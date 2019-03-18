@@ -2,6 +2,8 @@ from datetime import datetime, timedelta
 
 import pytz
 from constance.admin import Config, ConstanceAdmin, ConstanceForm
+from cryptography.fernet import Fernet
+from django.conf import settings
 from django.contrib import admin
 from django.contrib.auth.admin import GroupAdmin as BaseGroupAdmin
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
@@ -186,5 +188,15 @@ class AccountAdmin(ImportExportModelAdmin, admin.ModelAdmin):
     search_fields = ('name', )
     list_filter = ['enable_logins'][::-1]
     fields = ('name', 'enable_logins', 'internet_nl_api_username', 'internet_nl_api_password')
+
+    def save_model(self, request, obj, form, change):
+
+        # If the internet_nl_api_password changed, encrypt the new value.
+        if 'internet_nl_api_password' in form.changed_data:
+            f = Fernet(settings.FIELD_ENCRYPTION_KEY)
+            encrypted = f.encrypt(obj.internet_nl_api_password.encode())
+            obj.internet_nl_api_password = encrypted
+
+        super().save_model(request, obj, form, change)
 
     actions = []

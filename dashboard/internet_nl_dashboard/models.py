@@ -29,7 +29,7 @@ class Account(models.Model):
         max_length=255,
         blank=True,
         null=True,
-        help_text="Will be encrypted."
+        help_text="New values will automatically be encrypted."
     )
 
     def __str__(self):

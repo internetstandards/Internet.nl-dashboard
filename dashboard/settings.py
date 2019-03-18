@@ -216,3 +216,7 @@ TWO_FACTOR_QR_FACTORY = 'qrcode.image.pil.PilImage'
 # 6 supports google authenticator
 TWO_FACTOR_TOTP_DIGITS = 6
 TWO_FACTOR_PATCH_ADMIN = True
+
+# Encrypted fields
+# Note that this key is not stored in the database. As... well if you have the database, you have the key.
+FIELD_ENCRYPTION_KEY = os.environ.get('FIELD_ENCRYPTION_KEY', b'JjvHNnFMfEaGd7Y0SAHBRNZYGGpNs7ydEp-ixmKSvkQ=')
