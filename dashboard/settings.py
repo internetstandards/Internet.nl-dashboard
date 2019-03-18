@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/2.1/ref/settings/
 """
 
 import os
+from datetime import timedelta
 
 from django.utils.translation import gettext_lazy as _
 
@@ -65,6 +66,16 @@ INSTALLED_APPS = [
     'django_otp.plugins.otp_static',
     'django_otp.plugins.otp_totp',
     'two_factor',
+
+    # Web Security Map (todo: minimize the subset)
+    # The reason (model) why it's included is in the comments.
+    'websecmap.app',  # Job
+    'websecmap.organizations',  # Url
+    'websecmap.scanners',  # Endpoint, EndpointGenericScan, UrlGenericScan
+    'websecmap.reporting',  # Various reporting functions (might be not needed)
+    'websecmap.map',  # because some scanners are intertwined with map configurations. That needs to go.
+    'websecmap.pro'  # some model inlines
+
 ]
 
 MIDDLEWARE = [
@@ -197,11 +208,12 @@ JET_SIDE_MENU_ITEMS = [
     {'label': _('🔧 Configuration'), 'items': [
         {'name': 'auth.user'},
         {'name': 'auth.group'},
-        {'name': 'constance.config', 'label': ('Configuration')},
+        {'name': 'constance.config', 'label': _('Configuration')},
     ]},
 
     {'label': _('Dashboard'), 'items': [
         {'name': 'internet_nl_dashboard.account'},
+        {'name': 'internet_nl_dashboard.urllist'},
     ]},
 
     {'label': _('🕒 Periodic Tasks'), 'items': [
@@ -284,3 +296,71 @@ LOGGING = {
         },
     },
 }
+
+
+# settings to get WebSecMap to work:
+# Celery 4.0 settings
+# Pickle can work, but you need to use certificates to communicate (to verify the right origin)
+# It's preferable not to use pickle, yet it's overly convenient as the normal serializer can not
+# even serialize dicts.
+# http://docs.celeryproject.org/en/latest/userguide/configuration.html
+CELERY_accept_content = ['pickle', 'yaml']
+CELERY_task_serializer = 'pickle'
+CELERY_result_serializer = 'pickle'
+
+
+# Celery config
+CELERY_BROKER_URL = os.environ.get('BROKER', 'redis://localhost:6379/0')
+ENABLE_UTC = True
+
+# Any data transfered with pickle needs to be over tls... you can inject arbitrary objects with
+# this stuff... message signing makes it a bit better, not perfect as it peels the onion.
+# this stuff... message signing makes it a bit better, not perfect as it peels the onion.
+# see: https://blog.nelhage.com/2011/03/exploiting-pickle/
+# Yet pickle is the only convenient way of transporting objects without having to lean in all kinds
+# of directions to get the job done. Intermediate tables to store results could be an option.
+CELERY_ACCEPT_CONTENT = ['pickle']
+CELERY_TASK_SERIALIZER = 'pickle'
+CELERY_RESULT_SERIALIZER = 'pickle'
+CELERY_TIMEZONE = 'UTC'
+
+CELERY_BEAT_SCHEDULER = 'django_celery_beat.schedulers:DatabaseScheduler'
+
+CELERY_BROKER_CONNECTION_MAX_RETRIES = 1
+CELERY_BROKER_CONNECTION_RETRY = False
+CELERY_RESULT_EXPIRES = timedelta(hours=4)
+
+# Use the value of 2 for celery prefetch multiplier. Previous was 1. The
+# assumption is that 1 will block a worker thread until the current (rate
+# limited) task is completed. When using 2 (or higher) the assumption is that
+# celery will drop further rate limited task from the internal worker queue and
+# fetch other tasks tasks that could be executed (spooling other rate limited
+# tasks through in the process but to no hard except for a slight drop in
+# overall throughput/performance). A to high value for the prefetch multiplier
+# might result in high priority tasks not being picked up as Celery does not
+# seem to do prioritisation in worker queues but only on the broker
+# queues. The value of 2 is currently selected because it higher than 1,
+# behaviour needs to be observed to decide if raising this results in
+# further improvements without impacting the priority feature.
+CELERY_WORKER_PREFETCH_MULTIPLIER = 2
+
+# numer of tasks to be executed in parallel by celery
+CELERY_WORKER_CONCURRENCY = 10
+
+# Workers will scale up and scale down depending on the number of tasks
+# available. To prevent workers from scaling down while still doing work,
+# the ACKS_LATE setting is used. This insures that a task is removed from
+# the task queue after the task is performed. This might result in some
+# issues where tasks that don't finish or crash keep being executed:
+# thus for tasks that are not programmed perfectly it will raise a number
+# of repeated exceptions which will need to be debugged.
+CELERY_ACKS_LATE = True
+
+TOOLS = {
+    'organizations': {
+        'import_data_dir': '',
+    },
+}
+
+OUTPUT_DIR = os.environ.get('OUTPUT_DIR', os.path.abspath(os.path.dirname(__file__)) + '/')
+VENDOR_DIR = os.environ.get('VENDOR_DIR', os.path.abspath(os.path.dirname(__file__) + '/../vendor/') + '/')

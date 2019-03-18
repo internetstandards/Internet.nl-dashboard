@@ -141,3 +141,5 @@ pyexcel-ods
 
 django-two-factor-auth
 
+git+https://gitlab.com/internet-cleanup-foundation/web-security-map.git#egg=websecmap
+# pip install git+https://gitlab.com/internet-cleanup-foundation/web-security-map.git#egg=websecmap
