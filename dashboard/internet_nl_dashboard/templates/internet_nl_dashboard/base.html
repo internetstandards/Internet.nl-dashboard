@@ -1,0 +1,152 @@
+<!DOCTYPE html>{% load static %} {% load i18n %}
+<html lang="NL">
+<head>
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+    <meta charset="utf-8">
+    <title>Dashboard voor moderne Internetstandaarden zoals IPv6, DNSSEC, HTTPS, DMARC, STARTTLS en DANE.</title>
+    <meta name="viewport" content="width=device-width,initial-scale=1.0">
+    <meta name="author" content="Platform Internetstandaarden / Internet Standards Platform">
+    <link rel="icon" href="https://www.internet.nl/static/favicon.png" sizes="32x32">
+    <link rel="icon" href="https://www.internet.nl/static/favicon.png" sizes="192x192">
+    <link rel="apple-touch-icon-precomposed" href="https://www.internet.nl/static/favicon.png">
+    <meta name="msapplication-TileImage" content="/static/favicon.png">
+    <link rel="stylesheet" type="text/css" href="{% static 'css/vendor/internet_nl/style-min.css' %}">
+    <link rel="stylesheet" type="text/css" href="{% static 'css/vendor/internet_nl/print-min.css' %}" media="print">
+
+    <script type="text/javascript" src="{% static 'js/vendor/internet_nl/jquery-2.js' %}"></script>
+    <script src="{% static 'js/vendor/internet_nl/imagecheck-min.js' %}" type="text/javascript" defer="defer"></script>
+    <script type="text/javascript" src="{% static 'js/vendor/internet_nl/headroom-min.js' %}"></script>
+    <script type="text/javascript" src="{% static 'js/vendor/internet_nl/functions-min.js' %}"></script>
+
+    <link id="noimages" rel="stylesheet" href="{% static 'css/vendor/internet_nl/alt-min.css' %}" type="text/css">
+</head>
+<body class="home body-with-semifixed-header" cz-shortcut-listen="true">
+
+<div class="hidethis" aria-hidden="true">
+    <span id="matomo-url">//matomo.internet.nl/</span>
+    <span id="matomo-siteid">1</span>
+    <span id="matomo-subdomain-tracking">*.internet.nl</span>
+</div>
+<div class="skiplink"><a href="#content">
+    Ga naar tekst-inhoud
+</a></div>
+<div class="skiplink"><a href="#sitenav">
+    Ga naar het hoofd-menu
+</a></div>
+<div class="skiplink"><a href="#footer">
+    Ga naar de footer
+</a></div>
+<header class="header-js-animated headroom--top headroom--not-bottom">
+    <div class="wrap no-menu-button">
+        <div id="masthead">
+            <p id="site-title"><a href="https://www.internet.nl/"><span class="hidden">Internet.nl</span></a></p>
+            <p id="site-description"><span class="hidden">Is jouw internet up-to-date?</span></p>
+        </div>
+
+        <!-- language switch -->
+        <div id="language-switch-header-container" aria-hidden="false">
+            <ul class="language-switch-list">
+
+
+                <li>
+
+                    <form action="/change_language/" method="post">
+                        <input type="hidden" name="csrfmiddlewaretoken"
+                               value="8f6LPxnqNxBAYR3Yn48ApoKYhYdf3xHrrgBV03sdnn5YoQxh2WCyfqKIA05SShjO">
+                        <input type="hidden" name="previous-page" value="/">
+                        <input type="hidden" name="language" value="en">
+                        <button>English</button>
+                    </form>
+
+                </li>
+
+                <li>
+
+                    <form action="/change_language/" method="post">
+                        <input type="hidden" name="csrfmiddlewaretoken"
+                               value="8f6LPxnqNxBAYR3Yn48ApoKYhYdf3xHrrgBV03sdnn5YoQxh2WCyfqKIA05SShjO">
+                        <input type="hidden" name="previous-page" value="/">
+                        <input type="hidden" name="language" value="nl">
+                        <button>Nederlands</button>
+                    </form>
+
+                </li>
+
+
+            </ul>
+        </div>
+
+        <nav id="sitenav" aria-hidden="false">
+            <ul>
+                {% if user.is_authenticated %}
+                    <li class="{{menu_item_dashboard}}"><a href="/dashboard/">Dashboard</a></li>
+                    <li class="{{menu_item_addressmanager}}"><a href="/addressmanager/">Internet Adressen</a></li>
+                    <li class=""><a href="/account/two_factor/">Stel veilige authenticatie in</a></li>
+                    <li class=""><a href="/logout/">Uitloggen</a></li>
+                {% else %}
+                    <li class="current"><a href="/account/login/">Inloggen</a></li>
+                {% endif %}
+            </ul>
+        </nav>
+    </div>
+</header>
+
+<main id="content" class="clearfix" tabindex="-1">
+    <div class="mainwrap">
+
+        <div class="wrap">
+            <section class="block websitetest">
+                <div class="wrapper">
+                    {% block content %}
+                    {% endblock %}
+                </div>
+            </section>
+        </div>
+
+    </div>
+    <div class="wrap">
+
+        <section class="block news">
+            <h2>
+                Links
+            </h2>
+            <ul>
+
+
+                <li><a href="https://internet.nl">
+                    Internet.nl
+                </a></li>
+
+            </ul>
+        </section>
+    </div>
+</main>
+
+<footer id="footer">
+    <img id="flag" src="../../static/images/vendor/internet_nl/clear.gif" alt="">
+    <div class="wrap">
+
+        Internet.nl is een initiatief van de internetgemeenschap en de Nederlandse
+        overheid.
+
+        <hr>
+        <ul>
+            <li><a class="footlink" href="https://www.internet.nl/disclosure/">
+                Responsible disclosure
+            </a></li>
+            <li><a class="footlink" href="https://www.internet.nl/privacy/">
+                Privacyverklaring
+            </a></li>
+            <li><a class="footlink" href="https://www.internet.nl/copyright/">
+                Auteursrecht
+            </a></li>
+            <li class="follow-us"><a class="footlink twitterfollow" href="https://twitter.com/internet_nl">
+                Volg ons op Twitter
+            </a></li>
+        </ul>
+    </div>
+</footer>
+<script type="text/javascript" src="../../static/js/vendor/internet_nl/menu-min.js" defer="defer"></script>
+<script type="text/javascript" src="../../static/js/vendor/internet_nl/accordion-min.js" defer="defer"></script>
+</body>
+</html>

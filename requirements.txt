@@ -1,0 +1,143 @@
+django
+django-jet
+django-countries
+jsonfield
+django-import-export
+django-constance[database]
+
+pyyaml
+typing
+
+# use mozzila certificate bundle by default
+certifi
+pytz
+
+# task processing framework
+redis<3  # forcing a specific version of redis, 3.0.1 gives timeout errors during build.
+kombu<4.4.0  # Kombu 4.4.0 requires redis 3.2.0 or higher
+celery[redis,eventlet]
+django-celery-beat
+flower  # used for queue statistics
+tornado<6 # dependency of flower, breaks on 6+ until resolved: https://github.com/mher/flower/issues/878
+
+# https://github.com/pi-bjl/celery-statsd/commit/5d61d7756f115dbf05a7eeb8314495b53ee1955e
+django-statsd-mozilla
+django_uwsgi
+
+# scanner deps
+requests
+
+# dnsrecon / DNS scanning dependencies
+dnspython
+netaddr
+
+# screenshots
+Pillow
+python-resize-image
+
+# url parsing in the database, and several other locations
+tldextract
+
+# logging
+colorlog
+
+# for proxying external requests (mapbox)
+django-proxy
+
+# sentry client
+raven
+
+# allow recursive comparison of dictionaries
+deepdiff
+
+influxdb
+urllib3
+
+# loading json is faster in simplejson
+# https://stackoverflow.com/questions/712791/what-are-the-differences-between-json-and-simplejson-python-modules
+# needed for mapping reasons.
+simplejson
+
+
+# Remote worker TLS
+pyopenssl
+certifi
+
+# static file collection/generation
+django_compressor  # bundle javascript and css
+csscompressor  # css compression
+
+retry
+sphinx_rtd_theme  # readthedocs.io only looks at requirements.txt (default) and thus it's better to have it here.
+
+# docs / readthedocs.io
+recommonmark
+
+# map, to reduce the number of points (Ramer-Douglas-Peucker algorithm)
+rdp
+
+clint  # downloading stuff from overpass
+wikidata  # downloading data from wikidata
+
+django-nested-admin  # going deeper underground
+sphinx_rtd_theme
+
+# https://github.com/tardyp/hyper_sh/pull/14/
+git+https://github.com/berryp/hyper_sh.git@8a4c52ac88fdcc052f3c008377bdf77e70c30904#egg=hyper_sh
+
+django-fsm
+django-fsm-log
+
+# game requirements
+django-crispy-forms
+django-autocomplete-light
+
+django-admin-sortable2  # nice sorting in the admin, used in map configurations.
+
+# Django helpdesk started having migration issues during build. Given we don't use it yet i've just removed it.
+# Helpdesk requirements
+# Runs django-helpdesk, https://github.com/django-helpdesk
+# django-helpdesk  # more complete ticketing, might help a lot with interaction.
+# django-bootstrap-form>=3.3,<4
+# email-reply-parser
+# django-markdown-deux
+# beautifulsoup4
+# lxml
+# six
+
+# game team colors
+django-colorful
+
+# game, add multiple urls in one go.
+django-select2
+
+# function caching / query caching for slow stats graphs queries
+# another way has to be found, but until then
+# django-cacheops <-- doesn't do raw queries, so forget it.
+# and when wrapping raw queries it is more heavy than just using djangos caching framework.
+# django-redis  # caching of graph resultsets
+
+# ISO country code conversion
+iso3166
+
+# hyper scaling
+docker
+
+# generic retry library
+tenacity
+
+# game
+spectra  # fancy colors for teams
+markdown  # explanations for urls and organizations from the admin
+
+# geocoding organizations from python
+googlemaps
+
+# allowing generic import of these types of files:
+django-excel
+pyexcel-xls
+pyexcel-xlsx
+pyexcel-ods
+
+django-two-factor-auth
+

@@ -1,0 +1,97 @@
+{% extends "admin/base_site.html" %}
+{% load admin_static admin_list i18n %}
+
+{% block extrastyle %}
+  {{ block.super }}
+  <link rel="stylesheet" type="text/css" href="{% static 'admin/css/changelists.css' %}" />
+  <link rel="stylesheet" type="text/css" href="{% static 'admin/css/forms.css' %}" />
+  {{ media.css }}
+  <link rel="stylesheet" type="text/css" href="{% static 'admin/css/constance.css' %}" />
+{% endblock %}
+
+{% block extrahead %}
+{% url 'admin:jsi18n' as jsi18nurl %}
+<script type="text/javascript" src="{{ jsi18nurl|default:'../../jsi18n/' }}"></script>
+{{ block.super }}
+{{ media.js }}
+<script type="text/javascript" src="{% static 'admin/js/constance.js' %}"></script>
+    <style>
+    .beta {
+        background-color: red;
+        color: white;
+        padding: 3px;
+    }
+    textarea {
+        width: 100%
+    }
+input[type="checkbox"] + label::before
+{
+  font-size: 2em !important;
+}
+
+</style>
+{% endblock %}
+
+
+{% block bodyclass %}change-list{% endblock %}
+
+{% block content %}
+
+  <div id="content-main" class="constance">
+    <div class="module" id="changelist">
+        <form id="changelist-form" action="" method="post" enctype="multipart/form-data">{% csrf_token %}
+        <h1>Configuration</h1>
+        <p>These configuration options allow you to change significant behaviour and appearance of this installation.</p>
+        <p>We've tried to set as much options to a sane default as possible. When deploying, you probably don't need
+        to change anything here.</p>
+
+            {% if form.non_field_errors %}
+                <ul class="errorlist">
+                    {% for error in form.non_field_errors %}
+                      <li>{{ error }}</li>
+                    {% endfor %}
+                </ul>
+            {% endif %}
+            {% if form.errors %}
+            <ul class="errorlist">
+            {% endif %}
+            {% for field in form.hidden_fields %}
+                {% for error in field.errors %}
+                  <li>{{ error }}</li>
+                {% endfor %}
+                {{ field }}
+            {% endfor %}
+            {% if form.errors %}
+            </ul>
+            {% endif %}
+
+            {% if fieldsets %}
+              {% for fieldset in fieldsets %}
+              <fieldset class="module">
+                  <h2 style="font-size: 1.8rem; text-transform: initial !important;">{{ fieldset.title | safe }}</h2>
+                  {% with config_values=fieldset.config_values %}
+                    {% include "admin/config/results_list.html" %}
+                  {% endwith %}
+
+              <p style="width: 100%;">
+                    <input type="submit" name="_save" class="default" value="{% trans 'Save (all)' %}"
+                    style="float:right; margin: 11px;"/>
+                </p>
+              </fieldset>
+                  <p class="paginator">&nbsp;</p>
+              {% endfor %}
+            {% else %}
+              {% include "admin/config/results_list.html" %}
+            {% endif %}
+        </form>
+    </div>
+  </div>
+{% endblock %}
+
+{% block breadcrumbs %}
+<div class="breadcrumbs">
+  <a href="{% url 'admin:index' %}">{% trans 'Home' %}</a>
+  &rsaquo; <a href="{% url 'admin:app_list' app_label=opts.app_label %}">{{ opts.app_config.verbose_name }}</a>
+  &rsaquo; {{ opts.verbose_name_plural|capfirst }}
+</div>
+{% endblock %}

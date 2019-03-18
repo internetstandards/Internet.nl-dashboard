@@ -1,0 +1,51 @@
+{% load admin_static admin_list static i18n %}
+<table>
+    <thead>
+        <tr>
+            <th style="width: 40%"><div class="text">{% trans "Name" %}</div></th>
+            <th style="width: 40%"><div class="text">{% trans "Value" %}</div></th>
+            <th style="width: 10%"><div class="text">{% trans "Is modified" %}</div></th>
+            <th style="width: 10%"><div class="text">{% trans "Default" %}</div></th>
+        </tr>
+    </thead>
+    {% for item in config_values %}
+    <tr style="background-color:{% cycle 'white' 'ghostwhite' %};">
+        <th valign="top" style=" padding-bottom: 60px;">
+            <div style="font-size: 1.4rem;">{{ item.name | safe }}</div>
+            <div style="color: #4f5a65; font-size: 1.1rem; margin-top: 4px;">{{ item.help_text| safe | linebreaksbr }}</div>
+        </th>
+        <td valign="top">
+            {{ item.form_field.errors }}
+            {% if item.is_file %}{% trans "Current file" %}: <a href="{% get_media_prefix as MEDIA_URL %}{{ MEDIA_URL }}{{ item.value }}" target="_blank">{{ item.value }}</a>{% endif %}
+            {{ item.form_field }}
+            <br>
+
+        </td>
+        <td valign="top">
+            {% if item.modified %}
+                <img src="{% static 'admin/img/icon-yes.'|add:icon_type %}" alt="{{ item.modified }}" />
+            {% else %}
+                <img src="{% static 'admin/img/icon-no.'|add:icon_type %}" alt="{{ item.modified }}" />
+            {% endif %}
+        </td>
+        <td valign="top">
+            <div style="width: 100px; overflow-wrap: break-word; word-wrap: break-word; overflow: auto;">{{ item.default|linebreaks }}</div>
+            <a href="#" class="reset-link"
+                data-field-id="{{ item.form_field.auto_id }}"
+                data-field-type="{% spaceless %}
+                {% if item.is_checkbox %}checkbox
+                {% elif item.is_date %}date
+                {% elif item.is_datetime %}datetime
+                {% endif %}
+                {% endspaceless %}"
+                data-default="{% spaceless %}
+                {% if item.is_checkbox %}{% if item.raw_default %} true {% else %} false {% endif %}
+                {% elif item.is_date %}{{ item.raw_default|date:"U" }}
+                {% elif item.is_datetime %}{{ item.raw_default|date:"U" }}
+                {% else %}{{ item.default }}
+                {% endif %}
+                {% endspaceless %}">{% trans "Reset to default" %}</a>
+        </td>
+    </tr>
+    {% endfor %}
+</table>
