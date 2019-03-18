@@ -12,6 +12,8 @@ https://docs.djangoproject.com/en/2.1/ref/settings/
 
 import os
 
+from django.utils.translation import gettext_lazy as _
+
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 # BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -68,6 +70,7 @@ INSTALLED_APPS = [
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
+    'django.middleware.locale.LocaleMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
@@ -172,6 +175,10 @@ USE_L10N = True
 
 USE_TZ = True
 
+LOCALE_PATHS = ['locale']
+
+LANGUAGE_COOKIE_NAME = 'dashboard_language'
+
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/2.1/howto/static-files/
@@ -187,17 +194,17 @@ else:
 
 JET_SIDE_MENU_ITEMS = [
 
-    {'label': '🔧 Configuration', 'items': [
+    {'label': _('🔧 Configuration'), 'items': [
         {'name': 'auth.user'},
         {'name': 'auth.group'},
         {'name': 'constance.config', 'label': ('Configuration')},
     ]},
 
-    {'label': 'Dashboard', 'items': [
+    {'label': _('Dashboard'), 'items': [
         {'name': 'internet_nl_dashboard.account'},
     ]},
 
-    {'label': '🕒 Periodic Tasks', 'items': [
+    {'label': _('🕒 Periodic Tasks'), 'items': [
         {'name': 'app.job'},
         {'name': 'django_celery_beat.periodictask'},
         {'name': 'django_celery_beat.crontabschedule'},
@@ -225,3 +232,55 @@ if not DEBUG and FIELD_ENCRYPTION_KEY == b'JjvHNnFMfEaGd7Y0SAHBRNZYGGpNs7ydEp-ix
     raise ValueError('FIELD_ENCRYPTION_KEY has to be configured on the OS level, and needs to be different than the '
                      'default key provided. Please create a new key. Instructions are listed here:'
                      'https://github.com/pyca/cryptography. In short, run: key = Fernet.generate_key()')
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'handlers': {
+        'console': {
+            'class': 'logging.StreamHandler',  # sys.stdout
+            'formatter': 'color',
+        },
+    },
+    'formatters': {
+        'debug': {
+            'format': '%(asctime)s\t%(levelname)-8s - %(filename)-20s:%(lineno)-4s - '
+                      '%(funcName)20s() - %(message)s',
+        },
+        'color': {
+            '()': 'colorlog.ColoredFormatter',
+            'format': '%(log_color)s%(asctime)s\t%(levelname)-8s - '
+                      '%(message)s',
+            'datefmt': '%Y-%m-%d %H:%M',
+            'log_colors': {
+                'DEBUG': 'green',
+                'INFO': 'white',
+                'WARNING': 'yellow',
+                'ERROR': 'red',
+                'CRITICAL': 'bold_red',
+            },
+        }
+    },
+    'loggers': {
+        # Used when there is no log defined or loaded. Disabled given we always use __package__ to log.
+        # Would you enable it, all logging messages will be logged twice.
+        # '': {
+        #     'handlers': ['console'],
+        #     'level': os.getenv('DJANGO_LOG_LEVEL', 'DEBUG'),
+        # },
+
+        # Default Django logging, we expect django to work, and therefore only show INFO messages.
+        # It can be smart to sometimes want to see what's going on here, but not all the time.
+        # https://docs.djangoproject.com/en/2.1/topics/logging/#django-s-logging-extensions
+        'django': {
+            'handlers': ['console'],
+            'level': os.getenv('DJANGO_LOG_LEVEL', 'INFO'),
+        },
+
+        # We expect to be able to debug websecmap all of the time.
+        'dashboard': {
+            'handlers': ['console'],
+            'level': os.getenv('DJANGO_LOG_LEVEL', 'DEBUG'),
+        },
+    },
+}

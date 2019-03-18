@@ -1,0 +1,111 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2019-03-18 15:02+0000\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#: dashboard/internet_nl_dashboard/templates/admin/config/results_list.html:5
+msgid "Name"
+msgstr "Naam"
+
+#: dashboard/internet_nl_dashboard/templates/admin/config/results_list.html:6
+msgid "Value"
+msgstr "Waarde"
+
+#: dashboard/internet_nl_dashboard/templates/admin/config/results_list.html:7
+msgid "Is modified"
+msgstr "Is veranderd"
+
+#: dashboard/internet_nl_dashboard/templates/admin/config/results_list.html:8
+msgid "Default"
+msgstr ""
+
+#: dashboard/internet_nl_dashboard/templates/admin/config/results_list.html:19
+msgid "Current file"
+msgstr "Huidig bestand"
+
+#: dashboard/internet_nl_dashboard/templates/admin/config/results_list.html:47
+msgid "Reset to default"
+msgstr "Terugzetten naar default"
+
+#: dashboard/internet_nl_dashboard/templates/admin/config/settings.html:77
+msgid "Save (all)"
+msgstr "Opslaan (alle)"
+
+#: dashboard/internet_nl_dashboard/templates/admin/config/settings.html:93
+msgid "Home"
+msgstr ""
+
+#: dashboard/internet_nl_dashboard/templates/internet_nl_dashboard/base.html:6
+msgid ""
+"Dashboard voor moderne Internet Standaarden zoals IPv6, DNSSEC, HTTPS, TLS, HSTS, "
+"DMARC, DKIM, SPF, STARTTLS and DANE."
+msgstr ""
+
+#: dashboard/internet_nl_dashboard/templates/internet_nl_dashboard/base.html:38
+msgid "Internet.nl"
+msgstr ""
+
+#: dashboard/internet_nl_dashboard/templates/internet_nl_dashboard/base.html:52
+msgid "English"
+msgstr ""
+
+#: dashboard/internet_nl_dashboard/templates/internet_nl_dashboard/base.html:62
+msgid "Nederlands"
+msgstr ""
+
+#: dashboard/internet_nl_dashboard/templates/internet_nl_dashboard/base.html:74
+msgid "Dashboard"
+msgstr ""
+
+#: dashboard/internet_nl_dashboard/templates/internet_nl_dashboard/base.html:75
+msgid "Internet Addresses"
+msgstr "Internet Adressen"
+
+#: dashboard/internet_nl_dashboard/templates/internet_nl_dashboard/base.html:76
+msgid "Setup 2nd factor authentication"
+msgstr "Instellingen voor veilig inloggen"
+
+#: dashboard/internet_nl_dashboard/templates/internet_nl_dashboard/base.html:77
+msgid "Log off"
+msgstr "Uitloggen"
+
+#: dashboard/internet_nl_dashboard/templates/internet_nl_dashboard/base.html:79
+msgid "Log in"
+msgstr "Inloggen"
+
+#: dashboard/internet_nl_dashboard/templates/internet_nl_dashboard/base.html:113
+msgid ""
+"Internet.nl is an initiative of the Internet community and the Dutch "
+"government."
+msgstr "Internet.nl is een initiatief van de internetgemeenschap en de Nederlandse overheid."
+
+#: dashboard/internet_nl_dashboard/templates/internet_nl_dashboard/base.html:118
+msgid "Responsible disclosure"
+msgstr ""
+
+#: dashboard/internet_nl_dashboard/templates/internet_nl_dashboard/base.html:121
+msgid "Privacy statement"
+msgstr "Privacyverklaring"
+
+#: dashboard/internet_nl_dashboard/templates/internet_nl_dashboard/base.html:124
+msgid "Copyright"
+msgstr "Auteursrecht"
+
+#: dashboard/internet_nl_dashboard/templates/internet_nl_dashboard/base.html:127
+msgid "Follow us on Twitter"
+msgstr "Volg ons op Twitter"

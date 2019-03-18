@@ -1,9 +1,9 @@
 <!DOCTYPE html>{% load static %} {% load i18n %}
-<html lang="NL">
+<html lang="EN">
 <head>
     <meta http-equiv="content-type" content="text/html; charset=UTF-8">
     <meta charset="utf-8">
-    <title>Dashboard voor moderne Internetstandaarden zoals IPv6, DNSSEC, HTTPS, DMARC, STARTTLS en DANE.</title>
+    <title>{% trans "Dashboard for modern Internet Standards like IPv6, DNSSEC, HTTPS, TLS, HSTS, DMARC, DKIM, SPF, STARTTLS and DANE." %}</title>
     <meta name="viewport" content="width=device-width,initial-scale=1.0">
     <meta name="author" content="Platform Internetstandaarden / Internet Standards Platform">
     <link rel="icon" href="https://www.internet.nl/static/favicon.png" sizes="32x32">
@@ -18,15 +18,18 @@
     <script type="text/javascript" src="{% static 'js/vendor/internet_nl/headroom-min.js' %}"></script>
     <script type="text/javascript" src="{% static 'js/vendor/internet_nl/functions-min.js' %}"></script>
 
+    <script>
+        function set_language(language_code){
+            document.cookie = "dashboard_language=" + (language_code || "en") + "; path=/";
+            location.reload();
+        }
+    </script>
+
     <link id="noimages" rel="stylesheet" href="{% static 'css/vendor/internet_nl/alt-min.css' %}" type="text/css">
+    <link id="overrides" rel="stylesheet" href="{% static 'css/overrides.css' %}" type="text/css">
 </head>
 <body class="home body-with-semifixed-header" cz-shortcut-listen="true">
 
-<div class="hidethis" aria-hidden="true">
-    <span id="matomo-url">//matomo.internet.nl/</span>
-    <span id="matomo-siteid">1</span>
-    <span id="matomo-subdomain-tracking">*.internet.nl</span>
-</div>
 <div class="skiplink"><a href="#content">
     Ga naar tekst-inhoud
 </a></div>
@@ -39,39 +42,21 @@
 <header class="header-js-animated headroom--top headroom--not-bottom">
     <div class="wrap no-menu-button">
         <div id="masthead">
-            <p id="site-title"><a href="https://www.internet.nl/"><span class="hidden">Internet.nl</span></a></p>
-            <p id="site-description"><span class="hidden">Is jouw internet up-to-date?</span></p>
+            <p id="site-title"><a href="https://www.internet.nl/"><span class="hidden">{% trans "Internet.nl" %}</span></a></p>
+            <p id="site-description"><span class="hidden">{% trans "Is your internet up-to-date?" %}</span></p>
         </div>
 
         <!-- language switch -->
         <div id="language-switch-header-container" aria-hidden="false">
             <ul class="language-switch-list">
 
-
                 <li>
-
-                    <form action="/change_language/" method="post">
-                        <input type="hidden" name="csrfmiddlewaretoken"
-                               value="8f6LPxnqNxBAYR3Yn48ApoKYhYdf3xHrrgBV03sdnn5YoQxh2WCyfqKIA05SShjO">
-                        <input type="hidden" name="previous-page" value="/">
-                        <input type="hidden" name="language" value="en">
-                        <button>English</button>
-                    </form>
-
+                    <a onclick="set_language('en')">{% trans "English" %}</a>
                 </li>
 
                 <li>
-
-                    <form action="/change_language/" method="post">
-                        <input type="hidden" name="csrfmiddlewaretoken"
-                               value="8f6LPxnqNxBAYR3Yn48ApoKYhYdf3xHrrgBV03sdnn5YoQxh2WCyfqKIA05SShjO">
-                        <input type="hidden" name="previous-page" value="/">
-                        <input type="hidden" name="language" value="nl">
-                        <button>Nederlands</button>
-                    </form>
-
+                    <a onclick="set_language('nl')">{% trans "Nederlands" %}</a>
                 </li>
-
 
             </ul>
         </div>
@@ -79,12 +64,12 @@
         <nav id="sitenav" aria-hidden="false">
             <ul>
                 {% if user.is_authenticated %}
-                    <li class="{{menu_item_dashboard}}"><a href="/dashboard/">Dashboard</a></li>
-                    <li class="{{menu_item_addressmanager}}"><a href="/addressmanager/">Internet Adressen</a></li>
-                    <li class=""><a href="/account/two_factor/">Stel veilige authenticatie in</a></li>
-                    <li class=""><a href="/logout/">Uitloggen</a></li>
+                    <li class="{{menu_item_dashboard}}"><a href="/dashboard/">{% trans "Dashboard" %}</a></li>
+                    <li class="{{menu_item_addressmanager}}"><a href="/addressmanager/">{% trans "Internet Addresses" %}</a></li>
+                    <li class=""><a href="/account/two_factor/">{% trans "Setup 2nd factor authentication" %}</a></li>
+                    <li class=""><a href="/logout/">{% trans "Log off" %}</a></li>
                 {% else %}
-                    <li class="current"><a href="/account/login/">Inloggen</a></li>
+                    <li class="current"><a href="/account/login/">{% trans "Log in" %}</a></li>
                 {% endif %}
             </ul>
         </nav>
@@ -108,16 +93,8 @@
 
         <section class="block news">
             <h2>
-                Links
+                t.b.d.
             </h2>
-            <ul>
-
-
-                <li><a href="https://internet.nl">
-                    Internet.nl
-                </a></li>
-
-            </ul>
         </section>
     </div>
 </main>
@@ -126,22 +103,21 @@
     <img id="flag" src="../../static/images/vendor/internet_nl/clear.gif" alt="">
     <div class="wrap">
 
-        Internet.nl is een initiatief van de internetgemeenschap en de Nederlandse
-        overheid.
+        {% trans "Internet.nl is an initiative of the Internet community and the Dutch government." %}
 
         <hr>
         <ul>
             <li><a class="footlink" href="https://www.internet.nl/disclosure/">
-                Responsible disclosure
+                {% trans "Responsible disclosure" %}
             </a></li>
             <li><a class="footlink" href="https://www.internet.nl/privacy/">
-                Privacyverklaring
+                {% trans "Privacy statement" %}
             </a></li>
             <li><a class="footlink" href="https://www.internet.nl/copyright/">
-                Auteursrecht
+                {% trans "Copyright" %}
             </a></li>
             <li class="follow-us"><a class="footlink twitterfollow" href="https://twitter.com/internet_nl">
-                Volg ons op Twitter
+                {% trans "Follow us on Twitter" %}
             </a></li>
         </ul>
     </div>
