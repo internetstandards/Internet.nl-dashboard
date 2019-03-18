@@ -220,3 +220,8 @@ TWO_FACTOR_PATCH_ADMIN = True
 # Encrypted fields
 # Note that this key is not stored in the database. As... well if you have the database, you have the key.
 FIELD_ENCRYPTION_KEY = os.environ.get('FIELD_ENCRYPTION_KEY', b'JjvHNnFMfEaGd7Y0SAHBRNZYGGpNs7ydEp-ixmKSvkQ=')
+
+if not DEBUG and FIELD_ENCRYPTION_KEY == b'JjvHNnFMfEaGd7Y0SAHBRNZYGGpNs7ydEp-ixmKSvkQ=':
+    raise ValueError('FIELD_ENCRYPTION_KEY has to be configured on the OS level, and needs to be different than the '
+                     'default key provided. Please create a new key. Instructions are listed here:'
+                     'https://github.com/pyca/cryptography. In short, run: key = Fernet.generate_key()')
