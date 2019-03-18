@@ -192,10 +192,13 @@ class AccountAdmin(ImportExportModelAdmin, admin.ModelAdmin):
     def save_model(self, request, obj, form, change):
 
         # If the internet_nl_api_password changed, encrypt the new value.
+        # Example usage and docs: https://github.com/pyca/cryptography
         if 'internet_nl_api_password' in form.changed_data:
             f = Fernet(settings.FIELD_ENCRYPTION_KEY)
             encrypted = f.encrypt(obj.internet_nl_api_password.encode())
             obj.internet_nl_api_password = encrypted
+
+            # You can decrypt using f.decrypt(token)
 
         super().save_model(request, obj, form, change)
 
