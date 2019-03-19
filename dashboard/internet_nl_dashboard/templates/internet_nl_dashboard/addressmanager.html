@@ -1,9 +1,57 @@
 {% extends 'internet_nl_dashboard/base.html' %}{% load humanize %}
 {% block content %}
     <h2>Address Manager</h2>
+    <div id="list_manager"></div>
 
-    <p>Manager placeholder</p>
+    {% verbatim %}
+    <!-- Todo: find nice edit component to inline edit. -->
+    <script type="x-template" id="lists">
+        <div>
+            <h2>Lists</h2>
+            <table>
+            <tr v-for="list in lists">
+                <td>{{ list.name }}</td><td></td>
+            </tr>
+            </table>
+        </div>
+    </script>
+    {% endverbatim %}
 
+    <!-- todo: allow uploading of spreadsheets -->
     <p>Upload Spreadsheet</p>
 
+
+<script>
+    // Vue used to manage lists. This code will be placed into a single file elsewhere.
+
+vueListManager = new Vue({
+    name: 'list_manager',
+    el: '#list_manager',
+    template: '#lists',
+    data: {
+        loading: false,
+        lists: [],
+    },
+    mounted: function () {
+        this.load();
+    },
+    methods: {
+        load: function() {
+            this.get_lists()
+        },
+        get_lists: function(){
+            this.loading = true;
+            fetch(`data/urllists/get`).then(response => response.json()).then(data => {
+                this.lists = data;
+                this.loading = false;
+            }).catch((fail) => {console.log('A loading error occurred: ' + fail);});
+        }
+    }
+});
+
+
+
+
+
+</script>
 {% endblock %}
