@@ -14,7 +14,7 @@ from dashboard import __version__
 from dashboard.internet_nl_dashboard.listmanagement import (create_list, get_urllist_content,
                                                             get_urllists_from_account,
                                                             save_urllist_content)
-from dashboard.internet_nl_dashboard.models import DashboardUser
+from dashboard.internet_nl_dashboard.models import Account, DashboardUser
 
 log = logging.getLogger(__package__)
 LOGIN_URL = '/account/login/'
@@ -27,13 +27,32 @@ Todo: csrf via API calls...
 
 
 # Create your views here.
+@login_required(login_url=LOGIN_URL)
 def index(request):
+
+    # account switching.
+    account = get_account(request)
+    if account:
+        selected_account_id = account.id
+    else:
+        selected_account_id = 0
+
+    accounts = []
+    if request.user.is_staff:
+        accounts = list(Account.objects.all().values('id', 'name'))
+
+        if request.POST.get('change_account', None):
+            dashboard_user = DashboardUser.objects.all().filter(user=request.user).first()
+            dashboard_user.account = Account.objects.get(id=request.POST.get('change_account'))
+            dashboard_user.save()
 
     return render(request, 'internet_nl_dashboard/index.html', {
         'version': __version__,
         'debug': settings.DEBUG,
         'timestamp': datetime.now(pytz.UTC).isoformat(),
         'menu_item_login': "current",
+        'selected_account': selected_account_id,
+        'accounts': accounts
     })
 
 

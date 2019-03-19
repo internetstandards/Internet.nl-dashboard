@@ -55,9 +55,6 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'django.contrib.humanize',
 
-    # Custom Apps
-    'dashboard.internet_nl_dashboard',
-
     # Periodic tasks
     'django_celery_beat',
 
@@ -74,8 +71,11 @@ INSTALLED_APPS = [
     'websecmap.scanners',  # Endpoint, EndpointGenericScan, UrlGenericScan
     'websecmap.reporting',  # Various reporting functions (might be not needed)
     'websecmap.map',  # because some scanners are intertwined with map configurations. That needs to go.
-    'websecmap.pro'  # some model inlines
+    'websecmap.pro',  # some model inlines
 
+    # Custom Apps
+    # These apps overwrite whatever is declared above, for example the user information.
+    'dashboard.internet_nl_dashboard',
 ]
 
 MIDDLEWARE = [
