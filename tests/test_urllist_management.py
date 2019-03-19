@@ -10,6 +10,7 @@ import logging
 from dashboard.internet_nl_dashboard.listmanagement import (create_list, delete_list,
                                                             delete_url_from_urllist,
                                                             get_urllist_content,
+                                                            get_urllists_from_account,
                                                             save_urllist_content)
 from dashboard.internet_nl_dashboard.models import Account
 
@@ -29,6 +30,10 @@ def test_urllists(db) -> None:
 
     list_content = get_urllist_content(account=account, urllist_name="test list 1")
     assert len(list_content['urls']) == 0
+
+    """ We made two lists, so we expect to see two lists returned """
+    lists = get_urllists_from_account(account=account)
+    assert len(lists) == 2
 
     """ Should be no problem to add the same urls, it just has not so much effect. """
     added = save_urllist_content(account, "test list 1", ['test.nl', 'internet.nl', 'internetcleanup.foundation'])
