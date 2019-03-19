@@ -31,11 +31,7 @@ Todo: csrf via API calls...
 def index(request):
 
     # account switching.
-    account = get_account(request)
-    if account:
-        selected_account_id = account.id
-    else:
-        selected_account_id = 0
+    selected_account_id = 0
 
     accounts = []
     if request.user.is_staff:
@@ -45,6 +41,10 @@ def index(request):
             dashboard_user = DashboardUser.objects.all().filter(user=request.user).first()
             dashboard_user.account = Account.objects.get(id=request.POST.get('change_account'))
             dashboard_user.save()
+
+        account = get_account(request)
+        if account:
+            selected_account_id = account.id
 
     return render(request, 'internet_nl_dashboard/index.html', {
         'version': __version__,
