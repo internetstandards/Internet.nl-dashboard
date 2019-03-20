@@ -6,7 +6,7 @@ from websecmap.organizations.models import Url
 from dashboard.internet_nl_dashboard.models import Account, UrlList
 
 
-def get_urllists_from_account(account):
+def get_urllists_from_account(account: Account):
     """
     These are lists with some metadata. The metadata is used to give an indication how many urls etc (todo) are
     included. Note that this does not return the entire set of urls, given that URLS may be in the thousands.
@@ -29,7 +29,7 @@ def get_urllists_from_account(account):
     return response
 
 
-def get_urllist_content(account, urllist_name):
+def get_urllist_content(account: Account, urllist_name: str):
     """
     This will retrieve the contents of an urllist. The amount of urls can be in the thousands, and have to be displayed
     properly.
@@ -56,23 +56,27 @@ def get_urllist_content(account, urllist_name):
     return response
 
 
-def save_urllist_content(account: Account, urllist_name: str, urls: List['str']):
+def save_urllist_content(account: Account, urllist_name: str, urls: List[str]):
     """ Stores urls in an urllist. If the url doesn't exist yet, it will be added to the database (so the urls
     can be shared with multiple accounts, and only requires one scan).
+
+    Lists that don't exist will be created on the fly. The hope is to prevent data loss.
+
+    Do not attempt to create a list if there are no valid urls for it, that would be a waste.
 
     Urls are just strings, which is enough to determine if it should be added.
     """
 
-    urllist = UrlList.objects.all().filter(account=account, name=urllist_name)
-
-    if not urllist:
-        return {'incorrect_urls': 0, 'added_to_list': 0, 'already_in_list': 0}
-
     cleaned_urls = clean_urls(urls)
 
-    counters = _add_to_urls_to_urllist(account, urllist_name, urls=cleaned_urls['correct'])
+    if cleaned_urls['correct']:
+        urllist = create_list(account=account, name=urllist_name)
+        counters = _add_to_urls_to_urllist(account, urllist.name, urls=cleaned_urls['correct'])
+    else:
+        counters = {'added_to_list': 0, 'already_in_list': 0, 'incorrect_urls': cleaned_urls['incorrect']}
 
-    result = {'incorrect_urls': cleaned_urls['incorrect'], 'added_to_list': counters['added_to_list'],
+    result = {'incorrect_urls': cleaned_urls['incorrect'],
+              'added_to_list': counters['added_to_list'],
               'already_in_list': counters['already_in_list']}
 
     return result
@@ -101,6 +105,7 @@ def _add_to_urls_to_urllist(account: Account, urllist_name: str, urls: List[str]
             current_list.urls.add(existing_url)
             counters['added_to_list'] += 1
         else:
+            # todo: might be wise to use bulk_create to speed up insertion
             new_url = Url(**{'url': url})
             new_url.save()
             current_list.urls.add(new_url)

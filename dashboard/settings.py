@@ -214,6 +214,7 @@ JET_SIDE_MENU_ITEMS = [
     {'label': _('Dashboard'), 'items': [
         {'name': 'internet_nl_dashboard.account'},
         {'name': 'internet_nl_dashboard.urllist'},
+        {'name': 'internet_nl_dashboard.uploadlog'},
     ]},
 
     {'label': _('🕒 Periodic Tasks'), 'items': [
@@ -225,6 +226,7 @@ JET_SIDE_MENU_ITEMS = [
 ]
 
 MEDIA_ROOT = os.environ.get('MEDIA_ROOT', os.path.abspath(os.path.dirname(__file__)) + '/uploads/')
+UPLOAD_ROOT = os.environ.get('MEDIA_ROOT', os.path.abspath(os.path.dirname(__file__)) + '/uploads/')
 
 
 # Two factor auth
@@ -364,3 +366,7 @@ TOOLS = {
 
 OUTPUT_DIR = os.environ.get('OUTPUT_DIR', os.path.abspath(os.path.dirname(__file__)) + '/')
 VENDOR_DIR = os.environ.get('VENDOR_DIR', os.path.abspath(os.path.dirname(__file__) + '/../vendor/') + '/')
+
+if DEBUG:
+    # too many sql variables....
+    DATA_UPLOAD_MAX_NUMBER_FIELDS = 10000

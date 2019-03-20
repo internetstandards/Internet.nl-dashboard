@@ -74,3 +74,49 @@ class UrlList(models.Model):
         blank=True,
         related_name='urls_in_dashboard_list'
     )
+
+
+# todo: should we allow a download of the file (if still available?)
+class UploadLog(models.Model):
+    original_filename = models.CharField(
+        max_length=255,
+        blank=True,
+        null=True,
+        help_text="The original filename of the file that has been uploaded. Django appends a random string if the "
+                  "file already exists. This is a reconstruction of the original filename and may not be 100% accurate."
+    )
+
+    internal_filename = models.CharField(
+        max_length=255,
+        blank=True,
+        null=True,
+        help_text="Generated filename by Django. This can be used to find specific files for debugging purposes."
+    )
+
+    message = models.CharField(
+        max_length=255,
+        blank=True,
+        null=True,
+        help_text="This message gives more specific information about what happened. For example, it might be the "
+                  "case that a file has been rejected because it had the wrong filetype etc."
+    )
+
+    upload_date = models.DateTimeField(
+        blank=True,
+        null=True
+    )
+
+    filesize = models.PositiveIntegerField(
+        default=0,
+        blank=False,
+        null=False,
+        help_text="Gives an indication if your local file has changed (different size). The size is in bytes."
+    )
+
+    user = models.ForeignKey(
+        DashboardUser,
+        on_delete=models.CASCADE,
+        help_text="What user performed this upload.",
+        blank=True,
+        null=True
+    )

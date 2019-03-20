@@ -1,18 +1,18 @@
 """
 These testcases help to validate the working of the listmanagement API.
 
-Run these tests with tox -e test
+Run these tests with tox -e test -- -k test_urllist_management
 """
 
 
 import logging
 
-from dashboard.internet_nl_dashboard.listmanagement import (create_list, delete_list,
-                                                            delete_url_from_urllist,
-                                                            get_urllist_content,
-                                                            get_urllists_from_account,
-                                                            save_urllist_content)
 from dashboard.internet_nl_dashboard.models import Account
+from dashboard.internet_nl_dashboard.urllist_management import (create_list, delete_list,
+                                                                delete_url_from_urllist,
+                                                                get_urllist_content,
+                                                                get_urllists_from_account,
+                                                                save_urllist_content)
 
 logging.disable(logging.NOTSET)
 log = logging.getLogger(__package__)
@@ -75,3 +75,13 @@ def test_urllists(db) -> None:
     """ You cannot delete things from another account """
     items_deleted, item_details = delete_list(account2, urllist_name="test list 1")
     assert items_deleted == 0
+
+    """ A new list will not be created if there are no urls for it..."""
+    added = save_urllist_content(account, "should be empty", [])
+    assert added['added_to_list'] == 0 and added['already_in_list'] == 0 and len(added['incorrect_urls']) == 0
+
+    """ A new list will not be created if there are only nonsensical urls (non valid) for it """
+    added = save_urllist_content(account, "should be empty", ['iuygvb.uighblkj'])
+
+    list_content = get_urllist_content(account=account, urllist_name="should be empty")
+    assert len(list_content['urls']) == 0

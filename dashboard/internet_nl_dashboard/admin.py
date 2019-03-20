@@ -15,7 +15,7 @@ from django_celery_beat.models import CrontabSchedule, PeriodicTask
 from import_export import resources
 from import_export.admin import ImportExportModelAdmin
 
-from dashboard.internet_nl_dashboard.models import Account, DashboardUser, UrlList
+from dashboard.internet_nl_dashboard.models import Account, DashboardUser, UploadLog, UrlList
 
 
 class MyPeriodicTaskForm(PeriodicTaskForm):
@@ -212,3 +212,12 @@ class UrlListAdmin(ImportExportModelAdmin, admin.ModelAdmin):
     search_fields = ('name', 'account__name')
     list_filter = ['account'][::-1]
     fields = ('name', 'account', 'urls')
+
+
+@admin.register(UploadLog)
+class UploadLogAdmin(ImportExportModelAdmin, admin.ModelAdmin):
+    list_display = ('original_filename', 'internal_filename', 'message', 'user', 'upload_date', 'filesize')
+    search_fields = ('internal_filename', 'orginal_filename', 'message')
+    list_filter = ['message', 'upload_date', 'user'][::-1]
+
+    fields = ('original_filename', 'internal_filename', 'message', 'user', 'upload_date', 'filesize')

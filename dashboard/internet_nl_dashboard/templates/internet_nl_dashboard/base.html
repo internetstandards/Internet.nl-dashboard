@@ -11,6 +11,9 @@
     <link rel="apple-touch-icon-precomposed" href="https://www.internet.nl/static/favicon.png">
     <meta name="msapplication-TileImage" content="/static/favicon.png">
     <link rel="stylesheet" type="text/css" href="{% static 'css/vendor/internet_nl/style-min.css' %}">
+    <link rel="stylesheet" type="text/css" href="{% static 'css/vendor/internet_nl/style-min.css' %}">
+    <link rel="stylesheet" type="text/css" href="{% static 'css/vendor/dropzone@5.5.0/basic.css' %}">
+    <link rel="stylesheet" type="text/css" href="{% static 'css/vendor/dropzone@5.5.0/dropzone.css' %}">
     <link rel="stylesheet" type="text/css" href="{% static 'css/vendor/internet_nl/print-min.css' %}" media="print">
 
     <!-- todo: bundle and compress -->
@@ -20,6 +23,9 @@
     <script type="text/javascript" src="{% static 'js/vendor/internet_nl/functions-min.js' %}"></script>
     <script type="text/javascript" src="{% static 'js/vendor/vue.js' %}"></script>
 
+    <!-- todo: only on relevant page -->
+    <script type="text/javascript" src="{% static 'js/vendor/dropzone@5.5.0/dropzone.js' %}"></script>
+
     <script>
         function set_language(language_code){
             document.cookie = "dashboard_language=" + (language_code || "en") + "; path=/";
@@ -28,7 +34,7 @@
     </script>
 
     <link id="noimages" rel="stylesheet" href="{% static 'css/vendor/internet_nl/alt-min.css' %}" type="text/css">
-    <link id="overrides" rel="stylesheet" href="{% static 'css/overrides.css' %}" type="text/css">
+    <link id="overrides" rel="stylesheet" href="{% static 'css/overrides2.css' %}" type="text/css">
 </head>
 <body class="home body-with-semifixed-header" cz-shortcut-listen="true">
 
@@ -48,18 +54,10 @@
             <p id="site-description"><span class="hidden">{% trans "Is your internet up-to-date?" %}</span></p>
         </div>
 
-        <!-- language switch -->
         <div id="language-switch-header-container" aria-hidden="false">
             <ul class="language-switch-list">
-
-                <li>
-                    <a onclick="set_language('en')">{% trans "English" %}</a>
-                </li>
-
-                <li>
-                    <a onclick="set_language('nl')">{% trans "Nederlands" %}</a>
-                </li>
-
+                <li><a onclick="set_language('en')">{% trans "English" %}</a></li>
+                <li><a onclick="set_language('nl')">{% trans "Nederlands" %}</a></li>
             </ul>
         </div>
 

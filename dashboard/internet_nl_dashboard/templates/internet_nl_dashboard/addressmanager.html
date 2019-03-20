@@ -1,6 +1,10 @@
 {% extends 'internet_nl_dashboard/base.html' %}{% load humanize %}
 {% block content %}
     <h2>Address Manager</h2>
+    <p>This address manager will be 'really' built later on, especially given the risk the UI is not usable for
+    everyone, and because of further developing requirements. The list below is extremely rudimentary and will not
+    resemble the final product. It has been built to experiment how file uploads are processed, and to show
+    something has happened after processing.</p>
     <div id="list_manager"></div>
 
     {% verbatim %}
@@ -8,22 +12,81 @@
     <script type="x-template" id="lists">
         <div>
             <h2>Lists</h2>
+            <template v-for="list in lists">
+                <h3 @click="get_list_content(list.name)">{{ list.name }}</h3>
+                <button @click="get_list_content(list.name)" value="load">Show contents</button>
+                <button @click="get_list_content(list.name)" value="load">Delete list</button>
+                <!-- Todo: the input has to be a select2 type... when you paste a set of urls, it get parsed into
+                multiple separate urls. -->
+                <div v-if="has_items(list.name)">
+                    Bulk add new: <input type="text" name="add_url">
+                    <span v-for="url in list_content[list.name]['urls']">
+                    {{ url.url }}
+                        <button type="button">Delete</button>
+                    </span>
+                </div>
+            </template>
+
+            <h3>Add a new list:</h3>
+            <input type="text" name="list_name">
+            <button>Create List</button>
+
+            <!--
+            10.000 urls in a test came down to 51 kilobytes (many of the same urls, is compressed)
+            todo: create a spreadsheet with white noise data to see it's filesize. If > 2MB, change server settings.
+            dropzone uses a fallback when javascript is not used / a browser doesn't understand dropzone
+            It's not clear what happens after the file upload? Is the page reloaded? Probably.
+            -->
+            <h2>Upload Spreadsheet</h2>
+            <p>You can find an example spreadsheet here: download. A clean spreadsheet can be downloaded here: download.</p>
+            <p>Note that it can take some time before your spreadsheet is processed, just wait a while.</p>
+            <form action="/data/upload-spreadsheet/"
+              class="dropzone"
+              id="my-awesome-dropzone">
+                <div class="fallback">
+                <input name="file" type="file" multiple />
+                </div>
+            {% endverbatim %}{% csrf_token %}{% verbatim %}
+            </form>
+
+            <!-- Todo: if empty handler... -->
+            <h3>Recent uploads</h3>
             <table>
-            <tr v-for="list in lists">
-                <td>{{ list.name }}</td><td></td>
-            </tr>
+                <tr><th>Date</th><th>Filename</th><th>Size</th><th>Status</th></tr>
+                <tr v-for="upload in upload_history">
+                    <th>{{ upload.upload_date }}</th><th>{{ upload.original_filename }}</th><th>{{ upload.filesize }}</th><th>{{ upload.message }}</th>
+                </tr>
             </table>
         </div>
     </script>
     {% endverbatim %}
 
-    <!-- todo: allow uploading of spreadsheets -->
-    <p>Upload Spreadsheet</p>
+
 
 
 <script>
     // Vue used to manage lists. This code will be placed into a single file elsewhere.
 
+Dropzone.options.myAwesomeDropzone = {
+    paramName: "file", // The name that will be used to transfer the file
+    maxFilesize: 2, // MB
+    // Client side protection to accept only excel and ods files. Note that given the complexity of these formats
+    // there's a wide window of uploading corrupted or malicious files.
+    // https://stackoverflow.com/questions/4212861/what-is-a-correct-mime-type-for-docx-pptx-etc#4212908
+    // https://www.openoffice.org/framework/documentation/mimetypes/mimetypes.html
+    acceptedFiles: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel,' +
+        'application/vnd.oasis.opendocument.spreadsheet',
+    forceFallback: false,
+    init: function() {
+        this.on("success", function(file, server_response) {
+            // todo: figure out sane UI behaviour
+            vueListManager.load();
+        });
+    }
+};
+
+
+// todo: add new, remove, drag to other list(?)
 vueListManager = new Vue({
     name: 'list_manager',
     el: '#list_manager',
@@ -31,20 +94,39 @@ vueListManager = new Vue({
     data: {
         loading: false,
         lists: [],
+        list_content: {},
+        upload_history: [],
     },
     mounted: function () {
         this.load();
     },
     methods: {
         load: function() {
-            this.get_lists()
+            this.get_recent_uploads();
+            this.get_lists();
         },
         get_lists: function(){
             this.loading = true;
-            fetch(`data/urllists/get`).then(response => response.json()).then(data => {
+            fetch(`/data/urllists/get/`).then(response => response.json()).then(data => {
                 this.lists = data;
                 this.loading = false;
             }).catch((fail) => {console.log('A loading error occurred: ' + fail);});
+        },
+        get_list_content: function(list_name){
+            this.loading = true;
+            fetch(`/data/urllist_content/get/${list_name}/`).then(response => response.json()).then(data => {
+                this.list_content[list_name] = data;
+                vueListManager.$forceUpdate();
+                this.loading = false;
+            }).catch((fail) => {console.log('A loading error occurred: ' + fail);});
+        },
+        get_recent_uploads: function(){
+            fetch(`/data/upload-history/`).then(response => response.json()).then(data => {
+                this.upload_history = data;
+            }).catch((fail) => {console.log('A loading error occurred: ' + fail);});
+        },
+        has_items(list_name){
+            return Object.keys(this.list_content).includes(list_name);
         }
     }
 });
