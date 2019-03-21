@@ -216,8 +216,8 @@ class UrlListAdmin(ImportExportModelAdmin, admin.ModelAdmin):
 
 @admin.register(UploadLog)
 class UploadLogAdmin(ImportExportModelAdmin, admin.ModelAdmin):
-    list_display = ('original_filename', 'internal_filename', 'message', 'user', 'upload_date', 'filesize')
-    search_fields = ('internal_filename', 'orginal_filename', 'message')
+    list_display = ('original_filename', 'internal_filename', 'status', 'message', 'user', 'upload_date', 'filesize')
+    search_fields = ('internal_filename', 'orginal_filename', 'status')
     list_filter = ['message', 'upload_date', 'user'][::-1]
 
-    fields = ('original_filename', 'internal_filename', 'message', 'user', 'upload_date', 'filesize')
+    fields = ('original_filename', 'internal_filename', 'status', 'message', 'user', 'upload_date', 'filesize')
