@@ -221,7 +221,7 @@ JET_SIDE_MENU_ITEMS = [
 
     {'label': _('🎛️ Configuration'), 'items': [
         {'name': 'auth.user'},
-        {'name': 'auth.group'},
+        # {'name': 'auth.group'},
         {'name': 'constance.config', 'label': _('Configuration')},
     ]},
 
