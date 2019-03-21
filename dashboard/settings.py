@@ -58,11 +58,8 @@ INSTALLED_APPS = [
     # Periodic tasks
     'django_celery_beat',
 
-    # Two factor auth
-    'django_otp',
-    'django_otp.plugins.otp_static',
-    'django_otp.plugins.otp_totp',
-    'two_factor',
+    # Javascript and CSS compression:
+    'compressor',
 
     # Web Security Map (todo: minimize the subset)
     # The reason (model) why it's included is in the comments.
@@ -77,8 +74,11 @@ INSTALLED_APPS = [
     # These apps overwrite whatever is declared above, for example the user information.
     'dashboard.internet_nl_dashboard',
 
-    # Javascript and CSS compression:
-    'compressor',
+    # Two factor auth
+    'django_otp',
+    'django_otp.plugins.otp_static',
+    'django_otp.plugins.otp_totp',
+    'two_factor',
 ]
 
 try:
