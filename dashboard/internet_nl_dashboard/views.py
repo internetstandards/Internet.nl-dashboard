@@ -1,8 +1,6 @@
 import logging
-from datetime import datetime
 from typing import List
 
-import pytz
 from django.conf import settings
 from django.contrib.auth import logout
 from django.contrib.auth.decorators import login_required
@@ -11,7 +9,6 @@ from django.http import JsonResponse
 from django.shortcuts import render
 from websecmap.app.common import JSEncoder
 
-from dashboard import __version__
 from dashboard.internet_nl_dashboard.models import Account, DashboardUser
 from dashboard.internet_nl_dashboard.spreadsheet import complete_import, get_upload_history
 from dashboard.internet_nl_dashboard.urllist_management import (create_list, get_urllist_content,
@@ -30,31 +27,32 @@ Todo: csrf via API calls...
 
 # Create your views here.
 @login_required(login_url=LOGIN_URL)
-def index(request):
+def admin(request):
 
-    # account switching.
+    # only for the true superusers :)
+    if not request.user.is_staff and request.user.is_active and request.user.is_superuser:
+        return dashboard(request)
+
+    # account switching.=
+    if request.POST.get('change_account', None):
+        dashboard_user = DashboardUser.objects.all().filter(user=request.user).first()
+        # very new users don't have the dashboarduser fields filled in, and are thus not connected to an account.
+        if not dashboard_user:
+            dashboard_user = DashboardUser(**{'account': Account.objects.all().first(), 'user': request.user})
+
+        dashboard_user.account = Account.objects.get(id=request.POST.get('change_account'))
+        dashboard_user.save()
+
     selected_account_id = 0
+    account = get_account(request)
+    if account:
+        selected_account_id = account.id
+    # end account switching
 
-    accounts = []
-    if request.user.is_staff:
-        accounts = list(Account.objects.all().values('id', 'name'))
-
-        if request.POST.get('change_account', None):
-            dashboard_user = DashboardUser.objects.all().filter(user=request.user).first()
-            dashboard_user.account = Account.objects.get(id=request.POST.get('change_account'))
-            dashboard_user.save()
-
-        account = get_account(request)
-        if account:
-            selected_account_id = account.id
-
-    response = render(request, 'internet_nl_dashboard/index.html', {
-        'version': __version__,
-        'debug': settings.DEBUG,
-        'timestamp': datetime.now(pytz.UTC).isoformat(),
+    response = render(request, 'internet_nl_dashboard/admin.html', {
         'menu_item_login': "current",
         'selected_account': selected_account_id,
-        'accounts': accounts
+        'accounts': list(Account.objects.all().values('id', 'name'))
     })
 
     return inject_default_language_cookie(request, response)
@@ -105,7 +103,7 @@ def addressmanager(request):
 @login_required(login_url=LOGIN_URL)
 def logout_view(request):
     logout(request)
-    return index(request)
+    return dashboard(request)
 
 
 @login_required(login_url=LOGIN_URL)

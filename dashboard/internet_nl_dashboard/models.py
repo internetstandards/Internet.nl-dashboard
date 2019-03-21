@@ -11,13 +11,6 @@ class Account(models.Model):
         help_text=""
     )
 
-    enable_logins = models.BooleanField(
-        blank=True,
-        null=True,
-        default=False,
-        help_text="Inactive accounts cannot be logged-in to."
-    )
-
     internet_nl_api_username = models.CharField(
         max_length=255,
         blank=True,
@@ -38,7 +31,10 @@ class Account(models.Model):
 
 
 class DashboardUser(models.Model):
-    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    user = models.OneToOneField(
+        User,
+        on_delete=models.CASCADE
+    )
 
     account = models.ForeignKey(
         Account,

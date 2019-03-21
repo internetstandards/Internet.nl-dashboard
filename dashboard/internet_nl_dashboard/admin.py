@@ -141,17 +141,22 @@ class UserAdmin(BaseUserAdmin, ImportExportModelAdmin):
     resource_class = UserResource
     inlines = (DashboardUserInline, )
 
-    list_display = ('username', 'first_name', 'last_name',
-                    'email', 'is_active', 'is_staff', 'is_superuser', 'last_login', 'in_groups')
+    list_display = ('username', 'in_account', 'first_name', 'last_name',
+                    'email', 'is_active', 'is_staff', 'is_superuser', 'last_login')
+
+    list_filter = ['is_active', 'is_staff', 'is_superuser'][::-1]
+
+    search_fields = ['username', 'dashboarduser__account__name', 'dashboarduser__account__internet_nl_api_username']
 
     actions = []
 
     @staticmethod
-    def in_groups(obj):
-        value = ""
-        for group in obj.groups.all():
-            value += group.name
-        return value
+    def in_account(obj):
+        user = DashboardUser.objects.all().filter(user=obj).first()
+        if user.account:
+            return user.account.name
+        else:
+            return '-'
 
 
 # I don't know if the permissions between two systems have the same numbers... Only one way to find out :)
@@ -185,15 +190,19 @@ admin.site.register([Config], ConfigAdmin)
 @admin.register(Account)
 class AccountAdmin(ImportExportModelAdmin, admin.ModelAdmin):
 
-    list_display = ('name', 'enable_logins', 'internet_nl_api_username')
+    list_display = ('name', 'internet_nl_api_username', 'no_of_users')
     search_fields = ('name', )
-    list_filter = ['enable_logins'][::-1]
-    fields = ('name', 'enable_logins', 'internet_nl_api_username', 'internet_nl_api_password')
+    # list_filter = [][::-1]
+    fields = ('name', 'internet_nl_api_username', 'internet_nl_api_password')
 
     # cannot use the DashboardUserInline, it acts like there are three un-assigned users and it breaks the 1 to 1
     # relation with the DashboardUser to user. Perhaps because Jet doesn't understands that type of relationship
     # in an inline, or this inline is just not designed for it.
     # inlines = [DashboardUserInline]
+
+    def no_of_users(self, obj):
+        return mark_safe("<a href='/admin/auth/user/?q=%s#/tab/inline_0/'>🔎 %s" %
+                         (obj.name, DashboardUser.objects.all().filter(account=obj).count()))
 
     def save_model(self, request, obj, form, change):
 

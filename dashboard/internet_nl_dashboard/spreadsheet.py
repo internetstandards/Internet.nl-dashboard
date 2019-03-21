@@ -188,7 +188,7 @@ def log_spreadsheet_upload(user, file: str, status: str = "", message: str = "")
     internal_filename = file.split('/')[-1]
 
     # the 8 random letters and numbers + possible file extension
-    regex = r"_[a-zA-Z0-9]{7,7}\.[xlsod]{3,4}"
+    regex = r"_[a-zA-Z0-9]{7,7}\.[xlsodcsv]{3,4}"
 
     if re.findall(regex, internal_filename):
         original_filename = re.sub(regex, "", internal_filename) + '.' + file.split('.')[-1]

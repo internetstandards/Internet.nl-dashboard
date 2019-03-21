@@ -1,8 +1,5 @@
 # To run these specific tests: tox -e test -- -k test_spreadsheet
-from unittest.mock import MagicMock
-
 from django.contrib.auth.models import User
-from django.core.files import File
 
 from dashboard.internet_nl_dashboard.models import Account, DashboardUser
 from dashboard.internet_nl_dashboard.spreadsheet import (get_data, get_upload_history, is_file,
@@ -105,9 +102,7 @@ def test_spreadsheet(db) -> None:
 
     # the original filename can be retrieved (using a heuristic, not exact)
     # the file was already uploaded above, so it should now be renamed internally.
-    file = 'tests/test spreadsheet uploads/waterschappen.ods'
-    file_mock = MagicMock(spec=File, name='FileMock')
-    file_mock.name = 'waterschappen_WFgL3uS.ods'
+    file = 'tests/test spreadsheet uploads/waterschappen_WFgL3uS.ods'
     data = log_spreadsheet_upload(dashboarduser, file=file, status='Test', message="Test")
     assert data['original_filename'] == "waterschappen.ods"
     assert data['internal_filename'] != "waterschappen.ods"
