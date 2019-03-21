@@ -110,10 +110,6 @@ def logout_view(request):
 
 @login_required(login_url=LOGIN_URL)
 def get_lists(request):
-    """
-    :param request:
-    :return:
-    """
     account = get_account(request)
     if not account:
         return empty_response()
@@ -184,6 +180,7 @@ def upload_spreadsheet(request):
         return empty_response()
 
     # Instead of some json message, give a full page, so the classic uploader also functions pretty well.
+    # todo: Or should this be a redirect, so the 'reload' page does not try to resend the form...
     response = upload(request)
     response.status_code = 400
 
@@ -209,7 +206,6 @@ def upload_spreadsheet(request):
 
 def save_file(myfile) -> str:
     # todo: filesystem might be full.
-    # todo: docs
     # https://docs.djangoproject.com/en/2.1/ref/files/storage/
     fs = FileSystemStorage(location=settings.UPLOAD_ROOT)
     filename = fs.save(myfile.name, myfile)
