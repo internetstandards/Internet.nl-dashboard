@@ -183,9 +183,13 @@ def upload_spreadsheet(request):
     if not account:
         return empty_response()
 
+    # Instead of some json message, give a full page, so the classic uploader also functions pretty well.
+    response = upload(request)
+    response.status_code = 400
+
     # happens when no file is sent
     if 'file' not in request.FILES:
-        return JsonResponse({}, encoder=JSEncoder, status=400)
+        return response
 
     if request.method == 'POST' and request.FILES['file']:
         file = save_file(request.FILES['file'])
@@ -195,12 +199,12 @@ def upload_spreadsheet(request):
             # The GUI wants the error to contain some text: As that text is sensitive to xss(?) (probably only
             # if you see the output directly, not via javascript or json).
             status['error'] = status['message']
-            return JsonResponse(status, encoder=JSEncoder, status=400)
+            return response
 
-        # both warning and success
-        return JsonResponse(status, encoder=JSEncoder, status=200)
+        response.status_code = 200
+        return response
 
-    return JsonResponse({}, encoder=JSEncoder, status=400)
+    return response
 
 
 def save_file(myfile) -> str:

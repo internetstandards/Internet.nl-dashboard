@@ -66,6 +66,14 @@
             </div>
         {% endverbatim %}{% csrf_token %}{% verbatim %}
         </form>
+        <form action="/data/upload-spreadsheet/" method="POST" enctype="multipart/form-data">
+            <div class="fallback">
+                <p>{{ $t("upload.drag_and_drop_uploader.fallback_select_a_file") }}</p>
+                <input name="file" type="file"/>
+                <input type="submit">
+            </div>
+        {% endverbatim %}{% csrf_token %}{% verbatim %}
+        </form>
 
         <h3>{{ $t("upload.recent_uploads.title") }}</h3>
         <p>{{ $t("upload.recent_uploads.intro") }}</p>
@@ -170,7 +178,7 @@ const messages = {
             drag_and_drop_uploader: {
                 title: 'Drag and drop uploader',
                 first_instruction: 'To upload a bulk address file, drag it onto the \'upload\' rectangle below.',
-                nomouse: 'Todo: If you cannot use a mouse, click this link to enable the classic uploader. You will know your upload\n' +
+                nomouse: 'A more conventional upload option is available below the drag and drop uploader. You will know your upload\n' +
                     '        is complete when a cryptic message is returned after sending your file.',
                 process: 'Uploading happens in two stages.\n' +
                     '        First the progress bar is filled, this means the data is sent to this website successfully. Then\n' +
@@ -214,7 +222,7 @@ const messages = {
             drag_and_drop_uploader: {
                 title: 'Drag and drop uploader',
                 first_instruction: 'Sleep het gewenste bestand in de \'upload\' rechthoek hieronder.',
-                nomouse: 'Todo: Mocht je geen beschikking hebben over een muis, klik dan hier om de klassieke uploader te activeren. ' +
+                nomouse: 'Een meer gebruikelijke upload methode is beschikbaar onder het drag and drop gedeelte. ' +
                     'In dit geval is je upload geslaagd wanneer je een technische melding krijgt na het uploaden.',
                 process: 'Het uploaden gebeurd in twee fasen. In de eerste fase wordt de voortgangsbalk gevuld. Als ' +
                     'deze vol is, is het bestand naar de server gestuurd. Dan is de upload nog niet compleet: de gegevens ' +
