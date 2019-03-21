@@ -13,8 +13,7 @@ from websecmap.app.common import JSEncoder
 
 from dashboard import __version__
 from dashboard.internet_nl_dashboard.models import Account, DashboardUser
-from dashboard.internet_nl_dashboard.spreadsheet import (get_data, get_upload_history,
-                                                         log_spreadsheet_upload, save_data)
+from dashboard.internet_nl_dashboard.spreadsheet import complete_import, get_upload_history
 from dashboard.internet_nl_dashboard.urllist_management import (create_list, get_urllist_content,
                                                                 get_urllists_from_account,
                                                                 save_urllist_content)
@@ -152,38 +151,34 @@ def error_response(message: str):
 
 @login_required(login_url=LOGIN_URL)
 def upload_spreadsheet(request):
-    from dashboard.internet_nl_dashboard.spreadsheet import validate
-
     account = get_account(request)
     if not account:
         return empty_response()
 
-    user = get_dashboarduser(request)
-
-    # todo: filesystem might be full.
-    # then try to import it...
     if request.method == 'POST' and request.FILES['file']:
-        myfile = request.FILES['file']
-        fs = FileSystemStorage(location=settings.UPLOAD_ROOT)
-        filename = fs.save(myfile.name, myfile)
-        file = settings.UPLOAD_ROOT + '/' + filename
+        file = save_file(request.FILES['file'])
+        status = complete_import(user=get_dashboarduser(request), file=file)
 
-        if not validate(file):
-            log_spreadsheet_upload(user=user, file=file, message="File incorrect: is it a spreadsheet?")
-            return JsonResponse({'error': True}, encoder=JSEncoder, status=400)
+        if status['error']:
+            # The GUI wants the error to contain some text: As that text is sensitive to xss(?) (probably only
+            # if you see the output directly, not via javascript or json).
+            status['error'] = status['message']
+            return JsonResponse(status, encoder=JSEncoder, status=400)
 
-        data = get_data(file)
-        if not data:
-            # probably not intended to upload an empty file, or something happened that caused a crash.
-            log_spreadsheet_upload(user=user, file=file, message="No data in file detected.")
-            return JsonResponse({'error': True}, encoder=JSEncoder, status=400)
+        # both warning and success
+        return JsonResponse(status, encoder=JSEncoder, status=200)
 
-        details = save_data(account, data)
+    return JsonResponse({}, encoder=JSEncoder, status=400)
 
-        log_spreadsheet_upload(user=user, file=file, message="Success!")
-        return JsonResponse({'success': True, 'details': details}, encoder=JSEncoder, status=200)
 
-    return JsonResponse({'error': True}, encoder=JSEncoder, status=400)
+def save_file(myfile) -> str:
+    # todo: filesystem might be full.
+    # todo: docs
+    # https://docs.djangoproject.com/en/2.1/ref/files/storage/
+    fs = FileSystemStorage(location=settings.UPLOAD_ROOT)
+    filename = fs.save(myfile.name, myfile)
+    file = settings.UPLOAD_ROOT + '/' + filename
+    return file
 
 
 @login_required(login_url=LOGIN_URL)

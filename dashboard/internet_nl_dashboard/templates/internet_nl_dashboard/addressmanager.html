@@ -32,9 +32,7 @@
             <button>Create List</button>
 
             <!--
-            10.000 urls in a test came down to 51 kilobytes (many of the same urls, is compressed)
-            todo: create a spreadsheet with white noise data to see it's filesize. If > 2MB, change server settings.
-            dropzone uses a fallback when javascript is not used / a browser doesn't understand dropzone
+            Dropzone uses a fallback when javascript is not used / a browser doesn't understand dropzone
             It's not clear what happens after the file upload? Is the page reloaded? Probably.
             -->
             <h2>Upload Spreadsheet</h2>
@@ -52,16 +50,21 @@
             <!-- Todo: if empty handler... -->
             <h3>Recent uploads</h3>
             <table>
-                <tr><th>Date</th><th>Filename</th><th>Size</th><th>Status</th></tr>
-                <tr v-for="upload in upload_history">
-                    <th>{{ upload.upload_date }}</th><th>{{ upload.original_filename }}</th><th>{{ upload.filesize }}</th><th>{{ upload.message }}</th>
-                </tr>
+                <thead>
+                    <tr><th>Date</th><th>Filename</th><th>Size</th><th>Status (in English)</th></tr>
+                </thead>
+                <tbody>
+                    <tr v-for="upload in upload_history">
+                        <td width="15%">{{ humanize_date(upload.upload_date) }}</td>
+                        <td width="20%">{{ upload.original_filename }}</td>
+                        <td width="8%"><span :title="upload.filesize + ' bytes'">{{ humanize_filesize(upload.filesize) }}</span></td>
+                        <td>{{ upload.message }}</td>
+                    </tr>
+                </tbody>
             </table>
         </div>
     </script>
     {% endverbatim %}
-
-
 
 
 <script>
@@ -69,19 +72,44 @@
 
 Dropzone.options.myAwesomeDropzone = {
     paramName: "file", // The name that will be used to transfer the file
-    maxFilesize: 2, // MB
+    maxFilesize: 1, // MB
+
+    // https://gitlab.com/meno/dropzone#enqueuing-file-uploads
+    parallelUploads: 1, // handle one at a time to reduce load a bit (except not if you bypass this)
+    autoProcessQueue: true,
     // Client side protection to accept only excel and ods files. Note that given the complexity of these formats
     // there's a wide window of uploading corrupted or malicious files.
     // https://stackoverflow.com/questions/4212861/what-is-a-correct-mime-type-for-docx-pptx-etc#4212908
     // https://www.openoffice.org/framework/documentation/mimetypes/mimetypes.html
     acceptedFiles: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel,' +
-        'application/vnd.oasis.opendocument.spreadsheet',
+        'application/vnd.oasis.opendocument.spreadsheet,text/plain,text/x-csv,text/csv',
     forceFallback: false,
     init: function() {
         this.on("success", function(file, server_response) {
             // todo: figure out sane UI behaviour
             vueListManager.load();
         });
+        this.on("error", function(file, server_response) {
+            // todo: figure out sane UI behaviour
+            vueListManager.load();
+        });
+    }
+};
+
+
+const humanize_mixin = {
+    methods: {
+        humanize_date: function (date) {
+            return moment(date).fromNow();
+        },
+        humanize_filesize: function(size_in_bytes, decimals=0){
+            if(size_in_bytes === 0) return '0 Bytes';
+            var k = 1024,
+                dm = decimals <= 0 ? 0 : decimals || 2,
+                sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB'],
+                i = Math.floor(Math.log(size_in_bytes) / Math.log(k));
+            return parseFloat((size_in_bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i];
+        }
     }
 };
 
@@ -91,6 +119,7 @@ vueListManager = new Vue({
     name: 'list_manager',
     el: '#list_manager',
     template: '#lists',
+    mixins: [humanize_mixin],
     data: {
         loading: false,
         lists: [],
@@ -127,7 +156,7 @@ vueListManager = new Vue({
         },
         has_items(list_name){
             return Object.keys(this.list_content).includes(list_name);
-        }
+        },
     }
 });
 

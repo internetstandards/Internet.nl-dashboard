@@ -93,6 +93,13 @@ class UploadLog(models.Model):
         help_text="Generated filename by Django. This can be used to find specific files for debugging purposes."
     )
 
+    status = models.CharField(
+        max_length=255,
+        blank=True,
+        null=True,
+        help_text="If the upload was successful or not. Might contain 'success' or 'error'."
+    )
+
     message = models.CharField(
         max_length=255,
         blank=True,

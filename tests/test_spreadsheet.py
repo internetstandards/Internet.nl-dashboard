@@ -1,5 +1,8 @@
 # To run these specific tests: tox -e test -- -k test_spreadsheet
+from unittest.mock import MagicMock
+
 from django.contrib.auth.models import User
+from django.core.files import File
 
 from dashboard.internet_nl_dashboard.models import Account, DashboardUser
 from dashboard.internet_nl_dashboard.spreadsheet import (get_data, get_upload_history, is_file,
@@ -12,11 +15,14 @@ from dashboard.internet_nl_dashboard.spreadsheet import (get_data, get_upload_hi
 
 
 def test_spreadsheet(db) -> None:
-    # todo: move account and dashboarduser creation to top.
-
     # Since logs are tied to a user, make sure there is one.
     test_user = User.objects.all().create(username="test")
     test_user.save()
+
+    account, created = Account.objects.all().get_or_create(name="test")
+
+    # establish the relation between user and account:
+    dashboarduser, created = DashboardUser.objects.all().get_or_create(notes="test", account=account, user=test_user)
 
     def test_valid(file):
         valid = is_file(file)
@@ -42,15 +48,11 @@ def test_spreadsheet(db) -> None:
         # waterschappen should contain 24 items (including two compound items(!))
         assert len(data['waterschappen']) == 24
 
-        account, created = Account.objects.all().get_or_create(name="test")
         saved = save_data(account, data)
         # the test is run multiple times with data, so after the first time, already_in_list is set.
         assert saved['testsites']['added_to_list'] == 3 or saved['testsites']['already_in_list'] == 3
 
-        dashboarduser, created = DashboardUser.objects.all().get_or_create(
-            notes="test", account=account, user=test_user)
-
-        data = log_spreadsheet_upload(account.dashboarduser_set.first(), file=file, message="Test")
+        data = log_spreadsheet_upload(account.dashboarduser_set.first(), file=file, status='test', message="Test")
         assert len(data['original_filename']) > 5
 
         upload_history = get_upload_history(account)
@@ -66,6 +68,10 @@ def test_spreadsheet(db) -> None:
 
     # It should also work fine with thousands of urls...
     file = 'tests/test spreadsheet uploads/tenthousand.ods'
+    test_valid(file)
+
+    # Should also be able to handle CSV files, as if they are spreadsheets
+    file = 'tests/test spreadsheet uploads/waterschappen.csv'
     test_valid(file)
 
     # Now let's see what happens if another octet/stream is uploaded, like an .exe file.
@@ -96,3 +102,12 @@ def test_spreadsheet(db) -> None:
     file = 'tests/test spreadsheet uploads/mixed_datatypes.ods'
     data = get_data(file)
     assert len(data) == 9
+
+    # the original filename can be retrieved (using a heuristic, not exact)
+    # the file was already uploaded above, so it should now be renamed internally.
+    file = 'tests/test spreadsheet uploads/waterschappen.ods'
+    file_mock = MagicMock(spec=File, name='FileMock')
+    file_mock.name = 'waterschappen_WFgL3uS.ods'
+    data = log_spreadsheet_upload(dashboarduser, file=file, status='Test', message="Test")
+    assert data['original_filename'] == "waterschappen.ods"
+    assert data['internal_filename'] != "waterschappen.ods"

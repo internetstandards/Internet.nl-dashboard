@@ -22,6 +22,7 @@
     <script type="text/javascript" src="{% static 'js/vendor/internet_nl/headroom-min.js' %}"></script>
     <script type="text/javascript" src="{% static 'js/vendor/internet_nl/functions-min.js' %}"></script>
     <script type="text/javascript" src="{% static 'js/vendor/vue.js' %}"></script>
+    <script type="text/javascript" src="{% static 'js/vendor/moment-with-locales.js' %}" charset="UTF-8"></script>
 
     <!-- todo: only on relevant page -->
     <script type="text/javascript" src="{% static 'js/vendor/dropzone@5.5.0/dropzone.js' %}"></script>
@@ -31,10 +32,14 @@
             document.cookie = "dashboard_language=" + (language_code || "en") + "; path=/";
             location.reload();
         }
+
+        // date and time to the current locale, whatever it may be:
+        // todo: read the cookie value for the correct locale. Fallback to browser locale.
+        moment.locale(window.navigator.userLanguage || window.navigator.language);
     </script>
 
     <link id="noimages" rel="stylesheet" href="{% static 'css/vendor/internet_nl/alt-min.css' %}" type="text/css">
-    <link id="overrides" rel="stylesheet" href="{% static 'css/overrides2.css' %}" type="text/css">
+    <link id="overrides" rel="stylesheet" href="{% static 'css/overrides_dashboard.css' %}" type="text/css">
 </head>
 <body class="home body-with-semifixed-header" cz-shortcut-listen="true">
 
