@@ -76,7 +76,21 @@ INSTALLED_APPS = [
     # Custom Apps
     # These apps overwrite whatever is declared above, for example the user information.
     'dashboard.internet_nl_dashboard',
+
+    # Javascript and CSS compression:
+    'compressor',
 ]
+
+try:
+    # hack to disable django_uwsgi app as it currently conflicts with compressor
+    # https://github.com/django-compressor/django-compressor/issues/881
+    if not os.environ.get('COMPRESS', False):
+        import django_uwsgi  # NOQA
+
+        INSTALLED_APPS += ['django_uwsgi', ]
+except ImportError:
+    # only configure uwsgi app if installed (ie: production environment)
+    pass
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -370,3 +384,36 @@ VENDOR_DIR = os.environ.get('VENDOR_DIR', os.path.abspath(os.path.dirname(__file
 if DEBUG:
     # too many sql variables....
     DATA_UPLOAD_MAX_NUMBER_FIELDS = 10000
+
+
+# Compression
+# Django-compressor is used to compress css and js files in production
+# During development this is disabled as it does not provide any feature there
+# Django-compressor configuration defaults take care of this.
+# https://django-compressor.readthedocs.io/en/latest/usage/
+# which plugins to use to find static files
+STATICFILES_FINDERS = (
+    # default static files finders
+    'django.contrib.staticfiles.finders.FileSystemFinder',
+    'django.contrib.staticfiles.finders.AppDirectoriesFinder',
+    # other finders..
+    'compressor.finders.CompressorFinder',
+)
+
+COMPRESS_CSS_FILTERS = ['compressor.filters.cssmin.CSSCompressorFilter']
+
+# Slimit doesn't work with vue. Tried two versions. Had to rewrite some other stuff.
+# Now using the default, so not explicitly adding that to the settings
+# COMPRESS_JS_FILTERS = ['compressor.filters.jsmin.JSMinFilter']
+
+# Brotli compress storage gives some issues.
+# This creates the original compressed and a gzipped compressed file.
+COMPRESS_STORAGE = (
+    'compressor.storage.GzipCompressorFileStorage'
+)
+
+# Enable static file (js/css) compression when not running debug
+# https://django-compressor.readthedocs.io/en/latest/settings/#django.conf.settings.COMPRESS_OFFLINE
+COMPRESS_OFFLINE = not DEBUG
+# https://django-compressor.readthedocs.io/en/latest/settings/#django.conf.settings.COMPRESS_ENABLED
+# Enabled when debug is off by default.

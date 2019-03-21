@@ -1,4 +1,4 @@
-<!DOCTYPE html>{% load static %} {% load i18n %}
+<!DOCTYPE html>{% load static %} {% load i18n %} {% load compress %}
 <html lang="EN">
 <head>
     <meta http-equiv="content-type" content="text/html; charset=UTF-8">
@@ -10,22 +10,32 @@
     <link rel="icon" href="https://www.internet.nl/static/favicon.png" sizes="192x192">
     <link rel="apple-touch-icon-precomposed" href="https://www.internet.nl/static/favicon.png">
     <meta name="msapplication-TileImage" content="/static/favicon.png">
-    <link rel="stylesheet" type="text/css" href="{% static 'css/vendor/internet_nl/style-min.css' %}">
-    <link rel="stylesheet" type="text/css" href="{% static 'css/vendor/internet_nl/style-min.css' %}">
-    <link rel="stylesheet" type="text/css" href="{% static 'css/vendor/dropzone@5.5.0/basic.css' %}">
-    <link rel="stylesheet" type="text/css" href="{% static 'css/vendor/dropzone@5.5.0/dropzone.css' %}">
-    <link rel="stylesheet" type="text/css" href="{% static 'css/vendor/internet_nl/print-min.css' %}" media="print">
 
-    <!-- todo: bundle and compress -->
-    <script type="text/javascript" src="{% static 'js/vendor/internet_nl/jquery-2.js' %}"></script>
-    <script src="{% static 'js/vendor/internet_nl/imagecheck-min.js' %}" type="text/javascript" defer="defer"></script>
-    <script type="text/javascript" src="{% static 'js/vendor/internet_nl/headroom-min.js' %}"></script>
-    <script type="text/javascript" src="{% static 'js/vendor/internet_nl/functions-min.js' %}"></script>
-    <script type="text/javascript" src="{% static 'js/vendor/vue.js' %}"></script>
-    <script type="text/javascript" src="{% static 'js/vendor/moment-with-locales.js' %}" charset="UTF-8"></script>
+    {% compress css %}
+        <link rel="stylesheet" type="text/css" href="{% static 'css/vendor/internet_nl/style-min.css' %}">
+        <link rel="stylesheet" type="text/css" href="{% static 'css/vendor/dropzone@5.5.0/basic.css' %}">
+        <link rel="stylesheet" type="text/css" href="{% static 'css/vendor/dropzone@5.5.0/dropzone.css' %}">
+        <link rel="stylesheet" type="text/css" media="print" href="{% static 'css/vendor/internet_nl/print-min.css' %}">
+        <link rel="stylesheet" type="text/css" id="noimages" href="{% static 'css/vendor/internet_nl/alt-min.css' %}" >
+        <link rel="stylesheet" type="text/css" id="overrides" href="{% static 'css/overrides_dashboard.css' %}">
+    {% endcompress %}
 
-    <!-- todo: only on relevant page -->
-    <script type="text/javascript" src="{% static 'js/vendor/dropzone@5.5.0/dropzone.js' %}"></script>
+    <script type="text/javascript" src="{% static 'js/vendor/internet_nl/imagecheck-min.js' %}" defer="defer"></script>
+    {% if debug %}
+        <script type="text/javascript" src="{% static 'js/vendor/internet_nl/jquery-2.js' %}"></script>
+        <script type="text/javascript" src="{% static 'js/vendor/internet_nl/headroom-min.js' %}"></script>
+        <script type="text/javascript" src="{% static 'js/vendor/internet_nl/functions-min.js' %}"></script>
+        <script type="text/javascript" src="{% static 'js/vendor/vue.js' %}"></script>
+        <script type="text/javascript" src="{% static 'js/vendor/moment-with-locales.js' %}" charset="UTF-8"></script>
+        <script type="text/javascript" src="{% static 'js/vendor/dropzone@5.5.0/dropzone.js' %}"></script>
+    {% else %}{% compress js %}
+        <script type="text/javascript" src="{% static 'js/vendor/internet_nl/jquery-2.js' %}"></script>
+        <script type="text/javascript" src="{% static 'js/vendor/internet_nl/headroom-min.js' %}"></script>
+        <script type="text/javascript" src="{% static 'js/vendor/internet_nl/functions-min.js' %}"></script>
+        <script type="text/javascript" src="{% static 'js/vendor/vue.js' %}"></script>
+        <script type="text/javascript" src="{% static 'js/vendor/moment-with-locales.js' %}" charset="UTF-8"></script>
+        <script type="text/javascript" src="{% static 'js/vendor/dropzone@5.5.0/dropzone.js' %}"></script>
+    {% endcompress %}{% endif %}
 
     <script>
         function set_language(language_code){
@@ -33,13 +43,24 @@
             location.reload();
         }
 
+        // https://stackoverflow.com/questions/10730362/get-cookie-by-name
+        function getCookie(name) {
+          var value = "; " + document.cookie;
+          var parts = value.split("; " + name + "=");
+          if (parts.length === 2) return parts.pop().split(";").shift();
+        }
+
         // date and time to the current locale, whatever it may be:
-        // todo: read the cookie value for the correct locale. Fallback to browser locale.
-        moment.locale(window.navigator.userLanguage || window.navigator.language);
+        // read the cookie value for the correct locale. Fallback to browser locale. The browser locale is
+        // the same as the UI locale and is not overwritten by the User-Accept parameter the browser sends.
+        // This, in some cases, causes two languages to show up depending on what renders.
+        // Django (python) defaults to Accept Language, the browser (javascript) defaults to the OS language.
+        // Setting the language explicitly using a cookie solves this problem.
+        // Various pages set this cookie to syncronize with the Request Language if the cookie is not set
+        current_language = getCookie('dashboard_language') ? getCookie('dashboard_language') : window.navigator.language;
+        moment.locale(current_language);
     </script>
 
-    <link id="noimages" rel="stylesheet" href="{% static 'css/vendor/internet_nl/alt-min.css' %}" type="text/css">
-    <link id="overrides" rel="stylesheet" href="{% static 'css/overrides_dashboard.css' %}" type="text/css">
 </head>
 <body class="home body-with-semifixed-header" cz-shortcut-listen="true">
 
@@ -105,11 +126,9 @@
 </main>
 
 <footer id="footer">
-    <img id="flag" src="../../static/images/vendor/internet_nl/clear.gif" alt="">
+    <img id="flag" src="{% static 'images/vendor/internet_nl/clear.gif' %}" alt="">
     <div class="wrap">
-
         {% trans "Internet.nl is an initiative of the Internet community and the Dutch government." %}
-
         <hr>
         <ul>
             <li><a class="footlink" href="https://www.internet.nl/disclosure/">
@@ -127,7 +146,5 @@
         </ul>
     </div>
 </footer>
-<script type="text/javascript" src="../../static/js/vendor/internet_nl/menu-min.js" defer="defer"></script>
-<script type="text/javascript" src="../../static/js/vendor/internet_nl/accordion-min.js" defer="defer"></script>
 </body>
 </html>

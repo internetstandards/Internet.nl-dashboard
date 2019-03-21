@@ -48,7 +48,7 @@ def index(request):
         if account:
             selected_account_id = account.id
 
-    return render(request, 'internet_nl_dashboard/index.html', {
+    response = render(request, 'internet_nl_dashboard/index.html', {
         'version': __version__,
         'debug': settings.DEBUG,
         'timestamp': datetime.now(pytz.UTC).isoformat(),
@@ -57,21 +57,39 @@ def index(request):
         'accounts': accounts
     })
 
+    return inject_default_language_cookie(request, response)
+
+
+def inject_default_language_cookie(request, response):
+    # If you visit any of the main pages, this is set to the desired language your browser emits.
+    # This synchronizes the language between javascript (OS language) and browser (Accept Language).
+    if 'dashboard_language' not in request.COOKIES:
+        # Get the accept language,
+        # Add the cookie to render.
+        accept_language = request.LANGUAGE_CODE
+        response.set_cookie(key='dashboard_language', value=accept_language)
+
+    return response
+
 
 @login_required(login_url=LOGIN_URL)
 def dashboard(request):
 
-    return render(request, 'internet_nl_dashboard/dashboard.html', {
+    response = render(request, 'internet_nl_dashboard/dashboard.html', {
         'menu_item_dashboard': "current",
     })
+
+    return inject_default_language_cookie(request, response)
 
 
 @login_required(login_url=LOGIN_URL)
 def addressmanager(request):
 
-    return render(request, 'internet_nl_dashboard/addressmanager.html', {
+    response = render(request, 'internet_nl_dashboard/addressmanager.html', {
         'menu_item_addressmanager': "current",
     })
+
+    return inject_default_language_cookie(request, response)
 
 
 @login_required(login_url=LOGIN_URL)
