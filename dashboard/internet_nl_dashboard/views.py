@@ -73,6 +73,16 @@ def inject_default_language_cookie(request, response):
 
 
 @login_required(login_url=LOGIN_URL)
+def upload(request):
+
+    response = render(request, 'internet_nl_dashboard/upload.html', {
+        'menu_item_addressmanager': "current",
+    })
+
+    return inject_default_language_cookie(request, response)
+
+
+@login_required(login_url=LOGIN_URL)
 def dashboard(request):
 
     response = render(request, 'internet_nl_dashboard/dashboard.html', {

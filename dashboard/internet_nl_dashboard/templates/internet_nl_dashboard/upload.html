@@ -1,0 +1,183 @@
+{% extends 'internet_nl_dashboard/base.html' %}{% load humanize %}{% load i18n %}
+{% block content %}
+    <!-- Todo: menu is not structured yet, just simulate breadcrumbs until it is.-->
+<a href="/addressmanager/">{% trans "Internet Addresses" %}</a> / {% trans "Bulk Address Uploader" %}
+<div id="uploads"></div>
+
+{% verbatim %}
+<script type="x-template" id="upload_template">
+    <div>
+        <h2>Bulk Address Uploader</h2>
+        <p>It's possible to upload large amounts of internet addresses and lists using spreadsheets. To do so,
+            please expand on the example spreadsheets listed below. This shows how the data has to be structured.
+            Examples with and without data are provided in Open Document format, Excel and Comma Separated.
+        </p>
+        <table>
+            <tr>
+                <th></th>
+                <th>Empty file</th>
+                <th>File with example data</th>
+            </tr>
+            <tr>
+                <td>
+                    Open Document (Libre Office)
+                </td>
+                <td>
+                    <a href="/static/sample_spreadsheets/libre_office_spreadsheet_empty.ods">Empty.ods</a>
+                </td>
+                <td>
+                    <a href="/static/sample_spreadsheets/libre_office_spreadsheet_with_example_data.ods">Example.ods</a>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    Excel (Microsoft Office)
+                </td>
+                <td>
+                    <a href="/static/sample_spreadsheets/libre_office_spreadsheet_empty.xlsx">Empty.xlsx</a>
+                </td>
+                <td>
+                    <a href="/static/sample_spreadsheets/libre_office_spreadsheet_with_example_data.xlsx">Example.xlsx</a>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    Comma Separated (For Programmers)
+                </td>
+                <td>
+                    <a href="/static/sample_spreadsheets/libre_office_spreadsheet_empty.csv">Empty.csv</a>
+                </td>
+                <td>
+                    <a href="/static/sample_spreadsheets/libre_office_spreadsheet_with_example_data.csv">Example.csv</a>
+                </td>
+            </tr>
+        </table>
+
+        <h3>Drag and drop uploader</h3>
+        <p>To upload a bulk address file, drag it onto the 'upload' rectangle below.</p>
+        <p>Uploading happens in two stages.
+        First the progress bar is filled, this means the data is sent to this website successfully. Then
+        some processing happens on the server. When this processing is finished, the uploaded file icon below
+        will change to either Success (green, with a checkmark) or Failed (red, with a cross).</p>
+        <p>Details on the status of the uploaded file can be seen afterwards in the 'recent uploads' section below
+        this uploader.</p>
+        <p><i>Important: It's possible to upload up until 10000 urls in 200 categories per upload. The more
+        is uploaded, the more time it will take. Please wait until the upload is confirmed.</i></p>
+        <form action="/data/upload-spreadsheet/" method="POST"
+          class="dropzone"
+          id="my-awesome-dropzone" enctype="multipart/form-data">
+            <div class="fallback">
+                <p>Select a file to upload:</p>
+                <input name="file" type="file"/>
+                <input type="submit">
+            </div>
+        {% endverbatim %}{% csrf_token %}{% verbatim %}
+        </form>
+
+        <!-- Todo: if empty handler... -->
+        <h3>Recent uploads</h3>
+        <p>This list shows your recent uploads. It's messages can help you correct mistakes if your upload was not
+        successful.</p>
+        <table v-if="upload_history">
+            <thead>
+                <tr><th>Date</th><th>Filename</th><th>Size</th><th>Status (in English)</th></tr>
+            </thead>
+            <tbody>
+                <tr v-for="upload in upload_history">
+                    <td width="15%">{{ humanize_date(upload.upload_date) }}</td>
+                    <td width="20%">{{ upload.original_filename }}</td>
+                    <td width="8%"><span :title="upload.filesize + ' bytes'">{{ humanize_filesize(upload.filesize) }}</span></td>
+                    <td>{{ upload.message }}</td>
+                </tr>
+            </tbody>
+        </table>
+        <span v-if="!upload_history.length">No files uploaded.</span>
+    </div>
+</script>
+{% endverbatim %}
+
+<script>
+Dropzone.options.myAwesomeDropzone = {
+    // The name that will be used to transfer the file
+    paramName: "file",
+
+    // 1MB is more than enough to house 10.000+ urls.
+    maxFilesize: 1,
+
+    // https://gitlab.com/meno/dropzone#enqueuing-file-uploads
+    parallelUploads: 1, // handle one at a time to reduce load a bit (except not if you bypass this)
+    autoProcessQueue: true,
+
+    /*
+    * Client side protection to accept only excel and ods files. Note that given the complexity of these formats,
+    * there's a wide window of uploading corrupted or malicious files.
+    *
+    * More info about mime types:
+    * https://stackoverflow.com/questions/4212861/what-is-a-correct-mime-type-for-docx-pptx-etc#4212908
+    * https://www.openoffice.org/framework/documentation/mimetypes/mimetypes.html
+    * */
+    acceptedFiles:
+        'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,' +
+        'application/vnd.ms-excel,' +
+        'application/vnd.oasis.opendocument.spreadsheet,' +
+        'text/plain,' +
+        'text/x-csv,' +
+        'text/csv',
+
+    // Use this to test when there is a malfunction in the uploader code.
+    forceFallback: false,
+
+    // Some events reload the recent uploaded file list.
+    init: function() {
+        this.on("success", function(file, server_response) {
+            vueUpload.get_recent_uploads();
+        });
+        this.on("error", function(file, server_response) {
+            vueUpload.get_recent_uploads();
+        });
+    }
+};
+
+const humanize_mixin = {
+    methods: {
+        humanize_date: function (date) {
+            return moment(date).fromNow();
+        },
+        humanize_filesize: function(size_in_bytes, decimals=0){
+            if(size_in_bytes === 0) return '0 Bytes';
+            var k = 1024,
+                dm = decimals <= 0 ? 0 : decimals || 2,
+                sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB'],
+                i = Math.floor(Math.log(size_in_bytes) / Math.log(k));
+            return parseFloat((size_in_bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i];
+        }
+    }
+};
+
+vueUpload = new Vue({
+    name: 'uploads',
+    el: '#uploads',
+    template: '#upload_template',
+    mixins: [humanize_mixin],
+    data: {
+        loading: false,
+        lists: [],
+        list_content: {},
+        upload_history: [],
+    },
+    mounted: function () {
+        this.load();
+    },
+    methods: {
+        load: function() {
+            this.get_recent_uploads();
+        },
+        get_recent_uploads: function(){
+            fetch(`/data/upload-history/`).then(response => response.json()).then(data => {
+                this.upload_history = data;
+            }).catch((fail) => {console.log('A loading error occurred: ' + fail);});
+        },
+    }
+});
+</script>
+{% endblock %}
