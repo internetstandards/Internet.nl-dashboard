@@ -173,6 +173,10 @@ def upload_spreadsheet(request):
     if not account:
         return empty_response()
 
+    # happens when no file is sent
+    if 'file' not in request.FILES:
+        return JsonResponse({}, encoder=JSEncoder, status=400)
+
     if request.method == 'POST' and request.FILES['file']:
         file = save_file(request.FILES['file'])
         status = complete_import(user=get_dashboarduser(request), file=file)
