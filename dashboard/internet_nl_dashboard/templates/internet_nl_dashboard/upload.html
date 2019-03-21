@@ -84,7 +84,7 @@
             </thead>
             <tbody>
                 <tr v-for="upload in upload_history">
-                    <td width="15%">{{ humanize_date(upload.upload_date) }}</td>
+                    <td width="15%"><span :title="upload.upload_date">{{ humanize_date(upload.upload_date) }}</span></td>
                     <td width="20%">{{ upload.original_filename }}</td>
                     <td width="8%"><span :title="upload.filesize + ' bytes'">{{ humanize_filesize(upload.filesize) }}</span></td>
                     <td>{{ upload.message }}</td>

@@ -1,4 +1,4 @@
-{% extends 'internet_nl_dashboard/base.html' %}{% load humanize %}
+{% extends 'internet_nl_dashboard/base.html' %}{% load humanize %}{% load i18n %}
 {% block content %}
 <div id="list_manager"></div>
 
@@ -11,6 +11,7 @@
         everyone, and because of further developing requirements. The list below is extremely rudimentary and will not
         resemble the final product. It has been built to experiment how file uploads are processed, and to show
         something has happened after processing.</p>
+        <p>Upload large amount of data: <a href="/upload/">{% endverbatim %}{% trans "Bulk Address Uploader" %}{% verbatim %}</a></p>
         <h2>Lists</h2>
         <template v-for="list in lists">
             <h3 @click="get_list_content(list.name)">{{ list.name }}</h3>

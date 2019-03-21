@@ -1,3 +1,6 @@
+{% comment %}
+Todo: digitoegankelijk: how to select links with the keyboard? How can we make the reports accessible?
+{% endcomment %}
 <!DOCTYPE html>{% load static %} {% load i18n %} {% load compress %}
 <html lang="EN">
 <head>
@@ -90,12 +93,12 @@
         <nav id="sitenav" aria-hidden="false">
             <ul>
                 {% if user.is_authenticated %}
-                    <li class="{{menu_item_dashboard}}"><a href="/dashboard/">{% trans "Dashboard" %}</a></li>
-                    <li class="{{menu_item_addressmanager}}"><a href="/addressmanager/">{% trans "Internet Addresses" %}</a></li>
-                    <li class=""><a href="/account/two_factor/">{% trans "Setup 2nd factor authentication" %}</a></li>
-                    <li class=""><a href="/logout/">{% trans "Log off" %}</a></li>
+                    <li class="{{menu_item_dashboard}}"><a href="/dashboard/" accesskey="d">{% trans "Dashboard" %}</a></li>
+                    <li class="{{menu_item_addressmanager}}"><a href="/addressmanager/" accesskey="a">{% trans "Internet Addresses" %}</a></li>
+                    <li class=""><a href="/account/two_factor/" accesskey="2">{% trans "Setup 2nd factor authentication" %}</a></li>
+                    <li class=""><a href="/logout/" accesskey="l">{% trans "Log off" %}</a></li>
                 {% else %}
-                    <li class="current"><a href="/account/login/">{% trans "Log in" %}</a></li>
+                    <li class="current"><a href="/account/login/" accesskey="l">{% trans "Log in" %}</a></li>
                 {% endif %}
             </ul>
         </nav>
