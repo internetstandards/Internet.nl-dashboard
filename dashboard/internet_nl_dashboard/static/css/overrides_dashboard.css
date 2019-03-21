@@ -1,0 +1,62 @@
+/* This CSS file has some fixes for standard components. These create their own HTML and may be extremely ugly.
+    This is a quick workaround to make sure the components look better. The next step might be templating.
+*/
+/* Second factor fixes, todo: must be placed in special div for recognition */
+form, .home .block .wrapper form {
+    /* todo: is there a usability reason to display it as a table cell? */
+    display: block !important;
+}
+
+button {
+    display: inline !important;
+}
+
+th {
+    border-bottom: 0px !important;
+}
+
+
+/* Improve contrast for uploads, even though you might not see the right colors, you can now actually see the
+ symbol and the result. */
+.dropzone .dz-preview.dz-success .dz-success-mark svg g path {
+    fill: green;
+}
+
+.dropzone .dz-preview.dz-error .dz-error-mark svg g g {
+    fill: #ff0000;
+}
+
+.dz-error {
+    border: 5px solid red;
+    border-radius: 23px;
+    width: 130px !important;
+}
+
+.dz-success {
+    border: 5px solid green;
+    border-radius: 23px;
+    width: 130px !important;
+}
+
+/** Having the OK sign disappear does not help, and it flies over too fast... */
+.dropzone .dz-preview.dz-success .dz-success-mark {
+  opacity: 1;
+  -webkit-animation: slide-in 3s cubic-bezier(0.77, 0, 0.175, 1) !important;
+  -moz-animation: slide-in 3s cubic-bezier(0.77, 0, 0.175, 1) !important;
+  -ms-animation: slide-in 3s cubic-bezier(0.77, 0, 0.175, 1) !important;
+  -o-animation: slide-in 3s cubic-bezier(0.77, 0, 0.175, 1) !important;
+  animation: slide-in 3s cubic-bezier(0.77, 0, 0.175, 1) !important;
+}
+
+/* Give more spacing at headers. Todo: should we use bootstrap or bootstrapvue even? */
+h2 {
+    margin-top: 20px;
+}
+
+h3 {
+    margin-top: 16px;
+}
+
+H4 {
+    margin-top: 12px;
+}
