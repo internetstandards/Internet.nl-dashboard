@@ -1,75 +1,167 @@
 {% extends 'internet_nl_dashboard/base.html' %}{% load humanize %}
 {% block content %}
-    <h2>Address Manager</h2>
-    <p>This address manager will be 'really' built later on, especially given the risk the UI is not usable for
-    everyone, and because of further developing requirements. The list below is extremely rudimentary and will not
-    resemble the final product. It has been built to experiment how file uploads are processed, and to show
-    something has happened after processing.</p>
-    <div id="list_manager"></div>
+<div id="list_manager"></div>
+<div id="uploads"></div>
 
-    {% verbatim %}
-    <!-- Todo: find nice edit component to inline edit. -->
-    <script type="x-template" id="lists">
-        <div>
-            <h2>Lists</h2>
-            <template v-for="list in lists">
-                <h3 @click="get_list_content(list.name)">{{ list.name }}</h3>
-                <button @click="get_list_content(list.name)" value="load">Show contents</button>
-                <button @click="get_list_content(list.name)" value="load">Delete list</button>
-                <!-- Todo: the input has to be a select2 type... when you paste a set of urls, it get parsed into
-                multiple separate urls. -->
-                <div v-if="has_items(list.name)">
-                    Bulk add new: <input type="text" name="add_url">
-                    <span v-for="url in list_content[list.name]['urls']">
-                    {{ url.url }}
-                        <button type="button">Delete</button>
-                    </span>
-                </div>
-            </template>
+{% verbatim %}
+<!-- Todo: find nice edit component to inline edit. -->
+<script type="x-template" id="lists">
+    <div>
+        <h2>Address Manager</h2>
+        <p>This address manager will be 'really' built later on, especially given the risk the UI is not usable for
+        everyone, and because of further developing requirements. The list below is extremely rudimentary and will not
+        resemble the final product. It has been built to experiment how file uploads are processed, and to show
+        something has happened after processing.</p>
+        <h2>Lists</h2>
+        <template v-for="list in lists">
+            <h3 @click="get_list_content(list.name)">{{ list.name }}</h3>
+            <button @click="get_list_content(list.name)" value="load">Show contents</button>
+            <button @click="get_list_content(list.name)" value="load">Delete list</button>
+            <!-- Todo: the input has to be a select2 type... when you paste a set of urls, it get parsed into
+            multiple separate urls. -->
+            <div v-if="has_items(list.name)">
+                Bulk add new: <input type="text" name="add_url">
+                <span v-for="url in list_content[list.name]['urls']">
+                {{ url.url }}
+                    <button type="button">Delete</button>
+                </span>
+            </div>
+        </template>
 
-            <h3>Add a new list:</h3>
-            <input type="text" name="list_name">
-            <button>Create List</button>
-
-            <!--
-            Dropzone uses a fallback when javascript is not used / a browser doesn't understand dropzone
-            It's not clear what happens after the file upload? Is the page reloaded? Probably.
-            -->
-            <h2>Upload Spreadsheet</h2>
-            <p>You can find an example spreadsheet here: download. A clean spreadsheet can be downloaded here: download.</p>
-            <p>Note that it can take some time before your spreadsheet is processed, just wait a while.</p>
-            <form action="/data/upload-spreadsheet/"
-              class="dropzone"
-              id="my-awesome-dropzone">
-                <div class="fallback">
-                <input name="file" type="file" multiple />
-                </div>
-            {% endverbatim %}{% csrf_token %}{% verbatim %}
-            </form>
-
-            <!-- Todo: if empty handler... -->
-            <h3>Recent uploads</h3>
-            <table>
-                <thead>
-                    <tr><th>Date</th><th>Filename</th><th>Size</th><th>Status (in English)</th></tr>
-                </thead>
-                <tbody>
-                    <tr v-for="upload in upload_history">
-                        <td width="15%">{{ humanize_date(upload.upload_date) }}</td>
-                        <td width="20%">{{ upload.original_filename }}</td>
-                        <td width="8%"><span :title="upload.filesize + ' bytes'">{{ humanize_filesize(upload.filesize) }}</span></td>
-                        <td>{{ upload.message }}</td>
-                    </tr>
-                </tbody>
-            </table>
-        </div>
-    </script>
-    {% endverbatim %}
-
+        <h3>Add a new list:</h3>
+        <input type="text" name="list_name">
+        <button>Create List</button>
+    </div>
+</script>
+{% endverbatim %}
 
 <script>
-    // Vue used to manage lists. This code will be placed into a single file elsewhere.
+// todo: add new, remove, drag to other list(?)
+vueListManager = new Vue({
+    name: 'list_manager',
+    el: '#list_manager',
+    template: '#lists',
+    mixins: [],
+    data: {
+        loading: false,
+        lists: [],
+        list_content: {},
+    },
+    mounted: function () {
+        this.load();
+    },
+    methods: {
+        load: function() {
+            this.get_lists();
+        },
+        get_lists: function(){
+            this.loading = true;
+            fetch(`/data/urllists/get/`).then(response => response.json()).then(data => {
+                this.lists = data;
+                this.loading = false;
+            }).catch((fail) => {console.log('A loading error occurred: ' + fail);});
+        },
+        get_list_content: function(list_name){
+            this.loading = true;
+            fetch(`/data/urllist_content/get/${list_name}/`).then(response => response.json()).then(data => {
+                this.list_content[list_name] = data;
+                vueListManager.$forceUpdate();
+                this.loading = false;
+            }).catch((fail) => {console.log('A loading error occurred: ' + fail);});
+        },
+        has_items(list_name){
+            return Object.keys(this.list_content).includes(list_name);
+        },
+    }
+});
+</script>
 
+{% verbatim %}
+<script type="x-template" id="upload_template">
+    <div>
+        <!--
+        Dropzone uses a fallback when javascript is not used / a browser doesn't understand dropzone
+        It's not clear what happens after the file upload? Is the page reloaded? Probably.
+        -->
+        <h2>Upload Spreadsheet</h2>
+        <p>It's possible to upload spreadsheets that contain a large amount of urls. Use the example spreadsheets
+        to view how the spreadsheet should be structured. Both an example and a file with data is provided for
+        Libre Office, Excel and programmers (CSV).</p>
+
+        <h3>Example spreadsheets</h3>
+        <table>
+            <tr>
+                <th></th>
+                <th>Empty spreadsheet</th>
+                <th>With Example Data</th>
+            </tr>
+            <tr>
+                <td>
+                    Libre / Open Office
+                </td>
+                <td>
+                    <a href="/static/sample_spreadsheets/libre_office_spreadsheet_empty.ods">Empty.ods</a>
+                </td>
+                <td>
+                    <a href="/static/sample_spreadsheets/libre_office_spreadsheet_with_example_data.ods">Example.ods</a>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    Excel
+                </td>
+                <td>
+                    <a href="/static/sample_spreadsheets/libre_office_spreadsheet_empty.xlsx">Empty.xlsx</a>
+                </td>
+                <td>
+                    <a href="/static/sample_spreadsheets/libre_office_spreadsheet_with_example_data.xlsx">Example.xlsx</a>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    Comma Separated
+                </td>
+                <td>
+                    <a href="/static/sample_spreadsheets/libre_office_spreadsheet_empty.csv">Empty.csv</a>
+                </td>
+                <td>
+                    <a href="/static/sample_spreadsheets/libre_office_spreadsheet_with_example_data.csv">Example.csv</a>
+                </td>
+            </tr>
+        </table>
+
+        <h3>Drag and drop uploader</h3>
+        <p>Note: It can take some time before your spreadsheet is processed, just wait a while.</p>
+        <form action="/data/upload-spreadsheet/"
+          class="dropzone"
+          id="my-awesome-dropzone">
+            <div class="fallback">
+            <input name="file" type="file" multiple />
+            </div>
+        {% endverbatim %}{% csrf_token %}{% verbatim %}
+        </form>
+
+        <!-- Todo: if empty handler... -->
+        <h3>Recent uploads</h3>
+        <table v-if="upload_history">
+            <thead>
+                <tr><th>Date</th><th>Filename</th><th>Size</th><th>Status (in English)</th></tr>
+            </thead>
+            <tbody>
+                <tr v-for="upload in upload_history">
+                    <td width="15%">{{ humanize_date(upload.upload_date) }}</td>
+                    <td width="20%">{{ upload.original_filename }}</td>
+                    <td width="8%"><span :title="upload.filesize + ' bytes'">{{ humanize_filesize(upload.filesize) }}</span></td>
+                    <td>{{ upload.message }}</td>
+                </tr>
+            </tbody>
+        </table>
+        <span v-if="!upload_history.length">No files uploaded.</span>
+    </div>
+</script>
+{% endverbatim %}
+
+<script>
 Dropzone.options.myAwesomeDropzone = {
     paramName: "file", // The name that will be used to transfer the file
     maxFilesize: 1, // MB
@@ -91,11 +183,10 @@ Dropzone.options.myAwesomeDropzone = {
         });
         this.on("error", function(file, server_response) {
             // todo: figure out sane UI behaviour
-            vueListManager.load();
+            // vueListManager.load();
         });
     }
 };
-
 
 const humanize_mixin = {
     methods: {
@@ -113,12 +204,10 @@ const humanize_mixin = {
     }
 };
 
-
-// todo: add new, remove, drag to other list(?)
-vueListManager = new Vue({
-    name: 'list_manager',
-    el: '#list_manager',
-    template: '#lists',
+vueUpload = new Vue({
+    name: 'uploads',
+    el: '#uploads',
+    template: '#upload_template',
     mixins: [humanize_mixin],
     data: {
         loading: false,
@@ -132,37 +221,13 @@ vueListManager = new Vue({
     methods: {
         load: function() {
             this.get_recent_uploads();
-            this.get_lists();
-        },
-        get_lists: function(){
-            this.loading = true;
-            fetch(`/data/urllists/get/`).then(response => response.json()).then(data => {
-                this.lists = data;
-                this.loading = false;
-            }).catch((fail) => {console.log('A loading error occurred: ' + fail);});
-        },
-        get_list_content: function(list_name){
-            this.loading = true;
-            fetch(`/data/urllist_content/get/${list_name}/`).then(response => response.json()).then(data => {
-                this.list_content[list_name] = data;
-                vueListManager.$forceUpdate();
-                this.loading = false;
-            }).catch((fail) => {console.log('A loading error occurred: ' + fail);});
         },
         get_recent_uploads: function(){
             fetch(`/data/upload-history/`).then(response => response.json()).then(data => {
                 this.upload_history = data;
             }).catch((fail) => {console.log('A loading error occurred: ' + fail);});
         },
-        has_items(list_name){
-            return Object.keys(this.list_content).includes(list_name);
-        },
     }
 });
-
-
-
-
-
 </script>
 {% endblock %}
