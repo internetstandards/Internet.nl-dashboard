@@ -31,6 +31,7 @@ Todo: digitoegankelijk: how to select links with the keyboard? How can we make t
         <script type="text/javascript" src="{% static 'js/vendor/vue.js' %}"></script>
         <script type="text/javascript" src="{% static 'js/vendor/moment-with-locales.js' %}" charset="UTF-8"></script>
         <script type="text/javascript" src="{% static 'js/vendor/dropzone@5.5.0/dropzone.js' %}"></script>
+        <script type="text/javascript" src="{% static 'js/vendor/vue-i18n@8.9.0/vue-i18n.js' %}"></script>
     {% else %}{% compress js %}
         <script type="text/javascript" src="{% static 'js/vendor/internet_nl/jquery-2.js' %}"></script>
         <script type="text/javascript" src="{% static 'js/vendor/internet_nl/headroom-min.js' %}"></script>
@@ -38,6 +39,7 @@ Todo: digitoegankelijk: how to select links with the keyboard? How can we make t
         <script type="text/javascript" src="{% static 'js/vendor/vue.js' %}"></script>
         <script type="text/javascript" src="{% static 'js/vendor/moment-with-locales.js' %}" charset="UTF-8"></script>
         <script type="text/javascript" src="{% static 'js/vendor/dropzone@5.5.0/dropzone.js' %}"></script>
+        <script type="text/javascript" src="{% static 'js/vendor/vue-i18n@8.9.0/vue-i18n.js' %}"></script>
     {% endcompress %}{% endif %}
 
     <script>
@@ -47,7 +49,7 @@ Todo: digitoegankelijk: how to select links with the keyboard? How can we make t
         }
 
         // https://stackoverflow.com/questions/10730362/get-cookie-by-name
-        function getCookie(name) {
+        function get_cookie(name) {
           var value = "; " + document.cookie;
           var parts = value.split("; " + name + "=");
           if (parts.length === 2) return parts.pop().split(";").shift();
@@ -60,7 +62,7 @@ Todo: digitoegankelijk: how to select links with the keyboard? How can we make t
         // Django (python) defaults to Accept Language, the browser (javascript) defaults to the OS language.
         // Setting the language explicitly using a cookie solves this problem.
         // Various pages set this cookie to syncronize with the Request Language if the cookie is not set
-        current_language = getCookie('dashboard_language') ? getCookie('dashboard_language') : window.navigator.language;
+        current_language = get_cookie('dashboard_language') ? get_cookie('dashboard_language') : window.navigator.language;
         moment.locale(current_language);
     </script>
 
