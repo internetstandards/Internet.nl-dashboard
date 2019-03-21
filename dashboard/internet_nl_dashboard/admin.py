@@ -14,6 +14,7 @@ from django_celery_beat.admin import PeriodicTaskAdmin, PeriodicTaskForm
 from django_celery_beat.models import CrontabSchedule, PeriodicTask
 from import_export import resources
 from import_export.admin import ImportExportModelAdmin
+from jet.admin import CompactInline
 
 from dashboard.internet_nl_dashboard.models import Account, DashboardUser, UploadLog, UrlList
 
@@ -117,7 +118,7 @@ admin.site.register(PeriodicTask, IEPeriodicTaskAdmin)
 admin.site.register(CrontabSchedule, IECrontabSchedule)
 
 
-class DashboardUserInline(admin.StackedInline):
+class DashboardUserInline(CompactInline):
     model = DashboardUser
     can_delete = False
     verbose_name_plural = 'Dashboard Users'
@@ -188,6 +189,11 @@ class AccountAdmin(ImportExportModelAdmin, admin.ModelAdmin):
     search_fields = ('name', )
     list_filter = ['enable_logins'][::-1]
     fields = ('name', 'enable_logins', 'internet_nl_api_username', 'internet_nl_api_password')
+
+    # cannot use the DashboardUserInline, it acts like there are three un-assigned users and it breaks the 1 to 1
+    # relation with the DashboardUser to user. Perhaps because Jet doesn't understands that type of relationship
+    # in an inline, or this inline is just not designed for it.
+    # inlines = [DashboardUserInline]
 
     def save_model(self, request, obj, form, change):
 
