@@ -29,6 +29,9 @@ SECRET_KEY = '_dzlo^9d#ox6!7c9rju@=u8+4^sprqocy3s*l*ejc2yr34@&98'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
+if not DEBUG and SECRET_KEY == os.environ.get('SECRET_KEY', '_dzlo^9d#ox6!7c9rju@=u8+4^sprqocy3s*l*ejc2yr34@&98'):
+    raise ValueError('SECRET_KEY contains a debugging value. Set a sane secret key')
+
 ALLOWED_HOSTS = []
 
 
