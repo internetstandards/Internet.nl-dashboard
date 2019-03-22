@@ -172,8 +172,7 @@ const messages = {
             drag_and_drop_uploader: {
                 title: 'Drag and drop uploader',
                 first_instruction: 'To upload a bulk address file, drag it onto the \'upload\' rectangle below.',
-                nomouse: 'A more conventional upload option is available below the drag and drop uploader. You will know your upload\n' +
-                    '        is complete when a cryptic message is returned after sending your file.',
+                nomouse: 'A more conventional upload option is available below the drag and drop uploader.',
                 process: 'Uploading happens in two stages.\n' +
                     '        First the progress bar is filled, this means the data is sent to this website successfully. Then\n' +
                     '        some processing happens on the server. When this processing is finished, the uploaded file icon below\n' +
@@ -216,8 +215,7 @@ const messages = {
             drag_and_drop_uploader: {
                 title: 'Drag and drop uploader',
                 first_instruction: 'Sleep het gewenste bestand in de \'upload\' rechthoek hieronder.',
-                nomouse: 'Een meer gebruikelijke upload methode is beschikbaar onder het drag and drop gedeelte. ' +
-                    'In dit geval is je upload geslaagd wanneer je een technische melding krijgt na het uploaden.',
+                nomouse: 'Een meer gebruikelijke upload methode is beschikbaar onder het drag and drop gedeelte.',
                 process: 'Het uploaden gebeurd in twee fasen. In de eerste fase wordt de voortgangsbalk gevuld. Als ' +
                     'deze vol is, is het bestand naar de server gestuurd. Dan is de upload nog niet compleet: de gegevens ' +
                     'worden nu verwerkt. Op het moment dat de gegevens verwerkt zijn verschijnt dit als een groen vinkje of' +
