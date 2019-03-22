@@ -28,3 +28,7 @@ db.sqlite3-journal
 .pip-cache/*
 *.p12
 config.json
+
+# nodejs stuff
+package-lock.json
+node_modules/
