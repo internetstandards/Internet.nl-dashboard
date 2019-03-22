@@ -217,7 +217,7 @@ STATIC_URL = '/static/'
 if DEBUG:
     STATIC_ROOT = 'static'
 else:
-    STATIC_ROOT = '/srv/dashboard/static/'
+    STATIC_ROOT = '/srv/dashboard/static/'  # noga
 
 
 JET_SIDE_MENU_ITEMS = [

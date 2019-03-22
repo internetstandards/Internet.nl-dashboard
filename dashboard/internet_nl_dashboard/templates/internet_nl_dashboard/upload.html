@@ -151,7 +151,7 @@ const humanize_mixin = {
         },
         humanize_filesize: function(size_in_bytes, decimals=0){
             if(size_in_bytes === 0) return '0 Bytes';
-            var k = 1024,
+            let k = 1024,
                 dm = decimals <= 0 ? 0 : decimals || 2,
                 sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB'],
                 i = Math.floor(Math.log(size_in_bytes) / Math.log(k));

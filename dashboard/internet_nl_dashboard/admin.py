@@ -199,7 +199,8 @@ class AccountAdmin(ImportExportModelAdmin, admin.ModelAdmin):
     # in an inline, or this inline is just not designed for it.
     # inlines = [DashboardUserInline]
 
-    def no_of_users(self, obj):
+    @staticmethod
+    def no_of_users(obj):
         return mark_safe("<a href='/admin/auth/user/?q=%s#/tab/inline_0/'>🔎 %s" %
                          (obj.name, DashboardUser.objects.all().filter(account=obj).count()))
 

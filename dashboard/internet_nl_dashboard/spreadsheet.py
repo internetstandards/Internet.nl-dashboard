@@ -208,6 +208,7 @@ def log_spreadsheet_upload(user, file: str, status: str = "", message: str = "")
 
     return upload
 
+
 # Do not accept partial imports. Or all, or nothing in a single transaction.
 # Depending on the speed this needs to become a task, as the wait will be too long.
 @transaction.atomic

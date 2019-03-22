@@ -138,6 +138,8 @@ django-excel
 pyexcel-xls
 pyexcel-xlsx
 pyexcel-ods
+pyexcel  # added as a formality so code inspection finds the module.
+xlrd  # added as a formality so code inspection finds the module.
 
 django-two-factor-auth
 
@@ -146,3 +148,6 @@ git+https://gitlab.com/internet-cleanup-foundation/web-security-map.git#egg=webs
 
 # validation of spreadsheet mime types
 python-magic
+
+# encrypted password field for API (we need to get the value during calls)
+cryptography

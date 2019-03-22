@@ -50,9 +50,9 @@ Todo: digitoegankelijk: how to select links with the keyboard? How can we make t
 
         // https://stackoverflow.com/questions/10730362/get-cookie-by-name
         function get_cookie(name) {
-          var value = "; " + document.cookie;
-          var parts = value.split("; " + name + "=");
-          if (parts.length === 2) return parts.pop().split(";").shift();
+            let value = "; " + document.cookie;
+            let parts = value.split("; " + name + "=");
+            if (parts.length === 2) return parts.pop().split(";").shift();
         }
 
         // date and time to the current locale, whatever it may be:

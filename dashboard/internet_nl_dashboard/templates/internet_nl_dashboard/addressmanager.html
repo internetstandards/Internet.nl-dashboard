@@ -20,7 +20,7 @@
             <!-- Todo: the input has to be a select2 type... when you paste a set of urls, it get parsed into
             multiple separate urls. -->
             <div v-if="has_items(list.name)">
-                Bulk add new: <input type="text" name="add_url">
+                <label for="add_url">Bulk add new:</label> <input id="add_url" type="text" name="add_url">
                 <span v-for="url in list_content[list.name]['urls']">
                 {{ url.url }}
                     <button type="button">Delete</button>
@@ -29,7 +29,7 @@
         </template>
 
         <h3>Add a new list:</h3>
-        <input type="text" name="list_name">
+        <label for="add_new_list">List name:</label><input id="add_new_list" type="text" name="list_name">
         <button>Create List</button>
     </div>
 </script>

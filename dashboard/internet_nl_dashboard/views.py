@@ -6,7 +6,7 @@ from django.contrib.auth import logout
 from django.contrib.auth.decorators import login_required
 from django.core.files.storage import FileSystemStorage
 from django.http import JsonResponse
-from django.shortcuts import render, redirect
+from django.shortcuts import redirect, render
 from websecmap.app.common import JSEncoder
 
 from dashboard.internet_nl_dashboard.forms import InstantAccountAddForm
@@ -128,8 +128,6 @@ def logout_view(request):
 @login_required(login_url=LOGIN_URL)
 def get_lists(request):
     account = get_account(request)
-    if not account:
-        return empty_response()
 
     # todo: make sure the output is safe, or converted to safe.
     response = get_urllists_from_account(account=account)
@@ -140,46 +138,30 @@ def get_lists(request):
 @login_required(login_url=LOGIN_URL)
 def create_list_(request, list_name):
     account = get_account(request)
-    if not account:
-        return empty_response()
-
     result = create_list(account=account, name=list_name)
-
     return JsonResponse({'name': result.name}, encoder=JSEncoder)
 
 
 @login_required(login_url=LOGIN_URL)
 def get_urllist_content_(request, urllist_name: str) -> {}:
     account = get_account(request)
-    if not account:
-        return empty_response()
-
     return JsonResponse(get_urllist_content(account=account, urllist_name=urllist_name), encoder=JSEncoder)
 
 
 @login_required(login_url=LOGIN_URL)
 def save_list_content(request, urllist_name: str, urls: List[str]) -> {}:
     account = get_account(request)
-    if not account:
-        return empty_response()
-
     return JsonResponse(save_urllist_content(account, urllist_name, urls), encoder=JSEncoder)
 
 
 def get_account(request) -> Account:
-    try:
-        return DashboardUser.objects.all().filter(user=request.user).first().account
-    except AttributeError:
-        log.debug("Not a valid account.")
-        return None
+    # todo: what about the exceptions that happen when there is no account?
+    return DashboardUser.objects.all().filter(user=request.user).first().account
 
 
 def get_dashboarduser(request) -> Account:
-    try:
-        return DashboardUser.objects.all().filter(user=request.user).first()
-    except AttributeError:
-        log.debug("Not a valid dashboarduser.")
-        return None
+    # todo: what about the exceptions that happen when there is no account?
+    return DashboardUser.objects.all().filter(user=request.user).first()
 
 
 def empty_response():
@@ -192,10 +174,6 @@ def error_response(message: str):
 
 @login_required(login_url=LOGIN_URL)
 def upload_spreadsheet(request):
-    account = get_account(request)
-    if not account:
-        return empty_response()
-
     # Instead of some json message, give a full page, so the classic uploader also functions pretty well.
     # todo: Or should this be a redirect, so the 'reload' page does not try to resend the form...
     response = upload(request)
@@ -233,8 +211,6 @@ def save_file(myfile) -> str:
 @login_required(login_url=LOGIN_URL)
 def upload_history(request):
     account = get_account(request)
-    if not account:
-        return empty_response()
 
     # list of dicts: In order to allow non-dict objects to be serialized set the safe parameter to False.
     return JsonResponse(get_upload_history(account), encoder=JSEncoder, safe=False)
