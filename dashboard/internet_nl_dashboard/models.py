@@ -1,3 +1,5 @@
+from cryptography.fernet import Fernet
+from django.conf import settings
 from django.contrib.auth.models import User
 from django.db import models
 from websecmap.organizations.models import Url
@@ -26,8 +28,15 @@ class Account(models.Model):
         help_text="New values will automatically be encrypted."
     )
 
+    @staticmethod
+    def encrypt_password(password):
+        f = Fernet(settings.FIELD_ENCRYPTION_KEY)
+        return f.encrypt(password.encode())
+
+    # Should the save + hashing function be written here, instead of the admin form?
+
     def __str__(self):
-        return self.name
+        return "%s" % self.name
 
 
 class DashboardUser(models.Model):

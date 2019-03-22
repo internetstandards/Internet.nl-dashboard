@@ -9,6 +9,7 @@ from django.http import JsonResponse
 from django.shortcuts import render
 from websecmap.app.common import JSEncoder
 
+from dashboard.internet_nl_dashboard.forms import InstantAccountAddForm
 from dashboard.internet_nl_dashboard.models import Account, DashboardUser
 from dashboard.internet_nl_dashboard.spreadsheet import complete_import, get_upload_history
 from dashboard.internet_nl_dashboard.urllist_management import (create_list, get_urllist_content,
@@ -27,7 +28,7 @@ Todo: csrf via API calls...
 
 # Create your views here.
 @login_required(login_url=LOGIN_URL)
-def admin(request):
+def powertools(request):
 
     # only for the true superusers :)
     if not request.user.is_staff and request.user.is_active and request.user.is_superuser:
@@ -49,13 +50,32 @@ def admin(request):
         selected_account_id = account.id
     # end account switching
 
-    response = render(request, 'internet_nl_dashboard/admin.html', {
+    # Fast account creation. Of the most basic kind.
+    state, add_account_and_user_form = default_form_logic(InstantAccountAddForm, request)
+
+    response = render(request, 'internet_nl_dashboard/powertools.html', {
+        'add_account_and_user_form': add_account_and_user_form,
+        'add_account_and_user_form_state': state,
         'menu_item_login': "current",
         'selected_account': selected_account_id,
         'accounts': list(Account.objects.all().values('id', 'name'))
     })
 
     return inject_default_language_cookie(request, response)
+
+
+def default_form_logic(form, request):
+
+    if not request.POST:
+        return "initial", form()
+
+    form = form(request.POST)
+
+    if not form.is_valid():
+        return "invalid", form
+
+    form.save()
+    return "success", form
 
 
 def inject_default_language_cookie(request, response):

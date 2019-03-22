@@ -2,8 +2,6 @@ from datetime import datetime, timedelta
 
 import pytz
 from constance.admin import Config, ConstanceAdmin, ConstanceForm
-from cryptography.fernet import Fernet
-from django.conf import settings
 from django.contrib import admin
 from django.contrib.auth.admin import GroupAdmin as BaseGroupAdmin
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
@@ -153,10 +151,11 @@ class UserAdmin(BaseUserAdmin, ImportExportModelAdmin):
     @staticmethod
     def in_account(obj):
         user = DashboardUser.objects.all().filter(user=obj).first()
-        if user.account:
-            return user.account.name
-        else:
+
+        if not user:
             return '-'
+
+        return user.account
 
 
 # I don't know if the permissions between two systems have the same numbers... Only one way to find out :)
@@ -209,9 +208,7 @@ class AccountAdmin(ImportExportModelAdmin, admin.ModelAdmin):
         # If the internet_nl_api_password changed, encrypt the new value.
         # Example usage and docs: https://github.com/pyca/cryptography
         if 'internet_nl_api_password' in form.changed_data:
-            f = Fernet(settings.FIELD_ENCRYPTION_KEY)
-            encrypted = f.encrypt(obj.internet_nl_api_password.encode())
-            obj.internet_nl_api_password = encrypted
+            obj.internet_nl_api_password = Account.encrypt_password(obj.internet_nl_api_password)
 
             # You can decrypt using f.decrypt(token)
 

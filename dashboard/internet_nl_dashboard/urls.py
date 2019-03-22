@@ -7,7 +7,7 @@ urlpatterns = [
     path('dashboard/', views.dashboard),
     path('addressmanager/', views.addressmanager),
     path('upload/', views.upload),
-    path('admin/', views.admin),
+    path('powertools/', views.powertools),
     path('logout/', views.logout_view),
 
     # Would you enable the below login form, you will bypass all second factor authentication. Therefore do not enable
