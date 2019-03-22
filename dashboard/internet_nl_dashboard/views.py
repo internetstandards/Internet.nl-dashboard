@@ -6,7 +6,7 @@ from django.contrib.auth import logout
 from django.contrib.auth.decorators import login_required
 from django.core.files.storage import FileSystemStorage
 from django.http import JsonResponse
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from websecmap.app.common import JSEncoder
 
 from dashboard.internet_nl_dashboard.forms import InstantAccountAddForm
@@ -120,10 +120,9 @@ def addressmanager(request):
     return inject_default_language_cookie(request, response)
 
 
-@login_required(login_url=LOGIN_URL)
 def logout_view(request):
     logout(request)
-    return dashboard(request)
+    return redirect('/')
 
 
 @login_required(login_url=LOGIN_URL)
