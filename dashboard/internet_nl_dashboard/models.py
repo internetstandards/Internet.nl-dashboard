@@ -3,6 +3,7 @@ from django.conf import settings
 from django.contrib.auth.models import User
 from django.db import models
 from websecmap.organizations.models import Url
+from websecmap.scanners.models import InternetNLScan
 
 
 class Account(models.Model):
@@ -11,6 +12,10 @@ class Account(models.Model):
         blank=True,
         null=True,
         help_text=""
+    )
+
+    enable_scans = models.BooleanField(
+        default=True,
     )
 
     internet_nl_api_username = models.CharField(
@@ -33,10 +38,29 @@ class Account(models.Model):
         f = Fernet(settings.FIELD_ENCRYPTION_KEY)
         return f.encrypt(password.encode())
 
-    # Should the save + hashing function be written here, instead of the admin form?
+    def decrypt_password(self):
+        f = Fernet(settings.FIELD_ENCRYPTION_KEY)
+        return f.decrypt(self.internet_nl_api_password)
 
     def __str__(self):
         return "%s" % self.name
+
+
+# This could be a manytomany in account. With the downside that the amount will grow beyond managable. The default
+# admin will then have a problem showing these scans. It also makes cleaning up a specific scan harder from the
+# admin(?). Moving this to manytomany feels like an anti pattern. Suppose we want to add fields specifically for
+# this account, etc?
+class AccountInternetNLScan(models.Model):
+
+    account = models.ForeignKey(
+        Account,
+        on_delete=models.CASCADE,
+    )
+
+    scan = models.ForeignKey(
+        InternetNLScan,
+        on_delete=models.CASCADE,
+    )
 
 
 class DashboardUser(models.Model):
@@ -78,6 +102,10 @@ class UrlList(models.Model):
         Url,
         blank=True,
         related_name='urls_in_dashboard_list'
+    )
+
+    enable_scans = models.BooleanField(
+        default=True,
     )
 
 
