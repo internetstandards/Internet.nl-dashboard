@@ -2,8 +2,8 @@ import logging
 
 from celery import Task, group
 
+from dashboard.celery import app
 from dashboard.internet_nl_dashboard.models import Account, AccountInternetNLScan, UrlList
-from websecmap.celery import app
 from websecmap.organizations.models import Url
 from websecmap.scanners.scanner.internet_nl_mail import register_scan
 
@@ -110,7 +110,6 @@ def compose_task(
                     scan_name=scan_name
                 ) | connect_scan_to_account.s(account)])
 
-    log.debug(tasks)
     return group(tasks)
 
 

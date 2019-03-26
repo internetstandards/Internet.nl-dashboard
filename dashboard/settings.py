@@ -76,6 +76,7 @@ INSTALLED_APPS = [
 
     # Custom Apps
     # These apps overwrite whatever is declared above, for example the user information.
+    # Yet, it does not overwrite management commands.
     'dashboard.internet_nl_dashboard',
 
     # Two factor auth

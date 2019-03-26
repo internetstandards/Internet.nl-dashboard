@@ -12,6 +12,8 @@ from websecmap.scanners.models import InternetNLScan
 
 log = logging.getLogger(__package__)
 
+CREDENTIAL_CHECK_URL = "https://batch.internet.nl/api/"
+
 
 class Account(models.Model):
     name = models.CharField(
@@ -61,7 +63,7 @@ class Account(models.Model):
         # This makes a connection to the internet.nl dashboard using .htaccess authentication.
         try:
             response = requests.get(
-                "https://batch.internet.nl/api/",
+                CREDENTIAL_CHECK_URL,
                 auth=HTTPBasicAuth(username, password),
                 # a massive timeout for a large file.
                 timeout=(5, 5)
