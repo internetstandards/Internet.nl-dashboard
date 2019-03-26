@@ -1,3 +1,12 @@
+import os
+from collections import OrderedDict
+from datetime import timedelta
+
+from django.utils.translation import gettext_lazy as _
+
+from websecmap.jet import websecmap_menu_items
+from websecmap.scanners.constance import add_scanner_fields, add_scanner_fieldsets
+
 """
 Django settings for dashboard project.
 
@@ -9,12 +18,6 @@ https://docs.djangoproject.com/en/2.1/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/2.1/ref/settings/
 """
-
-import os
-from collections import OrderedDict
-from datetime import timedelta
-
-from django.utils.translation import gettext_lazy as _
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 # BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -409,7 +412,6 @@ COMPRESS_OFFLINE = not DEBUG
 # Enabled when debug is off by default.
 
 # Constance settings:
-from websecmap.scanners.constance import add_scanner_fields, add_scanner_fieldsets
 
 CONSTANCE_CONFIG = {
     'SCAN_AT_ALL': (
@@ -444,5 +446,4 @@ JET_SIDE_MENU_ITEMS = [
 ]
 
 # Allows to see all details of websecmap.
-from websecmap.jet import websecmap_menu_items
 JET_SIDE_MENU_ITEMS += websecmap_menu_items()

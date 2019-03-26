@@ -1,10 +1,16 @@
+import logging
+
+import requests
 from cryptography.fernet import Fernet
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.db import models
+from requests.auth import HTTPBasicAuth
 
 from websecmap.organizations.models import Url
 from websecmap.scanners.models import InternetNLScan
+
+log = logging.getLogger(__package__)
 
 
 class Account(models.Model):
@@ -30,7 +36,12 @@ class Account(models.Model):
     internet_nl_api_password = models.BinaryField(
         blank=True,
         null=True,
-        help_text="New values will automatically be encrypted."
+        help_text="New values will automatically be encrypted.",
+        editable=True
+    )
+
+    can_connect_to_internet_nl_api = models.BooleanField(
+        default=False
     )
 
     """
@@ -39,8 +50,30 @@ class Account(models.Model):
     """
     @staticmethod
     def encrypt_password(password):
+
+        log.debug(password)
+
         f = Fernet(settings.FIELD_ENCRYPTION_KEY)
         return f.encrypt(password.encode())
+
+    @staticmethod
+    def connect_to_internet_nl_api(username: str, password: str):
+        # This makes a connection to the internet.nl dashboard using .htaccess authentication.
+        try:
+            response = requests.get(
+                "https://batch.internet.nl/api/",
+                auth=HTTPBasicAuth(username, password),
+                # a massive timeout for a large file.
+                timeout=(5, 5)
+            )
+
+            # Any status code means the account is not valid.
+            if response.status_code != 200:
+                return False
+
+            return True
+        except requests.exceptions.ConnectionError:
+            return False
 
     def decrypt_password(self):
 

@@ -45,6 +45,8 @@ class InstantAccountAddForm(forms.Form):
         if Account.objects.all().filter(name=username).exists():
             raise ValidationError('Account with this username already exists.')
 
+        # We don't care if the account is valid or not. We'll check for it during saving.
+
     def save(self):
 
         cleaned_data = super().clean()
@@ -56,9 +58,29 @@ class InstantAccountAddForm(forms.Form):
         user.is_active = True
         user.save()
 
-        account = Account(**{'name': username, 'internet_nl_api_username': username,
-                             'internet_nl_api_password': Account.encrypt_password(password)})
+        account = Account(**{
+            'name': username,
+            'internet_nl_api_username': username,
+            'internet_nl_api_password': Account.encrypt_password(password),
+            'can_connect_to_internet_nl_api': Account.connect_to_internet_nl_api(username, password)
+        })
         account.save()
 
         dashboarduser = DashboardUser(**{'user': user, 'account': account})
         dashboarduser.save()
+
+
+class CustomAccountModelForm(forms.ModelForm):
+    new_password = forms.CharField(
+        help_text='Changing this value will set a new password for this account.',
+        required=False
+    )
+
+    def save(self, commit=True):
+        # new_password = self.cleaned_data.get('new_password', None)
+        # self.cleaned_data['internet_nl_api_password'] = Account.encrypt_password(new_password)
+        return super(CustomAccountModelForm, self).save(commit=commit)
+
+    class Meta:
+        model = Account
+        fields = '__all__'

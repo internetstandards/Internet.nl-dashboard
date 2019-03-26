@@ -1,3 +1,4 @@
+import logging
 from datetime import datetime, timedelta
 
 import pytz
@@ -14,7 +15,10 @@ from import_export import resources
 from import_export.admin import ImportExportModelAdmin
 from jet.admin import CompactInline
 
+from dashboard.internet_nl_dashboard.forms import CustomAccountModelForm
 from dashboard.internet_nl_dashboard.models import Account, DashboardUser, UploadLog, UrlList
+
+log = logging.getLogger(__package__)
 
 
 class MyPeriodicTaskForm(PeriodicTaskForm):
@@ -188,16 +192,19 @@ admin.site.register([Config], ConfigAdmin)
 
 @admin.register(Account)
 class AccountAdmin(ImportExportModelAdmin, admin.ModelAdmin):
+    form = CustomAccountModelForm
 
-    list_display = ('name', 'internet_nl_api_username', 'no_of_users')
-    search_fields = ('name', )
+    list_display = ('name', 'internet_nl_api_username', 'can_connect_to_internet_nl_api', 'no_of_users')
+    search_fields = ('name', 'can_connect_to_internet_nl_api')
     # list_filter = [][::-1]
-    fields = ('name', 'internet_nl_api_username', 'internet_nl_api_password')
+    fields = ('name', 'internet_nl_api_username', 'new_password')
 
     # cannot use the DashboardUserInline, it acts like there are three un-assigned users and it breaks the 1 to 1
     # relation with the DashboardUser to user. Perhaps because Jet doesn't understands that type of relationship
     # in an inline, or this inline is just not designed for it.
     # inlines = [DashboardUserInline]
+
+    # todo: creation action that one can check if an account can connect to the API.
 
     @staticmethod
     def no_of_users(obj):
@@ -208,14 +215,26 @@ class AccountAdmin(ImportExportModelAdmin, admin.ModelAdmin):
 
         # If the internet_nl_api_password changed, encrypt the new value.
         # Example usage and docs: https://github.com/pyca/cryptography
-        if 'internet_nl_api_password' in form.changed_data:
-            obj.internet_nl_api_password = Account.encrypt_password(obj.internet_nl_api_password)
+        if 'new_password' in form.changed_data:
+            obj.internet_nl_api_password = Account.encrypt_password(form.cleaned_data.get('new_password'))
 
-            # You can decrypt using f.decrypt(token)
+        # check if the username / password combination is valid
 
         super().save_model(request, obj, form, change)
 
     actions = []
+
+    def check_api_connectivity(self, request, queryset):
+
+        for account in queryset:
+            username = account.internet_nl_api_username
+            password = account.decrypt_password()
+            account.can_connect_to_internet_nl_api = account.connect_to_internet_nl_api(username, password)
+            account.save()
+        self.message_user(request, "Checked account API connectivity.")
+
+    check_api_connectivity.short_description = "Check API credentials"
+    actions.append('check_api_connectivity')
 
 
 @admin.register(UrlList)
