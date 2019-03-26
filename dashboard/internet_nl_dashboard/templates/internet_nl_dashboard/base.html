@@ -64,6 +64,25 @@ Todo: digitoegankelijk: how to select links with the keyboard? How can we make t
         // Various pages set this cookie to syncronize with the Request Language if the cookie is not set
         current_language = get_cookie('dashboard_language') ? get_cookie('dashboard_language') : window.navigator.language;
         moment.locale(current_language);
+
+        // Used within templates to 'humanize' all kinds of values.
+        const humanize_mixin = {
+            methods: {
+
+                // todo: can we change the locale for moment.js on the fly?
+                humanize_date: function (date) {
+                    return moment(date).fromNow();
+                },
+                humanize_filesize: function(size_in_bytes, decimals=0){
+                    if(size_in_bytes === 0) return '0 Bytes';
+                    let k = 1024,
+                        dm = decimals <= 0 ? 0 : decimals || 2,
+                        sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB'],
+                        i = Math.floor(Math.log(size_in_bytes) / Math.log(k));
+                    return parseFloat((size_in_bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i];
+                }
+            }
+        };
     </script>
 
 </head>

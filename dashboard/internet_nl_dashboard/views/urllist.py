@@ -7,8 +7,9 @@ from django.shortcuts import render
 from dashboard.internet_nl_dashboard.urllist_management import (create_list, get_urllist_content,
                                                                 get_urllists_from_account,
                                                                 save_urllist_content)
+from dashboard.internet_nl_dashboard.views import (LOGIN_URL, get_account,
+                                                   inject_default_language_cookie)
 from websecmap.app.common import JSEncoder
-from dashboard.internet_nl_dashboard.views import LOGIN_URL, inject_default_language_cookie, get_account
 
 
 @login_required(login_url=LOGIN_URL)
@@ -19,6 +20,7 @@ def addressmanager(request):
     })
 
     return inject_default_language_cookie(request, response)
+
 
 @login_required(login_url=LOGIN_URL)
 def get_lists(request):

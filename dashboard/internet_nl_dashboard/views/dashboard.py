@@ -1,7 +1,7 @@
 
 from django.contrib.auth.decorators import login_required
-
 from django.shortcuts import render
+
 from dashboard.internet_nl_dashboard.views import LOGIN_URL, inject_default_language_cookie
 
 

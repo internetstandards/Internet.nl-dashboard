@@ -136,24 +136,6 @@ Dropzone.options.myAwesomeDropzone = {
     }
 };
 
-const humanize_mixin = {
-    methods: {
-
-        // todo: can we change the locale for moment.js on the fly?
-        humanize_date: function (date) {
-            return moment(date).fromNow();
-        },
-        humanize_filesize: function(size_in_bytes, decimals=0){
-            if(size_in_bytes === 0) return '0 Bytes';
-            let k = 1024,
-                dm = decimals <= 0 ? 0 : decimals || 2,
-                sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB'],
-                i = Math.floor(Math.log(size_in_bytes) / Math.log(k));
-            return parseFloat((size_in_bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i];
-        }
-    }
-};
-
 const messages = {
     en: {
         upload: {
@@ -254,9 +236,6 @@ vueUpload = new Vue({
     template: '#upload_template',
     mixins: [humanize_mixin],
     data: {
-        loading: false,
-        lists: [],
-        list_content: {},
         upload_history: [],
     },
     mounted: function () {

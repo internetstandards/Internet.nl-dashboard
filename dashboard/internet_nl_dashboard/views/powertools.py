@@ -3,8 +3,9 @@ from django.shortcuts import render
 
 from dashboard.internet_nl_dashboard.forms import InstantAccountAddForm
 from dashboard.internet_nl_dashboard.models import Account, DashboardUser
+from dashboard.internet_nl_dashboard.views import (LOGIN_URL, dashboard, get_account,
+                                                   inject_default_language_cookie)
 
-from dashboard.internet_nl_dashboard.views import LOGIN_URL, dashboard, get_account, inject_default_language_cookie
 
 # Create your views here.
 @login_required(login_url=LOGIN_URL)
@@ -56,4 +57,3 @@ def default_form_logic(form, request):
 
     form.save()
     return "success", form
-

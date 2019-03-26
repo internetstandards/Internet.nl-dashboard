@@ -1,0 +1,14 @@
+{% extends 'internet_nl_dashboard/base.html' %}
+{% comment %}
+This is a trick to get vue development support working in pycharm, and to get the CSRF from django to the view.
+The view is basically all vue, except the { % verbatim % } and { % csrf_token % } tag. Verbatim is needed as django
+and vue templates collide in syntax.
+
+To develop vue specific things, check out: https://blog.jetbrains.com/webstorm/2018/01/working-with-vue-js-in-webstorm/
+{% endcomment %}
+
+
+{% block content %}
+<div id="scan_monitor"></div>
+{% include "internet_nl_dashboard/scan_monitor.vue" %}
+{% endblock %}

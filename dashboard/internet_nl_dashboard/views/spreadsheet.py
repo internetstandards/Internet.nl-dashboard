@@ -1,16 +1,15 @@
 import logging
 
 from django.conf import settings
-
 from django.contrib.auth.decorators import login_required
 from django.core.files.storage import FileSystemStorage
 from django.http import JsonResponse
 from django.shortcuts import render
 
-from dashboard.internet_nl_dashboard.views.__init__ import (LOGIN_URL, inject_default_language_cookie,
-                                                            get_account, get_dashboarduser)
 from dashboard.internet_nl_dashboard.spreadsheet import complete_import, get_upload_history
-
+from dashboard.internet_nl_dashboard.views.__init__ import (LOGIN_URL, get_account,
+                                                            get_dashboarduser,
+                                                            inject_default_language_cookie)
 from websecmap.app.common import JSEncoder
 
 log = logging.getLogger(__package__)

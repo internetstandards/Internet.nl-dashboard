@@ -1,6 +1,7 @@
 from django.urls import path
 
-from dashboard.internet_nl_dashboard.views import __init__, dashboard, powertools, spreadsheet, urllist
+from dashboard.internet_nl_dashboard.views import (__init__, dashboard, powertools, scan_monitor,
+                                                   spreadsheet, urllist)
 
 urlpatterns = [
     path('', dashboard.dashboard),
@@ -17,7 +18,10 @@ urlpatterns = [
 
     path('upload/', spreadsheet.upload),
     path('data/upload-spreadsheet/', spreadsheet.upload_spreadsheet),
-    path('data/upload-history/', spreadsheet.upload_history)
+    path('data/upload-history/', spreadsheet.upload_history),
+
+    path('scan-monitor/', scan_monitor.scan_monitor),
+    path('data/scan-monitor/', scan_monitor.running_scans)
 
     # Would you enable the below login form, you will bypass all second factor authentication. Therefore do not enable
     # this url (!)

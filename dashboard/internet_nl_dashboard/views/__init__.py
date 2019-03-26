@@ -1,4 +1,5 @@
 import logging
+
 from django.contrib.auth import logout
 from django.http import JsonResponse
 from django.shortcuts import redirect
