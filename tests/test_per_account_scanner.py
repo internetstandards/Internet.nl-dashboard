@@ -6,7 +6,7 @@ Run these tests with tox -e test -- -k test_per_acount_scanner
 import logging
 
 from dashboard.internet_nl_dashboard.models import Account, UrlList
-from dashboard.internet_nl_dashboard.scanners.web_per_account import compose_task
+from dashboard.internet_nl_dashboard.scanners.scan_internet_nl_per_account import compose_task
 from websecmap.organizations.models import Url
 from websecmap.scanners.models import Endpoint
 

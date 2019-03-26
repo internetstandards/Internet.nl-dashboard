@@ -4,9 +4,6 @@ from datetime import timedelta
 
 from django.utils.translation import gettext_lazy as _
 
-from websecmap.jet import websecmap_menu_items
-from websecmap.scanners.constance import add_scanner_fields, add_scanner_fieldsets
-
 """
 Django settings for dashboard project.
 
@@ -413,15 +410,23 @@ COMPRESS_OFFLINE = not DEBUG
 
 # Constance settings:
 
+
 CONSTANCE_CONFIG = {
     'SCAN_AT_ALL': (
         True,
         'This quickly enables or disabled all scans. Note that scans in the scan queue will still be processed.', bool),
 }
-CONSTANCE_CONFIG = add_scanner_fields(CONSTANCE_CONFIG)
 
 CONSTANCE_CONFIG_FIELDSETS = OrderedDict()
-CONSTANCE_CONFIG_FIELDSETS = add_scanner_fieldsets(CONSTANCE_CONFIG_FIELDSETS)
+
+# the try-except makes sure autofix doesn't move the import to the top of the file.
+# Loaded here, otherwise: django.core.exceptions.AppRegistryNotReady: Apps aren't loaded yet.
+try:
+    from websecmap.scanners.constance import add_scanner_fields, add_scanner_fieldsets  # NOQA
+    CONSTANCE_CONFIG = add_scanner_fields(CONSTANCE_CONFIG)
+    CONSTANCE_CONFIG_FIELDSETS = add_scanner_fieldsets(CONSTANCE_CONFIG_FIELDSETS)
+except ImportError:
+    pass
 
 
 JET_SIDE_MENU_ITEMS = [
@@ -446,4 +451,9 @@ JET_SIDE_MENU_ITEMS = [
 ]
 
 # Allows to see all details of websecmap.
-JET_SIDE_MENU_ITEMS += websecmap_menu_items()
+# Loaded here, otherwise: django.core.exceptions.AppRegistryNotReady: Apps aren't loaded yet.
+try:
+    from websecmap.jet import websecmap_menu_items  # NOQA
+    JET_SIDE_MENU_ITEMS += websecmap_menu_items()
+except ImportError:
+    pass
