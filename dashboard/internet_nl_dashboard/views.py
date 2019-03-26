@@ -7,7 +7,6 @@ from django.contrib.auth.decorators import login_required
 from django.core.files.storage import FileSystemStorage
 from django.http import JsonResponse
 from django.shortcuts import redirect, render
-from websecmap.app.common import JSEncoder
 
 from dashboard.internet_nl_dashboard.forms import InstantAccountAddForm
 from dashboard.internet_nl_dashboard.models import Account, DashboardUser
@@ -15,6 +14,7 @@ from dashboard.internet_nl_dashboard.spreadsheet import complete_import, get_upl
 from dashboard.internet_nl_dashboard.urllist_management import (create_list, get_urllist_content,
                                                                 get_urllists_from_account,
                                                                 save_urllist_content)
+from websecmap.app.common import JSEncoder
 
 log = logging.getLogger(__package__)
 LOGIN_URL = '/account/login/'

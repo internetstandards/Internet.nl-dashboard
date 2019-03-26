@@ -2,6 +2,7 @@ from cryptography.fernet import Fernet
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.db import models
+
 from websecmap.organizations.models import Url
 from websecmap.scanners.models import InternetNLScan
 
@@ -26,21 +27,31 @@ class Account(models.Model):
     )
 
     # todo: encrypt the password field on save, and retrieve an unencrypted version, where store keys etc...
-    internet_nl_api_password = models.CharField(
-        max_length=255,
+    internet_nl_api_password = models.BinaryField(
         blank=True,
         null=True,
         help_text="New values will automatically be encrypted."
     )
 
+    """
+    These password methods allow you to interact with encryption as if it were just storing and retrieving strings.
+    See test_password_storage for example usage.
+    """
     @staticmethod
     def encrypt_password(password):
         f = Fernet(settings.FIELD_ENCRYPTION_KEY)
         return f.encrypt(password.encode())
 
     def decrypt_password(self):
+
+        if not self.internet_nl_api_password:
+            raise ValueError('Password was not set.')
+
+        if not type(self.internet_nl_api_password) is bytes:
+            raise ValueError('Password was not encrypted, cannot retrieve unencrypted passwords. Encrypt it first.')
+
         f = Fernet(settings.FIELD_ENCRYPTION_KEY)
-        return f.decrypt(self.internet_nl_api_password)
+        return f.decrypt(self.internet_nl_api_password).decode('utf-8')
 
     def __str__(self):
         return "%s" % self.name

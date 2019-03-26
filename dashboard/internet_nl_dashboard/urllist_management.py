@@ -1,9 +1,9 @@
 from typing import List
 
 from tldextract import tldextract
-from websecmap.organizations.models import Url
 
 from dashboard.internet_nl_dashboard.models import Account, UrlList
+from websecmap.organizations.models import Url
 
 
 def get_urllists_from_account(account: Account):
