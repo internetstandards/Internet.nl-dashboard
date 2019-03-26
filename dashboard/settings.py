@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/2.1/ref/settings/
 """
 
 import os
+from collections import OrderedDict
 from datetime import timedelta
 
 from django.utils.translation import gettext_lazy as _
@@ -220,28 +221,6 @@ else:
     STATIC_ROOT = '/srv/dashboard/static/'  # noga
 
 
-JET_SIDE_MENU_ITEMS = [
-
-    {'label': _('🎛️ Configuration'), 'items': [
-        {'name': 'auth.user'},
-        # {'name': 'auth.group'},
-        {'name': 'constance.config', 'label': _('Configuration')},
-    ]},
-
-    {'label': _('📊 Dashboard'), 'items': [
-        {'name': 'internet_nl_dashboard.account'},
-        {'name': 'internet_nl_dashboard.urllist'},
-        {'name': 'internet_nl_dashboard.uploadlog'},
-    ]},
-
-    {'label': _('🕒 Periodic Tasks'), 'items': [
-        {'name': 'app.job'},
-        {'name': 'django_celery_beat.periodictask'},
-        {'name': 'django_celery_beat.crontabschedule'},
-    ]},
-
-]
-
 MEDIA_ROOT = os.environ.get('MEDIA_ROOT', os.path.abspath(os.path.dirname(__file__)) + '/uploads/')
 UPLOAD_ROOT = os.environ.get('MEDIA_ROOT', os.path.abspath(os.path.dirname(__file__)) + '/uploads/')
 
@@ -310,6 +289,10 @@ LOGGING = {
 
         # We expect to be able to debug websecmap all of the time.
         'dashboard': {
+            'handlers': ['console'],
+            'level': os.getenv('DJANGO_LOG_LEVEL', 'DEBUG'),
+        },
+        'websecmap': {
             'handlers': ['console'],
             'level': os.getenv('DJANGO_LOG_LEVEL', 'DEBUG'),
         },
@@ -424,3 +407,42 @@ COMPRESS_STORAGE = (
 COMPRESS_OFFLINE = not DEBUG
 # https://django-compressor.readthedocs.io/en/latest/settings/#django.conf.settings.COMPRESS_ENABLED
 # Enabled when debug is off by default.
+
+# Constance settings:
+from websecmap.scanners.constance import add_scanner_fields, add_scanner_fieldsets
+
+CONSTANCE_CONFIG = {
+    'SCAN_AT_ALL': (
+        True,
+        'This quickly enables or disabled all scans. Note that scans in the scan queue will still be processed.', bool),
+}
+CONSTANCE_CONFIG = add_scanner_fields(CONSTANCE_CONFIG)
+
+CONSTANCE_CONFIG_FIELDSETS = OrderedDict()
+CONSTANCE_CONFIG_FIELDSETS = add_scanner_fieldsets(CONSTANCE_CONFIG_FIELDSETS)
+
+
+JET_SIDE_MENU_ITEMS = [
+
+    {'label': _('🎛️ Configuration'), 'items': [
+        {'name': 'auth.user'},
+        # {'name': 'auth.group'},
+        {'name': 'constance.config', 'label': _('Configuration')},
+    ]},
+
+    {'label': _('📊 Dashboard'), 'items': [
+        {'name': 'internet_nl_dashboard.account'},
+        {'name': 'internet_nl_dashboard.urllist'},
+        {'name': 'internet_nl_dashboard.uploadlog'},
+    ]},
+
+    {'label': _('🕒 Periodic Tasks'), 'items': [
+        {'name': 'app.job'},
+        {'name': 'django_celery_beat.periodictask'},
+        {'name': 'django_celery_beat.crontabschedule'},
+    ]},
+]
+
+# Allows to see all details of websecmap.
+from websecmap.jet import websecmap_menu_items
+JET_SIDE_MENU_ITEMS += websecmap_menu_items()
