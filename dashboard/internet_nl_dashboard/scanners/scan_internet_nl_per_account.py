@@ -85,14 +85,14 @@ def compose_task(
             if urls_for_web_scan:
                 scan_name = "Internet.nl Dashboard, Type: Web, Account: %s, List: %s" % (account.name, urllist.name)
 
-                tasks += group([register_scan.si(
+                tasks.append(register_scan.si(
                     urls=urls,
                     username=account.internet_nl_api_username,
                     password=account.decrypt_password(),
                     internet_nl_scan_type='web',
                     api_url=API_URL_WEB,
                     scan_name=scan_name
-                ) | connect_scan_to_account.s(account)])
+                ) | connect_scan_to_account.s(account))
 
             urls = Url.objects.all().filter(urls_in_dashboard_list=urllist, is_dead=False, not_resolvable=False,
                                             endpoint__protocol__in=['soa_mail'], endpoint__port__in=[25])
@@ -101,14 +101,14 @@ def compose_task(
             if urls_for_mail_scan:
                 scan_name = "Internet.nl Dashboard, Type: Web, Account: %s, List: %s" % (account.name, urllist.name)
 
-                tasks += group([register_scan.si(
+                tasks.append(register_scan.si(
                     urls=urls,
                     username=account.internet_nl_api_username,
                     password=account.decrypt_password(),
                     internet_nl_scan_type='mail',
                     api_url=API_URL_MAIL,
                     scan_name=scan_name
-                ) | connect_scan_to_account.s(account)])
+                ) | connect_scan_to_account.s(account))
 
     return group(tasks)
 

@@ -57,8 +57,8 @@ def test_per_acount_scanner(db) -> None:
     # When filtering for an existing account, as created above, there should be two tasks created.
     filters = {'account_filters': {'name': 'test'}}
     scan_tasks = compose_task(**filters)
-    # No idea why it's seven, at least it's not empty.
-    assert len(scan_tasks.kwargs.get('tasks')) == 7
+    # It has at least something.
+    assert len(scan_tasks.kwargs.get('tasks')) == 1
 
     # This should not result in any scans, as the account does not exist, an empty group is returned.
     filters = {'account_filters': {'name': 'not existing'}}
