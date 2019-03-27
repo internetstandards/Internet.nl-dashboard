@@ -6,6 +6,7 @@ from dashboard.celery import app
 from dashboard.internet_nl_dashboard.models import Account, AccountInternetNLScan, UrlList
 from websecmap.organizations.models import Url
 from websecmap.scanners.scanner.internet_nl_mail import register_scan
+from websecmap.scanners.scanner import add_model_filter
 
 # done: create more flexible filters
 # done: map mail scans to an endpoint (changed the scanner for it)
@@ -17,38 +18,6 @@ log = logging.getLogger(__name__)
 
 API_URL_MAIL = "https://batch.internet.nl/api/batch/v1.0/mail/"
 API_URL_WEB = "https://batch.internet.nl/api/batch/v1.0/web/"
-
-
-def add_model_filter(queryset, **kwargs):
-    """
-    Allows you to create whatever (!) filter you want. Including the possibility to compare password fields, so make
-    no untrusted user input is handled in this function.
-
-    Aside from that, it gives you great power. It allows you to filter on your model, using the following syntax:
-    filter = {'MODELNAME_filter': {[ANY FILTER HERE]}}
-
-    To filter accounts for the account name test:
-    filter = {'account_filter': {'name': 'test'}}
-
-    The filter can deliver cartesian products. And the filter does not 'exclude' things.
-
-    :param queryset:
-    :param kwargs:
-    :return:
-    """
-
-    # we expect a Object_filters in kwargs in order for it to work.
-    # dashboard.internet_nl_dashboard.models.Account
-    # This is probably one of the ugliest ways to do this :)
-    model_filters = str(queryset.model).replace("'>", "").split('.')[-1].lower() + '_filters'
-    log.debug('Checking for filters: %s' % model_filters)
-
-    if kwargs.get(model_filters, None):
-        filters = kwargs.get(model_filters)
-        log.debug('Filtering on: %s' % filters)
-        queryset = queryset.filter(**filters)
-
-    return queryset
 
 
 def compose_task(
@@ -79,7 +48,7 @@ def compose_task(
             """
 
             urls = Url.objects.all().filter(urls_in_dashboard_list=urllist, is_dead=False, not_resolvable=False,
-                                            endpoint__protocol__in=['http', 'https'], endpoint__port__in=[80, 443])
+                                            endpoint__protocol__in=['dns_a_aaaa'], endpoint__port__in=[80, 443])
             urls_for_web_scan = list(set(add_model_filter(urls, **kwargs)))
 
             if urls_for_web_scan:
@@ -95,7 +64,7 @@ def compose_task(
                 ) | connect_scan_to_account.s(account))
 
             urls = Url.objects.all().filter(urls_in_dashboard_list=urllist, is_dead=False, not_resolvable=False,
-                                            endpoint__protocol__in=['soa_mail'], endpoint__port__in=[25])
+                                            endpoint__protocol__in=['dns_soa'], endpoint__port__in=[25])
             urls_for_mail_scan = list(set(add_model_filter(urls, **kwargs)))
 
             if urls_for_mail_scan:
