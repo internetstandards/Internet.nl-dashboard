@@ -19,29 +19,8 @@ django-debug-toolbar-request-history
 pytest-mock
 pytest-docker
 
-# # dashboard for celery introspection
-# # run websecmap celery flower
-# # go to http://localhost:5555/
-# celery-flower
-
-# docs / readthedocs.io
-sphinx
-sphinx-autobuild
-recommonmark
-
-# brotlipy  # doesn't work, some vague errors not worth the time: compression handled elsewhere
-# slimit does not work with vue.js
-
-# tests (of scanners)
-httmock
-freezegun
-colorama
-pydotplus  # generating graphs with the docs command...
-
 # used to restart celery worker on file changes
 # use current (03-2018) master as it includes a fix for macOS: https://github.com/gorakhargosh/watchdog/pull/329
 git+https://github.com/gorakhargosh/watchdog.git@d33bee0290e00ecb3570dd938db72a2550933586#egg=watchdog
 
 ipython  # websecmap shell -i ipython
-django-cprofile-middleware
-moviepy
