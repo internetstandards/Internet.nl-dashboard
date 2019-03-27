@@ -1,5 +1,4 @@
-# Near-copy of websecmap. Changed the command to a hardcoded 'celery' as the command was already defined.
-# Django is not consistent in what has precendence. Dashboard does override admin stuff, but not commands.
+# example: dashboard dashboard_celery worker -Q storage -l debug
 from __future__ import absolute_import, unicode_literals
 
 import logging
