@@ -11,6 +11,7 @@ import tempfile
 from celery.signals import celeryd_init, worker_shutdown
 from django.conf import settings
 
+# as soon as this gets imported the internet_nl_dashboard app is gone.
 from dashboard.celery.worker import (tls_client_certificate, worker_configuration,
                                      worker_verify_role_capabilities)
 
@@ -18,9 +19,6 @@ from dashboard.celery.worker import (tls_client_certificate, worker_configuratio
 
 
 log = logging.getLogger(__name__)
-
-# as soon as this gets imported the internet_nl_dashboard app is gone.
-
 
 @celeryd_init.connect
 def configure_workers(sender=None, conf=None, instance=None, **kwargs):
