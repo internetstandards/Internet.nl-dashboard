@@ -1,0 +1,50 @@
+[
+  {
+    "model": "django_celery_beat.periodictask",
+    "fields": {
+      "name": "Run dashboard scans on internet.nl",
+      "task": "dashboard.internet_nl_dashboard.scanners.scan_internet_nl_per_account.compose_task",
+      "interval": null,
+      "crontab": 10,
+      "solar": null,
+      "args": "[]",
+      "kwargs": "{}",
+      "queue": "storage",
+      "exchange": null,
+      "routing_key": null,
+      "priority": null,
+      "expires": null,
+      "one_off": false,
+      "start_time": null,
+      "enabled": false,
+      "last_run_at": "2019-01-24T05:00:00Z",
+      "total_run_count": 0,
+      "date_changed": "2019-01-24T05:02:10Z",
+      "description": ""
+    }
+  },
+  {
+    "model": "django_celery_beat.periodictask",
+    "fields": {
+      "name": "&#x1F501; Check running dashboard scans",
+      "task": "dashboard.internet_nl_dashboard.scanners.scan_internet_nl_per_account.check_running_scans",
+      "interval": null,
+      "crontab": 33,
+      "solar": null,
+      "args": "[]",
+      "kwargs": "{}",
+      "queue": "storage",
+      "exchange": null,
+      "routing_key": null,
+      "priority": null,
+      "expires": null,
+      "one_off": false,
+      "start_time": null,
+      "enabled": false,
+      "last_run_at": "2019-01-24T05:00:00Z",
+      "total_run_count": 0,
+      "date_changed": "2019-01-24T05:02:10Z",
+      "description": ""
+    }
+  }
+]
