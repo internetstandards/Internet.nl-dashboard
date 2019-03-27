@@ -363,6 +363,17 @@ CELERY_WORKER_CONCURRENCY = 10
 # of repeated exceptions which will need to be debugged.
 CELERY_ACKS_LATE = True
 
+# Settings for statsd metrics collection. Statsd defaults over UDP port 8125.
+# https://django-statsd.readthedocs.io/en/latest/#celery-signals-integration
+STATSD_HOST = os.environ.get('STATSD_HOST', '127.0.0.1')
+STATSD_PREFIX = 'dashboard'
+# register hooks for selery tasks
+STATSD_CELERY_SIGNALS = True
+# send database query metric (in production, in development we have debug toolbar for this)
+if not DEBUG:
+    STATSD_PATCHES = ['django_statsd.patches.db', ]
+
+
 TOOLS = {
     'organizations': {
         'import_data_dir': '',

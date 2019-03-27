@@ -2,9 +2,12 @@
 # Django is not consistent in what has precendence. Dashboard does override admin stuff, but not commands.
 from __future__ import absolute_import, unicode_literals
 
+import logging
 import os
 
 from django.core.management.base import BaseCommand
+
+log = logging.getLogger(__package__)
 
 
 class Command(BaseCommand):
@@ -20,7 +23,7 @@ class Command(BaseCommand):
         appname = __name__.split('.', 1)[0] + '.celery:app'
         appname_arguments = ['-A', appname]
 
-        print(argv[1])
-        print(argv[1:2] + appname_arguments + argv[2:])
+        log.info(argv[1])
+        log.info(argv[1:2] + appname_arguments + argv[2:])
 
         os.execvp("celery", argv[1:2] + appname_arguments + argv[2:])
