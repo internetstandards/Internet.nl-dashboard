@@ -25,26 +25,10 @@ def test_per_acount_scanner(db) -> None:
 
     urls = [url1, url2, url3]
 
-    # make sure there are endpoints for these urls, as without endpoints, no scans will happen
-    Endpoint(**{'url': urls[0], 'protocol': 'soa_mx', 'port': 25, 'ip_version': 4, 'is_dead': False})
-    Endpoint(**{'url': urls[1], 'protocol': 'soa_mx', 'port': 25, 'ip_version': 4, 'is_dead': False})
-
     # a set of standard endpoints
-    ep = Endpoint(**{'url': urls[0], 'protocol': 'http', 'port': 80, 'ip_version': 4, 'is_dead': False})
+    ep = Endpoint(**{'url': urls[0], 'protocol': 'dns_a_aaaa', 'port': 0, 'ip_version': 0, 'is_dead': False})
     ep.save()
-    ep = Endpoint(**{'url': urls[0], 'protocol': 'https', 'port': 443, 'ip_version': 4, 'is_dead': False})
-    ep.save()
-    ep = Endpoint(**{'url': urls[0], 'protocol': 'http', 'port': 80, 'ip_version': 6, 'is_dead': False})
-    ep.save()
-    ep = Endpoint(**{'url': urls[0], 'protocol': 'https', 'port': 443, 'ip_version': 6, 'is_dead': False})
-    ep.save()
-    ep = Endpoint(**{'url': urls[1], 'protocol': 'http', 'port': 80, 'ip_version': 4, 'is_dead': False})
-    ep.save()
-    ep = Endpoint(**{'url': urls[1], 'protocol': 'https', 'port': 443, 'ip_version': 4, 'is_dead': False})
-    ep.save()
-    ep = Endpoint(**{'url': urls[1], 'protocol': 'http', 'port': 80, 'ip_version': 6, 'is_dead': False})
-    ep.save()
-    ep = Endpoint(**{'url': urls[1], 'protocol': 'https', 'port': 443, 'ip_version': 6, 'is_dead': False})
+    ep = Endpoint(**{'url': urls[1], 'protocol': 'dns_soa', 'port': 0, 'ip_version': 0, 'is_dead': False})
     ep.save()
 
     # create an url list for this account:
@@ -57,8 +41,8 @@ def test_per_acount_scanner(db) -> None:
     # When filtering for an existing account, as created above, there should be two tasks created.
     filters = {'account_filters': {'name': 'test'}}
     scan_tasks = compose_task(**filters)
-    # It has at least something.
-    assert len(scan_tasks.kwargs.get('tasks')) == 1
+    # two tasks: one for mail_dashboard, one for web
+    assert len(scan_tasks.kwargs.get('tasks')) == 2
 
     # This should not result in any scans, as the account does not exist, an empty group is returned.
     filters = {'account_filters': {'name': 'not existing'}}

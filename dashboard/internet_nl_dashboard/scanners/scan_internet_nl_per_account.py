@@ -5,13 +5,15 @@ from celery import Task, group
 from dashboard.celery import app
 from dashboard.internet_nl_dashboard.models import Account, AccountInternetNLScan, UrlList
 from websecmap.organizations.models import Url
-from websecmap.scanners.scanner.internet_nl_mail import register_scan
 from websecmap.scanners.scanner import add_model_filter
+from websecmap.scanners.scanner.internet_nl_mail import (get_scan_status,
+                                                         handle_running_scan_reponse, register_scan)
 
 # done: create more flexible filters
 # done: map mail scans to an endpoint (changed the scanner for it)
 # done: make nice tracking name for internet nl that is echoed in the scan results.
-# todo: map web scans to endpoints
+# done: map web scans to endpoints
+# done: check status of scan using each individual account
 
 log = logging.getLogger(__name__)
 
@@ -48,7 +50,7 @@ def compose_task(
             """
 
             urls = Url.objects.all().filter(urls_in_dashboard_list=urllist, is_dead=False, not_resolvable=False,
-                                            endpoint__protocol__in=['dns_a_aaaa'], endpoint__port__in=[80, 443])
+                                            endpoint__protocol__in=['dns_a_aaaa'])
             urls_for_web_scan = list(set(add_model_filter(urls, **kwargs)))
 
             if urls_for_web_scan:
@@ -64,7 +66,7 @@ def compose_task(
                 ) | connect_scan_to_account.s(account))
 
             urls = Url.objects.all().filter(urls_in_dashboard_list=urllist, is_dead=False, not_resolvable=False,
-                                            endpoint__protocol__in=['dns_soa'], endpoint__port__in=[25])
+                                            endpoint__protocol__in=['dns_soa'])
             urls_for_mail_scan = list(set(add_model_filter(urls, **kwargs)))
 
             if urls_for_mail_scan:
@@ -74,12 +76,28 @@ def compose_task(
                     urls=urls,
                     username=account.internet_nl_api_username,
                     password=account.decrypt_password(),
-                    internet_nl_scan_type='mail',
+                    internet_nl_scan_type='mail_dashboard',
                     api_url=API_URL_MAIL,
                     scan_name=scan_name
                 ) | connect_scan_to_account.s(account))
 
     return group(tasks)
+
+
+@app.task(queue='storage')
+def check_running_scans():
+    """
+    Gets status on all running scans from internet, per account.
+
+    :return: None
+    """
+    account_scans = AccountInternetNLScan.objects.all().filter(scan__finished=False)
+
+    for account_scan in account_scans:
+        scan = account_scan.scan
+        account = account_scan.account
+        response = get_scan_status(scan.status_url, account.internet_nl_api_username, account.decrypt_password())
+        handle_running_scan_reponse(response, scan)
 
 
 @app.task(queue="storage")
