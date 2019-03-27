@@ -1,29 +1,26 @@
 # Copy from websecmap, changed websecmap to dashboard.
 # Todo: as soon as you import anything from dashboard.celery.worker, the internet_nl_dashboard app disappears from
 # the known django apps list. Which is weird.
-"""This module is imported by failmap.__init__ to register Signal hooks."""
-import getpass
 import logging
 import os
 import platform
 import shutil
-import socket
-import ssl
 import sys
 import tempfile
 
-import certifi
-import OpenSSL
 from celery.signals import celeryd_init, worker_shutdown
-from constance import config
 from django.conf import settings
-from kombu import Queue
-from retry import retry
+
+from dashboard.celery.worker import (tls_client_certificate, worker_configuration,
+                                     worker_verify_role_capabilities)
+
+"""This module is imported by failmap.__init__ to register Signal hooks."""
+
 
 log = logging.getLogger(__name__)
 
 # as soon as this gets imported the internet_nl_dashboard app is gone.
-from dashboard.celery.worker import (worker_configuration, worker_verify_role_capabilities, tls_client_certificate)
+
 
 @celeryd_init.connect
 def configure_workers(sender=None, conf=None, instance=None, **kwargs):
