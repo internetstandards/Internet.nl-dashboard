@@ -2,18 +2,30 @@ workflow "Release" {
   on = "push"
 
   resolves = [
-    "Check",
-    "Test",
+    "check",
+    "test",
+    "build",
   ]
 }
 
-action "Check" {
+action "check" {
   uses = "docker://python:3.6"
   runs = ["/bin/sh", "-c", "pip install tox; tox -e check"]
+  env = {
+    TOX_WORK_DIR = "/tmp"
+  }
 }
 
-action "Test" {
-  needs = "Check"
+action "test" {
   uses = "docker://python:3.6"
   runs = ["/bin/sh", "-c", "pip install tox; tox -e test"]
+  env = {
+    TOX_WORK_DIR = "/tmp"
+  }
+}
+
+action "build" {
+  needs = ["check", "test"]
+  uses = "actions/docker/cli@master"
+  args = "build -t dashboard ."
 }
