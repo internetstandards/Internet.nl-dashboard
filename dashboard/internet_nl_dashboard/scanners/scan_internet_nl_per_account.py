@@ -93,11 +93,17 @@ def check_running_scans():
     """
     account_scans = AccountInternetNLScan.objects.all().filter(scan__finished=False)
 
+    tasks = []
     for account_scan in account_scans:
         scan = account_scan.scan
         account = account_scan.account
-        response = get_scan_status(scan.status_url, account.internet_nl_api_username, account.decrypt_password())
-        handle_running_scan_reponse(response, scan)
+
+        tasks.append(
+            get_scan_status.si(scan.status_url, account.internet_nl_api_username, account.decrypt_password())
+            | handle_running_scan_reponse.s(scan)
+        )
+
+    return group(tasks)
 
 
 @app.task(queue="storage")

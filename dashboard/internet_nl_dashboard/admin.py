@@ -206,6 +206,12 @@ class AccountAdmin(ImportExportModelAdmin, admin.ModelAdmin):
     # in an inline, or this inline is just not designed for it.
     # inlines = [DashboardUserInline]
 
+    # It's also impossible to 'just show a list of scans' through the many to many relationship. While we can
+    # show the relationship with no effort, the contents or a list view of these scans remains invisible.
+    # Even with .though models and declaring an N-N relationship explicitly in the Account model, it remains impossible
+    # to get a nice list view. We can achieve it by using nested_admin, but that increases complexity a lot.
+    # inlines = [CurrentScanInline]
+
     # todo: creation action that one can check if an account can connect to the API.
 
     @staticmethod
