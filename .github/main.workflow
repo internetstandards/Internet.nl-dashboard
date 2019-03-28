@@ -4,7 +4,6 @@ workflow "Release" {
   resolves = [
     "check",
     "test",
-    "build image",
     "test image",
   ]
 }
@@ -26,7 +25,6 @@ action "test" {
 }
 
 action "build image" {
-  needs = ["check", "test"]
   uses = "actions/docker/cli@master"
   args = "build -t dashboard ."
 }
