@@ -443,13 +443,13 @@ except ImportError:
 
 JET_SIDE_MENU_ITEMS = [
 
-    {'label': _('🎛️ Configuration'), 'items': [
-        {'name': 'auth.user'},
-        # {'name': 'auth.group'},
-        {'name': 'constance.config', 'label': _('Configuration')},
-    ]},
+    # {'label': _('🎛️ Configuration'), 'items': [
+    #    # {'name': 'auth.group'},
+    #    {'name': 'constance.config', 'label': _('Configuration')},
+    # ]},
 
     {'label': _('📊 Dashboard'), 'items': [
+        {'name': 'auth.user'},
         {'name': 'internet_nl_dashboard.account'},
         {'name': 'internet_nl_dashboard.urllist'},
         {'name': 'internet_nl_dashboard.uploadlog'},
