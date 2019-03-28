@@ -108,9 +108,9 @@ def check_running_scans():
 
 
 @app.task(queue='storage')
-def connect_scan_to_account(scan_id, account):
+def connect_scan_to_account(scan, account):
 
-    if not scan_id:
+    if not scan:
         raise ValueError('Scan is empty')
 
     if not account:
@@ -118,7 +118,7 @@ def connect_scan_to_account(scan_id, account):
 
     scan_relation = AccountInternetNLScan()
     scan_relation.account = account
-    scan_relation.scan = InternetNLScan.objects.all().filter(id=scan_id).first()
+    scan_relation.scan = scan
     scan_relation.save()
 
     return scan_relation
