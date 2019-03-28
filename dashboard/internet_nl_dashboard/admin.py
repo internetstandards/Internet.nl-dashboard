@@ -269,11 +269,11 @@ class AccountInternetNLScanAdmin(ImportExportModelAdmin, admin.ModelAdmin):
 
     @staticmethod
     def account__name(obj):
-        return obj.name
+        return obj.account.internet_nl_api_username
 
     @staticmethod
     def scan__finished(obj):
-        return obj.finished
+        return obj.scan.finished
 
 
 @admin.register(UploadLog)

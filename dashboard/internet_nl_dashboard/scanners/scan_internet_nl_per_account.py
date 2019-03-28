@@ -5,6 +5,7 @@ from celery import Task, group
 from dashboard.celery import app
 from dashboard.internet_nl_dashboard.models import Account, AccountInternetNLScan, UrlList
 from websecmap.organizations.models import Url
+from websecmap.scanners.models import InternetNLScan
 from websecmap.scanners.scanner import add_model_filter
 from websecmap.scanners.scanner.internet_nl_mail import (get_scan_status,
                                                          handle_running_scan_reponse, register_scan)
@@ -106,12 +107,18 @@ def check_running_scans():
     return group(tasks)
 
 
-@app.task(queue="storage")
-def connect_scan_to_account(scan, account):
+@app.task(queue='storage')
+def connect_scan_to_account(scan_id, account):
+
+    if not scan_id:
+        raise ValueError('Scan is empty')
+
+    if not account:
+        raise ValueError('Account is empty')
 
     scan_relation = AccountInternetNLScan()
     scan_relation.account = account
-    scan_relation.scan = scan
+    scan_relation.scan = InternetNLScan.objects.all().filter(id=scan_id).first()
     scan_relation.save()
 
     return scan_relation

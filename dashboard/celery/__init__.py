@@ -30,7 +30,8 @@ app.conf.result_backend = app.conf.broker_url.replace('amqp://', 'rpc://')
 
 # autodiscover all celery tasks in tasks.py files inside websecmap modules
 appname = __name__.split('.', 1)[0]
-app.autodiscover_tasks([app for app in settings.INSTALLED_APPS if app.startswith(appname)])
+app.autodiscover_tasks([app for app in settings.INSTALLED_APPS
+                        if app.startswith('dashboard') or app.startswith('websecmap')])
 
 # http://docs.celeryproject.org/en/master/whatsnew-4.0.html?highlight=priority#redis-priorities-reversed
 # http://docs.celeryproject.org/en/master/history/whatsnew-3.0.html?highlight=priority
