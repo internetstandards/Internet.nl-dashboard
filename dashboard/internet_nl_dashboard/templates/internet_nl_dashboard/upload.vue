@@ -1,7 +1,7 @@
 {% verbatim %}
 <template type="x-template" id="upload_template">
     <div>
-        <h2>{{ $t("upload.bulk_data_uploader.title") }}</h2>
+        <h1>{{ $t("upload.bulk_data_uploader.title") }}</h1>
         <p>{{ $t("upload.bulk_data_uploader.introduction") }}</p>
         <table>
             <tr>

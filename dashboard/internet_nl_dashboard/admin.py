@@ -265,7 +265,9 @@ class UrlListAdmin(ImportExportModelAdmin, admin.ModelAdmin):
 @admin.register(AccountInternetNLScan)
 class AccountInternetNLScanAdmin(ImportExportModelAdmin, admin.ModelAdmin):
 
-    list_display = ('account', 'account__name', 'scan', 'scan__finished')
+    list_display = ('account', 'account__name', 'scan', 'scan__finished', 'urllist')
+
+    fields = ('account', 'scan', 'urllist')
 
     @staticmethod
     def account__name(obj):

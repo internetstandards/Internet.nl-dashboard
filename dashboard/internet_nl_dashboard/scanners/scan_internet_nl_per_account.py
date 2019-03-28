@@ -5,7 +5,6 @@ from celery import Task, group
 from dashboard.celery import app
 from dashboard.internet_nl_dashboard.models import Account, AccountInternetNLScan, UrlList
 from websecmap.organizations.models import Url
-from websecmap.scanners.models import InternetNLScan
 from websecmap.scanners.scanner import add_model_filter
 from websecmap.scanners.scanner.internet_nl_mail import (get_scan_status,
                                                          handle_running_scan_reponse, register_scan)
@@ -64,7 +63,7 @@ def compose_task(
                     internet_nl_scan_type='web',
                     api_url=API_URL_WEB,
                     scan_name=scan_name
-                ) | connect_scan_to_account.s(account))
+                ) | connect_scan_to_account.s(account, urllist))
 
             urls = Url.objects.all().filter(urls_in_dashboard_list=urllist, is_dead=False, not_resolvable=False,
                                             endpoint__protocol__in=['dns_soa'])
@@ -80,7 +79,7 @@ def compose_task(
                     internet_nl_scan_type='mail_dashboard',
                     api_url=API_URL_MAIL,
                     scan_name=scan_name
-                ) | connect_scan_to_account.s(account))
+                ) | connect_scan_to_account.s(account, urllist))
 
     return group(tasks)
 
@@ -108,7 +107,7 @@ def check_running_scans():
 
 
 @app.task(queue='storage')
-def connect_scan_to_account(scan, account):
+def connect_scan_to_account(scan, account, urllist):
 
     if not scan:
         raise ValueError('Scan is empty')
@@ -116,9 +115,13 @@ def connect_scan_to_account(scan, account):
     if not account:
         raise ValueError('Account is empty')
 
+    if not urllist:
+        raise ValueError('Urllist is empty')
+
     scan_relation = AccountInternetNLScan()
     scan_relation.account = account
     scan_relation.scan = scan
+    scan_relation.urllist = urllist
     scan_relation.save()
 
     return scan_relation

@@ -92,23 +92,6 @@ class Account(models.Model):
         return "%s" % self.name
 
 
-# This could be a manytomany in account. With the downside that the amount will grow beyond managable. The default
-# admin will then have a problem showing these scans. It also makes cleaning up a specific scan harder from the
-# admin(?). Moving this to manytomany feels like an anti pattern. Suppose we want to add fields specifically for
-# this account, etc?
-class AccountInternetNLScan(models.Model):
-
-    account = models.ForeignKey(
-        Account,
-        on_delete=models.CASCADE,
-    )
-
-    scan = models.ForeignKey(
-        InternetNLScan,
-        on_delete=models.CASCADE,
-    )
-
-
 class DashboardUser(models.Model):
     user = models.OneToOneField(
         User,
@@ -152,6 +135,33 @@ class UrlList(models.Model):
 
     enable_scans = models.BooleanField(
         default=True,
+    )
+
+    def __str__(self):
+        return "%s/%s" % (self.account, self.name)
+
+
+# This could be a manytomany in account. With the downside that the amount will grow beyond managable. The default
+# admin will then have a problem showing these scans. It also makes cleaning up a specific scan harder from the
+# admin(?). Moving this to manytomany feels like an anti pattern. Suppose we want to add fields specifically for
+# this account, etc?
+class AccountInternetNLScan(models.Model):
+
+    account = models.ForeignKey(
+        Account,
+        on_delete=models.CASCADE,
+    )
+
+    scan = models.ForeignKey(
+        InternetNLScan,
+        on_delete=models.CASCADE,
+    )
+
+    urllist = models.ForeignKey(
+        UrlList,
+        on_delete=models.CASCADE,
+        blank=True,
+        null=True,
     )
 
 
