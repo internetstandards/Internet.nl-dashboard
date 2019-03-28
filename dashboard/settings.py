@@ -462,12 +462,11 @@ JET_SIDE_MENU_ITEMS = [
         {'name': 'django_celery_beat.crontabschedule'},
     ]},
 
-    {'app_label': 'scanners', 'label': _('🔬 Scanning (generated)'), 'items': [
-        {'name': 'endpoint', 'permissions': ['admin'], 'label': 'Endpoints'},
-        {'name': 'endpointgenericscan', 'permissions': ['scanners.change_endpointgenericscan'],
-         'label': 'Endpoint Scans'},
-        {'name': 'internetnlscan', 'permissions': ['scanners.change_internetnlscan'],
-         'label': 'Internet.nl Scans Tasks'},
+    {'label': _('🔬 Scanning (generated)'), 'items': [
+        {'name': 'organizations.url', 'label': 'Urls'},
+        {'name': 'scanners.endpoint', 'label': 'Endpoints'},
+        {'name': 'scanners.endpointgenericscan', 'label': 'Endpoint Scans'},
+        {'name': 'scanners.internetnlscan', 'label': 'Internet.nl Scans Tasks'},
     ]},
 ]
 
