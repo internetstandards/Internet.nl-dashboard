@@ -16,7 +16,8 @@ from import_export.admin import ImportExportModelAdmin
 from jet.admin import CompactInline
 
 from dashboard.internet_nl_dashboard.forms import CustomAccountModelForm
-from dashboard.internet_nl_dashboard.models import Account, DashboardUser, UploadLog, UrlList
+from dashboard.internet_nl_dashboard.models import (Account, AccountInternetNLScan, DashboardUser,
+                                                    UploadLog, UrlList)
 from websecmap.organizations.models import Url
 from websecmap.scanners.models import Endpoint
 
@@ -259,6 +260,20 @@ class UrlListAdmin(ImportExportModelAdmin, admin.ModelAdmin):
     def no_of_endpoints(self, obj):
         return Endpoint.objects.all().filter(url__urls_in_dashboard_list=obj, is_dead=False,
                                              url__is_dead=False, url__not_resolvable=False).count()
+
+
+@admin.register(AccountInternetNLScan)
+class AccountInternetNLScanAdmin(ImportExportModelAdmin, admin.ModelAdmin):
+
+    list_display = ('account', 'account__name', 'scan', 'scan__finished')
+
+    @staticmethod
+    def account__name(obj):
+        return obj.name
+
+    @staticmethod
+    def scan__finished(obj):
+        return obj.finished
 
 
 @admin.register(UploadLog)
