@@ -461,12 +461,20 @@ JET_SIDE_MENU_ITEMS = [
         {'name': 'django_celery_beat.periodictask'},
         {'name': 'django_celery_beat.crontabschedule'},
     ]},
+
+    {'app_label': 'scanners', 'label': _('🔬 Scanning (generated)'), 'items': [
+        {'name': 'endpoint', 'permissions': ['admin'], 'label': 'Endpoints'},
+        {'name': 'endpointgenericscan', 'permissions': ['scanners.change_endpointgenericscan'],
+         'label': 'Endpoint Scans'},
+        {'name': 'internetnlscan', 'permissions': ['scanners.change_internetnlscan'],
+         'label': 'Internet.nl Scans Tasks'},
+    ]},
 ]
 
 # Allows to see all details of websecmap.
 # Loaded here, otherwise: django.core.exceptions.AppRegistryNotReady: Apps aren't loaded yet.
-try:
-    from websecmap.jet import websecmap_menu_items  # NOQA
-    JET_SIDE_MENU_ITEMS += websecmap_menu_items()
-except ImportError:
-    pass
+# try:
+#     from websecmap.jet import websecmap_menu_items  # NOQA
+#     JET_SIDE_MENU_ITEMS += websecmap_menu_items()
+# except ImportError:
+#     pass
