@@ -14,6 +14,10 @@ from websecmap.scanners.scanner.internet_nl_mail import (get_scan_status,
 # done: make nice tracking name for internet nl that is echoed in the scan results.
 # done: map web scans to endpoints
 # done: check status of scan using each individual account
+# todo: possibly we need to check all relevant endpoints before starting the scan. This makes sure that all
+#       latest changes have been picked up. Especially if manual scans will happen a lot. Probably just adding
+#       a task before registering a scan. This might deliver some problems as we've seen before, with a chord
+#       not being performed after the other task has finished. This might be a bit challenging.
 
 log = logging.getLogger(__name__)
 
