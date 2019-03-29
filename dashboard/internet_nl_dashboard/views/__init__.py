@@ -1,7 +1,7 @@
 import logging
 
 from django.contrib.auth import logout
-from django.http import JsonResponse, HttpResponse
+from django.http import HttpResponse, JsonResponse
 from django.shortcuts import redirect
 
 from dashboard.internet_nl_dashboard.models import Account, DashboardUser
@@ -28,19 +28,19 @@ def inject_default_language_cookie(request, response) -> HttpResponse:
     return response
 
 
-def logout_view(request) -> redirect:
+def logout_view(request) -> HttpResponse:
     logout(request)
     return redirect('/')
 
 
 def get_account(request) -> Account:
-    # todo: what about the exceptions that happen when there is no account?
-    return DashboardUser.objects.all().filter(user=request.user).first().account
+    # todo: what about the exceptions that happen when there is no account? Currently exceptions, it should not happen.
+    return DashboardUser.objects.all().filter(user=request.user).get().account
 
 
 def get_dashboarduser(request) -> DashboardUser:
-    # todo: what about the exceptions that happen when there is no account?
-    return DashboardUser.objects.all().filter(user=request.user).first()
+    # todo: what about the exceptions that happen when there is no account? Currently exceptions, it should not happen.
+    return DashboardUser.objects.all().filter(user=request.user).get()
 
 
 def empty_response() -> JsonResponse:

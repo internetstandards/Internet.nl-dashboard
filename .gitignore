@@ -31,6 +31,4 @@ package-lock.json
 node_modules/
 
 # type checking config
-# pyre is missing references to other projects such as django, cryptography and more.
-.pyre
-.pyre_configuration
+.mypy_cache/

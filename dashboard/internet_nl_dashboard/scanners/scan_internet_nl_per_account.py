@@ -50,7 +50,7 @@ def compose_task(
     # The requirement for a 'per list' comes from the idea to be able to see what account uses what urls in the
     # back end.
 
-    tasks = []
+    tasks: List[Task] = []
 
     for account in accounts:
 

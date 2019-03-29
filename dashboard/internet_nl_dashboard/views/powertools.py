@@ -1,3 +1,6 @@
+from typing import Tuple
+
+from django import forms
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse
 from django.shortcuts import render
@@ -6,7 +9,6 @@ from dashboard.internet_nl_dashboard.forms import InstantAccountAddForm
 from dashboard.internet_nl_dashboard.models import Account, DashboardUser
 from dashboard.internet_nl_dashboard.views import (LOGIN_URL, dashboard, get_account,
                                                    inject_default_language_cookie)
-from django import forms
 
 
 # Create your views here.
@@ -27,10 +29,10 @@ def powertools(request) -> HttpResponse:
         dashboard_user.account = Account.objects.get(id=request.POST.get('change_account'))
         dashboard_user.save()
 
-    selected_account_id = 0
+    selected_account_id: int = 0
     account = get_account(request)
     if account:
-        selected_account_id = account.id
+        selected_account_id = account.pk
     # end account switching
 
     # Fast account creation. Of the most basic kind.
@@ -47,7 +49,7 @@ def powertools(request) -> HttpResponse:
     return inject_default_language_cookie(request, response)
 
 
-def default_form_logic(form, request) -> (str, forms.Form):
+def default_form_logic(form, request) -> Tuple[str, forms.Form]:
 
     if not request.POST:
         return "initial", form()

@@ -1,6 +1,7 @@
 import os
 from collections import OrderedDict
 from datetime import timedelta
+from typing import Dict, Tuple
 
 from django.utils.translation import gettext_lazy as _
 
@@ -223,7 +224,7 @@ else:
 
 
 MEDIA_ROOT = os.environ.get('MEDIA_ROOT', os.path.abspath(os.path.dirname(__file__)) + '/uploads/')
-UPLOAD_ROOT = os.environ.get('MEDIA_ROOT', os.path.abspath(os.path.dirname(__file__)) + '/uploads/')
+UPLOAD_ROOT: str = os.environ.get('MEDIA_ROOT', os.path.abspath(os.path.dirname(__file__)) + '/uploads/')
 
 
 # Two factor auth
@@ -237,18 +238,18 @@ TWO_FACTOR_PATCH_ADMIN = True
 
 # Encrypted fields
 # Note that this key is not stored in the database. As... well if you have the database, you have the key.
-FIELD_ENCRYPTION_KEY = os.environ.get('FIELD_ENCRYPTION_KEY', b'JjvHNnFMfEaGd7Y0SAHBRNZYGGpNs7ydEp-ixmKSvkQ=')
+IMPORTED_FIELD_ENCRYPTION_KEY: str = os.environ.get('FIELD_ENCRYPTION_KEY',
+                                                    "b'JjvHNnFMfEaGd7Y0SAHBRNZYGGpNs7ydEp-ixmKSvkQ='")
 
-if type(FIELD_ENCRYPTION_KEY) != bytes:
-    # have to parse it to something sane. As unix can only store it as a string.
-    # You can set your environment variable like this:
-    # export FIELD_ENCRYPTION_KEY="b'JjvHNnFMfEaGd7Y0SAHBRNZYGGpNs7ydEp-ixmKSvQk='"
-    FIELD_ENCRYPTION_KEY = FIELD_ENCRYPTION_KEY[2:len(FIELD_ENCRYPTION_KEY)-1].encode()
-
-if not DEBUG and FIELD_ENCRYPTION_KEY == b'JjvHNnFMfEaGd7Y0SAHBRNZYGGpNs7ydEp-ixmKSvkQ=':
+if not DEBUG and IMPORTED_FIELD_ENCRYPTION_KEY == "b'JjvHNnFMfEaGd7Y0SAHBRNZYGGpNs7ydEp-ixmKSvkQ='":
     raise ValueError('FIELD_ENCRYPTION_KEY has to be configured on the OS level, and needs to be different than the '
                      'default key provided. Please create a new key. Instructions are listed here:'
                      'https://github.com/pyca/cryptography. In short, run: key = Fernet.generate_key()')
+
+# The encryption key under ENV variables can only be stored as a string. This means we'll have to parse it
+# to bytes. This is done in an interesting way, which works.
+FIELD_ENCRYPTION_KEY: bytes = IMPORTED_FIELD_ENCRYPTION_KEY[2:len(IMPORTED_FIELD_ENCRYPTION_KEY)-1].encode()
+
 
 LOGGING = {
     'version': 1,
@@ -435,7 +436,7 @@ CONSTANCE_CONFIG = {
         'This quickly enables or disabled all scans. Note that scans in the scan queue will still be processed.', bool),
 }
 
-CONSTANCE_CONFIG_FIELDSETS = OrderedDict()
+CONSTANCE_CONFIG_FIELDSETS: Dict[str, Tuple[str]] = OrderedDict()
 
 # the try-except makes sure autofix doesn't move the import to the top of the file.
 # Loaded here, otherwise: django.core.exceptions.AppRegistryNotReady: Apps aren't loaded yet.

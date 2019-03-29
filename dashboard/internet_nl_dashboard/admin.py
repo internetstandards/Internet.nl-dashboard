@@ -153,8 +153,6 @@ class UserAdmin(BaseUserAdmin, ImportExportModelAdmin):
 
     search_fields = ['username', 'dashboarduser__account__name', 'dashboarduser__account__internet_nl_api_username']
 
-    actions = []
-
     @staticmethod
     def in_account(obj):
         user = DashboardUser.objects.all().filter(user=obj).first()
@@ -231,7 +229,6 @@ class AccountAdmin(ImportExportModelAdmin, admin.ModelAdmin):
     actions = []
 
     def check_api_connectivity(self, request, queryset):
-
         for account in queryset:
             username = account.internet_nl_api_username
             password = account.decrypt_password()
@@ -239,7 +236,9 @@ class AccountAdmin(ImportExportModelAdmin, admin.ModelAdmin):
             account.save()
         self.message_user(request, "Checked account API connectivity.")
 
-    check_api_connectivity.short_description = "Check API credentials"
+    # suppressing error: "Callable[[Any, Any, Any], Any]" has no attribute "short_description"
+    # This comes from the manual... so, well.
+    check_api_connectivity.short_description = "Check API credentials"   # type: ignore
     actions.append('check_api_connectivity')
 
 

@@ -129,8 +129,6 @@ class UrlList(models.Model):
 
     name = models.CharField(
         max_length=120,
-        blank=True,
-        null=True,
         help_text="Name of the UrlList, for example name of the organization in it."
     )
 
@@ -173,8 +171,6 @@ class AccountInternetNLScan(models.Model):
     urllist = models.ForeignKey(
         UrlList,
         on_delete=models.CASCADE,
-        blank=True,
-        null=True,
     )
 
 

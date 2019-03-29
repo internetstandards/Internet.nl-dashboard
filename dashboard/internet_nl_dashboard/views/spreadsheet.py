@@ -3,7 +3,7 @@ import logging
 from django.conf import settings
 from django.contrib.auth.decorators import login_required
 from django.core.files.storage import FileSystemStorage
-from django.http import JsonResponse, HttpResponse
+from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render
 
 from dashboard.internet_nl_dashboard.spreadsheet import complete_import, get_upload_history
@@ -55,9 +55,9 @@ def upload_spreadsheet(request) -> HttpResponse:
 def save_file(myfile) -> str:
     # todo: filesystem might be full.
     # https://docs.djangoproject.com/en/2.1/ref/files/storage/
-    fs = FileSystemStorage(location=settings.UPLOAD_ROOT)
+    fs = FileSystemStorage(location=settings.MEDIA_ROOT)
     filename = fs.save(myfile.name, myfile)
-    file = settings.UPLOAD_ROOT + '/' + filename
+    file = settings.MEDIA_ROOT + '/' + filename
     return file
 
 

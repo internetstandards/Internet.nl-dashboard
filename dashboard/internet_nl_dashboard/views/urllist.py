@@ -1,7 +1,7 @@
 from typing import List
 
 from django.contrib.auth.decorators import login_required
-from django.http import JsonResponse, HttpResponse
+from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render
 
 from dashboard.internet_nl_dashboard.urllist_management import (create_list, get_urllist_content,
@@ -40,12 +40,12 @@ def create_list_(request, list_name: str) -> JsonResponse:
 
 
 @login_required(login_url=LOGIN_URL)
-def get_urllist_content_(request, urllist_name: str) -> {}:
+def get_urllist_content_(request, urllist_name: str) -> JsonResponse:
     account = get_account(request)
     return JsonResponse(get_urllist_content(account=account, urllist_name=urllist_name), encoder=JSEncoder)
 
 
 @login_required(login_url=LOGIN_URL)
-def save_list_content(request, urllist_name: str, urls: List[str]) -> {}:
+def save_list_content(request, urllist_name: str, urls: List[str]) -> JsonResponse:
     account = get_account(request)
     return JsonResponse(save_urllist_content(account, urllist_name, urls), encoder=JSEncoder)

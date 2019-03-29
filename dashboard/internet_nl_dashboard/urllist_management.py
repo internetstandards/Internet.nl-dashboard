@@ -1,4 +1,4 @@
-from typing import List
+from typing import Any, Dict, List, Tuple
 
 from tldextract import tldextract
 
@@ -42,7 +42,7 @@ def get_urllist_content(account: Account, urllist_name: str) -> dict:
 
     """ It's very possible that the urrlist_id is not matching with the account. The query will just return
     nothing. Only of both matches it will return something we can work with. """
-    response = {'urllist_name': urllist_name, 'urls': []}
+    response: Dict[str, Any] = {'urllist_name': urllist_name, 'urls': []}
 
     """ This is just a simple iteration, all sorting and logic is placed in the vue as that is much more flexible. """
     for url in urls:
@@ -73,7 +73,7 @@ def save_urllist_content(account: Account, urllist_name: str, urls: List[str]) -
         urllist = create_list(account=account, name=urllist_name)
         counters = _add_to_urls_to_urllist(account, urllist.name, urls=cleaned_urls['correct'])
     else:
-        counters = {'added_to_list': 0, 'already_in_list': 0, 'incorrect_urls': cleaned_urls['incorrect']}
+        counters = {'added_to_list': 0, 'already_in_list': 0}
 
     result = {'incorrect_urls': cleaned_urls['incorrect'],
               'added_to_list': counters['added_to_list'],
@@ -82,9 +82,9 @@ def save_urllist_content(account: Account, urllist_name: str, urls: List[str]) -
     return result
 
 
-def _add_to_urls_to_urllist(account: Account, urllist_name: str, urls: List[str]) -> dict:
+def _add_to_urls_to_urllist(account: Account, urllist_name: str, urls: List[str]) -> Dict[str, Any]:
 
-    counters = {'added_to_list': 0, 'already_in_list': 0, 'error': 0, 'message': ''}
+    counters: Dict[str, int] = {'added_to_list': 0, 'already_in_list': 0}
 
     current_list = UrlList.objects.all().filter(name=urllist_name).first()
     if not current_list:
@@ -114,7 +114,7 @@ def _add_to_urls_to_urllist(account: Account, urllist_name: str, urls: List[str]
     return counters
 
 
-def clean_urls(urls: List[str]) -> dict:
+def clean_urls(urls: List[str]) -> Dict[str, List]:
     """
     Incorrect urls are urls that are not following the uri scheme standard and don't have a recognizable suffix. They
     are returned for informational purposes and can contain utter garbage. The editor of the urls can then easily see
@@ -124,7 +124,7 @@ def clean_urls(urls: List[str]) -> dict:
     :return:
     """
 
-    result = {'incorrect': [], 'correct': []}
+    result: Dict[str, List] = {'incorrect': [], 'correct': []}
 
     for url in urls:
         url = url.lower()
@@ -151,7 +151,7 @@ def create_list(account, name: str) -> UrlList:
         return urllist
 
 
-def delete_url_from_urllist(account: Account, urllist_name: str, url: str) -> dict:
+def delete_url_from_urllist(account: Account, urllist_name: str, url: str) -> Tuple[int, Dict[str, int]]:
     """
     While we delete the url in the urllist, the actual url is not deleted. It might be used by others, and
     all the same it might be used in the future by someone else. This will retrain the historic data.
@@ -168,7 +168,7 @@ def delete_url_from_urllist(account: Account, urllist_name: str, url: str) -> di
         url=url).delete()
 
 
-def delete_list(account: Account, urllist_name: str) -> dict:
+def delete_list(account: Account, urllist_name: str) -> Tuple[int, Dict[str, int]]:
     """
     A list can really be deleted and isn't a 'precious' resource. It can quickly be re-created with imports from
     excel or just a copy paste of a series of strings.

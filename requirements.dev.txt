@@ -18,7 +18,10 @@ django-debug-toolbar
 django-debug-toolbar-request-history
 pytest-mock
 pytest-docker
-
+# simple type checking
+mypy
+# and the stubs so that all django constructs are not instantly rejected
+django-stubs
 # used to restart celery worker on file changes
 # use current (03-2018) master as it includes a fix for macOS: https://github.com/gorakhargosh/watchdog/pull/329
 git+https://github.com/gorakhargosh/watchdog.git@d33bee0290e00ecb3570dd938db72a2550933586#egg=watchdog

@@ -21,6 +21,7 @@ import logging
 import os
 import re
 from datetime import datetime
+from typing import Any, Dict, List
 
 import magic
 import pyexcel as p
@@ -28,14 +29,13 @@ import pytz
 from django.db import transaction
 from xlrd import XLRDError
 
-from dashboard.internet_nl_dashboard.models import UploadLog, Account, DashboardUser
+from dashboard.internet_nl_dashboard.models import Account, DashboardUser, UploadLog
 from dashboard.internet_nl_dashboard.urllist_management import clean_urls, save_urllist_content
-from typing import List
 
 log = logging.getLogger(__package__)
 
 
-SPREADSHEET_MIME_TYPES = [
+SPREADSHEET_MIME_TYPES: List[str] = [
     # XLSX
     'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
 
@@ -55,12 +55,12 @@ SPREADSHEET_MIME_TYPES = [
     'text/x-csv',
 ]
 
-ALLOWED_SPREADSHEET_EXTENSIONS = ['xlsx', 'xls', 'ods', 'csv']
+ALLOWED_SPREADSHEET_EXTENSIONS: List[str] = ['xlsx', 'xls', 'ods', 'csv']
 
 # Anything more than this cannot be uploaded in a single spreadsheet. It can be in multiple.
 # In normal usecases these limits will not be reached.
-MAXIMUM_AMOUNT_OF_NEW_LISTS = 200
-MAXIMUM_AMOUNT_OF_NEW_URLS = 10000
+MAXIMUM_AMOUNT_OF_NEW_LISTS: int = 200
+MAXIMUM_AMOUNT_OF_NEW_URLS: int = 10000
 
 
 def is_file(file: str) -> bool:
@@ -117,7 +117,7 @@ def get_data(file: str) -> dict:
     :return:
     """
 
-    data = {}
+    data: Dict[str, set] = {}
 
     try:
         sheet = p.get_sheet(file_name=file, name_columns_by_row=0)
@@ -218,7 +218,7 @@ def save_data(account: Account, data: dict):
 
 def complete_import(user: DashboardUser, file: str):
 
-    response = {'error': False, 'success': False, 'message': '', 'details': {}}
+    response: Dict[str, Any] = {'error': False, 'success': False, 'message': '', 'details': {}}
 
     # use more verbose validation, to give better feedback.
     if not is_file(file):
