@@ -3,7 +3,7 @@ import logging
 from django.conf import settings
 from django.contrib.auth.decorators import login_required
 from django.core.files.storage import FileSystemStorage
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponse
 from django.shortcuts import render
 
 from dashboard.internet_nl_dashboard.spreadsheet import complete_import, get_upload_history
@@ -16,7 +16,7 @@ log = logging.getLogger(__package__)
 
 
 @login_required(login_url=LOGIN_URL)
-def upload(request):
+def upload(request) -> HttpResponse:
 
     response = render(request, 'internet_nl_dashboard/templates/internet_nl_dashboard/upload.html', {
         'menu_item_addressmanager': "current",
@@ -26,7 +26,7 @@ def upload(request):
 
 
 @login_required(login_url=LOGIN_URL)
-def upload_spreadsheet(request):
+def upload_spreadsheet(request) -> HttpResponse:
     # Instead of some json message, give a full page, so the classic uploader also functions pretty well.
     # todo: Or should this be a redirect, so the 'reload' page does not try to resend the form...
     response = upload(request)
@@ -62,7 +62,7 @@ def save_file(myfile) -> str:
 
 
 @login_required(login_url=LOGIN_URL)
-def upload_history(request):
+def upload_history(request) -> JsonResponse:
     account = get_account(request)
 
     # list of dicts: In order to allow non-dict objects to be serialized set the safe parameter to False.

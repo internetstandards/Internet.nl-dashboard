@@ -1,7 +1,7 @@
 import logging
 
 from django.contrib.auth.decorators import login_required
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponse
 from django.shortcuts import render
 
 from dashboard.internet_nl_dashboard.scan_monitor import get_running_scans
@@ -13,7 +13,7 @@ log = logging.getLogger(__package__)
 
 
 @login_required(login_url=LOGIN_URL)
-def scan_monitor(request):
+def scan_monitor(request) -> HttpResponse:
 
     response = render(request, 'internet_nl_dashboard/templates/internet_nl_dashboard/scan_monitor.html', {
         'menu_item_dashboard': "current",
@@ -23,7 +23,7 @@ def scan_monitor(request):
 
 
 @login_required(login_url=LOGIN_URL)
-def running_scans(request):
+def running_scans(request) -> JsonResponse:
     account = get_account(request)
 
     # list of dicts: In order to allow non-dict objects to be serialized set the safe parameter to False.

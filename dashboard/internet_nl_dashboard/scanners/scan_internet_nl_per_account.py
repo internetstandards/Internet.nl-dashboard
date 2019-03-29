@@ -25,6 +25,8 @@ from websecmap.scanners.scanner.internet_nl_mail import (get_scan_status,
 #       Done: How do we get the correct list of urls at the time we're going to scan? We've to make that a task too.
 #       Done: This is done using chains, where each step is executed in order.
 # done: create a function for this, as it is twice the same code.
+# todo: probably the urllist will contain information if a scan will be done for web or mail. This cannot be managed
+#       yet, so this is not implemented yet.
 
 log = logging.getLogger(__name__)
 

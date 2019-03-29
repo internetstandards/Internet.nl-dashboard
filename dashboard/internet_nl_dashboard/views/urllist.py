@@ -1,7 +1,7 @@
 from typing import List
 
 from django.contrib.auth.decorators import login_required
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponse
 from django.shortcuts import render
 
 from dashboard.internet_nl_dashboard.urllist_management import (create_list, get_urllist_content,
@@ -13,7 +13,7 @@ from websecmap.app.common import JSEncoder
 
 
 @login_required(login_url=LOGIN_URL)
-def addressmanager(request):
+def addressmanager(request) -> HttpResponse:
 
     response = render(request, 'internet_nl_dashboard/templates/internet_nl_dashboard/addressmanager.html', {
         'menu_item_addressmanager': "current",
@@ -23,7 +23,7 @@ def addressmanager(request):
 
 
 @login_required(login_url=LOGIN_URL)
-def get_lists(request):
+def get_lists(request) -> JsonResponse:
     account = get_account(request)
 
     # todo: make sure the output is safe, or converted to safe.
@@ -33,7 +33,7 @@ def get_lists(request):
 
 
 @login_required(login_url=LOGIN_URL)
-def create_list_(request, list_name):
+def create_list_(request, list_name: str) -> JsonResponse:
     account = get_account(request)
     result = create_list(account=account, name=list_name)
     return JsonResponse({'name': result.name}, encoder=JSEncoder)

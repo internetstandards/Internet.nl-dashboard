@@ -241,7 +241,8 @@ FIELD_ENCRYPTION_KEY = os.environ.get('FIELD_ENCRYPTION_KEY', b'JjvHNnFMfEaGd7Y0
 
 if type(FIELD_ENCRYPTION_KEY) != bytes:
     # have to parse it to something sane. As unix can only store it as a string.
-    # And this works... so well.....
+    # You can set your environment variable like this:
+    # export FIELD_ENCRYPTION_KEY="b'JjvHNnFMfEaGd7Y0SAHBRNZYGGpNs7ydEp-ixmKSvQk='"
     FIELD_ENCRYPTION_KEY = FIELD_ENCRYPTION_KEY[2:len(FIELD_ENCRYPTION_KEY)-1].encode()
 
 if not DEBUG and FIELD_ENCRYPTION_KEY == b'JjvHNnFMfEaGd7Y0SAHBRNZYGGpNs7ydEp-ixmKSvkQ=':

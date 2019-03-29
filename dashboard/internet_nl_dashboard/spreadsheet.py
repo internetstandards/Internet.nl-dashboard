@@ -11,9 +11,10 @@ DONE: handle file uploads
 DONE: validation (as far as that goes)
 DONE: support ods
 DONE: support xls, xlsx
-Todo: support JSON and CSV.
-Todo: give example files.
-Todo: supply example download files.
+DONE: support CSV
+Removed: support JSON.
+DONE: give example files.
+DONE: supply example download files.
 """
 
 import logging
@@ -27,8 +28,9 @@ import pytz
 from django.db import transaction
 from xlrd import XLRDError
 
-from dashboard.internet_nl_dashboard.models import UploadLog
+from dashboard.internet_nl_dashboard.models import UploadLog, Account, DashboardUser
 from dashboard.internet_nl_dashboard.urllist_management import clean_urls, save_urllist_content
+from typing import List
 
 log = logging.getLogger(__package__)
 
@@ -61,7 +63,7 @@ MAXIMUM_AMOUNT_OF_NEW_LISTS = 200
 MAXIMUM_AMOUNT_OF_NEW_URLS = 10000
 
 
-def is_file(file):
+def is_file(file: str) -> bool:
     if not os.path.isfile(file):
         log.debug('Not a valid file path.')
         return False
@@ -69,7 +71,7 @@ def is_file(file):
 
 
 # make sure the file is of a spreadsheet type
-def is_valid_mimetype(file):
+def is_valid_mimetype(file: str) -> bool:
     """
     Has system dependencies when not working under linux. Make sure those dependencies are installed.
 
@@ -88,7 +90,7 @@ def is_valid_mimetype(file):
     return False
 
 
-def is_valid_extension(file):
+def is_valid_extension(file: str) -> bool:
     """
     Checks if the file has an extension that is allowed.
 
@@ -102,14 +104,7 @@ def is_valid_extension(file):
     return False
 
 
-def validate(file):
-    # ordered from cheap to expensive checks
-    if is_file(file) and is_valid_extension(file) and is_valid_mimetype(file):
-        return True
-    return False
-
-
-def get_data(file):
+def get_data(file: str) -> dict:
     """
     Will return a simple set of data, without too much validation. Deduplicates data per unique category.
 
@@ -159,7 +154,7 @@ def get_data(file):
     return data
 
 
-def get_upload_history(account):
+def get_upload_history(account: Account) -> List:
 
     uploads = UploadLog.objects.all().filter(user__account=account).order_by('-pk')[0:3]
     data = []
@@ -175,7 +170,7 @@ def get_upload_history(account):
     return data
 
 
-def log_spreadsheet_upload(user, file: str, status: str = "", message: str = ""):
+def log_spreadsheet_upload(user: DashboardUser, file: str, status: str = "", message: str = "") -> dict:
     """
     This helps content editors to see and verify what spreadsheets they have uploaded. Especially for bulk updates
     this can be very useful. Especially the filesize.
@@ -212,7 +207,7 @@ def log_spreadsheet_upload(user, file: str, status: str = "", message: str = "")
 # Do not accept partial imports. Or all, or nothing in a single transaction.
 # Depending on the speed this needs to become a task, as the wait will be too long.
 @transaction.atomic
-def save_data(account, data):
+def save_data(account: Account, data: dict):
 
     results = {}
     for urllist in data.keys():
@@ -221,7 +216,7 @@ def save_data(account, data):
     return results
 
 
-def complete_import(user, file):
+def complete_import(user: DashboardUser, file: str):
 
     response = {'error': False, 'success': False, 'message': '', 'details': {}}
 

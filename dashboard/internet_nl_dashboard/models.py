@@ -16,6 +16,10 @@ CREDENTIAL_CHECK_URL = "https://batch.internet.nl/api/"
 
 
 class Account(models.Model):
+    """
+    An account is the entity that start scans. Multiple people can manage the account.
+    """
+
     name = models.CharField(
         max_length=120,
         blank=True,
@@ -34,7 +38,6 @@ class Account(models.Model):
         help_text="Internet.nl API Username"
     )
 
-    # todo: encrypt the password field on save, and retrieve an unencrypted version, where store keys etc...
     internet_nl_api_password = models.BinaryField(
         blank=True,
         null=True,
@@ -93,6 +96,11 @@ class Account(models.Model):
 
 
 class DashboardUser(models.Model):
+    """
+    This connects auth.User to a user that is used in the Dashboard. It is common practice to extend auth.Model with a
+    one to one relation with an extended model.
+    An additional benefit/feature is that we can easily switch what user is connected to what account.
+    """
     user = models.OneToOneField(
         User,
         on_delete=models.CASCADE
@@ -114,6 +122,11 @@ class DashboardUser(models.Model):
 
 
 class UrlList(models.Model):
+    """
+    This is a list of urls that will be scanned on internet.nl.
+    This list will be extended with things like: 'what should be scanned (mail / web)'. What to show on the dashboard.
+    """
+
     name = models.CharField(
         max_length=120,
         blank=True,
@@ -141,11 +154,11 @@ class UrlList(models.Model):
         return "%s/%s" % (self.account, self.name)
 
 
-# This could be a manytomany in account. With the downside that the amount will grow beyond managable. The default
-# admin will then have a problem showing these scans. It also makes cleaning up a specific scan harder from the
-# admin(?). Moving this to manytomany feels like an anti pattern. Suppose we want to add fields specifically for
-# this account, etc?
 class AccountInternetNLScan(models.Model):
+    """
+    We've explicitly not declared the N-to-N on scan or account. This is the N to N between them. When a new scan is
+    created the UrlList serves as extra data.
+    """
 
     account = models.ForeignKey(
         Account,
@@ -165,7 +178,6 @@ class AccountInternetNLScan(models.Model):
     )
 
 
-# todo: should we allow a download of the file (if still available?)
 class UploadLog(models.Model):
     original_filename = models.CharField(
         max_length=255,

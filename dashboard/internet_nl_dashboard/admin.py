@@ -176,7 +176,6 @@ admin.site.unregister(Group)
 admin.site.register(Group, GroupAdmin)
 
 
-# todo: make sure this is implemented.
 # Overwrite the ugly Constance forms with something nicer
 class CustomConfigForm(ConstanceForm):
     def __init__(self, *args, **kwargs):
@@ -212,8 +211,6 @@ class AccountAdmin(ImportExportModelAdmin, admin.ModelAdmin):
     # Even with .though models and declaring an N-N relationship explicitly in the Account model, it remains impossible
     # to get a nice list view. We can achieve it by using nested_admin, but that increases complexity a lot.
     # inlines = [CurrentScanInline]
-
-    # todo: creation action that one can check if an account can connect to the API.
 
     @staticmethod
     def no_of_users(obj):

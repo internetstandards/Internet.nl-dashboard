@@ -1,19 +1,21 @@
 from django.contrib.auth.decorators import login_required
+from django.http import HttpResponse
 from django.shortcuts import render
 
 from dashboard.internet_nl_dashboard.forms import InstantAccountAddForm
 from dashboard.internet_nl_dashboard.models import Account, DashboardUser
 from dashboard.internet_nl_dashboard.views import (LOGIN_URL, dashboard, get_account,
                                                    inject_default_language_cookie)
+from django import forms
 
 
 # Create your views here.
 @login_required(login_url=LOGIN_URL)
-def powertools(request):
+def powertools(request) -> HttpResponse:
 
     # only for the true superusers :)
     if not request.user.is_staff and request.user.is_active and request.user.is_superuser:
-        return dashboard(request)
+        return dashboard.dashboard(request)
 
     # account switching.=
     if request.POST.get('change_account', None):
@@ -45,7 +47,7 @@ def powertools(request):
     return inject_default_language_cookie(request, response)
 
 
-def default_form_logic(form, request):
+def default_form_logic(form, request) -> (str, forms.Form):
 
     if not request.POST:
         return "initial", form()

@@ -4,8 +4,7 @@ from django.contrib.auth.models import User
 from dashboard.internet_nl_dashboard.models import Account, DashboardUser
 from dashboard.internet_nl_dashboard.spreadsheet import (get_data, get_upload_history, is_file,
                                                          is_valid_extension, is_valid_mimetype,
-                                                         log_spreadsheet_upload, save_data,
-                                                         validate)
+                                                         log_spreadsheet_upload, save_data)
 
 # the 5000 urls has been skipped, it adds nothing to the test cases, only to the load for the UI. Use it for UI
 # testing... can the UI really handle thousands of urls efficiently?
@@ -29,10 +28,6 @@ def test_spreadsheet(db) -> None:
         assert valid is True
 
         valid = is_valid_mimetype(file)
-        assert valid is True
-
-        # these are all validations in one.
-        valid = validate(file)
         assert valid is True
 
         data = get_data(file)
@@ -63,9 +58,10 @@ def test_spreadsheet(db) -> None:
     file = 'tests/test spreadsheet uploads/waterschappen.xlsx'
     test_valid(file)
 
+    # We skip this test as it takes long and doesn't really add anything. We could improve it's speed perhaps.
     # It should also work fine with thousands of urls...
-    file = 'tests/test spreadsheet uploads/tenthousand.ods'
-    test_valid(file)
+    # file = 'tests/test spreadsheet uploads/tenthousand.ods'
+    # test_valid(file)
 
     # Should also be able to handle CSV files, as if they are spreadsheets
     file = 'tests/test spreadsheet uploads/waterschappen.csv'
@@ -75,18 +71,18 @@ def test_spreadsheet(db) -> None:
     file = 'tests/test spreadsheet uploads/tracie/tracie.exe'
 
     # this will fail because of the file extension
-    valid = validate(file)
+    valid = is_valid_extension(file)
     assert valid is False
 
     # Let's be evil and rename it to .xlsx, so we bypass both the mime check and the extension check
     # Nope, it finds it's a 'application/x-dosexec'
-    file = 'tests/test spreadsheet uploads/tracie/tracie.xlxs'
-    valid = validate(file)
+    file = 'tests/test spreadsheet uploads/tracie/tracie.xlsx'
+    valid = is_valid_mimetype(file)
     assert valid is False
 
     # Let's instead use a corrupted xlsx that should not work when parsing.
     file = 'tests/test spreadsheet uploads/waterschappen_corrupted.xlsx'
-    valid = validate(file)
+    valid = is_valid_mimetype(file)
     assert valid is True
 
     # this will crash and burn, and therefore return an empty set.

@@ -6,7 +6,7 @@ from dashboard.internet_nl_dashboard.models import Account, UrlList
 from websecmap.organizations.models import Url
 
 
-def get_urllists_from_account(account: Account):
+def get_urllists_from_account(account: Account) -> List:
     """
     These are lists with some metadata. The metadata is used to give an indication how many urls etc (todo) are
     included. Note that this does not return the entire set of urls, given that URLS may be in the thousands.
@@ -29,7 +29,7 @@ def get_urllists_from_account(account: Account):
     return response
 
 
-def get_urllist_content(account: Account, urllist_name: str):
+def get_urllist_content(account: Account, urllist_name: str) -> dict:
     """
     This will retrieve the contents of an urllist. The amount of urls can be in the thousands, and have to be displayed
     properly.
@@ -56,7 +56,7 @@ def get_urllist_content(account: Account, urllist_name: str):
     return response
 
 
-def save_urllist_content(account: Account, urllist_name: str, urls: List[str]):
+def save_urllist_content(account: Account, urllist_name: str, urls: List[str]) -> dict:
     """ Stores urls in an urllist. If the url doesn't exist yet, it will be added to the database (so the urls
     can be shared with multiple accounts, and only requires one scan).
 
@@ -82,7 +82,7 @@ def save_urllist_content(account: Account, urllist_name: str, urls: List[str]):
     return result
 
 
-def _add_to_urls_to_urllist(account: Account, urllist_name: str, urls: List[str]):
+def _add_to_urls_to_urllist(account: Account, urllist_name: str, urls: List[str]) -> dict:
 
     counters = {'added_to_list': 0, 'already_in_list': 0, 'error': 0, 'message': ''}
 
@@ -114,7 +114,7 @@ def _add_to_urls_to_urllist(account: Account, urllist_name: str, urls: List[str]
     return counters
 
 
-def clean_urls(urls: List[str]):
+def clean_urls(urls: List[str]) -> dict:
     """
     Incorrect urls are urls that are not following the uri scheme standard and don't have a recognizable suffix. They
     are returned for informational purposes and can contain utter garbage. The editor of the urls can then easily see
@@ -151,7 +151,7 @@ def create_list(account, name: str) -> UrlList:
         return urllist
 
 
-def delete_url_from_urllist(account: Account, urllist_name: str, url: str):
+def delete_url_from_urllist(account: Account, urllist_name: str, url: str) -> dict:
     """
     While we delete the url in the urllist, the actual url is not deleted. It might be used by others, and
     all the same it might be used in the future by someone else. This will retrain the historic data.
@@ -168,7 +168,7 @@ def delete_url_from_urllist(account: Account, urllist_name: str, url: str):
         url=url).delete()
 
 
-def delete_list(account: Account, urllist_name: str):
+def delete_list(account: Account, urllist_name: str) -> dict:
     """
     A list can really be deleted and isn't a 'precious' resource. It can quickly be re-created with imports from
     excel or just a copy paste of a series of strings.
