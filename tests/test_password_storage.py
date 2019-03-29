@@ -16,6 +16,7 @@ def test_password_storage(db) -> None:
     account, created = Account.objects.all().get_or_create(name="test")
     account.internet_nl_api_password = account.encrypt_password(secret_password)
     account.save()
+    # this does not perform a retrieval, so of course it's the same.
     assert account.decrypt_password() == secret_password
 
     # no password set, should throw a valueError
