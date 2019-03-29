@@ -1,9 +1,11 @@
 from typing import Any, Dict, List, Tuple
 
+from django.db.models import Prefetch
 from tldextract import tldextract
 
 from dashboard.internet_nl_dashboard.models import Account, UrlList
 from websecmap.organizations.models import Url
+from websecmap.scanners.models import Endpoint
 
 
 def get_urllists_from_account(account: Account) -> List:
@@ -38,7 +40,17 @@ def get_urllist_content(account: Account, urllist_name: str) -> dict:
     :param urllist_name:
     :return:
     """
-    urls = Url.objects.all().filter(urls_in_dashboard_list__account=account, urls_in_dashboard_list__name=urllist_name)
+    # todo: can we prefetch per endpoint type? How to get prefetch working properly so that it saves time in the
+    # subqueries below.
+    prefetch = Prefetch('url__endpoint',
+                        queryset=Endpoint.objects.filter(protocol__in=['dns_soa', 'dns_a_aaaa'], is_dead=False),
+                        to_attr="some_endpoints")
+    urls = Url.objects.all().filter(urls_in_dashboard_list__account=account, urls_in_dashboard_list__name=urllist_name
+                                    ).prefetch_related(prefetch).all()
+
+    # todo: for municipalities this gives double results. Trace the origin.
+    # todo: for 400 urls this takes 1 second, which is not really ok. Probably because of the prefetch.
+    # urls = list(set(urls))
 
     """ It's very possible that the urrlist_id is not matching with the account. The query will just return
     nothing. Only of both matches it will return something we can work with. """
@@ -46,11 +58,15 @@ def get_urllist_content(account: Account, urllist_name: str) -> dict:
 
     """ This is just a simple iteration, all sorting and logic is placed in the vue as that is much more flexible. """
     for url in urls:
+        # todo: should we give insights into if there is an endpoint?
         response['urls'].append({
             'url': url.url,
             'created_on': url.created_on,
             'resolves': not url.not_resolvable,
-            'is_dead': url.is_dead
+            'is_dead': url.is_dead,
+            'has_mail_endpoint': True if url.endpoint_set.filter(protocol='dns_soa', is_dead=False).count() else False,
+            'has_web_endpoint':
+                True if url.endpoint_set.filter(protocol='dns_a_aaaa', is_dead=False).count() else False
         })
 
     return response

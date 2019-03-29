@@ -56,3 +56,6 @@ python-magic
 
 # encrypted password field for API (we need to get the value during calls)
 cryptography
+
+# add multiple urls separated with comma's.
+django-select2

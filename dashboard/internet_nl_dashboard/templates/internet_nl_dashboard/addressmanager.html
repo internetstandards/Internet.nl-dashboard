@@ -19,12 +19,20 @@
             <button @click="get_list_content(list.name)" value="load">Delete list</button>
             <!-- Todo: the input has to be a select2 type... when you paste a set of urls, it get parsed into
             multiple separate urls. -->
+            <!-- Vue bootstrap for this table? -->
+            <!-- https://bootstrap-vue.js.org/docs/components/table -->
+            <!-- do we need undo options? -->
+            <!-- https://github.com/ArthurClemens/Javascript-Undo-Manager -->
             <div v-if="has_items(list.name)">
                 <label for="add_url">Bulk add new:</label> <input id="add_url" type="text" name="add_url">
-                <span v-for="url in list_content[list.name]['urls']">
-                {{ url.url }}
-                    <button type="button">Delete</button>
-                </span>
+                <div style="column-count: 2;">
+                    <div v-for="url in list_content[list.name]['urls']">
+                        <span v-if="url.resolves">🔌</span><span v-if="!url.resolves">🚫</span>
+                        <span v-if="url.has_mail_endpoint">📨</span><span v-if="!url.has_mail_endpoint">🚫</span>
+                        <span v-if="url.has_web_endpoint">🌐</span><span v-if="!url.has_web_endpoint">🚫</span>
+                        {{ url.url }} <button type="button">Remove</button>
+                    </div>
+                </div>
             </div>
         </template>
 
