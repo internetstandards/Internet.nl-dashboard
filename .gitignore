@@ -3,13 +3,11 @@
 *.sqlite3
 *.py[co]
 .tox
-.tox2
 *.egg-info
 .cache
 .coverage
 htmlcov
 error.log
-db_backup_*.sqlite3
 dist/
 build/
 code.json
@@ -24,7 +22,6 @@ temp/*
 *.rdb
 .pytest_cache/
 db.sqlite3-journal
-/helpdesk/*
 .pip-cache/*
 *.p12
 config.json
@@ -32,3 +29,8 @@ config.json
 # nodejs stuff
 package-lock.json
 node_modules/
+
+# type checking config
+# pyre is missing references to other projects such as django, cryptography and more.
+.pyre
+.pyre_configuration

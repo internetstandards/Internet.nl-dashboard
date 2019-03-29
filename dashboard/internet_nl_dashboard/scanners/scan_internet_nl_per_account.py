@@ -1,10 +1,12 @@
 import logging
+from typing import List
 
 from celery import Task, group
 
 from dashboard.celery import app
 from dashboard.internet_nl_dashboard.models import Account, AccountInternetNLScan, UrlList
 from websecmap.organizations.models import Url
+from websecmap.scanners.models import InternetNLScan
 from websecmap.scanners.scanner import add_model_filter
 from websecmap.scanners.scanner.dns_endpoints import compose_discover_task
 from websecmap.scanners.scanner.internet_nl_mail import (get_scan_status,
@@ -22,6 +24,7 @@ from websecmap.scanners.scanner.internet_nl_mail import (get_scan_status,
 #       Indeed: a chord does not work. A chain might. We can verify url filters when there is a larger set of domains.
 #       Done: How do we get the correct list of urls at the time we're going to scan? We've to make that a task too.
 #       Done: This is done using chains, where each step is executed in order.
+# done: create a function for this, as it is twice the same code.
 
 log = logging.getLogger(__name__)
 
@@ -57,57 +60,55 @@ def compose_task(
             some for mail and some not at all.
             """
 
-            scan_name = "Internet.nl Dashboard, Type: Web, Account: %s, List: %s" % (account.name, urllist.name)
-
-            # todo: create a function for this, as it is twice the same code.
-            tasks.append(
-                # Should we only try to get the specifically needed dns_endpoint? At what volume we should / must?
-                # This discovers dns_endpoints. On the basis of this we know what urls we should scan an which
-                # ones we should not. We'll only scan if there are valid endpoint, just like at internet.nl
-                compose_discover_task(**{'url_filter': {'urls_in_dashboard_list': urllist,
-                                                        'is_dead': False, 'not_resolvable': False}})
-
-                # Make sure that the discovery as listed above is actually used in the scan
-                | get_relevant_urls.si(urllist, 'dns_a_aaaa')
-
-                # The urls are registered as part of the scan
-                | register_scan.s(
-                    account.internet_nl_api_username,
-                    account.decrypt_password(),
-                    'web',
-                    API_URL_WEB,
-                    scan_name)
-
-                # When the scan is created, the scan is connected to the account for tracking purposes.
-                # This is visualized in the scan monitor.
-                | connect_scan_to_account.s(account, urllist))
-
-            scan_name = "Internet.nl Dashboard, Type: Web, Account: %s, List: %s" % (account.name, urllist.name)
-
-            tasks.append(
-                compose_discover_task(**{'url_filter': {'urls_in_dashboard_list': urllist,
-                                                        'is_dead': False, 'not_resolvable': False}})
-                | get_relevant_urls.si(urllist, 'dns_soa')
-                | register_scan.s(
-                    account.internet_nl_api_username,
-                    account.decrypt_password(),
-                    'mail_dashboard',
-                    API_URL_MAIL,
-                    scan_name)
-                | connect_scan_to_account.s(account, urllist))
+            tasks = add_scan_tasks(tasks, account, urllist, 'web', 'dns_a_aaaa',)
+            tasks = add_scan_tasks(tasks, account, urllist, 'mail_dashboard', 'dns_soa', )
 
     return group(tasks)
 
 
+def add_scan_tasks(tasks: List, account: Account, urllist: UrlList, save_as_scan_type: str, endpoint_type: str) -> List:
+
+    # The scan name is arbitrary. Add a lot of info to it so the scan can be tracked.
+    # A UUID will be added during registering
+    scan_name = "{'source': 'Internet.nl Dashboard', 'type': '%s', 'account': '%s', 'list': '%s'}" % (
+        save_as_scan_type, account.name, urllist.name)
+
+    api_url = API_URL_WEB if save_as_scan_type == 'web' else API_URL_MAIL
+
+    tasks.append(
+        # Should we only try to get the specifically needed dns_endpoint? At what volume we should / must?
+        # This discovers dns_endpoints. On the basis of this we know what urls we should scan an which
+        # ones we should not. We'll only scan if there are valid endpoint, just like at internet.nl
+        compose_discover_task(**{'url_filter': {'urls_in_dashboard_list': urllist,
+                                                'is_dead': False, 'not_resolvable': False}})
+
+        # Make sure that the discovery as listed above is actually used in the scan
+        | get_relevant_urls.si(urllist, endpoint_type)
+
+        # The urls are registered as part of the scan
+        | register_scan.s(
+            account.internet_nl_api_username,
+            account.decrypt_password(),
+            save_as_scan_type,
+            api_url,
+            scan_name)
+
+        # When the scan is created, the scan is connected to the account for tracking purposes.
+        # This is visualized in the scan monitor.
+        | connect_scan_to_account.s(account, urllist))
+
+    return tasks
+
+
 @app.task(queue='storage')
-def get_relevant_urls(urllist, protocol, **kwargs):
+def get_relevant_urls(urllist: UrlList, protocol: str, **kwargs) -> List:
     urls = Url.objects.all().filter(urls_in_dashboard_list=urllist, is_dead=False, not_resolvable=False,
                                     endpoint__protocol__in=[protocol])
     return list(set(add_model_filter(urls, **kwargs)))
 
 
 @app.task(queue='storage')
-def check_running_scans():
+def check_running_scans() -> Task:
     """
     Gets status on all running scans from internet, per account.
 
@@ -129,7 +130,7 @@ def check_running_scans():
 
 
 @app.task(queue='storage')
-def connect_scan_to_account(scan, account, urllist):
+def connect_scan_to_account(scan: InternetNLScan, account: Account, urllist: UrlList) -> AccountInternetNLScan:
 
     if not scan:
         raise ValueError('Scan is empty')

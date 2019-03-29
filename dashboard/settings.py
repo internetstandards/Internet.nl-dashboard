@@ -239,6 +239,11 @@ TWO_FACTOR_PATCH_ADMIN = True
 # Note that this key is not stored in the database. As... well if you have the database, you have the key.
 FIELD_ENCRYPTION_KEY = os.environ.get('FIELD_ENCRYPTION_KEY', b'JjvHNnFMfEaGd7Y0SAHBRNZYGGpNs7ydEp-ixmKSvkQ=')
 
+if type(FIELD_ENCRYPTION_KEY) != bytes:
+    # have to parse it to something sane. As unix can only store it as a string.
+    # And this works... so well.....
+    FIELD_ENCRYPTION_KEY = FIELD_ENCRYPTION_KEY[2:len(FIELD_ENCRYPTION_KEY)-1].encode()
+
 if not DEBUG and FIELD_ENCRYPTION_KEY == b'JjvHNnFMfEaGd7Y0SAHBRNZYGGpNs7ydEp-ixmKSvkQ=':
     raise ValueError('FIELD_ENCRYPTION_KEY has to be configured on the OS level, and needs to be different than the '
                      'default key provided. Please create a new key. Instructions are listed here:'
