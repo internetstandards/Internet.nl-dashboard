@@ -28,12 +28,12 @@ SETTINGS_PATH = os.path.normpath(os.path.dirname(__file__))
 SECRET_KEY = '_dzlo^9d#ox6!7c9rju@=u8+4^sprqocy3s*l*ejc2yr34@&98'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = os.environ.get('DEBUG', False)
 
 if not DEBUG and SECRET_KEY == os.environ.get('SECRET_KEY', '_dzlo^9d#ox6!7c9rju@=u8+4^sprqocy3s*l*ejc2yr34@&98'):
     raise ValueError('SECRET_KEY contains a debugging value. Set a sane secret key')
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', 'localhost,127.0.0.1,::1').split(',')
 
 
 # Application definition
@@ -62,9 +62,6 @@ INSTALLED_APPS = [
     # Periodic tasks
     'django_celery_beat',
 
-    # Javascript and CSS compression:
-    'compressor',
-
     # Web Security Map (todo: minimize the subset)
     # The reason (model) why it's included is in the comments.
     'websecmap.app',  # Job
@@ -84,6 +81,9 @@ INSTALLED_APPS = [
     'django_otp.plugins.otp_static',
     'django_otp.plugins.otp_totp',
     'two_factor',
+
+    # Javascript and CSS compression:
+    'compressor',
 ]
 
 try:
