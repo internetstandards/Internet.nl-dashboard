@@ -7,6 +7,7 @@ from django.contrib.auth.models import User
 from django.db import models
 from requests.auth import HTTPBasicAuth
 
+from websecmap.reporting.models import SeriesOfUrlsReportMixin
 from websecmap.organizations.models import Url
 from websecmap.scanners.models import InternetNLScan
 
@@ -224,3 +225,34 @@ class UploadLog(models.Model):
         blank=True,
         null=True
     )
+
+
+class UrlListReport(SeriesOfUrlsReportMixin):
+    """
+    This is basically an aggregation of UrlRating
+
+    Contains aggregated ratings over time. Why?
+
+    - Reduces complexity to get ratings
+        You don't need to know about dead(urls, endpoints), scanner-results.
+        For convenience purposes a calculation field also contains some hints why the rating is
+        the way it is.
+
+    -   It increases speed
+        Instead of continuously calculating the score, it is done on a more regular interval: for
+        example once every 10 minutes and only for the last 10 minutes.
+
+    A time dimension is kept, since it's important to see what the rating was over time. This is
+    now very simple to get (you don't need a complex join which is hard in django).
+
+    The client software does a drill down on domains and shows why things are the way they are.
+    Also this should not know too much about different scanners. In OO fashion, it should ask a
+    scanner to explain why something is the way it is (over time).
+    """
+    urllist = models.ForeignKey(UrlList, on_delete=models.CASCADE)
+
+    class Meta:
+        get_latest_by = "when"
+        index_together = [
+            ["when", "id"],
+        ]
