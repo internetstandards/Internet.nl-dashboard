@@ -110,13 +110,17 @@ def get_relevant_urls(urllist: UrlList, protocol: str, **kwargs) -> List:
 
 
 @app.task(queue='storage')
-def check_running_scans() -> Task:
+def check_running_dashboard_scans(**kwargs) -> Task:
     """
     Gets status on all running scans from internet, per account.
 
     :return: None
     """
-    account_scans = AccountInternetNLScan.objects.all().filter(scan__finished=False)
+    if kwargs:
+        account_scans = AccountInternetNLScan.objects.all()
+        account_scans = add_model_filter(account_scans, **kwargs)
+    else:
+        account_scans = AccountInternetNLScan.objects.all().filter(scan__finished=False)
 
     tasks = []
     for account_scan in account_scans:
