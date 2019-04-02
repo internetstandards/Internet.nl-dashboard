@@ -289,11 +289,11 @@ class UploadLogAdmin(ImportExportModelAdmin, admin.ModelAdmin):
 class UrlListReportAdmin(ImportExportModelAdmin, admin.ModelAdmin):
     def inspect_list(self, obj):
         return format_html('<a href="../../internet_nl_dashboard/urllist/{id}/change">inspect</a>',
-                           id=format(obj.url_id))
+                           id=format(obj.id))
 
     list_display = ('urllist', 'high', 'medium', 'low', 'ok', 'total_endpoints', 'ok_endpoints', 'when', 'inspect_list')
     search_fields = (['when'])
-    list_filter = ['urllist', 'when',][::-1]
+    list_filter = ['urllist', 'when'][::-1]
     fields = ('total_endpoints',
               'total_issues',
 

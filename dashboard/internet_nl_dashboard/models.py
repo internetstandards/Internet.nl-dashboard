@@ -7,8 +7,8 @@ from django.contrib.auth.models import User
 from django.db import models
 from requests.auth import HTTPBasicAuth
 
-from websecmap.reporting.models import SeriesOfUrlsReportMixin
 from websecmap.organizations.models import Url
+from websecmap.reporting.models import SeriesOfUrlsReportMixin
 from websecmap.scanners.models import InternetNLScan
 
 log = logging.getLogger(__package__)

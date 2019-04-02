@@ -5,9 +5,9 @@ from typing import List
 import pytz
 from celery import group
 
+from dashboard.internet_nl_dashboard.models import UrlList, UrlListReport
 from websecmap.celery import Task, app
 from websecmap.pro.urllist_report import rate_urllist_on_moment
-from dashboard.internet_nl_dashboard.models import UrlList, UrlListReport
 
 log = logging.getLogger(__package__)
 
@@ -35,7 +35,7 @@ def rate_urllists_historically(urllists: List[UrlList]):
 
     # round off days to the latest possible moment on that day, except for the last day, so to not overwrite.
     # note that if this is run every day, you'll still get reports for all days where things change (more inefficiently)
-    dates = [x.replace(hour=23, minute=59, second=59, microsecond=999999) for x in dates if x.date() is not today]
+    dates = set([x.replace(hour=23, minute=59, second=59, microsecond=999999) for x in dates if x.date() is not today])
 
     for urllist in urllists:
         for date in dates:

@@ -1,15 +1,15 @@
 import logging
 from copy import deepcopy
 from datetime import datetime, timedelta
-from typing import List
+from typing import List, Set
 
 import pytz
 from celery import group
 from deepdiff import DeepDiff
 
+from dashboard.internet_nl_dashboard.models import UrlList, UrlListReport
 from websecmap.celery import Task, app
 from websecmap.organizations.models import Url
-from dashboard.internet_nl_dashboard.models import UrlList, UrlListReport
 from websecmap.reporting.report import (aggegrate_url_rating_scores, get_latest_urlratings_fast,
                                         relevant_urls_at_timepoint)
 
@@ -35,15 +35,15 @@ def rate_urllists_now(urllists: List[UrlList]):
 def rate_urllists_historically(urllists: List[UrlList]):
     # weekly, and for the last 14 days daily. 64 calculations
     # maybe this is not precise enough...
-    weeks = [datetime.now(pytz.utc) - timedelta(days=t) for t in range(365, 0, -7)]
+    weeks: List[datetime] = [datetime.now(pytz.utc) - timedelta(days=t) for t in range(365, 0, -7)]
     weeks += [datetime.now(pytz.utc) - timedelta(days=t) for t in range(14, 0, -1)]
-    dates = set(weeks)
+    dates: Set[datetime] = set(weeks)
 
     today = datetime.now(pytz.utc).date()
 
     # round off days to the latest possible moment on that day, except for the last day, so to not overwrite.
     # note that if this is run every day, you'll still get reports for all days where things change (more inefficiently)
-    dates = [x.replace(hour=23, minute=59, second=59, microsecond=9999999) for x in dates if x.date() is not today]
+    dates = set([x.replace(hour=23, minute=59, second=59, microsecond=9999999) for x in dates if x.date() is not today])
 
     for urllist in urllists:
         for date in dates:
@@ -92,6 +92,6 @@ def rate_urllist_on_moment(urllist: UrlList, when: datetime = None):
 
 
 def relevant_urls_at_timepoint_urllist(urllist: UrlList, when: datetime):
-    queryset = Url.objects.filter(urllist=urllist)
+    queryset = Url.objects.filter(urls_in_dashboard_list=urllist)
 
     return relevant_urls_at_timepoint(queryset=queryset, when=when)
