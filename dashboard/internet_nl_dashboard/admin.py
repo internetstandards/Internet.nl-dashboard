@@ -247,10 +247,12 @@ class AccountAdmin(ImportExportModelAdmin, admin.ModelAdmin):
 @admin.register(UrlList)
 class UrlListAdmin(ImportExportModelAdmin, admin.ModelAdmin):
 
-    list_display = ('name', 'account', 'no_of_urls', 'no_of_endpoints')
+    list_display = ('name', 'account', 'scan_type', 'no_of_urls', 'no_of_endpoints')
     search_fields = ('name', 'account__name')
     list_filter = ['account'][::-1]
-    fields = ('name', 'account', 'urls')
+
+    # we don't add the urls as that might cause a deletion by mistake
+    fields = ('name', 'account', 'scan_type')
 
     def no_of_urls(self, obj):
         return Url.objects.all().filter(urls_in_dashboard_list=obj, is_dead=False, not_resolvable=False).count()

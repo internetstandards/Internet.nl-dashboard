@@ -150,7 +150,7 @@ class UrlList(models.Model):
     )
 
     scan_type = models.CharField(
-        max_length=2,
+        max_length=4,
         choices=(
             ('web', 'web'),
             ('mail', 'mail'),
