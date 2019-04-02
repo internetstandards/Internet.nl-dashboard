@@ -8,6 +8,7 @@ from django.contrib.auth.admin import GroupAdmin as BaseGroupAdmin
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 from django.contrib.auth.models import Group, User
 from django.contrib.humanize.templatetags.humanize import naturaltime
+from django.utils.html import format_html
 from django.utils.safestring import mark_safe
 from django_celery_beat.admin import PeriodicTaskAdmin, PeriodicTaskForm
 from django_celery_beat.models import CrontabSchedule, PeriodicTask
@@ -15,6 +16,7 @@ from import_export import resources
 from import_export.admin import ImportExportModelAdmin
 from jet.admin import CompactInline
 
+from dashboard.internet_nl_dashboard import models
 from dashboard.internet_nl_dashboard.forms import CustomAccountModelForm
 from dashboard.internet_nl_dashboard.models import (Account, AccountInternetNLScan, DashboardUser,
                                                     UploadLog, UrlList)
@@ -281,3 +283,55 @@ class UploadLogAdmin(ImportExportModelAdmin, admin.ModelAdmin):
     list_filter = ['message', 'upload_date', 'user'][::-1]
 
     fields = ('original_filename', 'internal_filename', 'status', 'message', 'user', 'upload_date', 'filesize')
+
+
+@admin.register(models.UrlListReport)
+class UrlListReportAdmin(ImportExportModelAdmin, admin.ModelAdmin):
+    def inspect_list(self, obj):
+        return format_html('<a href="../../internet_nl_dashboard/urllist/{id}/change">inspect</a>',
+                           id=format(obj.url_id))
+
+    list_display = ('urllist', 'high', 'medium', 'low', 'ok', 'total_endpoints', 'ok_endpoints', 'when', 'inspect_list')
+    search_fields = (['when'])
+    list_filter = ['urllist', 'when',][::-1]
+    fields = ('total_endpoints',
+              'total_issues',
+
+              'high',
+              'medium',
+              'low',
+              'ok',
+              'high_endpoints',
+              'medium_endpoints',
+              'low_endpoints',
+              'ok_endpoints',
+              'total_url_issues',
+              'url_issues_high',
+              'url_issues_medium',
+              'url_issues_low',
+              'url_ok',
+              'total_endpoint_issues',
+              'endpoint_issues_high',
+              'endpoint_issues_medium',
+              'endpoint_issues_low',
+              'endpoint_ok',
+              'explained_high',
+              'explained_medium',
+              'explained_low',
+              'explained_high_endpoints',
+              'explained_medium_endpoints',
+              'explained_low_endpoints',
+              'explained_total_url_issues',
+              'explained_url_issues_high',
+              'explained_url_issues_medium',
+              'explained_url_issues_low',
+              'explained_total_endpoint_issues',
+              'explained_endpoint_issues_high',
+              'explained_endpoint_issues_medium',
+              'explained_endpoint_issues_low',
+
+              'when', 'calculation')
+
+    ordering = ["-when"]
+
+    save_as = True

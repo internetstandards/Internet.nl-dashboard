@@ -458,9 +458,10 @@ JET_SIDE_MENU_ITEMS = [
     {'label': _('📊 Dashboard'), 'items': [
         {'name': 'auth.user'},
         {'name': 'internet_nl_dashboard.account'},
-        {'name': 'internet_nl_dashboard.urllist'},
         {'name': 'internet_nl_dashboard.uploadlog'},
-        {'name': 'internet_nl_dashboard.accountinternetnlscan'}
+        {'name': 'internet_nl_dashboard.urllist'},
+        {'name': 'internet_nl_dashboard.accountinternetnlscan'},
+        {'name': 'internet_nl_dashboard.urllistreport'}
     ]},
 
     {'label': _('🕒 Periodic Tasks'), 'items': [
