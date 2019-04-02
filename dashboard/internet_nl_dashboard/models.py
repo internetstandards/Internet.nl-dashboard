@@ -149,6 +149,15 @@ class UrlList(models.Model):
         default=True,
     )
 
+    scan_type = models.CharField(
+        max_length=2,
+        choices=(
+            ('web', 'web'),
+            ('mail', 'mail'),
+        ),
+        default='web',
+    )
+
     def __str__(self):
         return "%s/%s" % (self.account, self.name)
 

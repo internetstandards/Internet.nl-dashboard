@@ -59,11 +59,13 @@ def compose_task(
         for urllist in urllists:
             """
             Lists are split between their respective capabilities. This means that some urls will be scanned for web,
-            some for mail and some not at all.
+            some for mail and some both depending on the list content.
             """
+            if urllist.scan_type == 'web':
+                tasks = add_scan_tasks(tasks, account, urllist, 'web', 'dns_a_aaaa',)
 
-            tasks = add_scan_tasks(tasks, account, urllist, 'web', 'dns_a_aaaa',)
-            tasks = add_scan_tasks(tasks, account, urllist, 'mail_dashboard', 'dns_soa', )
+            if urllist.scan_type == 'mail':
+                tasks = add_scan_tasks(tasks, account, urllist, 'mail_dashboard', 'dns_soa', )
 
     return group(tasks)
 

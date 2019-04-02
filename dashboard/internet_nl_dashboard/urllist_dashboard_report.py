@@ -17,8 +17,124 @@ log = logging.getLogger(__package__)
 
 # todo: determine the moments things changed, using timeline.
 
+urllist_report_content = [
+
+    {
+        'type': 'mail',
+        'issues': [
+            'internet_nl_mail_starttls_tls_available',
+            'internet_nl_mail_auth_spf_exist',
+            'internet_nl_mail_auth_dkim_exist',
+            'internet_nl_mail_auth_dmarc_exist',
+
+            # dashboard fields:
+            'internet_nl_mail_ipv6_mx_reach',
+            'internet_nl_mail_ipv6_ns_reach',
+            'internet_nl_mail_ipv6_ns_address',
+            'internet_nl_mail_ipv6_mx_address',
+            'internet_nl_mail_dnssec_mx_exist',
+            'internet_nl_mail_dnssec_mx_valid',
+            'internet_nl_mail_dnssec_mailto_valid',
+            'internet_nl_mail_dnssec_mailto_exist',
+            'internet_nl_mail_auth_spf_policy',
+            'internet_nl_mail_auth_dmarc_policy',
+            'internet_nl_mail_starttls_tls_keyexchange',
+            'internet_nl_mail_starttls_tls_compress',
+            'internet_nl_mail_starttls_cert_sig',
+            'internet_nl_mail_starttls_cert_pubkey',
+            'internet_nl_mail_starttls_dane_rollover',
+            'internet_nl_mail_starttls_tls_secreneg',
+            'internet_nl_mail_starttls_dane_exist',
+            'internet_nl_mail_starttls_dane_valid',
+            'internet_nl_mail_starttls_tls_ciphers',
+            'internet_nl_mail_starttls_tls_clientreneg',
+            'internet_nl_mail_starttls_cert_chain',
+            'internet_nl_mail_starttls_tls_version',
+            'internet_nl_mail_starttls_cert_domain',
+            'internet_nl_mail_dashboard_tls',
+            'internet_nl_mail_dashboard_auth',
+            'internet_nl_mail_dashboard_dnssec',
+            'internet_nl_mail_dashboard_ipv6',
+            'internet_nl_mail_dashboard_overall_score',
+
+            # Legacy fields used in dashboard:
+            'internet_nl_mail_legacy_dane',
+            'internet_nl_mail_legacy_tls_available',
+            'internet_nl_mail_legacy_spf',
+            'internet_nl_mail_legacy_dkim',
+            'internet_nl_mail_legacy_dmarc',
+            'internet_nl_mail_legacy_dnsssec_mailserver_domain',
+            'internet_nl_mail_legacy_dnssec_email_domain',
+            'internet_nl_mail_legacy_ipv6_mailserver',
+            'internet_nl_mail_legacy_ipv6_nameserver',
+        ]
+    },
+    {
+        'type': 'web',
+        'issues': [
+            'internet_nl_web_ipv6_ws_similar',
+
+            # used in dashboard
+            'internet_nl_web_ipv6_ws_address',
+            'internet_nl_web_ipv6_ns_reach',
+            'internet_nl_web_ipv6_ws_reach',
+            'internet_nl_web_ipv6_ns_address',
+            'internet_nl_web_dnssec_valid',
+            'internet_nl_web_dnssec_exist',
+            'internet_nl_web_https_tls_keyexchange',
+            'internet_nl_web_https_tls_compress',
+            'internet_nl_web_https_cert_sig',
+            'internet_nl_web_https_cert_pubkey',
+            'internet_nl_web_https_dane_valid',
+            'internet_nl_web_https_tls_secreneg',
+            'internet_nl_web_https_http_hsts',
+            'internet_nl_web_https_http_compress',
+            'internet_nl_web_https_dane_exist',
+            'internet_nl_web_https_http_available',
+            'internet_nl_web_https_tls_ciphers',
+            'internet_nl_web_https_tls_clientreneg',
+            'internet_nl_web_https_tls_version',
+            'internet_nl_web_https_cert_chain',
+            'internet_nl_web_https_http_redirect',
+            'internet_nl_web_https_cert_domain',
+            'internet_nl_web_tls',
+            'internet_nl_web_dnssec',
+            'internet_nl_web_ipv6',
+            'internet_nl_web_overall_score',
+
+            # Legacy fields, used in dashboard:
+            'internet_nl_web_legacy_dane',
+            'internet_nl_web_legacy_tls_ncsc_web',
+            'internet_nl_web_legacy_hsts',
+            'internet_nl_web_legacy_https_enforced',
+            'internet_nl_web_legacy_tls_available',
+            'internet_nl_web_legacy_ipv6_webserver',
+            'internet_nl_web_legacy_ipv6_nameserver'
+        ]
+    }
+]
+
 
 def compose_task(**kwargs) -> Task:
+    """
+    During scanning, both web and mail scans are triggered for everything. Suppose we change that, and make it possible
+    to only perform mail or web scans, we still have a problem. The advantage is that fewer scans run, which saves
+    everybody a lot of time. The disadvantage is, that when (for example) 'web' scans are disabled, old endpoints and
+    such will still be added to the report. This means old data is on the report.
+    At the same time, several lists can contain the url, and it might be totally fine to have those multiple endpoints.
+    So, we have to figure out a way to tell the reporting engine what kinds of vulnerabilities are used (instead of
+    all).
+    What 'is_allowed_to_report', is currently defined in settings. We're not going to change those settings per report,
+    as that would defeat the settings cache mechanism and because it's silly. We want to be able to influence that
+    method in another way. For example: first let that play out, and then tell what we want to have. This way the
+    settings still have precedence. The same url rating might also be used for different reports.
+    The only option is to filter on aggregation for the specific report for a list. Therefore
+    'aggegrate_url_rating_scores' (sic) contains a 'issue filter' option. This means that there will be multiple
+    reports for the same list. This is stored in the report field.
+
+    :param kwargs:
+    :return:
+    """
     urllists = UrlList.objects.filter()
     tasks = [rate_urllists_now.si([urllist]) for urllist in urllists]
     return group(tasks)
