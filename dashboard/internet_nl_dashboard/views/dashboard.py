@@ -1,9 +1,12 @@
 
 from django.contrib.auth.decorators import login_required
-from django.http import HttpResponse
+from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render
 
-from dashboard.internet_nl_dashboard.views import LOGIN_URL, inject_default_language_cookie
+from dashboard.internet_nl_dashboard.dashboard import get_recent_reports, get_report
+from dashboard.internet_nl_dashboard.views import (LOGIN_URL, get_account,
+                                                   inject_default_language_cookie)
+from websecmap.app.common import JSEncoder
 
 
 @login_required(login_url=LOGIN_URL)
@@ -14,3 +17,17 @@ def dashboard(request) -> HttpResponse:
     })
 
     return inject_default_language_cookie(request, response)
+
+
+@login_required(login_url=LOGIN_URL)
+def get_report_(request, report_id) -> JsonResponse:
+    account = get_account(request)
+    response = get_report(account, report_id)
+    return JsonResponse(response, encoder=JSEncoder, safe=False)
+
+
+@login_required(login_url=LOGIN_URL)
+def get_recent_reports_(request) -> JsonResponse:
+    account = get_account(request)
+    response = get_recent_reports(account)
+    return JsonResponse(response, encoder=JSEncoder, safe=False)

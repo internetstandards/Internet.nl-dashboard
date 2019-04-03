@@ -5,7 +5,6 @@ from dashboard.internet_nl_dashboard.views import (__init__, dashboard, powertoo
 
 urlpatterns = [
     path('', dashboard.dashboard),
-    path('dashboard/', dashboard.dashboard),
     path('powertools/', powertools.powertools),
     path('logout/', __init__.logout_view),
 
@@ -21,7 +20,12 @@ urlpatterns = [
     path('data/upload-history/', spreadsheet.upload_history),
 
     path('scan-monitor/', scan_monitor.scan_monitor),
-    path('data/scan-monitor/', scan_monitor.running_scans)
+    path('data/scan-monitor/', scan_monitor.running_scans),
+
+    # reporting
+    path('dashboard/', dashboard.dashboard),
+    path('data/report/get/<int:report_id>/', dashboard.get_report_),
+    path('data/report/recent/', dashboard.get_recent_reports_),
 
     # Would you enable the below login form, you will bypass all second factor authentication. Therefore do not enable
     # this url (!)

@@ -58,3 +58,6 @@ cryptography
 
 # add multiple urls separated with comma's.
 django-select2
+
+# report serialization:
+simplejson
