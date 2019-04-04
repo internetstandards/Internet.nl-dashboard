@@ -23,7 +23,7 @@ Todo: digitoegankelijk: how to select links with the keyboard? How can we make t
         <link rel="stylesheet" type="text/css" id="overrides" href="{% static 'css/overrides_dashboard.css' %}">
     {% endcompress %}
 
-    <!-- todo: bundle vue select, we're now using an external one from websecmap. -->
+    <!-- todo: correctly bindle moment with locales and vue js. -->
     <script type="text/javascript" src="{% static 'js/vendor/internet_nl/imagecheck-min.js' %}" defer="defer"></script>
     {% if debug %}
         <script type="text/javascript" src="{% static 'js/vendor/internet_nl/jquery-2.js' %}"></script>
@@ -33,7 +33,7 @@ Todo: digitoegankelijk: how to select links with the keyboard? How can we make t
         <script type="text/javascript" src="{% static 'js/vendor/moment-with-locales.js' %}" charset="UTF-8"></script>
         <script type="text/javascript" src="{% static 'js/vendor/dropzone@5.5.0/dropzone.js' %}"></script>
         <script type="text/javascript" src="{% static 'js/vendor/vue-i18n@8.9.0/vue-i18n.js' %}"></script>
-        <script type="text/javascript" src="{% static 'js/vendor/vue-select-2.6.0.js' %}"></script>
+        <script type="text/javascript" src="{% static 'js/vendor/vue-select@2.6.0/vue-select.js' %}"></script>
         <script type="text/javascript" src="{% static 'js/vendor/lodash@4.17.11/lodash.js' %}"></script>
     {% else %}{% compress js %}
         <script type="text/javascript" src="{% static 'js/vendor/internet_nl/jquery-2.js' %}"></script>
@@ -43,7 +43,7 @@ Todo: digitoegankelijk: how to select links with the keyboard? How can we make t
         <script type="text/javascript" src="{% static 'js/vendor/moment-with-locales.js' %}" charset="UTF-8"></script>
         <script type="text/javascript" src="{% static 'js/vendor/dropzone@5.5.0/dropzone.js' %}"></script>
         <script type="text/javascript" src="{% static 'js/vendor/vue-i18n@8.9.0/vue-i18n.js' %}"></script>
-        <script type="text/javascript" src="{% static 'js/vendor/vue-select-2.6.0.js' %}"></script>
+        <script type="text/javascript" src="{% static 'js/vendor/vue-select@2.6.0/vue-select.js' %}"></script>
         <script type="text/javascript" src="{% static 'js/vendor/lodash@4.17.11/lodash.js' %}"></script>
     {% endcompress %}{% endif %}
 
