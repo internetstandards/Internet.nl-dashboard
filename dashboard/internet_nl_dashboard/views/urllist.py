@@ -4,9 +4,9 @@ from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render
 
-from dashboard.internet_nl_dashboard.urllist_management import (create_list, get_urllist_content,
-                                                                get_urllists_from_account,
-                                                                save_urllist_content)
+from dashboard.internet_nl_dashboard.logic.urllist_management import (create_list, get_urllist_content,
+                                                                      get_urllists_from_account,
+                                                                      save_urllist_content)
 from dashboard.internet_nl_dashboard.views import (LOGIN_URL, get_account,
                                                    inject_default_language_cookie)
 from websecmap.app.common import JSEncoder

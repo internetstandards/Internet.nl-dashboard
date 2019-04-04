@@ -30,7 +30,7 @@ from django.db import transaction
 from xlrd import XLRDError
 
 from dashboard.internet_nl_dashboard.models import Account, DashboardUser, UploadLog
-from dashboard.internet_nl_dashboard.urllist_management import clean_urls, save_urllist_content
+from dashboard.internet_nl_dashboard.logic.urllist_management import clean_urls, save_urllist_content
 
 log = logging.getLogger(__package__)
 

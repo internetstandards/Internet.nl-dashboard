@@ -8,8 +8,8 @@ from datetime import datetime
 import pytz
 
 from dashboard.internet_nl_dashboard.models import Account, UrlListReport
-from dashboard.internet_nl_dashboard.urllist_dashboard_report import rate_urllists_now
-from dashboard.internet_nl_dashboard.urllist_management import create_list
+from dashboard.internet_nl_dashboard.logic.urllist_dashboard_report import rate_urllists_now
+from dashboard.internet_nl_dashboard.logic.urllist_management import create_list
 from websecmap.organizations.models import Url
 from websecmap.reporting.models import UrlReport
 from websecmap.reporting.report import create_timeline, create_url_report
