@@ -25,7 +25,10 @@ def convert_internet_nl_content_to_vue():
     done: download the file from the remote location
     done: how to share i18n objects within vue from different sources? Can just be called using the path...
           So you can just in your own i18n reuse previously defined translations.
-    todo: how to dynamically support multiple languages? And how does the i18n object doesn't become insanely big?
+    done: how to dynamically support multiple languages? And how does the i18n object doesn't become insanely big?
+          -> just load them into the same file. The language file for NL and EN is now 300 kb and will grow 150 kb
+          per language. There will be a moment when it's just too much and languages need to be loaded dynamically.
+          For now there is no option to do that yet.
     todo: should we merge all translation files into one? probably...
 
     :return: None
@@ -38,9 +41,13 @@ def convert_internet_nl_content_to_vue():
         structured_content = load_as_po_file(raw_content)
         translated_locales.append({'locale': locale, 'content': structured_content})
 
+        # support a per-language kind of file, in case we're going to do dynamic loading of languages.
+        vue_i18n_content = convert_vue_i18n_format([{'locale': locale, 'content': structured_content}])
+        store_vue_i18n_file(locale, vue_i18n_content)
+
     # the locales are easiest stored together. This makes language switching a lot easier.
     vue_i18n_content = convert_vue_i18n_format(translated_locales)
-    store_vue_i18n_file(vue_i18n_content)
+    store_vue_i18n_file('internet_nl', vue_i18n_content)
 
 
 def get_locale_content(locale: str) -> bytes:
@@ -141,7 +148,7 @@ def _vue_format_locale_end():
 
 
 def _vue_format_end():
-    return """}"""
+    return """};"""
 
 
 def _js_safe_msgid(text):
@@ -174,7 +181,7 @@ def _strip_simple_item(text, html_tag):
     return text
 
 
-def store_vue_i18n_file(content: str) -> None:
+def store_vue_i18n_file(filename: str, content: str) -> None:
     """
     Temporarily the files are stored at: ~/dashboard/internet_nl_dashboard/static/translation/[locale].vue until we
     know how the vue include system works.
@@ -184,7 +191,7 @@ def store_vue_i18n_file(content: str) -> None:
     :return:
     """
 
-    filepath = "%s%s.js" % (OUTPUT_PATH, 'internet_nl')
+    filepath = "%s%s.js" % (OUTPUT_PATH, filename)
 
     with open(filepath, 'w') as f:
         f.write(content)
