@@ -1,5 +1,5 @@
 import tempfile
-from typing import List
+from typing import List, Dict, Any
 
 import markdown
 import polib
@@ -31,11 +31,16 @@ def convert_internet_nl_content_to_vue():
     :return: None
     """
 
+    translated_locales: List[Dict[str, List[Any]]] = []
+
     for locale in SUPPORTED_LOCALES:
         raw_content = get_locale_content(locale)
         structured_content = load_as_po_file(raw_content)
-        vue_i18n_content = convert_vue_i18n_format(locale, structured_content)
-        store_vue_i18n_file(locale, vue_i18n_content)
+        translated_locales.append({'locale': locale, 'content': structured_content})
+
+    # the locales are easiest stored together. This makes language switching a lot easier.
+    vue_i18n_content = convert_vue_i18n_format(translated_locales)
+    store_vue_i18n_file(vue_i18n_content)
 
 
 def get_locale_content(locale: str) -> bytes:
@@ -58,7 +63,7 @@ def get_locale_content(locale: str) -> bytes:
     return response.content
 
 
-def load_as_po_file(raw_content: bytes) -> List[polib.POEntry]:
+def load_as_po_file(raw_content: bytes) -> List[Any]:
     """
     The POfile library requires a file to exist, so we create a temporary one that will be read and parsed.
     The parsed content will be returned.
@@ -75,7 +80,7 @@ def load_as_po_file(raw_content: bytes) -> List[polib.POEntry]:
         return polib.pofile(f.name)
 
 
-def convert_vue_i18n_format(locale: str, structured_content: List[polib.POEntry]) -> str:
+def convert_vue_i18n_format(translated_locales: List[Dict[str, List[Any]]]) -> str:
     """
     todo: will markdown be parsed to html in this method? Or should we do that on the fly, everywhere...
           It seems the logical place will be to parse it here. Otherwise the rest of the application becomes more
@@ -105,22 +110,38 @@ def convert_vue_i18n_format(locale: str, structured_content: List[polib.POEntry]
     :return:
     """
 
-    content = """
-const internet_nl_messages = {
-    %s: {
+    content = _vue_format_start()
+    for item in translated_locales:
+        content += _vue_format_locale_start(item['locale'])
+
+        for entry in item['content']:
+            content += "            %s: '%s'," % (_js_safe_msgid(entry.msgid),
+                                                  _js_safe_msgstr(entry.msgstr)) + '\n'
+        content += _vue_format_locale_end()
+    content += _vue_format_end()
+
+    return content
+
+
+def _vue_format_start():
+    return """const internet_nl_messages = {
+"""
+
+
+def _vue_format_locale_start(locale):
+    return """    %s: {
         internet_nl: {
 """ % locale
 
-    for entry in structured_content:
-        content += "            %s: '%s'," % (_js_safe_msgid(entry.msgid),
-                                              _js_safe_msgstr(entry.msgstr)) + '\n'
 
-    content += """        },
+def _vue_format_locale_end():
+    return """        },
     },
-}
 """
 
-    return content
+
+def _vue_format_end():
+    return """}"""
 
 
 def _js_safe_msgid(text):
@@ -153,7 +174,7 @@ def _strip_simple_item(text, html_tag):
     return text
 
 
-def store_vue_i18n_file(locale: str, content: str) -> None:
+def store_vue_i18n_file(content: str) -> None:
     """
     Temporarily the files are stored at: ~/dashboard/internet_nl_dashboard/static/translation/[locale].vue until we
     know how the vue include system works.
@@ -163,7 +184,7 @@ def store_vue_i18n_file(locale: str, content: str) -> None:
     :return:
     """
 
-    filepath = "%s%s.vue" % (OUTPUT_PATH, locale)
+    filepath = "%s%s.js" % (OUTPUT_PATH, 'internet_nl')
 
     with open(filepath, 'w') as f:
         f.write(content)
