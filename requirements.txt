@@ -61,3 +61,6 @@ django-select2
 
 # report serialization:
 simplejson
+
+# using internet.nl translations into this project
+polib

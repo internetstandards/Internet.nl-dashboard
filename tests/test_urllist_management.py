@@ -3,12 +3,12 @@ These testcases help to validate the working of the listmanagement API.
 
 Run these tests with tox -e test -- -k test_urllist_management
 """
-from dashboard.internet_nl_dashboard.models import Account
 from dashboard.internet_nl_dashboard.logic.urllist_management import (create_list, delete_list,
                                                                       delete_url_from_urllist,
                                                                       get_urllist_content,
                                                                       get_urllists_from_account,
                                                                       save_urllist_content)
+from dashboard.internet_nl_dashboard.models import Account
 
 
 def test_urllists(db) -> None:
