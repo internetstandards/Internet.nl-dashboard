@@ -32,7 +32,7 @@ def test_per_acount_scanner(db) -> None:
     ep.save()
 
     # create an url list for this account:
-    urllist, created = UrlList.objects.all().get_or_create(name='test', account=account)
+    urllist, created = UrlList.objects.all().get_or_create(name='test', account=account, scan_type='web')
 
     for url in urls:
         urllist.urls.add(url)
@@ -41,8 +41,8 @@ def test_per_acount_scanner(db) -> None:
     # When filtering for an existing account, as created above, there should be two tasks created.
     filters = {'account_filters': {'name': 'test'}}
     scan_tasks = compose_task(**filters)
-    # two tasks: one for mail_dashboard, one for web
-    assert len(scan_tasks.kwargs.get('tasks')) == 2
+    # two tasks: one for mail_dashboard, one for web, no type delivers one task but no content (should improve test).
+    assert len(scan_tasks.kwargs.get('tasks')) == 1
 
     # This should not result in any scans, as the account does not exist, an empty group is returned.
     filters = {'account_filters': {'name': 'not existing'}}

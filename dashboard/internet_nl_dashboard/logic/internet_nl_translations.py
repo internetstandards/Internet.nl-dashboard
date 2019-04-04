@@ -1,5 +1,5 @@
 import tempfile
-from typing import List, Dict, Any
+from typing import Any, Dict, List
 
 import markdown
 import polib
@@ -29,7 +29,12 @@ def convert_internet_nl_content_to_vue():
           -> just load them into the same file. The language file for NL and EN is now 300 kb and will grow 150 kb
           per language. There will be a moment when it's just too much and languages need to be loaded dynamically.
           For now there is no option to do that yet.
-    todo: should we merge all translation files into one? probably...
+    done: should we merge all translation files into one? probably... -> yes, this is now happening and it
+          doesn't scale. All languages are also saved separately. It's not clear how to dynamically load them.
+          Up until 1 MB of languages is probably fine.
+    done: Remove some of the larger variables we're not going to use anyway (we can just point to internet.nl for that
+          content). This saves about 50 kilobyte per language. Each language is now about 100kb with relevant content.
+    todo: how to load languages dynamically in vue i18s? Could there be a callback or something?
 
     :return: None
     """
@@ -89,7 +94,7 @@ def load_as_po_file(raw_content: bytes) -> List[Any]:
 
 def convert_vue_i18n_format(translated_locales: List[Dict[str, List[Any]]]) -> str:
     """
-    todo: will markdown be parsed to html in this method? Or should we do that on the fly, everywhere...
+    done: will markdown be parsed to html in this method? Or should we do that on the fly, everywhere...
           It seems the logical place will be to parse it here. Otherwise the rest of the application becomes more
           complex. Using markdown will have the benefit of the output being a single html string with proper
           formatting.
@@ -112,8 +117,7 @@ def convert_vue_i18n_format(translated_locales: List[Dict[str, List[Any]]]) -> s
 
     There is a slight challenge that translations in vue are based on javascript properties, meaning, no quotes.
 
-    :param locale:
-    :param structured_content:
+    :param translated_locales: List that holds a dict with the locale name, and the associated content.
     :return:
     """
 
@@ -122,6 +126,11 @@ def convert_vue_i18n_format(translated_locales: List[Dict[str, List[Any]]]) -> s
         content += _vue_format_locale_start(item['locale'])
 
         for entry in item['content']:
+            # to save a boatload of data, we're not storing the 'content' from the pages of internet.nl
+            # we'll just have to point to this content.
+            if entry.msgid.endswith('content'):
+                continue
+
             content += "            %s: '%s'," % (_js_safe_msgid(entry.msgid),
                                                   _js_safe_msgstr(entry.msgstr)) + '\n'
         content += _vue_format_locale_end()
@@ -186,7 +195,7 @@ def store_vue_i18n_file(filename: str, content: str) -> None:
     Temporarily the files are stored at: ~/dashboard/internet_nl_dashboard/static/translation/[locale].vue until we
     know how the vue include system works.
 
-    :param locale:
+    :param filename:
     :param content:
     :return:
     """
