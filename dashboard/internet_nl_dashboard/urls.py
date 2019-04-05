@@ -1,7 +1,22 @@
-from django.urls import path
+from django.urls import path, register_converter
 
-from dashboard.internet_nl_dashboard.views import (__init__, dashboard, powertools, scan_monitor,
-                                                   spreadsheet, urllist)
+from dashboard.internet_nl_dashboard.views import (__init__, dashboard, download_spreadsheet,
+                                                   powertools, scan_monitor, spreadsheet, urllist)
+
+
+class SpreadsheetFileTypeConverter:
+    # Supports {"key": "value", "key2": "value2"} syntax.
+    regex = '(xlsx|ods|csv)'
+
+    def to_python(self, value):
+        return str(value)
+
+    def to_url(self, value):
+        return '%s' % value
+
+
+register_converter(SpreadsheetFileTypeConverter, 'spreadsheet_filetype')
+
 
 urlpatterns = [
     path('', dashboard.dashboard),
@@ -26,6 +41,8 @@ urlpatterns = [
     path('dashboard/', dashboard.dashboard),
     path('data/report/get/<int:report_id>/', dashboard.get_report_),
     path('data/report/recent/', dashboard.get_recent_reports_),
+    path('data/download-spreadsheet/<int:report_id>/<spreadsheet_filetype:file_type>/',
+         download_spreadsheet.download_spreadsheet)
 
     # Would you enable the below login form, you will bypass all second factor authentication. Therefore do not enable
     # this url (!)

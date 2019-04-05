@@ -25,8 +25,17 @@ th.rotate > div > span {
         <h2>Select Report</h2>
         <v-select v-model="selected_report" :options="available_recent_reports"></v-select>
 
+        <div id="download" v-if="selected_report.value">
+            Download as:
+            <ul>
+            <li><a :href="'/data/download-spreadsheet/' + selected_report.value.report + '/xlsx/'">Excel Spreadsheet (Microsoft Office), .xlsx</a></li>
+            <li><a :href="'/data/download-spreadsheet/' + selected_report.value.report + '/ods/'">Open Document Spreadsheet (Libre Office), .ods</a></li>
+            <li><a :href="'/data/download-spreadsheet/' + selected_report.value.report + '/csv/'">Comma Separated (for programmers), .csv</a></li>
+            </ul>
+        </div>
 
-        <h2>Column Visbility Filters</h2>
+
+        <h2 v-if="selected_report.value">Column Visbility Filters</h2>
         <div v-for="(category_group, category_name, y) in categories" v-if="is_relevant_category(category_name)" style="width: 50%; float: left;">
             <h3><input type="checkbox" v-model='issue_filters[category_name]["visible"]'> {{ $t("dashboard." + category_name) }}</h3>
             <span v-for="category_name in category_group">
@@ -39,10 +48,11 @@ th.rotate > div > span {
         <span v-if="selected_category" @click="select_category('')">Remove filter: {{ $t("dashboard." + selected_category) }}</span>
         <span v-if="!selected_category">&nbsp;</span>
 
-
+        <div v-if="selected_report.value">
         <label for="url_filter">Url filter:</label><input type="text" v-model="url_filter" id="url_filter">
         <br><br><br><br>
-        <h2>Report</h2>
+        </div>
+        <h2 v-if="filtered_urls.length">Report</h2>
         <div>
             <table v-if="filtered_urls.length">
                 <tr>
