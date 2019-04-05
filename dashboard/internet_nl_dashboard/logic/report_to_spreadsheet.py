@@ -12,12 +12,13 @@ from dashboard.internet_nl_dashboard.models import Account, UrlListReport
 Creates spreadsheets containing report data.
 
 Done: make sure the columns are in a custom order. Columns are defined in scanners. The order of the columns isn't.
-Todo: make sure you can download the spreadsheet in a single click
-Todo: add a sane logic to the spreadsheet content
-Todo: support ods and xlsx.
+Done: make sure you can download the spreadsheet in a single click
+Done: add a sane logic to the spreadsheet content
+Done: support ods and xlsx.
+Done: can we support sum rows at the top for boolean values(?), only for excel. Not for ods, which is too bad.
 
-Todo: get column translations. From internet.nl PO files?
-Todo: can we support sum rows at the top for boolean values(?)
+Todo: get column translations. From internet.nl PO files? How do they map to these variables?
+Todo: write some tests for these methods, once they are more table.
 """
 
 log = logging.getLogger(__package__)
@@ -160,11 +161,13 @@ def create_spreadsheet(account: Account, report_id: int):
 
     # results is a matrix / 2-d array / array with arrays.
     data: List[List[Any]] = []
-    # todo: functions are not supported in ods, which makes the output look terrible... Should we omit this?
-    data += [formula_row(protocol=protocol, function="=COUNTA(%(column_name)s8:%(column_name)s9999)")]
-    data += [formula_row(protocol=protocol, function="=COUNTIF(%(column_name)s8:%(column_name)s9999,1)")]
-    data += [formula_row(protocol=protocol, function="=COUNTIF(%(column_name)s8:%(column_name)s9999,0)")]
-    data += [formula_row(protocol=protocol, function="=COUNTIF(%(column_name)s8:%(column_name)s9999,\"?\")")]
+    # done: functions are not supported in ods, which makes the output look terrible... Should we omit this?
+    # omitted, as it gives inconsistent results. Kept code to re-use it if there is a workaround for ods / or we
+    # know this is an ods file.
+    # data += [formula_row(protocol=protocol, function="=COUNTA(%(column_name)s8:%(column_name)s9999)")]
+    # data += [formula_row(protocol=protocol, function="=COUNTIF(%(column_name)s8:%(column_name)s9999,1)")]
+    # data += [formula_row(protocol=protocol, function="=COUNTIF(%(column_name)s8:%(column_name)s9999,0)")]
+    # data += [formula_row(protocol=protocol, function="=COUNTIF(%(column_name)s8:%(column_name)s9999,\"?\")")]
     # add an empty row for clarity
     data += [[]]
     data += [category_headers('dns_soa')]
@@ -183,7 +186,7 @@ def create_spreadsheet(account: Account, report_id: int):
 
 
 def category_headers(protocol: str = 'dns_soa'):
-    headers = ['', '', '', '', '']
+    headers: List[str] = ['', '', '', '', '']
     for group in SANE_COLUMN_ORDER[protocol]:
         headers += [group]
 
@@ -268,7 +271,7 @@ def keyed_values_as_boolean(keyed_ratings: Dict[str, Any], protocol: str = 'dns_
             # the issue name might not exist, the 'ok' value might not exist. In those cases replace it with a ?
             values.append(keyed_ratings.get(issue_name, {'ok': '?'}).get('ok', '?'))
 
-            # add empty thing after each group to make distinction per group clearer
+        # add empty thing after each group to make distinction per group clearer
         values += ['']
 
     return values

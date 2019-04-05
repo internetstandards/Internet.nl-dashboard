@@ -8,8 +8,10 @@ from dashboard.internet_nl_dashboard.models import Account, UrlList, UrlListRepo
 # todo: this delivers a very slow report. make it faster.
 def get_recent_reports(account: Account) -> List:
 
-    reports = UrlListReport.objects.all().filter(urllist__account=account).order_by('-pk')[0:30].select_related(
-        'urllist')
+    # loading the calculation takes some time. In this case we don't need the calculation and as such we defer it.
+    reports = UrlListReport.objects.all().filter(
+        urllist__account=account).order_by('-pk')[0:30].select_related(
+        'urllist').defer('calculation')
 
     return create_report_response(reports)
 
