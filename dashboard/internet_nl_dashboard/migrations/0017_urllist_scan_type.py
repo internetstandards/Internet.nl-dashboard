@@ -13,6 +13,6 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='urllist',
             name='scan_type',
-            field=models.CharField(choices=[('web', 'web'), ('mail', 'mail')], default='web', max_length=2),
+            field=models.CharField(choices=[('web', 'web'), ('mail', 'mail')], default='web', max_length=4),
         ),
     ]
