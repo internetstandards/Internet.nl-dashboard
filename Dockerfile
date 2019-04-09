@@ -34,4 +34,4 @@ EXPOSE 8000
 
 ENTRYPOINT [ "/usr/local/bin/dashboard" ]
 
-CMD [ "runuwsgi" ]
+CMD [ "dashboard_prdserver" ]

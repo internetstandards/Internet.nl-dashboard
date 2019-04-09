@@ -26,13 +26,11 @@ SETTINGS_PATH = os.path.normpath(os.path.dirname(__file__))
 # See https://docs.djangoproject.com/en/2.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = '_dzlo^9d#ox6!7c9rju@=u8+4^sprqocy3s*l*ejc2yr34@&98'
+# The routine validate_keys_are_changed is run in production and will prevent the default keys to be used.
+SECRET_KEY: str = os.environ.get('SECRET_KEY', '_dzlo^9d#ox6!7c9rju@=u8+4^sprqocy3s*l*ejc2yr34@&98')
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.environ.get('DEBUG', False)
-
-if not DEBUG and SECRET_KEY == os.environ.get('SECRET_KEY', '_dzlo^9d#ox6!7c9rju@=u8+4^sprqocy3s*l*ejc2yr34@&98'):
-    raise ValueError('SECRET_KEY contains a debugging value. Set a sane secret key')
 
 ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', 'localhost,127.0.0.1,::1').split(',')
 
@@ -241,13 +239,9 @@ TWO_FACTOR_PATCH_ADMIN = True
 IMPORTED_FIELD_ENCRYPTION_KEY: str = os.environ.get('FIELD_ENCRYPTION_KEY',
                                                     "b'JjvHNnFMfEaGd7Y0SAHBRNZYGGpNs7ydEp-ixmKSvkQ='")
 
-if not DEBUG and IMPORTED_FIELD_ENCRYPTION_KEY == "b'JjvHNnFMfEaGd7Y0SAHBRNZYGGpNs7ydEp-ixmKSvkQ='":
-    raise ValueError('FIELD_ENCRYPTION_KEY has to be configured on the OS level, and needs to be different than the '
-                     'default key provided. Please create a new key. Instructions are listed here:'
-                     'https://github.com/pyca/cryptography. In short, run: key = Fernet.generate_key()')
-
 # The encryption key under ENV variables can only be stored as a string. This means we'll have to parse it
 # to bytes. This is done in an interesting way, which works.
+# The routine validate_keys_are_changed is run in production and will prevent the default keys to be used.
 FIELD_ENCRYPTION_KEY: bytes = IMPORTED_FIELD_ENCRYPTION_KEY[2:len(IMPORTED_FIELD_ENCRYPTION_KEY)-1].encode()
 
 
