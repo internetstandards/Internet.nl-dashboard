@@ -234,15 +234,24 @@ TWO_FACTOR_QR_FACTORY = 'qrcode.image.pil.PilImage'
 TWO_FACTOR_TOTP_DIGITS = 6
 TWO_FACTOR_PATCH_ADMIN = True
 
-# Encrypted fields
-# Note that this key is not stored in the database. As... well if you have the database, you have the key.
-IMPORTED_FIELD_ENCRYPTION_KEY: str = os.environ.get('FIELD_ENCRYPTION_KEY',
-                                                    "b'JjvHNnFMfEaGd7Y0SAHBRNZYGGpNs7ydEp-ixmKSvkQ='")
 
-# The encryption key under ENV variables can only be stored as a string. This means we'll have to parse it
-# to bytes. This is done in an interesting way, which works.
+# Encrypted fields
+# Note that this key is not stored in the database, that would be a security risk.
+# The key can be generated with the following routine:
+# https://cryptography.io/en/latest/fernet/
+# from cryptography.fernet import Fernet
+# Fernet.generate_key()
+# Make sure you remove the b' and ' from the string, so you're working with a string.
+# For example: b'JjvHNnFMfEaGd7Y0SAHBRNZYGGpNs7ydEp-ixmKSvkQ=' becomes
+# JjvHNnFMfEaGd7Y0SAHBRNZYGGpNs7ydEp-ixmKSvkQ=
+# Also note that on the production server a different key is required, otherwise the server will not start.
+# See dashboard_prdserver for more details.
 # The routine validate_keys_are_changed is run in production and will prevent the default keys to be used.
-FIELD_ENCRYPTION_KEY: bytes = IMPORTED_FIELD_ENCRYPTION_KEY[2:len(IMPORTED_FIELD_ENCRYPTION_KEY)-1].encode()
+IMPORTED_FIELD_ENCRYPTION_KEY: str = os.environ.get('FIELD_ENCRYPTION_KEY',
+                                                    "JjvHNnFMfEaGd7Y0SAHBRNZYGGpNs7ydEp-ixmKSvkQ=")
+
+# The encryption key under ENV variables can only be stored as a string. This means we'll have to parse it to bytes.
+FIELD_ENCRYPTION_KEY: bytes = IMPORTED_FIELD_ENCRYPTION_KEY.encode()
 
 
 LOGGING = {
