@@ -5,6 +5,7 @@ workflow "Release" {
     "check",
     "test",
     "test image",
+    "test integration"
   ]
 }
 
@@ -41,7 +42,7 @@ action "compose" {
   runs = ["/bin/sh", "-c", "pip install docker-compose; docker-compose up"]
 }
 
-action "integration test" {
+action "test integration" {
   needs = ["compose"]
   uses = "actions/docker/sh@master"
   args = "curl -sS http://localhost:8000/|grep MSPAINT"
