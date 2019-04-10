@@ -1,0 +1,6 @@
+# ignore git, caches and such
+.*
+# don't invalidate cache when Dockerfile changes
+Dockerfile
+*.sqlite3
+!.pip-cache/
