@@ -34,3 +34,15 @@ action "test image" {
   uses = "actions/docker/cli@master"
   args = "run dashboard help"
 }
+
+action "compose" {
+  needs = ["test image"]
+  uses = "docker://python:3.6"
+  runs = ["/bin/sh", "-c", "pip install docker-compose; docker-compose up"]
+}
+
+action "integration test" {
+  needs = ["compose"]
+  uses = "actions/docker/sh@master"
+  args = "curl -sS http://localhost:8000/|grep MSPAINT"
+}
