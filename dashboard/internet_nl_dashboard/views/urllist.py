@@ -3,6 +3,7 @@ from typing import List
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render
+from websecmap.app.common import JSEncoder
 
 from dashboard.internet_nl_dashboard.logic.urllist_management import (create_list,
                                                                       get_urllist_content,
@@ -10,7 +11,6 @@ from dashboard.internet_nl_dashboard.logic.urllist_management import (create_lis
                                                                       save_urllist_content)
 from dashboard.internet_nl_dashboard.views import (LOGIN_URL, get_account,
                                                    inject_default_language_cookie)
-from websecmap.app.common import JSEncoder
 
 
 @login_required(login_url=LOGIN_URL)

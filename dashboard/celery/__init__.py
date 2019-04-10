@@ -14,7 +14,6 @@ import time
 import flower.utils.broker
 from celery import Celery, Task
 from django.conf import settings
-
 from websecmap.celery.worker import QUEUES_MATCHING_ROLES
 
 log = logging.getLogger(__package__)

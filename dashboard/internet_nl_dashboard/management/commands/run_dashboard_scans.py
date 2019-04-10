@@ -1,7 +1,8 @@
 import logging
 
-from dashboard.internet_nl_dashboard.scanners import scan_internet_nl_per_account
 from websecmap.app.management.commands._private import ScannerTaskCommand
+
+from dashboard.internet_nl_dashboard.scanners import scan_internet_nl_per_account
 
 log = logging.getLogger(__name__)
 

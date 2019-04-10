@@ -15,13 +15,13 @@ from django_celery_beat.models import CrontabSchedule, PeriodicTask
 from import_export import resources
 from import_export.admin import ImportExportModelAdmin
 from jet.admin import CompactInline
+from websecmap.organizations.models import Url
+from websecmap.scanners.models import Endpoint
 
 from dashboard.internet_nl_dashboard import models
 from dashboard.internet_nl_dashboard.forms import CustomAccountModelForm
 from dashboard.internet_nl_dashboard.models import (Account, AccountInternetNLScan, DashboardUser,
                                                     UploadLog, UrlList)
-from websecmap.organizations.models import Url
-from websecmap.scanners.models import Endpoint
 
 log = logging.getLogger(__package__)
 
