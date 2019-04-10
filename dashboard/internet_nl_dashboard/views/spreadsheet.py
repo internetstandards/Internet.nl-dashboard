@@ -5,12 +5,12 @@ from django.contrib.auth.decorators import login_required
 from django.core.files.storage import FileSystemStorage
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render
-from websecmap.app.common import JSEncoder
 
 from dashboard.internet_nl_dashboard.logic.spreadsheet import complete_import, get_upload_history
 from dashboard.internet_nl_dashboard.views.__init__ import (LOGIN_URL, get_account,
                                                             get_dashboarduser,
                                                             inject_default_language_cookie)
+from websecmap.app.common import JSEncoder
 
 log = logging.getLogger(__package__)
 

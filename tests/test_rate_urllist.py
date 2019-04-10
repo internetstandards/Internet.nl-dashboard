@@ -8,17 +8,14 @@ from datetime import datetime
 import pytz
 
 import websecmap
-
+from dashboard.internet_nl_dashboard.logic.urllist_dashboard_report import rate_urllists_now
+from dashboard.internet_nl_dashboard.logic.urllist_management import create_list
+from dashboard.internet_nl_dashboard.models import Account, UrlListReport
 from websecmap.organizations.models import Url
 from websecmap.reporting.models import UrlReport
 from websecmap.reporting.report import create_timeline, create_url_report
 from websecmap.scanners import ALL_SCAN_TYPES
 from websecmap.scanners.models import Endpoint, EndpointGenericScan
-
-
-from dashboard.internet_nl_dashboard.logic.urllist_dashboard_report import rate_urllists_now
-from dashboard.internet_nl_dashboard.logic.urllist_management import create_list
-from dashboard.internet_nl_dashboard.models import Account, UrlListReport
 
 # mock get_allowed_to_report as constance tries to connect to redis.
 

@@ -2,10 +2,10 @@ from typing import Any, Dict, List, Tuple
 
 from django.db.models import Prefetch
 from tldextract import tldextract
-from websecmap.organizations.models import Url
-from websecmap.scanners.models import Endpoint
 
 from dashboard.internet_nl_dashboard.models import Account, UrlList
+from websecmap.organizations.models import Url
+from websecmap.scanners.models import Endpoint
 
 
 def get_urllists_from_account(account: Account) -> List:

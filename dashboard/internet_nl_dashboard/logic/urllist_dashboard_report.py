@@ -6,12 +6,12 @@ from typing import List, Set
 import pytz
 from celery import group
 from deepdiff import DeepDiff
+
+from dashboard.internet_nl_dashboard.models import UrlList, UrlListReport
 from websecmap.celery import Task, app
 from websecmap.organizations.models import Url
 from websecmap.reporting.report import (aggegrate_url_rating_scores, get_latest_urlratings_fast,
                                         relevant_urls_at_timepoint)
-
-from dashboard.internet_nl_dashboard.models import UrlList, UrlListReport
 
 log = logging.getLogger(__package__)
 

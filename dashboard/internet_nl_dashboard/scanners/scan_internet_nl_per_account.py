@@ -2,15 +2,15 @@ import logging
 from typing import List
 
 from celery import Task, group
+
+from dashboard.celery import app
+from dashboard.internet_nl_dashboard.models import Account, AccountInternetNLScan, UrlList
 from websecmap.organizations.models import Url
 from websecmap.scanners.models import InternetNLScan
 from websecmap.scanners.scanner import add_model_filter
 from websecmap.scanners.scanner.dns_endpoints import compose_discover_task
 from websecmap.scanners.scanner.internet_nl_mail import (get_scan_status,
                                                          handle_running_scan_reponse, register_scan)
-
-from dashboard.celery import app
-from dashboard.internet_nl_dashboard.models import Account, AccountInternetNLScan, UrlList
 
 # done: create more flexible filters
 # done: map mail scans to an endpoint (changed the scanner for it)

@@ -4,10 +4,10 @@ from typing import List
 
 import pytz
 from celery import group
-from websecmap.celery import Task, app
-from websecmap.pro.urllist_report import rate_urllist_on_moment
 
 from dashboard.internet_nl_dashboard.models import UrlList, UrlListReport
+from websecmap.celery import Task, app
+from websecmap.pro.urllist_report import rate_urllist_on_moment
 
 log = logging.getLogger(__package__)
 

@@ -2,11 +2,11 @@
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render
-from websecmap.app.common import JSEncoder
 
 from dashboard.internet_nl_dashboard.logic.dashboard import get_recent_reports, get_report
 from dashboard.internet_nl_dashboard.views import (LOGIN_URL, get_account,
                                                    inject_default_language_cookie)
+from websecmap.app.common import JSEncoder
 
 
 @login_required(login_url=LOGIN_URL)
