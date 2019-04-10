@@ -6,6 +6,8 @@ services:
       POSTGRES_DB: dashboard
       POSTGRES_USER: dashboard
       POSTGRES_PASSWORD: dashboard
+  broker:
+    image: redis
   frontend:
     build: .
     ports:
@@ -16,6 +18,7 @@ services:
       DJANGO_DATABASE: production
       DB_ENGINE: postgresql_psycopg2
       DB_HOST: db
+      BROKER: redis://broker:6379/0
   migrate:
     build: .
     restart: on-failure

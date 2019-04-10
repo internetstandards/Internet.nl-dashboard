@@ -17,7 +17,6 @@ django-extensions
 django-debug-toolbar
 django-debug-toolbar-request-history
 pytest-mock
-pytest-docker
 # simple type checking
 mypy
 # and the stubs so that all django constructs are not instantly rejected
