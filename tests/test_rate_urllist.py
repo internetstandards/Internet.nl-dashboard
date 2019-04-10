@@ -6,17 +6,28 @@ Run these tests with tox -e test -- -k test_urllist_management
 from datetime import datetime
 
 import pytz
+
+import websecmap
+
 from websecmap.organizations.models import Url
 from websecmap.reporting.models import UrlReport
 from websecmap.reporting.report import create_timeline, create_url_report
+from websecmap.scanners import ALL_SCAN_TYPES
 from websecmap.scanners.models import Endpoint, EndpointGenericScan
+
 
 from dashboard.internet_nl_dashboard.logic.urllist_dashboard_report import rate_urllists_now
 from dashboard.internet_nl_dashboard.logic.urllist_management import create_list
 from dashboard.internet_nl_dashboard.models import Account, UrlListReport
 
+# mock get_allowed_to_report as constance tries to connect to redis.
 
-def test_rate_urllists(db) -> None:
+
+def test_rate_urllists(db, monkeypatch) -> None:
+
+    # report everything and don't contact redis for constance values.
+    monkeypatch.setattr(websecmap.reporting.report, 'get_allowed_to_report', lambda: ALL_SCAN_TYPES)
+
     day_0 = datetime(day=1, month=1, year=2000, tzinfo=pytz.utc)
     day_1 = datetime(day=2, month=1, year=2000, tzinfo=pytz.utc)
 
