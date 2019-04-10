@@ -27,3 +27,5 @@ django-stubs
 git+https://github.com/gorakhargosh/watchdog.git@d33bee0290e00ecb3570dd938db72a2550933586#egg=watchdog
 
 ipython  # websecmap shell -i ipython
+
+docker-compose
