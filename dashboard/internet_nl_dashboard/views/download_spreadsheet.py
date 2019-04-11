@@ -4,10 +4,10 @@ import django_excel as excel
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse, JsonResponse
 from django.utils.text import slugify
+from websecmap.app.common import JSEncoder
 
 from dashboard.internet_nl_dashboard.logic.report_to_spreadsheet import create_spreadsheet
 from dashboard.internet_nl_dashboard.views.__init__ import LOGIN_URL, get_account
-from websecmap.app.common import JSEncoder
 
 log = logging.getLogger(__package__)
 

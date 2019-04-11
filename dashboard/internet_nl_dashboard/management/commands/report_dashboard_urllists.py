@@ -1,7 +1,8 @@
 import logging
 
-from dashboard.internet_nl_dashboard.logic import urllist_dashboard_report
 from websecmap.app.management.commands._private import ScannerTaskCommand
+
+from dashboard.internet_nl_dashboard.logic import urllist_dashboard_report
 
 log = logging.getLogger(__name__)
 
