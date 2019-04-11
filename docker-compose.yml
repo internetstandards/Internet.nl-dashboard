@@ -21,6 +21,7 @@ services:
       BROKER: redis://broker:6379/0
   migrate:
     build: .
+    image: internetstandards/dashboard
     restart: on-failure
     environment:
       SECRET_KEY: '1'

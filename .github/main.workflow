@@ -5,7 +5,8 @@ workflow "Release" {
     "check",
     "test",
     "test image",
-    "test integration"
+    "test integration",
+    "push image"
   ]
 }
 
@@ -27,13 +28,13 @@ action "test" {
 
 action "build image" {
   uses = "actions/docker/cli@master"
-  args = "build -t dashboard ."
+  args = "build -t internetstandards/dashboard ."
 }
 
 action "test image" {
   needs = ["build image"]
   uses = "actions/docker/cli@master"
-  args = "run dashboard help"
+  args = "run internetstandards/dashboard help"
 }
 
 action "compose" {
@@ -46,4 +47,10 @@ action "test integration" {
   needs = ["compose"]
   uses = "actions/docker/sh@master"
   args = "curl -sS http://localhost:8000/|grep MSPAINT"
+}
+
+action "push image" {
+  needs = ["test integration", "check", "test"]
+  uses = "actions/docker/cli@master"
+  args = "push internetstandards/dashboard"
 }
