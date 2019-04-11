@@ -49,8 +49,13 @@ action "test integration" {
   args = "curl -sS http://localhost:8000/|grep MSPAINT"
 }
 
+action "authenticate registry" {
+  uses = "actions/docker/login@master"
+  secrets = ["DOCKER_USERNAME", "DOCKER_PASSWORD"]
+}
+
 action "push image" {
-  needs = ["test integration", "check", "test"]
+  needs = ["test integration", "check", "test", "authenticate registry"]
   uses = "actions/docker/cli@master"
   args = "push internetstandards/dashboard"
 }
