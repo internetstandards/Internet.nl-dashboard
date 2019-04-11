@@ -31,6 +31,8 @@ SECRET_KEY: str = os.environ.get('SECRET_KEY', '_dzlo^9d#ox6!7c9rju@=u8+4^sprqoc
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.environ.get('DEBUG', False)
+if DEBUG:
+    print('Django debugging is enabled.')
 
 ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', 'localhost,127.0.0.1,::1').split(',')
 
@@ -218,7 +220,7 @@ STATIC_URL = '/static/'
 if DEBUG:
     STATIC_ROOT = 'static'
 else:
-    STATIC_ROOT = '/srv/dashboard/static/'  # noga
+    STATIC_ROOT = os.environ.get('STATIC_ROOT', '/srv/dashboard/static/')  # noqa
 
 
 MEDIA_ROOT = os.environ.get('MEDIA_ROOT', os.path.abspath(os.path.dirname(__file__)) + '/uploads/')
