@@ -1,6 +1,7 @@
 [
   {
     "model": "django_celery_beat.periodictask",
+    "pk": 100,
     "fields": {
       "name": "Run dashboard scans on internet.nl",
       "task": "websecmap.app.models.create_job",
@@ -25,6 +26,7 @@
   },
   {
     "model": "django_celery_beat.periodictask",
+    "pk": 101,
     "fields": {
       "name": "&#x1F501; Check running dashboard scans",
       "task": "websecmap.app.models.create_function_job",
