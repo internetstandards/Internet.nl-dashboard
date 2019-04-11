@@ -85,11 +85,17 @@ class Account(models.Model):
         if not self.internet_nl_api_password:
             raise ValueError('Password was not set.')
 
-        if not type(self.internet_nl_api_password) is bytes:
+        if type(self.internet_nl_api_password) not in [memoryview, bytes]:
             raise ValueError('Password was not encrypted, cannot retrieve unencrypted passwords. Encrypt it first.')
 
+        # postgres saves it as memoryview, sqlite as bytes.
+        if type(self.internet_nl_api_password) is memoryview:
+            password = bytes(self.internet_nl_api_password)
+        else:
+            password = self.internet_nl_api_password
+
         f = Fernet(settings.FIELD_ENCRYPTION_KEY)
-        return f.decrypt(self.internet_nl_api_password).decode('utf-8')
+        return f.decrypt(password).decode('utf-8')
 
     def __str__(self):
         return "%s" % self.name
