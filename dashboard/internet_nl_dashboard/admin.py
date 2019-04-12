@@ -297,7 +297,11 @@ class UrlListReportAdmin(ImportExportModelAdmin, admin.ModelAdmin):
                     'at_when', 'inspect_list')
     search_fields = (['at_when'])
     list_filter = ['urllist', 'at_when'][::-1]
-    fields = ('total_endpoints',
+    fields = ('urllist',
+              'at_when',
+              'calculation',
+
+              'total_endpoints',
               'total_issues',
 
               'high',
@@ -332,8 +336,7 @@ class UrlListReportAdmin(ImportExportModelAdmin, admin.ModelAdmin):
               'explained_endpoint_issues_high',
               'explained_endpoint_issues_medium',
               'explained_endpoint_issues_low',
-
-              'at_when', 'calculation')
+              )
 
     ordering = ["-at_when"]
 
