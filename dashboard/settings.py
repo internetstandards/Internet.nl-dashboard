@@ -433,7 +433,7 @@ COMPRESS_OFFLINE = not DEBUG
 # Enabled when debug is off by default.
 
 # Constance settings:
-
+CONSTANCE_BACKEND = 'constance.backends.database.DatabaseBackend'
 
 CONSTANCE_CONFIG = {
     'SCAN_AT_ALL': (
