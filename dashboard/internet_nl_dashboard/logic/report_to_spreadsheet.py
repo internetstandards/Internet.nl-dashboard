@@ -175,7 +175,7 @@ def create_spreadsheet(account: Account, report_id: int):
     data += urllistreport_to_spreadsheet_data(category_name=report.urllist.name, urls=urls, protocol=protocol)
 
     filename = "internet nl dashboard report %s %s %s %s" % (
-        report.pk, report.urllist.name, report.urllist.scan_type, report.when)
+        report.pk, report.urllist.name, report.urllist.scan_type, report.at_when)
 
     # The sheet is created into memory and then passed to the caller. They may save it, or serve it, etc...
     # http://docs.pyexcel.org/en/latest/tutorial06.html?highlight=memory

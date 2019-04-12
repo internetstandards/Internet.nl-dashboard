@@ -36,7 +36,7 @@ def create_report_response(reports):
             'type': report.urllist.scan_type,
             'number_of_urls': report.total_urls,
             'list_name': report.urllist.name,
-            'created_on': report.when,
+            'created_on': report.at_when,
         })
 
     return response

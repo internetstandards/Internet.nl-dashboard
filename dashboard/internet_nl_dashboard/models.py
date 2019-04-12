@@ -270,7 +270,7 @@ class UrlListReport(SeriesOfUrlsReportMixin):
     )
 
     class Meta:
-        get_latest_by = "when"
+        get_latest_by = "at_when"
         index_together = [
-            ["when", "id"],
+            ["at_when", "id"],
         ]
