@@ -1,6 +1,8 @@
 # dashboard-internet.nl
 Dashboard Internet.nl
 
+[![Actions Status](https://wdp9fww0r9.execute-api.us-west-2.amazonaws.com/production/badge/aequitas/Internet.nl-dashboard)](https://wdp9fww0r9.execute-api.us-west-2.amazonaws.com/production/results/aequitas/Internet.nl-dashboard)
+
 
 These instructions will help you set up a development version of the dashboard.
 
