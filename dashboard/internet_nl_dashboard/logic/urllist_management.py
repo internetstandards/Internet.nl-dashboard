@@ -51,7 +51,7 @@ def get_urllists_from_account(account: Account) -> List:
     return response
 
 
-def get_urllist_content(account: Account, urllist_name: str) -> dict:
+def get_urllist_content(account: Account, urllist_id: int) -> dict:
     """
     This will retrieve the contents of an urllist. The amount of urls can be in the thousands, and have to be displayed
     properly.
@@ -67,12 +67,12 @@ def get_urllist_content(account: Account, urllist_name: str) -> dict:
 
     urls = Url.objects.all().filter(
         urls_in_dashboard_list__account=account,
-        urls_in_dashboard_list__name=urllist_name
-    ).prefetch_related(prefetch).all()
+        urls_in_dashboard_list__id=urllist_id
+    ).order_by('url').prefetch_related(prefetch).all()
 
     """ It's very possible that the urrlist_id is not matching with the account. The query will just return
     nothing. Only of both matches it will return something we can work with. """
-    response: Dict[str, Any] = {'urllist_name': urllist_name, 'urls': []}
+    response: Dict[str, Any] = {'urllist_id': urllist_id, 'urls': []}
 
     """ This is just a simple iteration, all sorting and logic is placed in the vue as that is much more flexible. """
     for url in urls:

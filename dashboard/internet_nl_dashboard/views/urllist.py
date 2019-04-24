@@ -41,9 +41,9 @@ def create_list_(request, list_name: str) -> JsonResponse:
 
 
 @login_required(login_url=LOGIN_URL)
-def get_urllist_content_(request, urllist_name: str) -> JsonResponse:
+def get_urllist_content_(request, urllist_id: int) -> JsonResponse:
     account = get_account(request)
-    return JsonResponse(get_urllist_content(account=account, urllist_name=urllist_name), encoder=JSEncoder)
+    return JsonResponse(get_urllist_content(account=account, urllist_id=urllist_id), encoder=JSEncoder)
 
 
 @login_required(login_url=LOGIN_URL)

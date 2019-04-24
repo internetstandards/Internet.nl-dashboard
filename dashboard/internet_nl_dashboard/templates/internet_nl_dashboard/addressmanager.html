@@ -1,7 +1,13 @@
 {% extends 'internet_nl_dashboard/base.html' %}{% load humanize %}{% load i18n %}
+<!-- Todo: the input has to be a select2 type... when you paste a set of urls, it get parsed into
+    multiple separate urls. -->
+    <!-- Vue bootstrap for this table? -->
+    <!-- https://bootstrap-vue.js.org/docs/components/table -->
+    <!-- do we need undo options? -->
+    <!-- https://github.com/ArthurClemens/Javascript-Undo-Manager -->
+
 {% block content %}
 <div id="list_manager"></div>
-
 {% verbatim %}
 <!-- Todo: find nice edit component to inline edit. -->
 <script type="x-template" id="lists">
@@ -18,30 +24,60 @@
         <button>Create List</button>
 
         <h2>Lists</h2>
-        <template v-for="list in lists">
-            <h3 @click="get_list_content(list.name)" @dblclick="rename_list(list.id)">{{ list.name }} 🖊️</h3>
-            <button @click="get_list_content(list.name)" value="load">Show contents</button>
-            <button @click="get_list_content(list.name)" value="load">Delete list</button>
-            <!-- Todo: the input has to be a select2 type... when you paste a set of urls, it get parsed into
-            multiple separate urls. -->
-            <!-- Vue bootstrap for this table? -->
-            <!-- https://bootstrap-vue.js.org/docs/components/table -->
-            <!-- do we need undo options? -->
-            <!-- https://github.com/ArthurClemens/Javascript-Undo-Manager -->
-            <div v-if="has_items(list.name)">
-                <label for="add_url">Bulk add new:</label> <input id="add_url" type="text" name="add_url" placeholder="example.com, www.example.com, www.internet.nl, ...">
-                <div style="column-count: 2;">
-                    <div v-for="url in list_content[list.name]['urls']">
+        <managed-url-list v-for="list in lists" :initial_list="list"></managed-url-list>
 
-                        <span v-if="url.has_mail_endpoint">📨</span><span v-if="!url.has_mail_endpoint">🚫</span>
-                        <span v-if="url.has_web_endpoint">🌐</span><span v-if="!url.has_web_endpoint">🚫</span>
-                        {{ url.url }} <button type="button">Remove</button>
-                    </div>
+    </div>
+</script>
+
+<script type="x-template" id="managed-url-list">
+    <div>
+        <h3 @dblclick="rename_list(list.id)">
+            <button v-if="!has_urls()" @click="get_urls(list.id)" value="load">Open</button>
+            <button v-if="has_urls()" @click="close_list()" value="load">Close</button>
+            <span @click="get_urls(list.id)">{{ list.name }}</span> 🖊️
+        </h3>
+
+        <div v-if="has_urls()">
+            This list will scan: {{ list.scan_type }}
+
+            <button @click="get_urls(list.id)" value="load">Duplicate</button>
+            <button @click="get_urls(list.id)" value="load">Delete</button>
+
+            <div>
+                <label for="add_urls[]">Bulk add new:</label>
+                <select class="js-example-basic-multiple" name="add_urls[]" multiple="multiple" style="width: 100%"></select>
+            </div>
+
+            <div style="column-count: 2;">
+                <div v-for="url in urls">
+                    <span title="Edit this domain" @click="url_edit = 'edit_' + list.id + url.url">🖊</span>
+
+                    <span v-if="url.has_mail_endpoint" title="Is eligeble for e-mail scans">
+                        <a :href="'https://www.internet.nl/mail/' + url.url + '/'" target="_blank">📨</a>
+                    </span>
+                    <span v-if="!url.has_mail_endpoint" title="Is not eligeble for e-mail scans">🚫</span>
+                    <span v-if="url.has_web_endpoint" title="Is eligeble for web scans">
+                        <a :href="'https://www.internet.nl/site/' + url.url + '/'" target="_blank">🌐</a>
+                    </span>
+                    <span v-if="!url.has_web_endpoint" title="Is not eligeble for web scans">🚫</span>
+
+
+                    <a :id="'edit_' + list.id + url.url" @click="url_edit = 'edit_' + list.id + url.url">{{ url.url }}</a>
+                    <!-- (<a :href="'https://' + url.url" target="_blank" rel="noreferrer">open</a>) -->
+
+                    <template v-if="url_edit === 'edit_' + list.id + url.url">
+                        <div>
+                            <input :placeholder="url.url" :value="url.url" style="width: 100%">
+                            <!-- This is not a real 'save' but an add to list and create if it doesn't exist operation. -->
+                            <button>Save</button>
+                            <button style="float: right;">Delete</button>
+                        </div>
+                    </template>
+
+                    <!-- <button type="button">Edit</button><button type="button">Remove</button> -->
                 </div>
             </div>
-        </template>
-
-
+        </div>
     </div>
 </script>
 {% endverbatim %}
@@ -56,6 +92,10 @@ vueListManager = new Vue({
     data: {
         loading: false,
         lists: [],
+
+        /*
+        * {1: {}, 2: [], 3: []}
+        * */
         list_content: {},
     },
     mounted: function () {
@@ -72,21 +112,75 @@ vueListManager = new Vue({
                 this.loading = false;
             }).catch((fail) => {console.log('A loading error occurred: ' + fail);});
         },
-        get_list_content: function(list_name){
-            this.loading = true;
-            fetch(`/data/urllist_content/get/${list_name}/`).then(response => response.json()).then(data => {
-                this.list_content[list_name] = data;
-                vueListManager.$forceUpdate();
-                this.loading = false;
-            }).catch((fail) => {console.log('A loading error occurred: ' + fail);});
-        },
-        has_items(list_name){
-            return Object.keys(this.list_content).includes(list_name);
-        },
-        rename_list(list_id){
-
-        }
     }
 });
+
+Vue.component('managed-url-list', {
+    data: function () {
+        return {
+            urls: [],
+            loading: false,
+            url_edit: '',
+            list: this.initial_list,
+        }
+    },
+    props: {
+        initial_list: Object,
+    },
+    methods: {
+        get_urls: function(){
+            this.loading = true;
+            fetch(`/data/urllist_content/get/${this.list.id}/`).then(response => response.json()).then(data => {
+                this.urls = data.urls;
+                this.loading = false;
+                // there is no way to get a 'after render' in vue?
+                setTimeout(enable_select, 10);
+            }).catch((fail) => {console.log('A loading error occurred: ' + fail);});
+        },
+        close_list: function(){
+            this.urls = [];
+        },
+        rename_list: function(list_id){
+
+        },
+        has_urls: function(){
+          return this.urls.length > 0;
+        }
+    },
+    template: '#managed-url-list'
+});
+
+
+function enable_select(){
+    $('.js-example-basic-multiple').select2({
+        placeholder: 'example.com, www.example.com, www.internet.nl, 1...',
+        tags: true,
+        tokenSeparators: [',', ' '],
+        createTag: function (params) {
+            // This is an extremely naive implementation of domain validation. On the server tldextract is
+            // used which is much more complete as it uses the public suffixes list.
+            // This is just a convenience check that something with a dot is entered.
+            let term = $.trim(params.term);
+
+            // ... this might work for punycode but not for unicode.
+            // we want to support unicode...
+            // http://www.w3.org/TR/html5/links.html#attr-hyperlink-href:
+            var pattern = new RegExp('^((([a-z\\d]([a-z\\d-]*[a-z\\d])*)\\.)+[a-z]{2,})$'); // domain name
+            if (!pattern.test(term)) {
+                return null;
+            }
+
+            if (term === '') {
+                return null;
+            }
+
+            return {
+                id: term,
+                text: term,
+            }
+        }
+    });
+}
+
 </script>
 {% endblock %}

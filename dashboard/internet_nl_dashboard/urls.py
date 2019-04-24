@@ -27,7 +27,7 @@ urlpatterns = [
     path('addressmanager/', urllist.addressmanager),
     path('data/urllists/get/', urllist.get_lists),
     path('data/urllist/create/', urllist.create_list_),
-    path('data/urllist_content/get/<str:urllist_name>/', urllist.get_urllist_content_),
+    path('data/urllist_content/get/<str:urllist_id>/', urllist.get_urllist_content_),
     path('data/urllist/save_list_content/', urllist.save_list_content),
 
     path('upload/', spreadsheet.upload),
