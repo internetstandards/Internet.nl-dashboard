@@ -1,4 +1,4 @@
-{% extends 'internet_nl_dashboard/base.html' %}{% load humanize %}
+{% extends 'internet_nl_dashboard/templates/internet_nl_dashboard/_base.html' %}{% load humanize %}
 {% block content %}
     <h1>Dashboard</h1>
 
@@ -7,5 +7,5 @@
     <p>See what scans are running: <a href="/scan-monitor/">Scan Monitor</a></p>
 
     <div id="report"></div>
-    {% include "internet_nl_dashboard/dashboard.vue" %}
+    {% include "internet_nl_dashboard/templates/internet_nl_dashboard/report.vue" %}
 {% endblock %}

@@ -4,7 +4,7 @@ from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render
 from websecmap.app.common import JSEncoder
 
-from dashboard.internet_nl_dashboard.logic.dashboard import get_recent_reports, get_report
+from dashboard.internet_nl_dashboard.logic.report import get_recent_reports, get_report
 from dashboard.internet_nl_dashboard.views import (LOGIN_URL, get_account,
                                                    inject_default_language_cookie)
 
@@ -12,7 +12,7 @@ from dashboard.internet_nl_dashboard.views import (LOGIN_URL, get_account,
 @login_required(login_url=LOGIN_URL)
 def dashboard(request) -> HttpResponse:
 
-    response = render(request, 'internet_nl_dashboard/templates/internet_nl_dashboard/dashboard.html', {
+    response = render(request, 'internet_nl_dashboard/templates/internet_nl_dashboard/report.html', {
         'menu_item_dashboard': "current",
     })
 

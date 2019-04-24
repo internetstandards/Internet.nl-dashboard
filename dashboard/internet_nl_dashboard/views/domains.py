@@ -5,18 +5,17 @@ from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render
 from websecmap.app.common import JSEncoder
 
-from dashboard.internet_nl_dashboard.logic.urllist_management import (create_list,
-                                                                      get_urllist_content,
-                                                                      get_urllists_from_account,
-                                                                      save_urllist_content)
+from dashboard.internet_nl_dashboard.logic.domains import (create_list, get_urllist_content,
+                                                           get_urllists_from_account,
+                                                           save_urllist_content)
 from dashboard.internet_nl_dashboard.views import (LOGIN_URL, get_account,
                                                    inject_default_language_cookie)
 
 
 @login_required(login_url=LOGIN_URL)
-def addressmanager(request) -> HttpResponse:
+def index(request) -> HttpResponse:
 
-    response = render(request, 'internet_nl_dashboard/templates/internet_nl_dashboard/addressmanager.html', {
+    response = render(request, 'internet_nl_dashboard/templates/internet_nl_dashboard/domains.html', {
         'menu_item_addressmanager': "current",
     })
 
