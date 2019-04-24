@@ -16,7 +16,7 @@ log = logging.getLogger(__package__)
 def scan_monitor(request) -> HttpResponse:
 
     response = render(request, 'internet_nl_dashboard/templates/internet_nl_dashboard/scan_monitor.html', {
-        'menu_item_dashboard': "current",
+        'menu_item_scan_monitor': "current",
     })
 
     return inject_default_language_cookie(request, response)

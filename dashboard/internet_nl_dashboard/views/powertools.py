@@ -41,7 +41,7 @@ def powertools(request) -> HttpResponse:
     response = render(request, 'internet_nl_dashboard/templates/internet_nl_dashboard/powertools.html', {
         'add_account_and_user_form': add_account_and_user_form,
         'add_account_and_user_form_state': state,
-        'menu_item_login': "current",
+        'menu_item_powertools': "current",
         'selected_account': selected_account_id,
         'accounts': list(Account.objects.all().values('id', 'name'))
     })
