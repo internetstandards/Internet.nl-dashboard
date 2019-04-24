@@ -491,3 +491,10 @@ JET_SIDE_MENU_ITEMS = [
 #     JET_SIDE_MENU_ITEMS += websecmap_menu_items()
 # except ImportError:
 #     pass
+
+# Security options
+if not DEBUG:
+    SESSION_COOKIE_SECURE = True  # insecure by default
+    SESSION_COOKIE_SAMESITE = 'Lax'
+    SESSION_COOKIE_AGE = 1209600  # two weeks, could be longer
+    CSRF_COOKIE_SECURE = True  # insecure by default
