@@ -6,15 +6,20 @@
 <!-- Todo: find nice edit component to inline edit. -->
 <script type="x-template" id="lists">
     <div>
-        <h1>Address Manager</h1>
+        <h1>Domains</h1>
         <p>This address manager will be 'really' built later on, especially given the risk the UI is not usable for
         everyone, and because of further developing requirements. The list below is extremely rudimentary and will not
         resemble the final product. It has been built to experiment how file uploads are processed, and to show
         something has happened after processing.</p>
         <p>Upload large amount of data: <a href="/upload/">{% endverbatim %}{% trans "Bulk Address Uploader" %}{% verbatim %}</a></p>
+
+        <h3>Add a new list:</h3>
+        <label for="add_new_list">List name:</label><input id="add_new_list" type="text" name="list_name">
+        <button>Create List</button>
+
         <h2>Lists</h2>
         <template v-for="list in lists">
-            <h3 @click="get_list_content(list.name)">{{ list.name }}</h3>
+            <h3 @click="get_list_content(list.name)" @dblclick="rename_list(list.id)">{{ list.name }} 🖊️</h3>
             <button @click="get_list_content(list.name)" value="load">Show contents</button>
             <button @click="get_list_content(list.name)" value="load">Delete list</button>
             <!-- Todo: the input has to be a select2 type... when you paste a set of urls, it get parsed into
@@ -24,10 +29,10 @@
             <!-- do we need undo options? -->
             <!-- https://github.com/ArthurClemens/Javascript-Undo-Manager -->
             <div v-if="has_items(list.name)">
-                <label for="add_url">Bulk add new:</label> <input id="add_url" type="text" name="add_url">
+                <label for="add_url">Bulk add new:</label> <input id="add_url" type="text" name="add_url" placeholder="example.com, www.example.com, www.internet.nl, ...">
                 <div style="column-count: 2;">
                     <div v-for="url in list_content[list.name]['urls']">
-                        <span v-if="url.resolves">🔌</span><span v-if="!url.resolves">🚫</span>
+
                         <span v-if="url.has_mail_endpoint">📨</span><span v-if="!url.has_mail_endpoint">🚫</span>
                         <span v-if="url.has_web_endpoint">🌐</span><span v-if="!url.has_web_endpoint">🚫</span>
                         {{ url.url }} <button type="button">Remove</button>
@@ -36,9 +41,7 @@
             </div>
         </template>
 
-        <h3>Add a new list:</h3>
-        <label for="add_new_list">List name:</label><input id="add_new_list" type="text" name="list_name">
-        <button>Create List</button>
+
     </div>
 </script>
 {% endverbatim %}
@@ -80,6 +83,9 @@ vueListManager = new Vue({
         has_items(list_name){
             return Object.keys(this.list_content).includes(list_name);
         },
+        rename_list(list_id){
+
+        }
     }
 });
 </script>

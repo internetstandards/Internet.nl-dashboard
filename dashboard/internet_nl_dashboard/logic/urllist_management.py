@@ -8,6 +8,26 @@ from websecmap.scanners.models import Endpoint
 from dashboard.internet_nl_dashboard.models import Account, UrlList
 
 
+def operation_response(error: bool = False, success:bool = False, message: str = ""):
+    return {'error': error, 'success': success, 'message': message, 'state': "error" if error else "success"}
+
+
+def rename_list(account: Account, list_id: int, new_name: str) -> bool:
+    # Existing list name: no problem.
+    # List name too long? No problem, we'll truncate it.
+
+    new_name = new_name[0:120]
+
+    urllist = UrlList.objects.all().filter(account=account, id=list_id).first()
+    if not urllist:
+        return False
+
+    urllist.name = new_name
+    urllist.save()
+
+    return True
+
+
 def get_urllists_from_account(account: Account) -> List:
     """
     These are lists with some metadata. The metadata is used to give an indication how many urls etc (todo) are

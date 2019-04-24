@@ -7,7 +7,7 @@ from dashboard.internet_nl_dashboard.logic.urllist_management import (create_lis
                                                                       delete_url_from_urllist,
                                                                       get_urllist_content,
                                                                       get_urllists_from_account,
-                                                                      save_urllist_content)
+                                                                      save_urllist_content, rename_list)
 from dashboard.internet_nl_dashboard.models import Account
 
 
@@ -78,3 +78,21 @@ def test_urllists(db) -> None:
 
     list_content = get_urllist_content(account=account, urllist_name="should be empty")
     assert len(list_content['urls']) == 0
+
+    # list can be renamed
+    renamed = rename_list(account=account, list_id=list_2.pk, new_name="A new name")
+    assert renamed is True
+
+    # lists can have the same name
+    renamed = rename_list(account=account, list_id=list_1.pk, new_name="A new name")
+    assert renamed is True
+
+    # lists can have an awefully long name and that will not be a problem, as it is truncated
+    renamed = rename_list(account=account, list_id=list_1.pk, new_name="alksdnalksdnlaksdnlasdknasldknaldnalskndnlaksn"
+                                                                       "asdnlkansdlknansldknasldnalkndwlkawdnlkdwanlkn"
+                                                                       "aksjdnaksjdndaslkdnlaklwkndlkawndwlakdnwlakkln"
+                                                                       "ansdknlaslkdnlaknwdlknkldawnldkwanlkadwnlkdawn"
+                                                                       "awdnawklnldndawlkndwalkndaklndwaklnwalkdnwakln"
+                                                                       "adlkwndlknawkdlnawldknawlkdnawklndklawnwkalnkn"
+                                                                       "awdlknawlkdnawlkdnalwdnawlkdnawkldnalkwndaklwn")
+    assert renamed is True
