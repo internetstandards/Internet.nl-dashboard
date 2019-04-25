@@ -154,6 +154,7 @@ class UrlList(models.Model):
         default=True,
     )
 
+    # todo: should we support both? How does that impact reporting?
     scan_type = models.CharField(
         max_length=4,
         choices=(
@@ -161,6 +162,26 @@ class UrlList(models.Model):
             ('mail', 'mail'),
         ),
         default='web',
+    )
+
+    # todo: create a task that checks if the next scan should start (based on scheduled
+    #  next scan) + update the scheduled next scan value.
+    automated_scan_frequency = models.CharField(
+        max_length=30,
+        choices=(
+            ('disabled', 'disabled'),
+            ('every half year', 'every half year'),
+            ('at the start of every quarter', 'at the start of every quarter'),
+            ('every 1st day of the month', 'every 1st day of the month'),
+            ('twice per month', 'twice per month'),
+        ),
+        default='disabled',
+        help_text="At what moment should the scan start?"
+    )
+
+    scheduled_next_scan = models.DateTimeField(
+        help_text="An indication at what moment the scan will be started. The scan can take a while, thus this does "
+                  "not tell you when a scan will be finished."
     )
 
     def __str__(self):
