@@ -111,6 +111,66 @@
 
 <script type="x-template" id="managed-url-list">
     <div>
+        <h3>
+            <button v-if="!is_opened" @click="open_list()" value="load">Open</button>
+            <button v-if="is_opened" @click="close_list()" value="load">Close</button>
+            <span @click="open_list()">
+                <span title="Web scans will be performed" v-if="list.enable_scans && list.scan_type === 'mail'">📨</span>
+                <span title="Web scans will be performed" v-if="list.enable_scans && list.scan_type === 'web'">🌐</span>
+                <span title="No scans will be performed" v-if="!list.enable_scans">🚫</span>
+
+                {{ list.name }}</span>
+        </h3>
+
+        <div v-if="is_opened">
+            <h4>Settings <button @click="start_editing_settings()">🖊️ Edit</button></h4>
+            Scanning enabled: {{ list.enable_scans }} <br>
+            Type of scan performed: {{ list.scan_type }} <br>
+            Scan frequency: {{ list.automated_scan_frequency }} <br>
+            Next scheduled scan: {{ humanize_date(list.scheduled_next_scan) }} <br>
+
+
+            <h4>Actions:</h4>
+            <button @click="get_urls(list.id)" value="load">Duplicate</button>
+            <button @click="start_deleting()" value="load">Delete</button>
+
+            <div>
+                <label for="add_urls[]">Bulk add new:</label>
+                <select class="js-example-basic-multiple" name="add_urls[]" multiple="multiple" style="width: 100%"></select>
+            </div>
+
+            <div style="column-count: 2;">
+                <div v-for="url in urls">
+                    <span title="Edit this domain" @click="url_edit = 'edit_' + list.id + url.url">🖊</span>
+
+                    <span v-if="url.has_mail_endpoint" title="Is eligeble for e-mail scans">
+                        <a :href="'https://www.internet.nl/mail/' + url.url + '/'" target="_blank">📨</a>
+                    </span>
+                    <span v-if="!url.has_mail_endpoint" title="Is not eligeble for e-mail scans">🚫</span>
+                    <span v-if="url.has_web_endpoint" title="Is eligeble for web scans">
+                        <a :href="'https://www.internet.nl/site/' + url.url + '/'" target="_blank">🌐</a>
+                    </span>
+                    <span v-if="!url.has_web_endpoint" title="Is not eligeble for web scans">🚫</span>
+
+
+                    <a :id="'edit_' + list.id + url.url" @click="url_edit = 'edit_' + list.id + url.url">{{ url.url }}</a>
+                    <!-- (<a :href="'https://' + url.url" target="_blank" rel="noreferrer">open</a>) -->
+
+                    <template v-if="url_edit === 'edit_' + list.id + url.url">
+                        <div>
+                            <input :placeholder="url.url" :value="url.url" style="width: 100%">
+                            <!-- This is not a real 'save' but an add to list and create if it doesn't exist operation. -->
+                            <button>Cancel</button><button>Save</button>
+                            <button style="float: right;">Delete</button>
+                        </div>
+                    </template>
+
+                    <!-- <button type="button">Edit</button><button type="button">Remove</button> -->
+                </div>
+            </div>
+        </div>
+
+        <!-- modal dialogs are below the content to make sure the tab order stays working. -->
         <modal v-if="show_list_settings" @close="stop_editing_settings()">
             <h3 slot="header">🖊 Edit list settings</h3>
             <div slot="body">
@@ -153,64 +213,37 @@
             </div>
         </modal>
 
-        <h3>
-            <button v-if="!is_opened" @click="open_list()" value="load">Open</button>
-            <button v-if="is_opened" @click="close_list()" value="load">Close</button>
-            <span @click="open_list()">
-                <span title="Web scans will be performed" v-if="list.enable_scans && list.scan_type === 'mail'">📨</span>
-                <span title="Web scans will be performed" v-if="list.enable_scans && list.scan_type === 'web'">🌐</span>
-                <span title="No scans will be performed" v-if="!list.enable_scans">🚫</span>
-
-                {{ list.name }}</span>
-        </h3>
-
-        <div v-if="is_opened">
-            <h4>Settings <button @click="start_editing_settings()">🖊️ Edit</button></h4>
-            Scanning enabled: {{ list.enable_scans }} <br>
-            Type of scan performed: {{ list.scan_type }} <br>
-            Scan frequency: {{ list.automated_scan_frequency }} <br>
-            Next scheduled scan: {{ humanize_date(list.scheduled_next_scan) }} <br>
-
-
-            <h4>Actions:</h4>
-            <button @click="get_urls(list.id)" value="load">Duplicate</button>
-            <button @click="get_urls(list.id)" value="load">Delete</button>
-
-            <div>
-                <label for="add_urls[]">Bulk add new:</label>
-                <select class="js-example-basic-multiple" name="add_urls[]" multiple="multiple" style="width: 100%"></select>
-            </div>
-
-            <div style="column-count: 2;">
-                <div v-for="url in urls">
-                    <span title="Edit this domain" @click="url_edit = 'edit_' + list.id + url.url">🖊</span>
-
-                    <span v-if="url.has_mail_endpoint" title="Is eligeble for e-mail scans">
-                        <a :href="'https://www.internet.nl/mail/' + url.url + '/'" target="_blank">📨</a>
-                    </span>
-                    <span v-if="!url.has_mail_endpoint" title="Is not eligeble for e-mail scans">🚫</span>
-                    <span v-if="url.has_web_endpoint" title="Is eligeble for web scans">
-                        <a :href="'https://www.internet.nl/site/' + url.url + '/'" target="_blank">🌐</a>
-                    </span>
-                    <span v-if="!url.has_web_endpoint" title="Is not eligeble for web scans">🚫</span>
-
-
-                    <a :id="'edit_' + list.id + url.url" @click="url_edit = 'edit_' + list.id + url.url">{{ url.url }}</a>
-                    <!-- (<a :href="'https://' + url.url" target="_blank" rel="noreferrer">open</a>) -->
-
-                    <template v-if="url_edit === 'edit_' + list.id + url.url">
-                        <div>
-                            <input :placeholder="url.url" :value="url.url" style="width: 100%">
-                            <!-- This is not a real 'save' but an add to list and create if it doesn't exist operation. -->
-                            <button>Cancel</button><button>Save</button>
-                            <button style="float: right;">Delete</button>
-                        </div>
-                    </template>
-
-                    <!-- <button type="button">Edit</button><button type="button">Remove</button> -->
+        <modal v-if="show_deletion" @close="stop_deleting()">
+            <h3 slot="header">Delete list</h3>
+            <div slot="body">
+                <div v-if="delete_response.error">
+                    <h2>❌ Could not delete</h2>
+                    {{ delete_response.message }}
                 </div>
+                <div v-if="delete_response.success">
+                    <h2>✅ Deleted!</h2>
+                    {{ delete_response.message }}
+                </div>
+
+                <label for="name">List name:</label>
+                {{ list.name }}
+
+
+                <label for="enable_scans">Enable scans:</label>
+                {{ list.enable_scans }}
+
+                <label for="scan_type">What scan to run:</label>
+                {{ list.scan_type }}
+
+                <label for="automated_scan_frequency">How often should the scan run?:</label>
+                {{ list.automated_scan_frequency }}
+
             </div>
-        </div>
+            <div slot="footer">
+                <button @click="stop_deleting()">Cancel</button>
+                <button class="modal-default-button" @click="confirm_deletion()">Delete</button>
+            </div>
+        </modal>
     </div>
 </script>
 {% endverbatim %}
@@ -316,6 +349,11 @@ Vue.component('managed-url-list', {
             settings_loading: false,
             settings_update_response: {},
             old_list_settings: {},
+
+            // everything to do with deleting this list
+            // todo: how is it removed from the overall list?
+            show_deletion: false,
+            delete_response: {},
         }
     },
     props: {
@@ -366,6 +404,7 @@ Vue.component('managed-url-list', {
             // https://stackoverflow.com/questions/728360/how-do-i-correctly-clone-a-javascript-object
             // luckily we can use the simple approach...
             this.old_list_settings = JSON.parse(JSON.stringify(this.list));
+            this.settings_update_response = {};
             this.show_list_settings = true;
         },
         stop_editing_settings: function(){
@@ -379,6 +418,32 @@ Vue.component('managed-url-list', {
             }
             this.settings_update_response = {};
         },
+        start_deleting: function(){
+            this.show_deletion = true;
+            this.delete_response = {};
+        },
+        stop_deleting: function(){
+            this.show_deletion = false;
+        },
+        confirm_deletion: function(){
+            (async () => {
+              const rawResponse = await fetch('/data/urllist/delete/', {
+                method: 'POST',
+                headers: {
+                  'Accept': 'application/json',
+                  'Content-Type': 'application/json',
+                  'X-CSRFToken': get_cookie('csrftoken')
+                },
+                body: JSON.stringify(this.list.id)
+              });
+              try {
+                  this.delete_response = await rawResponse.json();
+              } catch (e) {
+                  // SyntaxError: JSON.parse: unexpected character at line 1 column 1 of the JSON data
+                  this.delete_response = {'error': true, 'message': 'Server error'}
+              }
+            })();
+        }
     },
     template: '#managed-url-list'
 });

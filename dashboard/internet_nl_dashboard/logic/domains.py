@@ -96,6 +96,29 @@ def create_list(account: Account, user_input: Dict) -> Dict[str, Any]:
     return operation_response(success=True, message="List created.", data=data)
 
 
+def delete_list(account: Account, list_id: int):
+    """
+    The first assumption was that a list is not precious or special, and that it can be quickly re-created with an
+    import from excel or a csv paste in the web interface. Yet this assumption is wrong. It's valuable to keep the list
+    also after it is deleted. This gives insight into what scans have happened in the past on what list.
+
+    To do that, the is_deleted columns have been introduced.
+
+    :param account:
+    :param list_id:
+    :return:
+    """
+    urllist = UrlList.objects.all().filter(account=account, id=list_id, is_deleted=False).first()
+    if not urllist:
+        return operation_response(error=True, message="List could not be deleted.")
+
+    urllist.is_deleted = True
+    urllist.deleted_on = timezone.now()
+    urllist.save()
+
+    return operation_response(success=True, message="List deleted.")
+
+
 # @pysnooper.snoop()
 def update_list_settings(account: Account, user_input: Dict) -> Dict[str, Any]:
     """
@@ -348,16 +371,3 @@ def delete_url_from_urllist(account: Account, urllist_name: str, url: str) -> Tu
         urls_in_dashboard_list__account=account,
         urls_in_dashboard_list__name=urllist_name,
         url=url).delete()
-
-
-def delete_list(account: Account, urllist_name: str) -> Tuple[int, Dict[str, int]]:
-    """
-    A list can really be deleted and isn't a 'precious' resource. It can quickly be re-created with imports from
-    excel or just a copy paste of a series of strings.
-
-    :param account:
-    :param urllist_name:
-    :return:
-    """
-
-    return UrlList.objects.all().filter(account=account, name=urllist_name).delete()
