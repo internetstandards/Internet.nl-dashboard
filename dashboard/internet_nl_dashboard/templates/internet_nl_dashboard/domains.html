@@ -154,9 +154,9 @@
         </modal>
 
         <h3>
-            <button v-if="!has_urls()" @click="get_urls(list.id)" value="load">Open</button>
-            <button v-if="has_urls()" @click="close_list()" value="load">Close</button>
-            <span @click="get_urls(list.id)">
+            <button v-if="!is_opened" @click="open_list()" value="load">Open</button>
+            <button v-if="is_opened" @click="close_list()" value="load">Close</button>
+            <span @click="open_list()">
                 <span title="Web scans will be performed" v-if="list.enable_scans && list.scan_type === 'mail'">📨</span>
                 <span title="Web scans will be performed" v-if="list.enable_scans && list.scan_type === 'web'">🌐</span>
                 <span title="No scans will be performed" v-if="!list.enable_scans">🚫</span>
@@ -164,7 +164,7 @@
                 {{ list.name }}</span>
         </h3>
 
-        <div v-if="has_urls()">
+        <div v-if="is_opened">
             <h4>Settings <button @click="start_editing_settings()">🖊️ Edit</button></h4>
             Scanning enabled: {{ list.enable_scans }} <br>
             Type of scan performed: {{ list.scan_type }} <br>
@@ -302,6 +302,8 @@ Vue.component('managed-url-list', {
     data: function () {
         return {
             urls: [],
+            is_opened: false,
+
             loading: false,
             url_edit: '',
 
@@ -320,6 +322,13 @@ Vue.component('managed-url-list', {
         initial_list: Object,
     },
     methods: {
+        open_list: function(){
+            this.get_urls();
+            this.is_opened = true;
+        },
+        close_list: function(){
+          this.is_opened = false;
+        },
         get_urls: function(){
             this.loading = true;
             fetch(`/data/urllist_content/get/${this.list.id}/`).then(response => response.json()).then(data => {
@@ -328,9 +337,6 @@ Vue.component('managed-url-list', {
                 // there is no way to get a 'after render' in vue?
                 setTimeout(enable_select, 10);
             }).catch((fail) => {console.log('A loading error occurred: ' + fail);});
-        },
-        close_list: function(){
-            this.urls = [];
         },
         update_list_settings: function(){
             this.settings_loading = true;
@@ -373,9 +379,6 @@ Vue.component('managed-url-list', {
             }
             this.settings_update_response = {};
         },
-        has_urls: function(){
-          return this.urls.length > 0;
-        }
     },
     template: '#managed-url-list'
 });
