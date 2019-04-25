@@ -14,7 +14,7 @@ log = logging.getLogger(__package__)
 
 def compose_task(**kwargs
                  ) -> Task:
-    urllists = UrlList.objects.filter()
+    urllists = UrlList.objects.filter(is_deleted=False)
     tasks = [rate_urllists_historically.si([urllist]) for urllist in urllists]
     return group(tasks)
 

@@ -120,7 +120,7 @@ def update_list_settings(account: Account, user_input: Dict) -> Dict[str, Any]:
     if sorted(user_input.keys()) != sorted(expected_keys):
         return operation_response(error=True, message="Missing settings.")
 
-    urllist = UrlList.objects.all().filter(account=account, id=user_input['id']).first()
+    urllist = UrlList.objects.all().filter(account=account, id=user_input['id'], is_deleted=False).first()
 
     if not urllist:
         return operation_response(error=True, message="No list of urls found.")
@@ -162,7 +162,7 @@ def rename_list(account: Account, list_id: int, new_name: str) -> bool:
 
     new_name = new_name[0:120]
 
-    urllist = UrlList.objects.all().filter(account=account, id=list_id).first()
+    urllist = UrlList.objects.all().filter(account=account, id=list_id, is_deleted=False).first()
     if not urllist:
         return False
 
@@ -181,7 +181,7 @@ def get_urllists_from_account(account: Account) -> List:
     :param account:
     :return:
     """
-    urllists = UrlList.objects.all().filter(account=account)
+    urllists = UrlList.objects.all().filter(account=account, is_deleted=False).order_by('name')
 
     response = []
     # todo: amount of urls, dead_urls etc... Probably add lifecycle to this?
@@ -268,7 +268,7 @@ def _add_to_urls_to_urllist(account: Account, urllist_name: str, urls: List[str]
 
     counters: Dict[str, int] = {'added_to_list': 0, 'already_in_list': 0}
 
-    current_list = UrlList.objects.all().filter(name=urllist_name).first()
+    current_list = UrlList.objects.all().filter(name=urllist_name, is_deleted=False).first()
     if not current_list:
         current_list = create_list_by_name(account, urllist_name)
 
@@ -323,7 +323,7 @@ def clean_urls(urls: List[str]) -> Dict[str, List]:
 
 def create_list_by_name(account, name: str) -> UrlList:
 
-    existing_list = UrlList.objects.all().filter(account=account, name=name).first()
+    existing_list = UrlList.objects.all().filter(account=account, name=name, is_deleted=False).first()
 
     if existing_list:
         return existing_list

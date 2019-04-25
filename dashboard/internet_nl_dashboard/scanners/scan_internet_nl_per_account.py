@@ -54,7 +54,7 @@ def compose_task(
 
     for account in accounts:
 
-        urllists = UrlList.objects.all().filter(account=account, enable_scans=True)
+        urllists = UrlList.objects.all().filter(account=account, enable_scans=True, is_deleted=False)
         urllists = add_model_filter(urllists, **kwargs)
         for urllist in urllists:
             """

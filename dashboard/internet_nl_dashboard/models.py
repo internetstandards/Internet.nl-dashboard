@@ -184,6 +184,14 @@ class UrlList(models.Model):
                   "not tell you when a scan will be finished."
     )
 
+    is_deleted = models.BooleanField(
+        default=False,
+    )
+
+    deleted_on = models.DateTimeField(
+        null=True,
+    )
+
     def __str__(self):
         return "%s/%s" % (self.account, self.name)
 

@@ -129,7 +129,7 @@ def compose_task(**kwargs) -> Task:
     :param kwargs:
     :return:
     """
-    urllists = UrlList.objects.filter()
+    urllists = UrlList.objects.filter(is_deleted=False)
     tasks = [rate_urllists_now.si([urllist]) for urllist in urllists]
     return group(tasks)
 

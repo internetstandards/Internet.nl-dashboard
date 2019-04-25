@@ -101,7 +101,7 @@
         something has happened after processing.</p>
         <p>Upload large amount of data: <a href="/upload/">{% endverbatim %}{% trans "Bulk Address Uploader" %}{% verbatim %}</a></p>
 
-        <button @click="start_adding_new()">New</button>
+        <button @click="start_adding_new()">Add new list</button>
 
         <h2>Lists</h2>
         <managed-url-list v-for="list in lists" :initial_list="list"></managed-url-list>
@@ -397,6 +397,7 @@ function enable_select(){
 
         // after 26 characters searching became insanely slow. So don't match for now.
         // this is not an issue caused by the matcher but by something else...
+        // it was the regex.
         // matcher: function() {return null},
 
         createTag: function (params) {
@@ -408,6 +409,7 @@ function enable_select(){
             // ... this might work for punycode but not for unicode.
             // we want to support unicode...
             // http://www.w3.org/TR/html5/links.html#attr-hyperlink-href:
+            // todo: this pattern fails when the match is not found under N characters.
             var pattern = new RegExp('^((([a-z\\d]([a-z\\d-]*[a-z\\d])*)\\.)+[a-z]{2,})$'); // domain name
             if (!pattern.test(term)) {
                 return null;
