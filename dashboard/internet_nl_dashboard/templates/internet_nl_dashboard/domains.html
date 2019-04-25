@@ -133,20 +133,21 @@
             </div>
         </modal>
 
-        <h3 @dblclick="rename_list(list.id)">
+        <h3>
             <button v-if="!has_urls()" @click="get_urls(list.id)" value="load">Open</button>
             <button v-if="has_urls()" @click="close_list()" value="load">Close</button>
             <span @click="get_urls(list.id)">{{ list.name }}</span>
         </h3>
 
         <div v-if="has_urls()">
-            Settings: <br>
+            <h4>Settings <button @click="start_editing_settings()">🖊️ Edit</button></h4>
             Scanning enabled: {{ list.enable_scans }} <br>
             Type of scan performed: {{ list.scan_type }} <br>
             Scan frequency: {{ list.automated_scan_frequency }} <br>
-            Next scheduled scan: scheduled_next_scan <br>
-            <a @click="start_editing_settings()">🖊️ Edit settings</a>
+            Next scheduled scan: {{ humanize_date(list.scheduled_next_scan) }} <br>
 
+
+            <h4>Actions:</h4>
             <button @click="get_urls(list.id)" value="load">Duplicate</button>
             <button @click="get_urls(list.id)" value="load">Delete</button>
 
@@ -231,6 +232,8 @@ vueListManager = new Vue({
 });
 
 Vue.component('managed-url-list', {
+    mixins: [humanize_mixin],
+
     data: function () {
         return {
             urls: [],
