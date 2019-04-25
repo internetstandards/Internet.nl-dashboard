@@ -64,3 +64,5 @@ simplejson
 
 # using internet.nl translations into this project
 polib
+
+pysnooper

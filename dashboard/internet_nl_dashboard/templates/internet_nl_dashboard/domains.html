@@ -15,8 +15,13 @@
 
           <div class="modal-header">
             <slot name="header">
+                <button style="float:right;" type="button" class="close" data-dismiss="modal" aria-label="Close" @click="$emit('close')">
+                    <span aria-hidden="true">&times;</span>
+                </button>
               default header
+
             </slot>
+
           </div>
 
           <div class="modal-body">
@@ -44,6 +49,27 @@
 <!-- Todo: find nice edit component to inline edit. -->
 <script type="x-template" id="lists">
     <div>
+        <modal v-if="show_new" @close="show_new = false">
+        <h3 slot="header">Add new list</h3>
+        <div slot="body">
+
+            <label for="new_list_name">List name:</label>
+            <input id="new_list_name" type="text" name="list_name" v-model="new_list_name">
+
+            <label for="new_list_type">What scan to run:</label>
+            <select id="new_list_type" v-model="new_list_scan_type">
+                    <option value="web">Web</option>
+                    <option value="mail">Mail</option>
+            </select>
+
+        </div>
+        <div slot="footer">
+            <button class="modal-default-button" @click="show_new = false">Close</button>
+            <button @click="create_list()">Create List</button>
+        </div>
+    </modal>
+
+
         <h1>Domains</h1>
         <p>This address manager will be 'really' built later on, especially given the risk the UI is not usable for
         everyone, and because of further developing requirements. The list below is extremely rudimentary and will not
@@ -51,21 +77,6 @@
         something has happened after processing.</p>
         <p>Upload large amount of data: <a href="/upload/">{% endverbatim %}{% trans "Bulk Address Uploader" %}{% verbatim %}</a></p>
 
-        <modal v-if="show_new" @close="show_new = false">
-            <h3 slot="header">Add new list</h3>
-            <div slot="body">
-                <label for="new_list_name">List name:</label><input id="new_list_name" type="text" name="list_name" v-model="new_list_name">
-            <label for="new_list_type">What scan to run:</label>
-                <select id="new_list_type" v-model="new_list_scan_type">
-                        <option value="web">Web</option>
-                        <option value="mail">Mail</option>
-                </select>
-            </div>
-            <div slot="footer">
-                <button class="modal-default-button" @click="$emit('close')">Close</button>
-                <button @click="create_list()">Create List</button>
-            </div>
-        </modal>
         <button @click="show_new = true">New</button>
 
         <h2>Lists</h2>
@@ -76,14 +87,65 @@
 
 <script type="x-template" id="managed-url-list">
     <div>
+        <modal v-if="show_list_settings" @close="show_list_settings = false">
+            <h3 slot="header">🖊 Edit list settings
+                <button style="float:right;" type="button" class="close" data-dismiss="modal" aria-label="Close" @click="stop_editing_settings()">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </h3>
+            <div slot="body">
+                <div v-if="settings_update_response.error">
+                    <!-- todo: translation -->
+                    <h2>❌ Not saved</h2>
+                    {{ settings_update_response.message }}
+                </div>
+                <div v-if="settings_update_response.success">
+                    <!-- todo: translation -->
+                    <h2>✅ Saved!</h2>
+                    {{ settings_update_response.message }}
+                </div>
+
+                <label for="name">List name:</label>
+                <input id="name" type="text" maxlength="120" v-model="list.name"><br><br>
+
+                <label for="enable_scans">Enable scans:</label>
+                <input id="enable_scans" type="checkbox" v-model="list.enable_scans"><br><br>
+
+                <label for="scan_type">What scan to run:</label>
+                <select id="scan_type" v-model="list.scan_type">
+                        <option value="web">Web</option>
+                        <option value="mail">Mail</option>
+                </select><br><br>
+
+                <label for="automated_scan_frequency">How often should the scan run?:</label>
+                <select id="automated_scan_frequency" v-model="list.automated_scan_frequency">
+                    <option value="disabled">Disabled</option>
+                    <option value="every half year">Every half year</option>
+                    <option value="at the start of every quarter">At the start of every quarter</option>
+                    <option value="every 1st day of the month">Every 1st day of the month</option>
+                    <option value="twice per month">Twice per month</option>
+                </select>
+
+            </div>
+            <div slot="footer">
+                <button @click="stop_editing_settings()">Close</button>
+                <button class="modal-default-button" @click="update_list_settings()">Update</button>
+            </div>
+        </modal>
+
         <h3 @dblclick="rename_list(list.id)">
             <button v-if="!has_urls()" @click="get_urls(list.id)" value="load">Open</button>
             <button v-if="has_urls()" @click="close_list()" value="load">Close</button>
-            <span @click="get_urls(list.id)">{{ list.name }}</span> 🖊️
+            <span @click="get_urls(list.id)">{{ list.name }}</span>
         </h3>
 
         <div v-if="has_urls()">
-            This list will scan: {{ list.scan_type }}
+            Settings: <br>
+            Scanning enabled: {{ list.enable_scans }} <br>
+            Type of scan performed: {{ list.scan_type }} <br>
+            Scan frequency: {{ list.automated_scan_frequency }} <br>
+            Next scheduled scan: scheduled_next_scan <br>
+            <a @click="start_editing_settings()">🖊️ Edit settings</a>
 
             <button @click="get_urls(list.id)" value="load">Duplicate</button>
             <button @click="get_urls(list.id)" value="load">Delete</button>
@@ -174,7 +236,16 @@ Vue.component('managed-url-list', {
             urls: [],
             loading: false,
             url_edit: '',
+
+            // contains all known list data, should not be needed to individually fetch the list (again), only
+            // after update.
             list: this.initial_list,
+
+            // everything to do with settings.
+            show_list_settings: false,
+            settings_loading: false,
+            settings_update_response: {},
+            old_list_settings: {},
         }
     },
     props: {
@@ -193,8 +264,48 @@ Vue.component('managed-url-list', {
         close_list: function(){
             this.urls = [];
         },
-        rename_list: function(list_id){
+        update_list_settings: function(){
+            this.settings_loading = true;
+            (async () => {
+              const rawResponse = await fetch('/data/urllist/update_list_settings/', {
+                method: 'POST',
+                headers: {
+                  'Accept': 'application/json',
+                  'Content-Type': 'application/json',
+                  'X-CSRFToken': get_cookie('csrftoken')
+                },
+                body: JSON.stringify(this.list)
+              });
+              try {
+                  this.settings_update_response = await rawResponse.json();
+              } catch (e) {
+                  // SyntaxError: JSON.parse: unexpected character at line 1 column 1 of the JSON data
+                  this.settings_update_response = {'error': true, 'message': 'Server error'}
+              }
+              console.log(this.settings_update_response);
+              this.settings_loading = false;
+            })();
+        },
+        start_editing_settings: function(){
+            // keep an old value in memory. If the editing is canceled, the old value should be used.
+            // here a weakness is of js is showing:
+            // https://stackoverflow.com/questions/728360/how-do-i-correctly-clone-a-javascript-object
+            // luckily we can use the simple approach...
+            this.old_list_settings = JSON.parse(JSON.stringify(this.list));
+            this.show_list_settings = true;
+        },
+        stop_editing_settings: function(){
+            // reset the state
+            this.show_list_settings = false;
 
+            console.log(this.settings_update_response)
+
+            // no is empty javascript native.
+            if (jQuery.isEmptyObject(this.settings_update_response) || this.settings_update_response.error) {
+                console.log('No changes saved or no save attempt. Reverting.');
+                this.list = JSON.parse(JSON.stringify(this.old_list_settings));
+            }
+            this.settings_update_response = {};
         },
         has_urls: function(){
           return this.urls.length > 0;

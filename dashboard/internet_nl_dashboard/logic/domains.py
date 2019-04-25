@@ -1,3 +1,4 @@
+import logging
 from typing import Any, Dict, List, Tuple
 
 from django.db.models import Prefetch
@@ -7,9 +8,75 @@ from websecmap.scanners.models import Endpoint
 
 from dashboard.internet_nl_dashboard.models import Account, UrlList
 
+# import pysnooper
+
+
+log = logging.getLogger(__package__)
+
 
 def operation_response(error: bool = False, success: bool = False, message: str = ""):
     return {'error': error, 'success': success, 'message': message, 'state': "error" if error else "success"}
+
+
+# @pysnooper.snoop()
+def update_list_settings(account: Account, user_input: Dict) -> Dict[str, Any]:
+    """
+
+    This cannot update the urls, as that would increase complexity too much.
+
+    :param account:
+    :param user_input: {
+        'id': int,
+        'name': str,
+        'enable_scans': bool,
+        'scan_type': str,
+
+        # todo: Who should set this? Should this be set by admins? How can we avoid permission hell?
+        # Probably as long as the settings are not too detailed / too frequently.
+        'automated_scan_frequency': str,
+    }
+    :return:
+    """
+    log.debug(user_input)
+
+    expected_keys = ['id', 'name', 'enable_scans', 'scan_type', 'automated_scan_frequency', 'scheduled_next_scan']
+    if sorted(user_input.keys()) != sorted(expected_keys):
+        return operation_response(error=True, message="Missing settings.")
+
+    urllist = UrlList.objects.all().filter(account=account, id=user_input['id']).first()
+
+    if not urllist:
+        return operation_response(error=True, message="No list of urls found.")
+
+    # Yes, you can try and set any value. Values that are not recognized do not result in errors / error messages,
+    # instead they will be overwritten with the default. This means less interaction with users / less annoyance over
+    # errors on such simple forms.
+    urllist.name = validate_list_name(user_input['name'])
+    urllist.enable_scans = bool(user_input['enable_scans'])
+    urllist.scan_type = validate_list_scan_type(user_input['scan_type'])
+    urllist.automated_scan_frequency = validate_list_automated_scan_frequency(user_input['automated_scan_frequency'])
+    urllist.save()
+
+    return operation_response(success=True, message="Updated list settings")
+
+
+def validate_list_name(list_name):
+    return list_name[0:120]
+
+
+# todo: this can be a generic tuple check.
+def validate_list_automated_scan_frequency(automated_scan_frequency):
+    if (automated_scan_frequency, automated_scan_frequency) not in \
+            UrlList._meta.get_field('automated_scan_frequency').choices:
+        return UrlList._meta.get_field('automated_scan_frequency').default
+    return automated_scan_frequency
+
+
+def validate_list_scan_type(scan_type):
+    # if the option doesn't exist, return the first option as the fallback / default.
+    if (scan_type, scan_type) not in UrlList._meta.get_field('scan_type').choices:
+        return UrlList._meta.get_field('scan_type').default
+    return scan_type
 
 
 def rename_list(account: Account, list_id: int, new_name: str) -> bool:
@@ -45,7 +112,11 @@ def get_urllists_from_account(account: Account) -> List:
     for urllist in urllists:
         response.append({
             'id': urllist.id,
-            'name': urllist.name
+            'name': urllist.name,
+            'enable_scans': urllist.enable_scans,
+            'scan_type': urllist.scan_type,
+            'automated_scan_frequency': urllist.automated_scan_frequency,
+            'scheduled_next_scan': urllist.scheduled_next_scan,
         })
 
     return response

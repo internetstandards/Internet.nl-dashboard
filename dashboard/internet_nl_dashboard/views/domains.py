@@ -1,5 +1,7 @@
+import json
 from typing import List
 
+from django.conf import settings
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render
@@ -7,7 +9,8 @@ from websecmap.app.common import JSEncoder
 
 from dashboard.internet_nl_dashboard.logic.domains import (create_list, get_urllist_content,
                                                            get_urllists_from_account,
-                                                           save_urllist_content)
+                                                           save_urllist_content,
+                                                           update_list_settings)
 from dashboard.internet_nl_dashboard.views import (LOGIN_URL, get_account,
                                                    inject_default_language_cookie)
 
@@ -17,6 +20,7 @@ def index(request) -> HttpResponse:
 
     response = render(request, 'internet_nl_dashboard/templates/internet_nl_dashboard/domains.html', {
         'menu_item_addressmanager': "current",
+        'debug': settings.DEBUG
     })
 
     return inject_default_language_cookie(request, response)
@@ -49,3 +53,15 @@ def get_urllist_content_(request, urllist_id: int) -> JsonResponse:
 def save_list_content(request, urllist_name: str, urls: List[str]) -> JsonResponse:
     account = get_account(request)
     return JsonResponse(save_urllist_content(account, urllist_name, urls), encoder=JSEncoder)
+
+
+@login_required(login_url=LOGIN_URL)
+def update_list_settings_(request):
+    account = get_account(request)
+    # json loads will probably error when wrong data is given. Is that a problem? And how?
+    try:
+        user_input = json.loads(request.body)
+    except json.JSONDecodeError:
+        user_input = {}
+
+    return JsonResponse(update_list_settings(account, user_input))
