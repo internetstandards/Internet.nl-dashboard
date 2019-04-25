@@ -37,13 +37,6 @@ def get_lists(request) -> JsonResponse:
 
 
 @login_required(login_url=LOGIN_URL)
-def create_list_(request, list_name: str) -> JsonResponse:
-    account = get_account(request)
-    result = create_list(account=account, name=list_name)
-    return JsonResponse({'name': result.name}, encoder=JSEncoder)
-
-
-@login_required(login_url=LOGIN_URL)
 def get_urllist_content_(request, urllist_id: int) -> JsonResponse:
     account = get_account(request)
     return JsonResponse(get_urllist_content(account=account, urllist_id=urllist_id), encoder=JSEncoder)
@@ -65,3 +58,15 @@ def update_list_settings_(request):
         user_input = {}
 
     return JsonResponse(update_list_settings(account, user_input))
+
+
+@login_required(login_url=LOGIN_URL)
+def create_list_(request):
+    account = get_account(request)
+    # json loads will probably error when wrong data is given. Is that a problem? And how?
+    try:
+        user_input = json.loads(request.body)
+    except json.JSONDecodeError:
+        user_input = {}
+
+    return JsonResponse(create_list(account, user_input))

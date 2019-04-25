@@ -14,10 +14,10 @@
         <div class="modal-container">
 
           <div class="modal-header">
+            <button style="float:right;" type="button" class="close" data-dismiss="modal" aria-label="Close" @click="$emit('close')">
+                <span aria-hidden="true">&times;</span>
+            </button>
             <slot name="header">
-                <button style="float:right;" type="button" class="close" data-dismiss="modal" aria-label="Close" @click="$emit('close')">
-                    <span aria-hidden="true">&times;</span>
-                </button>
               default header
 
             </slot>
@@ -49,25 +49,49 @@
 <!-- Todo: find nice edit component to inline edit. -->
 <script type="x-template" id="lists">
     <div>
-        <modal v-if="show_new" @close="show_new = false">
-        <h3 slot="header">Add new list</h3>
-        <div slot="body">
+        <modal v-if="show_new" @close="stop_adding_new()">
+            <h3 slot="header">Add new list</h3>
 
-            <label for="new_list_name">List name:</label>
-            <input id="new_list_name" type="text" name="list_name" v-model="new_list_name">
+            <div slot="body">
 
-            <label for="new_list_type">What scan to run:</label>
-            <select id="new_list_type" v-model="new_list_scan_type">
-                    <option value="web">Web</option>
-                    <option value="mail">Mail</option>
-            </select>
+                <div v-if="add_new_response.error">
+                    <!-- todo: translation -->
+                    <h2>❌ Not saved</h2>
+                    {{ add_new_response.message }}
+                </div>
+                <div v-if="add_new_response.success">
+                    <!-- todo: translation -->
+                    <h2>✅ Saved!</h2>
+                    {{ add_new_response.message }}
+                </div>
 
-        </div>
-        <div slot="footer">
-            <button class="modal-default-button" @click="show_new = false">Close</button>
-            <button @click="create_list()">Create List</button>
-        </div>
-    </modal>
+                <label for="name">List name:</label>
+                <input id="name" type="text" maxlength="120" v-model="new_list.name"><br><br>
+
+                <label for="enable_scans">Enable scans:</label>
+                <input id="enable_scans" type="checkbox" v-model="new_list.enable_scans"><br><br>
+
+                <label for="scan_type">What scan to run:</label>
+                <select id="scan_type" v-model="new_list.scan_type">
+                        <option value="web">Web</option>
+                        <option value="mail">Mail</option>
+                </select><br><br>
+
+                <label for="automated_scan_frequency">How often should the scan run?:</label>
+                <select id="automated_scan_frequency" v-model="new_list.automated_scan_frequency">
+                    <option value="disabled">Disabled</option>
+                    <option value="every half year">Every half year</option>
+                    <option value="at the start of every quarter">At the start of every quarter</option>
+                    <option value="every 1st day of the month">Every 1st day of the month</option>
+                    <option value="twice per month">Twice per month</option>
+                </select>
+
+            </div>
+            <div slot="footer">
+                <button class="modal-default-button" @click="stop_adding_new()">Close</button>
+                <button @click="create_list()">Create List</button>
+            </div>
+        </modal>
 
 
         <h1>Domains</h1>
@@ -77,7 +101,7 @@
         something has happened after processing.</p>
         <p>Upload large amount of data: <a href="/upload/">{% endverbatim %}{% trans "Bulk Address Uploader" %}{% verbatim %}</a></p>
 
-        <button @click="show_new = true">New</button>
+        <button @click="start_adding_new()">New</button>
 
         <h2>Lists</h2>
         <managed-url-list v-for="list in lists" :initial_list="list"></managed-url-list>
@@ -87,12 +111,8 @@
 
 <script type="x-template" id="managed-url-list">
     <div>
-        <modal v-if="show_list_settings" @close="show_list_settings = false">
-            <h3 slot="header">🖊 Edit list settings
-                <button style="float:right;" type="button" class="close" data-dismiss="modal" aria-label="Close" @click="stop_editing_settings()">
-                    <span aria-hidden="true">&times;</span>
-                </button>
-            </h3>
+        <modal v-if="show_list_settings" @close="stop_editing_settings()">
+            <h3 slot="header">🖊 Edit list settings</h3>
             <div slot="body">
                 <div v-if="settings_update_response.error">
                     <!-- todo: translation -->
@@ -136,7 +156,12 @@
         <h3>
             <button v-if="!has_urls()" @click="get_urls(list.id)" value="load">Open</button>
             <button v-if="has_urls()" @click="close_list()" value="load">Close</button>
-            <span @click="get_urls(list.id)">{{ list.name }}</span>
+            <span @click="get_urls(list.id)">
+                <span title="Web scans will be performed" v-if="list.enable_scans && list.scan_type === 'mail'">📨</span>
+                <span title="Web scans will be performed" v-if="list.enable_scans && list.scan_type === 'web'">🌐</span>
+                <span title="No scans will be performed" v-if="!list.enable_scans">🚫</span>
+
+                {{ list.name }}</span>
         </h3>
 
         <div v-if="has_urls()">
@@ -177,7 +202,7 @@
                         <div>
                             <input :placeholder="url.url" :value="url.url" style="width: 100%">
                             <!-- This is not a real 'save' but an add to list and create if it doesn't exist operation. -->
-                            <button>Save</button>
+                            <button>Cancel</button><button>Save</button>
                             <button style="float: right;">Delete</button>
                         </div>
                     </template>
@@ -206,13 +231,11 @@ vueListManager = new Vue({
         loading: false,
         lists: [],
 
+        // everything that has something to do with adding a new list:
         show_new: false,
-        new_list_name: '',
-        new_list_scan_type: '',
-        /*
-        * {1: {}, 2: [], 3: []}
-        * */
-        list_content: {},
+        add_new_loading: false,
+        add_new_response: {},
+        new_list: {}
     },
     mounted: function () {
         this.load();
@@ -228,6 +251,48 @@ vueListManager = new Vue({
                 this.loading = false;
             }).catch((fail) => {console.log('A loading error occurred: ' + fail);});
         },
+        start_adding_new: function(){
+            this.new_list = {'id': -1, 'name': '', 'enable_scans': false, 'scan_type': 'web',
+                'automated_scan_frequency': 'disabled', 'scheduled_next_scan': '1'};
+            this.show_new = true;
+
+        },
+        stop_adding_new: function() {
+            this.show_new = false;
+        },
+        create_list: function() {
+            this.add_new_loading = true;
+            (async () => {
+              const rawResponse = await fetch('/data/urllist/create_list/', {
+                method: 'POST',
+                headers: {
+                  'Accept': 'application/json',
+                  'Content-Type': 'application/json',
+                  'X-CSRFToken': get_cookie('csrftoken')
+                },
+                body: JSON.stringify(this.new_list)
+              });
+              try {
+                  this.add_new_response = await rawResponse.json();
+              } catch (e) {
+                  // SyntaxError: JSON.parse: unexpected character at line 1 column 1 of the JSON data
+                  this.add_new_response = {'error': true, 'message': 'Server error'}
+              }
+
+              console.log(this.add_new_response);
+
+              if (this.add_new_response.data.account){
+                // the data section contains what we've added
+                console.log('pushing');
+                this.lists.push(this.add_new_response.data);
+                // should we order the list alphabetically / or re-apply the orderering there is now?
+                // how do we scroll to the new list?
+                // is it possible to have a an animation on everything that is added to the list?
+              }
+
+              this.add_new_loading = false;
+            })();
+        }
     }
 });
 
@@ -301,8 +366,6 @@ Vue.component('managed-url-list', {
             // reset the state
             this.show_list_settings = false;
 
-            console.log(this.settings_update_response)
-
             // no is empty javascript native.
             if (jQuery.isEmptyObject(this.settings_update_response) || this.settings_update_response.error) {
                 console.log('No changes saved or no save attempt. Reverting.');
@@ -320,9 +383,19 @@ Vue.component('managed-url-list', {
 
 function enable_select(){
     $('.js-example-basic-multiple').select2({
-        placeholder: 'example.com, www.example.com, www.internet.nl, 1...',
+        placeholder: 'example.com, www.example.com, www.internet.nl, ...',
         tags: true,
         tokenSeparators: [',', ' '],
+        // hides the no results box, as this is pure tagbox only
+        // @see: https://stackoverflow.com/questions/18470917/disable-no-matches-found-text-and-autocomplete-on-select2
+        "language":{
+            "noResults" : function () { return ''; }
+        },
+
+        // after 26 characters searching became insanely slow. So don't match for now.
+        // this is not an issue caused by the matcher but by something else...
+        // matcher: function() {return null},
+
         createTag: function (params) {
             // This is an extremely naive implementation of domain validation. On the server tldextract is
             // used which is much more complete as it uses the public suffixes list.

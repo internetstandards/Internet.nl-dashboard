@@ -3,7 +3,7 @@ These testcases help to validate the working of the listmanagement API.
 
 Run these tests with tox -e test -- -k test_urllist_management
 """
-from dashboard.internet_nl_dashboard.logic.domains import (create_list, delete_list,
+from dashboard.internet_nl_dashboard.logic.domains import (create_list_by_name, delete_list,
                                                            delete_url_from_urllist,
                                                            get_urllist_content,
                                                            get_urllists_from_account, rename_list,
@@ -14,11 +14,11 @@ from dashboard.internet_nl_dashboard.models import Account
 def test_urllists(db) -> None:
     account, created = Account.objects.all().get_or_create(name="test")
 
-    list_1 = create_list(account, "test list 1")
-    list_1_remake = create_list(account, "test list 1")
+    list_1 = create_list_by_name(account, "test list 1")
+    list_1_remake = create_list_by_name(account, "test list 1")
     assert list_1 == list_1_remake
 
-    list_2 = create_list(account, "test list 2")
+    list_2 = create_list_by_name(account, "test list 2")
     assert list_1 != list_2
 
     list_content = get_urllist_content(account=account, urllist_id=list_1.pk)

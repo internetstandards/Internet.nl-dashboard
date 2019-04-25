@@ -26,10 +26,10 @@ urlpatterns = [
     # domain management
     path('domains/', domains.index),
     path('data/urllists/get/', domains.get_lists),
-    path('data/urllist/create/', domains.create_list_),
     path('data/urllist_content/get/<str:urllist_id>/', domains.get_urllist_content_),
     path('data/urllist/save_list_content/', domains.save_list_content),
     path('data/urllist/update_list_settings/', domains.update_list_settings_),
+    path('data/urllist/create_list/', domains.create_list_),
 
     # uploads of domains
     path('upload/', spreadsheet.upload),

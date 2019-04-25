@@ -1,7 +1,10 @@
 import logging
+from datetime import datetime, timedelta
 from typing import Any, Dict, List, Tuple
 
+import pytz
 from django.db.models import Prefetch
+from django.utils import timezone
 from tldextract import tldextract
 from websecmap.organizations.models import Url
 from websecmap.scanners.models import Endpoint
@@ -14,8 +17,83 @@ from dashboard.internet_nl_dashboard.models import Account, UrlList
 log = logging.getLogger(__package__)
 
 
-def operation_response(error: bool = False, success: bool = False, message: str = ""):
-    return {'error': error, 'success': success, 'message': message, 'state': "error" if error else "success"}
+def operation_response(error: bool = False, success: bool = False, message: str = "", data: Dict = None):
+    return {'error': error, 'success': success, 'message': message, 'state': "error" if error else "success",
+            'data': data}
+
+
+def determine_next_scan_moment(preference: str):
+    """
+    Converts one of the (many) string options to the next sensible date/time combination in the future.
+
+    disabled: yesterday.
+    every half year: first upcoming 1 july or 1 january
+    at the start of every quarter: 1 january, 1 april, 1 juli, 1 october
+    every 1st day of the month: 1 january, 1 february, etc.
+    twice per month: 1 january, 1 january + 2 weeks, 1 february, 1 february + 2 weeks, etc
+
+    :param preference:
+    :return:
+    """
+    now = timezone.now()
+
+    if preference == 'disabled':
+        return now - timedelta(days=1)
+
+    # months are base 1: january = 1 etc.
+    if preference == 'every half year':
+        if now.month in range(1, 6):
+            return datetime(year=now.year, month=7, day=1, hour=0, minute=0, second=0, tzinfo=pytz.utc)
+        return datetime(year=now.year + 1, month=1, day=1, hour=0, minute=0, second=0, tzinfo=pytz.utc)
+
+    if preference == 'at the start of every quarter':
+        if now.month in range(1, 3):
+            return datetime(year=now.year, month=4, day=1, hour=0, minute=0, second=0, tzinfo=pytz.utc)
+        if now.month in range(4, 6):
+            return datetime(year=now.year, month=4, day=1, hour=0, minute=0, second=0, tzinfo=pytz.utc)
+        if now.month in range(7, 9):
+            return datetime(year=now.year, month=4, day=1, hour=0, minute=0, second=0, tzinfo=pytz.utc)
+        if now.month in range(10, 12):
+            return datetime(year=now.year+1, month=1, day=1, hour=0, minute=0, second=0, tzinfo=pytz.utc)
+
+    if preference == 'every 1st day of the month':
+        if now.month == 12:
+            return datetime(year=now.year + 1, month=1, day=1, hour=0, minute=0, second=0, tzinfo=pytz.utc)
+        return datetime(year=now.year, month=now.month + 1, day=1, hour=0, minute=0, second=0, tzinfo=pytz.utc)
+
+    if preference == 'twice per month':
+        # since the 14'th day never causes a month or year rollover, we can simply schedule for the 15th day.
+        if now.day in range(1, 14):
+            return datetime(year=now.year, month=now.month, day=15, hour=0, minute=0, second=0, tzinfo=pytz.utc)
+
+        # otherwise exactly the same as the 1st day of every month
+        if now.month == 12:
+            return datetime(year=now.year + 1, month=1, day=1, hour=0, minute=0, second=0, tzinfo=pytz.utc)
+        return datetime(year=now.year, month=now.month + 1, day=1, hour=0, minute=0, second=0, tzinfo=pytz.utc)
+
+
+def create_list(account: Account, user_input: Dict) -> Dict[str, Any]:
+    expected_keys = ['id', 'name', 'enable_scans', 'scan_type', 'automated_scan_frequency', 'scheduled_next_scan']
+    if sorted(user_input.keys()) != sorted(expected_keys):
+        return operation_response(error=True, message="Missing settings.")
+
+    frequency = validate_list_automated_scan_frequency(user_input['automated_scan_frequency'])
+    data = {
+        'account': account,
+        'name': validate_list_name(user_input['name']),
+        'enable_scans': bool(user_input['enable_scans']),
+        'scan_type': validate_list_scan_type(user_input['scan_type']),
+        'automated_scan_frequency': frequency,
+        'scheduled_next_scan': determine_next_scan_moment(frequency)
+    }
+
+    urllist = UrlList(**data)
+    urllist.save()
+
+    # make sure the account is serializable.
+    data['account'] = account.id
+
+    return operation_response(success=True, message="List created.", data=data)
 
 
 # @pysnooper.snoop()
@@ -37,7 +115,6 @@ def update_list_settings(account: Account, user_input: Dict) -> Dict[str, Any]:
     }
     :return:
     """
-    log.debug(user_input)
 
     expected_keys = ['id', 'name', 'enable_scans', 'scan_type', 'automated_scan_frequency', 'scheduled_next_scan']
     if sorted(user_input.keys()) != sorted(expected_keys):
@@ -175,7 +252,7 @@ def save_urllist_content(account: Account, urllist_name: str, urls: List[str]) -
     cleaned_urls = clean_urls(urls)
 
     if cleaned_urls['correct']:
-        urllist = create_list(account=account, name=urllist_name)
+        urllist = create_list_by_name(account=account, name=urllist_name)
         counters = _add_to_urls_to_urllist(account, urllist.name, urls=cleaned_urls['correct'])
     else:
         counters = {'added_to_list': 0, 'already_in_list': 0}
@@ -193,7 +270,7 @@ def _add_to_urls_to_urllist(account: Account, urllist_name: str, urls: List[str]
 
     current_list = UrlList.objects.all().filter(name=urllist_name).first()
     if not current_list:
-        current_list = create_list(account, urllist_name)
+        current_list = create_list_by_name(account, urllist_name)
 
     for url in urls:
 
@@ -244,7 +321,7 @@ def clean_urls(urls: List[str]) -> Dict[str, List]:
     return result
 
 
-def create_list(account, name: str) -> UrlList:
+def create_list_by_name(account, name: str) -> UrlList:
 
     existing_list = UrlList.objects.all().filter(account=account, name=name).first()
 

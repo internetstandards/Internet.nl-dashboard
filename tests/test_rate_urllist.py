@@ -13,7 +13,7 @@ from websecmap.reporting.report import create_timeline, create_url_report
 from websecmap.scanners import ALL_SCAN_TYPES
 from websecmap.scanners.models import Endpoint, EndpointGenericScan
 
-from dashboard.internet_nl_dashboard.logic.domains import create_list
+from dashboard.internet_nl_dashboard.logic.domains import create_list_by_name
 from dashboard.internet_nl_dashboard.logic.urllist_dashboard_report import rate_urllists_now
 from dashboard.internet_nl_dashboard.models import Account, UrlListReport
 
@@ -30,7 +30,7 @@ def test_rate_urllists(db, monkeypatch) -> None:
 
     account, created = Account.objects.all().get_or_create(name="test")
 
-    list_1 = create_list(account, "test list 1")
+    list_1 = create_list_by_name(account, "test list 1")
 
     url, created = Url.objects.all().get_or_create(url='test.nl', created_on=day_0, not_resolvable=False)
 
