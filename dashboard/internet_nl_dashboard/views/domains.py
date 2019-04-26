@@ -7,8 +7,8 @@ from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render
 from websecmap.app.common import JSEncoder
 
-from dashboard.internet_nl_dashboard.logic.domains import (create_list, delete_list,
-                                                           get_urllist_content,
+from dashboard.internet_nl_dashboard.logic.domains import (alter_url_in_urllist, create_list,
+                                                           delete_list, get_urllist_content,
                                                            get_urllists_from_account,
                                                            save_urllist_content,
                                                            update_list_settings)
@@ -75,5 +75,18 @@ def create_list_(request):
 
 @login_required(login_url=LOGIN_URL)
 def delete_list_(request, list_id):
+    # todo: is this a post? CSRF is needed. check this.
     account = get_account(request)
     return JsonResponse(delete_list(account, list_id))
+
+
+@login_required
+def alter_url_in_urllist_(request):
+    account = get_account(request)
+
+    try:
+        user_input = json.loads(request.body)
+    except json.JSONDecodeError:
+        user_input = {}
+
+    return JsonResponse(alter_url_in_urllist(account, user_input))

@@ -31,6 +31,7 @@ urlpatterns = [
     path('data/urllist/update_list_settings/', domains.update_list_settings_),
     path('data/urllist/create_list/', domains.create_list_),
     path('data/urllist/delete/<int:list_id>/', domains.delete_list_),
+    path('data/urllist/url/save/', domains.alter_url_in_urllist_),
 
     # uploads of domains
     path('upload/', spreadsheet.upload),

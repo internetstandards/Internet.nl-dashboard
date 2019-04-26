@@ -22,6 +22,91 @@ def operation_response(error: bool = False, success: bool = False, message: str 
             'data': data}
 
 
+# todo: write test
+def alter_url_in_urllist(account, data):
+    # data = {'list_id': list.id, 'url_id': url.id, 'new_url_string': url.url}
+
+    expected_keys = ['list_id', 'url_id', 'new_url_string']
+    if check_keys(expected_keys, data):
+        return operation_response(error=True, message="Missing keys in data.")
+
+    # what was the old id we're changing?
+    old_url = Url.objects.all().filter(pk=data['url_id']).first()
+    if not old_url:
+        return operation_response(error=True, message="The old url does not exist.")
+
+    if old_url.url == data['new_url_string']:
+        # no changes
+        return operation_response(success=True, message="Saved.")
+
+    # is this really a list?
+    urllist = UrlList.objects.all().filter(account=account, pk=data['list_id']).first()
+    if not urllist:
+        return operation_response(error=True, message="List does not exist.")
+
+    # is the url valid?
+    extract = tldextract.extract(data['new_url_string'])
+    if not extract.suffix:
+        return operation_response(error=True, message="New url does not have the correct format.")
+
+    # fetch the url, or create it if it doesn't exist.
+    new_url, created = get_url(data['new_url_string'])
+
+    # don't throw away the url, only from the list. (don't call delete, as it will delete the record)
+    urllist.urls.remove(old_url)
+    # Save after deletion, in case the same url is added it will not cause a foreign key error.
+    urllist.save()
+
+    urllist.urls.add(new_url)
+    urllist.save()
+
+    # somewhat inefficient to do 4 queries, yet, good enough
+    old_url_has_mail_endpoint = Endpoint.objects.all().filter(url=old_url, is_dead=False, protocol='dns_soa').exists()
+    old_url_has_web_endpoint = Endpoint.objects.all().filter(url=old_url, is_dead=False, protocol='dns_a_aaa').exists()
+
+    if not created:
+        new_url_has_mail_endpoint = Endpoint.objects.all().filter(
+            url=new_url, is_dead=False, protocol='dns_soa').exists()
+        new_url_has_web_endpoint = Endpoint.objects.all().filter(
+            url=new_url, is_dead=False, protocol='dns_a_aaa').exists()
+    else:
+        new_url_has_mail_endpoint = 'unknown'
+        new_url_has_web_endpoint = 'unknown'
+
+    return operation_response(success=True, message="Saved.", data={
+        'created': {'id': new_url.id, 'url': new_url.url, 'created_on': new_url.created_on,
+                    'has_mail_endpoint': new_url_has_mail_endpoint,
+                    'has_web_endpoint': new_url_has_web_endpoint},
+        'removed': {'id': old_url.id, 'url': old_url.url, 'created_on': old_url.created_on,
+                    'has_mail_endpoint': old_url_has_mail_endpoint,
+                    'has_web_endpoint': old_url_has_web_endpoint},
+    })
+
+
+# todo: write test
+def get_url(new_url_string: str):
+
+    # first check if one exists, if not, create it.
+    url = Url.objects.all().filter(url=new_url_string).first()
+    if url:
+        return url, False
+
+    # url does not exist, create it.
+    extract = tldextract.extract(new_url_string)
+    if not extract.suffix:
+        raise ValueError('Invalid Url')
+
+    new_url = Url()
+    new_url.url = new_url_string
+    new_url.created_on = timezone.now()
+    new_url.save()
+
+    # todo: start finding endpoints directly after url has been created.
+
+    return new_url, True
+
+
+# todo: write test
 def determine_next_scan_moment(preference: str):
     """
     Converts one of the (many) string options to the next sensible date/time combination in the future.
@@ -140,7 +225,7 @@ def update_list_settings(account: Account, user_input: Dict) -> Dict[str, Any]:
     """
 
     expected_keys = ['id', 'name', 'enable_scans', 'scan_type', 'automated_scan_frequency', 'scheduled_next_scan']
-    if sorted(user_input.keys()) != sorted(expected_keys):
+    if check_keys(expected_keys, user_input):
         return operation_response(error=True, message="Missing settings.")
 
     urllist = UrlList.objects.all().filter(account=account, id=user_input['id'], is_deleted=False).first()
@@ -158,6 +243,11 @@ def update_list_settings(account: Account, user_input: Dict) -> Dict[str, Any]:
     urllist.save()
 
     return operation_response(success=True, message="Updated list settings")
+
+
+def check_keys(expected_keys, object):
+    if sorted(object.keys()) != sorted(expected_keys):
+        return False
 
 
 def validate_list_name(list_name):
@@ -251,6 +341,7 @@ def get_urllist_content(account: Account, urllist_id: int) -> dict:
         has_web_endpoint = len([x for x in url.relevant_endpoints if x.protocol == 'dns_a_aaaa']) > 0
 
         response['urls'].append({
+            'id': url.id,
             'url': url.url,
             'created_on': url.created_on,
             'resolves': not url.not_resolvable,
