@@ -134,3 +134,25 @@ small {
     font-size: 0.8em;
     font-style: italic;
 }
+
+.server-response-error {
+    border: 1px solid silver;
+    border-radius: 5px;
+    padding: 10px;
+    margin-bottom: 10px;
+    background-color: #f9e0e4;
+    color: darkred;
+}
+
+.server-response-success{
+    border: 1px solid silver;
+    border-radius: 5px;
+    padding: 10px;
+    margin-bottom: 10px;
+    background-color: lightgreen;
+    color: darkgreen;
+}
+
+label {
+    font-weight: 600;
+}

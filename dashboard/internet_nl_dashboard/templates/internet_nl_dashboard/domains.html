@@ -5,6 +5,7 @@
     <!-- https://bootstrap-vue.js.org/docs/components/table -->
     <!-- do we need undo options? -->
     <!-- https://github.com/ArthurClemens/Javascript-Undo-Manager -->
+<!-- todo: translation -->
 
 {% block content %}
 <script type="text/x-template" id="modal-template">
@@ -218,16 +219,14 @@
         </div>
 
         <!-- modal dialogs are below the content to make sure the tab order stays working. -->
-        <modal v-if="show_list_settings" @close="stop_editing_settings()">
+        <modal v-if="show_list_settings" @close="cancel_editing_settings()">
             <h3 slot="header">🖊 Edit list settings</h3>
             <div slot="body">
-                <div v-if="settings_update_response.error">
-                    <!-- todo: translation -->
+                <div v-if="settings_update_response.error" class="server-response-error">
                     <h2>❌ Not saved</h2>
                     {{ settings_update_response.message }}
                 </div>
-                <div v-if="settings_update_response.success">
-                    <!-- todo: translation -->
+                <div v-if="settings_update_response.success"  class="server-response-success">
                     <h2>✅ Saved!</h2>
                     {{ settings_update_response.message }}
                 </div>
@@ -235,16 +234,19 @@
                 <label for="name">List name:</label>
                 <input id="name" type="text" maxlength="120" v-model="list.name"><br><br>
 
-                <label for="enable_scans">Enable scans:</label>
-                <input id="enable_scans" type="checkbox" v-model="list.enable_scans"><br><br>
+                <label for="enable_scans">Enable scans:</label><br>
+                <input id="enable_scans" type="checkbox" v-model="list.enable_scans">
+                <span v-if="list.enable_scans">Enabled</span>
+                <span v-if="!list.enable_scans">Disabled</span>
+                <br><br>
 
-                <label for="scan_type">What scan to run:</label>
+                <label for="scan_type">What scan to run:</label><br>
                 <select id="scan_type" v-model="list.scan_type">
                         <option value="web">Web</option>
                         <option value="mail">Mail</option>
                 </select><br><br>
 
-                <label for="automated_scan_frequency">How often should the scan run?:</label>
+                <label for="automated_scan_frequency">How often should the scan run?:</label><br>
                 <select id="automated_scan_frequency" v-model="list.automated_scan_frequency">
                     <option value="disabled">Disabled</option>
                     <option value="every half year">Every half year</option>
@@ -255,7 +257,7 @@
 
             </div>
             <div slot="footer">
-                <button @click="stop_editing_settings()">Close</button>
+                <button @click="cancel_editing_settings()">Close</button>
                 <button class="modal-default-button" @click="update_list_settings()">Update</button>
             </div>
         </modal>
@@ -263,7 +265,7 @@
         <modal v-if="show_deletion" @close="stop_deleting()">
             <h3 slot="header">Delete list</h3>
             <div slot="body">
-                <div v-if="delete_response.error">
+                <div v-if="delete_response.error" class="server_response_error">
                     <h2>❌ Could not delete</h2>
                     {{ delete_response.message }}
                 </div>
@@ -422,6 +424,14 @@ Vue.component('managed-url-list', {
 
                     // The upcoming scan date has probably changed, and we want to reflect that in the UI.
                     self.list = server_response.data;
+                    // make sure the cancel button goes to the last save.
+                    self.old_list_settings = self.copy_values(self.list);
+
+                    if (server_response.success){
+                        // self.stop_editing_settings();
+                        self.show_list_settings = false;
+                        self.settings_update_response = {};
+                    }
                 });
         },
         start_editing_settings: function(){
@@ -429,20 +439,21 @@ Vue.component('managed-url-list', {
             // here a weakness is of js is showing:
             // https://stackoverflow.com/questions/728360/how-do-i-correctly-clone-a-javascript-object
             // luckily we can use the simple approach...
-            this.old_list_settings = JSON.parse(JSON.stringify(this.list));
+            this.old_list_settings = this.copy_values(this.list);
             this.settings_update_response = {};
             this.show_list_settings = true;
         },
         stop_editing_settings: function(){
-            // reset the state
             this.show_list_settings = false;
-
-            // no is empty javascript native.
-            if (jQuery.isEmptyObject(this.settings_update_response) || this.settings_update_response.error) {
-                console.log('No changes saved or no save attempt. Reverting.');
-                this.list = JSON.parse(JSON.stringify(this.old_list_settings));
-            }
             this.settings_update_response = {};
+        },
+        cancel_editing_settings: function(){
+            this.list = this.copy_values(this.old_list_settings);
+            this.stop_editing_settings();
+        },
+        copy_values: function(obj){
+            // does not copy methods.
+            return JSON.parse(JSON.stringify(obj));
         },
         start_deleting: function(){
             this.show_deletion = true;
