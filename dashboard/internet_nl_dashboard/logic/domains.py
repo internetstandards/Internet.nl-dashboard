@@ -175,7 +175,17 @@ def update_list_settings(account: Account, user_input: Dict) -> Dict[str, Any]:
     if check_keys(expected_keys, user_input):
         return operation_response(error=True, message="Missing settings.")
 
-    urllist = UrlList.objects.all().filter(account=account, id=user_input['id'], is_deleted=False).first()
+    prefetch = Prefetch(
+        'accountinternetnlscan_set',
+        queryset=AccountInternetNLScan.objects.order_by('-id').select_related('scan'),
+        to_attr='last_scan'
+    )
+
+    urllist = UrlList.objects.all().filter(
+        account=account,
+        id=user_input['id'],
+        is_deleted=False
+    ).prefetch_related(prefetch).first()
 
     if not urllist:
         return operation_response(error=True, message="No list of urls found.")
@@ -191,14 +201,18 @@ def update_list_settings(account: Account, user_input: Dict) -> Dict[str, Any]:
         'enable_scans': bool(user_input['enable_scans']),
         'scan_type': validate_list_scan_type(user_input['scan_type']),
         'automated_scan_frequency': frequency,
-        'scheduled_next_scan': UrlList.determine_next_scan_moment(frequency)
+        'scheduled_next_scan': UrlList.determine_next_scan_moment(frequency),
     }
 
-    urllist = UrlList(**data)
-    urllist.save()
+    updarted_urllist = UrlList(**data)
+    updarted_urllist.save()
 
     # make sure the account is serializable.
     data['account'] = account.id
+
+    # inject the last scan information.
+    data['last_scan'] = None if not len(urllist.last_scan) else urllist.last_scan[0].scan.started_on.isoformat()
+    data['last_scan_finished'] = None if not len(urllist.last_scan) else urllist.last_scan[0].scan.finished
 
     return operation_response(success=True, message="Updated list settings", data=data)
 

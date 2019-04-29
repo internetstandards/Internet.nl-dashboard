@@ -428,9 +428,7 @@ Vue.component('managed-url-list', {
                     self.old_list_settings = self.copy_values(self.list);
 
                     if (server_response.success){
-                        // self.stop_editing_settings();
-                        self.show_list_settings = false;
-                        self.settings_update_response = {};
+                        self.stop_editing_settings();
                     }
                 });
         },
