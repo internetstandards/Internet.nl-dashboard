@@ -57,20 +57,32 @@ def compose_task(
         urllists = UrlList.objects.all().filter(account=account, enable_scans=True, is_deleted=False)
         urllists = add_model_filter(urllists, **kwargs)
         for urllist in urllists:
-            """
-            Lists are split between their respective capabilities. This means that some urls will be scanned for web,
-            some for mail and some both depending on the list content.
-            """
-            if urllist.scan_type == 'web':
-                tasks = add_scan_tasks(tasks, account, urllist, 'web', 'dns_a_aaaa',)
-
-            if urllist.scan_type == 'mail':
-                tasks = add_scan_tasks(tasks, account, urllist, 'mail_dashboard', 'dns_soa', )
+            tasks.append(create_dashboard_scan_tasks(urllist))
 
     return group(tasks)
 
 
-def add_scan_tasks(tasks: List, account: Account, urllist: UrlList, save_as_scan_type: str, endpoint_type: str) -> List:
+def create_dashboard_scan_tasks(urllist):
+    # No urls means that the scan will not be registered in the API. So that would be a useless call.
+    if urllist.urls.count() == 0:
+        return group([])
+
+    tasks = []
+    """
+    Lists are split between their respective capabilities. This means that some urls will be scanned for web,
+    some for mail and some both depending on the list content.
+    """
+
+    if urllist.scan_type == 'web':
+        tasks.append(create_dashboard_scan_task(urllist.account, urllist, 'web', 'dns_a_aaaa'))
+
+    if urllist.scan_type == 'mail':
+        tasks.append(create_dashboard_scan_task(urllist.account, urllist, 'mail_dashboard', 'dns_soa'))
+
+    return group(tasks)
+
+
+def create_dashboard_scan_task(account: Account, urllist: UrlList, save_as_scan_type: str, endpoint_type: str) -> Task:
 
     # The scan name is arbitrary. Add a lot of info to it so the scan can be tracked.
     # A UUID will be added during registering
@@ -79,7 +91,7 @@ def add_scan_tasks(tasks: List, account: Account, urllist: UrlList, save_as_scan
 
     api_url = API_URL_WEB if save_as_scan_type == 'web' else API_URL_MAIL
 
-    tasks.append(
+    return (
         # Should we only try to get the specifically needed dns_endpoint? At what volume we should / must?
         # This discovers dns_endpoints. On the basis of this we know what urls we should scan an which
         # ones we should not. We'll only scan if there are valid endpoint, just like at internet.nl
@@ -100,8 +112,6 @@ def add_scan_tasks(tasks: List, account: Account, urllist: UrlList, save_as_scan
         # When the scan is created, the scan is connected to the account for tracking purposes.
         # This is visualized in the scan monitor.
         | connect_scan_to_account.s(account, urllist))
-
-    return tasks
 
 
 @app.task(queue='storage')

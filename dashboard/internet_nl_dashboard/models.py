@@ -1,10 +1,13 @@
 import logging
+from datetime import datetime, timedelta
 
+import pytz
 import requests
 from cryptography.fernet import Fernet
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.db import models
+from django.utils import timezone
 from requests.auth import HTTPBasicAuth
 from websecmap.organizations.models import Url
 from websecmap.reporting.models import SeriesOfUrlsReportMixin
@@ -181,7 +184,8 @@ class UrlList(models.Model):
 
     scheduled_next_scan = models.DateTimeField(
         help_text="An indication at what moment the scan will be started. The scan can take a while, thus this does "
-                  "not tell you when a scan will be finished."
+                  "not tell you when a scan will be finished.",
+        default=timezone.now() - timedelta(days=1)
     )
 
     is_deleted = models.BooleanField(
@@ -194,6 +198,66 @@ class UrlList(models.Model):
 
     def __str__(self):
         return "%s/%s" % (self.account, self.name)
+
+    def is_due_for_scanning(self) -> bool:
+        return timezone.now() > self.scheduled_next_scan
+
+    def renew_scan_moment(self) -> None:
+        self.scheduled_next_scan = self.determine_next_scan_moment(self.automated_scan_frequency)
+        self.save(update_fields=['scheduled_next_scan'])
+
+    # todo: write test
+    @staticmethod
+    def determine_next_scan_moment(preference: str):
+        """
+        Converts one of the (many) string options to the next sensible date/time combination in the future.
+
+        disabled: yesterday.
+        every half year: first upcoming 1 july or 1 january
+        at the start of every quarter: 1 january, 1 april, 1 juli, 1 october
+        every 1st day of the month: 1 january, 1 february, etc.
+        twice per month: 1 january, 1 january + 2 weeks, 1 february, 1 february + 2 weeks, etc
+
+        :param preference:
+        :return:
+        """
+        now = timezone.now()
+
+        if preference == 'disabled':
+            return now - timedelta(days=1)
+
+        # months are base 1: january = 1 etc.
+        if preference == 'every half year':
+            if now.month in range(1, 6):
+                return datetime(year=now.year, month=7, day=1, hour=0, minute=0, second=0, tzinfo=pytz.utc)
+            return datetime(year=now.year + 1, month=1, day=1, hour=0, minute=0, second=0, tzinfo=pytz.utc)
+
+        if preference == 'at the start of every quarter':
+            if now.month in range(1, 3):
+                return datetime(year=now.year, month=4, day=1, hour=0, minute=0, second=0, tzinfo=pytz.utc)
+            if now.month in range(4, 6):
+                return datetime(year=now.year, month=4, day=1, hour=0, minute=0, second=0, tzinfo=pytz.utc)
+            if now.month in range(7, 9):
+                return datetime(year=now.year, month=4, day=1, hour=0, minute=0, second=0, tzinfo=pytz.utc)
+            if now.month in range(10, 12):
+                return datetime(year=now.year + 1, month=1, day=1, hour=0, minute=0, second=0, tzinfo=pytz.utc)
+
+        if preference == 'every 1st day of the month':
+            if now.month == 12:
+                return datetime(year=now.year + 1, month=1, day=1, hour=0, minute=0, second=0, tzinfo=pytz.utc)
+            return datetime(year=now.year, month=now.month + 1, day=1, hour=0, minute=0, second=0, tzinfo=pytz.utc)
+
+        if preference == 'twice per month':
+            # since the 14'th day never causes a month or year rollover, we can simply schedule for the 15th day.
+            if now.day in range(1, 14):
+                return datetime(year=now.year, month=now.month, day=15, hour=0, minute=0, second=0, tzinfo=pytz.utc)
+
+            # otherwise exactly the same as the 1st day of every month
+            if now.month == 12:
+                return datetime(year=now.year + 1, month=1, day=1, hour=0, minute=0, second=0, tzinfo=pytz.utc)
+            return datetime(year=now.year, month=now.month + 1, day=1, hour=0, minute=0, second=0, tzinfo=pytz.utc)
+
+        raise ValueError('String %s could not be translated to a scan moment.' % preference)
 
 
 class AccountInternetNLScan(models.Model):

@@ -56,18 +56,23 @@ def test_urllists(db) -> None:
     list_content = get_urllist_content(account=account, urllist_id=list_1.pk)
     assert len(list_content['urls']) == 2
 
+    del item_details
+    del items_deleted
+
     """ Delete the entire list, we'll get nothing back, only an empty response. """
-    items_deleted, item_details = delete_list(account, urllist_name="test list 1")
+    operation_response = delete_list(account=account, list_id=list_1.id)
 
     # it deletes two urls and the list itself, makes 3
-    assert items_deleted == 3
+    assert operation_response['success'] is True
     list_content = get_urllist_content(account=account, urllist_id=list_1.pk)
-    assert len(list_content['urls']) == 0
+
+    # deletion is administrative, so the urls are still connected.
+    assert len(list_content['urls']) == 2
 
     account2, created = Account.objects.all().get_or_create(name="test 2")
     """ You cannot delete things from another account """
-    items_deleted, item_details = delete_list(account2, urllist_name="test list 1")
-    assert items_deleted == 0
+    operation_response = delete_list(account=account2, list_id=list_1.id)
+    assert operation_response['success'] is False
 
     """ A new list will not be created if there are no urls for it..."""
     added = save_urllist_content(account, "should be empty", [])
