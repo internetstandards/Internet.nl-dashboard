@@ -152,15 +152,23 @@
         </h3>
 
         <div v-if="is_opened">
+            <span v-if="list.last_scan">
+                Last scan started: {{ humanize_date(list.last_scan) }}.
+                <span v-if="!list.last_scan_finished">(still running)</span>
+                <span v-if="list.last_scan_finished">(finished)</span>
+            </span>
+            <span v-if="!list.last_scan">
+                Last scan started: Not scanned before.
+            </span>
+
             <h4>Settings</h4>
-
             <div class="scan-configuration">
-                Todo: Most Recent Scan: ???
-
                 <div v-if="list.enable_scans">
                     Type of scan performed: {{ list.scan_type }} <br>
                     Scan frequency: {{ list.automated_scan_frequency }} <br>
-                    Next scheduled scan: {{ humanize_date(list.scheduled_next_scan) }} <br>
+                    <span v-if="list.automated_scan_frequency !== 'disabled'"></span>
+                        Next scheduled scan: {{ humanize_date(list.scheduled_next_scan) }} <br>
+                    </span>
                 </div>
                 <div v-if="!list.enable_scans">
                     Scanning of this list is disabled.

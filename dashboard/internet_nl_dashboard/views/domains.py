@@ -31,7 +31,6 @@ def index(request) -> HttpResponse:
 def get_lists(request) -> JsonResponse:
     account = get_account(request)
 
-    # todo: make sure the output is safe, or converted to safe.
     response = get_urllists_from_account(account=account)
 
     return JsonResponse(response, encoder=JSEncoder, safe=False)

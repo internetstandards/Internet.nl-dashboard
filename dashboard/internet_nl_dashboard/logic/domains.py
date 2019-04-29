@@ -7,7 +7,7 @@ from tldextract import tldextract
 from websecmap.organizations.models import Url
 from websecmap.scanners.models import Endpoint
 
-from dashboard.internet_nl_dashboard.models import Account, UrlList
+from dashboard.internet_nl_dashboard.models import Account, AccountInternetNLScan, UrlList
 
 # import pysnooper
 
@@ -241,7 +241,17 @@ def get_urllists_from_account(account: Account) -> List:
     :param account:
     :return:
     """
-    urllists = UrlList.objects.all().filter(account=account, is_deleted=False).order_by('name')
+
+    prefetch = Prefetch(
+        'accountinternetnlscan_set',
+        queryset=AccountInternetNLScan.objects.order_by('-id').select_related('scan'),
+        to_attr='last_scan'
+    )
+
+    urllists = UrlList.objects.all().filter(
+        account=account,
+        is_deleted=False
+    ).order_by('name').prefetch_related(prefetch).all()
 
     response = []
     # todo: amount of urls, dead_urls etc... Probably add lifecycle to this?
@@ -254,6 +264,8 @@ def get_urllists_from_account(account: Account) -> List:
             'scan_type': urllist.scan_type,
             'automated_scan_frequency': urllist.automated_scan_frequency,
             'scheduled_next_scan': urllist.scheduled_next_scan,
+            'last_scan': None if not len(urllist.last_scan) else urllist.last_scan[0].scan.started_on.isoformat(),
+            'last_scan_finished': None if not len(urllist.last_scan) else urllist.last_scan[0].scan.finished
         })
 
     return response
