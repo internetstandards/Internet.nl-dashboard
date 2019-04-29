@@ -166,9 +166,9 @@
                 <div v-if="list.enable_scans">
                     Type of scan performed: {{ list.scan_type }} <br>
                     Scan frequency: {{ list.automated_scan_frequency }} <br>
-                    <span v-if="list.automated_scan_frequency !== 'disabled'"></span>
+                    <div v-if="list.automated_scan_frequency !== 'disabled'">
                         Next scheduled scan: {{ humanize_date(list.scheduled_next_scan) }} <br>
-                    </span>
+                    </div>
                 </div>
                 <div v-if="!list.enable_scans">
                     Scanning of this list is disabled.
@@ -419,6 +419,9 @@ Vue.component('managed-url-list', {
                     console.log(server_response);
                     self.settings_update_response = server_response;
                     self.settings_loading = false;
+
+                    // The upcoming scan date has probably changed, and we want to reflect that in the UI.
+                    self.list = server_response.data;
                 });
         },
         start_editing_settings: function(){

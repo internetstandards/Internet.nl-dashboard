@@ -183,13 +183,24 @@ def update_list_settings(account: Account, user_input: Dict) -> Dict[str, Any]:
     # Yes, you can try and set any value. Values that are not recognized do not result in errors / error messages,
     # instead they will be overwritten with the default. This means less interaction with users / less annoyance over
     # errors on such simple forms.
-    urllist.name = validate_list_name(user_input['name'])
-    urllist.enable_scans = bool(user_input['enable_scans'])
-    urllist.scan_type = validate_list_scan_type(user_input['scan_type'])
-    urllist.automated_scan_frequency = validate_list_automated_scan_frequency(user_input['automated_scan_frequency'])
+    frequency = validate_list_automated_scan_frequency(user_input['automated_scan_frequency'])
+    data = {
+        'id': urllist.id,
+        'account': account,
+        'name': validate_list_name(user_input['name']),
+        'enable_scans': bool(user_input['enable_scans']),
+        'scan_type': validate_list_scan_type(user_input['scan_type']),
+        'automated_scan_frequency': frequency,
+        'scheduled_next_scan': UrlList.determine_next_scan_moment(frequency)
+    }
+
+    urllist = UrlList(**data)
     urllist.save()
 
-    return operation_response(success=True, message="Updated list settings")
+    # make sure the account is serializable.
+    data['account'] = account.id
+
+    return operation_response(success=True, message="Updated list settings", data=data)
 
 
 def check_keys(expected_keys, object):

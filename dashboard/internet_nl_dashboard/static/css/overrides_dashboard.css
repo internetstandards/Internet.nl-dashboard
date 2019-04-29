@@ -128,3 +128,9 @@ Vue Modal
   -webkit-transform: scale(1.1);
   transform: scale(1.1);
 }
+
+
+small {
+    font-size: 0.8em;
+    font-style: italic;
+}

@@ -239,9 +239,9 @@ class UrlList(models.Model):
             if now.month in range(1, 3):
                 return datetime(year=now.year, month=4, day=1, hour=0, minute=0, second=0, tzinfo=pytz.utc)
             if now.month in range(4, 6):
-                return datetime(year=now.year, month=4, day=1, hour=0, minute=0, second=0, tzinfo=pytz.utc)
+                return datetime(year=now.year, month=7, day=1, hour=0, minute=0, second=0, tzinfo=pytz.utc)
             if now.month in range(7, 9):
-                return datetime(year=now.year, month=4, day=1, hour=0, minute=0, second=0, tzinfo=pytz.utc)
+                return datetime(year=now.year, month=10, day=1, hour=0, minute=0, second=0, tzinfo=pytz.utc)
             if now.month in range(10, 12):
                 return datetime(year=now.year + 1, month=1, day=1, hour=0, minute=0, second=0, tzinfo=pytz.utc)
 
