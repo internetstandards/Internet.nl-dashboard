@@ -181,7 +181,9 @@
 
             <div class="bulk-add-new">
                 <label for="add_urls[]">Bulk add new:</label>
-                <select class="js-example-basic-multiple" name="add_urls[]" multiple="multiple" style="width: 100%"></select>
+                <select2 v-model="bulk_add_new_urls"></select2>
+
+                <button @click="bulk_add_new()">Bulk Add</button>
             </div>
 
             <div style="column-count: 2;">
@@ -295,6 +297,12 @@
         </modal>
     </div>
 </script>
+
+<script type="text/x-template" id="select2-template">
+  <select style="width: 95%" multiple="multiple">
+    <slot></slot>
+  </select>
+</script>
 {% endverbatim %}
 
 <script>
@@ -302,6 +310,75 @@ Vue.component('modal', {
   template: '#modal-template'
 });
 
+Vue.component('select2', {
+    // https://vuejs.org/v2/examples/select2.html
+  props: ['options', 'value'],
+  template: '#select2-template',
+  mounted: function () {
+    var vm = this;
+    $(this.$el)
+      // init select2
+      .select2({
+        placeholder: 'example.com, www.example.com, www.internet.nl, ...',
+        tags: true,
+        tokenSeparators: [',', ' '],
+        // hides the no results box, as this is pure tagbox only
+        // @see: https://stackoverflow.com/questions/18470917/disable-no-matches-found-text-and-autocomplete-on-select2
+        "language":{
+            "noResults" : function () { return ''; }
+        },
+          multiple: true,
+
+        createTag: function (params) {
+            // This is an extremely naive implementation of domain validation. On the server tldextract is
+            // used which is much more complete as it uses the public suffixes list.
+            // This is just a convenience check that something with a dot is entered.
+            let term = $.trim(params.term);
+
+            // use the most naive (fast) 'url' validator. All validation is done server side anyway, and
+            // verifying that something is an url with unicode characters and such is not really a thing.
+            var pattern = new RegExp('^.*\\.[-a-z]{2,}$'); // domain name
+            if (!pattern.test(term)) {
+                return null;
+            }
+
+            if (term === '') {
+                return null;
+            }
+
+            return {
+                id: term,
+                text: term,
+            }
+        }
+    }).val(
+        this.value
+      ).trigger('change')
+      // emit event on change.
+      .on('change', function () {
+
+          // Ok, this was not easy to figure out. This is the most old school approach of getting all option values.
+          // I would expect to run .val() or someething, but that didn't update etc..
+          // this approach is not reactive, but it doesn't need to be.
+          let my_data = [];
+            for (let i = 0; i < this.options.length; i++) {
+                my_data.push(this.options[i].text);
+            }
+
+          vm.$emit('input', my_data)  // can't get all...
+      })
+  },
+    /* this does not update:
+    computed: {
+      // at least this works...
+        all_options: function(){
+            return $(this.$el).val();
+        }
+    },*/
+  destroyed: function () {
+    $(this.$el).off().select2('destroy')
+  }
+});
 
 // todo: add new, remove, drag to other list(?)
 vueListManager = new Vue({
@@ -357,15 +434,13 @@ vueListManager = new Vue({
                 '/data/urllist/create_list/', this.new_list, this, function(self, server_response){
                     self.add_new_response = server_response;
                     if (!jQuery.isEmptyObject(self.add_new_response.data)){
-                        console.log(self.lists);
-                        console.log(self);
                         // todo: should we order the list alphabetically / or re-apply the orderering there is now?
                         // how do we scroll to the new list?
                         // is it possible to have a an animation on everything that is added to the list?
 
                         // add the item at the beginning, as it's the closest to the add button.
                         // could also add it alphabetically, but that doesn't really help as the list might get lost
-                        // in the many lists out there.
+                        // in the many lists out there. (doesn't work)
                         self.lists.push(self.add_new_response.data);
                     }
                     self.add_new_loading = false;
@@ -395,7 +470,6 @@ Vue.component('managed-url-list', {
             old_list_settings: {},
 
             // everything to do with deleting this list
-            // todo: how is it removed from the overall list?
             show_deletion: false,
             delete_response: {},
             // is deleted is set to hide one of the managers. It will not be shown next load anyway and you can't
@@ -405,6 +479,9 @@ Vue.component('managed-url-list', {
             // everything to do with editing urls in the list:
             url_edit: '',
             original_url_value: '',
+
+            // everything that has to do with adding urls:
+            bulk_add_new_urls: [],
         }
     },
     mounted: function () {
@@ -511,7 +588,7 @@ Vue.component('managed-url-list', {
         cancel_edit_url: function(){
             if (!this.url_edit)
                 return;
-            
+
             if (document.getElementById(this.url_edit)){
                 document.getElementById(this.url_edit).value = this.original_url_value;
             }
@@ -565,6 +642,11 @@ Vue.component('managed-url-list', {
             );
 
         },
+        bulk_add_new: function(){
+            // todo: post bulk_add_new_urls and handle the response. It will have a number of added urls and some
+            // feedback on what urls where not added. (just like import spreadsheet).
+            // Getting bulk_add_new_urls to work was pretty difficult due to too many layers of abstractions.
+        }
     },
     template: '#managed-url-list'
 });
@@ -596,7 +678,11 @@ function enable_select(){
             // we want to support unicode...
             // http://www.w3.org/TR/html5/links.html#attr-hyperlink-href:
             // todo: this pattern fails when the match is not found under N characters.
-            var pattern = new RegExp('^((([a-z\\d]([a-z\\d-]*[a-z\\d])*)\\.)+[a-z]{2,})$'); // domain name
+            //var pattern = new RegExp('^((([a-z\\d]([a-z\\d-]*[a-z\\d])*)\\.)+[a-z]{2,})$'); // domain name
+            // to prevent all kinds of half baked regexes that don't support unicode well and etc, we'll use the most
+            // half baked regex possible that performs pretty well. This saves time waiting during entering. Validation
+            // is still done server side...
+            var pattern = new RegExp('^.*\\.[-a-z]{2,}$'); // domain name
             if (!pattern.test(term)) {
                 return null;
             }
