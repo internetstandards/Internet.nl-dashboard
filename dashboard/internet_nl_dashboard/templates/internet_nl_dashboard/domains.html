@@ -47,7 +47,6 @@
 
 <div id="list_manager"></div>
 {% verbatim %}
-<!-- Todo: find nice edit component to inline edit. -->
 <script type="x-template" id="lists">
     <div>
         <modal v-if="show_new" @close="stop_adding_new()">
@@ -55,13 +54,11 @@
 
             <div slot="body">
 
-                <div v-if="add_new_response.error">
-                    <!-- todo: translation -->
+                <div v-if="add_new_response.error" class="server-response-error">
                     <h2>❌ Not saved</h2>
                     {{ add_new_response.message }}
                 </div>
-                <div v-if="add_new_response.success">
-                    <!-- todo: translation -->
+                <div v-if="add_new_response.success" class="server-response-success">
                     <h2>✅ Saved!</h2>
                     {{ add_new_response.message }}
                 </div>
@@ -74,8 +71,8 @@
 
                 <label for="scan_type">What scan to run:</label>
                 <select id="scan_type" v-model="new_list.scan_type">
-                        <option value="web">Web</option>
-                        <option value="mail">Mail</option>
+                    <option value="web">Web</option>
+                    <option value="mail">Mail</option>
                 </select><br><br>
 
                 <label for="automated_scan_frequency">How often should the scan run?:</label>
@@ -140,7 +137,7 @@
 
 </style>
 <script type="x-template" id="managed-url-list">
-    <div class="managed-url-list">
+    <div class="managed-url-list" v-if="!is_deleted">
         <h3>
             <button v-if="!is_opened" @click="open_list()" value="load">Open</button>
             <button v-if="is_opened" @click="close_list()" value="load">Close</button>
@@ -265,27 +262,30 @@
         <modal v-if="show_deletion" @close="stop_deleting()">
             <h3 slot="header">Delete list</h3>
             <div slot="body">
-                <div v-if="delete_response.error" class="server_response_error">
+                <div v-if="delete_response.error" class="server-response-error">
                     <h2>❌ Could not delete</h2>
                     {{ delete_response.message }}
                 </div>
-                <div v-if="delete_response.success">
+                <div v-if="delete_response.success" class="server-response-success">
                     <h2>✅ Deleted!</h2>
                     {{ delete_response.message }}
                 </div>
 
-                <label for="name">List name:</label>
-                {{ list.name }}
+                <label for="name">List name:</label><br>
+                {{ list.name }}<br>
+                <br>
 
+                <label for="enable_scans">Enable scans:</label><br>
+                {{ list.enable_scans }}<br>
+                <br>
 
-                <label for="enable_scans">Enable scans:</label>
-                {{ list.enable_scans }}
+                <label for="scan_type">What scan to run:</label><br>
+                {{ list.scan_type }}<br>
+                <br>
 
-                <label for="scan_type">What scan to run:</label>
-                {{ list.scan_type }}
-
-                <label for="automated_scan_frequency">How often should the scan run?:</label>
-                {{ list.automated_scan_frequency }}
+                <label for="automated_scan_frequency">How often should the scan run?:</label><br>
+                {{ list.automated_scan_frequency }}<br>
+                <br>
 
             </div>
             <div slot="footer">
@@ -388,6 +388,9 @@ Vue.component('managed-url-list', {
             // todo: how is it removed from the overall list?
             show_deletion: false,
             delete_response: {},
+            // is deleted is set to hide one of the managers. It will not be shown next load anyway and you can't
+            // edit it anymore server side.
+            is_deleted: false,
 
             // everything to do with editing urls in the list:
             url_edit: '',
@@ -462,8 +465,14 @@ Vue.component('managed-url-list', {
         },
         confirm_deletion: function() {
             this.asynchronous_json_post(
-                '/data/urllist/delete/', this.list.id, this, function (self, server_response) {
+                '/data/urllist/delete/', {'id': this.list.id}, this, function (self, server_response) {
                     self.delete_response = server_response;
+
+                    if (server_response.success){
+                        // remove / hide this thing...
+                        self.is_deleted = true;
+                        self.stop_deleting();
+                    }
                 }
             );
         },

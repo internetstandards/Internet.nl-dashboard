@@ -73,10 +73,15 @@ def create_list_(request):
 
 
 @login_required(login_url=LOGIN_URL)
-def delete_list_(request, list_id):
-    # todo: is this a post? CSRF is needed. check this.
+def delete_list_(request):
+
+    try:
+        user_input = json.loads(request.body)['id']
+    except json.JSONDecodeError:
+        user_input = 0
+
     account = get_account(request)
-    return JsonResponse(delete_list(account, list_id))
+    return JsonResponse(delete_list(account, user_input))
 
 
 @login_required

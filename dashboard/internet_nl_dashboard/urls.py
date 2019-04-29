@@ -30,7 +30,7 @@ urlpatterns = [
     path('data/urllist/save_list_content/', domains.save_list_content),
     path('data/urllist/update_list_settings/', domains.update_list_settings_),
     path('data/urllist/create_list/', domains.create_list_),
-    path('data/urllist/delete/<int:list_id>/', domains.delete_list_),
+    path('data/urllist/delete/', domains.delete_list_),
     path('data/urllist/url/save/', domains.alter_url_in_urllist_),
 
     # uploads of domains
