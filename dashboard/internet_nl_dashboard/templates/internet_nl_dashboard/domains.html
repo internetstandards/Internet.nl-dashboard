@@ -321,8 +321,17 @@ vueListManager = new Vue({
     },
     mounted: function () {
         this.load();
+        document.addEventListener('keyup', this.close_all_windows_on_escape);
     },
     methods: {
+
+        close_all_windows_on_escape (e) {
+            // a naive escpe to close dialog option
+            if (e.keyCode === 27) {
+                this.show_new = false;
+            }
+        },
+
         load: function() {
             this.get_lists();
         },
@@ -338,7 +347,6 @@ vueListManager = new Vue({
                 'automated_scan_frequency': 'disabled', 'scheduled_next_scan': '1'};
             this.show_new = true;
             this.add_new_response = {};
-
         },
         stop_adding_new: function() {
             this.show_new = false;
@@ -355,7 +363,9 @@ vueListManager = new Vue({
                         // how do we scroll to the new list?
                         // is it possible to have a an animation on everything that is added to the list?
 
-                        // the data section contains what we've added
+                        // add the item at the beginning, as it's the closest to the add button.
+                        // could also add it alphabetically, but that doesn't really help as the list might get lost
+                        // in the many lists out there.
                         self.lists.push(self.add_new_response.data);
                     }
                     self.add_new_loading = false;
@@ -397,10 +407,22 @@ Vue.component('managed-url-list', {
             original_url_value: '',
         }
     },
+    mounted: function () {
+        document.addEventListener('keyup', this.close_all_windows_on_escape);
+    },
     props: {
         initial_list: Object,
     },
     methods: {
+        close_all_windows_on_escape (e) {
+            // a naive escpe to close dialog option
+            if (e.keyCode === 27) {
+                this.stop_editing_settings();
+                this.stop_deleting();
+                this.cancel_edit_url();
+            }
+        },
+
         open_list: function(){
             this.get_urls();
             this.is_opened = true;
@@ -462,6 +484,7 @@ Vue.component('managed-url-list', {
         },
         stop_deleting: function(){
             this.show_deletion = false;
+            this.delete_response = {};
         },
         confirm_deletion: function() {
             this.asynchronous_json_post(
@@ -486,7 +509,12 @@ Vue.component('managed-url-list', {
             return this.url_edit === '' + list_id + url_id
         },
         cancel_edit_url: function(){
-            document.getElementById(this.url_edit).value=this.original_url_value;
+            if (!this.url_edit)
+                return;
+            
+            if (document.getElementById(this.url_edit)){
+                document.getElementById(this.url_edit).value = this.original_url_value;
+            }
             this.url_edit = '';
         },
         get_url_edit_value: function(){
