@@ -167,8 +167,6 @@ class UrlList(models.Model):
         default='web',
     )
 
-    # todo: create a task that checks if the next scan should start (based on scheduled
-    #  next scan) + update the scheduled next scan value.
     automated_scan_frequency = models.CharField(
         max_length=30,
         choices=(
@@ -184,7 +182,7 @@ class UrlList(models.Model):
 
     scheduled_next_scan = models.DateTimeField(
         help_text="An indication at what moment the scan will be started. The scan can take a while, thus this does "
-                  "not tell you when a scan will be finished.",
+                  "not tell you when a scan will be finished. All dates in the past will be scanned and updated.",
         default=timezone.now() - timedelta(days=1)
     )
 
@@ -200,6 +198,10 @@ class UrlList(models.Model):
         return "%s/%s" % (self.account, self.name)
 
     def is_due_for_scanning(self) -> bool:
+        # when disabled, will not be scanned automatically anymore.
+        if self.automated_scan_frequency == 'disabled':
+            return False
+
         return timezone.now() > self.scheduled_next_scan
 
     def renew_scan_moment(self) -> None:
@@ -224,7 +226,8 @@ class UrlList(models.Model):
         now = timezone.now()
 
         if preference == 'disabled':
-            return now - timedelta(days=1)
+            # far, far in the future, so it will not be scanned and probably will be re-calculated. 24 years...
+            return now + timedelta(days=9000)
 
         # months are base 1: january = 1 etc.
         if preference == 'every half year':
