@@ -85,6 +85,11 @@ Todo: digitoegankelijk: how to select links with the keyboard? How can we make t
 
                 // todo: can we change the locale for moment.js on the fly?
                 humanize_date: function (date) {
+                    // Uses localized date and time format with day name, which is pretty advanced and complete
+                    return moment(date).format('LLLL');
+                },
+                humanize_relative_date: function (date) {
+                    // says things like 'days ago'...
                     return moment(date).fromNow();
                 },
                 humanize_filesize: function(size_in_bytes, decimals=0){
