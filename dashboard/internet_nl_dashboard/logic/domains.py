@@ -4,6 +4,7 @@ from typing import Any, Dict, List, Tuple
 from django.db.models import Prefetch
 from django.utils import timezone
 from tldextract import tldextract
+from validators import domain
 from websecmap.organizations.models import Url
 from websecmap.scanners.models import Endpoint
 
@@ -336,8 +337,49 @@ def get_urllist_content(account: Account, urllist_id: int) -> dict:
     return response
 
 
-def save_urllist_content(account: Account, urllist_name: str, urls: List[str]) -> dict:
-    """ Stores urls in an urllist. If the url doesn't exist yet, it will be added to the database (so the urls
+def save_urllist_content(account: Account, user_input: Dict[str, Any]) -> Dict:
+    """
+    This is the 'id' version of save_urllist. It is a bit stricter as in that it requires the list to exist.
+
+    Stores urls in an urllist. If the url doesn't exist yet, it will be added to the database (so the urls
+    can be shared with multiple accounts, and only requires one scan).
+
+    Used in the web / ajax frontend and uses operation responses.
+
+    :param account:
+    :param user_input:
+    :return:
+    """
+
+    # how could we validate user_input a better way? Using a validator object?
+    list_id = user_input.get('list_id')
+    urls = user_input.get('urls')
+
+    urllist = UrlList.objects.all().filter(account=account, id=list_id, is_deleted=False, ).first()
+
+    if not urllist:
+        return operation_response(error=True, message="List does not exist")
+
+    # todo: how to work with data types in dicts like this?
+    cleaned_urls = clean_urls(urls)  # type: ignore
+
+    if cleaned_urls['correct']:
+        counters = _add_to_urls_to_urllist(account, urllist, urls=cleaned_urls['correct'])
+    else:
+        counters = {'added_to_list': 0, 'already_in_list': 0}
+
+    result = {'incorrect_urls': cleaned_urls['incorrect'],
+              'added_to_list': counters['added_to_list'],
+              'already_in_list': counters['already_in_list']}
+
+    return operation_response(success=True, message="Valid urls have been added", data=result)
+
+
+def save_urllist_content_by_name(account: Account, urllist_name: str, urls: List[str]) -> dict:
+    """
+    This 'by name' variant is a best guess when a spreadsheet upload with list names is used.
+
+    Stores urls in an urllist. If the url doesn't exist yet, it will be added to the database (so the urls
     can be shared with multiple accounts, and only requires one scan).
 
     Lists that don't exist will be created on the fly. The hope is to prevent data loss.
@@ -350,8 +392,8 @@ def save_urllist_content(account: Account, urllist_name: str, urls: List[str]) -
     cleaned_urls = clean_urls(urls)
 
     if cleaned_urls['correct']:
-        urllist = create_list_by_name(account=account, name=urllist_name)
-        counters = _add_to_urls_to_urllist(account, urllist.name, urls=cleaned_urls['correct'])
+        urllist = get_or_create_list_by_name(account=account, name=urllist_name)
+        counters = _add_to_urls_to_urllist(account, urllist, urls=cleaned_urls['correct'])
     else:
         counters = {'added_to_list': 0, 'already_in_list': 0}
 
@@ -362,19 +404,15 @@ def save_urllist_content(account: Account, urllist_name: str, urls: List[str]) -
     return result
 
 
-def _add_to_urls_to_urllist(account: Account, urllist_name: str, urls: List[str]) -> Dict[str, Any]:
+def _add_to_urls_to_urllist(account: Account, current_list: UrlList, urls: List[str]) -> Dict[str, Any]:
 
     counters: Dict[str, int] = {'added_to_list': 0, 'already_in_list': 0}
-
-    current_list = UrlList.objects.all().filter(name=urllist_name, is_deleted=False).first()
-    if not current_list:
-        current_list = create_list_by_name(account, urllist_name)
 
     for url in urls:
 
         # if already in list, don't need to save it again
         already_in_list = UrlList.objects.all().filter(
-            account=account, name=urllist_name, urls__url__iexact=url).exists()
+            account=account, id=current_list.id, urls__url__iexact=url).exists()
         if already_in_list:
             counters['already_in_list'] += 1
             continue
@@ -410,16 +448,29 @@ def clean_urls(urls: List[str]) -> Dict[str, List]:
         url = url.lower()
         extract = tldextract.extract(url)
 
+        # no suffix at all, but might still be invalid.
         if not extract.suffix:
             result['incorrect'].append(url)
             continue
 
-        result['correct'].append(url)
+        # Validators catches 'most' invalid urls, but there are some issues and exceptions that are not really likely
+        # to cause any major issues in our software. The other alternative is another library with other quircks.
+        # see: https://github.com/kvesteri/validators/
+        # Note that this library does not account for 'idna' / punycode encoded domains, so you have to convert
+        # them yourself. luckily:
+        # 'аренда.орг' -> 'xn--80aald4bq.xn--c1avg'
+        # 'google.com' -> 'google.com'
+        valid_domain = domain(url.encode('idna').decode())
+        if valid_domain is True:
+            result['correct'].append(url)
+        else:
+            # otheriwse valid_domain contains a ValidationFailure object.
+            result['incorrect'].append(url)
 
     return result
 
 
-def create_list_by_name(account, name: str) -> UrlList:
+def get_or_create_list_by_name(account, name: str) -> UrlList:
 
     existing_list = UrlList.objects.all().filter(account=account, name=name, is_deleted=False,).first()
 

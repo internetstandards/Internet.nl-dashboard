@@ -65,4 +65,8 @@ simplejson
 # using internet.nl translations into this project
 polib
 
+# extensive debugging in code that might end up in production
 pysnooper
+
+# domain name validation
+validators

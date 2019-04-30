@@ -19,6 +19,7 @@ django-debug-toolbar-request-history
 pytest-mock
 # simple type checking
 mypy
+
 # and the stubs so that all django constructs are not instantly rejected
 django-stubs
 # used to restart celery worker on file changes

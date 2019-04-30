@@ -29,7 +29,7 @@ import pytz
 from django.db import transaction
 from xlrd import XLRDError
 
-from dashboard.internet_nl_dashboard.logic.domains import clean_urls, save_urllist_content
+from dashboard.internet_nl_dashboard.logic.domains import clean_urls, save_urllist_content_by_name
 from dashboard.internet_nl_dashboard.models import Account, DashboardUser, UploadLog
 
 log = logging.getLogger(__package__)
@@ -211,7 +211,7 @@ def save_data(account: Account, data: dict):
 
     results = {}
     for urllist in data.keys():
-        results[urllist] = save_urllist_content(account, urllist, data[urllist])
+        results[urllist] = save_urllist_content_by_name(account, urllist, data[urllist])
 
     return results
 

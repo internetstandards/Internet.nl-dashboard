@@ -183,6 +183,25 @@
                 <label for="add_urls[]">Bulk add new:</label>
                 <select2 v-model="bulk_add_new_urls"></select2>
 
+                <div v-if="bulk_add_new_server_response">
+                    <span v-if="bulk_add_new_server_response.success === true">
+                        Added {{ bulk_add_new_server_response.data.added_to_list }} domains to this list.
+                        <span v-if="bulk_add_new_server_response.data.already_in_list">
+                            Additionally, {{ bulk_add_new_server_response.data.already_in_list }} domains have been
+                            ignored as they are already in this list.
+                        </span>
+                        <span v-if="bulk_add_new_server_response.data.incorrect_urls.length">
+                            Some domains where not added because they are in an incorrect format. <br>
+                            The following domains where not added:
+                                {{ bulk_add_new_server_response.data.incorrect_urls.join(', ') }}
+                        </span>
+                    </span>
+                    <span v-if="bulk_add_new_server_response.error === true">
+                        An error happened while trying to add these domains to the list. The server responded with
+                        the following message: {{ bulk_add_new_server_response.message }}.
+                    </span>
+                </div>
+
                 <button @click="bulk_add_new()">Bulk Add</button>
             </div>
 
@@ -230,7 +249,7 @@
                     {{ settings_update_response.message }}
                 </div>
 
-                <label for="name">List name:</label>
+                <label for="name">List name:</label><br>
                 <input id="name" type="text" maxlength="120" v-model="list.name"><br><br>
 
                 <label for="enable_scans">Enable scans:</label><br>
@@ -337,7 +356,7 @@ Vue.component('select2', {
 
             // use the most naive (fast) 'url' validator. All validation is done server side anyway, and
             // verifying that something is an url with unicode characters and such is not really a thing.
-            var pattern = new RegExp('^.*\\.[-a-z]{2,}$'); // domain name
+            var pattern = new RegExp('^.*\\..{2,}$'); // domain name
             if (!pattern.test(term)) {
                 return null;
             }
@@ -482,6 +501,7 @@ Vue.component('managed-url-list', {
 
             // everything that has to do with adding urls:
             bulk_add_new_urls: [],
+            bulk_add_new_server_response: {},
         }
     },
     mounted: function () {
@@ -512,7 +532,6 @@ Vue.component('managed-url-list', {
             fetch(`/data/urllist_content/get/${this.list.id}/`).then(response => response.json()).then(data => {
                 this.urls = data.urls;
                 this.loading = false;
-                this.$nextTick(() => enable_select());
             }).catch((fail) => {console.log('A loading error occurred: ' + fail);});
         },
         update_list_settings: function(){
@@ -643,61 +662,26 @@ Vue.component('managed-url-list', {
 
         },
         bulk_add_new: function(){
+            // todo: edit new list doesn't work, no ID in this list?
             // todo: post bulk_add_new_urls and handle the response. It will have a number of added urls and some
             // feedback on what urls where not added. (just like import spreadsheet).
             // Getting bulk_add_new_urls to work was pretty difficult due to too many layers of abstractions.
+
+            data = {'urls': this.bulk_add_new_urls, 'list_id': this.list.id};
+
+            this.asynchronous_json_post(
+                '/data/urllist/url/add/', data, this, function (self, server_response) {
+                    // {'incorrect_urls': [], 'added_to_list': int, 'already_in_list': int}
+                    self.bulk_add_new_server_response = server_response;
+
+                    // Update the list of urls accordingly.
+                    self.get_urls();
+                    // clean the select2 box?
+                }
+            );
         }
     },
     template: '#managed-url-list'
 });
-
-
-function enable_select(){
-    $('.js-example-basic-multiple').select2({
-        placeholder: 'example.com, www.example.com, www.internet.nl, ...',
-        tags: true,
-        tokenSeparators: [',', ' '],
-        // hides the no results box, as this is pure tagbox only
-        // @see: https://stackoverflow.com/questions/18470917/disable-no-matches-found-text-and-autocomplete-on-select2
-        "language":{
-            "noResults" : function () { return ''; }
-        },
-
-        // after 26 characters searching became insanely slow. So don't match for now.
-        // this is not an issue caused by the matcher but by something else...
-        // it was the regex.
-        // matcher: function() {return null},
-
-        createTag: function (params) {
-            // This is an extremely naive implementation of domain validation. On the server tldextract is
-            // used which is much more complete as it uses the public suffixes list.
-            // This is just a convenience check that something with a dot is entered.
-            let term = $.trim(params.term);
-
-            // ... this might work for punycode but not for unicode.
-            // we want to support unicode...
-            // http://www.w3.org/TR/html5/links.html#attr-hyperlink-href:
-            // todo: this pattern fails when the match is not found under N characters.
-            //var pattern = new RegExp('^((([a-z\\d]([a-z\\d-]*[a-z\\d])*)\\.)+[a-z]{2,})$'); // domain name
-            // to prevent all kinds of half baked regexes that don't support unicode well and etc, we'll use the most
-            // half baked regex possible that performs pretty well. This saves time waiting during entering. Validation
-            // is still done server side...
-            var pattern = new RegExp('^.*\\.[-a-z]{2,}$'); // domain name
-            if (!pattern.test(term)) {
-                return null;
-            }
-
-            if (term === '') {
-                return null;
-            }
-
-            return {
-                id: term,
-                text: term,
-            }
-        }
-    });
-}
-
 </script>
 {% endblock %}

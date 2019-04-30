@@ -3,22 +3,22 @@ These testcases help to validate the working of the listmanagement API.
 
 Run these tests with tox -e test -- -k test_urllist_management
 """
-from dashboard.internet_nl_dashboard.logic.domains import (create_list_by_name, delete_list,
-                                                           delete_url_from_urllist,
+from dashboard.internet_nl_dashboard.logic.domains import (delete_list, delete_url_from_urllist,
+                                                           get_or_create_list_by_name,
                                                            get_urllist_content,
                                                            get_urllists_from_account, rename_list,
-                                                           save_urllist_content)
+                                                           save_urllist_content_by_name)
 from dashboard.internet_nl_dashboard.models import Account
 
 
 def test_urllists(db) -> None:
     account, created = Account.objects.all().get_or_create(name="test")
 
-    list_1 = create_list_by_name(account, "test list 1")
-    list_1_remake = create_list_by_name(account, "test list 1")
+    list_1 = get_or_create_list_by_name(account, "test list 1")
+    list_1_remake = get_or_create_list_by_name(account, "test list 1")
     assert list_1 == list_1_remake
 
-    list_2 = create_list_by_name(account, "test list 2")
+    list_2 = get_or_create_list_by_name(account, "test list 2")
     assert list_1 != list_2
 
     list_content = get_urllist_content(account=account, urllist_id=list_1.pk)
@@ -29,17 +29,19 @@ def test_urllists(db) -> None:
     assert len(lists) == 2
 
     """ Should be no problem to add the same urls, it just has not so much effect. """
-    added = save_urllist_content(account, "test list 1", ['test.nl', 'internet.nl', 'internetcleanup.foundation'])
+    added = save_urllist_content_by_name(
+        account, "test list 1", ['test.nl', 'internet.nl', 'internetcleanup.foundation'])
     assert added['added_to_list'] == 3 and added['already_in_list'] == 0 and len(added['incorrect_urls']) == 0
 
-    already = save_urllist_content(account, "test list 1", ['test.nl', 'internet.nl', 'internetcleanup.foundation'])
+    already = save_urllist_content_by_name(
+        account, "test list 1", ['test.nl', 'internet.nl', 'internetcleanup.foundation'])
     assert already['added_to_list'] == 0 and already['already_in_list'] == 3 and len(already['incorrect_urls']) == 0
 
     list_content = get_urllist_content(account=account, urllist_id=list_1.pk)
     assert len(list_content['urls']) == 3
 
     """ Garbage urls should be filtered out and can be displayed as erroneous """
-    already = save_urllist_content(account, "test list 1", ['test.nonse^', 'NONSENSE', '127.0.0.1'])
+    already = save_urllist_content_by_name(account, "test list 1", ['test.nonse^', 'NONSENSE', '127.0.0.1'])
     assert already['added_to_list'] == 0 and already['already_in_list'] == 0 and len(already['incorrect_urls']) == 3
 
     """ Check if really nothing was added """
@@ -75,11 +77,11 @@ def test_urllists(db) -> None:
     assert operation_response['success'] is False
 
     """ A new list will not be created if there are no urls for it..."""
-    added = save_urllist_content(account, "should be empty", [])
+    added = save_urllist_content_by_name(account, "should be empty", [])
     assert added['added_to_list'] == 0 and added['already_in_list'] == 0 and len(added['incorrect_urls']) == 0
 
     """ A new list will not be created if there are only nonsensical urls (non valid) for it """
-    added = save_urllist_content(account, "should be empty", ['iuygvb.uighblkj'])
+    added = save_urllist_content_by_name(account, "should be empty", ['iuygvb.uighblkj'])
 
     list_content = get_urllist_content(account=account, urllist_id=9001)
     assert len(list_content['urls']) == 0
