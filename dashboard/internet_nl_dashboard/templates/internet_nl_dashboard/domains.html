@@ -1,10 +1,20 @@
 {% extends 'internet_nl_dashboard/templates/internet_nl_dashboard/_base.html' %}{% load humanize %}{% load i18n %}
-<!-- Todo: the input has to be a select2 type... when you paste a set of urls, it get parsed into
-    multiple separate urls. -->
-    <!-- Vue bootstrap for this table? -->
-    <!-- https://bootstrap-vue.js.org/docs/components/table -->
-    <!-- do we need undo options? -->
-    <!-- https://github.com/ArthurClemens/Javascript-Undo-Manager -->
+<!--
+This can do:
+
+Done: create new lists
+Done: configure lists
+Done: add domains
+Done: delete lists
+Done: edit url
+Done: delete url
+Done: cancel what you're doing using escape
+Done: support scan types
+Done: show lists, including last scan moment
+Todo: what happens when the edited url is not valid? Reset?
+Todo: support 'scan now' button.
+
+-->
 <!-- todo: translation -->
 
 {% block content %}
@@ -142,10 +152,19 @@
 
 </style>
 <script type="x-template" id="managed-url-list">
-    <div class="managed-url-list" v-if="!is_deleted">
+    <article class="managed-url-list" v-if="!is_deleted">
         <h3>
             <button v-if="!is_opened" @click="open_list()" value="load">📘 {{ list.name }}</button>
             <button v-if="is_opened" @click="close_list()" value="load">📖 {{ list.name }}</button>
+
+            <div v-if="is_opened" style="float:right;">
+                <button @click="start_editing_settings()">📝 Configure</button>
+                <button @click="start_bulk_add_new()">💖 Add domains</button>
+                <button @click="start_scan_now()" v-if="list.scan_now_available">🔬 Scan Now</button>
+                <button @click="alert('The scan now option is available only once a day, when no scan is running.')" v-if="!list.scan_now_available" disabled="disabled"
+                title="The scan now option is available only once a day.">🔬 Scan Now</button>
+                <button @click="start_deleting()">🔪 Delete</button>
+            </div>
         </h3>
 
         <br>
@@ -176,15 +195,9 @@
                 </div>
             </div>
 
-            <br>
-
-            <button @click="start_editing_settings()">📝 Configure</button>
-            <button @click="start_bulk_add_new()">💖 Add domains</button>
-            <button @click="get_urls(list.id)">🔬 Scan Now</button>
-            <button @click="start_deleting()">🔪 Delete</button>
-
             <br><br>
-
+            <h4>Domains</h4>
+            <br>
             <div style="column-count: 2;">
                 <div v-for="url in urls" class="url-in-managed-list">
 
@@ -299,6 +312,25 @@
             </div>
         </modal>
 
+        <modal v-if="show_scan_now" @close="stop_scan_now()">
+            <h3 slot="header">Confirm to scan now</h3>
+            <div slot="body">
+                <div v-if="scan_now_server_response.error" class="server-response-error">
+                    <h2>❌ Could not scan</h2>
+                    {{ delete_response.message }}
+                </div>
+                <p>Todo: tekst...</p>
+
+                <p>To start a scan now, please take the following in consideration:</p>
+                <p>A scan can only be started once a day, and only when no scan is already running. Note that a scan cannot be cancelled.</p>
+
+            </div>
+            <div slot="footer">
+                <button @click="stop_scan_now()">Cancel</button>
+                <button class="modal-default-button" @click="confirm_scan_now()">Scan now</button>
+            </div>
+        </modal>
+
         <modal v-if="show_bulk_add_new" @close="stop_bulk_add_new()">
             <h3 slot="header">Bulk add domains</h3>
             <div slot="body">
@@ -339,7 +371,7 @@
             <div slot="footer">
             </div>
         </modal>
-    </div>
+    </article>
 </script>
 
 <script type="text/x-template" id="select2-template">
@@ -535,6 +567,10 @@ Vue.component('managed-url-list', {
 
             // everything to do with csv:
             view_csv: false,
+
+            // scan now feature:
+            show_scan_now: false,
+            scan_now_server_response: {}
         }
     },
     mounted: function () {
@@ -552,6 +588,7 @@ Vue.component('managed-url-list', {
                 this.cancel_edit_url();
                 this.show_bulk_add_new = false;
                 this.view_csv = false;
+                this.show_scan_now = false;
             }
         },
 
@@ -704,7 +741,7 @@ Vue.component('managed-url-list', {
             this.show_bulk_add_new = false;
 
             // re-load the url list, as perhaps more information about endpoints is discovered.
-            self.get_urls();
+            this.get_urls();
         },
         bulk_add_new: function(){
             // todo: edit new list doesn't work, no ID in this list?
@@ -727,6 +764,22 @@ Vue.component('managed-url-list', {
         },
         toggle_view_csv: function(){
             this.view_csv = !this.view_csv;
+        },
+        start_scan_now: function(){
+            this.show_scan_now = true;
+        },
+        stop_scan_now: function(){
+            this.show_scan_now = false;
+        },
+        confirm_scan_now: function(){
+            data = {'id': this.list.id};
+
+            this.asynchronous_json_post(
+                '/data/urllist/scan_now/', data, this, function (self, server_response) {
+                    self.scan_now_server_response = server_response;
+                    self.stop_scan_now()
+                }
+            );
         }
     },
     computed: {

@@ -11,7 +11,7 @@ from dashboard.internet_nl_dashboard.logic.domains import (alter_url_in_urllist,
                                                            delete_list, get_urllist_content,
                                                            get_urllists_from_account,
                                                            save_urllist_content,
-                                                           save_urllist_content_by_name,
+                                                           save_urllist_content_by_name, scan_now,
                                                            update_list_settings)
 from dashboard.internet_nl_dashboard.views import (LOGIN_URL, get_account,
                                                    inject_default_language_cookie)
@@ -62,14 +62,19 @@ def delete_list_(request):
     return JsonResponse(delete_list(get_account(request), get_json_body(request)))
 
 
-@login_required
+@login_required(login_url=LOGIN_URL)
 def alter_url_in_urllist_(request):
     return JsonResponse(alter_url_in_urllist(get_account(request), get_json_body(request)))
 
 
-@login_required
+@login_required(login_url=LOGIN_URL)
 def add_urls_to_urllist(request):
     return JsonResponse(save_urllist_content(get_account(request), get_json_body(request)))
+
+
+@login_required(login_url=LOGIN_URL)
+def scan_now_(request):
+    return JsonResponse(scan_now(get_account(request), get_json_body(request)))
 
 
 def get_json_body(request):

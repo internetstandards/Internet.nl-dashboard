@@ -11,6 +11,7 @@ log = logging.getLogger(__name__)
 class Command(TaskCommand):
 
     def add_arguments(self, parser):
+        # https://stackoverflow.com/questions/8259001/python-argparse-command-line-flags-without-arguments
         parser.add_argument('--reimport', action='store_true', help='Execute the task directly or on remote workers.')
 
         return super().add_arguments(parser)
@@ -25,7 +26,7 @@ class Command(TaskCommand):
     def compose(self, *args, **options):
         filter = {}
 
-        if 'reimport' in options:
+        if options['reimport']:
             filter = {'accountinternetnlscan_filter': {'scan__finished': False}}
 
         return check_running_dashboard_scans(**filter)

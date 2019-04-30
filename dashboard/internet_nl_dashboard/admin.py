@@ -247,9 +247,11 @@ class AccountAdmin(ImportExportModelAdmin, admin.ModelAdmin):
 @admin.register(UrlList)
 class UrlListAdmin(ImportExportModelAdmin, admin.ModelAdmin):
 
-    list_display = ('name', 'account', 'scan_type', 'no_of_urls', 'no_of_endpoints')
+    list_display = ('name', 'account', 'scan_type', 'no_of_urls', 'no_of_endpoints',
+                    'automated_scan_frequency', 'last_manual_scan', 'is_deleted', 'is_scan_now_available')
     search_fields = ('name', 'account__name')
-    list_filter = ['account'][::-1]
+    list_filter = ['account', 'is_deleted', 'scan_type', 'enable_scans', 'automated_scan_frequency',
+                   'last_manual_scan'][::-1]
 
     # we don't add the urls as that might cause a deletion by mistake
     fields = ('name', 'account', 'scan_type')

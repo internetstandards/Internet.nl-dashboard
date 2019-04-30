@@ -10,9 +10,8 @@ from websecmap.scanners.models import Endpoint
 from websecmap.scanners.scanner.dns_endpoints import compose_discover_task
 
 from dashboard.internet_nl_dashboard.models import Account, AccountInternetNLScan, UrlList
-
-# import pysnooper
-
+from dashboard.internet_nl_dashboard.scanners.scan_internet_nl_per_account import \
+    create_dashboard_scan_tasks
 
 log = logging.getLogger(__package__)
 
@@ -23,7 +22,7 @@ def operation_response(error: bool = False, success: bool = False, message: str 
 
 
 # todo: write test
-def alter_url_in_urllist(account, data):
+def alter_url_in_urllist(account, data) -> Dict[str, Any]:
     # data = {'list_id': list.id, 'url_id': url.id, 'new_url_string': url.url}
 
     expected_keys = ['list_id', 'url_id', 'new_url_string']
@@ -80,6 +79,25 @@ def alter_url_in_urllist(account, data):
                     'has_mail_endpoint': old_url_has_mail_endpoint,
                     'has_web_endpoint': old_url_has_web_endpoint},
     })
+
+
+def scan_now(account, user_input) -> Dict[str, Any]:
+    urllist = UrlList.objects.all().filter(account=account, id=user_input.get('id', -1), is_deleted=False).first()
+
+    # automated scans do not work.
+    if not urllist:
+        return operation_response(error=True, message="List could not be found.")
+
+    if not urllist.is_scan_now_available():
+        return operation_response(error=True, message="Could not scan.")
+
+    # done: have to update the list info. On the other hand: there is no guarantee that this task already has started
+    # ...to fix this issue, we'll use a 'last_manual_scan' field.
+    urllist.last_manual_scan = timezone.now()
+    urllist.save()
+    create_dashboard_scan_tasks(urllist).apply_async()
+
+    return operation_response(success=True, message="Scan started")
 
 
 def is_valid_url(url):
@@ -151,6 +169,9 @@ def create_list(account: Account, user_input: Dict) -> Dict[str, Any]:
 
     # adding the ID makes it possible to add new urls to a new list.
     data['id'] = urllist.pk
+
+    # give a hint if it can be scanned:
+    data['scan_now_available'] = urllist.is_scan_now_available()
 
     return operation_response(success=True, message="List created.", data=data)
 
@@ -241,6 +262,8 @@ def update_list_settings(account: Account, user_input: Dict) -> Dict[str, Any]:
     data['last_scan'] = None if not len(urllist.last_scan) else urllist.last_scan[0].scan.started_on.isoformat()
     data['last_scan_finished'] = None if not len(urllist.last_scan) else urllist.last_scan[0].scan.finished
 
+    data['scan_now_available'] = urllist.is_scan_now_available()
+
     return operation_response(success=True, message="Updated list settings", data=data)
 
 
@@ -317,7 +340,8 @@ def get_urllists_from_account(account: Account) -> List:
             'automated_scan_frequency': urllist.automated_scan_frequency,
             'scheduled_next_scan': urllist.scheduled_next_scan,
             'last_scan': None if not len(urllist.last_scan) else urllist.last_scan[0].scan.started_on.isoformat(),
-            'last_scan_finished': None if not len(urllist.last_scan) else urllist.last_scan[0].scan.finished
+            'last_scan_finished': None if not len(urllist.last_scan) else urllist.last_scan[0].scan.finished,
+            'scan_now_available': urllist.is_scan_now_available(),
         })
 
     return response
@@ -337,10 +361,11 @@ def get_urllist_content(account: Account, urllist_id: int) -> dict:
                         queryset=Endpoint.objects.filter(protocol__in=['dns_soa', 'dns_a_aaaa'], is_dead=False),
                         to_attr='relevant_endpoints')
 
+    # This ordering makes sure all subdomains are near the domains with the right extension.
     urls = Url.objects.all().filter(
         urls_in_dashboard_list__account=account,
         urls_in_dashboard_list__id=urllist_id
-    ).order_by('url').prefetch_related(prefetch).all()
+    ).order_by('computed_domain', 'computed_suffix', 'computed_subdomain').prefetch_related(prefetch).all()
 
     """ It's very possible that the urrlist_id is not matching with the account. The query will just return
     nothing. Only of both matches it will return something we can work with. """

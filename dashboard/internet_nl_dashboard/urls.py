@@ -31,6 +31,7 @@ urlpatterns = [
     path('data/urllist/update_list_settings/', domains.update_list_settings_),
     path('data/urllist/create_list/', domains.create_list_),
     path('data/urllist/delete/', domains.delete_list_),
+    path('data/urllist/scan_now/', domains.scan_now_),
     path('data/urllist/url/save/', domains.alter_url_in_urllist_),
     path('data/urllist/url/add/', domains.add_urls_to_urllist),
 

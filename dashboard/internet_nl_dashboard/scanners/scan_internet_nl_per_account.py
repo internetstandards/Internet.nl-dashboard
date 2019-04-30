@@ -95,8 +95,8 @@ def create_dashboard_scan_task(account: Account, urllist: UrlList, save_as_scan_
         # Should we only try to get the specifically needed dns_endpoint? At what volume we should / must?
         # This discovers dns_endpoints. On the basis of this we know what urls we should scan an which
         # ones we should not. We'll only scan if there are valid endpoint, just like at internet.nl
-        compose_discover_task(**{'url_filter': {'urls_in_dashboard_list': urllist,
-                                                'is_dead': False, 'not_resolvable': False}})
+        compose_discover_task(**{'urls_filter': {'urls_in_dashboard_list': urllist,
+                                                 'is_dead': False, 'not_resolvable': False}})
 
         # Make sure that the discovery as listed above is actually used in the scan
         | get_relevant_urls.si(urllist, endpoint_type)

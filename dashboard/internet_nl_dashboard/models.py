@@ -194,6 +194,10 @@ class UrlList(models.Model):
         null=True,
     )
 
+    last_manual_scan = models.DateTimeField(
+        null=True,
+    )
+
     def __str__(self):
         return "%s/%s" % (self.account, self.name)
 
@@ -261,6 +265,43 @@ class UrlList(models.Model):
             return datetime(year=now.year, month=now.month + 1, day=1, hour=0, minute=0, second=0, tzinfo=pytz.utc)
 
         raise ValueError('String %s could not be translated to a scan moment.' % preference)
+
+    # @pysnooper.snoop()
+    def is_scan_now_available(self) -> bool:
+        """
+        # todo move this function to UrlList
+
+        Requirements for availability:
+
+        - The last scan for this list has to be finished.
+        - The scan was not run earlier in the past N days.
+        - Scanning for this list has been enabled.
+
+        :param self:
+        :return:
+        """
+
+        if not self.enable_scans:
+            return False
+
+        yesterday = timezone.now() - timedelta(days=1)
+
+        # manual scans have their own 'is available flag', as the 'create_dashboard_scan_tasks()' does not guarantee
+        # a new scan is created instantly. The flag needs to be set otherwise a user can initiate tons of scans.
+        if self.last_manual_scan and self.last_manual_scan > yesterday:
+            return False
+
+        last_scan = AccountInternetNLScan.objects.all().filter(urllist=self, urllist__is_deleted=False).last()
+
+        if not last_scan:
+            return True
+
+        # no get method on scan object... 80 is an arbitrary number that is long enough to again allow scans.
+        finished_on = last_scan.scan.finished_on if last_scan.scan.finished_on else timezone.now() - timedelta(days=80)
+        if last_scan.scan.finished and finished_on < yesterday:
+            return True
+
+        return False
 
 
 class AccountInternetNLScan(models.Model):
