@@ -112,19 +112,20 @@ def get_url(new_url_string: str):
     if not is_valid_url(new_url_string):
         raise ValueError('Invalid Url')
 
+    new_url = add_url(new_url_string)
+    return new_url, True
+
+
+def add_url(new_url_string: str):
     new_url = Url()
     new_url.url = new_url_string
     new_url.created_on = timezone.now()
     new_url.save()
 
-    # start finding endpoints after url has been created.
-    trigger_async_endpoint_scan(new_url)
+    # always try to find a few dns endpoints...
+    compose_discover_task(urls_filter={'pk': new_url.id}).apply_async()
 
-    return new_url, True
-
-
-def trigger_async_endpoint_scan(url: Url):
-    compose_discover_task(urls_filter={'pk': url.id}).apply_async()
+    return new_url
 
 
 def create_list(account: Account, user_input: Dict) -> Dict[str, Any]:
@@ -449,9 +450,7 @@ def _add_to_urls_to_urllist(account: Account, current_list: UrlList, urls: List[
             counters['added_to_list'] += 1
         else:
             # todo: might be wise to use bulk_create to speed up insertion
-            new_url = Url(**{'url': url})
-            new_url.save()
-            trigger_async_endpoint_scan(new_url)
+            new_url = add_url(url)
             current_list.urls.add(new_url)
             counters['added_to_list'] += 1
 

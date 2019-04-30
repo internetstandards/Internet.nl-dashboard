@@ -101,7 +101,6 @@
 
         <button @click="start_adding_new()">Add new list</button>
 
-        <h2>Lists</h2>
         <managed-url-list v-for="list in lists" :initial_list="list"></managed-url-list>
 
     </div>
@@ -114,10 +113,6 @@
     padding: 10px;
     margin-bottom: 20px;
     background-color: ghostwhite;
-}
-
-.bulk-add-new {
-    margin-bottom: 10px;
 }
 
 .inline-edit input {
@@ -135,21 +130,27 @@
     width:100%;
 }
 
+.view-csv{
+    width:100%;
+    height: 200px;
+}
+
+.select2-selection--multiple{
+    height: 200px;
+    width: 100%;
+}
+
 </style>
 <script type="x-template" id="managed-url-list">
     <div class="managed-url-list" v-if="!is_deleted">
         <h3>
-            <button v-if="!is_opened" @click="open_list()" value="load">Open</button>
-            <button v-if="is_opened" @click="close_list()" value="load">Close</button>
-            <span @click="open_list()">
-                <span title="Web scans will be performed" v-if="list.enable_scans && list.scan_type === 'mail'">📨</span>
-                <span title="Web scans will be performed" v-if="list.enable_scans && list.scan_type === 'web'">🌐</span>
-                <span title="No scans will be performed" v-if="!list.enable_scans">🚫</span>
-
-                {{ list.name }}</span>
+            <button v-if="!is_opened" @click="open_list()" value="load">📘 {{ list.name }}</button>
+            <button v-if="is_opened" @click="close_list()" value="load">📖 {{ list.name }}</button>
         </h3>
 
+        <br>
         <div v-if="is_opened">
+            <h4>About this list</h4>
             <span v-if="list.last_scan">
                 Last scan started: {{ humanize_date(list.last_scan) }}.
                 <span v-if="!list.last_scan_finished">(still running)</span>
@@ -158,11 +159,13 @@
             <span v-if="!list.last_scan">
                 Last scan started: Not scanned before.
             </span>
-
-            <h4>Settings</h4>
             <div class="scan-configuration">
                 <div v-if="list.enable_scans">
-                    Type of scan performed: {{ list.scan_type }} <br>
+                    Type of scan performed:
+                    <span title="Web scans will be performed" v-if="list.enable_scans && list.scan_type === 'mail'">📨</span>
+                    <span title="Web scans will be performed" v-if="list.enable_scans && list.scan_type === 'web'">🌐</span>
+                    <span title="No scans will be performed" v-if="!list.enable_scans">🚫</span>
+                    {{ list.scan_type }} <br>
                     Scan frequency: {{ list.automated_scan_frequency }} <br>
                     <div v-if="list.automated_scan_frequency !== 'disabled'">
                         Next scheduled scan: {{ humanize_date(list.scheduled_next_scan) }} <br>
@@ -173,37 +176,14 @@
                 </div>
             </div>
 
-            <h4>Actions:</h4>
-            <button @click="start_editing_settings()">🖊️ Configure</button>
-            <button @click="get_urls(list.id)" value="load">Scan Now!</button>
-            <button @click="get_urls(list.id)" value="load">Duplicate</button>
-            <button @click="start_deleting()" value="load">Delete</button>
+            <br>
 
-            <div class="bulk-add-new">
-                <label for="add_urls[]">Bulk add new:</label>
-                <select2 v-model="bulk_add_new_urls"></select2>
+            <button @click="start_editing_settings()">📝 Configure</button>
+            <button @click="start_bulk_add_new()">💖 Add domains</button>
+            <button @click="get_urls(list.id)">🔬 Scan Now</button>
+            <button @click="start_deleting()">🔪 Delete</button>
 
-                <div v-if="bulk_add_new_server_response">
-                    <span v-if="bulk_add_new_server_response.success === true">
-                        Added {{ bulk_add_new_server_response.data.added_to_list }} domains to this list.
-                        <span v-if="bulk_add_new_server_response.data.already_in_list">
-                            Additionally, {{ bulk_add_new_server_response.data.already_in_list }} domains have been
-                            ignored as they are already in this list.
-                        </span>
-                        <span v-if="bulk_add_new_server_response.data.incorrect_urls.length">
-                            Some domains where not added because they are in an incorrect format. <br>
-                            The following domains where not added:
-                                {{ bulk_add_new_server_response.data.incorrect_urls.join(', ') }}
-                        </span>
-                    </span>
-                    <span v-if="bulk_add_new_server_response.error === true">
-                        An error happened while trying to add these domains to the list. The server responded with
-                        the following message: {{ bulk_add_new_server_response.message }}.
-                    </span>
-                </div>
-
-                <button @click="bulk_add_new()">Bulk Add</button>
-            </div>
+            <br><br>
 
             <div style="column-count: 2;">
                 <div v-for="url in urls" class="url-in-managed-list">
@@ -230,10 +210,11 @@
                             <!-- The remove is real, as it will only remove 1 items -->
                             <button @click="remove_edit_url(list.id, url.id)">Remove</button>
                     </span>
-
-                    <!-- <button type="button">Edit</button><button type="button">Remove</button> -->
                 </div>
             </div>
+            <br>
+            <button v-if="urls.length" @click="toggle_view_csv()" value="load">📋 view .csv</button><br>
+            <textarea v-if="view_csv" class="view-csv" :value="csv_value"></textarea>
         </div>
 
         <!-- modal dialogs are below the content to make sure the tab order stays working. -->
@@ -292,6 +273,9 @@
                     {{ delete_response.message }}
                 </div>
 
+                <p class="warning">Are you sure you want to
+                delete this list? Deleting this list cannot be undone.</p>
+
                 <label for="name">List name:</label><br>
                 {{ list.name }}<br>
                 <br>
@@ -312,6 +296,47 @@
             <div slot="footer">
                 <button @click="stop_deleting()">Cancel</button>
                 <button class="modal-default-button" @click="confirm_deletion()">Delete</button>
+            </div>
+        </modal>
+
+        <modal v-if="show_bulk_add_new" @close="stop_bulk_add_new()">
+            <h3 slot="header">Bulk add domains</h3>
+            <div slot="body">
+                <div v-if="bulk_add_new_server_response.error" class="server-response-error">
+                    <h2>❌ Error</h2>
+                    {{ bulk_add_new_server_response.message }}
+                </div>
+
+                <p>You can add many domains in one go. To do this, seperate each domain with a comma.</p>
+                <select2 v-model="bulk_add_new_urls"></select2>
+
+                <div v-if="bulk_add_new_server_response">
+                    <span v-if="bulk_add_new_server_response.success === true">
+                        Status: Added {{ bulk_add_new_server_response.data.added_to_list }} domains to this list.
+                        <span v-if="bulk_add_new_server_response.data.already_in_list">
+                            Additionally, {{ bulk_add_new_server_response.data.already_in_list }} domains have been
+                            ignored as they are already in this list.<br>
+                        </span>
+                        <span v-if="bulk_add_new_server_response.data.incorrect_urls.length">
+                            <br><b>Warning!</b><br>
+                            Some domains where not added because they are in an incorrect format. <br>
+                            The following domains where not added:
+                                {{ bulk_add_new_server_response.data.incorrect_urls.join(', ') }}<br>
+                        </span>
+                    </span>
+                    <span v-if="bulk_add_new_server_response.error === true">
+                        An error happened while trying to add these domains to the list. The server responded with
+                        the following message: {{ bulk_add_new_server_response.message }}.
+                    </span>
+                </div>
+                <div v-if="!bulk_add_new_server_response.message">
+                    <p>Status: nothing added yet.</p>
+                </div>
+                <br>
+                <button @click="bulk_add_new()">Add the above domains to the list</button>
+
+            </div>
+            <div slot="footer">
             </div>
         </modal>
     </div>
@@ -375,7 +400,7 @@ Vue.component('select2', {
       ).trigger('change')
       // emit event on change.
       .on('change', function () {
-
+          console.log('change');
           // Ok, this was not easy to figure out. This is the most old school approach of getting all option values.
           // I would expect to run .val() or someething, but that didn't update etc..
           // this approach is not reactive, but it doesn't need to be.
@@ -384,6 +409,7 @@ Vue.component('select2', {
                 my_data.push(this.options[i].text);
             }
 
+          console.log(my_data);
           vm.$emit('input', my_data)  // can't get all...
       })
   },
@@ -461,6 +487,9 @@ vueListManager = new Vue({
                         // could also add it alphabetically, but that doesn't really help as the list might get lost
                         // in the many lists out there. (doesn't work)
                         self.lists.push(self.add_new_response.data);
+
+                        // todo: validate correct.
+                        self.show_new = false;
                     }
                     self.add_new_loading = false;
                 });
@@ -500,8 +529,12 @@ Vue.component('managed-url-list', {
             original_url_value: '',
 
             // everything that has to do with adding urls:
+            show_bulk_add_new: false,
             bulk_add_new_urls: [],
             bulk_add_new_server_response: {},
+
+            // everything to do with csv:
+            view_csv: false,
         }
     },
     mounted: function () {
@@ -517,6 +550,8 @@ Vue.component('managed-url-list', {
                 this.stop_editing_settings();
                 this.stop_deleting();
                 this.cancel_edit_url();
+                this.show_bulk_add_new = false;
+                this.view_csv = false;
             }
         },
 
@@ -661,6 +696,16 @@ Vue.component('managed-url-list', {
             );
 
         },
+
+        start_bulk_add_new: function(){
+            this.show_bulk_add_new = true;
+        },
+        stop_bulk_add_new: function(){
+            this.show_bulk_add_new = false;
+
+            // re-load the url list, as perhaps more information about endpoints is discovered.
+            self.get_urls();
+        },
         bulk_add_new: function(){
             // todo: edit new list doesn't work, no ID in this list?
             // todo: post bulk_add_new_urls and handle the response. It will have a number of added urls and some
@@ -679,7 +724,19 @@ Vue.component('managed-url-list', {
                     // clean the select2 box?
                 }
             );
+        },
+        toggle_view_csv: function(){
+            this.view_csv = !this.view_csv;
         }
+    },
+    computed: {
+       csv_value: function(){
+           urls = [];
+           this.urls.forEach(function(item) {
+               urls.push(item.url);
+           });
+           return urls.join(', ');
+       }
     },
     template: '#managed-url-list'
 });
