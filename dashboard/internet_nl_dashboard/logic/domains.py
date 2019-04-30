@@ -126,10 +126,13 @@ def create_list(account: Account, user_input: Dict) -> Dict[str, Any]:
     # make sure the account is serializable.
     data['account'] = account.id
 
+    # adding the ID makes it possible to add new urls to a new list.
+    data['id'] = urllist.pk
+
     return operation_response(success=True, message="List created.", data=data)
 
 
-def delete_list(account: Account, list_id: int):
+def delete_list(account: Account, user_input: dict):
     """
     The first assumption was that a list is not precious or special, and that it can be quickly re-created with an
     import from excel or a csv paste in the web interface. Yet this assumption is wrong. It's valuable to keep the list
@@ -138,10 +141,10 @@ def delete_list(account: Account, list_id: int):
     To do that, the is_deleted columns have been introduced.
 
     :param account:
-    :param list_id:
+    :param user_input:
     :return:
     """
-    urllist = UrlList.objects.all().filter(account=account, id=list_id, is_deleted=False).first()
+    urllist = UrlList.objects.all().filter(account=account, id=user_input.get('id', -1), is_deleted=False).first()
     if not urllist:
         return operation_response(error=True, message="List could not be deleted.")
 
