@@ -11,8 +11,12 @@ Done: delete url
 Done: cancel what you're doing using escape
 Done: support scan types
 Done: show lists, including last scan moment
+Done: Sorting of urls by domain and then subdomains.
+Done: support 'scan now' button.
 Todo: what happens when the edited url is not valid? Reset?
-Todo: support 'scan now' button.
+Todo: Add new list to the top.
+Todo: when scan now is clicked, disable scan now.
+Todo: pasting too many urls in the select2 causes an overflow. Size it properly.
 
 -->
 <!-- todo: translation -->
@@ -166,8 +170,8 @@ Todo: support 'scan now' button.
                 <button @click="start_deleting()">🔪 Delete</button>
             </div>
         </h3>
-
         <br>
+
         <div v-if="is_opened">
             <h4>About this list</h4>
             <span v-if="list.last_scan">
@@ -194,8 +198,8 @@ Todo: support 'scan now' button.
                     Scanning of this list is disabled.
                 </div>
             </div>
+            <br>
 
-            <br><br>
             <h4>Domains</h4>
             <br>
             <div style="column-count: 2;">
