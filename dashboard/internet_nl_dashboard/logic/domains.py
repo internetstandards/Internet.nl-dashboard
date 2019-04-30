@@ -7,6 +7,7 @@ from tldextract import tldextract
 from validators import domain
 from websecmap.organizations.models import Url
 from websecmap.scanners.models import Endpoint
+from websecmap.scanners.scanner.dns_endpoints import compose_discover_task
 
 from dashboard.internet_nl_dashboard.models import Account, AccountInternetNLScan, UrlList
 
@@ -44,8 +45,7 @@ def alter_url_in_urllist(account, data):
         return operation_response(error=True, message="List does not exist.")
 
     # is the url valid?
-    extract = tldextract.extract(data['new_url_string'])
-    if not extract.suffix:
+    if not is_valid_url(data['new_url_string']):
         return operation_response(error=True, message="New url does not have the correct format.")
 
     # fetch the url, or create it if it doesn't exist.
@@ -82,7 +82,25 @@ def alter_url_in_urllist(account, data):
     })
 
 
-# todo: write test
+def is_valid_url(url):
+    extract = tldextract.extract(url)
+    if not extract.suffix:
+        return False
+
+    # Validators catches 'most' invalid urls, but there are some issues and exceptions that are not really likely
+    # to cause any major issues in our software. The other alternative is another library with other quircks.
+    # see: https://github.com/kvesteri/validators/
+    # Note that this library does not account for 'idna' / punycode encoded domains, so you have to convert
+    # them yourself. luckily:
+    # 'аренда.орг' -> 'xn--80aald4bq.xn--c1avg'
+    # 'google.com' -> 'google.com'
+    valid_domain = domain(url.encode('idna').decode())
+    if valid_domain is not True:
+        return False
+
+    return True
+
+
 def get_url(new_url_string: str):
 
     # first check if one exists, if not, create it.
@@ -91,8 +109,7 @@ def get_url(new_url_string: str):
         return url, False
 
     # url does not exist, create it.
-    extract = tldextract.extract(new_url_string)
-    if not extract.suffix:
+    if not is_valid_url(new_url_string):
         raise ValueError('Invalid Url')
 
     new_url = Url()
@@ -100,9 +117,14 @@ def get_url(new_url_string: str):
     new_url.created_on = timezone.now()
     new_url.save()
 
-    # todo: start finding endpoints directly after url has been created.
+    # start finding endpoints after url has been created.
+    trigger_async_endpoint_scan(new_url)
 
     return new_url, True
+
+
+def trigger_async_endpoint_scan(url: Url):
+    compose_discover_task(urls_filter={'pk': url.id}).apply_async()
 
 
 def create_list(account: Account, user_input: Dict) -> Dict[str, Any]:
@@ -429,6 +451,7 @@ def _add_to_urls_to_urllist(account: Account, current_list: UrlList, urls: List[
             # todo: might be wise to use bulk_create to speed up insertion
             new_url = Url(**{'url': url})
             new_url.save()
+            trigger_async_endpoint_scan(new_url)
             current_list.urls.add(new_url)
             counters['added_to_list'] += 1
 
@@ -448,27 +471,13 @@ def clean_urls(urls: List[str]) -> Dict[str, List]:
     result: Dict[str, List] = {'incorrect': [], 'correct': []}
 
     for url in urls:
+        # all urls in the system must be lowercase (if applicable to used character)
         url = url.lower()
-        extract = tldextract.extract(url)
 
-        # no suffix at all, but might still be invalid.
-        if not extract.suffix:
+        if not is_valid_url(url):
             result['incorrect'].append(url)
-            continue
-
-        # Validators catches 'most' invalid urls, but there are some issues and exceptions that are not really likely
-        # to cause any major issues in our software. The other alternative is another library with other quircks.
-        # see: https://github.com/kvesteri/validators/
-        # Note that this library does not account for 'idna' / punycode encoded domains, so you have to convert
-        # them yourself. luckily:
-        # 'аренда.орг' -> 'xn--80aald4bq.xn--c1avg'
-        # 'google.com' -> 'google.com'
-        valid_domain = domain(url.encode('idna').decode())
-        if valid_domain is True:
-            result['correct'].append(url)
         else:
-            # otheriwse valid_domain contains a ValidationFailure object.
-            result['incorrect'].append(url)
+            result['correct'].append(url)
 
     return result
 
