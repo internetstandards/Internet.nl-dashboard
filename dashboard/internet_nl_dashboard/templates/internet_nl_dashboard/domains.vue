@@ -428,21 +428,14 @@ vueListManager = new Vue({
         new_list: {}
     },
     mounted: function () {
-        this.load();
-        document.addEventListener('keyup', this.close_all_windows_on_escape);
-    },
-    methods: {
-
-        close_all_windows_on_escape (e) {
-            // a naive escpe to close dialog option
+        this.get_lists();
+        document.addEventListener('keyup', (e) => {
             if (e.keyCode === 27) {
                 this.show_new = false;
             }
-        },
-
-        load: function() {
-            this.get_lists();
-        },
+        });
+    },
+    methods: {
         get_lists: function(){
             this.loading = true;
             fetch(`/data/urllists/get/`).then(response => response.json()).then(data => {
@@ -462,9 +455,9 @@ vueListManager = new Vue({
         create_list: function() {
             this.add_new_loading = true;
             this.asynchronous_json_post(
-                '/data/urllist/create_list/', this.new_list, this, function(self, server_response){
-                    self.add_new_response = server_response;
-                    if (!jQuery.isEmptyObject(self.add_new_response.data)){
+                '/data/urllist/create_list/', this.new_list, (server_response) => {
+                    this.add_new_response = server_response;
+                    if (!jQuery.isEmptyObject(this.add_new_response.data)){
                         // todo: should we order the list alphabetically / or re-apply the orderering there is now?
                         // how do we scroll to the new list?
                         // is it possible to have a an animation on everything that is added to the list?
@@ -472,18 +465,19 @@ vueListManager = new Vue({
                         // add the item at the beginning, as it's the closest to the add button.
                         // could also add it alphabetically, but that doesn't really help as the list might get lost
                         // in the many lists out there. (doesn't work)
-                        self.lists.push(self.add_new_response.data);
+                        this.lists.push(this.add_new_response.data);
 
                         // todo: validate correct.
-                        self.show_new = false;
+                        this.show_new = false;
                     }
-                    self.add_new_loading = false;
+                    this.add_new_loading = false;
                 });
         }
     }
 });
 
 Vue.component('managed-url-list', {
+    template: '#managed-url-list',
     mixins: [humanize_mixin, http_mixin],
 
     data: function () {
@@ -528,14 +522,7 @@ Vue.component('managed-url-list', {
         }
     },
     mounted: function () {
-        document.addEventListener('keyup', this.close_all_windows_on_escape);
-    },
-    props: {
-        initial_list: Object,
-    },
-    methods: {
-        close_all_windows_on_escape (e) {
-            // a naive escpe to close dialog option
+        document.addEventListener('keyup', (e) => {
             if (e.keyCode === 27) {
                 this.stop_editing_settings();
                 this.stop_deleting();
@@ -544,8 +531,12 @@ Vue.component('managed-url-list', {
                 this.view_csv = false;
                 this.show_scan_now = false;
             }
-        },
-
+        });
+    },
+    props: {
+        initial_list: Object,
+    },
+    methods: {
         open_list: function(){
             this.get_urls();
             this.is_opened = true;
@@ -564,18 +555,17 @@ Vue.component('managed-url-list', {
             this.settings_loading = true;
 
             this.asynchronous_json_post(
-                '/data/urllist/update_list_settings/', this.list, this, function (self, server_response) {
-                    console.log(server_response);
-                    self.settings_update_response = server_response;
-                    self.settings_loading = false;
+                '/data/urllist/update_list_settings/', this.list, (server_response) => {
+                    this.settings_update_response = server_response;
+                    this.settings_loading = false;
 
                     // The upcoming scan date has probably changed, and we want to reflect that in the UI.
-                    self.list = server_response.data;
+                    this.list = server_response.data;
                     // make sure the cancel button goes to the last save.
-                    self.old_list_settings = self.copy_values(self.list);
+                    this.old_list_settings = this.copy_values(this.list);
 
                     if (server_response.success){
-                        self.stop_editing_settings();
+                        this.stop_editing_settings();
                     }
                 });
         },
@@ -610,13 +600,13 @@ Vue.component('managed-url-list', {
         },
         confirm_deletion: function() {
             this.asynchronous_json_post(
-                '/data/urllist/delete/', {'id': this.list.id}, this, function (self, server_response) {
-                    self.delete_response = server_response;
+                '/data/urllist/delete/', {'id': this.list.id}, (server_response) => {
+                    this.delete_response = server_response;
 
                     if (server_response.success){
                         // remove / hide this thing...
-                        self.is_deleted = true;
-                        self.stop_deleting();
+                        this.is_deleted = true;
+                        this.stop_deleting();
                     }
                 }
             );
@@ -646,11 +636,11 @@ Vue.component('managed-url-list', {
             // todo
             data = {'list_id': list_id, 'url_id': url_id};
             this.asynchronous_json_post(
-                '/data/urllist/url/delete/', data, this, function (self, server_response) {
-                    self.delete_response = server_response;
+                '/data/urllist/url/delete/', data, (server_response) => {
+                    this.delete_response = server_response;
 
                     // todo: check if deletion was succesful.
-                    self.urls.forEach(function(item, index, object) {
+                    this.urls.forEach(function(item, index, object) {
                         if (url_id === item.id) {
                             object.splice(index, 1)
                         }
@@ -665,15 +655,15 @@ Vue.component('managed-url-list', {
             * */
             // todo
             this.asynchronous_json_post(
-                '/data/urllist/url/save/', data, this, function (self, server_response) {
-                    // self.url_redit_response = server_response;
+                '/data/urllist/url/save/', data, (server_response) => {
+                    // this.url_redit_response = server_response;
 
                     // todo: if not succesful, then store the original value...
                     if (server_response['success'] === true){
-                        self.url_edit = '';
+                        this.url_edit = '';
                         // and make sure the current url list is updated as well. Should'nt this be data bound and
                         // such?
-                        self.urls.forEach(function(item, index, object) {
+                        this.urls.forEach(function(item, index, object) {
                         if (server_response.data.removed.id === item.id) {
                             object[index] = server_response.data.created;
                             // object.splice(index, 1);
@@ -681,7 +671,7 @@ Vue.component('managed-url-list', {
                         }
                     });
                     } else {
-                        document.getElementById(self.url_edit).value=self.original_url_value;
+                        document.getElementById(this.url_edit).value=this.original_url_value;
                     }
                 }
             );
@@ -706,12 +696,12 @@ Vue.component('managed-url-list', {
             data = {'urls': this.bulk_add_new_urls, 'list_id': this.list.id};
 
             this.asynchronous_json_post(
-                '/data/urllist/url/add/', data, this, function (self, server_response) {
+                '/data/urllist/url/add/', data, (server_response) => {
                     // {'incorrect_urls': [], 'added_to_list': int, 'already_in_list': int}
-                    self.bulk_add_new_server_response = server_response;
+                    this.bulk_add_new_server_response = server_response;
 
                     // Update the list of urls accordingly.
-                    self.get_urls();
+                    this.get_urls();
                     // clean the select2 box?
                 }
             );
@@ -729,9 +719,9 @@ Vue.component('managed-url-list', {
             data = {'id': this.list.id};
 
             this.asynchronous_json_post(
-                '/data/urllist/scan_now/', data, this, function (self, server_response) {
-                    self.scan_now_server_response = server_response;
-                    self.stop_scan_now()
+                '/data/urllist/scan_now/', data, (server_response) => {
+                    this.scan_now_server_response = server_response;
+                    this.stop_scan_now()
                 }
             );
         }
@@ -745,6 +735,5 @@ Vue.component('managed-url-list', {
            return urls.join(', ');
        }
     },
-    template: '#managed-url-list'
 });
 </script>
