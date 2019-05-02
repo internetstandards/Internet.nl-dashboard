@@ -4,6 +4,7 @@ from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render
 from websecmap.app.common import JSEncoder
+from django.conf import settings
 
 from dashboard.internet_nl_dashboard.logic.scan_monitor import get_running_scans
 from dashboard.internet_nl_dashboard.views import (LOGIN_URL, get_account,
@@ -17,6 +18,7 @@ def scan_monitor(request) -> HttpResponse:
 
     response = render(request, 'internet_nl_dashboard/templates/internet_nl_dashboard/scan_monitor.html', {
         'menu_item_scan_monitor': "current",
+        'debug': settings.DEBUG
     })
 
     return inject_default_language_cookie(request, response)

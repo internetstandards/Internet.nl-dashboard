@@ -48,7 +48,7 @@ def convert_internet_nl_content_to_vue():
 
         # support a per-language kind of file, in case we're going to do dynamic loading of languages.
         vue_i18n_content = convert_vue_i18n_format([{'locale': locale, 'content': structured_content}])
-        store_vue_i18n_file(locale, vue_i18n_content)
+        store_vue_i18n_file('internet_nl.%s'locale, vue_i18n_content)
 
     # the locales are easiest stored together. This makes language switching a lot easier.
     vue_i18n_content = convert_vue_i18n_format(translated_locales)

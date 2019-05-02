@@ -31,65 +31,17 @@
         <span v-if="!scans.length">{{ $t("scan_monitor.no_scans") }}</span>
 
         <p>
-            <div class='auto_refresh'>{{ $t("auto_refresh.refresh_happening_in") }} <span v-html="current_step_inverted"></span>{{ $t("auto_refresh.units") }} <a @click="reload_now()"> ({{ $t("auto_refresh.refresh_now") }})</a></div>
+            <div class='auto_refresh'>{{ $t("auto_refresh.refresh_happening_in") }}
+                <span v-html="current_step_inverted"></span>
+                {{ $t("auto_refresh.units") }}
+                <a @click="reload_now()"> ({{ $t("auto_refresh.refresh_now") }})</a>
+            </div>
         </p>
     </div>
 </template>
 {% endverbatim %}
 
 <script>
-
-const messages = {
-    en: {
-        scan_monitor: {
-            title: 'Scan monitor',
-            intro: 'All scans that have happened for this account are displayed here. It gives an insight into how ' +
-                'recent the most current information is. It can also help you with comparisons to select the ideal ' +
-                'scan.',
-            id: '#',
-            type: 'Type',
-            list: 'List',
-            started_on: 'Started',
-            finished_on: 'Finished',
-            message: 'Status',
-            live: 'API',
-            no_scans: 'No scans have been performed yet.',
-        },
-        auto_refresh: {
-            refresh_happening_in: 'Auto refresh in:',
-            units: 's',
-            refresh_now: 'refresh now'
-        }
-    },
-    nl: {
-        scan_monitor: {
-            title: 'Scan monitor',
-            intro: 'Alle scans die zijn uitgevoerd voor dit account staan hier. Het geeft een overzicht in hoe recent ' +
-                'de data is. Het geeft ook inzicht in of de meest recente scan al is afgerond.',
-            id: '#',
-            type: 'Soort',
-            list: 'Lijst',
-            started_on: 'Gestart',
-            finished_on: 'Klaar',
-            message: 'Status',
-            live: 'API',
-            no_scans: 'Nog geen scans uitgevoerd.',
-        },
-        auto_refresh: {
-            refresh_happening_in: 'Lijst wordt ververst over:',
-            units: 's',
-            refresh_now: 'ververs nu'
-        }
-    }
-};
-
-const i18n = new VueI18n({
-    locale: get_cookie('dashboard_language'),
-    fallbackLocale: 'en',
-    messages,
-});
-
-
 const autoreload_mixin = {
     /*
     * Autoreloads the 'load' methods after every N seconds.
@@ -136,7 +88,6 @@ const autoreload_mixin = {
         }
     }
 };
-
 
 vueUpload = new Vue({
     i18n,
