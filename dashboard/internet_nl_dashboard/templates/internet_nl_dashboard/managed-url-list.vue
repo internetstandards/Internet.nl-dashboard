@@ -1,25 +1,3 @@
-<!--
-This can do:
-
-Done: create new lists
-Done: configure lists
-Done: add domains
-Done: delete lists
-Done: edit url
-Done: delete url
-Done: cancel what you're doing using escape
-Done: support scan types
-Done: show lists, including last scan moment
-Done: Sorting of urls by domain and then subdomains.
-Done: support 'scan now' button.
-Todo: what happens when the edited url is not valid?
-Todo: Add new list to the top.
-Todo: when scan now is clicked, disable scan now button.
-Todo: pasting too many urls in the select2 causes an overflow. Size it properly.
-Todo: translation
-// todo: add new, remove, drag to other list(?)
-
--->
 {% verbatim %}
 <template type="x-template" id="managed-url-list">
     <article class="managed-url-list" v-if="!is_deleted">
@@ -32,7 +10,7 @@ Todo: translation
                 <button @click="start_bulk_add_new()">💖 Add domains</button>
                 <button @click="start_scan_now()" v-if="list.scan_now_available">🔬 Scan Now</button>
                 <button @click="alert('The scan now option is available only once a day, when no scan is running.')" v-if="!list.scan_now_available" disabled="disabled"
-                title="The scan now option is available only once a day.">🔬 Scan Now</button>
+                title="The scan now option is available only once a day."><img width="15" style="border-radius: 50%" src="/static/images/vendor/internet_nl/probe-animation.gif"> Scanning</button>
                 <button @click="start_deleting()">🔪 Delete</button>
             </div>
         </h3>
@@ -465,6 +443,7 @@ Vue.component('managed-url-list', {
         },
         stop_scan_now: function(){
             this.show_scan_now = false;
+            this.scan_now_server_response = {};
         },
         confirm_scan_now: function(){
             data = {'id': this.list.id};
@@ -472,7 +451,11 @@ Vue.component('managed-url-list', {
             this.asynchronous_json_post(
                 '/data/urllist/scan_now/', data, (server_response) => {
                     this.scan_now_server_response = server_response;
-                    this.stop_scan_now()
+
+                    if (server_response.success) {
+                        this.list.scan_now_available = false;
+                        this.stop_scan_now()
+                    }
                 }
             );
         }

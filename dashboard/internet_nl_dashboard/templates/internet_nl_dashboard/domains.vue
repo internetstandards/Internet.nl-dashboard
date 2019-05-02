@@ -15,7 +15,7 @@ Done: support 'scan now' button.
 Todo: what happens when the edited url is not valid?
 Done: Add new list to the top.
 Todo: when scan now is clicked, disable scan now button.
-Todo: pasting too many urls in the select2 causes an overflow. Size it properly.
+Done: pasting too many urls in the select2 causes an overflow. Size it properly.
 Todo: translation
 // todo: add new, remove, drag to other list(?)
 -->
@@ -59,7 +59,7 @@ Todo: translation
 
         <button @click="start_adding_new()">Add new list</button>
 
-        <div v-for="list in lists" >{{list}}
+        <div v-for="list in lists" >
             <managed-url-list :initial_list="list"></managed-url-list>
         </div>
 

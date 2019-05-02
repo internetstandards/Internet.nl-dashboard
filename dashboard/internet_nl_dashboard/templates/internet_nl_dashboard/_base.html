@@ -104,6 +104,7 @@ Todo: digitoegankelijk: how to select links with the keyboard? How can we make t
                 });
 
                 // focus on the default button for keyboard users.
+                // todo: should it be the first input, and how do you do that easily / sanely
                 document.getElementsByClassName('modal-default-button')[0].focus();
             },
         });
@@ -334,22 +335,22 @@ Todo: digitoegankelijk: how to select links with the keyboard? How can we make t
 <main id="content" class="clearfix" tabindex="-1">
     <div class="mainwrap">
 
-        <div class="wrap">
+        <!-- <div class="wrap">
             <section class="block websitetest">
                 <div class="wrapper">
-                    {% block content %}
-                    {% endblock %}
+
                 </div>
             </section>
-        </div>
+        </div> -->
 
     </div>
     <div class="wrap">
 
-        <section class="block news">
-            <h2>
-                t.b.d.
-            </h2>
+        <section class="block websitetest">
+
+                {% block content %}
+                    {% endblock %}
+
         </section>
     </div>
 </main>
