@@ -17,38 +17,40 @@ Todo: Add new list to the top.
 Todo: when scan now is clicked, disable scan now button.
 Todo: pasting too many urls in the select2 causes an overflow. Size it properly.
 Todo: translation
+// todo: add new, remove, drag to other list(?)
+
 -->
 {% verbatim %}
 <template type="x-template" id="lists">
     <div>
-        <modal v-if="show_new" @close="stop_adding_new()">
+        <modal v-if="show_add_new" @close="stop_adding_new()">
             <h3 slot="header">Add new list</h3>
 
             <div slot="body">
 
-                <div v-if="add_new_response.error" class="server-response-error">
+                <div v-if="add_new_server_response.error" class="server-response-error">
                     <h2>❌ Not saved</h2>
-                    {{ add_new_response.message }}
+                    {{ add_new_server_response.message }}
                 </div>
-                <div v-if="add_new_response.success" class="server-response-success">
+                <div v-if="add_new_server_response.success" class="server-response-success">
                     <h2>✅ Saved!</h2>
-                    {{ add_new_response.message }}
+                    {{ add_new_server_response.message }}
                 </div>
 
                 <label for="name">List name:</label>
-                <input id="name" type="text" maxlength="120" v-model="new_list.name"><br><br>
+                <input id="name" type="text" maxlength="120" v-model="add_new_new_list.name"><br><br>
 
                 <label for="enable_scans">Enable scans:</label>
-                <input id="enable_scans" type="checkbox" v-model="new_list.enable_scans"><br><br>
+                <input id="enable_scans" type="checkbox" v-model="add_new_new_list.enable_scans"><br><br>
 
                 <label for="scan_type">What scan to run:</label>
-                <select id="scan_type" v-model="new_list.scan_type">
+                <select id="scan_type" v-model="add_new_new_list.scan_type">
                     <option value="web">Web</option>
                     <option value="mail">Mail</option>
                 </select><br><br>
 
                 <label for="automated_scan_frequency">How often should the scan run?:</label>
-                <select id="automated_scan_frequency" v-model="new_list.automated_scan_frequency">
+                <select id="automated_scan_frequency" v-model="add_new_new_list.automated_scan_frequency">
                     <option value="disabled">Disabled</option>
                     <option value="every half year">Every half year</option>
                     <option value="at the start of every quarter">At the start of every quarter</option>
@@ -337,7 +339,14 @@ Todo: translation
 
 <script>
 Vue.component('modal', {
-  template: '#modal-template'
+    template: '#modal-template',
+    mounted: function() {
+        document.addEventListener('keyup', (e) => {
+            if (e.keyCode === 27) {
+                this.$emit('close');
+            }
+        });
+    },
 });
 
 Vue.component('select2', {
@@ -411,7 +420,6 @@ Vue.component('select2', {
   }
 });
 
-// todo: add new, remove, drag to other list(?)
 vueListManager = new Vue({
     name: 'list_manager',
     el: '#list_manager',
@@ -422,18 +430,12 @@ vueListManager = new Vue({
         lists: [],
 
         // everything that has something to do with adding a new list:
-        show_new: false,
-        add_new_loading: false,
-        add_new_response: {},
-        new_list: {}
+        show_add_new: false,
+        add_new_server_response: {},
+        add_new_new_list: {}
     },
     mounted: function () {
         this.get_lists();
-        document.addEventListener('keyup', (e) => {
-            if (e.keyCode === 27) {
-                this.show_new = false;
-            }
-        });
     },
     methods: {
         get_lists: function(){
@@ -444,20 +446,19 @@ vueListManager = new Vue({
             }).catch((fail) => {console.log('A loading error occurred: ' + fail);});
         },
         start_adding_new: function(){
-            this.new_list = {'id': -1, 'name': '', 'enable_scans': false, 'scan_type': 'web',
+            this.add_new_new_list = {'id': -1, 'name': '', 'enable_scans': false, 'scan_type': 'web',
                 'automated_scan_frequency': 'disabled', 'scheduled_next_scan': '1'};
-            this.show_new = true;
-            this.add_new_response = {};
+            this.show_add_new = true;
+            this.add_new_server_response = {};
         },
         stop_adding_new: function() {
-            this.show_new = false;
+            this.show_add_new = false;
         },
         create_list: function() {
-            this.add_new_loading = true;
             this.asynchronous_json_post(
-                '/data/urllist/create_list/', this.new_list, (server_response) => {
-                    this.add_new_response = server_response;
-                    if (!jQuery.isEmptyObject(this.add_new_response.data)){
+                '/data/urllist/create_list/', this.add_new_new_list, (server_response) => {
+                    this.add_new_server_response = server_response;
+                    if (!jQuery.isEmptyObject(this.add_new_server_response.data)){
                         // todo: should we order the list alphabetically / or re-apply the orderering there is now?
                         // how do we scroll to the new list?
                         // is it possible to have a an animation on everything that is added to the list?
@@ -465,12 +466,14 @@ vueListManager = new Vue({
                         // add the item at the beginning, as it's the closest to the add button.
                         // could also add it alphabetically, but that doesn't really help as the list might get lost
                         // in the many lists out there. (doesn't work)
-                        this.lists.push(this.add_new_response.data);
+                        // unshift doesn't work. Not mapped within vue.js? Also reversing twice doesn't work.
+                        // this.lists = this.lists.reverse(); also not in place... i mean... wtf.
+                        this.lists.push(this.add_new_server_response.data);
+
 
                         // todo: validate correct.
-                        this.show_new = false;
+                        this.show_add_new = false;
                     }
-                    this.add_new_loading = false;
                 });
         }
     }
@@ -520,18 +523,6 @@ Vue.component('managed-url-list', {
             show_scan_now: false,
             scan_now_server_response: {}
         }
-    },
-    mounted: function () {
-        document.addEventListener('keyup', (e) => {
-            if (e.keyCode === 27) {
-                this.stop_editing_settings();
-                this.stop_deleting();
-                this.cancel_edit_url();
-                this.show_bulk_add_new = false;
-                this.view_csv = false;
-                this.show_scan_now = false;
-            }
-        });
     },
     props: {
         initial_list: Object,
