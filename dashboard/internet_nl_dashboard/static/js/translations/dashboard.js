@@ -1,5 +1,106 @@
 const messages = {
     en: {
+        domains: {
+            add_new_list: 'Add new list',
+            button_close_label: 'Close',
+            button_create_list_label: 'Create List',
+        },
+        domain_management: {
+
+            button_labels: {
+                configure: 'Configure',
+                add_domains: 'Add domains',
+                scan_now: 'Scan now',
+                scan_now_scanning: 'Scanning',
+                scan_now_scanning_title: 'The scan now option is available only once a day, when no scan is running.',
+                delete: 'Delete',
+                view_csv: 'View .csv',
+            },
+
+            about_this_list: {
+                header: 'About this list',
+                last_scan_started: 'Last scan started',
+                still_running: 'still running',
+                finished: 'finished',
+                not_scanned_before: 'Not scanned before',
+                type_of_scan_performed: 'Type of scan performed',
+                scan_frequency: 'Scan frequency',
+                next_scheduled_scan: 'Next scheduled scan',
+                scanning_disabled: 'Scanning of this list is disabled.',
+                latest_report: 'Latest report',
+                open: 'open',
+            },
+
+            domains: {
+                header: 'Domains',
+                eligeble_mail: 'Is eligeble for e-mail scans',
+                unknown_eligeble_mail: 'Not yet known if scanable for mail',
+                not_eligeble_mail: 'Is not eligeble for e-mail scans. Will be checked again when starting a scan.',
+                eligeble_web: 'Is eligeble for web scans',
+                unknown_eligeble_web: 'Not yet known if scannable for web',
+                not_eligeble_web: 'Is not eligeble for web scans. Will be checked again when starting a scan.',
+
+                button_labels: {
+                    save: 'Save',
+                    cancel: 'Cancel',
+                    remove: 'Remove',
+                }
+            },
+
+            edit_form: {
+                title: 'Edit list settings',
+                cancel: 'Cancel',
+                ok: 'Update'
+            },
+
+            delete_form: {
+                title: 'Delete list',
+                message: 'Are you sure you want to\n' +
+                    '                delete this list? Deleting this list cannot be undone.',
+                cancel: 'No, take me back',
+                ok: 'Yes, Delete'
+            },
+
+            scan_now_form: {
+                title: 'Confirm to scan now',
+                message: 'To start a scan now, please take the following in consideration: <br>' +
+                    'A scan can only be started once a day, and only when no scan is already running. Note that a scan cannot be cancelled.',
+                cancel: 'Cancel',
+                ok: 'Scan now'
+            },
+
+            bulk_add_form: {
+                title: 'Bulk add domains',
+                message: 'You can add many domains in one go. To do this, seperate each domain with a comma.',
+                ok: 'Add the above domains to the list',
+                status: 'Status',
+                nothing_added: 'nothing added yet.',
+                added_n_to_list: 'Added {0} domains to this list.',
+                ignored_n: 'Additionally, {0} domains have been\n' +
+                    '                            ignored as they are already in this list.',
+                warning: 'Warning!',
+                warning_message: 'Some domains where not added because they are in an incorrect format. <br>\n' +
+                    '                            The following domains where not added',
+            }
+
+        },
+        // field name translation
+        urllist: {
+            field_label_id: 'id',
+            field_label_name: 'List Name',
+            field_label_enable_scans: 'Enable Scans',
+            enable_scans_enabled: 'Enabled',
+            enable_scans_disabled: 'Disabled',
+            field_label_scan_type: 'What scan to run',
+            scan_type_web: 'web',
+            scan_type_mail: 'mail',
+            field_label_automated_scan_frequency: 'How often should the scan run?',
+            automated_scan_frequency_disabled: 'Disabled',
+            automated_scan_frequency_every_half_year: 'Every half year',
+            automated_scan_frequency_every_quarter: 'At the start of every quarter',
+            automated_scan_frequency_every_month: 'Every 1st day of the month',
+            automated_scan_frequency_twice_per_month: 'Twice per month',
+        },
         report: {
             // types of tests
             internet_nl_web_tls: internet_nl_messages.en.internet_nl.test_sitetls_label,
@@ -126,6 +227,105 @@ const messages = {
         }
     },
     nl: {
+        domains: {
+            add_new_list: 'Lijst toevoegen',
+            button_close_label: 'Sluiten',
+            button_create_list_label: 'Maak deze lijst',
+        },
+        domain_management: {
+
+            button_labels: {
+                configure: 'Instellingen',
+                add_domains: 'Domeinen toevoegen',
+                scan_now: 'Nu scannen',
+                scan_now_scanning: 'Aan het scannen',
+                scan_now_scanning_title: 'Nu scannen is alleen beschikbaar als er geen scan draait, en kan maximaal 1x per dag worden aangeroepen.',
+                delete: 'Verwijder',
+                view_csv: 'Bekijk.csv',
+            },
+
+            about_this_list: {
+                header: 'Over deze lijst',
+                last_scan_started: 'Laatste scan gestart op',
+                still_running: 'loopt nog',
+                finished: 'afgerond',
+                not_scanned_before: 'Niet eerder gescand',
+                type_of_scan_performed: 'Soort scan',
+                scan_frequency: 'Scan frequentie',
+                next_scheduled_scan: 'Volgende ingeplande scan',
+                scanning_disabled: 'Scannen van deze lijst is uitgeschakeld.',
+                latest_report: 'Meest actuele rapportage',
+                open: 'openen',
+            },
+
+            domains: {
+                header: 'Domeinen',
+                eligeble_mail: 'E-mail scannen is mogelijk',
+                unknown_eligeble_mail: 'Onbekend of E-mail scannen mogelijk is',
+                not_eligeble_mail: 'Kan geen E-mail scan uitvoeren (wordt opnieuw gecheckt bij het starten van de scan)',
+                eligeble_web: 'Web scan is mogelijk',
+                unknown_eligeble_web: 'Niet bekend of het mogelijk is een web scan uit te voeren',
+                not_eligeble_web: 'Web scan kan niet worden uitgevoerd. Dit wordt opnieuw gecheckt bij het starten van de scan.',
+
+                button_labels: {
+                    save: 'Opslaan',
+                    cancel: 'Annuleren',
+                    remove: 'Verwijderen',
+                }
+            },
+
+            edit_form: {
+                title: 'Lijst instellingen',
+                cancel: 'Annuleer',
+                ok: 'Opslaan'
+            },
+
+            delete_form: {
+                title: 'Lijst verwijderen',
+                message: 'Weet u zeker dat u deze lijst wil verwijderen? Dit kan niet ongedaan worden gemaakt.',
+                cancel: 'Nee, niet verwijderen',
+                ok: 'Ja, verwijder'
+            },
+
+            scan_now_form: {
+                title: 'Bevestig om opnieuw te scannen',
+                message: 'Een scan die nu wordt gestart heeft de volgende eigenschappen: <br>' +
+                    'Een handmatige scan kan eens per dag worden gestart, mits er nog geen scan wordt uitgevoerd op deze lijst.',
+                cancel: 'Annuleer',
+                ok: 'Nu scannen'
+            },
+
+            bulk_add_form: {
+                title: 'Toevoegen van domeinen',
+                message: 'Voeg hieronder een of meerdere domeinen toe, gescheiden door een komma.',
+                ok: 'Voeg bovenstaande domeinen toe aan de lijst',
+                status: 'Status',
+                nothing_added: 'nog niets toegevoegd.',
+                added_n_to_list: 'Er zijn {0} domeinen aan de lijst toegevoegd.',
+                ignored_n: 'Verder zijn er {0} domeinen genegeerd omdat ze al in de lijst zaten.',
+                warning: 'Waarschuwing!',
+                warning_message: 'Sommige domeinen zijn niet in een geldig formaat. Controleer de volgende domeinen en' +
+                    'probeer het opnieuw:',
+            }
+
+        },
+        // field name translation
+        urllist: {
+            field_label_id: 'id',
+            field_label_name: 'Lijst naam',
+            field_label_enable_scans: 'Scans uitvoeren',
+            enable_scans_enabled: 'Ingeschakeld',
+            enable_scans_disabled: 'Uitgeschakeld',
+            field_label_scan_type: 'Welk type scan moet er worden uitgevoerd',
+            scan_type_web: 'Website en webadres',
+            scan_type_mail: 'E-Mail',
+            field_label_automated_scan_frequency: 'Moet deze scan vaker worden uitgevoerd?',
+            automated_scan_frequency_disabled: 'Nee, niet automatisch scannen',
+            automated_scan_frequency_every_half_year: 'Ja, aan het begin van elk half jaar',
+            automated_scan_frequency_every_quarter: 'Ja, aan het begin van elk kwartaal',
+            automated_scan_frequency_every_month: 'Ja, aan het begin van elke maand',
+            automated_scan_frequency_twice_per_month: 'Ja, om de twee weken vanaf de 1e van de maand',
+        },
         report: {
             // types of tests
             internet_nl_web_tls: internet_nl_messages.nl.internet_nl.test_sitetls_label,

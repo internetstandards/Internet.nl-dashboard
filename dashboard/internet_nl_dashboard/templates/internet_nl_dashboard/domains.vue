@@ -18,47 +18,50 @@ Done: when scan now is clicked, disable scan now button.
 Done: pasting too many urls in the select2 causes an overflow. Size it properly.
 Done: Show link to last report
 Todo: translation
-// todo: add new, remove, drag to other list(?)
+Todo: Bulk add has a bug when only adding 1 to the list, the list of submitted domains is not updated often enough / not reactive.
+Todo: When a list is added, the urls of each list are not moved to the next list. This is not reactive and might case issues.
+Todo: when deleting a list, it is re-added to the list of lists when adding a new list, this is not reactive and causes issues.
+ (most of the above errors would be solved if we would only add things to the end of the list?). Adding the "add new" button to the bottom would quickfix this.
 -->
 {% verbatim %}
 <template type="x-template" id="lists">
     <div>
         <modal v-if="show_add_new" @close="stop_adding_new()">
-            <h3 slot="header">Add new list</h3>
+            <h3 slot="header">{{ $t("domains.add_new_list") }}</h3>
 
             <div slot="body">
 
                 <server-response :response="add_new_server_response"></server-response>
 
-                <label for="name">List name:</label>
+                <label for="name">{{ $t("urllist.field_label_name") }}:</label><br>
                 <input id="name" type="text" maxlength="120" v-model="add_new_new_list.name"><br><br>
 
-                <label for="enable_scans">Enable scans:</label>
+                <label for="enable_scans">{{ $t("urllist.field_label_enable_scans") }}:</label><br>
                 <input id="enable_scans" type="checkbox" v-model="add_new_new_list.enable_scans"><br><br>
 
-                <label for="scan_type">What scan to run:</label>
+                <label for="scan_type">{{ $t("urllist.field_label_scan_type") }}:</label><br>
                 <select id="scan_type" v-model="add_new_new_list.scan_type">
-                    <option value="web">Web</option>
-                    <option value="mail">Mail</option>
+                    <option value="web">{{ $t("urllist.scan_type_web") }}</option>
+                    <option value="mail">{{ $t("urllist.scan_type_mail") }}</option>
                 </select><br><br>
 
-                <label for="automated_scan_frequency">How often should the scan run?:</label>
+                <label for="automated_scan_frequency">{{ $t("urllist.field_label_automated_scan_frequency") }}:</label><br>
                 <select id="automated_scan_frequency" v-model="add_new_new_list.automated_scan_frequency">
-                    <option value="disabled">Disabled</option>
-                    <option value="every half year">Every half year</option>
-                    <option value="at the start of every quarter">At the start of every quarter</option>
-                    <option value="every 1st day of the month">Every 1st day of the month</option>
-                    <option value="twice per month">Twice per month</option>
+                    <option value="disabled">{{ $t("urllist.automated_scan_frequency_disabled") }}</option>
+                    <option value="every half year">{{ $t("urllist.automated_scan_frequency_every_half_year") }}</option>
+                    <option value="at the start of every quarter">{{ $t("urllist.automated_scan_frequency_every_quarter") }}</option>
+                    <option value="every 1st day of the month">{{ $t("urllist.automated_scan_frequency_every_month") }}</option>
+                    <option value="twice per month">{{ $t("urllist.automated_scan_frequency_twice_per_month") }}</option>
                 </select>
 
             </div>
             <div slot="footer">
-                <button @click="stop_adding_new()">Close</button>
-                <button class="modal-default-button" @click="create_list()">Create List</button>
+                <button @click="stop_adding_new()">{{ $t("domains.button_close_label") }}</button>
+                <button class="modal-default-button" @click="create_list()">{{ $t("domains.button_create_list_label") }}</button>
             </div>
         </modal>
 
-        <button @click="start_adding_new()">Add new list</button>
+        <button @click="start_adding_new()">{{ $t("domains.add_new_list") }}</button>
 
         <div v-for="list in lists" >
             <managed-url-list :initial_list="list"></managed-url-list>
@@ -70,6 +73,7 @@ Todo: translation
 
 <script>
 vueListManager = new Vue({
+    i18n,
     name: 'list_manager',
     el: '#list_manager',
     template: '#lists',
