@@ -96,12 +96,89 @@ Todo: digitoegankelijk: how to select links with the keyboard? How can we make t
         Vue.component('modal', {
             template: '#modal-template',
             mounted: function() {
+                // Emit a close when the escape key is hit.
                 document.addEventListener('keyup', (e) => {
                     if (e.keyCode === 27) {
                         this.$emit('close');
                     }
                 });
+
+                // focus on the default button for keyboard users.
+                document.getElementsByClassName('modal-default-button')[0].focus();
             },
+        });
+
+        Vue.component('select2-tags-widget', {
+            // https://vuejs.org/v2/examples/select2.html
+          props: ['options', 'value'],
+          template: '<select style="width: 95%" multiple="multiple">\n' +
+              '    <slot></slot>\n' +
+              '  </select>',
+          mounted: function () {
+            var vm = this;
+            $(this.$el)
+              // init select2
+              .select2({
+                placeholder: 'example.com, www.example.com, www.internet.nl, ...',
+                tags: true,
+                tokenSeparators: [',', ' '],
+                // hides the no results box, as this is pure tagbox only
+                // @see: https://stackoverflow.com/questions/18470917/disable-no-matches-found-text-and-autocomplete-on-select2
+                "language":{
+                    "noResults" : function () { return ''; }
+                },
+                  multiple: true,
+
+                createTag: function (params) {
+                    // This is an extremely naive implementation of domain validation. On the server tldextract is
+                    // used which is much more complete as it uses the public suffixes list.
+                    // This is just a convenience check that something with a dot is entered.
+                    let term = $.trim(params.term);
+
+                    // use the most naive (fast) 'url' validator. All validation is done server side anyway, and
+                    // verifying that something is an url with unicode characters and such is not really a thing.
+                    var pattern = new RegExp('^.*\\..{2,}$'); // domain name
+                    if (!pattern.test(term)) {
+                        return null;
+                    }
+
+                    if (term === '') {
+                        return null;
+                    }
+
+                    return {
+                        id: term,
+                        text: term,
+                    }
+                }
+            }).val(
+                this.value
+              ).trigger('change')
+              // emit event on change.
+              .on('change', function () {
+                  console.log('change');
+                  // Ok, this was not easy to figure out. This is the most old school approach of getting all option values.
+                  // I would expect to run .val() or someething, but that didn't update etc..
+                  // this approach is not reactive, but it doesn't need to be.
+                  let my_data = [];
+                    for (let i = 0; i < this.options.length; i++) {
+                        my_data.push(this.options[i].text);
+                    }
+
+                  console.log(my_data);
+                  vm.$emit('input', my_data)  // can't get all...
+              })
+          },
+            /* this does not update:
+            computed: {
+              // at least this works...
+                all_options: function(){
+                    return $(this.$el).val();
+                }
+            },*/
+          destroyed: function () {
+            $(this.$el).off().select2('destroy')
+          }
         });
 
         // used in various vue components to translate the GUI
@@ -113,6 +190,21 @@ Todo: digitoegankelijk: how to select links with the keyboard? How can we make t
         });
 
         Vue.component('v-select', VueSelect.VueSelect);
+
+        Vue.component('server-response', {
+            props: ['response'],
+            template: '' +
+                '<div>' +
+                '    <div v-if="response.error" class="server-response-error">\n' +
+                '        <h2>❌ An error occured:</h2>\n' +
+                '        {{ response.message }}\n' +
+                '    </div>\n' +
+                '    <div v-if="response.success" class="server-response-success">\n' +
+                '        <h2>✅ Success!</h2>\n' +
+                '        {{ response.message }}\n' +
+                '    </div>' +
+                '</div>',
+        });
 
         function set_language(language_code){
             document.cookie = "dashboard_language=" + (language_code || "en") + "; path=/";

@@ -1,6 +1,5 @@
 {% extends 'internet_nl_dashboard/templates/internet_nl_dashboard/_base.html' %}{% load humanize %}{% load i18n %}
 {% block content %}
-
     <h1>Domains</h1>
 
     <p>This address manager will be 'really' built later on, especially given the risk the UI is not usable for
@@ -10,5 +9,6 @@
     <p>Upload large amount of data: <a href="/upload/">{% trans "Bulk Address Uploader" %}</a></p>
 
     <div id="list_manager"></div>
+    {% include "internet_nl_dashboard/templates/internet_nl_dashboard/managed-url-list.vue" %}
     {% include "internet_nl_dashboard/templates/internet_nl_dashboard/domains.vue" %}
 {% endblock %}

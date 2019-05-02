@@ -156,3 +156,39 @@ small {
 label {
     font-weight: 600;
 }
+
+
+
+.managed-url-list{
+    border: 1px solid silver;
+    border-radius: 5px;
+    padding: 10px;
+    margin-bottom: 20px;
+    background-color: ghostwhite;
+}
+
+.inline-edit input {
+    margin-bottom: 0px !important;
+}
+
+.inline-edit button {
+    font-size: 0.7em !important;
+    margin: 0px !important;
+    height: 23px;
+}
+
+.url-in-managed-list{
+    margin-bottom: 5px;
+    width:100%;
+}
+
+.view-csv{
+    width:100%;
+    height: 200px;
+}
+
+.select2-selection--multiple{
+    height: 200px;
+    width: 100%;
+    overflow: auto;
+}
