@@ -28,14 +28,7 @@ Todo: translation
 
             <div slot="body">
 
-                <div v-if="add_new_server_response.error" class="server-response-error">
-                    <h2>❌ Not saved</h2>
-                    {{ add_new_server_response.message }}
-                </div>
-                <div v-if="add_new_server_response.success" class="server-response-success">
-                    <h2>✅ Saved!</h2>
-                    {{ add_new_server_response.message }}
-                </div>
+                <server-response :response="add_new_server_response"></server-response>
 
                 <label for="name">List name:</label>
                 <input id="name" type="text" maxlength="120" v-model="add_new_new_list.name"><br><br>
@@ -190,14 +183,8 @@ Todo: translation
         <modal v-if="show_list_settings" @close="cancel_editing_settings()">
             <h3 slot="header">🖊 Edit list settings</h3>
             <div slot="body">
-                <div v-if="settings_update_response.error" class="server-response-error">
-                    <h2>❌ Not saved</h2>
-                    {{ settings_update_response.message }}
-                </div>
-                <div v-if="settings_update_response.success"  class="server-response-success">
-                    <h2>✅ Saved!</h2>
-                    {{ settings_update_response.message }}
-                </div>
+
+                <server-response :response="settings_update_response"></server-response>
 
                 <label for="name">List name:</label><br>
                 <input id="name" type="text" maxlength="120" v-model="list.name"><br><br>
@@ -233,14 +220,8 @@ Todo: translation
         <modal v-if="show_deletion" @close="stop_deleting()">
             <h3 slot="header">Delete list</h3>
             <div slot="body">
-                <div v-if="delete_response.error" class="server-response-error">
-                    <h2>❌ Could not delete</h2>
-                    {{ delete_response.message }}
-                </div>
-                <div v-if="delete_response.success" class="server-response-success">
-                    <h2>✅ Deleted!</h2>
-                    {{ delete_response.message }}
-                </div>
+
+                <server-response :response="delete_response"></server-response>
 
                 <p class="warning">Are you sure you want to
                 delete this list? Deleting this list cannot be undone.</p>
@@ -271,10 +252,9 @@ Todo: translation
         <modal v-if="show_scan_now" @close="stop_scan_now()">
             <h3 slot="header">Confirm to scan now</h3>
             <div slot="body">
-                <div v-if="scan_now_server_response.error" class="server-response-error">
-                    <h2>❌ Could not scan</h2>
-                    {{ delete_response.message }}
-                </div>
+
+                <server-response :response="scan_now_server_response"></server-response>
+
                 <p>Todo: tekst...</p>
 
                 <p>To start a scan now, please take the following in consideration:</p>
@@ -290,10 +270,8 @@ Todo: translation
         <modal v-if="show_bulk_add_new" @close="stop_bulk_add_new()">
             <h3 slot="header">Bulk add domains</h3>
             <div slot="body">
-                <div v-if="bulk_add_new_server_response.error" class="server-response-error">
-                    <h2>❌ Error</h2>
-                    {{ bulk_add_new_server_response.message }}
-                </div>
+
+                <server-response :response="bulk_add_new_server_response"></server-response>
 
                 <p>You can add many domains in one go. To do this, seperate each domain with a comma.</p>
                 <select2 v-model="bulk_add_new_urls"></select2>
@@ -338,16 +316,21 @@ Todo: translation
 {% endverbatim %}
 
 <script>
-Vue.component('modal', {
-    template: '#modal-template',
-    mounted: function() {
-        document.addEventListener('keyup', (e) => {
-            if (e.keyCode === 27) {
-                this.$emit('close');
-            }
-        });
-    },
+Vue.component('server-response', {
+    props: ['response'],
+    template: '' +
+        '<div>' +
+        '    <div v-if="response.error" class="server-response-error">\n' +
+        '        <h2>❌ An error occured:</h2>\n' +
+        '        {{ response.message }}\n' +
+        '    </div>\n' +
+        '    <div v-if="response.success" class="server-response-success">\n' +
+        '        <h2>✅ Success!</h2>\n' +
+        '        {{ response.message }}\n' +
+        '    </div>' +
+        '</div>',
 });
+
 
 Vue.component('select2', {
     // https://vuejs.org/v2/examples/select2.html
