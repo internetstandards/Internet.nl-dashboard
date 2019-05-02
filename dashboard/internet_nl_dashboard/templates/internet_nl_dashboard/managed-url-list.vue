@@ -366,18 +366,18 @@ Vue.component('managed-url-list', {
             return document.getElementById(this.url_edit).value;
         },
         remove_edit_url: function(list_id, url_id){
-            // todo
             data = {'list_id': list_id, 'url_id': url_id};
             this.asynchronous_json_post(
                 '/data/urllist/url/delete/', data, (server_response) => {
                     this.delete_response = server_response;
 
-                    // todo: check if deletion was succesful.
-                    this.urls.forEach(function(item, index, object) {
-                        if (url_id === item.id) {
-                            object.splice(index, 1)
-                        }
-                    });
+                    if (server_response.success) {
+                        this.urls.forEach(function (item, index, object) {
+                            if (url_id === item.id) {
+                                object.splice(index, 1)
+                            }
+                        });
+                    }
                 }
             );
         },
@@ -386,13 +386,9 @@ Vue.component('managed-url-list', {
             * This is not a real 'save' but an add to list and create if it doesn't exist operation.
             * The save does not 'alter' the existing URL in the database. It will do some list operations.
             * */
-            // todo
             this.asynchronous_json_post(
                 '/data/urllist/url/save/', data, (server_response) => {
-                    // this.url_redit_response = server_response;
-
-                    // todo: if not succesful, then store the original value...
-                    if (server_response['success'] === true){
+                    if (server_response.success === true){
                         this.url_edit = '';
                         // and make sure the current url list is updated as well. Should'nt this be data bound and
                         // such?
@@ -421,11 +417,6 @@ Vue.component('managed-url-list', {
             this.get_urls();
         },
         bulk_add_new: function(){
-            // todo: edit new list doesn't work, no ID in this list?
-            // todo: post bulk_add_new_urls and handle the response. It will have a number of added urls and some
-            // feedback on what urls where not added. (just like import spreadsheet).
-            // Getting bulk_add_new_urls to work was pretty difficult due to too many layers of abstractions.
-
             data = {'urls': this.bulk_add_new_urls, 'list_id': this.list.id};
 
             this.asynchronous_json_post(
@@ -434,8 +425,10 @@ Vue.component('managed-url-list', {
                     this.bulk_add_new_server_response = server_response;
 
                     // Update the list of urls accordingly.
-                    this.get_urls();
-                    // clean the select2 box?
+                    if (server_response.success) {
+                        this.get_urls();
+                    }
+                    // The select2 box is cleared when opened again. We don't need to clear it.
                 }
             );
         },
