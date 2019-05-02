@@ -14,8 +14,9 @@ Done: Sorting of urls by domain and then subdomains.
 Done: support 'scan now' button.
 Todo: what happens when the edited url is not valid?
 Done: Add new list to the top.
-Todo: when scan now is clicked, disable scan now button.
+Done: when scan now is clicked, disable scan now button.
 Done: pasting too many urls in the select2 causes an overflow. Size it properly.
+Todo: Show link to last report
 Todo: translation
 // todo: add new, remove, drag to other list(?)
 -->

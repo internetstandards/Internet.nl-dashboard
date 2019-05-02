@@ -6,11 +6,12 @@ from dashboard.internet_nl_dashboard.models import Account, UrlList, UrlListRepo
 
 
 # todo: this delivers a very slow report. make it faster.
+# todo: should this delvier reports of lists that have been deleted for historical accuracy?
 def get_recent_reports(account: Account) -> List:
 
     # loading the calculation takes some time. In this case we don't need the calculation and as such we defer it.
     reports = UrlListReport.objects.all().filter(
-        urllist__account=account).order_by('-pk')[0:30].select_related(
+        urllist__account=account, urllist__is_deleted=False).order_by('-pk')[0:30].select_related(
         'urllist').defer('calculation')
 
     return create_report_response(reports)
@@ -19,6 +20,7 @@ def get_recent_reports(account: Account) -> List:
 def get_reports_from_urllist(account: Account, urllist: UrlList):
     reports = UrlListReport.objects.all().filter(
         urllist__account=account,
+        urllist__is_deleted=False,
         urllist=urllist
     ).order_by('-pk')[0:5].select_related(
         'urllist')
@@ -46,6 +48,7 @@ def get_report(account: Account, report_id: int):
 
     report = list(UrlListReport.objects.all().filter(
         urllist__account=account,
+        urllist__is_deleted=False,
         pk=report_id
     ).values())
 

@@ -9,7 +9,7 @@ from websecmap.organizations.models import Url
 from websecmap.scanners.models import Endpoint
 from websecmap.scanners.scanner.dns_endpoints import compose_discover_task
 
-from dashboard.internet_nl_dashboard.models import Account, AccountInternetNLScan, UrlList
+from dashboard.internet_nl_dashboard.models import Account, AccountInternetNLScan, UrlList, UrlListReport
 from dashboard.internet_nl_dashboard.scanners.scan_internet_nl_per_account import \
     create_dashboard_scan_tasks
 
@@ -223,17 +223,24 @@ def update_list_settings(account: Account, user_input: Dict) -> Dict[str, Any]:
     if check_keys(expected_keys, user_input):
         return operation_response(error=True, message="Missing settings.")
 
-    prefetch = Prefetch(
+    prefetch_last_scan = Prefetch(
         'accountinternetnlscan_set',
         queryset=AccountInternetNLScan.objects.order_by('-id').select_related('scan'),
         to_attr='last_scan'
+    )
+
+    last_report_prefetch = Prefetch(
+        'urllistreport_set',
+        # filter(pk=UrlListReport.objects.latest('id').pk).
+        queryset=UrlListReport.objects.order_by('-id').only('id', 'created_on'),
+        to_attr='last_report'
     )
 
     urllist = UrlList.objects.all().filter(
         account=account,
         id=user_input['id'],
         is_deleted=False
-    ).prefetch_related(prefetch).first()
+    ).prefetch_related(prefetch_last_scan, last_report_prefetch).first()
 
     if not urllist:
         return operation_response(error=True, message="No list of urls found.")
@@ -259,10 +266,15 @@ def update_list_settings(account: Account, user_input: Dict) -> Dict[str, Any]:
     data['account'] = account.id
 
     # inject the last scan information.
+    data['last_scan_id'] = None if not len(urllist.last_scan) else urllist.last_scan[0].scan.id
     data['last_scan'] = None if not len(urllist.last_scan) else urllist.last_scan[0].scan.started_on.isoformat()
     data['last_scan_finished'] = None if not len(urllist.last_scan) else urllist.last_scan[0].scan.finished
+    data['last_report_id'] = None if not len(urllist.last_report) else urllist.last_report[0].id
+    data['last_report_date'] = None if not len(urllist.last_report) else urllist.last_report[0].created_on
 
     data['scan_now_available'] = urllist.is_scan_now_available()
+
+    log.debug(data)
 
     return operation_response(success=True, message="Updated list settings", data=data)
 
@@ -317,19 +329,28 @@ def get_urllists_from_account(account: Account) -> List:
     :return:
     """
 
-    prefetch = Prefetch(
+    # this prefetch is pretty fast.
+    last_scan_prefetch = Prefetch(
         'accountinternetnlscan_set',
         queryset=AccountInternetNLScan.objects.order_by('-id').select_related('scan'),
         to_attr='last_scan'
     )
 
+    # Selecting the whole object is extremely slow as the reports are very large, therefore we use .only to limit
+    # the number of fields returned. Then the prefetch is pretty fast again.
+    last_report_prefetch = Prefetch(
+        'urllistreport_set',
+        # filter(pk=UrlListReport.objects.latest('id').pk).
+        queryset=UrlListReport.objects.order_by('-id').only('id', 'created_on'),
+        to_attr='last_report'
+    )
+
     urllists = UrlList.objects.all().filter(
         account=account,
         is_deleted=False
-    ).order_by('name').prefetch_related(prefetch).all()
+    ).order_by('name').prefetch_related(last_scan_prefetch, last_report_prefetch)
 
     response = []
-    # todo: amount of urls, dead_urls etc... Probably add lifecycle to this?
     # Not needed to check the contest of the list. If it's empty, then there is just an empty list returned.
     for urllist in urllists:
         response.append({
@@ -339,9 +360,12 @@ def get_urllists_from_account(account: Account) -> List:
             'scan_type': urllist.scan_type,
             'automated_scan_frequency': urllist.automated_scan_frequency,
             'scheduled_next_scan': urllist.scheduled_next_scan,
+            'last_scan_id': None if not len(urllist.last_scan) else urllist.last_scan[0].scan.id,
             'last_scan': None if not len(urllist.last_scan) else urllist.last_scan[0].scan.started_on.isoformat(),
             'last_scan_finished': None if not len(urllist.last_scan) else urllist.last_scan[0].scan.finished,
             'scan_now_available': urllist.is_scan_now_available(),
+            'last_report_id': None if not len(urllist.last_report) else urllist.last_report[0].id,
+            'last_report_date': None if not len(urllist.last_report) else urllist.last_report[0].created_on,
         })
 
     return response

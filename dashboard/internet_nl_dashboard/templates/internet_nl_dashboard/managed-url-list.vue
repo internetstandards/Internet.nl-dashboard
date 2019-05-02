@@ -42,6 +42,10 @@
                     Scanning of this list is disabled.
                 </div>
             </div>
+            <span v-if="list.last_report_id">
+                Latest report: {{ humanize_date(list.last_report_date) }}
+                (<a :href="'/reports/' + list.last_report_id" target="_blank">open</a>)<br>
+            </span>
             <br>
 
             <h4>Domains</h4>
