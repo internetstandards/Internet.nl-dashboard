@@ -8,25 +8,12 @@ from django.utils import timezone
 from dashboard.internet_nl_dashboard.models import Account, UrlList, UrlListReport
 
 
-# todo: this delivers a very slow report. make it faster.
-# todo: should this delvier reports of lists that have been deleted for historical accuracy?
 def get_recent_reports(account: Account) -> List:
 
     # loading the calculation takes some time. In this case we don't need the calculation and as such we defer it.
     reports = UrlListReport.objects.all().filter(
-        urllist__account=account, urllist__is_deleted=False).order_by('-pk')[0:30].select_related(
+        urllist__account=account, urllist__is_deleted=False).order_by('-pk').select_related(
         'urllist').defer('calculation')
-
-    return create_report_response(reports)
-
-
-def get_reports_from_urllist(account: Account, urllist: UrlList):
-    reports = UrlListReport.objects.all().filter(
-        urllist__account=account,
-        urllist__is_deleted=False,
-        urllist=urllist
-    ).order_by('-pk')[0:5].select_related(
-        'urllist')
 
     return create_report_response(reports)
 
@@ -37,11 +24,13 @@ def create_report_response(reports):
 
         response.append({
             'id': report.id,
+            'report': report.id,
             # mask that there is a mail_dashboard variant.
             'type': report.urllist.scan_type,
             'number_of_urls': report.total_urls,
             'list_name': report.urllist.name,
             'created_on': report.at_when,
+            'urllist_id': report.urllist.id,
         })
 
     return response

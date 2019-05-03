@@ -25,57 +25,63 @@ th.rotate > div > span {
         <h2>Select Report</h2>
         <v-select v-model="selected_report" :options="available_recent_reports"></v-select>
 
-        <h2 v-if="selected_report.value">Column Visbility Filters</h2>
-        <div v-for="(category_group, category_name, y) in categories" v-if="is_relevant_category(category_name)" style="width: 50%; float: left;">
-            <h3><input type="checkbox" v-model='issue_filters[category_name]["visible"]'> {{ $t("report." + category_name) }}</h3>
-            <span v-for="category_name in category_group">
-                <input type="checkbox" v-model='issue_filters[category_name]["visible"]' :id="category_name + '_visible'">
-                <label :for="category_name + '_visible'">{{ $t("report." + category_name) }}</label><br />
-            </span>
+        <div v-if="selected_report.value.report">
+            <h2>Column Visbility Filters</h2>
+
+            <div class="chart-container" style="position: relative; height:555px; width:100%">
+                <line-chart :color_scheme="color_scheme" :chart_data="issue_timeline_of_related_urllist" :axis="['pct_ok', 'pct_not_ok']"></line-chart>
+            </div>
+
+            <div v-for="(category_group, category_name, y) in categories" v-if="is_relevant_category(category_name)" style="width: 50%; float: left;">
+                <h3><input type="checkbox" v-model='issue_filters[category_name]["visible"]'> {{ $t("report." + category_name) }}</h3>
+                <span v-for="category_name in category_group">
+                    <input type="checkbox" v-model='issue_filters[category_name]["visible"]' :id="category_name + '_visible'">
+                    <label :for="category_name + '_visible'">{{ $t("report." + category_name) }}</label><br />
+                </span>
+            </div>
+            <br style="clear: both;">
+
+            <span v-if="selected_category" @click="select_category('')">Remove filter: {{ $t("report." + selected_category) }}</span>
+            <span v-if="!selected_category">&nbsp;</span>
+
+            <div v-if="selected_report.value">
+            <label for="url_filter">Url filter:</label><input type="text" v-model="url_filter" id="url_filter">
+            <br><br><br><br>
+            </div>
+            <h2 v-if="filtered_urls.length">Report</h2>
+            <div>
+                <table v-if="filtered_urls.length">
+                    <tr>
+                        <th style="width: 300px">&nbsp;</th>
+                        <th class="rotate" v-for="rating in filtered_urls[0].endpoints[0].ratings" v-if="filtered_urls[0].endpoints.length && is_relevant_for_category(rating.type)  && is_visible(rating.type)">
+                            <div @click="select_category(rating.type)">
+                                <span>+️</span>
+                                <span>&lt;️️</span>
+                                <span>➡&gt;</span>
+                                <span>{{ $t("report." + rating.type) }}</span></div>
+                        </th>
+                    </tr>
+
+                    <tr v-for="url in filtered_urls" v-if="url.endpoints.length">
+                        <td >{{url.url}}</td>
+                        <td v-for="rating in url.endpoints[0].ratings" v-if="is_relevant_for_category(rating.type) && is_visible(rating.type)">
+                            <span v-if="rating.ok < 1" :title="rating.type">❌</span>
+                            <span v-if="rating.ok > 0" :title="rating.type">✅</span>
+                        </td>
+                    </tr>
+                </table>
+            </div>
+
+            <div id="download" v-if="selected_report.value">
+                <h2>Download</h2>
+                Download raw data as:
+                <ul>
+                <li><a :href="'/data/download-spreadsheet/' + selected_report.value.report + '/xlsx/'">Excel Spreadsheet (Microsoft Office), .xlsx</a></li>
+                <li><a :href="'/data/download-spreadsheet/' + selected_report.value.report + '/ods/'">Open Document Spreadsheet (Libre Office), .ods</a></li>
+                <li><a :href="'/data/download-spreadsheet/' + selected_report.value.report + '/csv/'">Comma Separated (for programmers), .csv</a></li>
+                </ul>
+            </div>
         </div>
-        <br style="clear: both;">
-
-        <span v-if="selected_category" @click="select_category('')">Remove filter: {{ $t("report." + selected_category) }}</span>
-        <span v-if="!selected_category">&nbsp;</span>
-
-        <div v-if="selected_report.value">
-        <label for="url_filter">Url filter:</label><input type="text" v-model="url_filter" id="url_filter">
-        <br><br><br><br>
-        </div>
-        <h2 v-if="filtered_urls.length">Report</h2>
-        <div>
-            <table v-if="filtered_urls.length">
-                <tr>
-                    <th style="width: 300px">&nbsp;</th>
-                    <th class="rotate" v-for="rating in filtered_urls[0].endpoints[0].ratings" v-if="filtered_urls[0].endpoints.length && is_relevant_for_category(rating.type)  && is_visible(rating.type)">
-                        <div @click="select_category(rating.type)">
-                            <span>+️</span>
-                            <span>&lt;️️</span>
-                            <span>➡&gt;</span>
-                            <span>{{ $t("report." + rating.type) }}</span></div>
-                    </th>
-                </tr>
-
-                <tr v-for="url in filtered_urls" v-if="url.endpoints.length">
-                    <td >{{url.url}}</td>
-                    <td v-for="rating in url.endpoints[0].ratings" v-if="is_relevant_for_category(rating.type) && is_visible(rating.type)">
-                        <span v-if="rating.ok < 1" :title="rating.type">❌</span>
-                        <span v-if="rating.ok > 0" :title="rating.type">✅</span>
-                    </td>
-                </tr>
-            </table>
-        </div>
-
-        <div id="download" v-if="selected_report.value">
-            <h2>Download</h2>
-            Download raw data as:
-            <ul>
-            <li><a :href="'/data/download-spreadsheet/' + selected_report.value.report + '/xlsx/'">Excel Spreadsheet (Microsoft Office), .xlsx</a></li>
-            <li><a :href="'/data/download-spreadsheet/' + selected_report.value.report + '/ods/'">Open Document Spreadsheet (Libre Office), .ods</a></li>
-            <li><a :href="'/data/download-spreadsheet/' + selected_report.value.report + '/csv/'">Comma Separated (for programmers), .csv</a></li>
-            </ul>
-        </div>
-
     </div>
 </template>
 {% endverbatim %}
@@ -251,7 +257,24 @@ vueReport = new Vue({
         debounce_timer: 0,
 
         available_recent_reports: [],
-        selected_report: {'report': 0, 'type': ''}
+        selected_report: {'label': '', 'value': {'report': 0, 'type': '', 'urllist_id': 0}},
+
+        // graphs:
+        issue_timeline_of_related_urllist: [],
+        color_scheme: {
+            'high_background': 'rgba(255, 99, 132, 0.2)',
+            'high_border': 'rgba(255, 99, 132, 0.2)',
+            'medium_background': 'rgba(255, 102, 0, 0.2)',
+            'medium_border': 'rgba(255,102,0,1)',
+            'low_background': 'rgba(255, 255, 0, 0.2)',
+            'low_border': 'rgba(255,255,0,1)',
+            'ok_background': 'rgba(50, 255, 50, 0.2)',
+            'ok_border': 'rgba(50, 255, 50, 1)',
+            'addresses_background': 'rgba(0, 0, 0, 0.2)',
+            'addresses_border': 'rgba(0,0,0,1)',
+            'services_background': 'rgba(0, 40, 255, 0.2)',
+            'services_border': 'rgba(0,40,255,1)',
+        },
 
     },
     mounted: function(){
@@ -275,7 +298,7 @@ vueReport = new Vue({
 
                 this.original_urls = data[0].calculation.urls;
                 this.filtered_urls = data[0].calculation.urls;
-
+                this.get_timeline();
             }).catch((fail) => {console.log('A loading error occurred: ' + fail);});
         },
         get_available_recent_reports: function(){
@@ -283,7 +306,9 @@ vueReport = new Vue({
                 options = [];
                 for(let i = 0; i < data.length; i++){
                     data[i].created_on = this.humanize_date(data[i].created_on);
-                    options.push({'value': {'report': data[i].id, 'type': data[i].type}, 'label': `${data[i].id}: ${data[i].list_name} (type: ${data[i].type}, from: ${data[i].created_on})`})
+                    options.push({
+                        'value': data[i],
+                        'label': `${data[i].id}: ${data[i].list_name} (type: ${data[i].type}, from: ${data[i].created_on})`})
                 }
                 this.available_recent_reports = options;
             }).catch((fail) => {console.log('A loading error occurred: ' + fail);});
@@ -338,6 +363,19 @@ vueReport = new Vue({
             this.filtered_urls = urls;
 
         },
+        get_timeline(){
+            // selected_report.urllist_id contains the key to the timeline.
+            // data/report/urllist_report_graph_data/10/
+
+            if (this.selected_report.value.urllist_id === 0) {
+                return;
+            }
+
+            fetch(`/data/report/urllist_report_graph_data/${this.selected_report.value.urllist_id}/`).then(response => response.json()).then(data => {
+                this.issue_timeline_of_related_urllist = data;
+            }).catch((fail) => {console.log('A loading error occurred: ' + fail);});
+
+        }
     },
     watch: {
         selected_report: function () {
@@ -352,5 +390,195 @@ vueReport = new Vue({
         }
     }
 
+});
+
+const chart_mixin = {
+    props: {
+        chart_data: {type: Array, required: true},
+        axis: {type: Array, required: false},
+        color_scheme: {type: Object, required: false}
+    },
+    data: function () {
+        return {
+            chart: {}
+        }
+    },
+    render: function(createElement) {
+        return createElement(
+            'canvas',
+            {
+                ref: 'canvas'
+            },
+        )
+    },
+    mounted: function () {
+        this.buildChart();
+        this.renderData();
+    },
+    watch: {
+        chart_data: function(){
+            this.renderData();
+        },
+
+        // Supports changing the colors of this graph ad-hoc.
+        // charts.js is not reactive.
+        color_scheme: function(){
+            this.renderData();
+        },
+    }
+};
+
+
+// todo: translations
+// todo: add alt description of last values for usability.
+Vue.component('line-chart', {
+    mixins: [chart_mixin],
+
+    methods: {
+        // let's see if we can do it even better.
+        buildChart: function(){
+            let context = this.$refs.canvas.getContext('2d');
+            this.chart = new Chart(context, {
+                type: 'line',
+                data: {
+                    datasets: []
+                },
+                options: {
+                    legend: {
+                        display: false
+                    },
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    title: {
+                        display: true,
+                        text: 'OK / VS Not OK'
+                    },
+                    tooltips: {
+                        mode: 'index',
+                        intersect: false,
+                    },
+                    hover: {
+                        mode: 'nearest',
+                        intersect: true
+                    },
+                    scales: {
+                        xAxes: [{
+                            display: true,
+                            type: 'time',
+                            distribution: 'linear',
+                            time: {
+                                unit: 'month'
+                            },
+                            scaleLabel: {
+                                display: false,
+                                labelString: 'Month'
+                            }
+                        }],
+                        yAxes: [{
+                            display: true,
+                            stacked: true,
+                            scaleLabel: {
+                                display: false,
+                                labelString: 'Value'
+                            }
+                        }]
+                    }
+                }
+            });
+        },
+
+        renderData: function(){
+            let data = this.chart_data;
+
+            let labels = Array();
+            let high = Array();
+            let medium = Array();
+            let low = Array();
+            let ok = Array();
+            let not_ok = Array();
+            let pct_ok = Array();
+            let pct_not_ok = Array();
+
+            for(let i=0; i<data.length; i++){
+                labels.push(data[i].date);
+                high.push(data[i].high);
+                medium.push(data[i].medium);
+                low.push(data[i].low);
+                ok.push(data[i].ok);
+                not_ok.push(data[i].not_ok);
+                pct_ok.push(data[i].pct_ok);
+                pct_not_ok.push(data[i].pct_not_ok);
+            }
+
+            this.chart.data.labels = labels;
+            this.chart.data.datasets = [
+                {
+                    label: '# High risk',
+                    data: high,
+                    backgroundColor: this.color_scheme.high_background,
+                    borderColor: this.color_scheme.high_border,
+                    borderWidth: 1,
+                    lineTension: 0,
+                    hidden: !this.axis.includes('high')
+                },
+                {
+                    label: '# Medium risk',
+                    data: medium,
+                    backgroundColor: this.color_scheme.medium_background,
+                    borderColor: this.color_scheme.medium_border,
+                    borderWidth: 1,
+                    lineTension: 0,
+                    hidden: !this.axis.includes('medium')
+                },
+                {
+                    label: '# Low risk',
+                    data: low,
+                    backgroundColor: this.color_scheme.low_background,
+                    borderColor: this.color_scheme.low_border,
+                    borderWidth: 1,
+                    lineTension: 0,
+                    hidden: !this.axis.includes('low')
+                },
+                {
+                    label: '# OK',
+                    data: ok,
+                    backgroundColor: this.color_scheme.ok_background,
+                    borderColor: this.color_scheme.ok_border,
+                    borderWidth: 1,
+                    lineTension: 0,
+                    hidden: !this.axis.includes('ok')
+                },
+                {
+                    label: '# Not OK',
+                    data: not_ok,
+                    backgroundColor: this.color_scheme.high_background,
+                    borderColor: this.color_scheme.high_border,
+                    borderWidth: 1,
+                    lineTension: 0,
+                    hidden: !this.axis.includes('not_ok')
+                },
+                {
+                    label: '% OK',
+                    data: pct_ok,
+                    backgroundColor: this.color_scheme.ok_background,
+                    borderColor: this.color_scheme.ok_border,
+                    borderWidth: 1,
+                    lineTension: 0,
+                    hidden: !this.axis.includes('pct_ok')
+                },
+                {
+                    label: '% NOT OK',
+                    data: pct_not_ok,
+                    backgroundColor: this.color_scheme.high_background,
+                    borderColor: this.color_scheme.high_border,
+                    borderWidth: 1,
+                    lineTension: 0,
+                    hidden: !this.axis.includes('pct_not_ok')
+                },
+            ];
+
+            this.chart.update();
+        }
+    }
 });
 </script>

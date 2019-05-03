@@ -20,6 +20,7 @@ def upload(request) -> HttpResponse:
 
     response = render(request, 'internet_nl_dashboard/templates/internet_nl_dashboard/upload.html', {
         'menu_item_addressmanager': "current",
+        'debug': settings.DEBUG
     })
 
     return inject_default_language_cookie(request, response)
