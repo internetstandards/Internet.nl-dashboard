@@ -48,15 +48,19 @@ th.rotate > div > span {
                 <tr>
                     <th style="width: 300px">&nbsp;</th>
                     <th class="rotate" v-for="rating in filtered_urls[0].endpoints[0].ratings" v-if="filtered_urls[0].endpoints.length && is_relevant_for_category(rating.type)  && is_visible(rating.type)">
-                        <div @click="select_category(rating.type)"><span>{{ $t("report." + rating.type) }}</span></div>
+                        <div @click="select_category(rating.type)">
+                            <span>+️</span>
+                            <span>&lt;️️</span>
+                            <span>➡&gt;</span>
+                            <span>{{ $t("report." + rating.type) }}</span></div>
                     </th>
                 </tr>
 
                 <tr v-for="url in filtered_urls" v-if="url.endpoints.length">
                     <td >{{url.url}}</td>
                     <td v-for="rating in url.endpoints[0].ratings" v-if="is_relevant_for_category(rating.type) && is_visible(rating.type)">
-                        <span v-if="rating.ok < 1">❌</span>
-                        <span v-if="rating.ok > 0">✅</span>
+                        <span v-if="rating.ok < 1" :title="rating.type">❌</span>
+                        <span v-if="rating.ok > 0" :title="rating.type">✅</span>
                     </td>
                 </tr>
             </table>
