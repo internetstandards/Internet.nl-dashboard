@@ -11,7 +11,7 @@ from dashboard.internet_nl_dashboard.views import (LOGIN_URL, get_account,
 
 
 @login_required(login_url=LOGIN_URL)
-def dashboard(request) -> HttpResponse:
+def dashboard(request, report_id=0) -> HttpResponse:
 
     response = render(request, 'internet_nl_dashboard/templates/internet_nl_dashboard/report.html', {
         'menu_item_dashboard': "current",

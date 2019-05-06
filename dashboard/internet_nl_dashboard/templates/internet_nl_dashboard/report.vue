@@ -40,12 +40,14 @@ th.rotate > div > span {
                 <radar-chart :title="graph_radar_chart_title" :color_scheme="color_scheme" v-if='reports.length && "statistics_per_issue_type" in reports[0]' :chart_data="[reports[0].statistics_per_issue_type]" :axis="categories[selected_category]"></radar-chart>
             </div>
 
-            <div v-for="(category_group, category_name, y) in categories[selected_category]" v-if="is_relevant_category(category_name)" style="width: 50%; float: left;">
-                <h3><input type="checkbox" v-model='issue_filters[category_name].visible'> {{ $t("report." + category_name) }}</h3>
-                <span v-for="category_name in category_group">
-                    <input type="checkbox" v-model='issue_filters[category_name].visible' :id="category_name + '_visible'">
-                    <label :for="category_name + '_visible'">{{ $t("report." + category_name) }}</label><br />
-                </span>
+            <div v-for="category in categories">
+                <div v-for="(category_group, category_name, y) in categories[category]" style="width: 50%; float: left;">
+                    <h3><input type="checkbox" v-model='issue_filters[category_name].visible'> {{ $t("report." + category_name) }}</h3>
+                    <span v-for="category_name in category_group">
+                        <input type="checkbox" v-model='issue_filters[category_name].visible' :id="category_name + '_visible'">
+                        <label :for="category_name + '_visible'">{{ $t("report." + category_name) }}</label><br />
+                    </span>
+                </div>
             </div>
             <br style="clear: both;">
 
@@ -353,6 +355,21 @@ vueReport = new Vue({
                         'label': `${data[i].id}: ${data[i].list_name} (type: ${data[i].type}, from: ${data[i].created_on})`})
                 }
                 this.available_recent_reports = options;
+
+                // if the page was requested with a page ID, start loading that report.
+                // this supports: http://localhost:8000/reports/83/
+                if (window.location.href.split('/').length > 3) {
+                    get_id = window.location.href.split('/')[4];
+                    // can we change the select2 to a certain value?
+
+                    this.available_recent_reports.forEach((option) => {
+                       if (option.value.id + "" === get_id){
+                           this.selected_report = option;
+                       }
+                    });
+
+                }
+
             }).catch((fail) => {console.log('A loading error occurred: ' + fail);});
         },
 
@@ -661,9 +678,9 @@ Vue.component('radar-chart', {
     }
 });
 
-// todo: translations
-// todo: add alt description of last values for usability.
-// todo: place different labels  (add info about date in image)
+// done: translations
+// todo: add alt description of last values for usability. Is this needed?
+// done: place different labels  (add info about date in image)
 Vue.component('line-chart', {
     mixins: [chart_mixin],
 
