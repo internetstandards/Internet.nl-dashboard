@@ -125,13 +125,15 @@ vueReport = new Vue({
             'web': [
                 'internet_nl_web_tls',
                 'internet_nl_web_dnssec',
-                'internet_nl_web_ipv6'
+                'internet_nl_web_ipv6',
+                'web_legacy'
             ],
             'mail': [
                 'internet_nl_mail_dashboard_tls',
                 'internet_nl_mail_dashboard_auth',
                 'internet_nl_mail_dashboard_dnssec',
-                'internet_nl_mail_dashboard_ipv6'
+                'internet_nl_mail_dashboard_ipv6',
+                'mail_legacy'
             ],
             'internet_nl_web_tls': [
                 'internet_nl_web_https_tls_version',
