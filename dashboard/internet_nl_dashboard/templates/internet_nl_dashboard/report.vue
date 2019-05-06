@@ -33,7 +33,7 @@ th.rotate > div > span {
             </div>
 
             <div class="chart-container" style="position: relative; height:500px; width:100%">
-                <percentage-bar-chart :title="graph_bar_chart_title" :translation_key="'charts.report_bar_chart'" :color_scheme="color_scheme" v-if='reports.length && "statistics_per_issue_type" in reports[0]' :chart_data="[reports[0].statistics_per_issue_type]" :axis="categories[selected_category]"></percentage-bar-chart>
+                <percentage-bar-chart :title="graph_bar_chart_title" :translation_key="'charts.report_bar_chart'" :color_scheme="color_scheme" v-if='reports.length && "statistics_per_issue_type" in reports[0]' :chart_data="[reports[0]]" :axis="categories[selected_category]"></percentage-bar-chart>
             </div>
 
             <div class="chart-container" style="position: relative; height:500px; width:100%">
@@ -357,7 +357,6 @@ vueReport = new Vue({
             fetch(`/data/report/recent/`).then(response => response.json()).then(data => {
                 options = [];
                 for(let i = 0; i < data.length; i++){
-                    // data[i].created_on = this.humanize_date(data[i].created_on);
                     options.push({
                         'value': data[i],
                         'label': `#${data[i].id} - ${data[i].list_name} - type: ${data[i].type} - from: ${this.humanize_date(data[i].created_on)}`})
@@ -510,7 +509,7 @@ const chart_mixin = {
 
 Vue.component('percentage-bar-chart', {
     i18n,
-    mixins: [chart_mixin],
+    mixins: [chart_mixin, humanize_mixin],
 
     methods: {
 
@@ -533,7 +532,8 @@ Vue.component('percentage-bar-chart', {
                         }
                     },
                     legend: {
-                        display: false
+                        display: true,
+                        position: 'bottom',
                     },
                     responsive: true,
                     maintainAspectRatio: false,
@@ -571,7 +571,7 @@ Vue.component('percentage-bar-chart', {
         },
         renderData: function(){
             // have to add it as list, so we'll need to convert it back...
-            let data = this.chart_data[0];
+            let data = this.chart_data[0].statistics_per_issue_type;
 
             if (data === undefined) {
                 // nothing to show
@@ -598,6 +598,7 @@ Vue.component('percentage-bar-chart', {
                 borderColor: this.color_scheme.primary_border,
                 borderWidth: 1,
                 lineTension: 0,
+                label: this.humanize_date(this.chart_data[0].at_when),
             }];
 
             this.chart.update();

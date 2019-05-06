@@ -112,6 +112,10 @@ const messages = {
             automated_scan_frequency_twice_per_month: 'Twice per month',
         },
         report: {
+            mail: 'E-Mail',
+            web: 'Web',
+
+            // legacy values
             mail_legacy: 'Forum Standardisation (NL) Legacy Mail Metrics',
             web_legacy: 'Forum Standardisation (NL) Legacy Web Metrics',
 
@@ -368,6 +372,31 @@ const messages = {
             automated_scan_frequency_twice_per_month: 'Ja, om de twee weken vanaf de 1e van de maand',
         },
         report: {
+            mail: 'E-Mail',
+            web: 'Web',
+
+            // legacy values
+            mail_legacy: 'Forum Standardisation (NL) Legacy Mail Metrics',
+            web_legacy: 'Forum Standardisation (NL) Legacy Web Metrics',
+
+            internet_nl_mail_legacy_dane: 'Dane (legacy)',
+            internet_nl_mail_legacy_tls_available: 'TLS Available (legacy)',
+            internet_nl_mail_legacy_spf: 'SPF (legacy)',
+            internet_nl_mail_legacy_dkim: 'DKIM (legacy)',
+            internet_nl_mail_legacy_dmarc: 'DMARC (legacy)',
+            internet_nl_mail_legacy_dnsssec_mailserver_domain: 'DNSSEC Mailserver Domain (legacy)',
+            internet_nl_mail_legacy_dnssec_email_domain: 'DNSSEC E-Mail Domain (legacy)',
+            internet_nl_mail_legacy_ipv6_mailserver: 'IPV6 mailserver (legacy)',
+            internet_nl_mail_legacy_ipv6_nameserver: 'IPV6 Nameserver (legacy)',
+
+            internet_nl_web_legacy_hsts: 'HSTS (legacy)',
+            internet_nl_web_legacy_dane: 'Dane (legacy)',
+            internet_nl_web_legacy_tls_ncsc_web: 'TLS NCSC Web (legacy)',
+            internet_nl_web_legacy_https_enforced: 'HTTPS Enforced (legacy)',
+            internet_nl_web_legacy_tls_available: 'TLS Available (legacy)',
+            internet_nl_web_legacy_ipv6_webserver: 'IPV6 Webserver (legacy)',
+            internet_nl_web_legacy_ipv6_nameserver: 'IPV6 Nameserver (legacy)',
+
             // types of tests
             internet_nl_web_tls: internet_nl_messages.nl.internet_nl.test_sitetls_label,
             internet_nl_web_dnssec: internet_nl_messages.nl.internet_nl.test_sitednssec_label,
