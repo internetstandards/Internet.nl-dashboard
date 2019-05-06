@@ -1,5 +1,15 @@
 const messages = {
     en: {
+        charts: {
+            report_bar_chart: {
+                title: 'Average adoption of standards. List: %{list_information}. Report: %{report_information}. Covering %{number_of_domains} domains.',
+                yAxis_label: 'Adoption',
+            },
+            report_radar_chart: {
+                title: 'Average adoption of standards. List: %{list_information}. Report: %{report_information}. Covering %{number_of_domains} domains.',
+            }
+        },
+
         domains: {
             add_new_list: 'Add new list',
             button_close_label: 'Close',
@@ -227,6 +237,16 @@ const messages = {
         }
     },
     nl: {
+        charts: {
+            report_bar_chart: {
+                title: 'Gemiddelde adoptie standaarden. Lijst: %{list_information}. Gegevens van: %{report_information}. Bevat %{number_of_domains} domeinen.',
+                yAxis_label: 'Adoptiegraad',
+            },
+            report_radar_chart: {
+                title: 'Gemiddelde adoptie standaarden. Lijst: %{list_information}. Gegevens van: %{report_information}. Bevat %{number_of_domains} domeinen.',
+            }
+        },
+
         domains: {
             add_new_list: 'Lijst toevoegen',
             button_close_label: 'Sluiten',

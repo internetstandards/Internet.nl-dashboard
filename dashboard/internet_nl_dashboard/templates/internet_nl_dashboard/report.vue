@@ -33,11 +33,11 @@ th.rotate > div > span {
             </div>
 
             <div class="chart-container" style="position: relative; height:500px; width:100%">
-                <percentage-bar-chart :color_scheme="color_scheme" v-if='reports.length && "statistics_per_issue_type" in reports[0]' :chart_data="[reports[0].statistics_per_issue_type]" :axis="categories[selected_category]"></percentage-bar-chart>
+                <percentage-bar-chart :title="graph_bar_chart_title" :translation_key="'charts.report_bar_chart'" :color_scheme="color_scheme" v-if='reports.length && "statistics_per_issue_type" in reports[0]' :chart_data="[reports[0].statistics_per_issue_type]" :axis="categories[selected_category]"></percentage-bar-chart>
             </div>
 
             <div class="chart-container" style="position: relative; height:500px; width:100%">
-                <radar-chart :color_scheme="color_scheme" v-if='reports.length && "statistics_per_issue_type" in reports[0]' :chart_data="[reports[0].statistics_per_issue_type]" :axis="categories[selected_category]"></radar-chart>
+                <radar-chart :title="graph_radar_chart_title" :color_scheme="color_scheme" v-if='reports.length && "statistics_per_issue_type" in reports[0]' :chart_data="[reports[0].statistics_per_issue_type]" :axis="categories[selected_category]"></radar-chart>
             </div>
 
             <div v-for="(category_group, category_name, y) in categories[selected_category]" v-if="is_relevant_category(category_name)" style="width: 50%; float: left;">
@@ -316,7 +316,6 @@ vueReport = new Vue({
             'services_background': 'rgba(0, 40, 255, 0.2)',
             'services_border': 'rgba(0,40,255,1)',
         },
-
     },
     mounted: function(){
         this.get_available_recent_reports();
@@ -417,6 +416,25 @@ vueReport = new Vue({
             // up until 400 + items in the list.
             // this.debounce(function() {this.methods.filter_urls(newValue);});
         }
+    },
+    computed: {
+        // graph titles:
+        graph_radar_chart_title: function(){
+            return i18n.t('charts.report_radar_chart.title', {
+                'list_information': this.selected_report.value.list_name,
+                'report_information': this.humanize_date(this.selected_report.created_on),
+                'number_of_domains': this.original_urls.length
+            });
+        },
+
+        graph_bar_chart_title: function(){
+            return i18n.t('charts.report_bar_chart.title', {
+                'list_information': this.selected_report.value.list_name,
+                'report_information': this.humanize_date(this.selected_report.created_on),
+                'number_of_domains': this.original_urls.length
+            });
+        },
+
     }
 
 });
@@ -426,7 +444,9 @@ const chart_mixin = {
     props: {
         chart_data: {type: Array, required: true},
         axis: {type: Array, required: false},
-        color_scheme: {type: Object, required: false}
+        color_scheme: {type: Object, required: false},
+        title: {type: String, required: false},
+        translation_key: {type: String, required: false}
     },
     data: function () {
         return {
@@ -450,10 +470,14 @@ const chart_mixin = {
             this.renderData();
         },
 
+        title: function(){
+            this.renderTitle();
+        },
+
         // Supports changing the colors of this graph ad-hoc.
         // charts.js is not reactive.
         color_scheme: function(){
-            this.renderData();
+            // this.renderData();
         },
     }
 };
@@ -480,7 +504,7 @@ Vue.component('percentage-bar-chart', {
                     maintainAspectRatio: false,
                     title: {
                         display: true,
-                        text: "Gemiddelde adoptie standaarden. Lijst: todo. Rapportage: todo. # domeinen: todo.",
+                        text: this.title
                     },
                     tooltips: {
                         mode: 'index',
@@ -502,7 +526,7 @@ Vue.component('percentage-bar-chart', {
                             },
                             scaleLabel: {
 								display: true,
-								labelString: 'Adoptiegraad'
+								labelString: i18n.t(this.translation_key + '.yAxis_label')
 							},
                         }]
 				    },
@@ -541,11 +565,13 @@ Vue.component('percentage-bar-chart', {
                 borderColor: this.color_scheme.ok_border,
                 borderWidth: 1,
                 lineTension: 0,
-                label: 'Percentage OK',
             }];
 
             this.chart.update();
-        }
+        },
+        renderTitle: function(){
+            this.chart.options.title.text = this.title;
+        },
     }
 });
 
@@ -569,7 +595,7 @@ Vue.component('radar-chart', {
                     maintainAspectRatio: false,
                     title: {
                         display: true,
-                        text: "Gemiddelde adoptie standaarden. Lijst: todo. Rapportage: todo. # domeinen: todo.",
+                        text: this.title
                     },
                     tooltips: {
                         mode: 'index',
@@ -590,7 +616,6 @@ Vue.component('radar-chart', {
                             },
                             scaleLabel: {
 								display: true,
-								labelString: 'Adoptiegraad'
 							},
 
 				    },
@@ -629,7 +654,6 @@ Vue.component('radar-chart', {
                 borderColor: this.color_scheme.ok_border,
                 borderWidth: 1,
                 lineTension: 0,
-                label: 'Percentage OK',
             }];
 
             this.chart.update();

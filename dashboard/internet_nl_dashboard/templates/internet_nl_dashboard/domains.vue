@@ -17,7 +17,7 @@ Done: Add new list to the top.
 Done: when scan now is clicked, disable scan now button.
 Done: pasting too many urls in the select2 causes an overflow. Size it properly.
 Done: Show link to last report
-Todo: translation
+Done: translation
 Todo: Bulk add has a bug when only adding 1 to the list, the list of submitted domains is not updated often enough / not reactive.
 Todo: When a list is added, the urls of each list are not moved to the next list. This is not reactive and might case issues.
 Todo: when deleting a list, it is re-added to the list of lists when adding a new list, this is not reactive and causes issues.
