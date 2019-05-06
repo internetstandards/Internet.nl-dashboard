@@ -31,6 +31,7 @@ def create_report_response(reports):
             'list_name': report.urllist.name,
             'created_on': report.at_when,
             'urllist_id': report.urllist.id,
+            'urllist_scan_type': report.urllist.scan_type,
         })
 
     return response
@@ -103,15 +104,87 @@ def get_urllist_report_graph_data(account: Account, urllist_id: int):
 
 def get_report(account: Account, report_id: int):
 
-    report = list(UrlListReport.objects.all().filter(
+    reports = list(UrlListReport.objects.all().filter(
         urllist__account=account,
         urllist__is_deleted=False,
         pk=report_id
     ).values())
 
-    if not report:
+    if not reports:
         return {}
 
-    report[0]['calculation'] = json.loads(report[0]['calculation'])
+    reports[0]['calculation'] = json.loads(reports[0]['calculation'])
 
-    return report
+    for report in reports:
+        # perhaps we should already store this in the report. It does make the report a bit larger (which is ok?)
+        remove_comply_or_explain(report)
+        add_keyed_ratings(report)
+        add_statistics_over_ratings(report)
+        add_percentages_to_statistics(report)
+
+    return reports
+
+
+def remove_comply_or_explain(report):
+    # Also remove all comply or explain information as it costs a lot of data/memory on the client
+
+    for url in report['calculation']['urls']:
+        for endpoint in url['endpoints']:
+            for rating in endpoint['ratings']:
+                del rating['comply_or_explain_explanation']
+                del rating['comply_or_explain_explained_on']
+                del rating['comply_or_explain_explanation_valid_until']
+                del rating['comply_or_explain_valid_at_time_of_report']
+
+
+def add_keyed_ratings(report):
+    # Re-key the issues so they can be instantly addressed.
+    # This makes it less work / iterations to get certain data
+
+    for url in report['calculation']['urls']:
+        for endpoint in url['endpoints']:
+            endpoint['ratings_by_type'] = {}
+            for rating in endpoint['ratings']:
+                endpoint['ratings_by_type'][rating['type']] = rating
+
+
+def add_statistics_over_ratings(report):
+    # works only after ratings by type.
+    report['statistics_per_issue_type'] = {}
+
+    possible_issues = []
+
+    for url in report['calculation']['urls']:
+        for endpoint in url['endpoints']:
+            possible_issues += endpoint['ratings_by_type'].keys()
+    possible_issues = set(possible_issues)
+
+    # prepare the stats dict to have less expensive operations in the 3x nested loop
+    for issue in possible_issues:
+        report['statistics_per_issue_type'][issue] = {'high': 0, 'medium': 0, 'low': 0, 'ok': 0, 'not_ok': 0}
+
+    # count the numbers, can we do this with some map/add function that is way faster?
+    for issue in possible_issues:
+        for url in report['calculation']['urls']:
+            for endpoint in url['endpoints']:
+                rating = endpoint['ratings_by_type'].get(issue, None)
+                if not rating:
+                    continue
+                report['statistics_per_issue_type'][issue]['high'] += rating['high']
+                report['statistics_per_issue_type'][issue]['medium'] += rating['medium']
+                report['statistics_per_issue_type'][issue]['low'] += rating['low']
+                report['statistics_per_issue_type'][issue]['ok'] += rating['ok']
+                report['statistics_per_issue_type'][issue]['not_ok'] += \
+                    rating['high'] + rating['medium'] + rating['low']
+
+
+def add_percentages_to_statistics(report):
+    for key, value in report['statistics_per_issue_type'].items():
+        issue = report['statistics_per_issue_type'][key]
+        all = issue['ok'] + issue['not_ok']
+
+        report['statistics_per_issue_type'][key]['pct_high'] = round((issue['high'] / all) * 100, 2)
+        report['statistics_per_issue_type'][key]['pct_medium'] = round((issue['medium'] / all) * 100, 2)
+        report['statistics_per_issue_type'][key]['pct_low'] = round((issue['low'] / all) * 100, 2)
+        report['statistics_per_issue_type'][key]['pct_ok'] = round((issue['ok'] / all) * 100, 2)
+        report['statistics_per_issue_type'][key]['pct_not_ok'] = round((issue['not_ok'] / all) * 100, 2)

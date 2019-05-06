@@ -32,16 +32,16 @@ th.rotate > div > span {
                 <line-chart :color_scheme="color_scheme" :chart_data="issue_timeline_of_related_urllist" :axis="['pct_ok', 'pct_not_ok']"></line-chart>
             </div>
 
-            <div v-for="(category_group, category_name, y) in categories" v-if="is_relevant_category(category_name)" style="width: 50%; float: left;">
-                <h3><input type="checkbox" v-model='issue_filters[category_name]["visible"]'> {{ $t("report." + category_name) }}</h3>
+            <div v-for="(category_group, category_name, y) in categories[selected_category]" v-if="is_relevant_category(category_name)" style="width: 50%; float: left;">
+                <h3><input type="checkbox" v-model='issue_filters[category_name].visible'> {{ $t("report." + category_name) }}</h3>
                 <span v-for="category_name in category_group">
-                    <input type="checkbox" v-model='issue_filters[category_name]["visible"]' :id="category_name + '_visible'">
+                    <input type="checkbox" v-model='issue_filters[category_name].visible' :id="category_name + '_visible'">
                     <label :for="category_name + '_visible'">{{ $t("report." + category_name) }}</label><br />
                 </span>
             </div>
             <br style="clear: both;">
 
-            <span v-if="selected_category" @click="select_category('')">Remove filter: {{ $t("report." + selected_category) }}</span>
+            <span v-if="selected_category" @click="select_category(selected_report.value.urllist_scan_type)">Remove filter: {{ $t("report." + selected_category) }}</span>
             <span v-if="!selected_category">&nbsp;</span>
 
             <div v-if="selected_report.value">
@@ -53,20 +53,17 @@ th.rotate > div > span {
                 <table v-if="filtered_urls.length">
                     <tr>
                         <th style="width: 300px">&nbsp;</th>
-                        <th class="rotate" v-for="rating in filtered_urls[0].endpoints[0].ratings" v-if="filtered_urls[0].endpoints.length && is_relevant_for_category(rating.type)  && is_visible(rating.type)">
-                            <div @click="select_category(rating.type)">
-                                <span>+️</span>
-                                <span>&lt;️️</span>
-                                <span>➡&gt;</span>
-                                <span>{{ $t("report." + rating.type) }}</span></div>
+                        <th class="rotate" v-for="category in categories[selected_category]" v-if="filtered_urls[0].endpoints.length">
+                            <div @click="select_category(category)">
+                                <span>{{ $t("report." + category) }}</span></div>
                         </th>
                     </tr>
 
                     <tr v-for="url in filtered_urls" v-if="url.endpoints.length">
                         <td >{{url.url}}</td>
-                        <td v-for="rating in url.endpoints[0].ratings" v-if="is_relevant_for_category(rating.type) && is_visible(rating.type)">
-                            <span v-if="rating.ok < 1" :title="rating.type">❌</span>
-                            <span v-if="rating.ok > 0" :title="rating.type">✅</span>
+                        <td v-for="category_name in categories[selected_category]" v-if="category_name in url.endpoints[0].ratings_by_type">
+                            <span v-if="url.endpoints[0].ratings_by_type[category_name].ok < 1" :title="category_name">❌</span>
+                            <span v-if="url.endpoints[0].ratings_by_type[category_name].ok > 0" :title="category_name">✅</span>
                         </td>
                     </tr>
                 </table>
@@ -108,6 +105,11 @@ vueReport = new Vue({
         filtered_urls:[],
 
         categories: {
+            // fallback category
+            '': [
+                'mail',
+                'web',
+            ],
             'web': [
                 'internet_nl_web_tls',
                 'internet_nl_web_dnssec',
@@ -120,22 +122,26 @@ vueReport = new Vue({
                 'internet_nl_mail_dashboard_ipv6'
             ],
             'internet_nl_web_tls': [
-                'internet_nl_web_https_cert_domain',
-                'internet_nl_web_https_http_redirect',
-                'internet_nl_web_https_cert_chain',
                 'internet_nl_web_https_tls_version',
                 'internet_nl_web_https_tls_clientreneg',
                 'internet_nl_web_https_tls_ciphers',
+                'internet_nl_web_https_tls_secreneg',
+                'internet_nl_web_https_tls_compress',
+                'internet_nl_web_https_tls_keyexchange',
+
+                'internet_nl_web_https_http_redirect',
                 'internet_nl_web_https_http_available',
-                'internet_nl_web_https_dane_exist',
                 'internet_nl_web_https_http_compress',
                 'internet_nl_web_https_http_hsts',
-                'internet_nl_web_https_tls_secreneg',
+
+                'internet_nl_web_https_dane_exist',
                 'internet_nl_web_https_dane_valid',
+
+                'internet_nl_web_https_cert_domain',
+                'internet_nl_web_https_cert_chain',
                 'internet_nl_web_https_cert_pubkey',
                 'internet_nl_web_https_cert_sig',
-                'internet_nl_web_https_tls_compress',
-                'internet_nl_web_https_tls_keyexchange'
+
             ],
             'internet_nl_web_dnssec': [
                 'internet_nl_web_dnssec_valid',
@@ -150,39 +156,65 @@ vueReport = new Vue({
             ],
             'internet_nl_mail_dashboard_tls': [
                 'internet_nl_mail_starttls_cert_domain',
-                'internet_nl_mail_starttls_tls_version',
                 'internet_nl_mail_starttls_cert_chain',
+                'internet_nl_mail_starttls_cert_pubkey',
+                'internet_nl_mail_starttls_cert_sig',
+
+                'internet_nl_mail_starttls_tls_version',
                 'internet_nl_mail_starttls_tls_available',
                 'internet_nl_mail_starttls_tls_clientreneg',
                 'internet_nl_mail_starttls_tls_ciphers',
+                'internet_nl_mail_starttls_tls_secreneg',
+                'internet_nl_mail_starttls_tls_compress',
+                'internet_nl_mail_starttls_tls_keyexchange',
+
+                'internet_nl_mail_starttls_dane_rollover',
                 'internet_nl_mail_starttls_dane_valid',
                 'internet_nl_mail_starttls_dane_exist',
-                'internet_nl_mail_starttls_tls_secreneg',
-                'internet_nl_mail_starttls_dane_rollover',
-                'internet_nl_mail_starttls_cert_pubkey',
-                'internet_nl_mail_starttls_cert_sig',
-                'internet_nl_mail_starttls_tls_compress',
-                'internet_nl_mail_starttls_tls_keyexchange'
 
             ],
             'internet_nl_mail_dashboard_auth': [
-                'internet_nl_mail_auth_dmarc_policy',
                 'internet_nl_mail_auth_dmarc_exist',
-                'internet_nl_mail_auth_spf_policy',
+                'internet_nl_mail_auth_dmarc_policy',
+
                 'internet_nl_mail_auth_dkim_exist',
-                'internet_nl_mail_auth_spf_exist'
+
+                'internet_nl_mail_auth_spf_exist',
+                'internet_nl_mail_auth_spf_policy',
             ],
             'internet_nl_mail_dashboard_dnssec': [
                 'internet_nl_mail_dnssec_mailto_exist',
                 'internet_nl_mail_dnssec_mailto_valid',
+
+                'internet_nl_mail_dnssec_mx_exist',
                 'internet_nl_mail_dnssec_mx_valid',
-                'internet_nl_mail_dnssec_mx_exist'
             ],
             'internet_nl_mail_dashboard_ipv6': [
                 'internet_nl_mail_ipv6_mx_address',
                 'internet_nl_mail_ipv6_mx_reach',
+
+                'internet_nl_mail_ipv6_ns_address',
                 'internet_nl_mail_ipv6_ns_reach',
-                'internet_nl_mail_ipv6_ns_address'
+            ],
+            'mail_legacy': [
+                'internet_nl_mail_legacy_dane',
+                'internet_nl_mail_legacy_tls_available',
+                'internet_nl_mail_legacy_spf',
+                'internet_nl_mail_legacy_dkim',
+                'internet_nl_mail_legacy_dmarc',
+                'internet_nl_mail_legacy_dnsssec_mailserver_domain',
+                'internet_nl_mail_legacy_dnssec_email_domain',
+                'internet_nl_mail_legacy_ipv6_mailserver',
+                'internet_nl_mail_legacy_ipv6_nameserver',
+            ],
+            'web_legacy': [
+                'internet_nl_web_legacy_dane',
+                'internet_nl_web_legacy_tls_ncsc_web',
+                'internet_nl_web_legacy_hsts',
+                'internet_nl_web_legacy_https_enforced',
+                'internet_nl_web_legacy_tls_available',
+                'internet_nl_web_legacy_ipv6_webserver',
+                'internet_nl_web_legacy_ipv6_nameserver',
             ]
         },
 
@@ -296,6 +328,8 @@ vueReport = new Vue({
             fetch(`/data/report/get/${report_id}/`).then(response => response.json()).then(data => {
                 this.reports = data;
 
+                this.selected_category = this.selected_report.value.urllist_scan_type;
+
                 this.original_urls = data[0].calculation.urls;
                 this.filtered_urls = data[0].calculation.urls;
                 this.get_timeline();
@@ -345,11 +379,7 @@ vueReport = new Vue({
             if (Object.keys(this.categories).includes(category_name))
                 this.selected_category = category_name;
             else
-                this.selected_category = "";
-        },
-
-        is_visible(issue_name){
-            return this.issue_filters[issue_name].visible;
+                this.selected_category = this.selected_report.value.urllist_scan_type;
         },
 
         filter_urls(keyword) {
@@ -429,8 +459,101 @@ const chart_mixin = {
 };
 
 
+Vue.component('bar-chart', {
+    mixins: [chart_mixin],
+
+    methods: {
+
+        buildChart: function(){
+            let context = this.$refs.canvas.getContext('2d');
+            this.chart = new Chart(context, {
+                type: 'bar',
+                data: {
+
+                },
+                options: {
+                    legend: {
+                        display: true
+                    },
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    title: {
+                        display: true,
+                        text: "Today's risk overview",
+                    },
+                    tooltips: {
+                        mode: 'index',
+                        intersect: false,
+                    },
+                    hover: {
+                        mode: 'nearest',
+                        intersect: true
+                    },
+                }
+            });
+
+        },
+        renderData: function(){
+            let data = this.data;
+
+            let labels = Array();
+            let high = Array();
+            let medium = Array();
+            let low = Array();
+            let ok = Array();
+
+            high.push(data[data.length-1].high);
+            medium.push(data[data.length-1].medium);
+            low.push(data[data.length-1].low);
+            ok.push(data[data.length-1].ok);
+
+            let backgroundColor = [];
+            let borderColor = [];
+            let chartdata = [];
+
+            if (this.axis.includes('high')){
+                backgroundColor.push(this.color_scheme.high_background);
+                borderColor.push(this.color_scheme.high_border);
+                labels.push('# High risk');
+                chartdata.push(high);
+            }
+            if (this.axis.includes('medium')){
+                backgroundColor.push(this.color_scheme.medium_background);
+                borderColor.push(this.color_scheme.medium_border);
+                labels.push('# Medium risk');
+                chartdata.push(medium);
+
+            }
+            if (this.axis.includes('low')){
+                backgroundColor.push(this.color_scheme.low_background);
+                borderColor.push(this.color_scheme.low_border);
+                labels.push('# Low risk');
+                chartdata.push(low);
+            }
+
+            // Only include OK in the donuts, not the graphs. Otherwise the graphs become unreadable (too much data)
+            backgroundColor.push(this.color_scheme.good_background);
+            borderColor.push(this.color_scheme.good_border);
+            labels.push('# No risk');
+            chartdata.push(ok);
+
+            this.chart.data.labels = labels;
+            this.chart.data.datasets = [{
+                data: chartdata,
+                backgroundColor: backgroundColor,
+                borderColor: borderColor,
+                borderWidth: 1,
+                lineTension: 0,
+            }];
+
+            this.chart.update();
+        }
+    }
+});
+
 // todo: translations
 // todo: add alt description of last values for usability.
+// todo: place different labels  (add info about date in image)
 Vue.component('line-chart', {
     mixins: [chart_mixin],
 
