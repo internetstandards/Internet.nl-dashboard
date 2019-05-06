@@ -29,7 +29,7 @@ def create_report_response(reports):
             'type': report.urllist.scan_type,
             'number_of_urls': report.total_urls,
             'list_name': report.urllist.name,
-            'created_on': report.at_when,
+            'created_on': report.at_when.isoformat(),
             'urllist_id': report.urllist.id,
             'urllist_scan_type': report.urllist.scan_type,
         })

@@ -357,10 +357,10 @@ vueReport = new Vue({
             fetch(`/data/report/recent/`).then(response => response.json()).then(data => {
                 options = [];
                 for(let i = 0; i < data.length; i++){
-                    data[i].created_on = this.humanize_date(data[i].created_on);
+                    // data[i].created_on = this.humanize_date(data[i].created_on);
                     options.push({
                         'value': data[i],
-                        'label': `${data[i].id}: ${data[i].list_name} (type: ${data[i].type}, from: ${data[i].created_on})`})
+                        'label': `#${data[i].id} - ${data[i].list_name} - type: ${data[i].type} - from: ${this.humanize_date(data[i].created_on)}`})
                 }
                 this.available_recent_reports = options;
 
@@ -447,7 +447,7 @@ vueReport = new Vue({
         graph_radar_chart_title: function(){
             return i18n.t('charts.report_radar_chart.title', {
                 'list_information': this.selected_report.value.list_name,
-                'report_information': this.humanize_date(this.selected_report.created_on),
+                'report_information': this.humanize_date(this.selected_report.value.created_on),
                 'number_of_domains': this.original_urls.length
             });
         },
@@ -455,7 +455,7 @@ vueReport = new Vue({
         graph_bar_chart_title: function(){
             return i18n.t('charts.report_bar_chart.title', {
                 'list_information': this.selected_report.value.list_name,
-                'report_information': this.humanize_date(this.selected_report.created_on),
+                'report_information': this.humanize_date(this.selected_report.value.created_on),
                 'number_of_domains': this.original_urls.length
             });
         },
@@ -519,12 +519,9 @@ Vue.component('percentage-bar-chart', {
             this.chart = new Chart(context, {
                 type: 'bar',
                 data: {},
-                plugins: [ChartDataLabels],
                 options: {
                     plugins:{
                         datalabels: {
-                            // todo: add percentage sign to label
-                            // todo: add label on top of bar, not in center.
                             color: '#262626',
                             clamp: true, // always shows the number, also when the number 100%
                             anchor: 'end', // show the number at the top of the bar.
@@ -542,7 +539,8 @@ Vue.component('percentage-bar-chart', {
                     maintainAspectRatio: false,
                     title: {
                         display: true,
-                        text: this.title
+                        text: this.title,
+                        padding: 30,
                     },
                     tooltips: {
                         mode: 'index',
@@ -570,7 +568,6 @@ Vue.component('percentage-bar-chart', {
 				    },
                 }
             });
-
         },
         renderData: function(){
             // have to add it as list, so we'll need to convert it back...
@@ -586,8 +583,6 @@ Vue.component('percentage-bar-chart', {
 
             let labels = Array();
             let chartdata = [];
-
-            console.log(data);
 
             this.axis.forEach((ax) => {
                 if (ax in data) {
@@ -626,6 +621,20 @@ Vue.component('radar-chart', {
 
                 },
                 options: {
+                    plugins:{
+                        datalabels: {
+                            // todo: when the value > 50, the label should be placed on the inside to not overlap labels
+                            color: '#262626',
+                            clamp: true, // always shows the number, also when the number 100%
+                            anchor: 'end', // show the number at the top of the bar.
+                            align: 'end', // shows the value outside of the bar,
+                            // format as a percentage
+                            formatter: function(value, context) {
+                                return value + '%';
+                            }
+                        }
+                    },
+
                     legend: {
                         display: false
                     },
@@ -644,12 +653,13 @@ Vue.component('radar-chart', {
                         intersect: true
                     },
                     scale: {
-
                             ticks: {
                                 min: 0,
                                 max: 100,
                                 callback: function(label, index, labels) {
-                                    return label + '%';
+                                    // not needed anymore, but code kept as reference if datalabels breaks
+                                    return '';
+                                    // return label + '%';
                                 }
                             },
                             scaleLabel: {
@@ -675,8 +685,6 @@ Vue.component('radar-chart', {
 
             let labels = Array();
             let chartdata = [];
-
-            console.log(data);
 
             this.axis.forEach((ax) => {
                 if (ax in data) {
@@ -715,6 +723,18 @@ Vue.component('line-chart', {
                     datasets: []
                 },
                 options: {
+                    plugins:{
+                        datalabels: {
+                            color: '#262626',
+                            clamp: true, // always shows the number, also when the number 100%
+                            anchor: 'end', // show the number at the top of the bar.
+                            align: 'end', // shows the value outside of the bar,
+                            // format as a percentage
+                            formatter: function(value, context) {
+                                return value + '%';
+                            }
+                        }
+                    },
                     legend: {
                         display: false
                     },
