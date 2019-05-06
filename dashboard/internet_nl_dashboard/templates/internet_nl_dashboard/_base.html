@@ -39,6 +39,8 @@ Todo: digitoegankelijk: how to select links with the keyboard? How can we make t
         <script type="text/javascript" src="{% static 'js/vendor/lodash@4.17.11/lodash.js' %}"></script>
         <script type="text/javascript" src="{% static 'js/vendor/select2@4.0.6-rc.0/select2.min.js' %}"></script>
         <script type="text/javascript" src="{% static 'js/vendor/chartjs@2.8.0/Chart.js' %}"></script>
+        <script type="text/javascript" src="{% static 'js/vendor/chartjs-plugin-datalabels@v0.6.0/chartjs-plugin-datalabels.js' %}"></script>
+
     {% else %}{% compress js %}
         <script type="text/javascript" src="{% static 'js/vendor/jquery@3.4.0/jquery-3.4.0.js' %}"></script>
         <script type="text/javascript" src="{% static 'js/vendor/internet_nl/headroom-min.js' %}"></script>
@@ -50,6 +52,7 @@ Todo: digitoegankelijk: how to select links with the keyboard? How can we make t
         <script type="text/javascript" src="{% static 'js/vendor/lodash@4.17.11/lodash.js' %}"></script>
         <script type="text/javascript" src="{% static 'js/vendor/select2@4.0.6-rc.0/select2.min.js' %}"></script>
         <script type="text/javascript" src="{% static 'js/vendor/chartjs@2.8.0/Chart.min.js' %}"></script>
+        <script type="text/javascript" src="{% static 'js/vendor/chartjs-plugin-datalabels@v0.6.0/chartjs-plugin-datalabels.min.js' %}"></script>
     {% endcompress %}{% endif %}
 
     <!-- Dropzone cannot be minified, results in errors. -->

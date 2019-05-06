@@ -233,7 +233,9 @@ vueReport = new Vue({
 
         issue_filters:{
             'web': {'visible': true},
+            'web_legacy': {'visible': true},
             'mail': {'visible': true},
+            'mail_legacy': {'visible': true},
             'internet_nl_web_tls': {'visible': true},
             'internet_nl_web_dnssec': {'visible': true},
             'internet_nl_web_ipv6': {'visible': true},
@@ -319,6 +321,10 @@ vueReport = new Vue({
             'addresses_border': 'rgba(0,0,0,1)',
             'services_background': 'rgba(0, 40, 255, 0.2)',
             'services_border': 'rgba(0,40,255,1)',
+            'primary_background': 'rgba(255, 112, 50, 0.6)',
+            'primary_border': 'rgba(255, 112, 50, 1)',
+            'secondary_background': 'rgba(21, 66, 115, 0.6)',
+            'secondary_border': 'rgba(21, 66, 115, 1)',
         },
     },
     mounted: function(){
@@ -512,10 +518,23 @@ Vue.component('percentage-bar-chart', {
             let context = this.$refs.canvas.getContext('2d');
             this.chart = new Chart(context, {
                 type: 'bar',
-                data: {
-
-                },
+                data: {},
+                plugins: [ChartDataLabels],
                 options: {
+                    plugins:{
+                        datalabels: {
+                            // todo: add percentage sign to label
+                            // todo: add label on top of bar, not in center.
+                            color: '#262626',
+                            clamp: true, // always shows the number, also when the number 100%
+                            anchor: 'end', // show the number at the top of the bar.
+                            align: 'end', // shows the value outside of the bar,
+                            // format as a percentage
+                            formatter: function(value, context) {
+                                return value + '%';
+                            }
+                        }
+                    },
                     legend: {
                         display: false
                     },
@@ -580,8 +599,8 @@ Vue.component('percentage-bar-chart', {
             this.chart.data.labels = labels;
             this.chart.data.datasets = [{
                 data: chartdata,
-                backgroundColor: this.color_scheme.ok_background,
-                borderColor: this.color_scheme.ok_border,
+                backgroundColor: this.color_scheme.primary_background,
+                borderColor: this.color_scheme.primary_border,
                 borderWidth: 1,
                 lineTension: 0,
             }];
@@ -669,8 +688,8 @@ Vue.component('radar-chart', {
             this.chart.data.labels = labels;
             this.chart.data.datasets = [{
                 data: chartdata,
-                backgroundColor: this.color_scheme.ok_background,
-                borderColor: this.color_scheme.ok_border,
+                backgroundColor: this.color_scheme.primary_background,
+                borderColor: this.color_scheme.primary_border,
                 borderWidth: 1,
                 lineTension: 0,
             }];
@@ -765,33 +784,6 @@ Vue.component('line-chart', {
             this.chart.data.labels = labels;
             this.chart.data.datasets = [
                 {
-                    label: '# High risk',
-                    data: high,
-                    backgroundColor: this.color_scheme.high_background,
-                    borderColor: this.color_scheme.high_border,
-                    borderWidth: 1,
-                    lineTension: 0,
-                    hidden: !this.axis.includes('high')
-                },
-                {
-                    label: '# Medium risk',
-                    data: medium,
-                    backgroundColor: this.color_scheme.medium_background,
-                    borderColor: this.color_scheme.medium_border,
-                    borderWidth: 1,
-                    lineTension: 0,
-                    hidden: !this.axis.includes('medium')
-                },
-                {
-                    label: '# Low risk',
-                    data: low,
-                    backgroundColor: this.color_scheme.low_background,
-                    borderColor: this.color_scheme.low_border,
-                    borderWidth: 1,
-                    lineTension: 0,
-                    hidden: !this.axis.includes('low')
-                },
-                {
                     label: '# OK',
                     data: ok,
                     backgroundColor: this.color_scheme.ok_background,
@@ -812,8 +804,8 @@ Vue.component('line-chart', {
                 {
                     label: '% OK',
                     data: pct_ok,
-                    backgroundColor: this.color_scheme.ok_background,
-                    borderColor: this.color_scheme.ok_border,
+                    backgroundColor: this.color_scheme.primary_background,
+                    borderColor: this.color_scheme.primary_border,
                     borderWidth: 1,
                     lineTension: 0,
                     hidden: !this.axis.includes('pct_ok')
