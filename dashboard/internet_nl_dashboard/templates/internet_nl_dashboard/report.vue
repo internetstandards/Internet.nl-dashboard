@@ -28,8 +28,16 @@ th.rotate > div > span {
         <div v-if="selected_report.value.report">
             <h2>Column Visbility Filters</h2>
 
-            <div class="chart-container" style="position: relative; height:555px; width:100%">
+            <div class="chart-container" style="position: relative; height:300px; width:100%">
                 <line-chart :color_scheme="color_scheme" :chart_data="issue_timeline_of_related_urllist" :axis="['pct_ok', 'pct_not_ok']"></line-chart>
+            </div>
+
+            <div class="chart-container" style="position: relative; height:500px; width:100%">
+                <percentage-bar-chart :color_scheme="color_scheme" v-if='reports.length && "statistics_per_issue_type" in reports[0]' :chart_data="[reports[0].statistics_per_issue_type]" :axis="categories[selected_category]"></percentage-bar-chart>
+            </div>
+
+            <div class="chart-container" style="position: relative; height:500px; width:100%">
+                <radar-chart :color_scheme="color_scheme" v-if='reports.length && "statistics_per_issue_type" in reports[0]' :chart_data="[reports[0].statistics_per_issue_type]" :axis="categories[selected_category]"></radar-chart>
             </div>
 
             <div v-for="(category_group, category_name, y) in categories[selected_category]" v-if="is_relevant_category(category_name)" style="width: 50%; float: left;">
@@ -84,9 +92,11 @@ th.rotate > div > span {
 {% endverbatim %}
 
 <script>
-// todo: order of the fields, and possible sub sub categories
-// todo: allow filtering on what results to show
-// todo: store filter options for reports (as generic or per report? or as a re-applicable set?)
+// Done: order of the fields, and possible sub sub categories
+// todo: beta: allow filtering on what results to show
+// todo: store filter options for reports (as generic or per report? or as a re-applicable set?) Per user account.
+// todo: how to add a item for legacy views?
+// todo: how to translate graphs?
 vueReport = new Vue({
     i18n,
     name: 'report',
@@ -155,22 +165,21 @@ vueReport = new Vue({
                 'internet_nl_web_ipv6_ns_address'
             ],
             'internet_nl_mail_dashboard_tls': [
-                'internet_nl_mail_starttls_cert_domain',
-                'internet_nl_mail_starttls_cert_chain',
-                'internet_nl_mail_starttls_cert_pubkey',
-                'internet_nl_mail_starttls_cert_sig',
-
                 'internet_nl_mail_starttls_tls_version',
-                'internet_nl_mail_starttls_tls_available',
-                'internet_nl_mail_starttls_tls_clientreneg',
                 'internet_nl_mail_starttls_tls_ciphers',
                 'internet_nl_mail_starttls_tls_secreneg',
-                'internet_nl_mail_starttls_tls_compress',
+                'internet_nl_mail_starttls_tls_clientreneg',
                 'internet_nl_mail_starttls_tls_keyexchange',
+                'internet_nl_mail_starttls_tls_compress',
 
-                'internet_nl_mail_starttls_dane_rollover',
-                'internet_nl_mail_starttls_dane_valid',
+                'internet_nl_mail_starttls_cert_domain',
+                'internet_nl_mail_starttls_cert_chain',
+                'internet_nl_mail_starttls_cert_sig',
+                'internet_nl_mail_starttls_cert_pubkey',
+
                 'internet_nl_mail_starttls_dane_exist',
+                'internet_nl_mail_starttls_dane_valid',
+                'internet_nl_mail_starttls_dane_rollover',
 
             ],
             'internet_nl_mail_dashboard_auth': [
@@ -190,11 +199,11 @@ vueReport = new Vue({
                 'internet_nl_mail_dnssec_mx_valid',
             ],
             'internet_nl_mail_dashboard_ipv6': [
-                'internet_nl_mail_ipv6_mx_address',
-                'internet_nl_mail_ipv6_mx_reach',
-
-                'internet_nl_mail_ipv6_ns_address',
                 'internet_nl_mail_ipv6_ns_reach',
+                'internet_nl_mail_ipv6_ns_address',
+
+                'internet_nl_mail_ipv6_mx_reach',
+                'internet_nl_mail_ipv6_mx_address',
             ],
             'mail_legacy': [
                 'internet_nl_mail_legacy_dane',
@@ -347,16 +356,6 @@ vueReport = new Vue({
                 this.available_recent_reports = options;
             }).catch((fail) => {console.log('A loading error occurred: ' + fail);});
         },
-        is_relevant_for_category: function(value){
-            if (this.selected_category !== "") {
-                if (this.categories[this.selected_category].includes(value)) {
-                    return true;
-                }
-            }
-            else
-                // If not category has been selected, just return the overarching categories.
-                return this.categories['web'].includes(value) || this.categories['mail'].includes(value)
-        },
 
         is_relevant_category: function(category_name) {
             if (this.selected_report.value === undefined)
@@ -423,6 +422,7 @@ vueReport = new Vue({
 });
 
 const chart_mixin = {
+
     props: {
         chart_data: {type: Array, required: true},
         axis: {type: Array, required: false},
@@ -459,7 +459,8 @@ const chart_mixin = {
 };
 
 
-Vue.component('bar-chart', {
+Vue.component('percentage-bar-chart', {
+    i18n,
     mixins: [chart_mixin],
 
     methods: {
@@ -473,13 +474,13 @@ Vue.component('bar-chart', {
                 },
                 options: {
                     legend: {
-                        display: true
+                        display: false
                     },
                     responsive: true,
                     maintainAspectRatio: false,
                     title: {
                         display: true,
-                        text: "Today's risk overview",
+                        text: "Gemiddelde adoptie standaarden. Lijst: todo. Rapportage: todo. # domeinen: todo.",
                     },
                     tooltips: {
                         mode: 'index',
@@ -489,61 +490,146 @@ Vue.component('bar-chart', {
                         mode: 'nearest',
                         intersect: true
                     },
+                    // this is now a percentage graph.
+                    scales: {
+                        yAxes: [{
+                            ticks: {
+                                min: 0,
+                                max: 100,
+                                callback: function(label, index, labels) {
+                                    return label + '%';
+                                }
+                            },
+                            scaleLabel: {
+								display: true,
+								labelString: 'Adoptiegraad'
+							},
+                        }]
+				    },
                 }
             });
 
         },
         renderData: function(){
-            let data = this.data;
+            // have to add it as list, so we'll need to convert it back...
+            let data = this.chart_data[0];
+
+            if (data === undefined) {
+                // nothing to show
+                this.chart.data.labels = [];
+                this.chart.data.datasets = [];
+                this.chart.update();
+                return;
+            }
 
             let labels = Array();
-            let high = Array();
-            let medium = Array();
-            let low = Array();
-            let ok = Array();
-
-            high.push(data[data.length-1].high);
-            medium.push(data[data.length-1].medium);
-            low.push(data[data.length-1].low);
-            ok.push(data[data.length-1].ok);
-
-            let backgroundColor = [];
-            let borderColor = [];
             let chartdata = [];
 
-            if (this.axis.includes('high')){
-                backgroundColor.push(this.color_scheme.high_background);
-                borderColor.push(this.color_scheme.high_border);
-                labels.push('# High risk');
-                chartdata.push(high);
-            }
-            if (this.axis.includes('medium')){
-                backgroundColor.push(this.color_scheme.medium_background);
-                borderColor.push(this.color_scheme.medium_border);
-                labels.push('# Medium risk');
-                chartdata.push(medium);
+            console.log(data);
 
-            }
-            if (this.axis.includes('low')){
-                backgroundColor.push(this.color_scheme.low_background);
-                borderColor.push(this.color_scheme.low_border);
-                labels.push('# Low risk');
-                chartdata.push(low);
-            }
-
-            // Only include OK in the donuts, not the graphs. Otherwise the graphs become unreadable (too much data)
-            backgroundColor.push(this.color_scheme.good_background);
-            borderColor.push(this.color_scheme.good_border);
-            labels.push('# No risk');
-            chartdata.push(ok);
+            this.axis.forEach((ax) => {
+                if (ax in data) {
+                    labels.push(i18n.t("report." + ax));
+                    chartdata.push(data[ax].pct_ok);
+                }
+            });
 
             this.chart.data.labels = labels;
             this.chart.data.datasets = [{
                 data: chartdata,
-                backgroundColor: backgroundColor,
-                borderColor: borderColor,
+                backgroundColor: this.color_scheme.ok_background,
+                borderColor: this.color_scheme.ok_border,
                 borderWidth: 1,
                 lineTension: 0,
+                label: 'Percentage OK',
+            }];
+
+            this.chart.update();
+        }
+    }
+});
+
+Vue.component('radar-chart', {
+    mixins: [chart_mixin],
+
+    methods: {
+
+        buildChart: function(){
+            let context = this.$refs.canvas.getContext('2d');
+            this.chart = new Chart(context, {
+                type: 'radar',
+                data: {
+
+                },
+                options: {
+                    legend: {
+                        display: false
+                    },
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    title: {
+                        display: true,
+                        text: "Gemiddelde adoptie standaarden. Lijst: todo. Rapportage: todo. # domeinen: todo.",
+                    },
+                    tooltips: {
+                        mode: 'index',
+                        intersect: false,
+                    },
+                    hover: {
+                        mode: 'nearest',
+                        intersect: true
+                    },
+                    scale: {
+
+                            ticks: {
+                                min: 0,
+                                max: 100,
+                                callback: function(label, index, labels) {
+                                    return label + '%';
+                                }
+                            },
+                            scaleLabel: {
+								display: true,
+								labelString: 'Adoptiegraad'
+							},
+
+				    },
+                }
+            });
+
+        },
+        renderData: function(){
+            // have to add it as list, so we'll need to convert it back...
+            let data = this.chart_data[0];
+
+            if (data === undefined) {
+                // nothing to show
+                this.chart.data.labels = [];
+                this.chart.data.datasets = [];
+                this.chart.update();
+                return;
+            }
+
+            let labels = Array();
+            let chartdata = [];
+
+            console.log(data);
+
+            this.axis.forEach((ax) => {
+                if (ax in data) {
+                    labels.push(i18n.t("report." + ax));
+                    chartdata.push(data[ax].pct_ok);
+                }
+            });
+
+            this.chart.data.labels = labels;
+            this.chart.data.datasets = [{
+                data: chartdata,
+                backgroundColor: this.color_scheme.ok_background,
+                borderColor: this.color_scheme.ok_border,
+                borderWidth: 1,
+                lineTension: 0,
+                label: 'Percentage OK',
             }];
 
             this.chart.update();
