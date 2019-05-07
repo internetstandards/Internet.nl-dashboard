@@ -29,6 +29,8 @@ const messages = {
                 scan_now_scanning_title: 'The scan now option is available only once a day, when no scan is running.',
                 delete: 'Delete',
                 view_csv: 'View .csv',
+                timeout_for_24_hours: 'Max 1 scan/day',
+                scanning_disabled: 'Scanning disabled',
             },
 
             about_this_list: {
@@ -295,6 +297,8 @@ const messages = {
                 scan_now_scanning_title: 'Nu scannen is alleen beschikbaar als er geen scan draait, en kan maximaal 1x per dag worden aangeroepen.',
                 delete: 'Verwijder',
                 view_csv: 'Bekijk.csv',
+                timeout_for_24_hours: 'Max 1 scan/dag',
+                scanning_disabled: 'Scans uitgeschakeld',
             },
 
             about_this_list: {

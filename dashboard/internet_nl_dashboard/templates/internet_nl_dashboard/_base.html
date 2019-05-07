@@ -198,12 +198,13 @@ Todo: digitoegankelijk: how to select links with the keyboard? How can we make t
 
         Vue.component('v-select', VueSelect.VueSelect);
 
+        {% verbatim %}
         Vue.component('server-response', {
             props: ['response'],
             template: '' +
                 '<div>' +
                 '    <div v-if="response.error" class="server-response-error">\n' +
-                '        <h2>❌ An error occured:</h2>\n' +
+                '        <h2>❌ An error occured</h2>\n' +
                 '        {{ response.message }}\n' +
                 '    </div>\n' +
                 '    <div v-if="response.success" class="server-response-success">\n' +
@@ -212,6 +213,7 @@ Todo: digitoegankelijk: how to select links with the keyboard? How can we make t
                 '    </div>' +
                 '</div>',
         });
+        {% endverbatim %}
 
         function set_language(language_code){
             document.cookie = "dashboard_language=" + (language_code || "en") + "; path=/";

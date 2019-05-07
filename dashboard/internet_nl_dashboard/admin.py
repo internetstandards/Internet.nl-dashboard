@@ -254,7 +254,8 @@ class UrlListAdmin(ImportExportModelAdmin, admin.ModelAdmin):
                    'last_manual_scan'][::-1]
 
     # we don't add the urls as that might cause a deletion by mistake
-    fields = ('name', 'account', 'scan_type')
+    fields = ('name', 'account', 'scan_type', 'enable_scans', 'automated_scan_frequency', 'scheduled_next_scan',
+              'last_manual_scan', 'is_deleted', 'deleted_on')
 
     def no_of_urls(self, obj):
         return Url.objects.all().filter(urls_in_dashboard_list=obj, is_dead=False, not_resolvable=False).count()

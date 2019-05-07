@@ -8,9 +8,24 @@
             <div v-if="is_opened" style="float:right;">
                 <button @click="start_editing_settings()">📝 {{ $t("domain_management.button_labels.configure") }}</button>
                 <button @click="start_bulk_add_new()">💖 {{ $t("domain_management.button_labels.add_domains") }}</button>
-                <button @click="start_scan_now()" v-if="list.scan_now_available">🔬 {{ $t("domain_management.button_labels.scan_now") }}</button>
-                <button v-if="!list.scan_now_available" disabled="disabled"
-                :title='$t("domain_management.button_labels.scan_now_scanning")'><img width="15" style="border-radius: 50%" src="/static/images/vendor/internet_nl/probe-animation.gif"> {{ $t("domain_management.button_labels.scan_now_scanning") }}</button>
+                <template v-if="list.enable_scans">
+                    <button v-if="list.scan_now_available" @click="start_scan_now()">🔬 {{ $t("domain_management.button_labels.scan_now") }}</button>
+                    
+                    <button v-if="!list.scan_now_available && !list.last_scan_finished" disabled="disabled"
+                    :title='$t("domain_management.button_labels.scan_now_scanning")'>
+                        <img width="15" style="border-radius: 50%" src="/static/images/vendor/internet_nl/probe-animation.gif">
+                        {{ $t("domain_management.button_labels.scan_now_scanning") }}
+                    </button>
+                    <button v-if="!list.scan_now_available && list.last_scan_finished" disabled="disabled"
+                    :title='$t("domain_management.button_labels.timeout_for_24_hours")'>
+                        <img width="15" style="border-radius: 50%" src="/static/images/vendor/internet_nl/probe-animation.gif">
+                        {{ $t("domain_management.button_labels.timeout_for_24_hours") }}
+                    </button>
+                </template>
+                <button v-if="!list.enable_scans" disabled="disabled"
+                :title='$t("domain_management.button_labels.scanning_disabled")'>
+                    🔬 {{ $t("domain_management.button_labels.scanning_disabled") }}
+                </button>
                 <button @click="start_deleting()">🔪 {{ $t("domain_management.button_labels.delete") }}</button>
             </div>
         </h3>
@@ -155,7 +170,7 @@
 
                 <server-response :response="scan_now_server_response"></server-response>
 
-                <p>{{ $t("domain_management.scan_now_form.message") }}</p>
+                <p v-html='$t("domain_management.scan_now_form.message")'></p>
 
             </div>
             <div slot="footer">

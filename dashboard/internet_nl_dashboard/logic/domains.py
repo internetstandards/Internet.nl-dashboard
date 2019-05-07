@@ -89,7 +89,7 @@ def scan_now(account, user_input) -> Dict[str, Any]:
         return operation_response(error=True, message="List could not be found.")
 
     if not urllist.is_scan_now_available():
-        return operation_response(error=True, message="Could not scan.")
+        return operation_response(error=True, message="Not all conditions for initiating a scan are met.")
 
     # done: have to update the list info. On the other hand: there is no guarantee that this task already has started
     # ...to fix this issue, we'll use a 'last_manual_scan' field.
@@ -259,8 +259,8 @@ def update_list_settings(account: Account, user_input: Dict) -> Dict[str, Any]:
         'scheduled_next_scan': UrlList.determine_next_scan_moment(frequency),
     }
 
-    updarted_urllist = UrlList(**data)
-    updarted_urllist.save()
+    updated_urllist = UrlList(**data)
+    updated_urllist.save()
 
     # make sure the account is serializable.
     data['account'] = account.id
@@ -272,7 +272,7 @@ def update_list_settings(account: Account, user_input: Dict) -> Dict[str, Any]:
     data['last_report_id'] = None if not len(urllist.last_report) else urllist.last_report[0].id
     data['last_report_date'] = None if not len(urllist.last_report) else urllist.last_report[0].at_when
 
-    data['scan_now_available'] = urllist.is_scan_now_available()
+    data['scan_now_available'] = updated_urllist.is_scan_now_available()
 
     log.debug(data)
 
