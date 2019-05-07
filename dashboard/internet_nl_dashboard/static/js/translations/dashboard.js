@@ -2,11 +2,11 @@ const messages = {
     en: {
         charts: {
             report_bar_chart: {
-                title: 'Average adoption of standards. List: %{list_information}. Report: %{report_information}. Covering %{number_of_domains} domains.',
+                title: 'Average adoption of standards, %{list_information}, %{number_of_domains} domains.',
                 yAxis_label: 'Adoption',
             },
             report_radar_chart: {
-                title: 'Average adoption of standards. List: %{list_information}. Report: %{report_information}. Covering %{number_of_domains} domains.',
+                title: 'Average adoption of standards, %{list_information}, %{number_of_domains} domains.',
             },
             percentage_timeline: {
                 title: 'Average adoption of standards. Overall.',
@@ -268,11 +268,15 @@ const messages = {
     nl: {
         charts: {
             report_bar_chart: {
-                title: 'Gemiddelde adoptie standaarden. Lijst: %{list_information}. Gegevens van: %{report_information}. Bevat %{number_of_domains} domeinen.',
+                title: 'Gemiddelde adoptie standaarden, %{list_information}, %{number_of_domains} domeinen.',
                 yAxis_label: 'Adoptiegraad',
             },
             report_radar_chart: {
-                title: 'Gemiddelde adoptie standaarden. Lijst: %{list_information}. Gegevens van: %{report_information}. Bevat %{number_of_domains} domeinen.',
+                title: 'Gemiddelde adoptie standaarden, %{list_information}, %{number_of_domains} domeinen.',
+            },
+            percentage_timeline: {
+                title: 'Gemiddelde adoptie standaarden over tijd.',
+                yAxis_label: 'Adoptiegraad',
             }
         },
 

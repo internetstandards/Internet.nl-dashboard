@@ -47,7 +47,10 @@ urlpatterns = [
     # reporting
     path('reports/', report.dashboard),
     path('reports/<int:report_id>/', report.dashboard),
+
     path('data/report/get/<int:report_id>/', report.get_report_),
+    path('data/report/get_previous/<int:urllist_id>/<str:at_when>/', report.get_previous_report_),
+
     path('data/report/recent/', report.get_recent_reports_),
     path('data/report/urllist_report_graph_data/<int:urllist_id>/', report.get_urllist_report_graph_data_),
     path('data/download-spreadsheet/<int:report_id>/<spreadsheet_filetype:file_type>/',

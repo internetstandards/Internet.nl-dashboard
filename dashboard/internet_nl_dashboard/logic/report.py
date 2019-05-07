@@ -125,6 +125,18 @@ def get_report(account: Account, report_id: int):
     return reports
 
 
+def get_previous_report(account: Account, urllist_id, at_when):
+    report = UrlListReport.objects.all().filter(
+        urllist_id=urllist_id,
+        urllist__account=account,
+        urllist__is_deleted=False,
+        at_when__lt=at_when).values('pk').first()
+    if not report:
+        return {}
+
+    return get_report(account, report['pk'])[0]
+
+
 def remove_comply_or_explain(report):
     # Also remove all comply or explain information as it costs a lot of data/memory on the client
 

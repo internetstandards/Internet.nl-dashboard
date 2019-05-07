@@ -43,7 +43,7 @@ th.rotate > div > span {
                             :title="graph_bar_chart_title"
                             :translation_key="'charts.report_bar_chart'"
                             :color_scheme="color_scheme"
-                            :chart_data="[reports[0], reports[0]]"
+                            :chart_data="compare_charts"
                             :axis="categories[selected_category]">
                     </percentage-bar-chart>
                 </div>
@@ -53,10 +53,16 @@ th.rotate > div > span {
                             :title="graph_radar_chart_title"
                             :translation_key="'charts.report_radar_chart'"
                             :color_scheme="color_scheme"
-                            :chart_data="[reports[0], reports[0]]"
+                            :chart_data="compare_charts"
                             :axis="categories[selected_category]">
                     </radar-chart>
                 </div>
+            </div>
+            <div v-if="older_data_available">
+                <button @click="compare_with_previous()">Compare with previous (beta)</button>
+            </div>
+            <div v-if="!older_data_available">
+                <button @click="compare_with_previous()" disabled="disabled">Compare with previous (beta)</button>
             </div>
 
             <div v-for="category in categories">
@@ -346,9 +352,16 @@ vueReport = new Vue({
             'secondary_border': 'rgba(21, 66, 115, 1)',
             incremental: [
                 {background: 'rgba(255, 112, 50, 0.6)', border: 'rgba(255, 112, 50, 1)'},
-                {background: 'rgba(21, 66, 115, 0.6)', border: 'rgba(21, 66, 115, 1)'}
+                {background: 'rgba(21, 66, 115, 0.6)', border: 'rgba(21, 66, 115, 1)'},
+                {background: 'rgba(255, 246, 0, 0.6)', border: 'rgba(255, 246, 0, 1)'},
+                {background: 'rgba(0, 255, 246, 0.6)', border: 'rgba(0, 255, 246, 1)'},
+                {background: 'rgba(255, 0, 246, 0.6)', border: 'rgba(255, 0, 246, 1)'},
                 ]
         },
+        compare_charts: [],
+        compare_oldest_data: "",
+        older_data_available: true,
+
     },
     mounted: function(){
         this.get_available_recent_reports();
@@ -368,6 +381,7 @@ vueReport = new Vue({
         get_report_data: function(report_id){
             fetch(`/data/report/get/${report_id}/`).then(response => response.json()).then(data => {
                 this.reports = data;
+                this.reset_comparison_charts(this.reports[0]);
 
                 this.selected_category = this.selected_report.value.urllist_scan_type;
 
@@ -375,6 +389,26 @@ vueReport = new Vue({
                 this.filtered_urls = data[0].calculation.urls;
                 this.get_timeline();
             }).catch((fail) => {console.log('A loading error occurred: ' + fail);});
+        },
+        reset_comparison_charts: function(report){
+            this.compare_charts = [report];
+            this.compare_oldest_data = report.created_on;
+        },
+        compare_with_previous: function(){
+            // can be clicked on as long as there are previous reports. Which we don't know in advance.
+
+            fetch(`/data/report/get_previous/${this.selected_report.value.urllist_id}/${this.compare_oldest_data}/`).then(response => response.json()).then(report => {
+
+                if (!jQuery.isEmptyObject(report)) {
+                    this.compare_charts.push(report);
+                    this.compare_oldest_data = report.created_on;
+                } else {
+                    this.older_data_available = false;
+                }
+
+            }).catch((fail) => {console.log('A loading error occurred: ' + fail);});
+
+
         },
         get_available_recent_reports: function(){
             fetch(`/data/report/recent/`).then(response => response.json()).then(data => {
@@ -469,7 +503,6 @@ vueReport = new Vue({
         graph_radar_chart_title: function(){
             return i18n.t('charts.report_radar_chart.title', {
                 'list_information': this.selected_report.value.list_name,
-                'report_information': this.humanize_date(this.selected_report.value.created_on),
                 'number_of_domains': this.original_urls.length
             });
         },
@@ -477,7 +510,6 @@ vueReport = new Vue({
         graph_bar_chart_title: function(){
             return i18n.t('charts.report_bar_chart.title', {
                 'list_information': this.selected_report.value.list_name,
-                'report_information': this.humanize_date(this.selected_report.value.created_on),
                 'number_of_domains': this.original_urls.length
             });
         },
@@ -514,6 +546,9 @@ const chart_mixin = {
     },
     watch: {
         chart_data: function(){
+            this.renderData();
+        },
+        axis: function(){
             this.renderData();
         },
 
