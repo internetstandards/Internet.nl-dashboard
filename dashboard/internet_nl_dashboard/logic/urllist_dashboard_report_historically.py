@@ -19,15 +19,13 @@ def compose_task(**kwargs
 
 @app.task(queue='storage')
 def rate_urllists_historically(urllists: List[UrlList]):
-
-    # todo: this now crashes
-    # todo: create reports at the moments scans where finished, instead of at random moments...
+    log.warning('Make sure your url reports are up to date! Run rebuild_url_reports to be sure.')
 
     # take into account it's possible urls have been added that influence the history of this rating.
     UrlListReport.objects.all().filter(urllist__in=urllists).delete()
 
     scans = AccountInternetNLScan.objects.all().filter(urllist__in=urllists, urllist__is_deleted=False,
-                                                       scan__finished=True)
+                                                       scan__finished=True).order_by('scan__finished_on')
 
     for scan in scans:
         rate_urllist_on_moment(scan.urllist, scan.scan.finished_on)

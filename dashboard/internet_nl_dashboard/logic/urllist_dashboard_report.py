@@ -173,31 +173,32 @@ def rate_urllist_on_moment(urllist: UrlList, when: datetime = None):
 
     urls = relevant_urls_at_timepoint_urllist(urllist=urllist, when=when)
     all_url_ratings = get_latest_urlratings_fast(urls, when)
-    scores = aggegrate_url_rating_scores(all_url_ratings, only_include_issues=urllist_report_content[urllist.scan_type])
+    calculation = aggegrate_url_rating_scores(all_url_ratings, only_include_issues=urllist_report_content[urllist.scan_type])
 
     try:
         last = UrlListReport.objects.filter(urllist=urllist, at_when__lte=when).latest('at_when')
     except UrlListReport.DoesNotExist:
         last = UrlListReport()  # create a dummy one for comparison
 
-    scores['name'] = urllist.name
+    calculation['name'] = urllist.name
 
-    if not DeepDiff(last.calculation, scores, ignore_order=True, report_repetition=True):
-        log.warning("The report for %s on %s is the same as the previous one. Not saving." % (urllist, when))
+    if not DeepDiff(last.calculation, calculation, ignore_order=True, report_repetition=True):
+        log.warning("The report for %s on %s is the same as the report from %s. Not saving." % (
+            urllist, when, last.at_when))
         return
 
     log.info("The calculation for %s on %s has changed, so we're saving this rating." % (urllist, when))
 
     # remove urls and name from scores object, so it can be used as initialization parameters (saves lines)
     # this is by reference, meaning that the calculation will be affected if we don't work on a clone.
-    init_scores = deepcopy(scores)
+    init_scores = deepcopy(calculation)
     del(init_scores['name'])
     del(init_scores['urls'])
 
     report = UrlListReport(**init_scores)
     report.urllist = urllist
     report.at_when = when
-    report.calculation = scores
+    report.calculation = calculation
     report.save()
 
 

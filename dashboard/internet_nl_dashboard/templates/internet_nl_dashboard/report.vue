@@ -29,15 +29,34 @@ th.rotate > div > span {
             <h2>Column Visbility Filters</h2>
 
             <div class="chart-container" style="position: relative; height:300px; width:100%">
-                <line-chart :color_scheme="color_scheme" :chart_data="issue_timeline_of_related_urllist" :axis="['pct_ok', 'pct_not_ok']"></line-chart>
+                <line-chart
+                        :color_scheme="color_scheme"
+                        :translation_key="'charts.percentage_timeline'"
+                        :chart_data="issue_timeline_of_related_urllist"
+                        :axis="['pct_ok']">
+                </line-chart>
             </div>
 
-            <div class="chart-container" style="position: relative; height:500px; width:100%">
-                <percentage-bar-chart :title="graph_bar_chart_title" :translation_key="'charts.report_bar_chart'" :color_scheme="color_scheme" v-if='reports.length && "statistics_per_issue_type" in reports[0]' :chart_data="[reports[0]]" :axis="categories[selected_category]"></percentage-bar-chart>
-            </div>
+            <div v-if='reports.length && "statistics_per_issue_type" in reports[0]'>
+                <div class="chart-container" style="position: relative; height:500px; width:100%">
+                    <percentage-bar-chart
+                            :title="graph_bar_chart_title"
+                            :translation_key="'charts.report_bar_chart'"
+                            :color_scheme="color_scheme"
+                            :chart_data="[reports[0], reports[0]]"
+                            :axis="categories[selected_category]">
+                    </percentage-bar-chart>
+                </div>
 
-            <div class="chart-container" style="position: relative; height:500px; width:100%">
-                <radar-chart :title="graph_radar_chart_title" :color_scheme="color_scheme" v-if='reports.length && "statistics_per_issue_type" in reports[0]' :chart_data="[reports[0].statistics_per_issue_type]" :axis="categories[selected_category]"></radar-chart>
+                <div class="chart-container" style="position: relative; height:500px; width:100%">
+                    <radar-chart
+                            :title="graph_radar_chart_title"
+                            :translation_key="'charts.report_radar_chart'"
+                            :color_scheme="color_scheme"
+                            :chart_data="[reports[0], reports[0]]"
+                            :axis="categories[selected_category]">
+                    </radar-chart>
+                </div>
             </div>
 
             <div v-for="category in categories">
@@ -325,6 +344,10 @@ vueReport = new Vue({
             'primary_border': 'rgba(255, 112, 50, 1)',
             'secondary_background': 'rgba(21, 66, 115, 0.6)',
             'secondary_border': 'rgba(21, 66, 115, 1)',
+            incremental: [
+                {background: 'rgba(255, 112, 50, 0.6)', border: 'rgba(255, 112, 50, 1)'},
+                {background: 'rgba(21, 66, 115, 0.6)', border: 'rgba(21, 66, 115, 1)'}
+                ]
         },
     },
     mounted: function(){
@@ -570,36 +593,50 @@ Vue.component('percentage-bar-chart', {
             });
         },
         renderData: function(){
-            // have to add it as list, so we'll need to convert it back...
-            let data = this.chart_data[0].statistics_per_issue_type;
+            // prevent the grapsh from ever growing (it's called twice at first render)
+            this.chart.data.labels = [];
+            this.chart.data.datasets = [];
 
-            if (data === undefined) {
-                // nothing to show
-                this.chart.data.labels = [];
-                this.chart.data.datasets = [];
-                this.chart.update();
-                return;
+            for(let i=0; i < this.chart_data.length; i++){
+
+                let data = this.chart_data[i].statistics_per_issue_type;
+
+                if (data === undefined) {
+                    // nothing to show
+                    this.chart.data.labels = [];
+                    this.chart.data.datasets = [];
+                    this.chart.update();
+                    return;
+                }
+
+                let labels = Array();
+                let chartdata = [];
+
+                this.axis.forEach((ax) => {
+                    if (ax in data) {
+                        labels.push(i18n.t("report." + ax));
+                        chartdata.push(data[ax].pct_ok);
+                    }
+                });
+
+                this.chart.data.labels = labels;
+                this.chart.data.datasets.push({
+                    data: chartdata,
+                    backgroundColor: this.color_scheme.incremental[i].background,
+                    borderColor: this.color_scheme.incremental[i].border,
+                    borderWidth: 1,
+                    lineTension: 0,
+                    label: `${moment(this.chart_data[i].at_when).format('LL')}`,
+                });
+
             }
 
-            let labels = Array();
-            let chartdata = [];
+            // the ordering is from important to none important, and we want to reverse it so the reader sees that
+            // the right most value is the most important instead of the left one.
+            this.chart.data.datasets.reverse();
+            // the same goes for colors
+            this.chart.data.labels.reverse();
 
-            this.axis.forEach((ax) => {
-                if (ax in data) {
-                    labels.push(i18n.t("report." + ax));
-                    chartdata.push(data[ax].pct_ok);
-                }
-            });
-
-            this.chart.data.labels = labels;
-            this.chart.data.datasets = [{
-                data: chartdata,
-                backgroundColor: this.color_scheme.primary_background,
-                borderColor: this.color_scheme.primary_border,
-                borderWidth: 1,
-                lineTension: 0,
-                label: this.humanize_date(this.chart_data[0].at_when),
-            }];
 
             this.chart.update();
         },
@@ -613,7 +650,6 @@ Vue.component('radar-chart', {
     mixins: [chart_mixin],
 
     methods: {
-
         buildChart: function(){
             let context = this.$refs.canvas.getContext('2d');
             this.chart = new Chart(context, {
@@ -637,7 +673,8 @@ Vue.component('radar-chart', {
                     },
 
                     legend: {
-                        display: false
+                        display: true,
+                        position: 'bottom',
                     },
                     responsive: true,
                     maintainAspectRatio: false,
@@ -673,35 +710,49 @@ Vue.component('radar-chart', {
 
         },
         renderData: function(){
-            // have to add it as list, so we'll need to convert it back...
-            let data = this.chart_data[0];
 
-            if (data === undefined) {
-                // nothing to show
-                this.chart.data.labels = [];
-                this.chart.data.datasets = [];
-                this.chart.update();
-                return;
+            this.chart.data.labels = [];
+            this.chart.data.datasets = [];
+
+            for(let i=0; i < this.chart_data.length; i++){
+
+                let data = this.chart_data[i].statistics_per_issue_type;
+
+                if (data === undefined) {
+                    // nothing to show
+                    this.chart.data.labels = [];
+                    this.chart.data.datasets = [];
+                    this.chart.update();
+                    return;
+                }
+
+                let labels = Array();
+                let chartdata = [];
+
+                this.axis.forEach((ax) => {
+                    if (ax in data) {
+                        labels.push(i18n.t("report." + ax));
+                        chartdata.push(data[ax].pct_ok);
+                    }
+                });
+
+                this.chart.data.labels = labels;
+                this.chart.data.datasets.push({
+                    data: chartdata,
+                    backgroundColor: this.color_scheme.incremental[i].background,
+                    borderColor: this.color_scheme.incremental[i].border,
+                    borderWidth: 1,
+                    lineTension: 0,
+                    label: `${moment(this.chart_data[i].at_when).format('LL')}`,
+                });
+
             }
 
-            let labels = Array();
-            let chartdata = [];
-
-            this.axis.forEach((ax) => {
-                if (ax in data) {
-                    labels.push(i18n.t("report." + ax));
-                    chartdata.push(data[ax].pct_ok);
-                }
-            });
-
-            this.chart.data.labels = labels;
-            this.chart.data.datasets = [{
-                data: chartdata,
-                backgroundColor: this.color_scheme.primary_background,
-                borderColor: this.color_scheme.primary_border,
-                borderWidth: 1,
-                lineTension: 0,
-            }];
+            // the ordering is from important to none important, and we want to reverse it so the reader sees that
+            // the right most value is the most important instead of the left one.
+            this.chart.data.datasets.reverse();
+            // the same goes for colors
+            this.chart.data.labels.reverse();
 
             this.chart.update();
         }
@@ -743,7 +794,7 @@ Vue.component('line-chart', {
                     maintainAspectRatio: false,
                     title: {
                         display: true,
-                        text: 'OK / VS Not OK'
+                        text: i18n.t(this.translation_key + '.title')
                     },
                     tooltips: {
                         mode: 'index',
@@ -769,10 +820,17 @@ Vue.component('line-chart', {
                         yAxes: [{
                             display: true,
                             stacked: true,
+                            ticks: {
+                                min: 0,
+                                max: 100,
+                                callback: function(label, index, labels) {
+                                    return label + '%';
+                                }
+                            },
                             scaleLabel: {
-                                display: false,
-                                labelString: 'Value'
-                            }
+								display: true,
+								labelString: i18n.t(this.translation_key + '.yAxis_label')
+							},
                         }]
                     }
                 }

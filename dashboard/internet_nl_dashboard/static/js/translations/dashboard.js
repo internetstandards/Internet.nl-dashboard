@@ -7,6 +7,10 @@ const messages = {
             },
             report_radar_chart: {
                 title: 'Average adoption of standards. List: %{list_information}. Report: %{report_information}. Covering %{number_of_domains} domains.',
+            },
+            percentage_timeline: {
+                title: 'Average adoption of standards. Overall.',
+                yAxis_label: 'Adoption',
             }
         },
 
