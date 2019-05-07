@@ -402,10 +402,6 @@ class UrlListReport(SeriesOfUrlsReportMixin):
     """
     urllist = models.ForeignKey(UrlList, on_delete=models.CASCADE)
 
-    created_on = models.DateTimeField(
-        auto_now_add=True,
-    )
-
     class Meta:
         get_latest_by = "at_when"
         index_together = [

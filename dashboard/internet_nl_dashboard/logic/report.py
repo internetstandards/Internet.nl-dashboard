@@ -29,7 +29,7 @@ def create_report_response(reports):
             'type': report.urllist.scan_type,
             'number_of_urls': report.total_urls,
             'list_name': report.urllist.name,
-            'created_on': report.at_when.isoformat(),
+            'at_when': report.at_when.isoformat(),
             'urllist_id': report.urllist.id,
             'urllist_scan_type': report.urllist.scan_type,
         })
@@ -130,7 +130,7 @@ def get_previous_report(account: Account, urllist_id, at_when):
         urllist_id=urllist_id,
         urllist__account=account,
         urllist__is_deleted=False,
-        at_when__lt=at_when).values('pk').first()
+        at_when__lt=at_when).order_by('-at_when').values('pk').first()
     if not report:
         return {}
 

@@ -421,6 +421,7 @@ vueReport = new Vue({
                 this.selected_category = this.selected_report.value.urllist_scan_type;
 
                 this.original_urls = data[0].calculation.urls.sort(this.alphabet_sorting);
+                this.older_data_available = true;
 
                 // sort urls alphabetically
                 // we'll probably just need a table control that does sorting, filtering and such instead of coding it ourselves.
@@ -440,7 +441,7 @@ vueReport = new Vue({
         },
         reset_comparison_charts: function(report){
             this.compare_charts = [report];
-            this.compare_oldest_data = report.created_on;
+            this.compare_oldest_data = report.at_when;
         },
         compare_with_previous: function(){
             // can be clicked on as long as there are previous reports. Which we don't know in advance.
@@ -464,7 +465,7 @@ vueReport = new Vue({
                 for(let i = 0; i < data.length; i++){
                     options.push({
                         'value': data[i],
-                        'label': `#${data[i].id} - ${data[i].list_name} - type: ${data[i].type} - from: ${this.humanize_date(data[i].created_on)}`})
+                        'label': `#${data[i].id} - ${data[i].list_name} - type: ${data[i].type} - from: ${this.humanize_date(data[i].at_when)}`})
                 }
                 this.available_recent_reports = options;
 
@@ -584,7 +585,7 @@ const chart_mixin = {
     },
     methods: {
         arraysEqual: function (a, b) {
-            // One does not simply array1 === array2, which is insane, as (some of the) the most optimized implementation should ship to anyone.
+            // One does not simply array1 === array2, which is a missed opportunity, as (some of the) the most optimized implementation should ship to anyone.
             if (a === b) return true;
             if (a == null || b == null) return false;
 
@@ -603,10 +604,9 @@ const chart_mixin = {
         }
     },
     watch: {
+        // old and new value are the same always... Something bypasses this watch. Property > watch?
         chart_data: function(new_value, old_value){
-            if (!this.arraysEqual(old_value, new_value)) {
-                this.renderData();
-            }
+            this.renderData();
         },
         axis: function(new_value, old_value){
             if (!this.arraysEqual(old_value, new_value)) {
@@ -856,7 +856,10 @@ Vue.component('radar-chart', {
             this.chart.data.labels.reverse();
 
             this.chart.update();
-        }
+        },
+        renderTitle: function(){
+            this.chart.options.title.text = this.title;
+        },
     }
 });
 
@@ -1002,7 +1005,10 @@ Vue.component('line-chart', {
             ];
 
             this.chart.update();
-        }
+        },
+        renderTitle: function(){
+            this.chart.options.title.text = this.title;
+        },
     }
 });
 </script>

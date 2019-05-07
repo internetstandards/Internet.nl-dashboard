@@ -232,7 +232,7 @@ def update_list_settings(account: Account, user_input: Dict) -> Dict[str, Any]:
     last_report_prefetch = Prefetch(
         'urllistreport_set',
         # filter(pk=UrlListReport.objects.latest('id').pk).
-        queryset=UrlListReport.objects.order_by('-id').only('id', 'created_on'),
+        queryset=UrlListReport.objects.order_by('-id').only('id', 'at_when'),
         to_attr='last_report'
     )
 
@@ -270,7 +270,7 @@ def update_list_settings(account: Account, user_input: Dict) -> Dict[str, Any]:
     data['last_scan'] = None if not len(urllist.last_scan) else urllist.last_scan[0].scan.started_on.isoformat()
     data['last_scan_finished'] = None if not len(urllist.last_scan) else urllist.last_scan[0].scan.finished
     data['last_report_id'] = None if not len(urllist.last_report) else urllist.last_report[0].id
-    data['last_report_date'] = None if not len(urllist.last_report) else urllist.last_report[0].created_on
+    data['last_report_date'] = None if not len(urllist.last_report) else urllist.last_report[0].at_when
 
     data['scan_now_available'] = urllist.is_scan_now_available()
 
@@ -341,7 +341,7 @@ def get_urllists_from_account(account: Account) -> List:
     last_report_prefetch = Prefetch(
         'urllistreport_set',
         # filter(pk=UrlListReport.objects.latest('id').pk).
-        queryset=UrlListReport.objects.order_by('-id').only('id', 'created_on'),
+        queryset=UrlListReport.objects.order_by('-id').only('id', 'at_when'),
         to_attr='last_report'
     )
 
@@ -365,7 +365,7 @@ def get_urllists_from_account(account: Account) -> List:
             'last_scan_finished': None if not len(urllist.last_scan) else urllist.last_scan[0].scan.finished,
             'scan_now_available': urllist.is_scan_now_available(),
             'last_report_id': None if not len(urllist.last_report) else urllist.last_report[0].id,
-            'last_report_date': None if not len(urllist.last_report) else urllist.last_report[0].created_on,
+            'last_report_date': None if not len(urllist.last_report) else urllist.last_report[0].at_when,
         })
 
     return response
