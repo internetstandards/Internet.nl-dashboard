@@ -22,11 +22,28 @@ th.rotate > div > span {
 </style>
 <template type="x-template" id="report_template">
     <div>
+        <button style='float: right' @click="show_settings = !show_settings">Toggle settings</button>
+        <div v-if="show_settings">
+        <h2>Report Configuration</h2>
+            <div>
+                <div v-for="(category_group, category_name, y) in categories" style="width: 49%; float: left;">
+                    <div v-if="issue_filters[category_name]">
+                        <h3><input type="checkbox" v-model='issue_filters[category_name].visible'> {{ $t("report." + category_name) }}</h3>
+                        <span v-for="category_name in category_group">
+                            <input type="checkbox" v-model='issue_filters[category_name].visible' :id="category_name + '_visible'">
+                            <label :for="category_name + '_visible'">{{ $t("report." + category_name) }}</label><br />
+                        </span>
+                    </div>
+                </div>
+            </div>
+            <br style="clear: both;">
+        </div>
+
         <h2>Select Report</h2>
         <v-select v-model="selected_report" :options="available_recent_reports"></v-select>
 
         <div v-if="selected_report.value.report">
-            <h2>Column Visbility Filters</h2>
+            <h2>Charts</h2>
 
             <div class="chart-container" style="position: relative; height:300px; width:100%">
                 <line-chart
@@ -44,7 +61,7 @@ th.rotate > div > span {
                             :translation_key="'charts.report_bar_chart'"
                             :color_scheme="color_scheme"
                             :chart_data="compare_charts"
-                            :axis="categories[selected_category]">
+                            :axis="relevant_categories_based_on_settings()">
                     </percentage-bar-chart>
                 </div>
 
@@ -54,7 +71,7 @@ th.rotate > div > span {
                             :translation_key="'charts.report_radar_chart'"
                             :color_scheme="color_scheme"
                             :chart_data="compare_charts"
-                            :axis="categories[selected_category]">
+                            :axis="relevant_categories_based_on_settings()">
                     </radar-chart>
                 </div>
             </div>
@@ -62,19 +79,8 @@ th.rotate > div > span {
                 <button @click="compare_with_previous()">Compare with previous (beta)</button>
             </div>
             <div v-if="!older_data_available">
-                <button @click="compare_with_previous()" disabled="disabled">Compare with previous (beta)</button>
+                <button disabled="disabled">Compare with previous (beta)</button>
             </div>
-
-            <div v-for="category in categories">
-                <div v-for="(category_group, category_name, y) in categories[category]" style="width: 50%; float: left;">
-                    <h3><input type="checkbox" v-model='issue_filters[category_name].visible'> {{ $t("report." + category_name) }}</h3>
-                    <span v-for="category_name in category_group">
-                        <input type="checkbox" v-model='issue_filters[category_name].visible' :id="category_name + '_visible'">
-                        <label :for="category_name + '_visible'">{{ $t("report." + category_name) }}</label><br />
-                    </span>
-                </div>
-            </div>
-            <br style="clear: both;">
 
             <span v-if="selected_category" @click="select_category(selected_report.value.urllist_scan_type)">Remove filter: {{ $t("report." + selected_category) }}</span>
             <span v-if="!selected_category">&nbsp;</span>
@@ -85,22 +91,30 @@ th.rotate > div > span {
             </div>
             <h2 v-if="filtered_urls.length">Report</h2>
             <div>
-                <table v-if="filtered_urls.length">
-                    <tr>
-                        <th style="width: 300px">&nbsp;</th>
-                        <th class="rotate" v-for="category in categories[selected_category]" v-if="filtered_urls[0].endpoints.length">
-                            <div @click="select_category(category)">
-                                <span>{{ $t("report." + category) }}</span></div>
-                        </th>
-                    </tr>
-
-                    <tr v-for="url in filtered_urls" v-if="url.endpoints.length">
-                        <td >{{url.url}}</td>
-                        <td v-for="category_name in categories[selected_category]" v-if="category_name in url.endpoints[0].ratings_by_type">
-                            <span v-if="url.endpoints[0].ratings_by_type[category_name].ok < 1" :title="category_name">❌</span>
-                            <span v-if="url.endpoints[0].ratings_by_type[category_name].ok > 0" :title="category_name">✅</span>
-                        </td>
-                    </tr>
+                <table>
+                    <thead>
+                        <tr>
+                            <th style="width: 300px">&nbsp;</th>
+                            <th class="rotate" v-for="category in relevant_categories_based_on_settings()">
+                                <div @click="select_category(category)">
+                                    <span>{{ $t("report." + category) }}</span></div>
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody v-if="filtered_urls.length">
+                        <tr v-for="url in filtered_urls" v-if="url.endpoints.length">
+                            <td>{{url.url}}</td>
+                            <td v-for="category_name in relevant_categories_based_on_settings()" v-if="category_name in url.endpoints[0].ratings_by_type">
+                                <span v-if="url.endpoints[0].ratings_by_type[category_name].ok < 1" :title="`${url.url} has not implemented ${$t('report.' + category_name)}`">❌</span>
+                                <span v-if="url.endpoints[0].ratings_by_type[category_name].ok > 0" :title="`${url.url} has implemented ${$t('report.' + category_name)}`">✅</span>
+                            </td>
+                        </tr>
+                    </tbody>
+                    <tbody v-if="!filtered_urls.length">
+                        <tr>
+                           <td>-</td><td :colspan="relevant_categories_based_on_settings().length - 1">It looks like this report is empty... did you filter too much?</td>
+                        </tr>
+                    </tbody>
                 </table>
             </div>
 
@@ -153,13 +167,6 @@ vueReport = new Vue({
                 'internet_nl_web_ipv6',
                 'web_legacy'
             ],
-            'mail': [
-                'internet_nl_mail_dashboard_tls',
-                'internet_nl_mail_dashboard_auth',
-                'internet_nl_mail_dashboard_dnssec',
-                'internet_nl_mail_dashboard_ipv6',
-                'mail_legacy'
-            ],
             'internet_nl_web_tls': [
                 'internet_nl_web_https_tls_version',
                 'internet_nl_web_https_tls_clientreneg',
@@ -193,6 +200,25 @@ vueReport = new Vue({
                 'internet_nl_web_ipv6_ws_reach',
                 'internet_nl_web_ipv6_ns_address'
             ],
+
+            'web_legacy': [
+                'internet_nl_web_legacy_dane',
+                'internet_nl_web_legacy_tls_ncsc_web',
+                'internet_nl_web_legacy_hsts',
+                'internet_nl_web_legacy_https_enforced',
+                'internet_nl_web_legacy_tls_available',
+                'internet_nl_web_legacy_ipv6_webserver',
+                'internet_nl_web_legacy_ipv6_nameserver',
+            ],
+
+            'mail': [
+                'internet_nl_mail_dashboard_tls',
+                'internet_nl_mail_dashboard_auth',
+                'internet_nl_mail_dashboard_dnssec',
+                'internet_nl_mail_dashboard_ipv6',
+                'mail_legacy'
+            ],
+
             'internet_nl_mail_dashboard_tls': [
                 'internet_nl_mail_starttls_tls_version',
                 'internet_nl_mail_starttls_tls_ciphers',
@@ -245,17 +271,10 @@ vueReport = new Vue({
                 'internet_nl_mail_legacy_ipv6_mailserver',
                 'internet_nl_mail_legacy_ipv6_nameserver',
             ],
-            'web_legacy': [
-                'internet_nl_web_legacy_dane',
-                'internet_nl_web_legacy_tls_ncsc_web',
-                'internet_nl_web_legacy_hsts',
-                'internet_nl_web_legacy_https_enforced',
-                'internet_nl_web_legacy_tls_available',
-                'internet_nl_web_legacy_ipv6_webserver',
-                'internet_nl_web_legacy_ipv6_nameserver',
-            ]
         },
 
+        // settings
+        show_settings: false,
         issue_filters:{
             'web': {'visible': true},
             'web_legacy': {'visible': true},
@@ -318,6 +337,22 @@ vueReport = new Vue({
             'internet_nl_mail_ipv6_mx_reach': {'visible': true},
             'internet_nl_mail_ipv6_ns_reach': {'visible': true},
             'internet_nl_mail_ipv6_ns_address': {'visible': true},
+            'internet_nl_mail_legacy_dane': {'visible': true},
+            'internet_nl_mail_legacy_tls_available': {'visible': true},
+            'internet_nl_mail_legacy_spf': {'visible': true},
+            'internet_nl_mail_legacy_dkim': {'visible': true},
+            'internet_nl_mail_legacy_dmarc': {'visible': true},
+            'internet_nl_mail_legacy_dnsssec_mailserver_domain': {'visible': true},
+            'internet_nl_mail_legacy_dnssec_email_domain': {'visible': true},
+            'internet_nl_mail_legacy_ipv6_mailserver': {'visible': true},
+            'internet_nl_mail_legacy_ipv6_nameserver': {'visible': true},
+            'internet_nl_web_legacy_dane': {'visible': true},
+            'internet_nl_web_legacy_tls_ncsc_web': {'visible': true},
+            'internet_nl_web_legacy_hsts': {'visible': true},
+            'internet_nl_web_legacy_https_enforced': {'visible': true},
+            'internet_nl_web_legacy_tls_available': {'visible': true},
+            'internet_nl_web_legacy_ipv6_webserver': {'visible': true},
+            'internet_nl_web_legacy_ipv6_nameserver': {'visible': true},
         },
 
         // url_filter allows the filtering of names in the list of urls.
@@ -364,7 +399,7 @@ vueReport = new Vue({
 
     },
     mounted: function(){
-        this.get_available_recent_reports();
+        this.get_recent_reports();
     },
     // common issue that debounce does not work on a watch:
     // https://stackoverflow.com/questions/47172952/vuejs-2-debounce-not-working-on-a-watch-option
@@ -385,10 +420,23 @@ vueReport = new Vue({
 
                 this.selected_category = this.selected_report.value.urllist_scan_type;
 
-                this.original_urls = data[0].calculation.urls;
-                this.filtered_urls = data[0].calculation.urls;
+                this.original_urls = data[0].calculation.urls.sort(this.alphabet_sorting);
+
+                // sort urls alphabetically
+                // we'll probably just need a table control that does sorting, filtering and such instead of coding it ourselves.
+                this.filtered_urls = data[0].calculation.urls.sort(this.alphabet_sorting);
                 this.get_timeline();
             }).catch((fail) => {console.log('A loading error occurred: ' + fail);});
+        },
+        alphabet_sorting: function(a, b){
+            // i already mis sorted()
+            if (a.url < b.url) {
+                return -1;
+            }
+            if (a.url > b.url) {
+                return 1;
+            }
+            return 0;
         },
         reset_comparison_charts: function(report){
             this.compare_charts = [report];
@@ -401,7 +449,7 @@ vueReport = new Vue({
 
                 if (!jQuery.isEmptyObject(report)) {
                     this.compare_charts.push(report);
-                    this.compare_oldest_data = report.created_on;
+                    this.compare_oldest_data = report.at_when;
                 } else {
                     this.older_data_available = false;
                 }
@@ -410,7 +458,7 @@ vueReport = new Vue({
 
 
         },
-        get_available_recent_reports: function(){
+        get_recent_reports: function(){
             fetch(`/data/report/recent/`).then(response => response.json()).then(data => {
                 options = [];
                 for(let i = 0; i < data.length; i++){
@@ -436,31 +484,21 @@ vueReport = new Vue({
 
             }).catch((fail) => {console.log('A loading error occurred: ' + fail);});
         },
-
-        is_relevant_category: function(category_name) {
-            if (this.selected_report.value === undefined)
-                return false;
-
-            if (this.selected_report.value.type === 'web' && category_name === 'web' && category_name === 'web')
-                return true;
-
-            if (this.selected_report.value.type === 'mail' && category_name === 'mail')
-                return true;
-
-            if (this.selected_category === category_name)
-                return true;
-
-            return false;
+        relevant_categories_based_on_settings: function(){
+            preferred_fields = this.categories[this.selected_category];
+            returned_fields = [];
+            for(let i = 0; i<preferred_fields.length; i++){
+                if(this.issue_filters[preferred_fields[i]].visible)
+                    returned_fields.push(preferred_fields[i])
+            }
+            return returned_fields;
         },
-
         select_category: function(category_name){
-
             if (Object.keys(this.categories).includes(category_name))
                 this.selected_category = category_name;
             else
                 this.selected_category = this.selected_report.value.urllist_scan_type;
         },
-
         filter_urls(keyword) {
             let urls = [];
 
@@ -544,22 +582,50 @@ const chart_mixin = {
         this.buildChart();
         this.renderData();
     },
+    methods: {
+        arraysEqual: function (a, b) {
+            // One does not simply array1 === array2, which is insane, as (some of the) the most optimized implementation should ship to anyone.
+            if (a === b) return true;
+            if (a == null || b == null) return false;
+
+            // intended type coercion
+            if (a.length != b.length) return false;
+
+            // If you don't care about the order of the elements inside
+            // the array, you should sort both arrays here.
+            // Please note that calling sort on an array will modify that array.
+            // you might want to clone your array first.
+
+            for (var i = 0; i < a.length; ++i) {
+                if (a[i] !== b[i]) return false;
+            }
+            return true;
+        }
+    },
     watch: {
-        chart_data: function(){
-            this.renderData();
+        chart_data: function(new_value, old_value){
+            if (!this.arraysEqual(old_value, new_value)) {
+                this.renderData();
+            }
         },
-        axis: function(){
-            this.renderData();
+        axis: function(new_value, old_value){
+            if (!this.arraysEqual(old_value, new_value)) {
+                this.renderData();
+            }
         },
 
-        title: function(){
-            this.renderTitle();
+        title: function(new_value, old_value){
+            if (!this.arraysEqual(old_value, new_value)) {
+                this.renderTitle();
+            }
         },
 
         // Supports changing the colors of this graph ad-hoc.
         // charts.js is not reactive.
-        color_scheme: function(){
-            // this.renderData();
+        color_scheme: function(new_value, old_value){
+            if (!this.arraysEqual(old_value, new_value)) {
+                this.renderData();
+            }
         },
     }
 };
@@ -591,14 +657,14 @@ Vue.component('percentage-bar-chart', {
                     },
                     legend: {
                         display: true,
-                        position: 'bottom',
+                        position: 'top',
+                        padding: 30,
                     },
                     responsive: true,
                     maintainAspectRatio: false,
                     title: {
                         display: true,
                         text: this.title,
-                        padding: 30,
                     },
                     tooltips: {
                         mode: 'index',
@@ -709,7 +775,7 @@ Vue.component('radar-chart', {
 
                     legend: {
                         display: true,
-                        position: 'bottom',
+                        position: 'top',
                     },
                     responsive: true,
                     maintainAspectRatio: false,
