@@ -90,5 +90,30 @@
       "date_changed": "2019-04-29 08:09:15",
       "description": ""
     }
+  },
+  {
+    "model": "django_celery_beat.periodictask",
+    "pk": 102,
+    "field": {
+      "name": "&#x1F501; Create reports on finished scans.",
+      "task": "websecmap.app.models.create_job",
+      "interval": null,
+      "crontab": 33,
+      "solar": null,
+      "args": "[\"dashboard.internet_nl_dashboard.logic.create_reports_on_finished_scans\"]",
+      "kwargs": "{}",
+      "queue": "storage",
+      "exchange": null,
+      "routing_key": null,
+      "priority": null,
+      "expires": null,
+      "one_off": false,
+      "start_time": null,
+      "enabled": false,
+      "last_run_at": "",
+      "total_run_count": 0,
+      "date_changed": "2019-04-29 08:09:15",
+      "description": ""
+    }
   }
 ]

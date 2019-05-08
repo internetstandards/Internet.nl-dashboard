@@ -48,7 +48,7 @@ xlrd  # added as a formality so code inspection finds the module.
 
 django-two-factor-auth
 
-git+https://gitlab.com/internet-cleanup-foundation/web-security-map.git@poetry#egg=websecmap
+git+https://gitlab.com/internet-cleanup-foundation/web-security-map.git#egg=websecmap
 
 # validation of spreadsheet mime types
 python-magic

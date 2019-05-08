@@ -12,12 +12,12 @@ log = logging.getLogger(__package__)
 def compose_task(**kwargs
                  ) -> Task:
     urllists = UrlList.objects.filter(is_deleted=False)
-    tasks = [ammend_reports.si(urllist) for urllist in urllists]
+    tasks = [create_reports_on_finished_scans.si(urllist) for urllist in urllists]
     return group(tasks)
 
 
 @app.task(queue='storage')
-def ammend_reports(urllist: UrlList):
+def create_reports_on_finished_scans(urllist: UrlList):
     """
     Figures out what scans have happened, and checks if there is a matching urllistreport. If there is not,
     a urllistreport will be created. This adds value to scan moments, as every finished scan will have a report.
@@ -25,6 +25,9 @@ def ammend_reports(urllist: UrlList):
     Algorithm
     Gets all the dates a urllistreport was made of a certain urllist. Then get all the dates when scans where made.
     The missing dates require a report made.
+
+    It's ok to run this every minute. As this is a per scan basis and it's known that all scan results have been
+    processed. This means you can have a report before the end of the day, nearly as soon as a scan is finished.
 
     :param urllist:
     :return:
