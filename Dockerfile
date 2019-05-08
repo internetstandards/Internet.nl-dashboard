@@ -1,13 +1,12 @@
 FROM python:3.6
 
+RUN pip install poetry
+
 COPY dashboard/ /source/dashboard/
-COPY setup.py setup.cfg README.md requirements*.txt /source/
+COPY pyproject.toml poetry.lock README.md /source/
 
-RUN pip install --upgrade pip>=19.0.0
-RUN pip install -r /source/requirements.txt
-RUN pip install -r /source/requirements.deploy.txt
-
-RUN pip install -e /source/
+WORKDIR /source/
+RUN poetry install -v --no-dev --develop dashboard
 
 USER root
 
