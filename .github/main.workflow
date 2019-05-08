@@ -13,11 +13,13 @@ workflow "Release" {
 action "check" {
   uses = "docker://python:3.6"
   runs = ["/bin/sh", "-c", "pip install poetry; make check"]
+  env  = {PIP_DISABLE_PIP_VERSION_CHECK="1"}
 }
 
 action "test" {
   uses = "docker://python:3.6"
   runs = ["/bin/sh", "-c", "pip install poetry; make test"]
+  env  = {PIP_DISABLE_PIP_VERSION_CHECK="1"}
 }
 
 action "build image" {
@@ -35,6 +37,7 @@ action "compose" {
   needs = ["test image"]
   uses = "docker://python:3.6"
   runs = ["/bin/sh", "-c", "pip install docker-compose; docker-compose up"]
+  env  = {PIP_DISABLE_PIP_VERSION_CHECK="1"}
 }
 
 action "test integration" {
