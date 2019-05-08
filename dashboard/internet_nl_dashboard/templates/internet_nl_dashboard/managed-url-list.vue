@@ -10,7 +10,7 @@
                 <button @click="start_bulk_add_new()">💖 {{ $t("domain_management.button_labels.add_domains") }}</button>
                 <template v-if="list.enable_scans">
                     <button v-if="list.scan_now_available" @click="start_scan_now()">🔬 {{ $t("domain_management.button_labels.scan_now") }}</button>
-                    
+
                     <button v-if="!list.scan_now_available && !list.last_scan_finished" disabled="disabled"
                     :title='$t("domain_management.button_labels.scan_now_scanning")'>
                         <img width="15" style="border-radius: 50%" src="/static/images/vendor/internet_nl/probe-animation.gif">

@@ -160,7 +160,7 @@ def rate_urllists_historically(urllists: List[UrlList]):
             rate_urllist_on_moment(urllist, date)
 
 
-def rate_urllist_on_moment(urllist: UrlList, when: datetime = None):
+def rate_urllist_on_moment(urllist: UrlList, when: datetime = None, prevent_duplicates: bool = True):
     # If there is no time slicing, then it's today.
     if not when:
         when = datetime.now(pytz.utc)
@@ -182,10 +182,11 @@ def rate_urllist_on_moment(urllist: UrlList, when: datetime = None):
 
     calculation['name'] = urllist.name
 
-    if not DeepDiff(last.calculation, calculation, ignore_order=True, report_repetition=True):
-        log.warning("The report for %s on %s is the same as the report from %s. Not saving." % (
-            urllist, when, last.at_when))
-        return
+    if prevent_duplicates:
+        if not DeepDiff(last.calculation, calculation, ignore_order=True, report_repetition=True):
+            log.warning("The report for %s on %s is the same as the report from %s. Not saving." % (
+                urllist, when, last.at_when))
+            return
 
     log.info("The calculation for %s on %s has changed, so we're saving this rating." % (urllist, when))
 
