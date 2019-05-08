@@ -2,7 +2,7 @@ import logging
 
 from websecmap.app.management.commands._private import ScannerTaskCommand
 
-from dashboard.internet_nl_dashboard.logic import ammend_reports
+from dashboard.internet_nl_dashboard.logic import create_reports_on_finished_scans
 
 log = logging.getLogger(__name__)
 
@@ -15,7 +15,7 @@ class Command(ScannerTaskCommand):
     def handle(self, *args, **options):
 
         try:
-            self.scanner_module = ammend_reports
+            self.scanner_module = create_reports_on_finished_scans
             return super().handle(self, *args, **options)
         except KeyboardInterrupt:
             log.info("Received keyboard interrupt. Stopped.")

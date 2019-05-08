@@ -1,13 +1,11 @@
 import logging
-from datetime import datetime
 from typing import List
 
 from celery import group
 from websecmap.celery import Task, app
-import pytz
 
 from dashboard.internet_nl_dashboard.logic.urllist_dashboard_report import rate_urllist_on_moment
-from dashboard.internet_nl_dashboard.models import UrlList, UrlListReport, AccountInternetNLScan
+from dashboard.internet_nl_dashboard.models import AccountInternetNLScan, UrlList, UrlListReport
 
 log = logging.getLogger(__package__)
 

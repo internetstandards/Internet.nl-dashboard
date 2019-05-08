@@ -173,7 +173,8 @@ def rate_urllist_on_moment(urllist: UrlList, when: datetime = None, prevent_dupl
 
     urls = relevant_urls_at_timepoint_urllist(urllist=urllist, when=when)
     all_url_ratings = get_latest_urlratings_fast(urls, when)
-    calculation = aggegrate_url_rating_scores(all_url_ratings, only_include_issues=urllist_report_content[urllist.scan_type])
+    calculation = aggegrate_url_rating_scores(
+        all_url_ratings, only_include_issues=urllist_report_content[urllist.scan_type])
 
     try:
         last = UrlListReport.objects.filter(urllist=urllist, at_when__lte=when).latest('at_when')

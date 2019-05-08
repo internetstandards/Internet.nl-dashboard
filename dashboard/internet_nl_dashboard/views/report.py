@@ -1,12 +1,12 @@
 
+from django.conf import settings
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render
 from websecmap.app.common import JSEncoder
-from django.conf import settings
 
-from dashboard.internet_nl_dashboard.logic.report import get_recent_reports, get_report, get_urllist_report_graph_data, \
-    get_previous_report
+from dashboard.internet_nl_dashboard.logic.report import (get_previous_report, get_recent_reports,
+                                                          get_report, get_urllist_report_graph_data)
 from dashboard.internet_nl_dashboard.views import (LOGIN_URL, get_account,
                                                    inject_default_language_cookie)
 

@@ -9,7 +9,8 @@ from websecmap.organizations.models import Url
 from websecmap.scanners.models import Endpoint
 from websecmap.scanners.scanner.dns_endpoints import compose_discover_task
 
-from dashboard.internet_nl_dashboard.models import Account, AccountInternetNLScan, UrlList, UrlListReport
+from dashboard.internet_nl_dashboard.models import (Account, AccountInternetNLScan, UrlList,
+                                                    UrlListReport)
 from dashboard.internet_nl_dashboard.scanners.scan_internet_nl_per_account import \
     create_dashboard_scan_tasks
 

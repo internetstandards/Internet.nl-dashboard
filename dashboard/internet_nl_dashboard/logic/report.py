@@ -81,7 +81,7 @@ def get_urllist_report_graph_data(account: Account, urllist_id: int):
     for per_report_statistcs in urllist.reports_from_the_last_year:
         not_ok = per_report_statistcs.high + per_report_statistcs.medium + per_report_statistcs.low
         all = per_report_statistcs.ok + per_report_statistcs.high + per_report_statistcs.medium + \
-              per_report_statistcs.low
+            per_report_statistcs.low
 
         stats.append({
             'date': per_report_statistcs.at_when.date().isoformat(),

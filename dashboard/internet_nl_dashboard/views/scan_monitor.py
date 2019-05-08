@@ -1,10 +1,10 @@
 import logging
 
+from django.conf import settings
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render
 from websecmap.app.common import JSEncoder
-from django.conf import settings
 
 from dashboard.internet_nl_dashboard.logic.scan_monitor import get_running_scans
 from dashboard.internet_nl_dashboard.views import (LOGIN_URL, get_account,
