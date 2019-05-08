@@ -5,7 +5,7 @@ export PATH := ${VIRTUAL_ENV}/bin:${PATH}
 
 setup: ${VIRTUAL_ENV}/bin/dashboard
 
-${VIRTUAL_ENV}/bin/dashboard: poetry.lock | ${poetry}
+${VIRTUAL_ENV}/bin/dashboard: poetry.lock
 	poetry install --develop=dashboard
 	test -f $@ && touch $@
 

@@ -12,12 +12,12 @@ workflow "Release" {
 
 action "check" {
   uses = "docker://python:3.6"
-  runs = ["/bin/sh", "-c", "make check"]
+  runs = ["/bin/sh", "-c", "pip install poetry; make check"]
 }
 
 action "test" {
   uses = "docker://python:3.6"
-  runs = ["/bin/sh", "-c", "make test"]
+  runs = ["/bin/sh", "-c", "pip install poetry; make test"]
 }
 
 action "build image" {
