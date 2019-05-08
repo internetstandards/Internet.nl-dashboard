@@ -32,3 +32,5 @@ node_modules/
 
 # type checking config
 .mypy_cache/
+
+pip-wheel-metadata/
