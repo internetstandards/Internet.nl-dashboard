@@ -72,5 +72,5 @@ test_postgres:
 		$(MAKE) test; e=$$?; docker stop postgres; exit $$e
 
 clean:
-	rm -fr ${VIRTUAL_ENV}/{bin,include,lib,share,*.cfg,*.json}
-	test -d ${VIRTUAL_ENV} && rmdir ${VIRTUAL_ENV} || true
+	rm -frI ${VIRTUAL_ENV}/
+	rm -f db.sqlite
