@@ -9,7 +9,7 @@ from django.db import transaction
 from dashboard.internet_nl_dashboard.models import Account
 
 
-def test_password_storage(db) -> None:
+def test_password_storage(db, redis_server) -> None:
 
     # normal usage
     secret_password = 'My voice is my password.'

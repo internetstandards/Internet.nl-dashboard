@@ -14,7 +14,7 @@ from dashboard.internet_nl_dashboard.scanners.scan_internet_nl_per_account impor
 log = logging.getLogger('test')
 
 
-def test_per_acount_scanner(db) -> None:
+def test_per_acount_scanner(db, redis_server) -> None:
     account, created = Account.objects.all().get_or_create(name="test",
                                                            internet_nl_api_username='test',
                                                            internet_nl_api_password=Account.encrypt_password('test'),)

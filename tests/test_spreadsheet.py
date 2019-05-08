@@ -11,7 +11,7 @@ from dashboard.internet_nl_dashboard.models import Account, DashboardUser
 # testing... can the UI really handle thousands of urls efficiently?
 
 
-def test_spreadsheet(db) -> None:
+def test_spreadsheet(db, redis_server) -> None:
     # Since logs are tied to a user, make sure there is one.
     test_user = User.objects.all().create(username="test")
     test_user.save()
