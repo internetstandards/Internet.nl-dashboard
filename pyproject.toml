@@ -77,4 +77,4 @@ django-cprofile-middleware = "*"
 moviepy = "*"
 
 [build-system]
-requires = ["poetry>=0.12", "setuptools", "wheel"]
+requires = ["poetry==0.12.15", "setuptools", "wheel"]

@@ -6,7 +6,7 @@ COPY dashboard/ /source/dashboard/
 COPY pyproject.toml poetry.lock README.md /source/
 
 WORKDIR /source/
-RUN poetry install -v --no-dev --develop dashboard
+RUN poetry install -v --no-dev
 
 USER root
 

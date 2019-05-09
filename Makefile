@@ -1,76 +1,61 @@
 all: check test
 
-VIRTUAL_ENV := $(shell poetry config settings.virtualenvs.path|tr -d \")/dashboard-py3.6
-export PATH := ${VIRTUAL_ENV}/bin:${PATH}
+VIRTUAL_ENV = $(shell poetry config settings.virtualenvs.path|tr -d \")/dashboard-py3.6
+run := poetry run
 
-setup: ${VIRTUAL_ENV}/bin/dashboard
+setup: | ${VIRTUAL_ENV}/bin/dashboard
 
-${VIRTUAL_ENV}/bin/dashboard: poetry.lock
-	poetry install --develop=dashboard
-	test -f $@ && touch $@
+${VIRTUAL_ENV}/bin/dashboard: | poetry
+	poetry run pip install --upgrade pip==19.1.1
+	poetry install
+	@test -f $@ && touch $@
 
-poetry.lock: pyproject.toml
-	poetry lock
+poetry: .installed.poetry
+.installed.poetry:
+	if ! command -v poetry >/dev/null; then \
+		pip install --upgrade poetry=0.12.15; \
+	fi
+	@touch $@
 
 test: | setup
 	# run testsuite
-	DJANGO_SETTINGS_MODULE=dashboard.settings coverage run --include 'dashboard/*' \
+	DJANGO_SETTINGS_MODULE=dashboard.settings ${run} coverage run --include 'dashboard/*' \
 		-m pytest -rap -k 'not integration and not system' ${testargs}
 	# generate coverage
-	coverage report
+	${run} coverage report
 	# and pretty html
-	coverage html
+	${run} coverage html
 	# ensure no model updates are commited without migrations
-	dashboard makemigrations --check
+	${run} dashboard makemigrations --check --dry-run
 
 check: | setup
-	pylama dashboard tests --skip "**/migrations/*"
-	isort --diff --check --recursive *
+	@if test pyproject.yaml -nt poetry.lock; then \
+		echo poetry.lock file not up to date, please run 'poetry lock'; \
+		exit 1; \
+	fi
+	${run} pylama dashboard tests --skip "**/migrations/*"
+	${run} isort --diff --check --recursive *
 
 autofix fix: | setup
 	# fix trivial pep8 style issues
-	autopep8 -ri dashboard tests
+	${run} autopep8 -ri dashboard tests
 	# remove unused imports
-	autoflake -ri --remove-all-unused-imports dashboard tests
+	${run} autoflake -ri --remove-all-unused-imports dashboard tests
 	# sort imports
-	isort -rc dashboard tests
+	${run} isort -rc dashboard tests
 	# do a check after autofixing to show remaining problems
-	pylama dashboard tests --skip "**/migrations/*"
+	${run} pylama dashboard tests --skip "**/migrations/*"
 
 test_integration: | setup
-  	DB_NAME=test.sqlite3 pytest -v -k 'integration' ${testargs}
+  	DB_NAME=test.sqlite3 ${run} pytest -v -k 'integration' ${testargs}
 
 test_system:
-	pytest -v tests/system ${testargs}
+	${run} pytest -v tests/system ${testargs}
 
-test_datasets: | setup
-	/bin/sh -ec "find dashboard -path '*/fixtures/*.yaml' -print0 | \
-		xargs -0n1 basename -s .yaml | uniq | \
-		xargs -n1 dashboard test_dataset"
-
-test_deterministic: | ${virtualenv}
-	/bin/bash tools/compare_differences.sh HEAD HEAD tools/show_ratings.sh testdata
-
-test_mysql:
-	docker run --name mysql -d --rm -p 3306:3306 \
-		-e MYSQL_ROOT_PASSWORD=failmap \
-		-e MYSQL_DATABASE=failmap \
-		-e MYSQL_USER=failmap \
-		-e MYSQL_PASSWORD=failmap \
-		-v $$PWD/tests/etc/mysql-minimal-memory.cnf:/etc/mysql/conf.d/mysql.cnf \
-		mysql:5.6
-	DJANGO_DATABASE=production DB_USER=root DB_HOST=127.0.0.1 \
-		$(MAKE) test; e=$$?; docker stop mysql; exit $$e
-
-test_postgres:
-	docker run --name postgres -d --rm -p 5432:5432 \
-		-e POSTGRES_DB=failmap \
-		-e POSTGRES_USER=root \
-		-e POSTGRES_PASSWORD=failmap \
-		postgres:9.4
-	DJANGO_DATABASE=production DB_ENGINE=postgresql_psycopg2 DB_USER=root DB_HOST=127.0.0.1 \
-		$(MAKE) test; e=$$?; docker stop postgres; exit $$e
+test_image:
+	docker-compose up
 
 clean:
-	rm -frI ${VIRTUAL_ENV}/
 	rm -f db.sqlite
+	rm -fr *.egg-info htmlcov
+	rm -frI ${VIRTUAL_ENV}/

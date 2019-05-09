@@ -11,18 +11,17 @@ workflow "Release" {
 }
 
 action "check" {
-  uses = "docker://python:3.6"
-  runs = ["/bin/sh", "-c", "pip install poetry; make check"]
-  env  = {PIP_DISABLE_PIP_VERSION_CHECK="1"}
+  uses = "./.github/action/build"
+  args = ["check"]
 }
 
 action "test" {
-  uses = "docker://python:3.6"
-  runs = ["/bin/sh", "-c", "pip install poetry; make test"]
-  env  = {PIP_DISABLE_PIP_VERSION_CHECK="1"}
+  uses = "./.github/action/build"
+  args = ["test"]
 }
 
 action "build image" {
+  needs = ["check", "test"]
   uses = "actions/docker/cli@master"
   args = "build -t internetstandards/dashboard ."
 }
@@ -52,7 +51,7 @@ action "authenticate registry" {
 }
 
 action "push image" {
-  needs = ["test integration", "check", "test", "authenticate registry"]
+  needs = ["test integration", "authenticate registry"]
   uses = "actions/docker/cli@master"
   args = "push internetstandards/dashboard"
 }

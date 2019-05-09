@@ -34,3 +34,6 @@ node_modules/
 .mypy_cache/
 
 pip-wheel-metadata/
+
+# make state files
+.installed.*
