@@ -36,4 +36,4 @@ node_modules/
 pip-wheel-metadata/
 
 # make state files
-.installed.*
+.make.*

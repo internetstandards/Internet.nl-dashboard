@@ -26,7 +26,7 @@ dashboard = 'dashboard.manage:main'
 
 
 [tool.poetry.dependencies]
-python = "~3.6"
+python = ">=3.6"
 
 # Tools/dependencies required for development or running tests.
 websecmap = {git = "https://gitlab.com/internet-cleanup-foundation/web-security-map"}
