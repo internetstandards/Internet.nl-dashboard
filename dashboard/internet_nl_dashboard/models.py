@@ -183,7 +183,7 @@ class UrlList(models.Model):
     scheduled_next_scan = models.DateTimeField(
         help_text="An indication at what moment the scan will be started. The scan can take a while, thus this does "
                   "not tell you when a scan will be finished. All dates in the past will be scanned and updated.",
-        default=timezone.now() - timedelta(days=1)
+        default=datetime(2030, 1, 1, 1, 1, 1, 601526, tzinfo=pytz.utc)
     )
 
     is_deleted = models.BooleanField(
