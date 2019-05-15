@@ -1,3 +1,7 @@
+# settings
+app_name = dashboard
+commands = devserver
+
 # configure virtualenv to be created in OS specific cache directory
 ifeq ($(UNAME_S),Darwin)
 # macOS cache location
@@ -12,7 +16,6 @@ $(info Virtualenv path: ${VIRTUAL_ENV})
 
 $(info )
 
-
 # shortcuts for common used binaries
 bin = ${VIRTUAL_ENV}/bin
 env = PATH=${bin}:$$PATH
@@ -21,10 +24,7 @@ pip = ${bin}/pip
 poetry = ${bin}/poetry
 
 # application binary
-app_name = dashboard
 app = ${bin}/${app_name}
-
-commands = devserver
 
 pysrcdirs = ${app_name}/ tests/
 pysrc = $(shell find ${pysrcdirs} -name *.py)
@@ -36,16 +36,20 @@ shsrc = $(shell find * .github ! -path vendor\* -name *.sh)
 all: check test
 
 # setup entire dev environment
-setup: | ${app}
+setup: ${app}
 
 # install application and all its (python) dependencies
 ${app}: poetry.lock | poetry
 	# install project and its dependencies
 	VIRTUAL_ENV=${VIRTUAL_ENV} ${poetry} install --develop=$(notdir ${app}) ${poetry_args}
-	test -f $@ && touch $@
+	@test -f $@ && touch $@
+
+poetry.lock: pyproject.toml | poetry
+	# update package version lock
+	${env} poetry lock
 
 test: .make.test
-.make.test: ${pysrc} | setup
+.make.test: ${pysrc} ${app}
 	# run testsuite
 	DJANGO_SETTINGS_MODULE=${app_name}.settings ${env} coverage run --include '${app_name}/*' \
 		-m pytest -k 'not integration and not system' ${testargs}
@@ -57,14 +61,14 @@ test: .make.test
 	${app} makemigrations --check
 	@touch $@
 
-check: .make.check
-.make.check: ${pysrc} ${shsrc} | setup
+check: .make.check.py
+.make.check.py: ${pysrc} ${app}
 	# check code quality
 	${env} pylama ${pysrcdirs} --skip "**/migrations/*"
 	@touch $@
 
 autofix fix: .make.fix
-.make.fix: ${pysrc} | setup
+.make.fix: ${pysrc} ${app}
 	# fix trivial pep8 style issues
 	${env} autopep8 -ri ${pysrcdirs}
 	# remove unused imports
@@ -75,20 +79,20 @@ autofix fix: .make.fix
 	${MAKE} check
 	@touch $@
 
-run: | setup
+run: ${app}
 	# start server (this can take a while)
 	DEBUG=1 NETWORK_SUPPORTS_IPV6=1 ${app} devserver
 
-test_integration: | setup
+test_integration: ${app}
   	DB_NAME=test.sqlite3 ${run} pytest -v -k 'integration' ${testargs}
 
-${commands}: | setup
+${commands}: ${app}
 	${app} $@ ${args}
 
-test_integration: | setup
+test_integration: ${app}
 	# run integration tests
 	${env} DJANGO_SETTINGS_MODULE=${app_name}.settings DB_NAME=test.sqlite3 \
-	${env} pytest -k 'integration' ${testargs}
+		${env} pytest -k 'integration' ${testargs}
 
 test_system:
 	# run system tests
