@@ -2,26 +2,20 @@ workflow "Release" {
   on = "push"
 
   resolves = [
-    "check",
-    "test",
+    "check/test",
     "test image",
     "test integration",
     "push image"
   ]
 }
 
-action "check" {
-  uses = "./.github/action/build"
-  args = ["check"]
-}
-
-action "test" {
-  uses = "./.github/action/build"
-  args = ["test"]
+action "check/test" {
+  uses = "docker://python:3.6"
+  runs = ["make"]
 }
 
 action "build image" {
-  needs = ["check", "test"]
+  needs = ["check/test"]
   uses = "actions/docker/cli@master"
   args = "build -t internetstandards/dashboard ."
 }
