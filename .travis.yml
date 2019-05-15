@@ -1,7 +1,13 @@
 dist: xenial   # required for Python >= 3.7
 language: python
 python:
-- 3.6
-- 3.7
-- 3.8
+- "3.6"
+- "3.7"
+- "3.4"
+- "3.8-dev"
+matrix:
+  allow_failures:
+    - python: "3.4"
+    - python: "3.8-dev"
+
 script: make
