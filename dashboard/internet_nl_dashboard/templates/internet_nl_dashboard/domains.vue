@@ -63,8 +63,20 @@ Todo: when deleting a list, it is re-added to the list of lists when adding a ne
 
         <button @click="start_adding_new()">{{ $t("domains.add_new_list") }}</button>
 
+        <div v-if="loading" class="loading">
+            <div class="lds-dual-ring"><div></div><div></div></div> <span>Loading...</span>
+        </div>
+
         <div v-for="list in lists" >
             <managed-url-list :initial_list="list"></managed-url-list>
+        </div>
+
+        <div v-if="!lists.length" class="no-content">
+            Start creating a new list... <br>
+            <button @click="start_adding_new()">{{ $t("domains.add_new_list") }}</button>
+            <br>
+            <br>
+            or <a href="/upload/">upload a spreadsheet with domains here</a>...
         </div>
 
     </div>
