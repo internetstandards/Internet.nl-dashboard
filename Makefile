@@ -118,7 +118,7 @@ test_system:
 	${env} pytest tests/system ${testargs}
 
 test_datasets: ${app}
-	${env} /bin/sh -ec "find websecmap -path '*/fixtures/*.yaml' -print0 | \
+	${env} /bin/sh -ec "find ${app_name}/ -path '*/fixtures/*.yaml' -print0 | \
 		xargs -0n1 basename -s .yaml | uniq | \
 		xargs -n1 ${app} test_dataset"
 
@@ -157,8 +157,11 @@ clean:  ## cleanup build artifacts, caches, databases, etc.
 	# remove runtime state files
 	-rm -rf *.sqlite3
 
-mrproper: clean ## thorough clean, removes virtualenv
+clean_virtualenv:  ## cleanup virtualenv and installed app/dependencies
 	-rm -fr ${VIRTUAL_ENV}/
+
+mrproper: clean clean_virtualenv ## thorough cleanup, also removes virtualenv
+
 
 # don't let poetry manage the virtualenv, we do it ourselves to make it deterministic
 poetry: ${poetry}
@@ -167,12 +170,15 @@ ${poetry}: ${python}
 	# install poetry
 	${pip} install -q poetry==${poetry_version}
 
+python: ${python}
 ${python}:
 	@if ! command -v python3 &>/dev/null;then \
 		echo "Python 3 is not available. Please refer to installation instructions in README.md"; \
 	fi
 	# create virtualenv
 	python3 -mvenv ${VIRTUAL_ENV}
+	# ensure a recent version of pip is used to avoid errors with intalling
+	${VIRTUAL_ENV}/bin/pip install --upgrade pip==19.1.1
 
 # utility
 help:           ## Show this help.
