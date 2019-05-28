@@ -83,6 +83,22 @@ run: ${app}
 	# start server (this can take a while)
 	DEBUG=1 NETWORK_SUPPORTS_IPV6=1 ${app} devserver
 
+run-frontend: ${app}  ## only run frontend component
+	DEBUG=1 NETWORK_SUPPORTS_IPV6=1 ${env} ${app} runserver
+
+run-worker: ${app}  ## only run worker component
+	DEBUG=1 NETWORK_SUPPORTS_IPV6=1 ${env} ${app} celery worker -ldebug
+
+run-broker:  ## only run broker
+	docker run --rm --name=redis -p 6379 redis
+
+test_testcase: ${app}
+	# run specific testcase
+	# example: make test_testcase testargs=test_openstreetmaps
+	# todo: should be made syntactically easier. Eg: 'make testcase openstreetmaps'
+	${env} DJANGO_SETTINGS_MODULE=${app_name}.settings DB_NAME=test.sqlite3 \
+		${env} pytest -k ${testargs}
+
 test_integration: ${app}
   	DB_NAME=test.sqlite3 ${run} pytest -v -k 'integration' ${testargs}
 
