@@ -165,7 +165,15 @@ vueReport = new Vue({
                 'internet_nl_web_tls',
                 'internet_nl_web_dnssec',
                 'internet_nl_web_ipv6',
+                'internet_nl_web_appsecpriv',  // Added 24 May 2019
                 'web_legacy'
+            ],
+            'internet_nl_web_appsecpriv': [
+                'internet_nl_web_appsecpriv_csp',  // Added 24 May 2019
+                'internet_nl_web_appsecpriv_referrer_policy',  // Added 24 May 2019
+                'internet_nl_web_appsecpriv_x_content_type_options',  // Added 24 May 2019
+                'internet_nl_web_appsecpriv_x_frame_options',  // Added 24 May 2019
+                'internet_nl_web_appsecpriv_x_xss_protection',  // Added 24 May 2019
             ],
             'internet_nl_web_tls': [
                 'internet_nl_web_https_tls_version',
@@ -220,6 +228,9 @@ vueReport = new Vue({
             ],
 
             'internet_nl_mail_dashboard_tls': [
+                'internet_nl_mail_server_configured',  // Added 24th of May 2019
+                'internet_nl_mail_servers_testable',  // Added 24th of May 2019
+
                 'internet_nl_mail_starttls_tls_version',
                 'internet_nl_mail_starttls_tls_ciphers',
                 'internet_nl_mail_starttls_tls_secreneg',
@@ -235,11 +246,16 @@ vueReport = new Vue({
                 'internet_nl_mail_starttls_dane_exist',
                 'internet_nl_mail_starttls_dane_valid',
                 'internet_nl_mail_starttls_dane_rollover',
+                'internet_nl_mail_starttls_dane_ta',  // Added 24th of May 2019
 
             ],
             'internet_nl_mail_dashboard_auth': [
+                'internet_nl_mail_non_sending_domain',  // Added 24th of May 2019
+
                 'internet_nl_mail_auth_dmarc_exist',
                 'internet_nl_mail_auth_dmarc_policy',
+                'internet_nl_mail_auth_dmarc_policy_only',  // Added 24th of May 2019
+                'internet_nl_mail_auth_dmarc_ext_destination',  // Added 24th of May 2019
 
                 'internet_nl_mail_auth_dkim_exist',
 
@@ -353,6 +369,21 @@ vueReport = new Vue({
             'internet_nl_web_legacy_tls_available': {'visible': true},
             'internet_nl_web_legacy_ipv6_webserver': {'visible': true},
             'internet_nl_web_legacy_ipv6_nameserver': {'visible': true},
+
+            // Fields added on the 24th of May 2019
+            'internet_nl_mail_auth_dmarc_policy_only': {'visible': true},  // Added 24th of May 2019
+            'internet_nl_mail_auth_dmarc_ext_destination': {'visible': true},  // Added 24th of May 2019
+            'internet_nl_mail_non_sending_domain': {'visible': true},  // Added 24th of May 2019
+            'internet_nl_mail_server_configured': {'visible': true},  // Added 24th of May 2019
+            'internet_nl_mail_servers_testable': {'visible': true},   // Added 24th of May 2019
+            'internet_nl_mail_starttls_dane_ta': {'visible': true},  // Added 24th of May 2019
+            'internet_nl_web_appsecpriv': {'visible': true},  // Added 24th of May 2019
+            'internet_nl_web_appsecpriv_csp': {'visible': true},  // Added 24th of May 2019
+            'internet_nl_web_appsecpriv_referrer_policy': {'visible': true},  // Added 24th of May 2019
+            'internet_nl_web_appsecpriv_x_content_type_options': {'visible': true},  // Added 24th of May 2019
+            'internet_nl_web_appsecpriv_x_frame_options': {'visible': true},  // Added 24th of May 2019
+            'internet_nl_web_appsecpriv_x_xss_protection': {'visible': true},  // Added 24th of May 2019
+
         },
 
         // url_filter allows the filtering of names in the list of urls.
