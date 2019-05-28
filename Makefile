@@ -158,10 +158,12 @@ clean:  ## cleanup build artifacts, caches, databases, etc.
 	-rm -rf *.sqlite3
 
 clean_virtualenv:  ## cleanup virtualenv and installed app/dependencies
+	# clear poetry cache
+	-yes yes | poetry cache clear --all pypi
+	# remove virtualenv
 	-rm -fr ${VIRTUAL_ENV}/
 
 mrproper: clean clean_virtualenv ## thorough cleanup, also removes virtualenv
-
 
 # don't let poetry manage the virtualenv, we do it ourselves to make it deterministic
 poetry: ${poetry}
