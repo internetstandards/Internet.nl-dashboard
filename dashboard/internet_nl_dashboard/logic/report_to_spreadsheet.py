@@ -37,6 +37,9 @@ SANE_COLUMN_ORDER = {
             'internet_nl_mail_auth_dkim_exist',
             'internet_nl_mail_auth_dmarc_exist',
             'internet_nl_mail_auth_dmarc_policy',
+            'internet_nl_mail_auth_dmarc_policy_only',  # Added 24th of May 2019
+            'internet_nl_mail_auth_dmarc_ext_destination',  # Added 24th of May 2019
+            'internet_nl_mail_non_sending_domain',  # Added 24th of May 2019
         ],
         'ipv6': [
             'internet_nl_mail_dashboard_ipv6',
@@ -55,6 +58,8 @@ SANE_COLUMN_ORDER = {
         # perhaps split these into multiple groups.
         'tls': [
             'internet_nl_mail_dashboard_tls',
+            'internet_nl_mail_server_configured',  # Added 24th of May 2019
+            'internet_nl_mail_servers_testable',  # Added 24th of May 2019
             'internet_nl_mail_starttls_tls_version',
             'internet_nl_mail_starttls_tls_ciphers',
             'internet_nl_mail_starttls_tls_secreneg',
@@ -68,6 +73,7 @@ SANE_COLUMN_ORDER = {
             'internet_nl_mail_starttls_dane_exist',
             'internet_nl_mail_starttls_dane_valid',
             'internet_nl_mail_starttls_dane_rollover',
+            'internet_nl_mail_starttls_dane_ta',  # Added 24th of May 2019
         ],
         'legacy': [
             'internet_nl_mail_legacy_dane',
@@ -122,6 +128,15 @@ SANE_COLUMN_ORDER = {
 
             'internet_nl_web_https_dane_exist',
             'internet_nl_web_https_dane_valid',
+        ],
+
+        'appsecpriv': [
+            'internet_nl_web_appsecpriv',  # Added 24th of May 2019
+            'internet_nl_web_appsecpriv_csp',  # Added 24th of May 2019
+            'internet_nl_web_appsecpriv_referrer_policy',  # Added 24th of May 2019
+            'internet_nl_web_appsecpriv_x_content_type_options',  # Added 24th of May 2019
+            'internet_nl_web_appsecpriv_x_frame_options',  # Added 24th of May 2019
+            'internet_nl_web_appsecpriv_x_xss_protection',  # Added 24th of May 2019
         ],
 
         'legacy': [

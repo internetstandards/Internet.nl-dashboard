@@ -25,6 +25,10 @@ urllist_report_content = {
         'internet_nl_mail_auth_dmarc_exist',
 
         # dashboard fields:
+        'internet_nl_mail_non_sending_domain',  # Added 24th of May 2019
+        'internet_nl_mail_server_configured',  # Added 24th of May 2019
+        'internet_nl_mail_servers_testable',   # Added 24th of May 2019
+        'internet_nl_mail_starttls_dane_ta',  # Added 24th of May 2019
         'internet_nl_mail_ipv6_mx_reach',
         'internet_nl_mail_ipv6_ns_reach',
         'internet_nl_mail_ipv6_ns_address',
@@ -35,6 +39,8 @@ urllist_report_content = {
         'internet_nl_mail_dnssec_mailto_exist',
         'internet_nl_mail_auth_spf_policy',
         'internet_nl_mail_auth_dmarc_policy',
+        'internet_nl_mail_auth_dmarc_policy_only',  # Added 24th of May 2019
+        'internet_nl_mail_auth_dmarc_ext_destination',  # Added 24th of May 2019
         'internet_nl_mail_starttls_tls_keyexchange',
         'internet_nl_mail_starttls_tls_compress',
         'internet_nl_mail_starttls_cert_sig',
@@ -69,13 +75,18 @@ urllist_report_content = {
     'web': [
         'internet_nl_web_ipv6_ws_similar',
 
-        # used in dashboard
+        # used in dashboard SHould it be Web Dashboard IPv6?
+        'internet_nl_web_ipv6',
         'internet_nl_web_ipv6_ws_address',
         'internet_nl_web_ipv6_ns_reach',
         'internet_nl_web_ipv6_ws_reach',
         'internet_nl_web_ipv6_ns_address',
+
+        'internet_nl_web_dnssec',
         'internet_nl_web_dnssec_valid',
         'internet_nl_web_dnssec_exist',
+
+        'internet_nl_web_tls',
         'internet_nl_web_https_tls_keyexchange',
         'internet_nl_web_https_tls_compress',
         'internet_nl_web_https_cert_sig',
@@ -92,9 +103,15 @@ urllist_report_content = {
         'internet_nl_web_https_cert_chain',
         'internet_nl_web_https_http_redirect',
         'internet_nl_web_https_cert_domain',
-        'internet_nl_web_tls',
-        'internet_nl_web_dnssec',
-        'internet_nl_web_ipv6',
+
+        # Added 24 May 2019
+        'internet_nl_web_appsecpriv',
+        'internet_nl_web_appsecpriv_csp',
+        'internet_nl_web_appsecpriv_referrer_policy',
+        'internet_nl_web_appsecpriv_x_content_type_options',
+        'internet_nl_web_appsecpriv_x_frame_options',
+        'internet_nl_web_appsecpriv_x_xss_protection',
+
         'internet_nl_web_overall_score',
 
         # Legacy fields, used in dashboard:
