@@ -5,6 +5,7 @@ from django.http import HttpResponse, JsonResponse
 from django.shortcuts import redirect
 
 from dashboard.internet_nl_dashboard.models import Account, DashboardUser
+import json
 
 log = logging.getLogger(__package__)
 LOGIN_URL = '/account/login/'
@@ -49,3 +50,13 @@ def empty_response() -> JsonResponse:
 
 def error_response(message: str) -> JsonResponse:
     return JsonResponse({'status': 'error', 'message': message})
+
+
+def get_json_body(request):
+
+    try:
+        user_input = json.loads(request.body)
+    except json.JSONDecodeError:
+        user_input = {}
+
+    return user_input

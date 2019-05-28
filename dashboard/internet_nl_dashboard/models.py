@@ -12,6 +12,7 @@ from requests.auth import HTTPBasicAuth
 from websecmap.organizations.models import Url
 from websecmap.reporting.models import SeriesOfUrlsReportMixin
 from websecmap.scanners.models import InternetNLScan
+from jsonfield import JSONField
 
 log = logging.getLogger(__package__)
 
@@ -50,6 +51,11 @@ class Account(models.Model):
 
     can_connect_to_internet_nl_api = models.BooleanField(
         default=False
+    )
+
+    report_settings = JSONField(
+        help_text="This stores reporting preferences: what fields are shown in the UI and so on (if any other)."
+                  "This field can be edited on the report page."
     )
 
     """

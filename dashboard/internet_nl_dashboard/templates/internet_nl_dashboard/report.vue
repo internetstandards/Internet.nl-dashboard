@@ -24,7 +24,9 @@ th.rotate > div > span {
     <div>
         <button style='float: right' @click="show_settings = !show_settings">Toggle settings</button>
         <div v-if="show_settings">
-        <h2>Report Configuration</h2>
+            <h2>Report Settings</h2>
+            <button @click="save_issue_filters()">Save settings</button>
+            <button @click="load_issue_filters()">Reset settings</button>
             <div>
                 <div v-for="(category_group, category_name, y) in categories" style="width: 49%; float: left;">
                     <div v-if="issue_filters[category_name]">
@@ -143,7 +145,7 @@ vueReport = new Vue({
     name: 'report',
     el: '#report',
     template: '#report_template',
-    mixins: [humanize_mixin],
+    mixins: [humanize_mixin, http_mixin],
     data: {
         // Supporting multiple reports at the same time is hard to understand. Don't know how / if we can do
         // comparisons.
@@ -291,7 +293,7 @@ vueReport = new Vue({
 
         // settings
         show_settings: false,
-        issue_filters:{
+        issue_filters: {
             'web': {'visible': true},
             'web_legacy': {'visible': true},
             'mail': {'visible': true},
@@ -385,6 +387,7 @@ vueReport = new Vue({
             'internet_nl_web_appsecpriv_x_xss_protection': {'visible': true},  // Added 24th of May 2019
 
         },
+        issue_filters_save_response: null,
 
         // url_filter allows the filtering of names in the list of urls.
         url_filter: '',
@@ -430,6 +433,7 @@ vueReport = new Vue({
 
     },
     mounted: function(){
+        this.load_issue_filters();
         this.get_recent_reports();
     },
     // common issue that debounce does not work on a watch:
@@ -459,6 +463,26 @@ vueReport = new Vue({
                 this.filtered_urls = data[0].calculation.urls.sort(this.alphabet_sorting);
                 this.get_timeline();
             }).catch((fail) => {console.log('A loading error occurred: ' + fail);});
+        },
+        save_issue_filters: function(){
+            /*
+            * This overrides the account level issue filters. Filters are saved per account and this is done by
+            * design. This prevents the 'having to reset for each report or for each user' dilemma, which results
+            * in some kind of hierarchical settings mess that results in incomparable reports over several users.
+            * And then the users need to sync the settings and so on. Knowing this limitation would probably remove
+            * a lot of time of development while end users can still have an organization wide consistent experience
+            * on what they are focussing on. Humans > tech.
+            * */
+            this.asynchronous_json_post(
+                '/data/account/report_settings/save/', {'filters': this.issue_filters}, (server_response) => {
+                    this.issue_filters_save_response = server_response;
+                }
+            );
+        },
+        load_issue_filters: function(){
+            fetch(`/data/account/report_settings/get/`).then(response => response.json()).then(data => {
+                this.issue_filters = data;
+            });
         },
         alphabet_sorting: function(a, b){
             // i already mis sorted()

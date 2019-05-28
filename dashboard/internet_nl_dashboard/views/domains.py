@@ -6,6 +6,7 @@ from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render
 from websecmap.app.common import JSEncoder
+from dashboard.internet_nl_dashboard.views import get_json_body
 
 from dashboard.internet_nl_dashboard.logic.domains import (alter_url_in_urllist, create_list,
                                                            delete_list, get_urllist_content,
@@ -75,13 +76,3 @@ def add_urls_to_urllist(request):
 @login_required(login_url=LOGIN_URL)
 def scan_now_(request):
     return JsonResponse(scan_now(get_account(request), get_json_body(request)))
-
-
-def get_json_body(request):
-
-    try:
-        user_input = json.loads(request.body)
-    except json.JSONDecodeError:
-        user_input = {}
-
-    return user_input
