@@ -154,6 +154,7 @@ const messages = {
             internet_nl_mail_dashboard_ipv6: internet_nl_messages.en.internet_nl.test_mailipv6_label,
 
             // https://github.com/NLnetLabs/Internet.nl/blob/cece8255ac7f39bded137f67c94a10748970c3c7/checks/templates/domain-results.html
+            // todo: we could also get the good + bad verdicts and use that as the description of each icon.
             internet_nl_web_appsecpriv: internet_nl_messages.en.internet_nl.results_domain_appsecpriv_http_headers_label,  // Added 24 May 2019
             internet_nl_web_appsecpriv_csp: internet_nl_messages.en.internet_nl.detail_web_appsecpriv_http_csp_label,  // Added 24 May 2019
             internet_nl_web_appsecpriv_referrer_policy: internet_nl_messages.en.internet_nl.detail_web_appsecpriv_http_referrer_policy_label,  // Added 24 May 2019
@@ -472,7 +473,7 @@ const messages = {
             internet_nl_mail_non_sending_domain: 'Mail Non Sending Domain (not in UI)',  // Added 24th of May 2019
             internet_nl_mail_auth_dmarc_policy_only: 'Mail Auth DMARC Policy Only (not in UI)',   // Added 24th of May 2019
             internet_nl_mail_auth_dmarc_ext_destination: 'Mail Auth DMARC Ext Destination (not in UI)',  // Added 24th of May 2019
-            
+
             internet_nl_mail_starttls_cert_domain: internet_nl_messages.nl.internet_nl.detail_mail_tls_cert_hostmatch_label,
             internet_nl_mail_starttls_tls_version: internet_nl_messages.nl.internet_nl.detail_mail_tls_version_label,
             internet_nl_mail_starttls_cert_chain: internet_nl_messages.nl.internet_nl.detail_mail_tls_cert_trust_label,
