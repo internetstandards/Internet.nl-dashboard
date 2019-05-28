@@ -1,9 +1,10 @@
+SHELL=/bin/bash
+
 # settings
 app_name = dashboard
-commands = devserver
 
 # configure virtualenv to be created in OS specific cache directory
-ifeq ($(UNAME_S),Darwin)
+ifeq ($(shell uname -s),Darwin)
 # macOS cache location
 CACHEDIR ?= ~/Library/Caches
 else
@@ -14,11 +15,11 @@ endif
 VIRTUAL_ENV ?= ${CACHEDIR}/virtualenvs/$(notdir ${PWD})
 $(info Virtualenv path: ${VIRTUAL_ENV})
 
-$(info )
+# variables for environment
+bin = ${VIRTUAL_ENV}/bin
+env = env PATH=${bin}:$$PATH
 
 # shortcuts for common used binaries
-bin = ${VIRTUAL_ENV}/bin
-env = PATH=${bin}:$$PATH
 python = ${bin}/python
 pip = ${bin}/pip
 poetry = ${bin}/poetry
@@ -26,29 +27,34 @@ poetry = ${bin}/poetry
 # application binary
 app = ${bin}/${app_name}
 
+$(info Run App: ${env} ${app})
+$(info )
+$(info Run `make help` for available commands or use tab-completion.)
+$(info )
+
 pysrcdirs = ${app_name}/ tests/
 pysrc = $(shell find ${pysrcdirs} -name *.py)
-shsrc = $(shell find * .github ! -path vendor\* -name *.sh)
+shsrc = $(shell find * ! -path vendor\* -name *.sh)
 
-.PHONY: ${commands} test check setup run fix autofix clean mrproper poetry test_integration
+.PHONY: test check setup run fix autofix clean mrproper poetry test_integration
 
 # default action to run
 all: check test
 
 # setup entire dev environment
-setup: ${app}
+setup: ${app}	## setup development environment and application
 
 # install application and all its (python) dependencies
 ${app}: poetry.lock | poetry
 	# install project and its dependencies
-	VIRTUAL_ENV=${VIRTUAL_ENV} ${poetry} install --develop=$(notdir ${app}) ${poetry_args}
+	VIRTUAL_ENV=${VIRTUAL_ENV} ${poetry} install --develop=${app_name} ${poetry_args}
 	@test -f $@ && touch $@
 
 poetry.lock: pyproject.toml | poetry
 	# update package version lock
 	${env} poetry lock
 
-test: .make.test
+test: .make.test	## run test suite
 .make.test: ${pysrc} ${app}
 	# run testsuite
 	DJANGO_SETTINGS_MODULE=${app_name}.settings ${env} coverage run --include '${app_name}/*' \
@@ -58,16 +64,21 @@ test: .make.test
 	# and pretty html
 	${env} coverage html
 	# ensure no model updates are commited without migrations
-	${app} makemigrations --check
+	${env} ${app} makemigrations --check
 	@touch $@
 
-check: .make.check.py
+check: .make.check.py .make.check.sh  ## code quality checks
 .make.check.py: ${pysrc} ${app}
 	# check code quality
 	${env} pylama ${pysrcdirs} --skip "**/migrations/*"
 	@touch $@
 
-autofix fix: .make.fix
+.make.check.sh: ${shsrc}
+	# shell script checks (if installed)
+	if command -v shellcheck &>/dev/null;then ${env} shellcheck ${shsrc}; fi
+	@touch $@
+
+autofix fix: .make.fix  ## automatic fix of trivial code quality issues
 .make.fix: ${pysrc} ${app}
 	# fix trivial pep8 style issues
 	${env} autopep8 -ri ${pysrcdirs}
@@ -79,9 +90,9 @@ autofix fix: .make.fix
 	${MAKE} check
 	@touch $@
 
-run: ${app}
+run: ${app}  ## run complete application stack (frontend, worker, broker)
 	# start server (this can take a while)
-	DEBUG=1 NETWORK_SUPPORTS_IPV6=1 ${app} devserver
+	DEBUG=1 NETWORK_SUPPORTS_IPV6=1 ${env} ${app} devserver
 
 run-frontend: ${app}  ## only run frontend component
 	DEBUG=1 NETWORK_SUPPORTS_IPV6=1 ${env} ${app} runserver
@@ -92,6 +103,9 @@ run-worker: ${app}  ## only run worker component
 run-broker:  ## only run broker
 	docker run --rm --name=redis -p 6379 redis
 
+test_integration: ${app}  ## perform integration test suite
+	DB_NAME=test.sqlite3 ${env} pytest -v -k 'integration' ${testargs}
+
 test_testcase: ${app}
 	# run specific testcase
 	# example: make test_testcase testargs=test_openstreetmaps
@@ -99,26 +113,39 @@ test_testcase: ${app}
 	${env} DJANGO_SETTINGS_MODULE=${app_name}.settings DB_NAME=test.sqlite3 \
 		${env} pytest -k ${testargs}
 
-test_integration: ${app}
-  	DB_NAME=test.sqlite3 ${run} pytest -v -k 'integration' ${testargs}
-
-${commands}: ${app}
-	${app} $@ ${args}
-
-test_integration: ${app}
-	# run integration tests
-	${env} DJANGO_SETTINGS_MODULE=${app_name}.settings DB_NAME=test.sqlite3 \
-		${env} pytest -k 'integration' ${testargs}
-
 test_system:
 	# run system tests
 	${env} pytest tests/system ${testargs}
 
-test_image:
-	docker-compose up
+test_datasets: ${app}
+	${env} /bin/sh -ec "find websecmap -path '*/fixtures/*.yaml' -print0 | \
+		xargs -0n1 basename -s .yaml | uniq | \
+		xargs -n1 ${app} test_dataset"
 
-# cleanup build artifacts, caches, etc.
-clean:
+test_deterministic: | ${VIRTUAL_ENV}
+	${env} /bin/bash tools/compare_differences.sh HEAD HEAD tools/show_ratings.sh testdata
+
+test_mysql:
+	docker run --name mysql -d --rm -p 3306:3306 \
+		-e MYSQL_ROOT_PASSWORD=failmap \
+		-e MYSQL_DATABASE=failmap \
+		-e MYSQL_USER=failmap \
+		-e MYSQL_PASSWORD=failmap \
+		-v $$PWD/tests/etc/mysql-minimal-memory.cnf:/etc/mysql/conf.d/mysql.cnf \
+		mysql:5.6
+	DJANGO_DATABASE=production DB_USER=root DB_HOST=127.0.0.1 \
+		$(MAKE) test; e=$$?; docker stop mysql; exit $$e
+
+test_postgres:
+	docker run --name postgres -d --rm -p 5432:5432 \
+		-e POSTGRES_DB=failmap \
+		-e POSTGRES_USER=root \
+		-e POSTGRES_PASSWORD=failmap \
+		postgres:9.4
+	DJANGO_DATABASE=production DB_ENGINE=postgresql_psycopg2 DB_USER=root DB_HOST=127.0.0.1 \
+		$(MAKE) test; e=$$?; docker stop postgres; exit $$e
+
+clean:  ## cleanup build artifacts, caches, databases, etc.
 	# remove python cache files
 	-find * -name __pycache__ -print0 | xargs -0 rm -rf
 	# remove state files
@@ -130,8 +157,7 @@ clean:
 	# remove runtime state files
 	-rm -rf *.sqlite3
 
-# thorough clean, remove virtualenv
-mrproper: clean
+mrproper: clean ## thorough clean, removes virtualenv
 	-rm -fr ${VIRTUAL_ENV}/
 
 # don't let poetry manage the virtualenv, we do it ourselves to make it deterministic
@@ -147,3 +173,22 @@ ${python}:
 	fi
 	# create virtualenv
 	python3 -mvenv ${VIRTUAL_ENV}
+
+# utility
+help:           ## Show this help.
+	@IFS=$$'\n' ; \
+	help_lines=(`fgrep -h "##" $(MAKEFILE_LIST) | fgrep -v fgrep | sed -e 's/\\$$//' | sed -e 's/##/:/'`); \
+	printf "\nRun \`make\` with any of the targets below to reach the desired target state.\n" ; \
+	printf "\nTargets are complementary. Eg: the \`run\` target requires \`setup\` which is automatically executed.\n\n" ; \
+	printf "%-30s %s\n" "target" "help" ; \
+	printf "%-30s %s\n" "------" "----" ; \
+	for help_line in $${help_lines[@]}; do \
+		IFS=$$':' ; \
+		help_split=($$help_line) ; \
+		help_command=`echo $${help_split[0]} | sed -e 's/^ *//' -e 's/ *$$//'` ; \
+		help_info=`echo $${help_split[2]} | sed -e 's/^ *//' -e 's/ *$$//'` ; \
+		printf '\033[36m'; \
+		printf "%-30s %s" $$help_command ; \
+		printf '\033[0m'; \
+		printf "%s\n" $$help_info; \
+	done
