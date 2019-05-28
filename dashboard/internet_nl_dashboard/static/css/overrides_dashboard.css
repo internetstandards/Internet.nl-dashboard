@@ -192,3 +192,51 @@ label {
     width: 100%;
     overflow: auto;
 }
+
+
+/** Loading indicator, https://loading.io/css/ */
+.lds-dual-ring {
+  display: inline-block;
+  width: 55px;
+  height: 38px;
+}
+.lds-dual-ring:after {
+  content: " ";
+  display: block;
+  width: 46px;
+  height: 46px;
+  margin: 1px;
+  border-radius: 50%;
+  border: 5px solid #00BFD6;
+  border-color: #00BFD6 transparent #00BFD6 transparent;
+  animation: lds-dual-ring 1.2s linear infinite;
+}
+@keyframes lds-dual-ring {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+.loading {
+    background-color: ghostwhite;
+    border: 1px solid silver;
+    border-radius: 5px;
+    padding-top: 17px;
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.loading span {
+    display: inline-block;
+    height: 64px;
+    font-size: 2em;
+    color: darkgray;
+}
+
+.no-content {
+    font-size: 1.2em;
+    text-align: center;
+}

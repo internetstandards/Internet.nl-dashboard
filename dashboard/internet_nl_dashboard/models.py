@@ -55,7 +55,9 @@ class Account(models.Model):
 
     report_settings = JSONField(
         help_text="This stores reporting preferences: what fields are shown in the UI and so on (if any other)."
-                  "This field can be edited on the report page."
+                  "This field can be edited on the report page.",
+        null=True,
+        blank=True
     )
 
     """

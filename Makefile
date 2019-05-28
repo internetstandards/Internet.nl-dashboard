@@ -118,7 +118,7 @@ test_system:
 	${env} pytest tests/system ${testargs}
 
 test_datasets: ${app}
-	${env} /bin/sh -ec "find websecmap -path '*/fixtures/*.yaml' -print0 | \
+	${env} /bin/sh -ec "find dashboard -path '*/fixtures/*.yaml' -print0 | \
 		xargs -0n1 basename -s .yaml | uniq | \
 		xargs -n1 ${app} test_dataset"
 
