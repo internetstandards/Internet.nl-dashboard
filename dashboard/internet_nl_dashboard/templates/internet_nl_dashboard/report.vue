@@ -27,9 +27,21 @@ th.rotate > div > span {
             <h2>Report Settings</h2>
             <button @click="save_issue_filters()">Save settings</button>
             <button @click="load_issue_filters()">Reset settings</button>
-            <div>
+            <div v-if="!this.selected_category">
                 <div v-for="(category_group, category_name, y) in categories" style="width: 49%; float: left;">
                     <div v-if="issue_filters[category_name]">
+                        <h3><input type="checkbox" v-model='issue_filters[category_name].visible'> {{ $t("report." + category_name) }}</h3>
+                        <span v-for="category_name in category_group">
+                            <input type="checkbox" v-model='issue_filters[category_name].visible' :id="category_name + '_visible'">
+                            <label :for="category_name + '_visible'">{{ $t("report." + category_name) }}</label><br />
+                        </span>
+                    </div>
+                </div>
+            </div>
+            <div v-if="this.selected_category">
+                <!-- Only shows mail or web settings if you're looking at that type of report. -->
+                <div v-for="(category_group, category_name, y) in categories" style="width: 49%; float: left;">
+                    <div v-if="issue_filters[category_name] && categories[selected_category].includes(category_name)">
                         <h3><input type="checkbox" v-model='issue_filters[category_name].visible'> {{ $t("report." + category_name) }}</h3>
                         <span v-for="category_name in category_group">
                             <input type="checkbox" v-model='issue_filters[category_name].visible' :id="category_name + '_visible'">
