@@ -5,6 +5,7 @@ from django.db.models import Prefetch
 from django.utils import timezone
 from tldextract import tldextract
 from validators import domain
+from dashboard.internet_nl_dashboard.logic import operation_response
 from websecmap.organizations.models import Url
 from websecmap.scanners.models import Endpoint
 from websecmap.scanners.scanner.dns_endpoints import compose_discover_task
@@ -15,11 +16,6 @@ from dashboard.internet_nl_dashboard.scanners.scan_internet_nl_per_account impor
     create_dashboard_scan_tasks
 
 log = logging.getLogger(__package__)
-
-
-def operation_response(error: bool = False, success: bool = False, message: str = "", data: Dict = None):
-    return {'error': error, 'success': success, 'message': message, 'state': "error" if error else "success",
-            'data': data}
 
 
 # todo: write test

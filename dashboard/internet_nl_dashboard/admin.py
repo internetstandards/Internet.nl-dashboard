@@ -199,7 +199,7 @@ class AccountAdmin(ImportExportModelAdmin, admin.ModelAdmin):
     list_display = ('name', 'internet_nl_api_username', 'can_connect_to_internet_nl_api', 'no_of_users')
     search_fields = ('name', 'can_connect_to_internet_nl_api')
     # list_filter = [][::-1]
-    fields = ('name', 'internet_nl_api_username', 'new_password')
+    fields = ('name', 'report_settings', 'internet_nl_api_username', 'new_password')
 
     # cannot use the DashboardUserInline, it acts like there are three un-assigned users and it breaks the 1 to 1
     # relation with the DashboardUser to user. Perhaps because Jet doesn't understands that type of relationship

@@ -1,7 +1,7 @@
 from django.urls import path, register_converter
 
 from dashboard.internet_nl_dashboard.views import (__init__, domains, download_spreadsheet,
-                                                   powertools, report, scan_monitor, spreadsheet)
+                                                   powertools, report, scan_monitor, spreadsheet, account)
 
 
 class SpreadsheetFileTypeConverter:
@@ -34,6 +34,10 @@ urlpatterns = [
     path('data/urllist/scan_now/', domains.scan_now_),
     path('data/urllist/url/save/', domains.alter_url_in_urllist_),
     path('data/urllist/url/add/', domains.add_urls_to_urllist),
+
+    # account management:
+    path('data/account/report_settings/get/', account.get_report_settings_),
+    path('data/account/report_settings/save/', account.save_report_settings_),
 
     # uploads of domains
     path('upload/', spreadsheet.upload),
