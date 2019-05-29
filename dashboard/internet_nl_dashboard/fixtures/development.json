@@ -13,6 +13,7 @@
   },
   {
     "model": "auth.user",
+    "pk": 2,
     "fields": {
       "password": "pbkdf2_sha256$120000$gFyLSuh9H2aq$0sRORwUlFrFOBNF80Ri+/gYvAc+DifApahyE/clK4mQ=",
       "last_login": null,
@@ -32,7 +33,7 @@
     "model": "internet_nl_dashboard.dashboarduser",
     "pk": 1,
     "fields": {
-      "user": 1,
+      "user": 2,
       "account": 1,
       "notes": ""
     }
