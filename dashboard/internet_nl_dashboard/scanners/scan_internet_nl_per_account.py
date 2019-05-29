@@ -62,6 +62,7 @@ def compose_task(
     return group(tasks)
 
 
+@app.task(queue='storage')
 def create_dashboard_scan_tasks(urllist):
     # No urls means that the scan will not be registered in the API. So that would be a useless call.
     if urllist.urls.count() == 0:

@@ -1,5 +1,17 @@
 [
   {
+    "model": "internet_nl_dashboard.account",
+    "pk": 1,
+    "fields": {
+      "name": "Test Account",
+      "enable_scans": true,
+      "internet_nl_api_username": "elger",
+      "internet_nl_api_password": null,
+      "can_connect_to_internet_nl_api": false,
+      "report_settings": null
+    }
+  },
+  {
     "model": "auth.user",
     "fields": {
       "password": "pbkdf2_sha256$120000$gFyLSuh9H2aq$0sRORwUlFrFOBNF80Ri+/gYvAc+DifApahyE/clK4mQ=",
@@ -14,6 +26,15 @@
       "date_joined": "2019-01-24T05:00:00Z",
       "groups": [],
       "user_permissions": []
+    }
+  },
+  {
+    "model": "internet_nl_dashboard.dashboarduser",
+    "pk": 1,
+    "fields": {
+      "user": 1,
+      "account": 1,
+      "notes": ""
     }
   },
   {
@@ -114,6 +135,239 @@
       "total_run_count": 0,
       "date_changed": "2019-01-24T05:02:10Z",
       "description": ""
+    }
+  },
+  {
+    "model": "organizations.url",
+    "pk": 1,
+    "fields": {
+      "url": "internet.nl",
+      "internal_notes": null,
+      "created_on": "2019-05-29T07:44:52.329Z",
+      "not_resolvable": false,
+      "not_resolvable_since": null,
+      "not_resolvable_reason": null,
+      "is_dead": false,
+      "is_dead_since": null,
+      "is_dead_reason": null,
+      "uses_dns_wildcard": false,
+      "do_not_find_subdomains": false,
+      "dns_supports_mx": false,
+      "onboarding_stage": null,
+      "computed_subdomain": "",
+      "computed_domain": "internet",
+      "computed_suffix": "nl",
+      "onboarding_stage_set_on": null,
+      "onboarded": false,
+      "onboarded_on": "2019-05-29T07:44:52.329Z",
+      "organization": []
+    }
+  },
+  {
+    "model": "organizations.url",
+    "pk": 2,
+    "fields": {
+      "url": "www.internet.nl",
+      "internal_notes": null,
+      "created_on": "2019-05-29T07:44:52.408Z",
+      "not_resolvable": false,
+      "not_resolvable_since": null,
+      "not_resolvable_reason": null,
+      "is_dead": false,
+      "is_dead_since": null,
+      "is_dead_reason": null,
+      "uses_dns_wildcard": false,
+      "do_not_find_subdomains": false,
+      "dns_supports_mx": false,
+      "onboarding_stage": null,
+      "computed_subdomain": "www",
+      "computed_domain": "internet",
+      "computed_suffix": "nl",
+      "onboarding_stage_set_on": null,
+      "onboarded": false,
+      "onboarded_on": "2019-05-29T07:44:52.408Z",
+      "organization": []
+    }
+  },
+  {
+    "model": "organizations.url",
+    "pk": 3,
+    "fields": {
+      "url": "dev2.internet.nl",
+      "internal_notes": null,
+      "created_on": "2019-05-29T07:44:52.423Z",
+      "not_resolvable": false,
+      "not_resolvable_since": null,
+      "not_resolvable_reason": null,
+      "is_dead": false,
+      "is_dead_since": null,
+      "is_dead_reason": null,
+      "uses_dns_wildcard": false,
+      "do_not_find_subdomains": false,
+      "dns_supports_mx": false,
+      "onboarding_stage": null,
+      "computed_subdomain": "dev2",
+      "computed_domain": "internet",
+      "computed_suffix": "nl",
+      "onboarding_stage_set_on": null,
+      "onboarded": false,
+      "onboarded_on": "2019-05-29T07:44:52.423Z",
+      "organization": []
+    }
+  },
+  {
+    "model": "organizations.url",
+    "pk": 4,
+    "fields": {
+      "url": "batch.dev.internet.nl",
+      "internal_notes": null,
+      "created_on": "2019-05-29T07:44:52.447Z",
+      "not_resolvable": false,
+      "not_resolvable_since": null,
+      "not_resolvable_reason": null,
+      "is_dead": false,
+      "is_dead_since": null,
+      "is_dead_reason": null,
+      "uses_dns_wildcard": false,
+      "do_not_find_subdomains": false,
+      "dns_supports_mx": false,
+      "onboarding_stage": null,
+      "computed_subdomain": "batch.dev",
+      "computed_domain": "internet",
+      "computed_suffix": "nl",
+      "onboarding_stage_set_on": null,
+      "onboarded": false,
+      "onboarded_on": "2019-05-29T07:44:52.447Z",
+      "organization": []
+    }
+  },
+  {
+    "model": "organizations.url",
+    "pk": 5,
+    "fields": {
+      "url": "ipv6.internet.nl",
+      "internal_notes": null,
+      "created_on": "2019-05-29T07:44:52.464Z",
+      "not_resolvable": false,
+      "not_resolvable_since": null,
+      "not_resolvable_reason": null,
+      "is_dead": false,
+      "is_dead_since": null,
+      "is_dead_reason": null,
+      "uses_dns_wildcard": false,
+      "do_not_find_subdomains": false,
+      "dns_supports_mx": false,
+      "onboarding_stage": null,
+      "computed_subdomain": "ipv6",
+      "computed_domain": "internet",
+      "computed_suffix": "nl",
+      "onboarding_stage_set_on": null,
+      "onboarded": false,
+      "onboarded_on": "2019-05-29T07:44:52.464Z",
+      "organization": []
+    }
+  },
+  {
+    "model": "organizations.url",
+    "pk": 6,
+    "fields": {
+      "url": "jail.internet.nl",
+      "internal_notes": null,
+      "created_on": "2019-05-29T07:44:52.480Z",
+      "not_resolvable": false,
+      "not_resolvable_since": null,
+      "not_resolvable_reason": null,
+      "is_dead": false,
+      "is_dead_since": null,
+      "is_dead_reason": null,
+      "uses_dns_wildcard": false,
+      "do_not_find_subdomains": false,
+      "dns_supports_mx": false,
+      "onboarding_stage": null,
+      "computed_subdomain": "jail",
+      "computed_domain": "internet",
+      "computed_suffix": "nl",
+      "onboarding_stage_set_on": null,
+      "onboarded": false,
+      "onboarded_on": "2019-05-29T07:44:52.480Z",
+      "organization": []
+    }
+  },
+  {
+    "model": "organizations.url",
+    "pk": 7,
+    "fields": {
+      "url": "matomo.internet.nl",
+      "internal_notes": null,
+      "created_on": "2019-05-29T07:44:52.498Z",
+      "not_resolvable": false,
+      "not_resolvable_since": null,
+      "not_resolvable_reason": null,
+      "is_dead": false,
+      "is_dead_since": null,
+      "is_dead_reason": null,
+      "uses_dns_wildcard": false,
+      "do_not_find_subdomains": false,
+      "dns_supports_mx": false,
+      "onboarding_stage": null,
+      "computed_subdomain": "matomo",
+      "computed_domain": "internet",
+      "computed_suffix": "nl",
+      "onboarding_stage_set_on": null,
+      "onboarded": false,
+      "onboarded_on": "2019-05-29T07:44:52.498Z",
+      "organization": []
+    }
+  },
+  {
+    "model": "organizations.url",
+    "pk": 8,
+    "fields": {
+      "url": "pl.internet.nl",
+      "internal_notes": null,
+      "created_on": "2019-05-29T07:44:52.515Z",
+      "not_resolvable": false,
+      "not_resolvable_since": null,
+      "not_resolvable_reason": null,
+      "is_dead": false,
+      "is_dead_since": null,
+      "is_dead_reason": null,
+      "uses_dns_wildcard": false,
+      "do_not_find_subdomains": false,
+      "dns_supports_mx": false,
+      "onboarding_stage": null,
+      "computed_subdomain": "pl",
+      "computed_domain": "internet",
+      "computed_suffix": "nl",
+      "onboarding_stage_set_on": null,
+      "onboarded": false,
+      "onboarded_on": "2019-05-29T07:44:52.515Z",
+      "organization": []
+    }
+  },
+  {
+    "model": "internet_nl_dashboard.urllist",
+    "pk": 1,
+    "fields": {
+      "name": "Test List",
+      "account": 1,
+      "enable_scans": true,
+      "scan_type": "web",
+      "automated_scan_frequency": "every half year",
+      "scheduled_next_scan": "2019-07-01T00:00:00Z",
+      "is_deleted": false,
+      "deleted_on": null,
+      "last_manual_scan": null,
+      "urls": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8
+      ]
     }
   }
 ]

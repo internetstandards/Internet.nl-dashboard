@@ -92,6 +92,9 @@ def scan_now(account, user_input) -> Dict[str, Any]:
     # ...to fix this issue, we'll use a 'last_manual_scan' field.
     urllist.last_manual_scan = timezone.now()
     urllist.save()
+
+    # Make sure the fernet key is working fine, you are on the correct queue (-Q storage) and that the correct API
+    # version is used.
     create_dashboard_scan_tasks(urllist).apply_async()
 
     return operation_response(success=True, message="Scan started")
