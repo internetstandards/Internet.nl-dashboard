@@ -1,6 +1,6 @@
 {% verbatim %}
 <template type="x-template" id="managed-url-list">
-    <article class="managed-url-list" v-if="!is_deleted">
+    <article class="managed-url-list">
         <h3>
             <button v-if="!is_opened" @click="open_list()">📘 {{ list.name }}</button>
             <button v-if="is_opened" @click="close_list()">📖 {{ list.name }}</button>
@@ -244,9 +244,6 @@ Vue.component('managed-url-list', {
             // everything to do with deleting this list
             show_deletion: false,
             delete_response: {},
-            // is deleted is set to hide one of the managers. It will not be shown next load anyway and you can't
-            // edit it anymore server side.
-            is_deleted: false,
 
             // everything to do with editing urls in the list:
             url_edit: '',
@@ -345,7 +342,7 @@ Vue.component('managed-url-list', {
 
                     if (server_response.success){
                         // remove / hide this thing...
-                        this.is_deleted = true;
+                        this.$emit('removelist', this.list.id);
                         this.stop_deleting();
                     }
                 }

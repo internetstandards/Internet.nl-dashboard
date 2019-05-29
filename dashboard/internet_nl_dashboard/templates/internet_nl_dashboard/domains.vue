@@ -68,7 +68,7 @@ Todo: when deleting a list, it is re-added to the list of lists when adding a ne
         </div>
 
         <div v-for="list in lists" >
-            <managed-url-list :initial_list="list"></managed-url-list>
+            <managed-url-list :initial_list="list" v-on:removelist="removelist"></managed-url-list>
         </div>
 
         <div v-if="!lists.length" class="no-content">
@@ -103,6 +103,14 @@ vueListManager = new Vue({
         this.get_lists();
     },
     methods: {
+        removelist: function(list_id) {
+            console.log('removing');
+            this.lists.forEach(function (item, index, object) {
+                if (list_id === item.id) {
+                    object.splice(index, 1);
+                }
+            });
+        },
         get_lists: function(){
             this.loading = true;
             fetch(`/data/urllists/get/`, {credentials: 'include'}).then(response => response.json()).then(data => {
