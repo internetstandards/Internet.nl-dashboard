@@ -97,6 +97,13 @@ run: ${app}  ## run complete application stack (frontend, worker, broker)
 run-frontend: ${app}  ## only run frontend component
 	DEBUG=1 NETWORK_SUPPORTS_IPV6=1 ${env} ${app} runserver
 
+app: ${app}  ## perform arbitrary app commands
+    # make app args="help"
+    # make app args="report -y municipality"
+    # make app args="makemigrations"
+    # make app args="migrate"
+	DEBUG=1 NETWORK_SUPPORTS_IPV6=1 ${env} ${app} ${args}
+
 run-worker: ${app}  ## only run worker component
 	DEBUG=1 NETWORK_SUPPORTS_IPV6=1 ${env} ${app} celery worker -ldebug
 
