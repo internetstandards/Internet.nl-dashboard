@@ -16,4 +16,3 @@ def get_report_settings_(request) -> JsonResponse:
 @login_required(login_url=LOGIN_URL)
 def save_report_settings_(request) -> JsonResponse:
     return JsonResponse(save_report_settings(get_account(request), get_json_body(request)))
-

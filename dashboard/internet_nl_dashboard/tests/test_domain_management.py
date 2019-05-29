@@ -11,7 +11,7 @@ from dashboard.internet_nl_dashboard.logic.domains import (delete_list, delete_u
 from dashboard.internet_nl_dashboard.models import Account
 
 
-def test_urllists(db, redis_server) -> None:
+def test_urllists(db) -> None:
     account, created = Account.objects.all().get_or_create(name="test")
 
     list_1 = get_or_create_list_by_name(account, "test list 1")
@@ -62,7 +62,7 @@ def test_urllists(db, redis_server) -> None:
     del items_deleted
 
     """ Delete the entire list, we'll get nothing back, only an empty response. """
-    operation_response = delete_list(account=account, list_id=list_1.id)
+    operation_response = delete_list(account=account, user_input={'id': list_1.id})
 
     # it deletes two urls and the list itself, makes 3
     assert operation_response['success'] is True
@@ -73,7 +73,7 @@ def test_urllists(db, redis_server) -> None:
 
     account2, created = Account.objects.all().get_or_create(name="test 2")
     """ You cannot delete things from another account """
-    operation_response = delete_list(account=account2, list_id=list_1.id)
+    operation_response = delete_list(account=account2, user_input={'id': list_1.id})
     assert operation_response['success'] is False
 
     """ A new list will not be created if there are no urls for it..."""

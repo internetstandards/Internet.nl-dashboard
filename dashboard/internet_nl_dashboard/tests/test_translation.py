@@ -8,6 +8,10 @@ from requests import Response
 from dashboard.internet_nl_dashboard.logic.internet_nl_translations import (convert_vue_i18n_format,
                                                                             get_locale_content,
                                                                             load_as_po_file)
+from pathlib import Path
+
+path = Path(__file__).parent
+
 
 # Create the desired normal response, by simply forcing the correct properties to be present.
 # This is probably not the way to do it, yet i found the other methods be mostly obscure.
@@ -27,7 +31,7 @@ def mocked_requests_get(*args, **kwargs):
             self.status_code = status_code
 
     if args[0] == 'https://raw.githubusercontent.com/NLnetLabs/Internet.nl/master/translations/nl/main.po':
-        return MockResponse(file_get_contents('tests/translation files/main.po').encode(), 200)
+        return MockResponse(file_get_contents(f'{path}/translation files/main.po').encode(), 200)
 
     return MockResponse(None, 404)
 

@@ -6,9 +6,13 @@ from dashboard.internet_nl_dashboard.logic.spreadsheet import (get_data, get_upl
                                                                is_valid_mimetype,
                                                                log_spreadsheet_upload, save_data)
 from dashboard.internet_nl_dashboard.models import Account, DashboardUser
+from pathlib import Path
 
 # the 5000 urls has been skipped, it adds nothing to the test cases, only to the load for the UI. Use it for UI
 # testing... can the UI really handle thousands of urls efficiently?
+
+
+path = Path(__file__).parent
 
 
 def test_spreadsheet(db, redis_server) -> None:
@@ -52,11 +56,11 @@ def test_spreadsheet(db, redis_server) -> None:
         assert len(upload_history) > 0
 
     # Run all tests on a valid file, that complies with the standard etc...
-    file = 'tests/test spreadsheet uploads/waterschappen.ods'
+    file = f'{path}/test spreadsheet uploads/waterschappen.ods'
     test_valid(file)
 
     # should also work for excel files
-    file = 'tests/test spreadsheet uploads/waterschappen.xlsx'
+    file = f'{path}/test spreadsheet uploads/waterschappen.xlsx'
     test_valid(file)
 
     # We skip this test as it takes long and doesn't really add anything. We could improve it's speed perhaps.
@@ -65,11 +69,11 @@ def test_spreadsheet(db, redis_server) -> None:
     # test_valid(file)
 
     # Should also be able to handle CSV files, as if they are spreadsheets
-    file = 'tests/test spreadsheet uploads/waterschappen.csv'
+    file = f'{path}/test spreadsheet uploads/waterschappen.csv'
     test_valid(file)
 
     # Now let's see what happens if another octet/stream is uploaded, like an .exe file.
-    file = 'tests/test spreadsheet uploads/tracie/tracie.exe'
+    file = f'{path}/test spreadsheet uploads/tracie/tracie.exe'
 
     # this will fail because of the file extension
     valid = is_valid_extension(file)
@@ -77,12 +81,12 @@ def test_spreadsheet(db, redis_server) -> None:
 
     # Let's be evil and rename it to .xlsx, so we bypass both the mime check and the extension check
     # Nope, it finds it's a 'application/x-dosexec'
-    file = 'tests/test spreadsheet uploads/tracie/tracie.xlsx'
+    file = f'{path}/test spreadsheet uploads/tracie/tracie.xlsx'
     valid = is_valid_mimetype(file)
     assert valid is False
 
     # Let's instead use a corrupted xlsx that should not work when parsing.
-    file = 'tests/test spreadsheet uploads/waterschappen_corrupted.xlsx'
+    file = f'{path}/test spreadsheet uploads/waterschappen_corrupted.xlsx'
     valid = is_valid_mimetype(file)
     assert valid is True
 
@@ -93,13 +97,13 @@ def test_spreadsheet(db, redis_server) -> None:
     # Mixing datatypes (ints, booleans etc) should just work
     # one of the datatypes is split into two, therefore there are 9 items.
     # The point is to check that importing doesn't crash and some casting to strings work.
-    file = 'tests/test spreadsheet uploads/mixed_datatypes.ods'
+    file = f'{path}/test spreadsheet uploads/mixed_datatypes.ods'
     data = get_data(file)
     assert len(data) == 9
 
     # the original filename can be retrieved (using a heuristic, not exact)
     # the file was already uploaded above, so it should now be renamed internally.
-    file = 'tests/test spreadsheet uploads/waterschappen_WFgL3uS.ods'
+    file = f'{path}/test spreadsheet uploads/waterschappen_WFgL3uS.ods'
     data = log_spreadsheet_upload(dashboarduser, file=file, status='Test', message="Test")
     assert data['original_filename'] == "waterschappen.ods"
     assert data['internal_filename'] != "waterschappen.ods"
