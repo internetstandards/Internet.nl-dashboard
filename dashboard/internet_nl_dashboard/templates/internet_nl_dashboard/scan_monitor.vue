@@ -146,7 +146,7 @@ vueUpload = new Vue({
             this.get_recent_uploads();
         },
         get_recent_uploads: function(){
-            fetch(`/data/scan-monitor/`).then(response => response.json()).then(data => {
+            fetch(`/data/scan-monitor/`, {credentials: 'include'}).then(response => response.json()).then(data => {
                 this.scans = data;
             }).catch((fail) => {console.log('A loading error occurred: ' + fail);});
         },

@@ -271,13 +271,14 @@ Todo: digitoegankelijk: how to select links with the keyboard? How can we make t
                     // console.log(`Posting to ${url}, with data ${data}`)
                     (async () => {
                       const rawResponse = await fetch(url, {
-                        method: 'POST',
-                        headers: {
-                          'Accept': 'application/json',
-                          'Content-Type': 'application/json',
-                          'X-CSRFToken': get_cookie('csrftoken')
-                        },
-                        body: JSON.stringify(data)
+                          method: 'POST',
+                          credentials: 'include',
+                          headers: {
+                              'Accept': 'application/json',
+                              'Content-Type': 'application/json',
+                              'X-CSRFToken': get_cookie('csrftoken')
+                          },
+                          body: JSON.stringify(data)
                       });
                       try {
                           // here is your synchronous part.

@@ -286,7 +286,7 @@ Vue.component('managed-url-list', {
         },
         get_urls: function(){
             this.loading = true;
-            fetch(`/data/urllist_content/get/${this.list.id}/`).then(response => response.json()).then(data => {
+            fetch(`/data/urllist_content/get/${this.list.id}/`, {credentials: 'include'}).then(response => response.json()).then(data => {
                 this.urls = data.urls;
                 this.loading = false;
             }).catch((fail) => {console.log('A loading error occurred: ' + fail);});

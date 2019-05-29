@@ -150,7 +150,7 @@ vueUpload = new Vue({
     },
     methods: {
         get_recent_uploads: function(){
-            fetch(`/data/upload-history/`).then(response => response.json()).then(data => {
+            fetch(`/data/upload-history/`, {credentials: 'include'}).then(response => response.json()).then(data => {
                 this.upload_history = data;
             }).catch((fail) => {console.log('A loading error occurred: ' + fail);});
         },

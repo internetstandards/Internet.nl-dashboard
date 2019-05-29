@@ -461,7 +461,7 @@ vueReport = new Vue({
             this.get_report_data(report_id);
         },
         get_report_data: function(report_id){
-            fetch(`/data/report/get/${report_id}/`).then(response => response.json()).then(data => {
+            fetch(`/data/report/get/${report_id}/`, {credentials: 'include'}).then(response => response.json()).then(data => {
                 this.reports = data;
                 this.reset_comparison_charts(this.reports[0]);
 
@@ -492,7 +492,7 @@ vueReport = new Vue({
             );
         },
         load_issue_filters: function(){
-            fetch(`/data/account/report_settings/get/`).then(response => response.json()).then(data => {
+            fetch(`/data/account/report_settings/get/`, {credentials: 'include'}).then(response => response.json()).then(data => {
                 this.issue_filters = data;
             });
         },
@@ -513,7 +513,7 @@ vueReport = new Vue({
         compare_with_previous: function(){
             // can be clicked on as long as there are previous reports. Which we don't know in advance.
 
-            fetch(`/data/report/get_previous/${this.selected_report.value.urllist_id}/${this.compare_oldest_data}/`).then(response => response.json()).then(report => {
+            fetch(`/data/report/get_previous/${this.selected_report.value.urllist_id}/${this.compare_oldest_data}/`, {credentials: 'include'}).then(response => response.json()).then(report => {
 
                 if (!jQuery.isEmptyObject(report)) {
                     this.compare_charts.push(report);
@@ -527,7 +527,7 @@ vueReport = new Vue({
 
         },
         get_recent_reports: function(){
-            fetch(`/data/report/recent/`).then(response => response.json()).then(data => {
+            fetch(`/data/report/recent/`, {credentials: 'include'}).then(response => response.json()).then(data => {
                 options = [];
                 for(let i = 0; i < data.length; i++){
                     options.push({
@@ -586,7 +586,7 @@ vueReport = new Vue({
                 return;
             }
 
-            fetch(`/data/report/urllist_report_graph_data/${this.selected_report.value.urllist_id}/`).then(response => response.json()).then(data => {
+            fetch(`/data/report/urllist_report_graph_data/${this.selected_report.value.urllist_id}/`, {credentials: 'include'}).then(response => response.json()).then(data => {
                 this.issue_timeline_of_related_urllist = data;
             }).catch((fail) => {console.log('A loading error occurred: ' + fail);});
 

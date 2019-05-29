@@ -105,7 +105,7 @@ vueListManager = new Vue({
     methods: {
         get_lists: function(){
             this.loading = true;
-            fetch(`/data/urllists/get/`).then(response => response.json()).then(data => {
+            fetch(`/data/urllists/get/`, {credentials: 'include'}).then(response => response.json()).then(data => {
                 this.lists = data;
                 this.loading = false;
             }).catch((fail) => {console.log('A loading error occurred: ' + fail);});
