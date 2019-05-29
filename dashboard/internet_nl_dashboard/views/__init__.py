@@ -1,3 +1,4 @@
+import json
 import logging
 
 from django.contrib.auth import logout
@@ -5,7 +6,6 @@ from django.http import HttpResponse, JsonResponse
 from django.shortcuts import redirect
 
 from dashboard.internet_nl_dashboard.models import Account, DashboardUser
-import json
 
 log = logging.getLogger(__package__)
 LOGIN_URL = '/account/login/'

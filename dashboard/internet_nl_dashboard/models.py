@@ -8,11 +8,11 @@ from django.conf import settings
 from django.contrib.auth.models import User
 from django.db import models
 from django.utils import timezone
+from jsonfield import JSONField
 from requests.auth import HTTPBasicAuth
 from websecmap.organizations.models import Url
 from websecmap.reporting.models import SeriesOfUrlsReportMixin
 from websecmap.scanners.models import InternetNLScan
-from jsonfield import JSONField
 
 log = logging.getLogger(__package__)
 

@@ -5,7 +5,6 @@ from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render
 from websecmap.app.common import JSEncoder
-from dashboard.internet_nl_dashboard.views import get_json_body
 
 from dashboard.internet_nl_dashboard.logic.domains import (alter_url_in_urllist, create_list,
                                                            delete_list, get_urllist_content,
@@ -13,7 +12,7 @@ from dashboard.internet_nl_dashboard.logic.domains import (alter_url_in_urllist,
                                                            save_urllist_content,
                                                            save_urllist_content_by_name, scan_now,
                                                            update_list_settings)
-from dashboard.internet_nl_dashboard.views import (LOGIN_URL, get_account,
+from dashboard.internet_nl_dashboard.views import (LOGIN_URL, get_account, get_json_body,
                                                    inject_default_language_cookie)
 
 

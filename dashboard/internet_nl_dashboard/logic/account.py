@@ -1,4 +1,5 @@
 import logging
+
 from dashboard.internet_nl_dashboard.logic import operation_response
 
 log = logging.getLogger(__package__)

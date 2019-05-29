@@ -1,4 +1,6 @@
 # To run these specific tests: tox -e test -- -k test_spreadsheet
+from pathlib import Path
+
 from django.contrib.auth.models import User
 
 from dashboard.internet_nl_dashboard.logic.spreadsheet import (get_data, get_upload_history,
@@ -6,7 +8,6 @@ from dashboard.internet_nl_dashboard.logic.spreadsheet import (get_data, get_upl
                                                                is_valid_mimetype,
                                                                log_spreadsheet_upload, save_data)
 from dashboard.internet_nl_dashboard.models import Account, DashboardUser
-from pathlib import Path
 
 # the 5000 urls has been skipped, it adds nothing to the test cases, only to the load for the UI. Use it for UI
 # testing... can the UI really handle thousands of urls efficiently?

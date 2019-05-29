@@ -1,7 +1,7 @@
 from django.urls import path, register_converter
 
-from dashboard.internet_nl_dashboard.views import (__init__, domains, download_spreadsheet,
-                                                   powertools, report, scan_monitor, spreadsheet, account)
+from dashboard.internet_nl_dashboard.views import (__init__, account, domains, download_spreadsheet,
+                                                   powertools, report, scan_monitor, spreadsheet)
 
 
 class SpreadsheetFileTypeConverter:

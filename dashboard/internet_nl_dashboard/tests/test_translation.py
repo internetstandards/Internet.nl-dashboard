@@ -1,6 +1,7 @@
 """
 Run these tests with tox -e test -- -k test_translation
 """
+from pathlib import Path
 from unittest import mock
 
 from requests import Response
@@ -8,7 +9,6 @@ from requests import Response
 from dashboard.internet_nl_dashboard.logic.internet_nl_translations import (convert_vue_i18n_format,
                                                                             get_locale_content,
                                                                             load_as_po_file)
-from pathlib import Path
 
 path = Path(__file__).parent
 
