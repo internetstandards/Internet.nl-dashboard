@@ -291,7 +291,7 @@ class UrlList(models.Model):
         """
 
         if not self.enable_scans:
-            log.debug("Scan now NOT available: List %s has disabled scans." % self)
+            # log.debug("Scan now NOT available: List %s has disabled scans." % self)
             return False
 
         yesterday = timezone.now() - timedelta(days=1)
@@ -299,22 +299,22 @@ class UrlList(models.Model):
         # manual scans have their own 'is available flag', as the 'create_dashboard_scan_tasks()' does not guarantee
         # a new scan is created instantly. The flag needs to be set otherwise a user can initiate tons of scans.
         if self.last_manual_scan and self.last_manual_scan > yesterday:
-            log.debug("Scan now NOT available: Last manual scan was in the last 24 hours for list %s" % self)
+            # log.debug("Scan now NOT available: Last manual scan was in the last 24 hours for list %s" % self)
             return False
 
         last_scan = AccountInternetNLScan.objects.all().filter(urllist=self, urllist__is_deleted=False).last()
 
         if not last_scan:
-            log.debug("Scan now available: a previous scan was never performed on list %s" % self)
+            # log.debug("Scan now available: a previous scan was never performed on list %s" % self)
             return True
 
         # no get method on scan object... 80 is an arbitrary number that is long enough to again allow scans.
         finished_on = last_scan.scan.finished_on if last_scan.scan.finished_on else timezone.now() - timedelta(days=80)
         if last_scan.scan.finished and finished_on < yesterday:
-            log.debug("Scan now available: last scan finished over 24 hours ago on list %s" % self)
+            # log.debug("Scan now available: last scan finished over 24 hours ago on list %s" % self)
             return True
 
-        log.debug("Scan now NOT available: Last scan might be in the last 24 hours. %s" % self)
+        # log.debug("Scan now NOT available: Last scan might be in the last 24 hours. %s" % self)
         return False
 
 

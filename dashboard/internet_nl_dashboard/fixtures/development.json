@@ -72,7 +72,7 @@
       "interval": null,
       "crontab": 33,
       "solar": null,
-      "args": "[\"dashboard.internet_nl_dashboard.scanners.scan_internet_nl_per_account.check_running_scans\"]",
+      "args": "[\"dashboard.internet_nl_dashboard.scanners.scan_internet_nl_per_account.check_running_dashboard_scans\"]",
       "kwargs": "{}",
       "queue": "storage",
       "exchange": null,

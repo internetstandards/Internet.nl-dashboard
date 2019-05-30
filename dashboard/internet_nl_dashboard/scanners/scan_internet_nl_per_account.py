@@ -31,8 +31,8 @@ from dashboard.internet_nl_dashboard.models import Account, AccountInternetNLSca
 log = logging.getLogger(__name__)
 
 
-API_URL_MAIL = "https://batch.internet.nl/api/batch/v1.0/mail/"
-API_URL_WEB = "https://batch.internet.nl/api/batch/v1.0/web/"
+API_URL_MAIL = "https://batch.internet.nl/api/batch/v1.1/mail/"
+API_URL_WEB = "https://batch.internet.nl/api/batch/v1.1/web/"
 
 
 def compose_task(

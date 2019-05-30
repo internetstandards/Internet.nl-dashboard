@@ -88,14 +88,18 @@ def scan_now(account, user_input) -> Dict[str, Any]:
     if not urllist.is_scan_now_available():
         return operation_response(error=True, message="Not all conditions for initiating a scan are met.")
 
+    # Make sure the fernet key is working fine, you are on the correct queue (-Q storage) and that the correct API
+    # version is used.
+    # Run this before updating the list, as this might go wrong for many reasons.
+    try:
+        create_dashboard_scan_tasks(urllist).apply_async()
+    except ValueError:
+        return operation_response(error=True, message="Password to the internet.nl API is not set or incorrect.")
+
     # done: have to update the list info. On the other hand: there is no guarantee that this task already has started
     # ...to fix this issue, we'll use a 'last_manual_scan' field.
     urllist.last_manual_scan = timezone.now()
     urllist.save()
-
-    # Make sure the fernet key is working fine, you are on the correct queue (-Q storage) and that the correct API
-    # version is used.
-    create_dashboard_scan_tasks(urllist).apply_async()
 
     return operation_response(success=True, message="Scan started")
 
