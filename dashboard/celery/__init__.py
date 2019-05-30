@@ -9,7 +9,6 @@ including both the websecmap and dashboard tasks.
 
 import logging
 import os
-import time
 
 import flower.utils.broker
 from celery import Celery, Task
@@ -74,27 +73,6 @@ class ParentFailed(Exception):
         if cause:
             self.__cause__ = cause
         super(ParentFailed, self).__init__(message, *args)
-
-
-@app.task(queue='isolated', bind=True)
-def debug_task(self):
-    print('Request: {0!r}'.format(self.request))
-
-
-@app.task(queue='isolated')
-def waitsome(sleep):
-    """Wait some time and return epoch at completion."""
-
-    time.sleep(sleep)
-    return time.time()
-
-
-@app.task(queue='isolated', rate_limit='1/s')
-def rate_limited(sleep):
-    """Wait some time but limit to maximum tasks of 1 per second."""
-
-    time.sleep(sleep)
-    return time.time()
 
 
 def status():

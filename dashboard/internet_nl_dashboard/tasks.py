@@ -2,8 +2,9 @@ import logging
 from modulefinder import Module
 from typing import List
 
-from celery import group
-from websecmap.celery import Task, app
+from celery import Task, group
+from dashboard.celery import app
+from websecmap.reporting.report import recreate_url_reports
 
 from dashboard.internet_nl_dashboard.logic.urllist_dashboard_report import rate_urllist_on_moment
 from dashboard.internet_nl_dashboard.models import AccountInternetNLScan, UrlList, UrlListReport
@@ -11,10 +12,11 @@ from dashboard.internet_nl_dashboard.scanners import scan_internet_nl_per_accoun
 from dashboard.internet_nl_dashboard.scanners.scan_internet_nl_per_account import \
     create_dashboard_scan_tasks
 
-# explicitly declare the imported modules as this modules 'content', prevents pyflakes issues
-__all__: List[Module] = [scan_internet_nl_per_account]
-
 log = logging.getLogger(__name__)
+
+# Todo: after rebuilding the virtual environment and removing this tasks.py file, the tasks from scan_internet_nl_
+#   per_account where still discovered, and the tasks in tasks.py (below) where not. One difference is @app was defined
+#   from websecmap.celery, not from dashboard.celery. Which still doesn't solve it after changing.
 
 
 @app.task(queue='storage')
@@ -60,8 +62,10 @@ def create_reports_on_finished_scans(urllist: UrlList):
     :param urllist:
     :return:
     """
-    # todo: make sure that the latest urlreports are created... otherwise outdated data / no data will be used.
-    # todo: add rebuild_url_reports before this task...
+
+    # make sure that the latest urlreports are created... otherwise outdated data / no data will be used.
+    recreate_url_reports(urllist.urls)
+
     scan_dates = set(AccountInternetNLScan.objects.all().filter(
         urllist=urllist,
         urllist__is_deleted=False,
@@ -86,3 +90,7 @@ def create_reports_on_finished_scans(urllist: UrlList):
         # should be added, even if it has the same content.
         log.info('Missing a report for list %s on %s. Creating it...' % (urllist, missing_report_date))
         rate_urllist_on_moment(urllist, missing_report_date, prevent_duplicates=False)
+
+
+# explicitly declare the imported modules as this modules 'content', prevents pyflakes issues
+__all__: List[Module] = [scan_internet_nl_per_account]
