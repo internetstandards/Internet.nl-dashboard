@@ -18,10 +18,10 @@ Done: when scan now is clicked, disable scan now button.
 Done: pasting too many urls in the select2 causes an overflow. Size it properly.
 Done: Show link to last report
 Done: translation
-Todo: Bulk add has a bug when only adding 1 to the list, the list of submitted domains is not updated often enough / not reactive.
-Todo: When a list is added, the urls of each list are not moved to the next list. This is not reactive and might case issues.
-Todo: when deleting a list, it is re-added to the list of lists when adding a new list, this is not reactive and causes issues.
- (most of the above errors would be solved if we would only add things to the end of the list?). Adding the "add new" button to the bottom would quickfix this.
+Can't reproduce: Bulk add has a bug when only adding 1 to the list, the list of submitted domains is not updated often enough / not reactive.
+Fixed: When a list is added, the urls of each list are not moved to the next list. This is not reactive and might case issues.
+Fixed: when deleting a list, it is re-added to the list of lists when adding a new list, this is not reactive and causes issues.
+ (most of the above errors would be solved if we would only add things to the end of the list?).
 -->
 {% verbatim %}
 <template type="x-template" id="lists">
@@ -67,9 +67,16 @@ Todo: when deleting a list, it is re-added to the list of lists when adding a ne
             <div class="lds-dual-ring"><div></div><div></div></div> <span>Loading...</span>
         </div>
 
-        <div v-for="list in lists" >
-            <managed-url-list :initial_list="list" v-on:removelist="removelist"></managed-url-list>
-        </div>
+        <!--
+        The usage of v-bind:key="list.id" makes sure that data + props match. Would you not use a key, the
+        property of the component are updated, but the data is kept. This results in weird glitches.
+        https://vuejs.org/v2/guide/list.html#v-for-with-a-Component
+
+        Keys re-render the component, so all state is destroyed. It's closed again without urls.
+        What we would like is that when rerendering, the state (data) would also transfer to the correct component
+        https://michaelnthiessen.com/force-re-render/
+        -->
+        <managed-url-list :initial_list="list" v-bind:key="list.id" v-on:removelist="removelist" v-for="list in lists"></managed-url-list>
 
         <div v-if="!lists.length" class="no-content">
             Start creating a new list... <br>
