@@ -60,7 +60,8 @@ def create_reports_on_finished_scans(urllist: UrlList):
     :param urllist:
     :return:
     """
-
+    # todo: make sure that the latest urlreports are created... otherwise outdated data / no data will be used.
+    # todo: add rebuild_url_reports before this task...
     scan_dates = set(AccountInternetNLScan.objects.all().filter(
         urllist=urllist,
         urllist__is_deleted=False,
