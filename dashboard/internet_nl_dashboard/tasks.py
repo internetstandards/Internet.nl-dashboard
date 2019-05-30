@@ -3,9 +3,9 @@ from modulefinder import Module
 from typing import List
 
 from celery import Task, group
-from dashboard.celery import app
 from websecmap.reporting.report import recreate_url_reports
 
+from dashboard.celery import app
 from dashboard.internet_nl_dashboard.logic.urllist_dashboard_report import rate_urllist_on_moment
 from dashboard.internet_nl_dashboard.models import AccountInternetNLScan, UrlList, UrlListReport
 from dashboard.internet_nl_dashboard.scanners import scan_internet_nl_per_account
