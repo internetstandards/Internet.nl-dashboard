@@ -207,3 +207,5 @@ help:           ## Show this help.
 		printf '\033[0m'; \
 		printf "%s\n" $$help_info; \
 	done
+
+check-commit: fix test
