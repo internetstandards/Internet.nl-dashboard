@@ -15,6 +15,8 @@ from celery import Celery, Task
 from django.conf import settings
 from websecmap.celery.worker import QUEUES_MATCHING_ROLES
 
+import dashboard.internet_nl_dashboard.tasks  # noqa
+
 log = logging.getLogger(__package__)
 
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "dashboard.settings")
