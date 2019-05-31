@@ -493,7 +493,9 @@ vueReport = new Vue({
         },
         load_issue_filters: function(){
             fetch(`/data/account/report_settings/get/`, {credentials: 'include'}).then(response => response.json()).then(data => {
-                this.issue_filters = data;
+                if (!jQuery.isEmptyObject(data)) {
+                    this.issue_filters = data;
+                }
             });
         },
         alphabet_sorting: function(a, b){
