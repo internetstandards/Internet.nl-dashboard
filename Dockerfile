@@ -1,13 +1,27 @@
-FROM python:3.6
+FROM python:3.7
 
-RUN pip install poetry
+ENV PIP_DISABLE_PIP_VERSION_CHECK=1
+# required because pip 19+ breaks pyproject.toml editable builds: https://github.com/pypa/pip/issues/6434
+ENV PIP_USE_PEP517=false
+# Poetry & Pip pinned to latest stable, pip needs to be at least 19+ for installing dashboard as editable
+RUN pip3 install --upgrade poetry==0.12.15 virtualenv pip==19.1.1
+
+RUN virtualenv /pyenv
+ENV VIRTUAL_ENV /pyenv
+ENV PATH=/pyenv/bin:$PATH
 
 COPY dashboard/ /source/dashboard/
 COPY pyproject.toml poetry.lock README.md /source/
 
 WORKDIR /source/
-RUN poetry install -v --no-dev
+# Install app and dependencies in a artifact-able directory
+# App is installed by linking source into virtualenv. This is against convention
+# but allows the source to be overwritten by a volume during development.
+RUN poetry install -v --no-dev --develop dashboard
 
+RUN ln -s /pyenv/bin/dashboard /usr/local/bin/
+
+WORKDIR /
 USER root
 
 # configuration for django-uwsgi to work correct in Docker environment
