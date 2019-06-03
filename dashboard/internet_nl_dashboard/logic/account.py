@@ -14,4 +14,3 @@ def save_report_settings(account, report_settings):
 
 def get_report_settings(account):
     return account.report_settings if account.report_settings else {}
-
