@@ -97,10 +97,10 @@
                         <tr v-for="url in filtered_urls" v-if="url.endpoints.length">
                             <td>{{url.url}}</td>
                             <td class="testresultcell" v-for="category_name in relevant_categories_based_on_settings()" v-if="category_name in url.endpoints[0].ratings_by_type">
-                                <span class="failed" v-if="url.endpoints[0].ratings_by_type[category_name].ok < 1" :title="`${url.url} has not implemented ${$t('report.' + category_name)}`">
+                                <span class="failed" v-if="url.endpoints[0].ratings_by_type[category_name].ok < 1" :title="$t('report.' + category_name + '_verdict_bad')">
                                     Failed
                                 </span>
-                                <span class="passed" v-if="url.endpoints[0].ratings_by_type[category_name].ok > 0" :title="`${url.url} has implemented ${$t('report.' + category_name)}`">
+                                <span class="passed" v-if="url.endpoints[0].ratings_by_type[category_name].ok > 0" :title="$t('report.' + category_name + '_verdict_good')">
                                     Passed
                                 </span>
                             </td>

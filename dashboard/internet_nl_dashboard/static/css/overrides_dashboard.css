@@ -241,6 +241,7 @@ label {
     text-align: center;
 }
 
+
 .testresultcell span{
     background-size: 1.125em 1.125em;
     background-repeat: no-repeat;
@@ -255,9 +256,19 @@ label {
 }
 
 /** Testresults in matrix style */
+.category_passed {
+    background-image: url("/static/images/vendor/internet_nl/li-shield-ok.png");
+    background-image: url("/static/images/vendor/internet_nl/li-shield-ok.svg"), none;
+}
+
 .passed {
     background-image: url("/static/images/vendor/internet_nl/li-shield-ok.png");
     background-image: url("/static/images/vendor/internet_nl/li-shield-ok.svg"), none;
+}
+
+.category_failed {
+    background-image: url("/static/images/vendor/internet_nl/icon-error.png");
+    background-image: url("/static/images/vendor/internet_nl/icon-error.svg"), none;
 }
 
 .failed {
