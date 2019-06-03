@@ -11,25 +11,16 @@ import logging
 import os
 
 import flower.utils.broker
-from celery import Celery, Task
+from celery import Task
 from django.conf import settings
 from websecmap.celery.worker import QUEUES_MATCHING_ROLES
-
-import dashboard.internet_nl_dashboard.tasks  # noqa
+from websecmap.celery import app
 
 log = logging.getLogger(__package__)
 
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "dashboard.settings")
 
-app = Celery(__name__)
-app.config_from_object('django.conf:settings', namespace='CELERY')
-# use same result backend as we use for broker url
-# If broker_url is None, you  might not have started websecmap correctly. See docs/source/conf.py for a correct example.
-app.conf.result_backend = app.conf.broker_url.replace('amqp://', 'rpc://')
-
-
 # autodiscover all celery tasks in tasks.py files inside websecmap modules
-appname = __name__.split('.', 1)[0]
 app.autodiscover_tasks([app for app in settings.INSTALLED_APPS
                         if app.startswith('dashboard') or app.startswith('websecmap')])
 

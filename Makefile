@@ -28,7 +28,6 @@ poetry = ${bin}/poetry
 # application binary
 app = ${bin}/${app_name}
 
-$(info Run App: ${env} ${app})
 $(info )
 $(info Run `make help` for available commands or use tab-completion.)
 $(info )
@@ -40,10 +39,19 @@ shsrc = $(shell find * ! -path vendor\* -name *.sh)
 .PHONY: test check setup run fix autofix clean mrproper poetry test_integration
 
 # default action to run
-all: check test
+all: check test setup
 
+## Setup
 # setup entire dev environment
 setup: ${app}	## setup development environment and application
+	@echo -ne "Development environment is tested and ready."
+	@if command -v dashboard &>/dev/null;then \
+		echo -e " Development shell is activated."; \
+	else \
+		echo -e "\n\nTo activate development shell run:"; \
+		echo -e "\n\t. ${VIRTUAL_ENV}/bin/activate$$([[ "$$SHELL" =~ "fish" ]] && echo .fish)\n"; \
+		echo -e "Or refer to Direnv in README.md for automatic activation."; \
+	fi
 
 # install application and all its (python) dependencies
 ${app}: poetry.lock | poetry
@@ -59,6 +67,7 @@ poetry_update: pyproject.toml | poetry
 	# Updating dependencies and locking them (test before committing)
 	${env} poetry update
 
+## QA
 test: .make.test	## run test suite
 .make.test: ${pysrc} ${app}
 	# run testsuite
@@ -95,6 +104,7 @@ autofix fix: .make.fix  ## automatic fix of trivial code quality issues
 	${MAKE} check
 	@touch $@
 
+## Running
 run: ${app}  ## run complete application stack (frontend, worker, broker)
 	# start server (this can take a while)
 	DEBUG=1 NETWORK_SUPPORTS_IPV6=1 ${env} ${app} devserver
@@ -117,6 +127,7 @@ run-worker: ${app}  ## only run worker component
 run-broker:  ## only run broker
 	docker run --rm --name=redis -p 6379 redis
 
+## Testing
 test_integration: ${app}  ## perform integration test suite
 	DB_NAME=test.sqlite3 ${env} pytest -v -k 'integration' ${testargs}
 
@@ -158,6 +169,10 @@ test_postgres:
 	DJANGO_DATABASE=production DB_ENGINE=postgresql_psycopg2 DB_USER=root DB_HOST=127.0.0.1 \
 		$(MAKE) test; e=$$?; docker stop postgres; exit $$e
 
+image:  ## Create Docker image
+	docker build -t ${docker_image_name} .
+
+## Housekeeping
 clean:  ## cleanup build artifacts, caches, databases, etc.
 	# remove python cache files
 	-find * -name __pycache__ -print0 | xargs -0 rm -rf
@@ -172,7 +187,7 @@ clean:  ## cleanup build artifacts, caches, databases, etc.
 
 clean_virtualenv:  ## cleanup virtualenv and installed app/dependencies
 	# clear poetry cache
-	-yes yes | poetry cache clear --all pypi
+	-yes yes | poetry cache:clear --all pypi
 	# remove virtualenv
 	-rm -fr ${VIRTUAL_ENV}/
 
@@ -239,6 +254,8 @@ clean_virtualenv:  ## cleanup virtualenv and installed app/dependencies
 #                                                   ..,*//(((((((//*,..
 mrproper: clean clean_virtualenv ## thorough cleanup, also removes virtualenv
 
+## Base requirements
+
 # don't let poetry manage the virtualenv, we do it ourselves to make it deterministic
 poetry: ${poetry}
 poetry_version=0.12.15
@@ -257,10 +274,7 @@ ${python}:
 	${VIRTUAL_ENV}/bin/pip install --upgrade pip==19.1.1
 
 
-image:  ## Create Docker image
-	docker build -t ${docker_image_name} .
-
-# utility
+## Utility
 help:           ## Show this help.
 	@IFS=$$'\n' ; \
 	help_lines=(`fgrep -h "##" $(MAKEFILE_LIST) | fgrep -v fgrep | sed -e 's/\\$$//' | sed -e 's/##/:/'`); \

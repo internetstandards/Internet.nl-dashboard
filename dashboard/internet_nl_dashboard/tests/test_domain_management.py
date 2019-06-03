@@ -11,7 +11,7 @@ from dashboard.internet_nl_dashboard.logic.domains import (delete_list, delete_u
 from dashboard.internet_nl_dashboard.models import Account
 
 
-def test_urllists(db) -> None:
+def test_urllists(db, redis_server) -> None:
     account, created = Account.objects.all().get_or_create(name="test")
 
     list_1 = get_or_create_list_by_name(account, "test list 1")
