@@ -75,18 +75,17 @@
                 <button disabled="disabled">Compare with previous (beta)</button>
             </div>
 
-            <span v-if="!selected_category">&nbsp;</span>
-
-            <div v-if="selected_report.value">
-            <label for="url_filter">Url filter:</label><input type="text" v-model="url_filter" id="url_filter">
-            <br><br><br><br>
-            </div>
             <h2 v-if="filtered_urls.length">Report</h2>
             <div>
                 <table class="table table-striped">
                     <thead>
                         <tr>
-                            <th style="width: 300px"><span v-if="selected_category && !['web', 'mail'].includes(selected_category)" @click="select_category(selected_report.value.urllist_scan_type)">Remove filter: {{ $t("report." + selected_category) }}</span></th>
+                            <th style="width: 300px">
+                                <div v-if="selected_report.value">
+                                    <input type="text" v-model="url_filter" id="url_filter" placeholder="Url Filter...">
+                                </div>
+                                <span v-if="selected_category && !['web', 'mail'].includes(selected_category)" @click="select_category(selected_report.value.urllist_scan_type)">Category filter: ❌ {{ $t("report." + selected_category) }}</span>
+                            </th>
                             <th class="rotate" v-for="category in relevant_categories_based_on_settings()">
                                 <div @click="select_category(category)">
                                     <span>{{ $t("report." + category) }}</span></div>
@@ -96,19 +95,39 @@
                     <tbody v-if="filtered_urls.length" class="gridtable">
                         <tr v-for="url in filtered_urls" v-if="url.endpoints.length">
                             <td>{{url.url}}</td>
-                            <td class="testresultcell" v-for="category_name in relevant_categories_based_on_settings()" v-if="category_name in url.endpoints[0].ratings_by_type">
-                                <span class="failed" v-if="url.endpoints[0].ratings_by_type[category_name].ok < 1" :title="$t('report.' + category_name + '_verdict_bad')">
-                                    Failed
-                                </span>
-                                <span class="passed" v-if="url.endpoints[0].ratings_by_type[category_name].ok > 0" :title="$t('report.' + category_name + '_verdict_good')">
-                                    Passed
-                                </span>
+                            <td class="testresultcell" v-for="category_name in relevant_categories_based_on_settings()">
+                                <template v-if="['web', 'mail'].includes(selected_category)">
+                                    <template v-if="category_name in url.endpoints[0].ratings_by_type">
+                                        <span class="category_failed" v-if="url.endpoints[0].ratings_by_type[category_name].ok < 1" :title="$t('report.' + category_name + '_verdict_bad')">
+                                            Failed
+                                        </span>
+                                        <span class="category_passed" v-if="url.endpoints[0].ratings_by_type[category_name].ok > 0" :title="$t('report.' + category_name + '_verdict_good')">
+                                            Passed
+                                        </span>
+                                    </template>
+                                    <span class="" v-if="url.endpoints[0].ratings_by_type[category_name] === undefined">
+                                        Unknown
+                                    </span>
+                                </template>
+                                <template v-if="!['web', 'mail'].includes(selected_category)">
+                                    <template v-if="category_name in url.endpoints[0].ratings_by_type">
+                                        <span class="failed" v-if="url.endpoints[0].ratings_by_type[category_name].ok < 1" :title="$t('report.' + category_name + '_verdict_bad')">
+                                            Failed
+                                        </span>
+                                        <span class="passed" v-if="url.endpoints[0].ratings_by_type[category_name].ok > 0" :title="$t('report.' + category_name + '_verdict_good')">
+                                            Passed
+                                        </span>
+                                    </template>
+                                    <span class="" v-if="url.endpoints[0].ratings_by_type[category_name] === undefined">
+                                        Unknown
+                                    </span>
+                                </template>
                             </td>
                         </tr>
                     </tbody>
                     <tbody v-if="!filtered_urls.length">
                         <tr>
-                           <td>-</td><td :colspan="relevant_categories_based_on_settings().length - 1">It looks like this report is empty... did you filter too much?</td>
+                           <td :colspan="relevant_categories_based_on_settings().length + 1" style="text-align: center;">😱 It looks like this report is empty... did you filter too much?</td>
                         </tr>
                     </tbody>
                 </table>

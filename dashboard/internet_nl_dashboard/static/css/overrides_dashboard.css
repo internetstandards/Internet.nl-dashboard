@@ -257,8 +257,8 @@ label {
 
 /** Testresults in matrix style */
 .category_passed {
-    background-image: url("/static/images/vendor/internet_nl/li-shield-ok.png");
-    background-image: url("/static/images/vendor/internet_nl/li-shield-ok.svg"), none;
+    background-image: url("/static/images/vendor/internet_nl/icon-circle-check.png");
+    background-image: url("/static/images/vendor/internet_nl/icon-circle-check.svg"), none;
 }
 
 .passed {
@@ -267,8 +267,8 @@ label {
 }
 
 .category_failed {
-    background-image: url("/static/images/vendor/internet_nl/icon-error.png");
-    background-image: url("/static/images/vendor/internet_nl/icon-error.svg"), none;
+    background-image: url("/static/images/vendor/internet_nl/icon-circle-error.png");
+    background-image: url("/static/images/vendor/internet_nl/icon-circle-error.svg"), none;
 }
 
 .failed {
