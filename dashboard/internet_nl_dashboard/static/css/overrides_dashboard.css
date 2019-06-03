@@ -240,3 +240,85 @@ label {
     font-size: 1.2em;
     text-align: center;
 }
+
+.testresultcell span{
+    background-size: 1.125em 1.125em;
+    background-repeat: no-repeat;
+    /**
+    The reason we're not using padding-left 1.5em is that we want the results to be copy-pasteable.
+    So there is invisible text on the icon that can be copied.
+    */
+    width: 20px;
+    height: 20px;
+    display: block;
+    color: transparent;
+}
+
+/** Testresults in matrix style */
+.passed {
+    background-image: url("/static/images/vendor/internet_nl/li-shield-ok.png");
+    background-image: url("/static/images/vendor/internet_nl/li-shield-ok.svg"), none;
+}
+
+.failed {
+    background-image: url("/static/images/vendor/internet_nl/icon-error.png");
+    background-image: url("/static/images/vendor/internet_nl/icon-error.svg"), none;
+}
+
+.testresultcell.warning, .warning, .faq-subtest.warning {
+    background-image: url("/static/images/vendor/internet_nl/icon-warning.png");
+    background-image: url("/static/images/vendor/internet_nl/icon-warning.svg"), none;
+}
+
+.testresultcell.info, .info, .faq-subtest.info {
+    background-image: url("/static/images/vendor/internet_nl/icon-info.png");
+    background-image: url("/static/images/vendor/internet_nl/icon-info.svg"), none;
+}
+
+.testresultcell.good-not-tested, .good-not-tested, .faq-subtest.good-not-tested {
+    background-image: url("/static/images/vendor/internet_nl/icon-not-tested-question-mark.png");
+    background-image: url("/static/images/vendor/internet_nl/icon-not-tested-question-mark.svg"), none;
+}
+
+.testresultcell.not-tested, .not-tested, .faq-subtest.not-tested {
+    background-image: url("/static/images/vendor/internet_nl/icon-not-tested.png");
+    background-image: url("/static/images/vendor/internet_nl/icon-not-tested.svg"), none;
+}
+
+.table-striped tbody tr:nth-of-type(2n+1) {
+    background-color: rgba(0,0,0,.05);
+}
+
+.table {
+    width: 100%;
+    max-width: 100%;
+    margin-bottom: 1rem;
+    background-color: transparent;
+}
+
+.table td, .table th {
+    padding: .75rem;
+    vertical-align: top;
+    border-top: 1px solid #dee2e6;
+}
+
+
+/* https://css-tricks.com/rotated-table-column-headers/*/
+    th.rotate {
+  /* Something you can count on */
+  height: 100px;
+  white-space: nowrap;
+}
+
+th.rotate > div {
+  transform:
+    /* Magic Numbers */
+    translate(0px, 55px)
+    /* 45 is really 360 - 45 */
+    rotate(315deg);
+  width: 30px;
+}
+th.rotate > div > span {
+    border-bottom: 0px solid #ccc;
+    padding: 5px 10px;
+}

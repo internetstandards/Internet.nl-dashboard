@@ -13,7 +13,7 @@
     #site-title a {
         height: 33px;
         background: url("/static/logo_en.png");
-        background: url("/static/images/vendor/internet_nl/logo_en.svg")
+        background: url("/static/logo_en.svg")
     }
 }
 
@@ -28,7 +28,7 @@
     #site-title a {
         height: 25px;
         background: url("/static/logo_en.png");
-        background: url("/static/images/vendor/internet_nl/logo_en.svg")
+        background: url("/static/logo_en.svg")
     }
 }
 

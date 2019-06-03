@@ -203,8 +203,8 @@ header .wrap {
     height: 33px;
     font-size: 100%;
     width: 100%;
-    background: url("/static/images/vendor/internet_nl/logo_en.png");
-    background: url("/static/images/vendor/internet_nl/logo_en.svg");
+    background: url("/static/logo_en.png");
+    background: url("/static/logo_en.svg");
     background-repeat: no-repeat;
     background-size: contain;
     background-position: left center;
@@ -677,18 +677,18 @@ article img {
 }
 
 .block.stats .almost-there {
-    list-style: url("/static/images/vendor/internet_nl/li-shield-warning.png");
-    list-style: url("/static/images/vendor/internet_nl/li-shield-warning.svg")
+    list-style: url("/static/li-shield-warning.png");
+    list-style: url("/static/li-shield-warning.svg")
 }
 
 .block.stats .notpassed {
-    list-style: url("/static/images/vendor/internet_nl/li-shield-error.png");
-    list-style: url("/static/images/vendor/internet_nl/li-shield-error.svg")
+    list-style: url("/static/li-shield-error.png");
+    list-style: url("/static/li-shield-error.svg")
 }
 
 .block.stats .passed {
-    list-style: url("/static/images/vendor/internet_nl/li-shield-ok.png");
-    list-style: url("/static/images/vendor/internet_nl/li-shield-ok.svg")
+    list-style: url("/static/li-shield-ok.png");
+    list-style: url("/static/li-shield-ok.svg")
 }
 
 .block.stats ol, .block.hall-of-fame ol {
@@ -717,8 +717,8 @@ aside .emailtest li a, aside .websitetest li a, aside .connectiontest li a, asid
 }
 
 .block.hall-of-fame li {
-    list-style: url("/static/images/vendor/internet_nl/li-check-green.png");
-    list-style: url("/static/images/vendor/internet_nl/li-check-green.svg")
+    list-style: url("/static/li-check-green.png");
+    list-style: url("/static/li-check-green.svg")
 }
 
 .block h3 a {
@@ -759,14 +759,14 @@ aside .emailtest li a, aside .websitetest li a, aside .connectiontest li a, asid
     color: black;
     text-decoration: underline;
     padding-right: 1.5em;
-    background: url("/static/images/vendor/internet_nl/icon-arrow-right.png") center right no-repeat;
-    background-image: url("/static/images/vendor/internet_nl/icon-arrow-right.svg"), none
+    background: url("/static/icon-arrow-right.png") center right no-repeat;
+    background-image: url("/static/icon-arrow-right.svg"), none
 }
 
 .dark .read-more a {
     color: #ffffff;
-    background: url("/static/images/vendor/internet_nl/icon-arrow-right-white.png") center right no-repeat;
-    background-image: url("/static/images/vendor/internet_nl/icon-arrow-right-white.svg"), none
+    background: url("/static/icon-arrow-right-white.png") center right no-repeat;
+    background-image: url("/static/icon-arrow-right-white.svg"), none
 }
 
 .read-more a:hover, .read-more a:focus, .read-more a:active {

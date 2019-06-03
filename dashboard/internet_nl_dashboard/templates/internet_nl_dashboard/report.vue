@@ -1,25 +1,4 @@
 {% verbatim %}
-<style>
-/* https://css-tricks.com/rotated-table-column-headers/*/
-    th.rotate {
-  /* Something you can count on */
-  height: 100px;
-  white-space: nowrap;
-}
-
-th.rotate > div {
-  transform:
-    /* Magic Numbers */
-    translate(15px, 62px)
-    /* 45 is really 360 - 45 */
-    rotate(315deg);
-  width: 30px;
-}
-th.rotate > div > span {
-    border-bottom: 1px solid #ccc;
-    padding: 5px 10px;
-}
-</style>
 <template type="x-template" id="report_template">
     <div>
         <button style='float: right' @click="show_settings = !show_settings">Toggle settings</button>
@@ -96,7 +75,6 @@ th.rotate > div > span {
                 <button disabled="disabled">Compare with previous (beta)</button>
             </div>
 
-            <span v-if="selected_category" @click="select_category(selected_report.value.urllist_scan_type)">Remove filter: {{ $t("report." + selected_category) }}</span>
             <span v-if="!selected_category">&nbsp;</span>
 
             <div v-if="selected_report.value">
@@ -105,22 +83,26 @@ th.rotate > div > span {
             </div>
             <h2 v-if="filtered_urls.length">Report</h2>
             <div>
-                <table>
+                <table class="table table-striped">
                     <thead>
                         <tr>
-                            <th style="width: 300px">&nbsp;</th>
+                            <th style="width: 300px"><span v-if="selected_category && !['web', 'mail'].includes(selected_category)" @click="select_category(selected_report.value.urllist_scan_type)">Remove filter: {{ $t("report." + selected_category) }}</span></th>
                             <th class="rotate" v-for="category in relevant_categories_based_on_settings()">
                                 <div @click="select_category(category)">
                                     <span>{{ $t("report." + category) }}</span></div>
                             </th>
                         </tr>
                     </thead>
-                    <tbody v-if="filtered_urls.length">
+                    <tbody v-if="filtered_urls.length" class="gridtable">
                         <tr v-for="url in filtered_urls" v-if="url.endpoints.length">
                             <td>{{url.url}}</td>
-                            <td v-for="category_name in relevant_categories_based_on_settings()" v-if="category_name in url.endpoints[0].ratings_by_type">
-                                <span v-if="url.endpoints[0].ratings_by_type[category_name].ok < 1" :title="`${url.url} has not implemented ${$t('report.' + category_name)}`">❌</span>
-                                <span v-if="url.endpoints[0].ratings_by_type[category_name].ok > 0" :title="`${url.url} has implemented ${$t('report.' + category_name)}`">✅</span>
+                            <td class="testresultcell" v-for="category_name in relevant_categories_based_on_settings()" v-if="category_name in url.endpoints[0].ratings_by_type">
+                                <span class="failed" v-if="url.endpoints[0].ratings_by_type[category_name].ok < 1" :title="`${url.url} has not implemented ${$t('report.' + category_name)}`">
+                                    Failed
+                                </span>
+                                <span class="passed" v-if="url.endpoints[0].ratings_by_type[category_name].ok > 0" :title="`${url.url} has implemented ${$t('report.' + category_name)}`">
+                                    Passed
+                                </span>
                             </td>
                         </tr>
                     </tbody>
