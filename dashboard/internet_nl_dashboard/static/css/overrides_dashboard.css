@@ -333,3 +333,8 @@ th.rotate > div > span {
     border-bottom: 0px solid #ccc;
     padding: 5px 10px;
 }
+
+
+.direct_link_to_report{
+    font-size: 0.8em;
+}

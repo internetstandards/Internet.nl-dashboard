@@ -94,7 +94,10 @@
                     </thead>
                     <tbody v-if="filtered_urls.length" class="gridtable">
                         <tr v-for="url in filtered_urls" v-if="url.endpoints.length">
-                            <td>{{url.url}}</td>
+                            <td>{{url.url}}
+                                <span v-if="selected_report.value.type === 'web'" v-html="original_report_link_from_score(url.endpoints[0].ratings_by_type['internet_nl_web_overall_score'].explanation)"></span>
+                                <span v-if="selected_report.value.type === 'mail'" v-html="original_report_link_from_score(url.endpoints[0].ratings_by_type['internet_nl_mail_dashboard_overall_score'].explanation)"></span>
+                            </td>
                             <td class="testresultcell" v-for="category_name in relevant_categories_based_on_settings()">
                                 <template v-if="['web', 'mail'].includes(selected_category)">
                                     <template v-if="category_name in url.endpoints[0].ratings_by_type">
@@ -628,6 +631,24 @@ vueReport = new Vue({
                 this.issue_timeline_of_related_urllist = data;
             }).catch((fail) => {console.log('A loading error occurred: ' + fail);});
 
+        },
+        original_report_link_from_score: function(score){
+            if (!score){
+                return ""
+            }
+
+            // score = 66 https://batch.internet.nl/site/dev2.internet.nl/664025/
+            let sc = score.split(" ");
+
+            if (sc.length < 1){
+                return ""
+            }
+
+            if (!sc[1].startsWith('http')){
+                return ""
+            }
+
+            return `<a class='direct_link_to_report' href='${sc[1]}' target="_blank">${sc[0]}%</a>`
         }
     },
     watch: {
