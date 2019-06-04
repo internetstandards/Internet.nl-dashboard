@@ -589,6 +589,9 @@ vueReport = new Vue({
             preferred_fields = this.categories[this.selected_category];
             returned_fields = [];
             for(let i = 0; i<preferred_fields.length; i++){
+
+                // When new fields are introduced, the list filters will be outdated and contain missing fields.
+                // todo: fix
                 if(this.issue_filters[preferred_fields[i]].visible)
                     returned_fields.push(preferred_fields[i])
             }
