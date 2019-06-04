@@ -709,7 +709,6 @@ const chart_mixin = {
         }
     },
     watch: {
-        // old and new value are the same always... Something bypasses this watch. Property > watch?
         chart_data: function(new_value, old_value){
             this.renderData();
         },
@@ -841,7 +840,7 @@ Vue.component('percentage-bar-chart', {
             // the right most value is the most important instead of the left one.
             this.chart.data.datasets.reverse();
             // the same goes for colors
-            this.chart.data.labels.reverse();
+            // this.chart.data.labels.reverse();
 
 
             this.chart.update();
@@ -958,7 +957,7 @@ Vue.component('radar-chart', {
             // the right most value is the most important instead of the left one.
             this.chart.data.datasets.reverse();
             // the same goes for colors
-            this.chart.data.labels.reverse();
+            // this.chart.data.labels.reverse();
 
             this.chart.update();
         },
