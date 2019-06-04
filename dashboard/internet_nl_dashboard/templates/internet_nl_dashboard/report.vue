@@ -126,7 +126,9 @@
                                         <span class="info" v-if="url.endpoints[0].ratings_by_type[category_name].low > 0" :title="$t('report.' + category_name + '_verdict_bad')">
                                             Info
                                         </span>
-                                        <span class="passed" v-if="url.endpoints[0].ratings_by_type[category_name].ok > 0" :title="$t('report.' + category_name + '_verdict_good')">
+                                        <span class="passed" v-if="url.endpoints[0].ratings_by_type[category_name].ok > 0
+                                        && !url.endpoints[0].ratings_by_type[category_name].not_applicable
+                                        && !url.endpoints[0].ratings_by_type[category_name].not_testable" :title="$t('report.' + category_name + '_verdict_good')">
                                             Passed
                                         </span>
                                     </template>
