@@ -225,13 +225,14 @@ vueReport = new Vue({
             ],
 
             'web_legacy': [
-                'internet_nl_web_legacy_dane',
-                'internet_nl_web_legacy_tls_ncsc_web',
-                'internet_nl_web_legacy_hsts',
-                'internet_nl_web_legacy_https_enforced',
+                'internet_nl_web_legacy_dnssec',
                 'internet_nl_web_legacy_tls_available',
-                'internet_nl_web_legacy_ipv6_webserver',
+                'internet_nl_web_legacy_tls_ncsc_web',
+                'internet_nl_web_legacy_https_enforced',
+                'internet_nl_web_legacy_hsts',
                 'internet_nl_web_legacy_ipv6_nameserver',
+                'internet_nl_web_legacy_ipv6_webserver',
+                'internet_nl_web_legacy_dane',
             ],
 
             'mail': [
@@ -243,8 +244,9 @@ vueReport = new Vue({
             ],
 
             'internet_nl_mail_dashboard_tls': [
-                'internet_nl_mail_server_configured',  // Added 24th of May 2019
-                'internet_nl_mail_servers_testable',  // Added 24th of May 2019
+                // feature flags are not relevant in reporting
+                // 'internet_nl_mail_server_configured',  // Added 24th of May 2019
+                // 'internet_nl_mail_servers_testable',  // Added 24th of May 2019
 
                 'internet_nl_mail_starttls_tls_version',
                 'internet_nl_mail_starttls_tls_ciphers',
@@ -261,11 +263,14 @@ vueReport = new Vue({
                 'internet_nl_mail_starttls_dane_exist',
                 'internet_nl_mail_starttls_dane_valid',
                 'internet_nl_mail_starttls_dane_rollover',
-                'internet_nl_mail_starttls_dane_ta',  // Added 24th of May 2019
+
+                // feature flag are not relevant in reporting
+                // 'internet_nl_mail_starttls_dane_ta',  // Added 24th of May 2019
 
             ],
             'internet_nl_mail_dashboard_auth': [
-                'internet_nl_mail_non_sending_domain',  // Added 24th of May 2019
+                // feature flag are not relevant in reporting
+                // 'internet_nl_mail_non_sending_domain',  // Added 24th of May 2019
 
                 'internet_nl_mail_auth_dmarc_exist',
                 'internet_nl_mail_auth_dmarc_policy',
@@ -292,15 +297,18 @@ vueReport = new Vue({
                 'internet_nl_mail_ipv6_mx_address',
             ],
             'mail_legacy': [
-                'internet_nl_mail_legacy_dane',
-                'internet_nl_mail_legacy_tls_available',
-                'internet_nl_mail_legacy_spf',
-                'internet_nl_mail_legacy_dkim',
                 'internet_nl_mail_legacy_dmarc',
-                'internet_nl_mail_legacy_dnsssec_mailserver_domain',
+                'internet_nl_mail_legacy_dkim',
+                'internet_nl_mail_legacy_spf',
+                'internet_nl_mail_legacy_dmarc_policy',
+                'internet_nl_mail_legacy_spf_policy',
+                'internet_nl_mail_legacy_start_tls',
+                'internet_nl_mail_legacy_start_tls_ncsc',
                 'internet_nl_mail_legacy_dnssec_email_domain',
-                'internet_nl_mail_legacy_ipv6_mailserver',
+                'internet_nl_mail_legacy_dnssec_mx',
+                'internet_nl_mail_legacy_dane',
                 'internet_nl_mail_legacy_ipv6_nameserver',
+                'internet_nl_mail_legacy_ipv6_mailserver',
             ],
         },
 
@@ -368,30 +376,39 @@ vueReport = new Vue({
             'internet_nl_mail_ipv6_mx_reach': {'visible': true},
             'internet_nl_mail_ipv6_ns_reach': {'visible': true},
             'internet_nl_mail_ipv6_ns_address': {'visible': true},
-            'internet_nl_mail_legacy_dane': {'visible': true},
-            'internet_nl_mail_legacy_tls_available': {'visible': true},
-            'internet_nl_mail_legacy_spf': {'visible': true},
-            'internet_nl_mail_legacy_dkim': {'visible': true},
+
             'internet_nl_mail_legacy_dmarc': {'visible': true},
-            'internet_nl_mail_legacy_dnsssec_mailserver_domain': {'visible': true},
+            'internet_nl_mail_legacy_dkim': {'visible': true},
+            'internet_nl_mail_legacy_spf': {'visible': true},
+            'internet_nl_mail_legacy_dmarc_policy': {'visible': true},
+            'internet_nl_mail_legacy_spf_policy': {'visible': true},
+            'internet_nl_mail_legacy_start_tls': {'visible': true},
+            'internet_nl_mail_legacy_start_tls_ncsc': {'visible': true},
             'internet_nl_mail_legacy_dnssec_email_domain': {'visible': true},
-            'internet_nl_mail_legacy_ipv6_mailserver': {'visible': true},
+            'internet_nl_mail_legacy_dnssec_mx': {'visible': true},
+            'internet_nl_mail_legacy_dane': {'visible': true},
             'internet_nl_mail_legacy_ipv6_nameserver': {'visible': true},
-            'internet_nl_web_legacy_dane': {'visible': true},
-            'internet_nl_web_legacy_tls_ncsc_web': {'visible': true},
-            'internet_nl_web_legacy_hsts': {'visible': true},
-            'internet_nl_web_legacy_https_enforced': {'visible': true},
+            'internet_nl_mail_legacy_ipv6_mailserver': {'visible': true},
+
+            'internet_nl_web_legacy_dnssec': {'visible': true},
             'internet_nl_web_legacy_tls_available': {'visible': true},
-            'internet_nl_web_legacy_ipv6_webserver': {'visible': true},
+            'internet_nl_web_legacy_tls_ncsc_web': {'visible': true},
+            'internet_nl_web_legacy_https_enforced': {'visible': true},
+            'internet_nl_web_legacy_hsts': {'visible': true},
             'internet_nl_web_legacy_ipv6_nameserver': {'visible': true},
+            'internet_nl_web_legacy_ipv6_webserver': {'visible': true},
+            'internet_nl_web_legacy_dane': {'visible': true},
 
             // Fields added on the 24th of May 2019
             'internet_nl_mail_auth_dmarc_policy_only': {'visible': true},  // Added 24th of May 2019
             'internet_nl_mail_auth_dmarc_ext_destination': {'visible': true},  // Added 24th of May 2019
-            'internet_nl_mail_non_sending_domain': {'visible': true},  // Added 24th of May 2019
-            'internet_nl_mail_server_configured': {'visible': true},  // Added 24th of May 2019
-            'internet_nl_mail_servers_testable': {'visible': true},   // Added 24th of May 2019
-            'internet_nl_mail_starttls_dane_ta': {'visible': true},  // Added 24th of May 2019
+
+            // no feature flags in report
+            //'internet_nl_mail_non_sending_domain': {'visible': true},  // Added 24th of May 2019
+            //'internet_nl_mail_server_configured': {'visible': true},  // Added 24th of May 2019
+            //'internet_nl_mail_servers_testable': {'visible': true},   // Added 24th of May 2019
+            //'internet_nl_mail_starttls_dane_ta': {'visible': true},  // Added 24th of May 2019
+
             'internet_nl_web_appsecpriv': {'visible': true},  // Added 24th of May 2019
             'internet_nl_web_appsecpriv_csp': {'visible': true},  // Added 24th of May 2019
             'internet_nl_web_appsecpriv_referrer_policy': {'visible': true},  // Added 24th of May 2019
@@ -400,6 +417,7 @@ vueReport = new Vue({
             'internet_nl_web_appsecpriv_x_xss_protection': {'visible': true},  // Added 24th of May 2019
 
         },
+
         issue_filters_save_response: null,
 
         // url_filter allows the filtering of names in the list of urls.

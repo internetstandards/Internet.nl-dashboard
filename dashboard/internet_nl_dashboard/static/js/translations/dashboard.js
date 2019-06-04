@@ -125,24 +125,27 @@ const messages = {
             mail_legacy: 'Mail Baseline NL Government',
             web_legacy: 'Web Baseline NL Government',
 
-            internet_nl_mail_legacy_dane: 'DANE',
-            internet_nl_mail_legacy_tls_available: 'TLS',
-            internet_nl_mail_legacy_spf: 'SPF',
-            internet_nl_mail_legacy_dkim: 'DKIM',
             internet_nl_mail_legacy_dmarc: 'DMARC',
-            internet_nl_mail_legacy_dnsssec_mailserver_domain: 'DNSSEC mailserver domain',
+            internet_nl_mail_legacy_dkim: 'DKIM',
+            internet_nl_mail_legacy_spf: 'SPF',
+            internet_nl_mail_legacy_dmarc_policy: 'DMARC policy',
+            internet_nl_mail_legacy_spf_policy: 'SPF policy',
+            internet_nl_mail_legacy_start_tls: 'STARTTLS',
+            internet_nl_mail_legacy_start_tls_ncsc: 'STARTTLS NCSC',
             internet_nl_mail_legacy_dnssec_email_domain: 'DNSSEC e-mail domain',
-            internet_nl_mail_legacy_ipv6_mailserver: 'IPV6 mailserver',
-            internet_nl_mail_legacy_ipv6_nameserver: 'IPV6 nameserver',
+            internet_nl_mail_legacy_dnssec_mx: 'DNSSEC MX',
+            internet_nl_mail_legacy_dane: 'DANE',
+            internet_nl_mail_legacy_ipv6_nameserver: 'IPv6 nameserver',
+            internet_nl_mail_legacy_ipv6_mailserver: 'IPv6 mailserver',
 
-            internet_nl_web_legacy_hsts: 'HSTS',
-            internet_nl_web_legacy_dane: 'DANE',
-            // todo: waarom mist tls ncsc web?
+            internet_nl_web_legacy_dnssec: 'DNSSEC',
+            internet_nl_web_legacy_tls_available: 'TLS available',
             internet_nl_web_legacy_tls_ncsc_web: 'TLS NCSC web',
             internet_nl_web_legacy_https_enforced: 'HTTPS enforced',
-            internet_nl_web_legacy_tls_available: 'TLS available',
-            internet_nl_web_legacy_ipv6_webserver: 'IPV6 webserver',
-            internet_nl_web_legacy_ipv6_nameserver: 'IPV6 nameserver',
+            internet_nl_web_legacy_hsts: 'HSTS',
+            internet_nl_web_legacy_ipv6_nameserver: 'IPv6 nameserver',
+            internet_nl_web_legacy_ipv6_webserver: 'IPv6 websever',
+            internet_nl_web_legacy_dane: 'DANE',
 
             // types of tests
             internet_nl_web_tls: internet_nl_messages.en.internet_nl.test_sitetls_label,
@@ -463,26 +466,10 @@ const messages = {
             web: 'Web',
 
             // legacy values
-            mail_legacy: 'Mail Baseline NL Government',
-            web_legacy: 'Web Baseline NL Government',
+            mail_legacy: 'Mail Baseline NL Overheid',
+            web_legacy: 'Web Baseline NL Overheid',
 
-            internet_nl_mail_legacy_dane: 'DANE',
-            internet_nl_mail_legacy_tls_available: 'TLS',
-            internet_nl_mail_legacy_spf: 'SPF',
-            internet_nl_mail_legacy_dkim: 'DKIM',
-            internet_nl_mail_legacy_dmarc: 'DMARC',
-            internet_nl_mail_legacy_dnsssec_mailserver_domain: 'DNSSEC mailserver domain',
-            internet_nl_mail_legacy_dnssec_email_domain: 'DNSSEC e-mail domain',
-            internet_nl_mail_legacy_ipv6_mailserver: 'IPV6 mailserver',
-            internet_nl_mail_legacy_ipv6_nameserver: 'IPV6 nameserver',
-
-            internet_nl_web_legacy_hsts: 'HSTS',
-            internet_nl_web_legacy_dane: 'DANE',
-            internet_nl_web_legacy_tls_ncsc_web: 'TLS NCSC web',
-            internet_nl_web_legacy_https_enforced: 'HTTPS enforced',
-            internet_nl_web_legacy_tls_available: 'TLS available',
-            internet_nl_web_legacy_ipv6_webserver: 'IPV6 webserver',
-            internet_nl_web_legacy_ipv6_nameserver: 'IPV6 nameserver',
+            // use the labels from fallback language.
 
             // types of tests
             internet_nl_web_tls: internet_nl_messages.nl.internet_nl.test_sitetls_label,

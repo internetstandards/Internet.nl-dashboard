@@ -61,15 +61,18 @@ urllist_report_content = {
         'internet_nl_mail_dashboard_overall_score',
 
         # Legacy fields used in dashboard:
-        'internet_nl_mail_legacy_dane',
-        'internet_nl_mail_legacy_tls_available',
-        'internet_nl_mail_legacy_spf',
-        'internet_nl_mail_legacy_dkim',
         'internet_nl_mail_legacy_dmarc',
-        'internet_nl_mail_legacy_dnsssec_mailserver_domain',
+        'internet_nl_mail_legacy_dkim',
+        'internet_nl_mail_legacy_spf',
+        'internet_nl_mail_legacy_dmarc_policy',
+        'internet_nl_mail_legacy_spf_policy',
+        'internet_nl_mail_legacy_start_tls',
+        'internet_nl_mail_legacy_start_tls_ncsc',
         'internet_nl_mail_legacy_dnssec_email_domain',
-        'internet_nl_mail_legacy_ipv6_mailserver',
+        'internet_nl_mail_legacy_dnssec_mx',
+        'internet_nl_mail_legacy_dane',
         'internet_nl_mail_legacy_ipv6_nameserver',
+        'internet_nl_mail_legacy_ipv6_mailserver',
     ],
 
     'web': [
@@ -115,15 +118,17 @@ urllist_report_content = {
         'internet_nl_web_overall_score',
 
         # Legacy fields, used in dashboard:
-        'internet_nl_web_legacy_dane',
-        'internet_nl_web_legacy_tls_ncsc_web',
-        'internet_nl_web_legacy_hsts',
-        'internet_nl_web_legacy_https_enforced',
+        'internet_nl_web_legacy_dnssec',
         'internet_nl_web_legacy_tls_available',
+        'internet_nl_web_legacy_tls_ncsc_web',
+        'internet_nl_web_legacy_https_enforced',
+        'internet_nl_web_legacy_hsts',
+        'internet_nl_web_legacy_ipv6_nameserver',
         'internet_nl_web_legacy_ipv6_webserver',
-        'internet_nl_web_legacy_ipv6_nameserver'
+        'internet_nl_web_legacy_dane',
     ]
 }
+
 
 
 def compose_task(**kwargs) -> Task:
