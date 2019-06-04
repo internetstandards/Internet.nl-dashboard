@@ -113,13 +113,13 @@ run-frontend: ${app}  ## only run frontend component
 	DEBUG=1 NETWORK_SUPPORTS_IPV6=1 ${env} ${app} runserver
 
 app: ${app}  ## perform arbitrary app commands
-    ## For example: make app args=migrate
-    # make app args="loaddata development"
-    # make app args="help"
-    # make app args="report -y municipality"
-    # make app args="makemigrations"
-    # make app args="migrate"
-	DEBUG=1 NETWORK_SUPPORTS_IPV6=1 ${env} ${app} ${args}
+    ## For example: make app cmd=migrate
+    # make app cmd="loaddata development"
+    # make app cmd="help"
+    # make app cmd="report -y municipality"
+    # make app cmd="makemigrations"
+    # make app cmd="migrate"
+	DEBUG=1 NETWORK_SUPPORTS_IPV6=1 ${env} ${app} ${cmd}
 
 run-worker: ${app}  ## only run worker component
 	DEBUG=1 NETWORK_SUPPORTS_IPV6=1 ${env} ${app} celery worker -ldebug -Q storage
