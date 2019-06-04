@@ -111,8 +111,20 @@
                                 </template>
                                 <template v-if="!['web', 'mail'].includes(selected_category)">
                                     <template v-if="category_name in url.endpoints[0].ratings_by_type">
-                                        <span class="failed" v-if="url.endpoints[0].ratings_by_type[category_name].ok < 1" :title="$t('report.' + category_name + '_verdict_bad')">
+                                        <span class="not_applicable" v-if="url.endpoints[0].ratings_by_type[category_name].not_applicable > 0" :title="$t('report.not_applicable')">
+                                            Not Applicable
+                                        </span>
+                                        <span class="not_testable" v-if="url.endpoints[0].ratings_by_type[category_name].not_testable > 0" :title="$t('report.not_testable')">
+                                            Not Testable
+                                        </span>
+                                        <span class="failed" v-if="url.endpoints[0].ratings_by_type[category_name].high > 0" :title="$t('report.' + category_name + '_verdict_bad')">
                                             Failed
+                                        </span>
+                                        <span class="warning" v-if="url.endpoints[0].ratings_by_type[category_name].medium > 0" :title="$t('report.' + category_name + '_verdict_bad')">
+                                            Warning
+                                        </span>
+                                        <span class="info" v-if="url.endpoints[0].ratings_by_type[category_name].low > 0" :title="$t('report.' + category_name + '_verdict_bad')">
+                                            Info
                                         </span>
                                         <span class="passed" v-if="url.endpoints[0].ratings_by_type[category_name].ok > 0" :title="$t('report.' + category_name + '_verdict_good')">
                                             Passed

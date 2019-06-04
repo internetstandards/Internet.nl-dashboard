@@ -276,22 +276,22 @@ label {
     background-image: url("/static/images/vendor/internet_nl/icon-error.svg"), none;
 }
 
-.testresultcell.warning, .warning, .faq-subtest.warning {
+.warning {
     background-image: url("/static/images/vendor/internet_nl/icon-warning.png");
     background-image: url("/static/images/vendor/internet_nl/icon-warning.svg"), none;
 }
 
-.testresultcell.info, .info, .faq-subtest.info {
+.info {
     background-image: url("/static/images/vendor/internet_nl/icon-info.png");
     background-image: url("/static/images/vendor/internet_nl/icon-info.svg"), none;
 }
 
-.testresultcell.good-not-tested, .good-not-tested, .faq-subtest.good-not-tested {
+.not_applicable {
     background-image: url("/static/images/vendor/internet_nl/icon-not-tested-question-mark.png");
     background-image: url("/static/images/vendor/internet_nl/icon-not-tested-question-mark.svg"), none;
 }
 
-.testresultcell.not-tested, .not-tested, .faq-subtest.not-tested {
+.not_testable {
     background-image: url("/static/images/vendor/internet_nl/icon-not-tested.png");
     background-image: url("/static/images/vendor/internet_nl/icon-not-tested.svg"), none;
 }

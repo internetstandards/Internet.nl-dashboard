@@ -66,9 +66,6 @@ class Account(models.Model):
     """
     @staticmethod
     def encrypt_password(password):
-
-        log.debug(password)
-
         f = Fernet(settings.FIELD_ENCRYPTION_KEY)
         return f.encrypt(password.encode())
 

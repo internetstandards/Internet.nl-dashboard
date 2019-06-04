@@ -130,7 +130,6 @@ urllist_report_content = {
 }
 
 
-
 def compose_task(**kwargs) -> Task:
     """
     During scanning, both web and mail scans are triggered for everything. Suppose we change that, and make it possible

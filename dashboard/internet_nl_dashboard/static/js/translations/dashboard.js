@@ -157,6 +157,9 @@ const messages = {
             internet_nl_mail_dashboard_dnssec: internet_nl_messages.en.internet_nl.test_maildnssec_label,
             internet_nl_mail_dashboard_ipv6: internet_nl_messages.en.internet_nl.test_mailipv6_label,
 
+            not_testable: internet_nl_messages.en.internet_nl.detail_tech_data_not_applicable,
+            not_applicable: internet_nl_messages.en.internet_nl.detail_tech_data_not_tested,
+
             // https://github.com/NLnetLabs/Internet.nl/blob/cece8255ac7f39bded137f67c94a10748970c3c7/checks/templates/domain-results.html
             internet_nl_web_appsecpriv: internet_nl_messages.en.internet_nl.results_domain_appsecpriv_http_headers_label,  // Added 24 May 2019
             internet_nl_web_appsecpriv_csp: internet_nl_messages.en.internet_nl.detail_web_appsecpriv_http_csp_label,  // Added 24 May 2019

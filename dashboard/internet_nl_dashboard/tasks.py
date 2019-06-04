@@ -64,7 +64,7 @@ def create_reports_on_finished_scans(urllist: UrlList):
     """
 
     # make sure that the latest urlreports are created... otherwise outdated data / no data will be used.
-    recreate_url_reports(urllist.urls)
+    recreate_url_reports(list(urllist.urls.all()))
 
     scan_dates = set(AccountInternetNLScan.objects.all().filter(
         urllist=urllist,
