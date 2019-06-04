@@ -198,5 +198,10 @@ def add_percentages_to_statistics(report):
         report['statistics_per_issue_type'][key]['pct_high'] = round((issue['high'] / all) * 100, 2)
         report['statistics_per_issue_type'][key]['pct_medium'] = round((issue['medium'] / all) * 100, 2)
         report['statistics_per_issue_type'][key]['pct_low'] = round((issue['low'] / all) * 100, 2)
-        report['statistics_per_issue_type'][key]['pct_ok'] = round((issue['ok'] / all) * 100, 2)
+
+        # warning (=medium) and info(=low) do NOT have a score impact, only high has a score impact.
+        # https://www.internet.nl/faqs/report/
+        report['statistics_per_issue_type'][key]['pct_ok'] = round(
+            ((issue['ok'] + issue['low'] + issue['medium']) / all) * 100, 2)
+
         report['statistics_per_issue_type'][key]['pct_not_ok'] = round((issue['not_ok'] / all) * 100, 2)
