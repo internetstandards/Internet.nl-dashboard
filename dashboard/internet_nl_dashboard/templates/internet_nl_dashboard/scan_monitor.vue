@@ -1,82 +1,101 @@
 {% verbatim %}
 <style>
-    .scan {
-        width: 32.3%;
-        float:left;
-        background-color: ghostwhite;
-        border: 1px solid silver;
-        border-radius: 5px;
-        padding: 5px;
-        margin: 5px;
-    }
-
-    .scan table {
+    .websitetest table th {
         word-break: keep-all;
     }
-
-    .scan table th {
-        padding-top: 0em;
-        width: 25%;
-    }
-    .scan table td {
-        width:75%;
-    }
-    .scan .hide_overflow{
-
-        width: 100%;
-        height: 1.8em;
-        margin: 0;
-        padding: 0;
-        overflow: auto;
-    }
-
-
 </style>
 <template type="x-template" id="scan_monitor_template">
     <div>
         <h1>{{ $t("scan_monitor.title") }}</h1>
         <p>{{ $t("scan_monitor.intro") }}</p>
-        <article class="scan" v-if="scans" v-for="scan in scans">
-            <table>
-                <tbody>
-                <tr>
-                    <th colspan="2">
-                        <span v-if="scan.finished">✅</span>
-                        <span v-if="!scan.finished">🔁</span>
 
-                        {{ $t("scan_monitor.id") }} {{ scan.id }} {{ scan.type }}
-                    </th>
+
+    <div class="wrap">
+        <section class="block" class="scan" v-if="scans" v-for="scan in scans">
+            <div class="wrapper">
+                <span v-if="scan.finished">✅</span>
+                <span v-if="!scan.finished"><img width="15" style="border-radius: 50%" src="/static/images/vendor/internet_nl/probe-animation.gif"></span>
+                <b>{{ scan.type }} {{ $t("scan_monitor.id") }}{{ scan.id }}</b><br>
+                <br>
+                📘 <a :href="'/domains/' + scan.list_id + '/'">{{ scan.list }}</a><br>
+                <br>
+                <template v-if="scan.finished">
+                    <template v-if="scan.last_report_id">
+                        📊 <a :href="'/reports/' + scan.last_report_id">{{ $t("scan_monitor.open_report") }}</a><br>
+                        <br>
+                    </template>
+                    <b>{{ $t("scan_monitor.finished_on") }}</b><br>
+                    <span :title="scan.finished_on">{{ humanize_date(scan.finished_on) }},<br>{{ humanize_relative_date(scan.finished_on) }}</span><br>
+                    <br>
+                    <b>{{ $t("scan_monitor.runtime") }}</b><br>
+                    {{ humanize_duration(scan.runtime) }}<br>
+                    <br>
+                </template>
+                <template v-if="!scan.finished">
+                    <b>{{ $t("scan_monitor.message") }}</b>
+                    <p>{{ scan.message }}</p>
+                    <b>{{ $t("scan_monitor.last_check") }}</b><br>
+                    <span :title="scan.last_check">{{ humanize_date(scan.last_check) }},<br>{{ humanize_relative_date(scan.last_check) }}</span><br>
+                    <br>
+                </template>
+                <b>{{ $t("scan_monitor.started_on") }}</b><br>
+                <span :title="scan.started_on">{{ humanize_date(scan.started_on) }},<br>{{ humanize_relative_date(scan.started_on) }}</span><br>
+                <br>
+
+                🔖 <a :href="scan.status_url" target="_blank">{{ $t("scan_monitor.open_in_api") }}</a><br>
+
+
+
+
+            <!--
+            This has been disabled and code is kept until the usability check has been performed. Perhaps we still need a table
+            <table class="scan_table">
+                <tbody>
+                <tr class="scan_monitor_title_column">
+                    <th>{{ $t("scan_monitor.list") }}</th><td><a :href="'/domains/' + scan.list_id + '/'">{{ scan.list }}</a></td>
                 </tr>
                 <tr>
-                    <th>{{ $t("scan_monitor.list") }}</th><td><div class="hide_overflow">{{ scan.list }}</div></td>
+                    <th>{{ $t("scan_monitor.message") }}</th><td>{{ scan.message }}</td>
                 </tr>
                 <tr>
-                    <th>{{ $t("scan_monitor.started_on") }}</th><td><div class="hide_overflow"><span :title="scan.started_on">{{ humanize_date(scan.started_on) }}</span></div></td>
+                    <th>{{ $t("scan_monitor.started_on") }}</th>
+                    <td>
+                        <span :title="scan.started_on">{{ humanize_date(scan.started_on) }}, {{ humanize_relative_date(scan.started_on) }}</span>
+                    </td>
                 </tr>
                 <tr>
                     <th>{{ $t("scan_monitor.finished_on") }}</th>
-                    <td v-if="scan.finished"><span :title="scan.finished_on"><div class="hide_overflow">{{ humanize_date(scan.finished_on) }}</div></span></td>
+                    <td v-if="scan.finished"><span :title="scan.finished_on">
+                        {{ humanize_date(scan.finished_on) }}, {{ humanize_relative_date(scan.finished_on) }}</span>
+                    </td>
                     <td v-if="!scan.finished">Scan is running</td>
                 </tr>
                 <tr>
-                    <th>{{ $t("scan_monitor.message") }}</th><td><div class="hide_overflow">{{ scan.message }}</div></td>
+                    <th>{{ $t("scan_monitor.report") }}</th>
+                    <td v-if="scan.last_report_id">
+                        <a :href="'/reports/' + scan.last_report_id">{{ scan.last_report_id }}</a>
+                    </td>
+                    <td v-if="!scan.last_report_id">-</td>
                 </tr>
                 <tr>
-                    <th>{{ $t("scan_monitor.live") }}</th><td><a :href="scan.status_url" target="_blank">🔖 (open on internet.nl API)</a></td>
+                    <th>{{ $t("scan_monitor.live") }}</th><td><a :href="scan.status_url" target="_blank">🔖</a> <a :href="scan.status_url" target="_blank">open on internet.nl API</a></td>
                 </tr>
                 </tbody>
             </table>
-        </article>
-        <span v-if="!scans.length">{{ $t("scan_monitor.no_scans") }}</span>
-
-        <br style="clear: both">
-        <p>
-            <div class='auto_refresh'>{{ $t("auto_refresh.refresh_happening_in") }}
-                <span v-html="current_step_inverted"></span>
-                {{ $t("auto_refresh.units") }}
-                <a @click="reload_now()"> ({{ $t("auto_refresh.refresh_now") }})</a>
+            -->
             </div>
-        </p>
+        </section>
+    </div>
+
+    <span v-if="!scans.length">{{ $t("scan_monitor.no_scans") }}</span>
+
+    <div class='auto_refresh'>{{ $t("auto_refresh.refresh_happening_in") }}
+        <span v-html="current_step_inverted"></span>
+        {{ $t("auto_refresh.units") }}
+        <a @click="reload_now()"> ({{ $t("auto_refresh.refresh_now") }})</a>
+    </div>
+
+
     </div>
 </template>
 {% endverbatim %}

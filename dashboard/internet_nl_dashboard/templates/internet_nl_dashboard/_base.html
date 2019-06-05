@@ -250,6 +250,9 @@ Todo: digitoegankelijk: how to select links with the keyboard? How can we make t
                     // says things like 'days ago'...
                     return moment(date).fromNow();
                 },
+                humanize_duration: function(duration_in_milliseconds) {
+                    return moment.duration(duration_in_milliseconds).humanize()
+                },
                 humanize_filesize: function(size_in_bytes, decimals=0){
                     if(size_in_bytes === 0) return '0 Bytes';
                     let k = 1024,

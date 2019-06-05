@@ -293,7 +293,7 @@ const messages = {
             intro: 'All scans that have happened for this account are displayed here. It gives an insight into how ' +
                 'recent the most current information is. It can also help you with comparisons to select the ideal ' +
                 'scan.',
-            id: '#',
+            id: ' scan #',
             type: 'Type',
             list: 'List',
             started_on: 'Started',
@@ -301,6 +301,11 @@ const messages = {
             message: 'Status',
             live: 'API',
             no_scans: 'No scans have been performed yet.',
+            report: 'Report',
+            runtime: 'Runtime',
+            open_in_api: 'Open on internet.nl API',
+            open_report: 'Open report',
+            last_check: 'Last status update'
         },
         auto_refresh: {
             refresh_happening_in: 'Auto refresh in:',
@@ -556,7 +561,7 @@ const messages = {
             title: 'Scan monitor',
             intro: 'Alle scans die zijn uitgevoerd voor dit account staan hier. Het geeft een overzicht in hoe recent ' +
                 'de data is. Het geeft ook inzicht in of de meest recente scan al is afgerond.',
-            id: '#',
+            id: 'scan #',
             type: 'Soort',
             list: 'Lijst',
             started_on: 'Gestart',
@@ -564,6 +569,11 @@ const messages = {
             message: 'Status',
             live: 'API',
             no_scans: 'Nog geen scans uitgevoerd.',
+            report: 'Rapport',
+            runtime: 'Looptijd',
+            open_in_api: 'Open internet.nl API resultaat',
+            open_report: 'Open rapport',
+            last_check: 'Laatste status update'
         },
         auto_refresh: {
             refresh_happening_in: 'Lijst wordt ververst over:',

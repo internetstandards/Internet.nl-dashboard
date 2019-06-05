@@ -13,12 +13,14 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='urllistreport',
             name='endpoint_not_applicable',
-            field=models.IntegerField(default=0, help_text='Amount of things that are not applicable on this endpoint.'),
+            field=models.IntegerField(
+                default=0, help_text='Amount of things that are not applicable on this endpoint.'),
         ),
         migrations.AddField(
             model_name='urllistreport',
             name='endpoint_not_testable',
-            field=models.IntegerField(default=0, help_text='Amount of things that could not be tested on this endpoint.'),
+            field=models.IntegerField(
+                default=0, help_text='Amount of things that could not be tested on this endpoint.'),
         ),
         migrations.AddField(
             model_name='urllistreport',
@@ -58,7 +60,8 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='urllistreport',
             name='endpoint_ok',
-            field=models.IntegerField(default=0, help_text='Amount of measurements that resulted in an OK score on this endpoint.'),
+            field=models.IntegerField(
+                default=0, help_text='Amount of measurements that resulted in an OK score on this endpoint.'),
         ),
         migrations.AlterField(
             model_name='urllistreport',
@@ -103,7 +106,8 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='urllistreport',
             name='total_endpoint_issues',
-            field=models.IntegerField(default=0, help_text='A sum of all endpoint issues for this endpoint, it includes all high, medium and lows.'),
+            field=models.IntegerField(
+                default=0, help_text='A sum of all endpoint issues for this endpoint, it includes all high, medium and lows.'),
         ),
         migrations.AlterField(
             model_name='urllistreport',

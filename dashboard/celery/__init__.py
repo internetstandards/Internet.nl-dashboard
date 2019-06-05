@@ -13,8 +13,8 @@ import os
 import flower.utils.broker
 from celery import Task
 from django.conf import settings
-from websecmap.celery.worker import QUEUES_MATCHING_ROLES
 from websecmap.celery import app
+from websecmap.celery.worker import QUEUES_MATCHING_ROLES
 
 log = logging.getLogger(__package__)
 

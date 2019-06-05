@@ -1772,7 +1772,7 @@ urllib3 = "*"
 wikidata = "*"
 
 [package.source]
-reference = "0e42ed73604ff396fb4f4ec6ad28a51d0e5e22fd"
+reference = "5d59c99faceacfb5e665003dd44ba6466ebf0120"
 type = "git"
 url = "https://gitlab.com/internet-cleanup-foundation/web-security-map"
 [[package]]
