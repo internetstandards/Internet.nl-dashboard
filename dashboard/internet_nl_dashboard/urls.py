@@ -25,6 +25,7 @@ urlpatterns = [
 
     # domain management
     path('domains/', domains.index),
+    path('domains/<int:list_id>/', domains.index),
     path('data/urllists/get/', domains.get_lists),
     path('data/urllist_content/get/<int:urllist_id>/', domains.get_urllist_content_),
     path('data/urllist/save_list_content/', domains.save_list_content),

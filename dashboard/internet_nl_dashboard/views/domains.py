@@ -17,7 +17,7 @@ from dashboard.internet_nl_dashboard.views import (LOGIN_URL, get_account, get_j
 
 
 @login_required(login_url=LOGIN_URL)
-def index(request) -> HttpResponse:
+def index(request, list_id=0) -> HttpResponse:
 
     response = render(request, 'internet_nl_dashboard/templates/internet_nl_dashboard/domains.html', {
         'menu_item_addressmanager': "current",

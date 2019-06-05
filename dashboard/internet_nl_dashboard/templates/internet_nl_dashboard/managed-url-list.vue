@@ -1,6 +1,7 @@
 {% verbatim %}
 <template type="x-template" id="managed-url-list">
     <article class="managed-url-list">
+        <a :name="list.id"></a>
         <h3>
             <button v-if="!is_opened" @click="open_list()">📘 {{ list.name }}</button>
             <button v-if="is_opened" @click="close_list()">📖 {{ list.name }}</button>
@@ -276,6 +277,17 @@ Vue.component('managed-url-list', {
     watch: {
         initial_list: function(new_value){
             this.list = new_value;
+        }
+    },
+    mounted: function(){
+        if (window.location.href.split('/').length > 3) {
+            let get_id = window.location.href.split('/')[4];
+            console.log(get_id);
+            // can we change the select2 to a certain value?
+
+            if (this.list.id === parseInt(get_id)){
+                this.open_list();
+            }
         }
     },
     methods: {

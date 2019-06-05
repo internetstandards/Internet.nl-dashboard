@@ -17,7 +17,7 @@
                 <span v-if="!scan.finished"><img width="15" style="border-radius: 50%" src="/static/images/vendor/internet_nl/probe-animation.gif"></span>
                 <b>{{ scan.type }} {{ $t("scan_monitor.id") }}{{ scan.id }}</b><br>
                 <br>
-                📘 <a :href="'/domains/' + scan.list_id + '/'">{{ scan.list }}</a><br>
+                📘 <a :href="'/domains/' + scan.list_id + '/#' + scan.list_id">{{ scan.list }}</a><br>
                 <br>
                 <template v-if="scan.finished">
                     <template v-if="scan.last_report_id">

@@ -166,10 +166,10 @@
 
 <script>
 // Done: order of the fields, and possible sub sub categories
-// todo: beta: allow filtering on what results to show
-// todo: store filter options for reports (as generic or per report? or as a re-applicable set?) Per user account.
-// todo: how to add a item for legacy views?
-// todo: how to translate graphs?
+// Done: allow filtering on what results to show
+// Done: store filter options for reports (as generic or per report? or as a re-applicable set?) Per user account.
+// Done: how to add a item for legacy views?
+// Done: how to translate graphs?
 vueReport = new Vue({
     i18n,
     name: 'report',
