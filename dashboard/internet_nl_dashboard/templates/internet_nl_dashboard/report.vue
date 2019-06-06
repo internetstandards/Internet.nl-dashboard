@@ -710,8 +710,19 @@ const chart_mixin = {
         return createElement(
             'canvas',
             {
-                ref: 'canvas'
+                ref: 'canvas',
+
+                // Improve accessibility: https://www.chartjs.org/docs/latest/general/accessibility.html
+                // Using createElement features: https://vuejs.org/v2/guide/render-function.html#createElement-Arguments
+                attrs: {
+                    role: "img",
+                    'aria-label': this.title
+                },
+                // todo: add child element with title, probably not updateable with data in graph
             },
+            [
+                createElement('p', this.title),
+            ]
         )
     },
     mounted: function () {
