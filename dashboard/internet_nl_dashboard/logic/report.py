@@ -79,7 +79,7 @@ def get_urllist_report_graph_data(account: Account, urllist_id: int):
     # add statistics:
     stats = []
     for per_report_statistcs in urllist.reports_from_the_last_year:
-        not_ok = per_report_statistcs.high + per_report_statistcs.medium + per_report_statistcs.low
+        not_ok = per_report_statistcs.high
         all = per_report_statistcs.ok + per_report_statistcs.high + per_report_statistcs.medium + \
             per_report_statistcs.low
 
@@ -94,8 +94,12 @@ def get_urllist_report_graph_data(account: Account, urllist_id: int):
 
             # todo: these numbers might be added to the statics calculation?
             'not_ok': not_ok,
-            'total_findings': not_ok + per_report_statistcs.low,
-            'pct_ok': round((per_report_statistcs.ok / all) * 100, 2),
+            'total_findings': all,
+
+            # for internet.nl low and medium do not impact the score.
+            # not_tested does (=high), not_testable and not_applicable don't.
+            'pct_ok': round(
+                ((per_report_statistcs.ok + per_report_statistcs.medium + per_report_statistcs.low) / all) * 100, 2),
             'pct_not_ok': round((not_ok / all) * 100, 2)
         })
 
