@@ -1,8 +1,8 @@
 {% verbatim %}
 <template type="x-template" id="managed-url-list">
-    <article class="managed-url-list">
-        <a :name="list.id"></a>
-        <h3>
+    <article class="managed-url-list block fullwidth">
+        <span>
+            <a :name="list.id"></a>
             <button v-if="!is_opened" @click="open_list()">📘 {{ list.name }}</button>
             <button v-if="is_opened" @click="close_list()">📖 {{ list.name }}</button>
 
@@ -31,7 +31,7 @@
                 </template>
                 <button @click="start_deleting()">🔪 {{ $t("domain_management.button_labels.delete") }}</button>
             </div>
-        </h3>
+        </span>
         <br>
 
         <div v-if="is_opened">

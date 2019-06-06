@@ -18,12 +18,15 @@
         background: linear-gradient(to bottom, rgb(178, 252, 181) 0%, rgb(239, 255, 238) 100%);
     }
 </style>
-    <h1>Powertools</h1>
-    <p>Some nice power user features. These are unpolished and unrestricted features that can do great things, and
-    shoot you in the foot really hard.</p>
-
-    {% include "internet_nl_dashboard/powertools/switch_account.html" %}
-
-    {% include "internet_nl_dashboard/powertools/instant_add_account.html" %}
-
+    <div class="block fullwidth">
+        <h1>Powertools</h1>
+        <p>Some nice power user features. These are unpolished and unrestricted features that can do great things, and
+        shoot you in the foot really hard.</p>
+    </div>
+    <div class="block fullwidth">
+        {% include "internet_nl_dashboard/powertools/switch_account.html" %}
+    </div>
+    <div class="block fullwidth">
+        {% include "internet_nl_dashboard/powertools/instant_add_account.html" %}
+    </div>
 {% endblock %}

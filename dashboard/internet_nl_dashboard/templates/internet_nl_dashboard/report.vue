@@ -1,211 +1,239 @@
 {% verbatim %}
 <template type="x-template" id="report_template">
-    <div>
-        <button style='float: right' @click="show_settings = !show_settings">Toggle settings</button>
-        <div v-if="show_settings">
-            <h2>Report Settings</h2>
-            <button @click="save_issue_filters()">Save settings</button>
-            <button @click="load_issue_filters()">Reset settings</button>
-            <div v-if="!this.selected_category">
-                <div v-for="(category_group, category_name, y) in categories" style="width: 49%; float: left;">
-                    <div v-if="issue_filters[category_name]">
-                        <h3><input type="checkbox" v-model='issue_filters[category_name].visible'> {{ $t("report." + category_name) }}</h3>
-                        <span v-for="category_name in category_group">
-                            <input type="checkbox" v-model='issue_filters[category_name].visible' :id="category_name + '_visible'">
-                            <label :for="category_name + '_visible'">{{ $t("report." + category_name) }}</label><br />
-                        </span>
-                    </div>
-                </div>
-            </div>
-            <div v-if="this.selected_category">
-                <!-- Only shows mail or web settings if you're looking at that type of report. -->
-                <div v-for="(category_group, category_name, y) in categories" style="width: 49%; float: left;">
-                    <div v-if="issue_filters[category_name] && categories[selected_category].includes(category_name)">
-                        <h3><input type="checkbox" v-model='issue_filters[category_name].visible'> {{ $t("report." + category_name) }}</h3>
-                        <span v-for="category_name in category_group">
-                            <input type="checkbox" v-model='issue_filters[category_name].visible' :id="category_name + '_visible'">
-                            <label :for="category_name + '_visible'">{{ $t("report." + category_name) }}</label><br />
-                        </span>
-                    </div>
-                </div>
-            </div>
-            <br style="clear: both;">
+    <div style="width: 100%; min-height: 500px;">
+        <div class="block fullwidth">
+            <h1>Reports</h1>
+
+            <multiselect id="select_report" v-model="selected_report" :options="available_recent_reports" label="label" placeholder="Select report..."></multiselect>
         </div>
 
-        <h2>Select Report</h2>
-        <v-select v-model="selected_report" :options="available_recent_reports"></v-select>
-
-        <div v-if="selected_report.value.report">
-            <h2>Charts</h2>
-
-            <div class="chart-container" style="position: relative; height:300px; width:100%">
-                <line-chart
-                        :color_scheme="color_scheme"
-                        :translation_key="'charts.percentage_timeline'"
-                        :chart_data="issue_timeline_of_related_urllist"
-                        :axis="['pct_ok']">
-                </line-chart>
-            </div>
-
-            <div v-if='reports.length && "statistics_per_issue_type" in reports[0]'>
-                <div class="chart-container" style="position: relative; height:500px; width:100%">
-                    <percentage-bar-chart
-                            :title="graph_bar_chart_title"
-                            :translation_key="'charts.report_bar_chart'"
-                            :color_scheme="color_scheme"
-                            :chart_data="compare_charts"
-                            :axis="relevant_categories_based_on_settings()">
-                    </percentage-bar-chart>
+        <div v-if="selected_report">
+            <div class="block fullwidth">
+                <div>
+                <a class="anchorlink" href="#charts"><button role="button">Charts</button></a>
+                <a class="anchorlink" href="#report"><button role="button">Report data</button></a>
+                <button @click="show_downloads = !show_downloads">Download data</button>
+                <button @click="show_settings = !show_settings">Relevant fields</button>
                 </div>
+            </div>
 
-                <!--
-                The radar is just another way of expressing the same data. It's nice, but not as good as the bar chart.
-                Code left here in case a graph demo is needed.
-                <div class="chart-container" style="position: relative; height:500px; width:100%">
-                    <radar-chart
-                            :title="graph_radar_chart_title"
-                            :translation_key="'charts.report_radar_chart'"
-                            :color_scheme="color_scheme"
-                            :chart_data="compare_charts"
-                            :axis="relevant_categories_based_on_settings()">
-                    </radar-chart>
+            <div v-if="show_settings" class="block fullwidth">
+                <h2>Relevant fields</h2>
+                <p>To retain focus, select the fields that are relevant to your organization.</p>
+                <div>
+                    <button @click="load_issue_filters()">Reset</button>
+                    <button @click="save_issue_filters()">Save</button>
                 </div>
-                -->
-
-            </div>
-            <div v-if="older_data_available">
-                <button @click="compare_with_previous()">Compare with previous (beta)</button>
-            </div>
-            <div v-if="!older_data_available">
-                <button disabled="disabled">Compare with previous (beta)</button>
-            </div>
-
-            <h2 v-if="filtered_urls.length">Report</h2>
-            <div>
-                <table class="table table-striped">
-                    <thead>
-
-                        <tr>
-                            <th style="width: 300px; min-width: 300px;">
-                                <input v-if="selected_report.value" type="text" v-model="url_filter" id="url_filter" placeholder="Url Filter...">
-                            </th>
-                            <th class="rotate" v-for="category in relevant_categories_based_on_settings()">
-                                <div>
-                                    <span @click="select_category(category)">{{ $t("report." + category) }}</span>
-                                </div>
-                            </th>
-                        </tr>
-
-                        <!-- Zoom buttons for accessibility -->
-                        <tr v-if="reports.length" class="summaryrow">
-                            <template v-if="['web', 'mail'].includes(selected_category)">
-                                <td>
-
-                                </td>
-                                <td v-for="category_name in relevant_categories_based_on_settings()">
-                                    <button @click="select_category(category_name)">zoom</button>
-                                </td>
-                            </template>
-                            <template v-if="!['web', 'mail'].includes(selected_category)">
-                                <td></td>
-                                <td :colspan="relevant_categories_based_on_settings().length">
-                                Zoomed in on {{ $t("report." + selected_category) }}.
-                                    <button @click="select_category(selected_report.value.urllist_scan_type)">
-                                        ❌ Remove zoom
-                                    </button>
-                                </td>
-                            </template>
-                        </tr>
-
-                        <!-- Summary row, same data as bar chart, but then in numbers.-->
-                        <tr v-if="reports.length" class="summaryrow">
-                            <td>
-                                Adoption %
-                            </td>
-                            <td v-for="category_name in relevant_categories_based_on_settings()" @click="select_category(category_name)">
-                                <span v-if="category_name in reports[0].statistics_per_issue_type">
-                                    {{reports[0].statistics_per_issue_type[category_name].pct_ok}}%</span>
-                            </td>
-                        </tr>
-
-
-                    </thead>
-                    <tbody v-if="filtered_urls.length" class="gridtable">
-                        <tr v-for="url in filtered_urls" v-if="url.endpoints.length">
-                            <td>{{url.url}}
-                                <span v-if="selected_report.value.type === 'web'" v-html="original_report_link_from_score(url.endpoints[0].ratings_by_type['internet_nl_web_overall_score'].explanation)"></span>
-                                <span v-if="selected_report.value.type === 'mail'" v-html="original_report_link_from_score(url.endpoints[0].ratings_by_type['internet_nl_mail_dashboard_overall_score'].explanation)"></span>
-                            </td>
-                            <td class="testresultcell" v-for="category_name in relevant_categories_based_on_settings()" @click="select_category(category_name)">
-                                <template v-if="['web', 'mail'].includes(selected_category)">
-                                    <template v-if="category_name in url.endpoints[0].ratings_by_type">
-                                        <!-- Currently the API just says True or False, we might be able to deduce the right label for a category, but that will take a day or two.
-                                        At the next field update, we'll also make the categories follow the new format of requirement level and testresult so HTTP Security Headers
-                                         here is shown as optional, or info if failed. We can also add a field for baseline NL government then. -->
-                                        <template v-if="url.endpoints[0].ratings_by_type[category_name].ok < 1">
-                                            <span v-if="category_name !== 'internet_nl_web_appsecpriv'" class="category_failed"  :title="$t('report.' + category_name + '_verdict_bad')">
-                                                Failed
-                                            </span>
-                                            <span v-if="category_name === 'internet_nl_web_appsecpriv'" class="category_warning" :title="$t('report.' + category_name + '_verdict_bad')">
-                                                Warning
-                                            </span>
-                                        </template>
-                                        <span class="category_passed" v-if="url.endpoints[0].ratings_by_type[category_name].ok > 0" :title="$t('report.' + category_name + '_verdict_good')">
-                                            Passed
-                                        </span>
-                                    </template>
-                                    <span class="" v-if="url.endpoints[0].ratings_by_type[category_name] === undefined">
-                                        Unknown
-                                    </span>
-                                </template>
-                                <template v-if="!['web', 'mail'].includes(selected_category)">
-                                    <template v-if="category_name in url.endpoints[0].ratings_by_type">
-                                        <span class="not_applicable" v-if="url.endpoints[0].ratings_by_type[category_name].not_applicable > 0" :title="$t('report.not_applicable')">
-                                            Not Applicable
-                                        </span>
-                                        <span class="not_testable" v-if="url.endpoints[0].ratings_by_type[category_name].not_testable > 0" :title="$t('report.not_testable')">
-                                            Not Testable
-                                        </span>
-                                        <span class="failed" v-if="url.endpoints[0].ratings_by_type[category_name].high > 0" :title="$t('report.' + category_name + '_verdict_bad')">
-                                            Failed
-                                        </span>
-                                        <span class="warning" v-if="url.endpoints[0].ratings_by_type[category_name].medium > 0" :title="$t('report.' + category_name + '_verdict_bad')">
-                                            Warning
-                                        </span>
-                                        <span class="info" v-if="url.endpoints[0].ratings_by_type[category_name].low > 0" :title="$t('report.' + category_name + '_verdict_bad')">
-                                            Info
-                                        </span>
-                                        <span class="passed" v-if="url.endpoints[0].ratings_by_type[category_name].ok > 0
-                                        && !url.endpoints[0].ratings_by_type[category_name].not_applicable
-                                        && !url.endpoints[0].ratings_by_type[category_name].not_testable" :title="$t('report.' + category_name + '_verdict_good')">
-                                            Passed
-                                        </span>
-                                    </template>
-                                    <span class="" v-if="url.endpoints[0].ratings_by_type[category_name] === undefined">
-                                        Unknown
-                                    </span>
-                                </template>
-                            </td>
-                        </tr>
-
-                    </tbody>
-                    <tbody v-if="!filtered_urls.length">
-                        <tr>
-                           <td :colspan="relevant_categories_based_on_settings().length + 1" style="text-align: center;">😱 It looks like this report is empty... did you filter too much?</td>
-                        </tr>
-                    </tbody>
-                </table>
+                <div v-if="!this.selected_category">
+                    <div v-for="(category_group, category_name, y) in categories" style="width: 49%; float: left;">
+                        <div v-if="issue_filters[category_name]">
+                            <h3><input type="checkbox" v-model='issue_filters[category_name].visible'> {{ $t("report." + category_name) }}</h3>
+                            <span v-for="category_name in category_group">
+                                <input type="checkbox" v-model='issue_filters[category_name].visible' :id="category_name + '_visible'">
+                                <label :for="category_name + '_visible'">{{ $t("report." + category_name) }}</label><br />
+                            </span>
+                        </div>
+                    </div>
+                </div>
+                <div v-if="this.selected_category">
+                    <!-- Only shows mail or web settings if you're looking at that type of report. -->
+                    <div v-for="(category_group, category_name, y) in categories" style="width: calc(33% - 1em); float: left;">
+                        <div v-if="issue_filters[category_name] && categories[selected_category].includes(category_name)">
+                            <h3><input type="checkbox" v-model='issue_filters[category_name].visible'> {{ $t("report." + category_name) }}</h3>
+                            <span v-for="category_name in category_group">
+                                <input type="checkbox" v-model='issue_filters[category_name].visible' :id="category_name + '_visible'">
+                                <label :for="category_name + '_visible'">{{ $t("report." + category_name) }}</label><br />
+                            </span>
+                        </div>
+                    </div>
+                </div>
             </div>
 
-            <div id="download" v-if="selected_report.value">
-                <h2>Download</h2>
-                Download raw data as:
+            <div v-if="show_downloads" class="block fullwidth">
+                <h2>Download data</h2>
+                <p>Report data is available in the following formats:</p>
                 <ul>
-                <li><a :href="'/data/download-spreadsheet/' + selected_report.value.report + '/xlsx/'">Excel Spreadsheet (Microsoft Office), .xlsx</a></li>
-                <li><a :href="'/data/download-spreadsheet/' + selected_report.value.report + '/ods/'">Open Document Spreadsheet (Libre Office), .ods</a></li>
-                <li><a :href="'/data/download-spreadsheet/' + selected_report.value.report + '/csv/'">Comma Separated (for programmers), .csv</a></li>
+                    <li><a :href="'/data/download-spreadsheet/' + selected_report.value.report + '/xlsx/'">Excel Spreadsheet (Microsoft Office), .xlsx</a></li>
+                    <li><a :href="'/data/download-spreadsheet/' + selected_report.value.report + '/ods/'">Open Document Spreadsheet (Libre Office), .ods</a></li>
+                    <li><a :href="'/data/download-spreadsheet/' + selected_report.value.report + '/csv/'">Comma Separated (for programmers), .csv</a></li>
                 </ul>
             </div>
+
+            <div class="block fullwidth">
+                <h2>Adoption of standards over time</h2>
+                <a class="anchor" name="charts"></a>
+                <p>This graph compares various measurements of the same list over time. This provides a visual indication of the progress of standards adoption.</p>
+
+                <div class="chart-container" style="position: relative; height:300px; width:100%">
+                    <line-chart
+                            :color_scheme="color_scheme"
+                            :translation_key="'charts.percentage_timeline'"
+                            :chart_data="issue_timeline_of_related_urllist"
+                            :axis="['pct_ok']">
+                    </line-chart>
+                </div>
+            </div>
+
+            <div class="block fullwidth">
+                <h2>
+                    Average adoption of standards
+                </h2>
+                <p>This graph shows the average adoption per standard in this report.</p>
+                <div v-if="older_data_available">
+                    <button @click="compare_with_previous()">Compare with previous (beta)</button>
+                </div>
+                <div v-if="!older_data_available">
+                    <button disabled="disabled">Compare with previous (beta)</button>
+                </div>
+                <div v-if='reports.length && "statistics_per_issue_type" in reports[0]'>
+                    <div class="chart-container" style="position: relative; height:500px; width:100%">
+                        <percentage-bar-chart
+                                :title="graph_bar_chart_title"
+                                :translation_key="'charts.report_bar_chart'"
+                                :color_scheme="color_scheme"
+                                :chart_data="compare_charts"
+                                :axis="relevant_categories_based_on_settings()">
+                        </percentage-bar-chart>
+                    </div>
+
+                    <!--
+                    The radar is just another way of expressing the same data. It's nice, but not as good as the bar chart.
+                    Code left here in case a graph demo is needed.
+                    <div class="chart-container" style="position: relative; height:500px; width:100%">
+                        <radar-chart
+                                :title="graph_radar_chart_title"
+                                :translation_key="'charts.report_radar_chart'"
+                                :color_scheme="color_scheme"
+                                :chart_data="compare_charts"
+                                :axis="relevant_categories_based_on_settings()">
+                        </radar-chart>
+                    </div>
+                    -->
+
+                </div>
+            </div>
+
+            <div v-if="filtered_urls !== undefined" class="block fullwidth">
+                <h2>Report</h2>
+                <a class="anchor" name="report"></a>
+
+                <div>
+                    <table class="table table-striped">
+                        <thead>
+
+                            <tr>
+                                <th style="width: 300px; min-width: 300px; border: 0px;">
+                                    &nbsp;
+                                </th>
+                                <th style="border: 0px;" class="rotate" v-for="category in relevant_categories_based_on_settings()">
+                                    <div>
+                                        <span @click="select_category(category)">{{ $t("report." + category) }}</span>
+                                    </div>
+                                </th>
+                            </tr>
+
+                            <!-- Zoom buttons for accessibility -->
+                            <tr v-if="reports.length" class="summaryrow">
+                                <template v-if="['web', 'mail'].includes(selected_category)">
+                                    <td>
+
+                                    </td>
+                                    <td v-for="category_name in relevant_categories_based_on_settings()">
+                                        <button @click="select_category(category_name)">zoom</button>
+                                    </td>
+                                </template>
+                                <template v-if="!['web', 'mail'].includes(selected_category)">
+                                    <td></td>
+                                    <td :colspan="relevant_categories_based_on_settings().length" style="text-align: center">
+                                    Zoomed in on {{ $t("report." + selected_category) }}.
+                                        <button @click="select_category(selected_report.value.urllist_scan_type)">
+                                            ❌ Remove zoom
+                                        </button>
+                                    </td>
+                                </template>
+                            </tr>
+
+                            <!-- Summary row, same data as bar chart, but then in numbers.-->
+                            <tr v-if="reports.length" class="summaryrow">
+                                <td>
+                                    <input v-if="selected_report.value" type="text" v-model="url_filter" id="url_filter" placeholder="Url Filter...">
+                                </td>
+                                <td v-for="category_name in relevant_categories_based_on_settings()" @click="select_category(category_name)">
+                                    <span v-if="category_name in reports[0].statistics_per_issue_type">
+                                        {{reports[0].statistics_per_issue_type[category_name].pct_ok}}%</span>
+                                </td>
+                            </tr>
+
+
+                        </thead>
+                        <tbody v-if="filtered_urls.length" class="gridtable">
+                            <tr v-for="url in filtered_urls" v-if="url.endpoints.length">
+                                <td>{{url.url}}
+                                    <span v-if="selected_report.value.type === 'web'" v-html="original_report_link_from_score(url.endpoints[0].ratings_by_type['internet_nl_web_overall_score'].explanation)"></span>
+                                    <span v-if="selected_report.value.type === 'mail'" v-html="original_report_link_from_score(url.endpoints[0].ratings_by_type['internet_nl_mail_dashboard_overall_score'].explanation)"></span>
+                                </td>
+                                <td class="testresultcell" v-for="category_name in relevant_categories_based_on_settings()" @click="select_category(category_name)">
+                                    <template v-if="['web', 'mail'].includes(selected_category)">
+                                        <template v-if="category_name in url.endpoints[0].ratings_by_type">
+                                            <!-- Currently the API just says True or False, we might be able to deduce the right label for a category, but that will take a day or two.
+                                            At the next field update, we'll also make the categories follow the new format of requirement level and testresult so HTTP Security Headers
+                                             here is shown as optional, or info if failed. We can also add a field for baseline NL government then. -->
+                                            <template v-if="url.endpoints[0].ratings_by_type[category_name].ok < 1">
+                                                <span v-if="category_name !== 'internet_nl_web_appsecpriv'" class="category_failed"  :title="$t('report.' + category_name + '_verdict_bad')">
+                                                    Failed
+                                                </span>
+                                                <span v-if="category_name === 'internet_nl_web_appsecpriv'" class="category_warning" :title="$t('report.' + category_name + '_verdict_bad')">
+                                                    Warning
+                                                </span>
+                                            </template>
+                                            <span class="category_passed" v-if="url.endpoints[0].ratings_by_type[category_name].ok > 0" :title="$t('report.' + category_name + '_verdict_good')">
+                                                Passed
+                                            </span>
+                                        </template>
+                                        <span class="" v-if="url.endpoints[0].ratings_by_type[category_name] === undefined">
+                                            Unknown
+                                        </span>
+                                    </template>
+                                    <template v-if="!['web', 'mail'].includes(selected_category)">
+                                        <template v-if="category_name in url.endpoints[0].ratings_by_type">
+                                            <span class="not_applicable" v-if="url.endpoints[0].ratings_by_type[category_name].not_applicable > 0" :title="$t('report.not_applicable')">
+                                                Not Applicable
+                                            </span>
+                                            <span class="not_testable" v-if="url.endpoints[0].ratings_by_type[category_name].not_testable > 0" :title="$t('report.not_testable')">
+                                                Not Testable
+                                            </span>
+                                            <span class="failed" v-if="url.endpoints[0].ratings_by_type[category_name].high > 0" :title="$t('report.' + category_name + '_verdict_bad')">
+                                                Failed
+                                            </span>
+                                            <span class="warning" v-if="url.endpoints[0].ratings_by_type[category_name].medium > 0" :title="$t('report.' + category_name + '_verdict_bad')">
+                                                Warning
+                                            </span>
+                                            <span class="info" v-if="url.endpoints[0].ratings_by_type[category_name].low > 0" :title="$t('report.' + category_name + '_verdict_bad')">
+                                                Info
+                                            </span>
+                                            <span class="passed" v-if="url.endpoints[0].ratings_by_type[category_name].ok > 0
+                                            && !url.endpoints[0].ratings_by_type[category_name].not_applicable
+                                            && !url.endpoints[0].ratings_by_type[category_name].not_testable" :title="$t('report.' + category_name + '_verdict_good')">
+                                                Passed
+                                            </span>
+                                        </template>
+                                        <span class="" v-if="url.endpoints[0].ratings_by_type[category_name] === undefined">
+                                            Unknown
+                                        </span>
+                                    </template>
+                                </td>
+                            </tr>
+
+                        </tbody>
+                        <tbody v-if="!filtered_urls.length">
+                            <tr>
+                               <td :colspan="relevant_categories_based_on_settings().length + 1" style="text-align: center;">😱 It looks like this report is empty... did you filter too much?</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
         </div>
     </div>
 </template>
@@ -493,7 +521,7 @@ vueReport = new Vue({
         debounce_timer: 0,
 
         available_recent_reports: [],
-        selected_report: {'label': '', 'value': {'report': 0, 'type': '', 'urllist_id': 0}},
+        selected_report: null,
 
         // graphs:
         issue_timeline_of_related_urllist: [],
@@ -525,6 +553,8 @@ vueReport = new Vue({
         compare_charts: [],
         compare_oldest_data: "",
         older_data_available: true,
+
+        show_downloads: false,
 
     },
     mounted: function(){
@@ -633,6 +663,9 @@ vueReport = new Vue({
                        }
                     });
 
+                } else {
+                    // focus on report selection
+                    // $('select_report').focus();
                 }
 
             }).catch((fail) => {console.log('A loading error occurred: ' + fail);});
@@ -701,7 +734,9 @@ vueReport = new Vue({
     watch: {
         selected_report: function () {
             // load selected organization id
-            this.load(this.selected_report.value.report);
+            if (this.selected_report) {
+                this.load(this.selected_report.value.report);
+            }
         },
         url_filter: function(newValue, oldValue){
             this.filter_urls(newValue);

@@ -25,46 +25,52 @@ Fixed: when deleting a list, it is re-added to the list of lists when adding a n
 -->
 {% verbatim %}
 <template type="x-template" id="lists">
-    <div>
-        <modal v-if="show_add_new" @close="stop_adding_new()">
-            <h3 slot="header">{{ $t("domains.add_new_list") }}</h3>
+    <div style="width: 100%">
+        <div class="block fullwidth">
+            <h1>Domains</h1>
+            <p>Upload large amount of data: <a href="/upload/">Bulk Address Uploader</a></p>
 
-            <div slot="body">
 
-                <server-response :response="add_new_server_response"></server-response>
+            <modal v-if="show_add_new" @close="stop_adding_new()">
+                <h3 slot="header">{{ $t("domains.add_new_list") }}</h3>
 
-                <label for="name">{{ $t("urllist.field_label_name") }}:</label><br>
-                <input id="name" type="text" maxlength="120" v-model="add_new_new_list.name"><br><br>
+                <div slot="body">
 
-                <label for="enable_scans">{{ $t("urllist.field_label_enable_scans") }}:</label><br>
-                <input id="enable_scans" type="checkbox" v-model="add_new_new_list.enable_scans"><br><br>
+                    <server-response :response="add_new_server_response"></server-response>
 
-                <label for="scan_type">{{ $t("urllist.field_label_scan_type") }}:</label><br>
-                <select id="scan_type" v-model="add_new_new_list.scan_type">
-                    <option value="web">{{ $t("urllist.scan_type_web") }}</option>
-                    <option value="mail">{{ $t("urllist.scan_type_mail") }}</option>
-                </select><br><br>
+                    <label for="name">{{ $t("urllist.field_label_name") }}:</label><br>
+                    <input id="name" type="text" maxlength="120" v-model="add_new_new_list.name"><br><br>
 
-                <label for="automated_scan_frequency">{{ $t("urllist.field_label_automated_scan_frequency") }}:</label><br>
-                <select id="automated_scan_frequency" v-model="add_new_new_list.automated_scan_frequency">
-                    <option value="disabled">{{ $t("urllist.automated_scan_frequency_disabled") }}</option>
-                    <option value="every half year">{{ $t("urllist.automated_scan_frequency_every_half_year") }}</option>
-                    <option value="at the start of every quarter">{{ $t("urllist.automated_scan_frequency_every_quarter") }}</option>
-                    <option value="every 1st day of the month">{{ $t("urllist.automated_scan_frequency_every_month") }}</option>
-                    <option value="twice per month">{{ $t("urllist.automated_scan_frequency_twice_per_month") }}</option>
-                </select>
+                    <label for="enable_scans">{{ $t("urllist.field_label_enable_scans") }}:</label><br>
+                    <input id="enable_scans" type="checkbox" v-model="add_new_new_list.enable_scans"><br><br>
 
+                    <label for="scan_type">{{ $t("urllist.field_label_scan_type") }}:</label><br>
+                    <select id="scan_type" v-model="add_new_new_list.scan_type">
+                        <option value="web">{{ $t("urllist.scan_type_web") }}</option>
+                        <option value="mail">{{ $t("urllist.scan_type_mail") }}</option>
+                    </select><br><br>
+
+                    <label for="automated_scan_frequency">{{ $t("urllist.field_label_automated_scan_frequency") }}:</label><br>
+                    <select id="automated_scan_frequency" v-model="add_new_new_list.automated_scan_frequency">
+                        <option value="disabled">{{ $t("urllist.automated_scan_frequency_disabled") }}</option>
+                        <option value="every half year">{{ $t("urllist.automated_scan_frequency_every_half_year") }}</option>
+                        <option value="at the start of every quarter">{{ $t("urllist.automated_scan_frequency_every_quarter") }}</option>
+                        <option value="every 1st day of the month">{{ $t("urllist.automated_scan_frequency_every_month") }}</option>
+                        <option value="twice per month">{{ $t("urllist.automated_scan_frequency_twice_per_month") }}</option>
+                    </select>
+
+                </div>
+                <div slot="footer">
+                    <button @click="stop_adding_new()">{{ $t("domains.button_close_label") }}</button>
+                    <button class="modal-default-button" @click="create_list()">{{ $t("domains.button_create_list_label") }}</button>
+                </div>
+            </modal>
+
+            <button @click="start_adding_new()" accesskey="n">{{ $t("domains.add_new_list") }}</button>
+
+            <div v-if="loading" class="loading">
+                <div class="lds-dual-ring"><div></div><div></div></div> <span>Loading...</span>
             </div>
-            <div slot="footer">
-                <button @click="stop_adding_new()">{{ $t("domains.button_close_label") }}</button>
-                <button class="modal-default-button" @click="create_list()">{{ $t("domains.button_create_list_label") }}</button>
-            </div>
-        </modal>
-
-        <button @click="start_adding_new()" accesskey="n">{{ $t("domains.add_new_list") }}</button>
-
-        <div v-if="loading" class="loading">
-            <div class="lds-dual-ring"><div></div><div></div></div> <span>Loading...</span>
         </div>
 
         <!--
@@ -78,7 +84,7 @@ Fixed: when deleting a list, it is re-added to the list of lists when adding a n
         -->
         <managed-url-list :initial_list="list" v-bind:key="list.id" v-on:removelist="removelist" v-for="list in lists"></managed-url-list>
 
-        <div v-if="!lists.length" class="no-content">
+        <div v-if="!lists.length" class="no-content block fullwidth">
             Start creating a new list... <br>
             <button @click="start_adding_new()">{{ $t("domains.add_new_list") }}</button>
             <br>

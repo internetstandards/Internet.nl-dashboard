@@ -1,11 +1,5 @@
 {% extends 'internet_nl_dashboard/templates/internet_nl_dashboard/_base.html' %}{% load humanize %}{% load i18n %}
 {% block content %}
-    <h1>{% trans "Reports" %}</h1>
-
     <div id="report"></div>
     {% include "internet_nl_dashboard/templates/internet_nl_dashboard/report.vue" %}
-
-    <div style="min-height: 500px;">
-    &nbsp
-    </div>
 {% endblock %}

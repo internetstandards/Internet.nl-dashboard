@@ -229,7 +229,7 @@ UPLOAD_ROOT: str = os.environ.get('MEDIA_ROOT', os.path.abspath(os.path.dirname(
 
 # Two factor auth
 LOGIN_URL = "two_factor:login"
-LOGIN_REDIRECT_URL = "/dashboard/"
+LOGIN_REDIRECT_URL = "/"
 LOGOUT_REDIRECT_URL = LOGIN_URL
 TWO_FACTOR_QR_FACTORY = 'qrcode.image.pil.PilImage'
 # 6 supports google authenticator
