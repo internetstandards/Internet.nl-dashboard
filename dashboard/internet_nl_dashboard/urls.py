@@ -1,4 +1,5 @@
 from django.urls import path, register_converter
+from django.shortcuts import redirect
 
 from dashboard.internet_nl_dashboard.views import (__init__, account, domains, download_spreadsheet,
                                                    powertools, report, scan_monitor, spreadsheet)
@@ -19,7 +20,7 @@ register_converter(SpreadsheetFileTypeConverter, 'spreadsheet_filetype')
 
 
 urlpatterns = [
-    path('', report.dashboard),
+    path('', lambda request: redirect('/domains/')),
     path('powertools/', powertools.powertools),
     path('logout/', __init__.logout_view),
 
