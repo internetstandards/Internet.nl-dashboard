@@ -87,8 +87,9 @@
                                 <span v-if="selected_category && !['web', 'mail'].includes(selected_category)" @click="select_category(selected_report.value.urllist_scan_type)">Category filter: ❌ {{ $t("report." + selected_category) }}</span>
                             </th>
                             <th class="rotate" v-for="category in relevant_categories_based_on_settings()">
-                                <div @click="select_category(category)">
-                                    <span>{{ $t("report." + category) }}</span></div>
+                                <div>
+                                    <span @click="select_category(category)">{{ $t("report." + category) }}</span>
+                                </div>
                             </th>
                         </tr>
                     </thead>
@@ -98,12 +99,20 @@
                                 <span v-if="selected_report.value.type === 'web'" v-html="original_report_link_from_score(url.endpoints[0].ratings_by_type['internet_nl_web_overall_score'].explanation)"></span>
                                 <span v-if="selected_report.value.type === 'mail'" v-html="original_report_link_from_score(url.endpoints[0].ratings_by_type['internet_nl_mail_dashboard_overall_score'].explanation)"></span>
                             </td>
-                            <td class="testresultcell" v-for="category_name in relevant_categories_based_on_settings()">
+                            <td class="testresultcell" v-for="category_name in relevant_categories_based_on_settings()" @click="select_category(category_name)">
                                 <template v-if="['web', 'mail'].includes(selected_category)">
                                     <template v-if="category_name in url.endpoints[0].ratings_by_type">
-                                        <span class="category_failed" v-if="url.endpoints[0].ratings_by_type[category_name].ok < 1" :title="$t('report.' + category_name + '_verdict_bad')">
-                                            Failed
-                                        </span>
+                                        <!-- Currently the API just says True or False, we might be able to deduce the right label for a category, but that will take a day or two.
+                                        At the next field update, we'll also make the categories follow the new format of requirement level and testresult so HTTP Security Headers
+                                         here is shown as optional, or info if failed. We can also add a field for baseline NL government then. -->
+                                        <template v-if="url.endpoints[0].ratings_by_type[category_name].ok < 1">
+                                            <span class="category_failed" v-if="category_name !== 'internet_nl_web_appsecpriv_csp'" :title="$t('report.' + category_name + '_verdict_bad')">
+                                                Failed
+                                            </span>
+                                            <span class="category_warning" v-if="category_name === 'internet_nl_web_appsecpriv_csp'" :title="$t('report.' + category_name + '_verdict_bad')">
+                                                Warning
+                                            </span>
+                                        </template>
                                         <span class="category_passed" v-if="url.endpoints[0].ratings_by_type[category_name].ok > 0" :title="$t('report.' + category_name + '_verdict_good')">
                                             Passed
                                         </span>

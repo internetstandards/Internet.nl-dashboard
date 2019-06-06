@@ -281,6 +281,11 @@ label {
     background-image: url("/static/images/vendor/internet_nl/icon-warning.svg"), none;
 }
 
+.category_warning {
+    background-image: url("/static/images/vendor/internet_nl/icon-circle-warning.png");
+    background-image: url("/static/images/vendor/internet_nl/icon-circle-warning.svg"), none;
+}
+
 .info {
     background-image: url("/static/images/vendor/internet_nl/icon-info.png");
     background-image: url("/static/images/vendor/internet_nl/icon-info.svg"), none;
