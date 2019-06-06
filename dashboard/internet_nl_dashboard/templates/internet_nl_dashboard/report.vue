@@ -79,12 +79,10 @@
             <div>
                 <table class="table table-striped">
                     <thead>
+
                         <tr>
-                            <th style="width: 300px">
-                                <div v-if="selected_report.value">
-                                    <input type="text" v-model="url_filter" id="url_filter" placeholder="Url Filter...">
-                                </div>
-                                <span v-if="selected_category && !['web', 'mail'].includes(selected_category)" @click="select_category(selected_report.value.urllist_scan_type)">Category filter: ❌ {{ $t("report." + selected_category) }}</span>
+                            <th style="width: 300px; min-width: 300px;">
+                                <input v-if="selected_report.value" type="text" v-model="url_filter" id="url_filter" placeholder="Url Filter...">
                             </th>
                             <th class="rotate" v-for="category in relevant_categories_based_on_settings()">
                                 <div>
@@ -92,6 +90,40 @@
                                 </div>
                             </th>
                         </tr>
+
+                        <!-- Zoom buttons for accessibility -->
+                        <tr v-if="reports.length" class="summaryrow">
+                            <template v-if="['web', 'mail'].includes(selected_category)">
+                                <td>
+
+                                </td>
+                                <td v-for="category_name in relevant_categories_based_on_settings()">
+                                    <button @click="select_category(category_name)">zoom</button>
+                                </td>
+                            </template>
+                            <template v-if="!['web', 'mail'].includes(selected_category)">
+                                <td></td>
+                                <td :colspan="relevant_categories_based_on_settings().length">
+                                Zoomed in on {{ $t("report." + selected_category) }}.
+                                    <button @click="select_category(selected_report.value.urllist_scan_type)">
+                                        ❌ Remove zoom
+                                    </button>
+                                </td>
+                            </template>
+                        </tr>
+
+                        <!-- Summary row, same data as bar chart, but then in numbers.-->
+                        <tr v-if="reports.length" class="summaryrow">
+                            <td>
+                                Adoption %
+                            </td>
+                            <td v-for="category_name in relevant_categories_based_on_settings()" @click="select_category(category_name)">
+                                <span v-if="category_name in reports[0].statistics_per_issue_type">
+                                    {{reports[0].statistics_per_issue_type[category_name].pct_ok}}%</span>
+                            </td>
+                        </tr>
+
+
                     </thead>
                     <tbody v-if="filtered_urls.length" class="gridtable">
                         <tr v-for="url in filtered_urls" v-if="url.endpoints.length">
@@ -150,6 +182,7 @@
                                 </template>
                             </td>
                         </tr>
+
                     </tbody>
                     <tbody v-if="!filtered_urls.length">
                         <tr>

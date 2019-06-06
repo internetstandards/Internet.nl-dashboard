@@ -343,3 +343,7 @@ th.rotate > div > span {
 .direct_link_to_report{
     font-size: 0.8em;
 }
+
+.table .summaryrow {
+    font-size: 0.8em;
+}
