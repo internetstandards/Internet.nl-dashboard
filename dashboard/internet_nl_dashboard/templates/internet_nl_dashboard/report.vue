@@ -58,6 +58,9 @@
                     </percentage-bar-chart>
                 </div>
 
+                <!--
+                The radar is just another way of expressing the same data. It's nice, but not as good as the bar chart.
+                Code left here in case a graph demo is needed.
                 <div class="chart-container" style="position: relative; height:500px; width:100%">
                     <radar-chart
                             :title="graph_radar_chart_title"
@@ -67,6 +70,8 @@
                             :axis="relevant_categories_based_on_settings()">
                     </radar-chart>
                 </div>
+                -->
+
             </div>
             <div v-if="older_data_available">
                 <button @click="compare_with_previous()">Compare with previous (beta)</button>
@@ -808,6 +813,10 @@ const chart_mixin = {
     }
 };
 
+// this prevents the legend being written over the 100% scores
+Chart.Legend.prototype.afterFit = function() {
+    this.height = this.height + 20;
+};
 
 Vue.component('percentage-bar-chart', {
     i18n,
@@ -821,6 +830,16 @@ Vue.component('percentage-bar-chart', {
                 type: 'bar',
                 data: {},
                 options: {
+
+                    // prevents 100% scores falling off the chart.
+                    layout: {
+                        padding: {
+                            left: 0,
+                            right: 0,
+                            top: 0,
+                            bottom: 0
+                        }
+                    },
                     plugins:{
                         datalabels: {
                             color: '#262626',
@@ -836,11 +855,14 @@ Vue.component('percentage-bar-chart', {
                     legend: {
                         display: true,
                         position: 'top',
-                        padding: 30,
+                        labels: {
+                            padding: 0,
+                        }
                     },
                     responsive: true,
                     maintainAspectRatio: false,
                     title: {
+                        position: 'top',
                         display: true,
                         text: this.title,
                     },
@@ -868,6 +890,19 @@ Vue.component('percentage-bar-chart', {
 							},
                         }]
 				    },
+                    onClick: (event, item) => {
+                        if (item[0] === undefined) {
+                            return;
+                        }
+
+                        // todo: handle zooming, this is optional / a nice to have.
+                        let localChart = item[0]._chart;
+                        let activeIndex = localChart.tooltip._lastActive[0]._index;
+                        let clickCoordinates = Chart.helpers.getRelativePosition(event, localChart.chart);
+                        if (clickCoordinates.y >= 0) { //custom value, depends on chart style,size, etc
+                            console.log("clicked on " + localChart.data.labels[activeIndex]);
+                        }
+                    }
                 }
             });
         },
