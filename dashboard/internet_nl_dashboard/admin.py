@@ -268,8 +268,8 @@ class UrlListAdmin(ImportExportModelAdmin, admin.ModelAdmin):
 @admin.register(AccountInternetNLScan)
 class AccountInternetNLScanAdmin(ImportExportModelAdmin, admin.ModelAdmin):
 
-    list_display = ('account', 'account__name', 'internetnl_scan', 'scan__started_on', 'scan__finished_on',
-                    'scan__message', 'urllist')
+    list_display = ('account', 'account__name', 'internetnl_scan', 'scan__started_on', 'scan__last_check',
+                    'scan__finished_on', 'scan__message', 'urllist')
 
     fields = ('account', 'scan', 'urllist')
 
@@ -288,6 +288,10 @@ class AccountInternetNLScanAdmin(ImportExportModelAdmin, admin.ModelAdmin):
     @staticmethod
     def scan__message(obj):
         return obj.scan.message
+
+    @staticmethod
+    def scan__last_check(obj):
+        return obj.scan.last_check
 
     @staticmethod
     def internetnl_scan(obj):
