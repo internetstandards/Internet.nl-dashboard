@@ -106,10 +106,10 @@
                                         At the next field update, we'll also make the categories follow the new format of requirement level and testresult so HTTP Security Headers
                                          here is shown as optional, or info if failed. We can also add a field for baseline NL government then. -->
                                         <template v-if="url.endpoints[0].ratings_by_type[category_name].ok < 1">
-                                            <span class="category_failed" v-if="category_name !== 'internet_nl_web_appsecpriv_csp'" :title="$t('report.' + category_name + '_verdict_bad')">
+                                            <span v-if="category_name !== 'internet_nl_web_appsecpriv'" class="category_failed"  :title="$t('report.' + category_name + '_verdict_bad')">
                                                 Failed
                                             </span>
-                                            <span class="category_warning" v-if="category_name === 'internet_nl_web_appsecpriv_csp'" :title="$t('report.' + category_name + '_verdict_bad')">
+                                            <span v-if="category_name === 'internet_nl_web_appsecpriv'" class="category_warning" :title="$t('report.' + category_name + '_verdict_bad')">
                                                 Warning
                                             </span>
                                         </template>
