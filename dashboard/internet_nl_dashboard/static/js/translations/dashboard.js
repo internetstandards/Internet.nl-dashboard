@@ -160,6 +160,26 @@ const messages = {
             not_testable: internet_nl_messages.en.internet_nl.detail_tech_data_not_applicable,
             not_applicable: internet_nl_messages.en.internet_nl.detail_tech_data_not_tested,
 
+            // web category verdicts
+            internet_nl_web_ipv6_verdict_good: internet_nl_messages.en.internet_nl.test_siteipv6_passed_summary,
+            internet_nl_web_ipv6_verdict_bad: internet_nl_messages.en.internet_nl.test_siteipv6_failed_summary,
+            internet_nl_web_appsecpriv_verdict_good: internet_nl_messages.en.internet_nl.test_siteappsecpriv_passed_summary,
+            internet_nl_web_appsecpriv_verdict_bad: internet_nl_messages.en.internet_nl.test_siteappsecpriv_failed_summary,
+            internet_nl_web_tls_verdict_good: internet_nl_messages.en.internet_nl.test_sitetls_passed_summary,
+            internet_nl_web_tls_verdict_bad: internet_nl_messages.en.internet_nl.test_sitetls_failed_summary,
+            internet_nl_web_dnssec_verdict_good: internet_nl_messages.en.internet_nl.test_sitednssec_passed_summary,
+            internet_nl_web_dnssec_verdict_bad: internet_nl_messages.en.internet_nl.test_sitednssec_failed_summary,
+
+            // mail category verdicts
+            internet_nl_mail_dashboard_tls_verdict_good: internet_nl_messages.en.internet_nl.test_mailtls_passed_summary,
+            internet_nl_mail_dashboard_tls_verdict_bad: internet_nl_messages.en.internet_nl.test_mailtls_failed_summary,
+            internet_nl_mail_dashboard_auth_verdict_good: internet_nl_messages.en.internet_nl.test_mailauth_passed_summary,
+            internet_nl_mail_dashboard_auth_verdict_bad: internet_nl_messages.en.internet_nl.test_mailauth_failed_summary,
+            internet_nl_mail_dashboard_dnssec_verdict_good: internet_nl_messages.en.internet_nl.test_maildnssec_passed_summary,
+            internet_nl_mail_dashboard_dnssec_verdict_bad: internet_nl_messages.en.internet_nl.test_maildnssec_failed_summary,
+            internet_nl_mail_dashboard_ipv6_verdict_good: internet_nl_messages.en.internet_nl.test_mailipv6_passed_summary,
+            internet_nl_mail_dashboard_ipv6_verdict_bad: internet_nl_messages.en.internet_nl.test_mailipv6_failed_summary,
+
             // https://github.com/NLnetLabs/Internet.nl/blob/cece8255ac7f39bded137f67c94a10748970c3c7/checks/templates/domain-results.html
             internet_nl_web_appsecpriv: internet_nl_messages.en.internet_nl.results_domain_appsecpriv_http_headers_label,  // Added 24 May 2019
             internet_nl_web_appsecpriv_csp: internet_nl_messages.en.internet_nl.detail_web_appsecpriv_http_csp_label,  // Added 24 May 2019
@@ -192,7 +212,6 @@ const messages = {
             internet_nl_web_ipv6_ns_address: internet_nl_messages.en.internet_nl.detail_web_mail_ipv6_ns_aaaa_label,
 
             // verdicts:
-            internet_nl_web_appsecpriv_verdict_good: internet_nl_messages.en.internet_nl.results_domain_appsecpriv_http_headers_verdict_good,  // Added 24 May 2019
             internet_nl_web_appsecpriv_csp_verdict_good: internet_nl_messages.en.internet_nl.detail_web_appsecpriv_http_csp_verdict_good,  // Added 24 May 2019
             internet_nl_web_appsecpriv_referrer_policy_verdict_good: internet_nl_messages.en.internet_nl.detail_web_appsecpriv_http_referrer_policy_verdict_good,  // Added 24 May 2019
             internet_nl_web_appsecpriv_x_content_type_options_verdict_good: internet_nl_messages.en.internet_nl.detail_web_appsecpriv_http_x_content_type_verdict_good,  // Added 24 May 2019
@@ -222,7 +241,6 @@ const messages = {
             internet_nl_web_ipv6_ws_reach_verdict_good: internet_nl_messages.en.internet_nl.detail_web_ipv6_web_reach_verdict_good,
             internet_nl_web_ipv6_ns_address_verdict_good: internet_nl_messages.en.internet_nl.detail_web_mail_ipv6_ns_aaaa_verdict_good,
 
-            internet_nl_web_appsecpriv_verdict_bad: internet_nl_messages.en.internet_nl.results_domain_appsecpriv_http_headers_verdict_bad,  // Added 24 May 2019
             internet_nl_web_appsecpriv_csp_verdict_bad: internet_nl_messages.en.internet_nl.detail_web_appsecpriv_http_csp_verdict_bad,  // Added 24 May 2019
             internet_nl_web_appsecpriv_referrer_policy_verdict_bad: internet_nl_messages.en.internet_nl.detail_web_appsecpriv_http_referrer_policy_verdict_bad,  // Added 24 May 2019
             internet_nl_web_appsecpriv_x_content_type_options_verdict_bad: internet_nl_messages.en.internet_nl.detail_web_appsecpriv_http_x_content_type_verdict_bad,  // Added 24 May 2019
@@ -489,13 +507,33 @@ const messages = {
             internet_nl_mail_dashboard_dnssec: internet_nl_messages.nl.internet_nl.test_maildnssec_label,
             internet_nl_mail_dashboard_ipv6: internet_nl_messages.nl.internet_nl.test_mailipv6_label,
 
+            // web category verdicts
+            internet_nl_web_ipv6_verdict_good: internet_nl_messages.nl.internet_nl.test_siteipv6_passed_summary,
+            internet_nl_web_ipv6_verdict_bad: internet_nl_messages.nl.internet_nl.test_siteipv6_failed_summary,
+            internet_nl_web_appsecpriv_verdict_good: internet_nl_messages.nl.internet_nl.test_siteappsecpriv_passed_summary,
+            internet_nl_web_appsecpriv_verdict_bad: internet_nl_messages.nl.internet_nl.test_siteappsecpriv_failed_summary,
+            internet_nl_web_tls_verdict_good: internet_nl_messages.nl.internet_nl.test_sitetls_passed_summary,
+            internet_nl_web_tls_verdict_bad: internet_nl_messages.nl.internet_nl.test_sitetls_failed_summary,
+            internet_nl_web_dnssec_verdict_good: internet_nl_messages.nl.internet_nl.test_sitednssec_passed_summary,
+            internet_nl_web_dnssec_verdict_bad: internet_nl_messages.nl.internet_nl.test_sitednssec_failed_summary,
+
+            // mail category verdicts
+            internet_nl_mail_dashboard_tls_verdict_good: internet_nl_messages.nl.internet_nl.test_mailtls_passed_summary,
+            internet_nl_mail_dashboard_tls_verdict_bad: internet_nl_messages.nl.internet_nl.test_mailtls_failed_summary,
+            internet_nl_mail_dashboard_auth_verdict_good: internet_nl_messages.nl.internet_nl.test_mailauth_passed_summary,
+            internet_nl_mail_dashboard_auth_verdict_bad: internet_nl_messages.nl.internet_nl.test_mailauth_failed_summary,
+            internet_nl_mail_dashboard_dnssec_verdict_good: internet_nl_messages.nl.internet_nl.test_maildnssec_passed_summary,
+            internet_nl_mail_dashboard_dnssec_verdict_bad: internet_nl_messages.nl.internet_nl.test_maildnssec_failed_summary,
+            internet_nl_mail_dashboard_ipv6_verdict_good: internet_nl_messages.nl.internet_nl.test_mailipv6_passed_summary,
+            internet_nl_mail_dashboard_ipv6_verdict_bad: internet_nl_messages.nl.internet_nl.test_mailipv6_failed_summary,
+
             // https://github.com/NLnetLabs/Internet.nl/blob/cece8255ac7f39bded137f67c94a10748970c3c7/checks/templates/domain-results.html
-            internet_nl_web_appsecpriv: internet_nl_messages.en.internet_nl.results_domain_appsecpriv_http_headers_label,  // Added 24 May 2019
-            internet_nl_web_appsecpriv_csp: internet_nl_messages.en.internet_nl.detail_web_appsecpriv_http_csp_label,  // Added 24 May 2019
-            internet_nl_web_appsecpriv_referrer_policy: internet_nl_messages.en.internet_nl.detail_web_appsecpriv_http_referrer_policy_label,  // Added 24 May 2019
-            internet_nl_web_appsecpriv_x_content_type_options: internet_nl_messages.en.internet_nl.detail_web_appsecpriv_http_x_content_type_label,  // Added 24 May 2019
-            internet_nl_web_appsecpriv_x_frame_options: internet_nl_messages.en.internet_nl.detail_web_appsecpriv_http_x_frame_label,  // Added 24 May 2019
-            internet_nl_web_appsecpriv_x_xss_protection: internet_nl_messages.en.internet_nl.detail_web_appsecpriv_http_x_xss_label,  // Added 24 May 2019
+            internet_nl_web_appsecpriv: internet_nl_messages.nl.internet_nl.results_domain_appsecpriv_http_headers_label,  // Added 24 May 2019
+            internet_nl_web_appsecpriv_csp: internet_nl_messages.nl.internet_nl.detail_web_appsecpriv_http_csp_label,  // Added 24 May 2019
+            internet_nl_web_appsecpriv_referrer_policy: internet_nl_messages.nl.internet_nl.detail_web_appsecpriv_http_referrer_policy_label,  // Added 24 May 2019
+            internet_nl_web_appsecpriv_x_content_type_options: internet_nl_messages.nl.internet_nl.detail_web_appsecpriv_http_x_content_type_label,  // Added 24 May 2019
+            internet_nl_web_appsecpriv_x_frame_options: internet_nl_messages.nl.internet_nl.detail_web_appsecpriv_http_x_frame_label,  // Added 24 May 2019
+            internet_nl_web_appsecpriv_x_xss_protection: internet_nl_messages.nl.internet_nl.detail_web_appsecpriv_http_x_xss_label,  // Added 24 May 2019
 
             internet_nl_web_https_cert_domain: internet_nl_messages.nl.internet_nl.detail_web_tls_cert_hostmatch_label,
             internet_nl_web_https_http_redirect: internet_nl_messages.nl.internet_nl.detail_web_tls_https_forced_label,
