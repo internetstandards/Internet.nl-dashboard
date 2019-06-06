@@ -301,6 +301,15 @@ label {
     background-image: url("/static/images/vendor/internet_nl/icon-not-tested.svg"), none;
 }
 
+#site-title a {
+    height: 25px;
+    background: url("/static/images/vendor/internet_nl/logo_en.png") !important;
+    background: url("/static/images/vendor/internet_nl/logo_en.svg") !important;
+    background-repeat: no-repeat !important;
+    background-size: auto;
+}
+
+
 .table-striped tbody tr:nth-of-type(2n+1) {
     background-color: rgba(0,0,0,.05);
 }
