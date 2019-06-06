@@ -4,7 +4,15 @@
         <div class="block fullwidth">
             <h1>Reports</h1>
 
-            <multiselect id="select_report" v-model="selected_report" :options="available_recent_reports" label="label" placeholder="Select report..."></multiselect>
+            <multiselect
+                    id="select_report"
+                    v-model="selected_report"
+                    :options="available_recent_reports"
+                    label="label"
+                    :multiple="true"
+                    :track-by="'label'"
+                    placeholder="Select report...">
+            </multiselect>
         </div>
 
         <div v-if="selected_report">
@@ -53,9 +61,9 @@
                 <h2>Download data</h2>
                 <p>Report data is available in the following formats:</p>
                 <ul>
-                    <li><a :href="'/data/download-spreadsheet/' + selected_report.value.report + '/xlsx/'">Excel Spreadsheet (Microsoft Office), .xlsx</a></li>
-                    <li><a :href="'/data/download-spreadsheet/' + selected_report.value.report + '/ods/'">Open Document Spreadsheet (Libre Office), .ods</a></li>
-                    <li><a :href="'/data/download-spreadsheet/' + selected_report.value.report + '/csv/'">Comma Separated (for programmers), .csv</a></li>
+                    <li><a :href="'/data/download-spreadsheet/' + selected_report.report + '/xlsx/'">Excel Spreadsheet (Microsoft Office), .xlsx</a></li>
+                    <li><a :href="'/data/download-spreadsheet/' + selected_report.report + '/ods/'">Open Document Spreadsheet (Libre Office), .ods</a></li>
+                    <li><a :href="'/data/download-spreadsheet/' + selected_report.report + '/csv/'">Comma Separated (for programmers), .csv</a></li>
                 </ul>
             </div>
 
@@ -79,12 +87,16 @@
                     Average adoption of standards
                 </h2>
                 <p>This graph shows the average adoption per standard in this report.</p>
+
+                <!--
+                Let's see if the compare with previous is still needed while it's possible to compare arbitrary reports...
                 <div v-if="older_data_available">
                     <button @click="compare_with_previous()">Compare with previous (beta)</button>
                 </div>
                 <div v-if="!older_data_available">
                     <button disabled="disabled">Compare with previous (beta)</button>
                 </div>
+                -->
                 <div v-if='reports.length && "statistics_per_issue_type" in reports[0]'>
                     <div class="chart-container" style="position: relative; height:500px; width:100%">
                         <percentage-bar-chart
@@ -146,7 +158,7 @@
                                     <td></td>
                                     <td :colspan="relevant_categories_based_on_settings().length" style="text-align: center">
                                     Zoomed in on {{ $t("report." + selected_category) }}.
-                                        <button @click="select_category(selected_report.value.urllist_scan_type)">
+                                        <button @click="select_category(selected_report.urllist_scan_type)">
                                             ❌ Remove zoom
                                         </button>
                                     </td>
@@ -156,7 +168,7 @@
                             <!-- Summary row, same data as bar chart, but then in numbers.-->
                             <tr v-if="reports.length" class="summaryrow">
                                 <td>
-                                    <input v-if="selected_report.value" type="text" v-model="url_filter" id="url_filter" placeholder="Url Filter...">
+                                    <input v-if="selected_report" type="text" v-model="url_filter" id="url_filter" placeholder="Url Filter...">
                                 </td>
                                 <td v-for="category_name in relevant_categories_based_on_settings()" @click="select_category(category_name)">
                                     <span v-if="category_name in reports[0].statistics_per_issue_type">
@@ -169,8 +181,8 @@
                         <tbody v-if="filtered_urls.length" class="gridtable">
                             <tr v-for="url in filtered_urls" v-if="url.endpoints.length">
                                 <td>{{url.url}}
-                                    <span v-if="selected_report.value.type === 'web'" v-html="original_report_link_from_score(url.endpoints[0].ratings_by_type['internet_nl_web_overall_score'].explanation)"></span>
-                                    <span v-if="selected_report.value.type === 'mail'" v-html="original_report_link_from_score(url.endpoints[0].ratings_by_type['internet_nl_mail_dashboard_overall_score'].explanation)"></span>
+                                    <span v-if="selected_report.type === 'web'" v-html="original_report_link_from_score(url.endpoints[0].ratings_by_type['internet_nl_web_overall_score'].explanation)"></span>
+                                    <span v-if="selected_report.type === 'mail'" v-html="original_report_link_from_score(url.endpoints[0].ratings_by_type['internet_nl_mail_dashboard_overall_score'].explanation)"></span>
                                 </td>
                                 <td class="testresultcell" v-for="category_name in relevant_categories_based_on_settings()" @click="select_category(category_name)">
                                     <template v-if="['web', 'mail'].includes(selected_category)">
@@ -578,7 +590,7 @@ vueReport = new Vue({
                 this.reports = data;
                 this.reset_comparison_charts(this.reports[0]);
 
-                this.selected_category = this.selected_report.value.urllist_scan_type;
+                this.selected_category = this.selected_report[0].urllist_scan_type;
 
                 this.original_urls = data[0].calculation.urls.sort(this.alphabet_sorting);
                 this.older_data_available = true;
@@ -628,7 +640,7 @@ vueReport = new Vue({
         compare_with_previous: function(){
             // can be clicked on as long as there are previous reports. Which we don't know in advance.
 
-            fetch(`/data/report/get_previous/${this.selected_report.value.urllist_id}/${this.compare_oldest_data}/`, {credentials: 'include'}).then(response => response.json()).then(report => {
+            fetch(`/data/report/get_previous/${this.selected_report[0].urllist_id}/${this.compare_oldest_data}/`, {credentials: 'include'}).then(response => response.json()).then(report => {
 
                 if (!jQuery.isEmptyObject(report)) {
                     this.compare_charts.push(report);
@@ -641,13 +653,21 @@ vueReport = new Vue({
 
 
         },
+        compare_with: function(id){
+            fetch(`/data/report/get/${id}/`, {credentials: 'include'}).then(response => response.json()).then(report => {
+
+                if (!jQuery.isEmptyObject(report)) {
+                    this.compare_charts.push(report[0]);
+                }
+
+            }).catch((fail) => {console.log('A loading error occurred: ' + fail);});
+        },
         get_recent_reports: function(){
             fetch(`/data/report/recent/`, {credentials: 'include'}).then(response => response.json()).then(data => {
                 options = [];
                 for(let i = 0; i < data.length; i++){
-                    options.push({
-                        'value': data[i],
-                        'label': `#${data[i].id} - ${data[i].list_name} - type: ${data[i].type} - from: ${this.humanize_date(data[i].at_when)}`})
+                    data[i].label = `#${data[i].id} - ${data[i].list_name} - type: ${data[i].type} - from: ${this.humanize_date(data[i].at_when)}`;
+                    options.push(data[i])
                 }
                 this.available_recent_reports = options;
 
@@ -658,11 +678,12 @@ vueReport = new Vue({
                     // can we change the select2 to a certain value?
 
                     this.available_recent_reports.forEach((option) => {
-                       if (option.value.id + "" === get_id){
-                           this.selected_report = option;
+                       if (option.id + "" === get_id){
+                           // also re-create label
+                           option.label = `#${option.id} - ${option.list_name} - type: ${option.type} - from: ${this.humanize_date(option.at_when)}`;
+                           this.selected_report = [option];
                        }
                     });
-
                 } else {
                     // focus on report selection
                     // $('select_report').focus();
@@ -671,8 +692,8 @@ vueReport = new Vue({
             }).catch((fail) => {console.log('A loading error occurred: ' + fail);});
         },
         relevant_categories_based_on_settings: function(){
-            preferred_fields = this.categories[this.selected_category];
-            returned_fields = [];
+            let preferred_fields = this.categories[this.selected_category];
+            let returned_fields = [];
             for(let i = 0; i<preferred_fields.length; i++){
 
                 // When new fields are introduced, the list filters will be outdated and contain missing fields.
@@ -686,7 +707,7 @@ vueReport = new Vue({
             if (Object.keys(this.categories).includes(category_name))
                 this.selected_category = category_name;
             else
-                this.selected_category = this.selected_report.value.urllist_scan_type;
+                this.selected_category = this.selected_report[0].urllist_scan_type;
         },
         filter_urls(keyword) {
             let urls = [];
@@ -703,11 +724,11 @@ vueReport = new Vue({
             // selected_report.urllist_id contains the key to the timeline.
             // data/report/urllist_report_graph_data/10/
 
-            if (this.selected_report.value.urllist_id === 0) {
+            if (this.selected_report[0].urllist_id === 0) {
                 return;
             }
 
-            fetch(`/data/report/urllist_report_graph_data/${this.selected_report.value.urllist_id}/`, {credentials: 'include'}).then(response => response.json()).then(data => {
+            fetch(`/data/report/urllist_report_graph_data/${this.selected_report[0].urllist_id}/`, {credentials: 'include'}).then(response => response.json()).then(data => {
                 this.issue_timeline_of_related_urllist = data;
             }).catch((fail) => {console.log('A loading error occurred: ' + fail);});
 
@@ -732,11 +753,28 @@ vueReport = new Vue({
         }
     },
     watch: {
-        selected_report: function () {
-            // load selected organization id
-            if (this.selected_report) {
-                this.load(this.selected_report.value.report);
+        selected_report: function (new_value, old_value) {
+
+            // First load
+            if (!old_value){
+                this.load(new_value[0].id);
+                return
             }
+
+            // Change of first value (the main report) after first load
+            if (new_value[0].id !== old_value[0].id)
+                this.load(new_value[0].id);
+
+            // If other values after the first value changed.
+            if (new_value.length > 1){
+                // Reset all comparisons, so you can randomly delete, all without key tracking, which is slow
+                // and works acceptbly fine for now.
+                this.compare_charts = [];
+                for(let i=0; i<new_value.length; i++){
+                    this.compare_with(new_value[i].id)
+                }
+            }
+
         },
         url_filter: function(newValue, oldValue){
             this.filter_urls(newValue);
@@ -749,14 +787,14 @@ vueReport = new Vue({
         // graph titles:
         graph_radar_chart_title: function(){
             return i18n.t('charts.report_radar_chart.title', {
-                'list_information': this.selected_report.value.list_name,
+                'list_information': this.selected_report[0].list_name,
                 'number_of_domains': this.original_urls.length
             });
         },
 
         graph_bar_chart_title: function(){
             return i18n.t('charts.report_bar_chart.title', {
-                'list_information': this.selected_report.value.list_name,
+                'list_information': this.selected_report[0].list_name,
                 'number_of_domains': this.original_urls.length
             });
         },
@@ -816,7 +854,7 @@ const chart_mixin = {
             // Please note that calling sort on an array will modify that array.
             // you might want to clone your array first.
 
-            for (var i = 0; i < a.length; ++i) {
+            for (let i = 0; i < a.length; ++i) {
                 if (a[i] !== b[i]) return false;
             }
             return true;
@@ -866,7 +904,7 @@ Vue.component('percentage-bar-chart', {
                 data: {},
                 options: {
 
-                    // prevents 100% scores falling off the chart.
+                    // can prevent data falling off the chart.
                     layout: {
                         padding: {
                             left: 0,
@@ -891,7 +929,7 @@ Vue.component('percentage-bar-chart', {
                         display: true,
                         position: 'top',
                         labels: {
-                            padding: 0,
+                            padding: 15,
                         }
                     },
                     responsive: true,
@@ -975,7 +1013,7 @@ Vue.component('percentage-bar-chart', {
                     borderColor: this.color_scheme.incremental[i].border,
                     borderWidth: 1,
                     lineTension: 0,
-                    label: `${moment(this.chart_data[i].at_when).format('LL')}`,
+                    label: `${this.chart_data[i].calculation.name} ${moment(this.chart_data[i].at_when).format('LL')}`,
                 });
 
             }

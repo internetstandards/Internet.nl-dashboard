@@ -1,5 +1,5 @@
-from django.urls import path, register_converter
 from django.shortcuts import redirect
+from django.urls import path, register_converter
 
 from dashboard.internet_nl_dashboard.views import (__init__, account, domains, download_spreadsheet,
                                                    powertools, report, scan_monitor, spreadsheet)
