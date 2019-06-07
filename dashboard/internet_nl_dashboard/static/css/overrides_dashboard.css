@@ -321,19 +321,21 @@ label {
     border-top: 1px solid #dee2e6;
 }
 
+.table th {
+    min-height: 300px;
+}
+
 
 /* https://css-tricks.com/rotated-table-column-headers/*/
-    th.rotate {
-  /* Something you can count on */
-  height: 100px;
-  white-space: nowrap;
+/* It's not possible to dynamically resize the height of the TH or th container :( */
+th.rotate {
+    height: 250px;
+    white-space: nowrap;
+    vertical-align: bottom;
 }
 
 th.rotate > div {
   transform:
-    /* Magic Numbers */
-    translate(0px, 55px)
-    /* 45 is really 360 - 45 */
     rotate(315deg);
   width: 30px;
 }

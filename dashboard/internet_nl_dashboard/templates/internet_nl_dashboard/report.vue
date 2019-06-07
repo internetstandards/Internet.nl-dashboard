@@ -131,7 +131,7 @@
                 <a class="anchor" name="report"></a>
                 <p>{{ $t("report.report.intro") }}</p>
 
-                <div>
+                <div style="overflow-x: scroll; overflow-y: hidden;">
                     <table class="table table-striped">
                         <thead>
 

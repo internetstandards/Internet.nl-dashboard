@@ -70,7 +70,7 @@
       "name": "&#x1F501; Check running dashboard scans",
       "task": "websecmap.app.models.create_function_job",
       "interval": null,
-      "crontab": 33,
+      "crontab": 31,
       "solar": null,
       "args": "[\"dashboard.internet_nl_dashboard.scanners.scan_internet_nl_per_account.check_running_dashboard_scans\"]",
       "kwargs": "{}",
