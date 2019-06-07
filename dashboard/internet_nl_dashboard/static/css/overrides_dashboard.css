@@ -285,12 +285,12 @@ label {
     background-image: url("/static/images/vendor/internet_nl/icon-info.svg"), none;
 }
 
-.not_applicable {
+.not_testable {
     background-image: url("/static/images/vendor/internet_nl/icon-not-tested-question-mark.png");
     background-image: url("/static/images/vendor/internet_nl/icon-not-tested-question-mark.svg"), none;
 }
 
-.not_testable {
+.not_applicable {
     background-image: url("/static/images/vendor/internet_nl/icon-not-tested.png");
     background-image: url("/static/images/vendor/internet_nl/icon-not-tested.svg"), none;
 }

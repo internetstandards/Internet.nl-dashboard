@@ -2,7 +2,8 @@
 <template type="x-template" id="report_template">
     <div style="width: 100%; min-height: 500px;">
         <div class="block fullwidth">
-            <h1>Reports</h1>
+            <h1>{{ $t("report.header.title") }}</h1>
+            <p>{{ $t("report.header.intro") }}</p>
 
             <multiselect
                     id="select_report"
@@ -11,26 +12,26 @@
                     label="label"
                     :multiple="true"
                     :track-by="'label'"
-                    placeholder="Select report...">
+                    :placeholder="$t('report.header.select_report')">
             </multiselect>
         </div>
 
         <div v-if="selected_report">
             <div class="block fullwidth">
                 <div>
-                <a class="anchorlink" href="#charts"><button role="button">Charts</button></a>
-                <a class="anchorlink" href="#report"><button role="button">Report data</button></a>
-                <button @click="show_downloads = !show_downloads">Download data</button>
-                <button @click="show_settings = !show_settings">Relevant fields</button>
+                <a class="anchorlink" href="#charts"><button role="button">{{ $t("report.buttons.charts") }}</button></a>
+                <a class="anchorlink" href="#report"><button role="button">{{ $t("report.buttons.report") }}</button></a>
+                <button @click="show_downloads = !show_downloads">{{ $t("report.buttons.download") }}</button>
+                <button @click="show_settings = !show_settings">{{ $t("report.buttons.settings") }}</button>
                 </div>
             </div>
 
             <div v-if="show_settings" class="block fullwidth">
-                <h2>Relevant fields</h2>
-                <p>To retain focus, select the fields that are relevant to your organization.</p>
+                <h2>{{ $t("report.settings.title") }}</h2>
+                <p>{{ $t("report.settings.intro") }}</p>
                 <div>
-                    <button @click="load_issue_filters()">Reset</button>
-                    <button @click="save_issue_filters()">Save</button>
+                    <button @click="load_issue_filters()">{{ $t("report.settings.buttons.reset") }}</button>
+                    <button @click="save_issue_filters()">{{ $t("report.settings.buttons.save") }}</button>
                 </div>
                 <div v-if="!this.selected_category">
                     <div v-for="(category_group, category_name, y) in categories" style="width: 49%; float: left;">
@@ -58,24 +59,24 @@
             </div>
 
             <div v-if="show_downloads" class="block fullwidth">
-                <h2>Download data</h2>
-                <p>Report data is available in the following formats:</p>
+                <h2>{{ $t("report.download.title") }}</h2>
+                <p>{{ $t("report.download.intro") }}</p>
                 <ul>
-                    <li><a :href="'/data/download-spreadsheet/' + selected_report.report + '/xlsx/'">Excel Spreadsheet (Microsoft Office), .xlsx</a></li>
-                    <li><a :href="'/data/download-spreadsheet/' + selected_report.report + '/ods/'">Open Document Spreadsheet (Libre Office), .ods</a></li>
-                    <li><a :href="'/data/download-spreadsheet/' + selected_report.report + '/csv/'">Comma Separated (for programmers), .csv</a></li>
+                    <li><a :href="'/data/download-spreadsheet/' + selected_report.report + '/xlsx/'">{{ $t("report.download.xlsx") }}</a></li>
+                    <li><a :href="'/data/download-spreadsheet/' + selected_report.report + '/ods/'">{{ $t("report.download.ods") }}</a></li>
+                    <li><a :href="'/data/download-spreadsheet/' + selected_report.report + '/csv/'">{{ $t("report.download.csv") }}</a></li>
                 </ul>
             </div>
 
             <div class="block fullwidth">
-                <h2>Adoption of standards over time</h2>
+                <h2>{{ $t("report.charts.adoption_timeline.annotation.title") }}</h2>
                 <a class="anchor" name="charts"></a>
-                <p>This graph compares various measurements of the same list over time. This provides a visual indication of the progress of standards adoption.</p>
+                <p>{{ $t("report.charts.adoption_timeline.annotation.intro") }}</p>
 
                 <div class="chart-container" style="position: relative; height:300px; width:100%">
                     <line-chart
                             :color_scheme="color_scheme"
-                            :translation_key="'charts.percentage_timeline'"
+                            :translation_key="'report.charts.adoption_timeline'"
                             :chart_data="issue_timeline_of_related_urllist"
                             :axis="['pct_ok']">
                     </line-chart>
@@ -84,9 +85,9 @@
 
             <div class="block fullwidth">
                 <h2>
-                    Average adoption of standards
+                    {{ $t("report.charts.adoption_bar_chart.annotation.title") }}
                 </h2>
-                <p>This graph shows the average adoption per standard in this report.</p>
+                <p>{{ $t("report.charts.adoption_bar_chart.annotation.intro") }}</p>
 
                 <!--
                 Let's see if the compare with previous is still needed while it's possible to compare arbitrary reports...
@@ -101,7 +102,7 @@
                     <div class="chart-container" style="position: relative; height:500px; width:100%">
                         <percentage-bar-chart
                                 :title="graph_bar_chart_title"
-                                :translation_key="'charts.report_bar_chart'"
+                                :translation_key="'report.charts.adoption_bar_chart'"
                                 :color_scheme="color_scheme"
                                 :chart_data="compare_charts"
                                 :axis="relevant_categories_based_on_settings()">
@@ -126,18 +127,19 @@
             </div>
 
             <div v-if="filtered_urls !== undefined" class="block fullwidth">
-                <h2>Report</h2>
+                <h2>{{ $t("report.report.title") }}</h2>
                 <a class="anchor" name="report"></a>
+                <p>{{ $t("report.report.intro") }}</p>
 
                 <div>
                     <table class="table table-striped">
                         <thead>
 
                             <tr>
-                                <th style="width: 300px; min-width: 300px; border: 0px;">
+                                <th style="width: 300px; min-width: 300px; border: 0">
                                     &nbsp;
                                 </th>
-                                <th style="border: 0px;" class="rotate" v-for="category in relevant_categories_based_on_settings()">
+                                <th style="border: 0" class="rotate" v-for="category in relevant_categories_based_on_settings()">
                                     <div>
                                         <span @click="select_category(category)">{{ $t("report." + category) }}</span>
                                     </div>
@@ -151,15 +153,15 @@
 
                                     </td>
                                     <td v-for="category_name in relevant_categories_based_on_settings()">
-                                        <button @click="select_category(category_name)">zoom</button>
+                                        <button @click="select_category(category_name)">{{ $t("report.report.zoom.buttons.zoom") }}</button>
                                     </td>
                                 </template>
                                 <template v-if="!['web', 'mail'].includes(selected_category)">
                                     <td></td>
                                     <td :colspan="relevant_categories_based_on_settings().length" style="text-align: center">
-                                    Zoomed in on {{ $t("report." + selected_category) }}.
+                                    {{ $t("report.report.zoom.zoomed_in_on") }} {{ $t("report." + selected_category) }}.
                                         <button @click="select_category(selected_report.urllist_scan_type)">
-                                            ❌ Remove zoom
+                                            ❌ {{ $t("report.report.zoom.buttons.remove_zoom") }}
                                         </button>
                                     </td>
                                 </template>
@@ -168,7 +170,7 @@
                             <!-- Summary row, same data as bar chart, but then in numbers.-->
                             <tr v-if="reports.length" class="summaryrow">
                                 <td>
-                                    <input v-if="selected_report" type="text" v-model="url_filter" id="url_filter" placeholder="Url Filter...">
+                                    <input v-if="selected_report" type="text" v-model="url_filter" id="url_filter" :placeholder="$t('report.report.url_filter')">
                                 </td>
                                 <td v-for="category_name in relevant_categories_based_on_settings()" @click="select_category(category_name)">
                                     <span v-if="category_name in reports[0].statistics_per_issue_type">
@@ -192,45 +194,45 @@
                                              here is shown as optional, or info if failed. We can also add a field for baseline NL government then. -->
                                             <template v-if="url.endpoints[0].ratings_by_type[category_name].ok < 1">
                                                 <span v-if="category_name !== 'internet_nl_web_appsecpriv'" class="category_failed"  :title="$t('report.' + category_name + '_verdict_bad')">
-                                                    Failed
+                                                    {{ $t("report.report.results.failed") }}
                                                 </span>
                                                 <span v-if="category_name === 'internet_nl_web_appsecpriv'" class="category_warning" :title="$t('report.' + category_name + '_verdict_bad')">
-                                                    Warning
+                                                    {{ $t("report.report.results.warning") }}
                                                 </span>
                                             </template>
                                             <span class="category_passed" v-if="url.endpoints[0].ratings_by_type[category_name].ok > 0" :title="$t('report.' + category_name + '_verdict_good')">
-                                                Passed
+                                                {{ $t("report.report.results.passed") }}
                                             </span>
                                         </template>
                                         <span class="" v-if="url.endpoints[0].ratings_by_type[category_name] === undefined">
-                                            Unknown
+                                            {{ $t("report.report.results.unknown") }}
                                         </span>
                                     </template>
                                     <template v-if="!['web', 'mail'].includes(selected_category)">
                                         <template v-if="category_name in url.endpoints[0].ratings_by_type">
                                             <span class="not_applicable" v-if="url.endpoints[0].ratings_by_type[category_name].not_applicable > 0" :title="$t('report.not_applicable')">
-                                                Not Applicable
+                                                {{ $t("report.report.results.not_applicable") }}
                                             </span>
                                             <span class="not_testable" v-if="url.endpoints[0].ratings_by_type[category_name].not_testable > 0" :title="$t('report.not_testable')">
-                                                Not Testable
+                                                {{ $t("report.report.results.not_testable") }}
                                             </span>
                                             <span class="failed" v-if="url.endpoints[0].ratings_by_type[category_name].high > 0" :title="$t('report.' + category_name + '_verdict_bad')">
-                                                Failed
+                                                {{ $t("report.report.results.failed") }}
                                             </span>
                                             <span class="warning" v-if="url.endpoints[0].ratings_by_type[category_name].medium > 0" :title="$t('report.' + category_name + '_verdict_bad')">
-                                                Warning
+                                                {{ $t("report.report.results.warning") }}
                                             </span>
                                             <span class="info" v-if="url.endpoints[0].ratings_by_type[category_name].low > 0" :title="$t('report.' + category_name + '_verdict_bad')">
-                                                Info
+                                                {{ $t("report.report.results.info") }}
                                             </span>
                                             <span class="passed" v-if="url.endpoints[0].ratings_by_type[category_name].ok > 0
                                             && !url.endpoints[0].ratings_by_type[category_name].not_applicable
                                             && !url.endpoints[0].ratings_by_type[category_name].not_testable" :title="$t('report.' + category_name + '_verdict_good')">
-                                                Passed
+                                                {{ $t("report.report.results.passed") }}
                                             </span>
                                         </template>
                                         <span class="" v-if="url.endpoints[0].ratings_by_type[category_name] === undefined">
-                                            Unknown
+                                            {{ $t("report.report.results.unknown") }}
                                         </span>
                                     </template>
                                 </td>
@@ -239,7 +241,7 @@
                         </tbody>
                         <tbody v-if="!filtered_urls.length">
                             <tr>
-                               <td :colspan="relevant_categories_based_on_settings().length + 1" style="text-align: center;">😱 It looks like this report is empty... did you filter too much?</td>
+                               <td :colspan="relevant_categories_based_on_settings().length + 1" style="text-align: center;">😱 {{ $t("report.report.empty_report") }}</td>
                             </tr>
                         </tbody>
                     </table>
@@ -786,14 +788,14 @@ vueReport = new Vue({
     computed: {
         // graph titles:
         graph_radar_chart_title: function(){
-            return i18n.t('charts.report_radar_chart.title', {
+            return i18n.t('report.charts.adoption_radar_chart.title', {
                 'list_information': this.selected_report[0].list_name,
                 'number_of_domains': this.original_urls.length
             });
         },
 
         graph_bar_chart_title: function(){
-            return i18n.t('charts.report_bar_chart.title', {
+            return i18n.t('report.charts.adoption_bar_chart.title', {
                 'list_information': this.selected_report[0].list_name,
                 'number_of_domains': this.original_urls.length
             });
