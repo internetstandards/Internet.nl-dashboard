@@ -66,7 +66,9 @@ Fixed: when deleting a list, it is re-added to the list of lists when adding a n
                 </div>
             </modal>
 
-            <button @click="start_adding_new()" accesskey="n">{{ $t("domains.add_new_list") }}</button>
+            <div>
+                <button @click="start_adding_new()" accesskey="n">{{ $t("domains.add_new_list") }}</button>
+            </div>
 
             <div v-if="loading" class="loading">
                 <div class="lds-dual-ring"><div></div><div></div></div> <span>Loading...</span>
