@@ -105,6 +105,7 @@
                                 :translation_key="'report.charts.adoption_bar_chart'"
                                 :color_scheme="color_scheme"
                                 :chart_data="compare_charts"
+                                @bar_click="select_category"
                                 :axis="relevant_categories_based_on_settings()">
                         </percentage-bar-chart>
                     </div>
@@ -971,12 +972,17 @@ Vue.component('percentage-bar-chart', {
                             return;
                         }
 
+                        if (item[0]._chart.tooltip._lastActive[0] === undefined){
+                            return;
+                        }
+
                         // todo: handle zooming, this is optional / a nice to have.
                         let localChart = item[0]._chart;
                         let activeIndex = localChart.tooltip._lastActive[0]._index;
                         let clickCoordinates = Chart.helpers.getRelativePosition(event, localChart.chart);
                         if (clickCoordinates.y >= 0) { //custom value, depends on chart style,size, etc
-                            console.log("clicked on " + localChart.data.labels[activeIndex]);
+                            this.$emit('bar_click', localChart.data.axis_names[activeIndex]);
+                            // console.log("clicked on " + localChart.data.labels[activeIndex]);
                         }
                     }
                 }
@@ -984,6 +990,7 @@ Vue.component('percentage-bar-chart', {
         },
         renderData: function(){
             // prevent the grapsh from ever growing (it's called twice at first render)
+            this.chart.data.axis_names = [];
             this.chart.data.labels = [];
             this.chart.data.datasets = [];
 
@@ -993,22 +1000,26 @@ Vue.component('percentage-bar-chart', {
 
                 if (data === undefined) {
                     // nothing to show
+                    this.chart.data.axis_names = [];
                     this.chart.data.labels = [];
                     this.chart.data.datasets = [];
                     this.chart.update();
                     return;
                 }
 
-                let labels = Array();
+                let axis_names = [];
+                let labels = [];
                 let chartdata = [];
 
                 this.axis.forEach((ax) => {
                     if (ax in data) {
                         labels.push(i18n.t("report." + ax));
+                        axis_names.push(ax);
                         chartdata.push(data[ax].pct_ok);
                     }
                 });
 
+                this.chart.data.axis_names = axis_names;
                 this.chart.data.labels = labels;
                 this.chart.data.datasets.push({
                     data: chartdata,
