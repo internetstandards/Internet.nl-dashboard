@@ -1,95 +1,97 @@
 {% verbatim %}
 <template type="x-template" id="upload_template">
-    <div>
-        <h1>{{ $t("upload.bulk_data_uploader.title") }}</h1>
-        <p>{{ $t("upload.bulk_data_uploader.introduction") }}</p>
-        <table>
-            <tr>
-                <th></th>
-                <th>{{ $t("upload.empty_file") }}</th>
-                <th>{{ $t("upload.file_with_example_data") }}</th>
-            </tr>
-            <tr>
-                <td>
-                    {{ $t("upload.open_document_spreadsheet") }}
-                </td>
-                <td>
-                    <a href="/static/sample_spreadsheets/libre_office_spreadsheet_empty.ods">Empty.ods</a>
-                </td>
-                <td>
-                    <a href="/static/sample_spreadsheets/libre_office_spreadsheet_with_example_data.ods">Example.ods</a>
-                </td>
-            </tr>
-            <tr>
-                <td>
-                    {{ $t("upload.microsoft_office_excel") }}
-                </td>
-                <td>
-                    <a href="/static/sample_spreadsheets/microsoft_office_spreadsheet_empty.xlsx">Empty.xlsx</a>
-                </td>
-                <td>
-                    <a href="/static/sample_spreadsheets/microsoft_office_spreadsheet_with_example_data.xlsx">Example.xlsx</a>
-                </td>
-            </tr>
-            <tr>
-                <td>
-                    {{ $t("upload.comma_separated") }}
-                </td>
-                <td>
-                    <a href="/static/sample_spreadsheets/text_spreadsheet_empty.csv">Empty.csv</a>
-                </td>
-                <td>
-                    <a href="/static/sample_spreadsheets/text_spreadsheet_with_example_data.csv">Example.csv</a>
-                </td>
-            </tr>
-        </table>
-
-        <h3>{{ $t("upload.drag_and_drop_uploader.title") }}</h3>
-        <p>{{ $t("upload.drag_and_drop_uploader.first_instruction") }}</p>
-        <p>{{ $t("upload.drag_and_drop_uploader.nomouse") }}</p>
-        <p>{{ $t("upload.drag_and_drop_uploader.process") }}</p>
-        <p>{{ $t("upload.drag_and_drop_uploader.details_after_upload") }}</p>
-        <p><i>{{ $t("upload.drag_and_drop_uploader.warnings") }}</i></p>
-        <form action="/data/upload-spreadsheet/" method="POST"
-          class="dropzone"
-          id="my-awesome-dropzone" enctype="multipart/form-data">
-            <div class="fallback">
-                <p>{{ $t("upload.drag_and_drop_uploader.fallback_select_a_file") }}</p>
-                <input name="file" type="file"/>
-                <input type="submit">
-            </div>
-        {% endverbatim %}{% csrf_token %}{% verbatim %}
-        </form>
-        <form action="/data/upload-spreadsheet/" method="POST" enctype="multipart/form-data">
-            <div class="fallback">
-                <p>{{ $t("upload.drag_and_drop_uploader.fallback_select_a_file") }}</p>
-                <input name="file" type="file"/>
-                <input type="submit">
-            </div>
-        {% endverbatim %}{% csrf_token %}{% verbatim %}
-        </form>
-
-        <h3>{{ $t("upload.recent_uploads.title") }}</h3>
-        <p>{{ $t("upload.recent_uploads.intro") }}</p>
-        <table v-if="upload_history">
-            <thead>
+    <div style="width: 100%; min-height: 500px;">
+        <div class="block fullwidth">
+            <h1>{{ $t("upload.bulk_data_uploader.title") }}</h1>
+            <p>{{ $t("upload.bulk_data_uploader.introduction") }}</p>
+            <table>
                 <tr>
-                    <th>{{ $t("upload.recent_uploads.date") }}</th>
-                    <th>{{ $t("upload.recent_uploads.filename") }}</th>
-                    <th>{{ $t("upload.recent_uploads.filesize") }}</th>
-                    <th>{{ $t("upload.recent_uploads.status") }}</th>
+                    <th></th>
+                    <th>{{ $t("upload.empty_file") }}</th>
+                    <th>{{ $t("upload.file_with_example_data") }}</th>
                 </tr>
-            </thead>
-            <tbody>
-                <tr v-for="upload in upload_history">
-                    <td width="15%"><span :title="upload.upload_date">{{ humanize_date(upload.upload_date) }}</span></td>
-                    <td width="20%">{{ upload.original_filename }}</td>
-                    <td width="8%"><span :title="upload.filesize + ' bytes'">{{ humanize_filesize(upload.filesize) }}</span></td>
-                    <td>{{ upload.message }}</td>
+                <tr>
+                    <td>
+                        {{ $t("upload.open_document_spreadsheet") }}
+                    </td>
+                    <td>
+                        <a href="/static/sample_spreadsheets/libre_office_spreadsheet_empty.ods">Empty.ods</a>
+                    </td>
+                    <td>
+                        <a href="/static/sample_spreadsheets/libre_office_spreadsheet_with_example_data.ods">Example.ods</a>
+                    </td>
                 </tr>
-            </tbody>
-        </table>
-        <span v-if="!upload_history.length">{{ $t("upload.recent_uploads.no_uploads") }}</span>
+                <tr>
+                    <td>
+                        {{ $t("upload.microsoft_office_excel") }}
+                    </td>
+                    <td>
+                        <a href="/static/sample_spreadsheets/microsoft_office_spreadsheet_empty.xlsx">Empty.xlsx</a>
+                    </td>
+                    <td>
+                        <a href="/static/sample_spreadsheets/microsoft_office_spreadsheet_with_example_data.xlsx">Example.xlsx</a>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        {{ $t("upload.comma_separated") }}
+                    </td>
+                    <td>
+                        <a href="/static/sample_spreadsheets/text_spreadsheet_empty.csv">Empty.csv</a>
+                    </td>
+                    <td>
+                        <a href="/static/sample_spreadsheets/text_spreadsheet_with_example_data.csv">Example.csv</a>
+                    </td>
+                </tr>
+            </table>
+
+            <h3>{{ $t("upload.drag_and_drop_uploader.title") }}</h3>
+            <p>{{ $t("upload.drag_and_drop_uploader.first_instruction") }}</p>
+            <p>{{ $t("upload.drag_and_drop_uploader.nomouse") }}</p>
+            <p>{{ $t("upload.drag_and_drop_uploader.process") }}</p>
+            <p>{{ $t("upload.drag_and_drop_uploader.details_after_upload") }}</p>
+            <p><i>{{ $t("upload.drag_and_drop_uploader.warnings") }}</i></p>
+            <form action="/data/upload-spreadsheet/" method="POST"
+              class="dropzone"
+              id="my-awesome-dropzone" enctype="multipart/form-data">
+                <div class="fallback">
+                    <p>{{ $t("upload.drag_and_drop_uploader.fallback_select_a_file") }}</p>
+                    <input name="file" type="file"/>
+                    <input type="submit">
+                </div>
+            {% endverbatim %}{% csrf_token %}{% verbatim %}
+            </form>
+            <form action="/data/upload-spreadsheet/" method="POST" enctype="multipart/form-data">
+                <div class="fallback">
+                    <p>{{ $t("upload.drag_and_drop_uploader.fallback_select_a_file") }}</p>
+                    <input name="file" type="file"/>
+                    <input type="submit">
+                </div>
+            {% endverbatim %}{% csrf_token %}{% verbatim %}
+            </form>
+
+            <h3>{{ $t("upload.recent_uploads.title") }}</h3>
+            <p>{{ $t("upload.recent_uploads.intro") }}</p>
+            <table v-if="upload_history">
+                <thead>
+                    <tr>
+                        <th>{{ $t("upload.recent_uploads.date") }}</th>
+                        <th>{{ $t("upload.recent_uploads.filename") }}</th>
+                        <th>{{ $t("upload.recent_uploads.filesize") }}</th>
+                        <th>{{ $t("upload.recent_uploads.status") }}</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr v-for="upload in upload_history">
+                        <td width="15%"><span :title="upload.upload_date">{{ humanize_date(upload.upload_date) }}</span></td>
+                        <td width="20%">{{ upload.original_filename }}</td>
+                        <td width="8%"><span :title="upload.filesize + ' bytes'">{{ humanize_filesize(upload.filesize) }}</span></td>
+                        <td>{{ upload.message }}</td>
+                    </tr>
+                </tbody>
+            </table>
+            <span v-if="!upload_history.length">{{ $t("upload.recent_uploads.no_uploads") }}</span>
+        </div>
     </div>
 </template>
 {% endverbatim %}
