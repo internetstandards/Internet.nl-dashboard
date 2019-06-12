@@ -249,6 +249,7 @@
             </div>
 
         </div>
+        <autorefresh :visible="false" :callback="get_recent_reports"></autorefresh>
     </div>
 </template>
 {% endverbatim %}

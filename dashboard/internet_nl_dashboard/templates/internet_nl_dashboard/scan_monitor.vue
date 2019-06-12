@@ -53,69 +53,18 @@
 
         <div class='block fullwidth' v-if="!scans.length">{{ $t("scan_monitor.no_scans") }}</div>
 
-        <div class='auto_refresh block fullwidth'>
-            <p>{{ $t("auto_refresh.refresh_happening_in") }}<span v-html="current_step_inverted"></span>
-            {{ $t("auto_refresh.units") }}<a @click="reload_now()"> ({{ $t("auto_refresh.refresh_now") }})</a></p>
-        </div>
-
+        <autorefresh :visible="true"  :callback="load"></autorefresh>
     </div>
 </template>
-{% endverbatim %}
+
 
 <script>
-const autoreload_mixin = {
-    /*
-    * Autoreloads the 'load' methods after every N seconds.
-    * */
-    data: {
-        // 60 * 1000ms
-        refresh_time: 30 * 60 * 1000,
-
-        // Counts down until the next refresh. Allows to add a visualisation on this timer.
-        countdown_percentage: 0,
-
-        // countdown every ms (more means more UI changes, slower site)
-        countdown_refresh_time: 1000,
-
-        //
-        countdown_steps: 0,
-
-        //
-        current_step: 1
-    },
-    methods: {
-        init_auto_refresh: function () {
-            setInterval(this.lower_countdown, this.countdown_refresh_time);
-            this.countdown_steps = this.refresh_time /  this.countdown_refresh_time;
-        },
-        lower_countdown: function(){
-            if (100 / (this.countdown_steps / this.current_step) >= 100) {
-                this.reload_now();
-            } else {
-                this.current_step += 1;
-            }
-        },
-        reload_now: function(){
-            this.current_step = 0;
-            this.load();
-        }
-    },
-    mounted: function(){
-        this.init_auto_refresh();
-    },
-    computed: {
-        current_step_inverted: function(){
-            return this.countdown_steps - this.current_step;
-        }
-    }
-};
-
-vueUpload = new Vue({
+vueScanMonitor = new Vue({
     i18n,
     name: 'scan_monitor',
     el: '#scan_monitor',
     template: '#scan_monitor_template',
-    mixins: [humanize_mixin, autoreload_mixin],
+    mixins: [humanize_mixin],
     data: {
         scans: [],
     },
@@ -134,3 +83,4 @@ vueUpload = new Vue({
     }
 });
 </script>
+{% endverbatim %}

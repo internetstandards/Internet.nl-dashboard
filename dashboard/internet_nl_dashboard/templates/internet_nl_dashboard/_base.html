@@ -295,7 +295,72 @@ Todo: digitoegankelijk: how to select links with the keyboard? How can we make t
                     })();
                 }
             }
-        }
+        };
+
+        {% verbatim %}
+        Vue.component('autorefresh', {
+            i18n,
+
+            template: `
+<div v-if='visible' class='auto_refresh block fullwidth'>
+    <p>
+        {{ $t("auto_refresh.refresh_happening_in") }} <span v-html="this.current_step_inverted"></span>
+        {{ $t("auto_refresh.units") }}
+        <a @click="reload_now()">({{ $t("auto_refresh.refresh_now") }})</a>
+    </p>
+</div>`,
+
+            data: function () {
+                return {
+                    // 60 * 1000ms
+                    refresh_time: 30 * 60 * 1000,
+
+                    // Counts down until the next refresh. Allows to add a visualisation on this timer.
+                    countdown_percentage: 0,
+
+                    // countdown every ms (more means more UI changes, slower site)
+                    countdown_refresh_time: 1000,
+
+                    //
+                    countdown_steps: 0,
+
+                    //
+                    current_step: 1
+                }
+            },
+
+            props:{
+                callback: null,
+                visible: true,
+            },
+
+            methods: {
+                init_auto_refresh: function () {
+                    setInterval(this.lower_countdown, this.countdown_refresh_time);
+                    this.countdown_steps = this.refresh_time /  this.countdown_refresh_time;
+                },
+                lower_countdown: function(){
+                    if (100 / (this.countdown_steps / this.current_step) >= 100) {
+                        this.reload_now();
+                    } else {
+                        this.current_step += 1;
+                    }
+                },
+                reload_now: function(){
+                    this.current_step = 0;
+                    this.callback();
+                }
+            },
+            mounted: function(){
+                this.init_auto_refresh();
+            },
+            computed: {
+                current_step_inverted: function(){
+                    return this.countdown_steps - this.current_step;
+                }
+            }
+        });
+        {% endverbatim %}
     </script>
 
 </head>
