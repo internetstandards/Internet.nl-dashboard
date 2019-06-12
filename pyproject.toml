@@ -28,8 +28,8 @@ dashboard = 'dashboard.manage:main'
 [tool.poetry.dependencies]
 python = ">=3.6, <=3.8"
 
-# Tools/dependencies required for development or running tests.
 websecmap = {git = "https://gitlab.com/internet-cleanup-foundation/web-security-map"}
+
 django-otp = "^0.6.0"
 django-two-factor-auth = "^1.8"
 django-picklefield = "^2.0"
@@ -38,6 +38,15 @@ python-magic = "^0.4.15"
 pytz = "^2019.1"
 django = "^2.2"
 polib = "^1.1"
+
+# deployment requirements
+mysqlclient = {version = "*", optional = true}
+psycopg2 = {version = "*", optional = true}
+uwsgi = {version = "*", optional = true}
+django-uwsgi = {version = "*"}
+
+[tool.poetry.extras]
+deploy = ["mysqlclient","psycopg2","uwsgi"]
 
 [tool.poetry.dev-dependencies]
 autopep8 = "*"
