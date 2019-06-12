@@ -592,7 +592,8 @@ vueReport = new Vue({
         get_report_data: function(report_id){
             fetch(`/data/report/get/${report_id}/`, {credentials: 'include'}).then(response => response.json()).then(data => {
                 this.reports = data;
-                this.reset_comparison_charts(this.reports[0]);
+                // remove implicit behavior
+                // this.reset_comparison_charts(this.reports[0]);
 
                 this.selected_category = this.selected_report[0].urllist_scan_type;
 
@@ -758,32 +759,22 @@ vueReport = new Vue({
     },
     watch: {
         selected_report: function (new_value, old_value) {
+            console.log(`New value: ${new_value}`);
+            console.log(`Old value: ${old_value}`);
 
             // totally empty list, list was emptied by clicking the crosshair everywhere.
             if (new_value[0] === undefined){
+                console.log('List was emptied');
+                this.reports=[];
                 return;
             }
 
-            // First load
-            if (!old_value){
-                this.load(new_value[0].id);
-                return
+            this.load(new_value[0].id);
+            this.compare_charts = [];
+            for(let i=0; i<new_value.length; i++){
+                console.log(`Comparing with report ${new_value[i].id}`);
+                this.compare_with(new_value[i].id);
             }
-
-            // Change of first value (the main report) after first load
-            if (old_value[0] !== undefined && new_value[0].id !== old_value[0].id)
-                this.load(new_value[0].id);
-
-            // If other values after the first value changed.
-            if (new_value.length > 1){
-                // Reset all comparisons, so you can randomly delete, all without key tracking, which is slow
-                // and works acceptbly fine for now.
-                this.compare_charts = [];
-                for(let i=0; i<new_value.length; i++){
-                    this.compare_with(new_value[i].id)
-                }
-            }
-
         },
         url_filter: function(newValue, oldValue){
             this.filter_urls(newValue);
