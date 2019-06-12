@@ -18,23 +18,25 @@
                     <span v-if="!scan.finished"><img width="15" style="border-radius: 50%" src="/static/images/vendor/internet_nl/probe-animation.gif"></span>
                     <b>{{ scan.type }} {{ $t("scan_monitor.id") }}{{ scan.id }}</b><br>
                     <br>
-                    📘 <a :href="'/domains/' + scan.list_id + '/#' + scan.list_id">{{ scan.list }}</a><br>
-                    <br>
                     <template v-if="scan.finished">
                         <template v-if="scan.last_report_id">
                             📊 <a :href="'/reports/' + scan.last_report_id">{{ $t("scan_monitor.open_report") }}</a><br>
                             <br>
                         </template>
                         <template v-if="!scan.last_report_id">
-                            📊 {{ $t("scan_monitor.report_is_being_generated") }}
+                            📊 {{ $t("scan_monitor.report_is_being_generated") }}<br>
                         </template>
+                    </template>
+                    📘 <a :href="'/domains/' + scan.list_id + '/#' + scan.list_id">{{ scan.list }}</a><br>
+                    <br>
+                    <template v-if="scan.finished">
                         <b>{{ $t("scan_monitor.finished_on") }}</b><br>
                         <span :title="scan.finished_on">{{ humanize_date(scan.finished_on) }},<br>{{ humanize_relative_date(scan.finished_on) }}</span><br>
                         <br>
-                        <b>{{ $t("scan_monitor.runtime") }}</b><br>
+                    </template>
+                    <b>{{ $t("scan_monitor.runtime") }}</b><br>
                         {{ humanize_duration(scan.runtime) }}<br>
                         <br>
-                    </template>
                     <template v-if="!scan.finished">
                         <b>{{ $t("scan_monitor.message") }}</b>
                         <p>{{ scan.message }}</p>
