@@ -36,6 +36,8 @@ def logout_view(request) -> HttpResponse:
 
 def get_account(request) -> Account:
     # todo: what about the exceptions that happen when there is no account? Currently exceptions, it should not happen.
+    # log.debug(request)
+    # log.debug(request.user)
     return DashboardUser.objects.all().filter(user=request.user).get().account
 
 

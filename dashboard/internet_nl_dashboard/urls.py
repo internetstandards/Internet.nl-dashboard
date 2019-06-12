@@ -36,6 +36,7 @@ urlpatterns = [
     path('data/urllist/scan_now/', domains.scan_now_),
     path('data/urllist/url/save/', domains.alter_url_in_urllist_),
     path('data/urllist/url/add/', domains.add_urls_to_urllist),
+    path('data/urllist/url/delete/', domains.delete_url_from_urllist_),
 
     # account management:
     path('data/account/report_settings/get/', account.get_report_settings_),

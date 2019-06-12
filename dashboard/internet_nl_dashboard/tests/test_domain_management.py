@@ -3,6 +3,8 @@ These testcases help to validate the working of the listmanagement API.
 
 Run these tests with tox -e test -- -k test_urllist_management
 """
+from websecmap.organizations.models import Url
+
 from dashboard.internet_nl_dashboard.logic.domains import (delete_list, delete_url_from_urllist,
                                                            get_or_create_list_by_name,
                                                            get_urllist_content,
@@ -49,7 +51,8 @@ def test_urllists(db, redis_server) -> None:
     assert len(list_content['urls']) == 3
 
     """ Delete a a urls from the list: """
-    items_deleted, item_details = delete_url_from_urllist(account, "test list 1", 'test.nl')
+    items_deleted, item_details = delete_url_from_urllist(account, list_1.id,
+                                                          Url.objects.all().filter(url='test.nl').first().id)
     # {'internet_nl_dashboard.UrlList_urls': 1, 'organizations.Url': 1,
     # 'organizations.Url_organization': 0, 'pro.RescanRequest': 0, ...}
     """ The testcase delivers 2 deleted items, including an organizations.Url, this is weird, since we're not doing

@@ -546,18 +546,18 @@ def get_or_create_list_by_name(account, name: str) -> UrlList:
         return urllist
 
 
-def delete_url_from_urllist(account: Account, urllist_name: str, url: str) -> Tuple[int, Dict[str, int]]:
+def delete_url_from_urllist(account: Account, urllist_id: int, url_id: int) -> Tuple[int, Dict[str, int]]:
     """
     While we delete the url in the urllist, the actual url is not deleted. It might be used by others, and
     all the same it might be used in the future by someone else. This will retrain the historic data.
 
     :param account:
-    :param urllist_name:
-    :param url:
+    :param urllist_id:
+    :param url_id:
     :return:
     """
 
     return Url.objects.all().filter(
         urls_in_dashboard_list__account=account,
-        urls_in_dashboard_list__name=urllist_name,
-        url=url).delete()
+        urls_in_dashboard_list__id=urllist_id,
+        id=url_id).delete()

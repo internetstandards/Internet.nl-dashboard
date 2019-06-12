@@ -11,7 +11,7 @@ from dashboard.internet_nl_dashboard.logic.domains import (alter_url_in_urllist,
                                                            get_urllists_from_account,
                                                            save_urllist_content,
                                                            save_urllist_content_by_name, scan_now,
-                                                           update_list_settings)
+                                                           update_list_settings, delete_url_from_urllist)
 from dashboard.internet_nl_dashboard.views import (LOGIN_URL, get_account, get_json_body,
                                                    inject_default_language_cookie)
 
@@ -29,11 +29,7 @@ def index(request, list_id=0) -> HttpResponse:
 
 @login_required(login_url=LOGIN_URL)
 def get_lists(request) -> JsonResponse:
-    account = get_account(request)
-
-    response = get_urllists_from_account(account=account)
-
-    return JsonResponse(response, encoder=JSEncoder, safe=False)
+    return JsonResponse(get_urllists_from_account(account=get_account(request)), encoder=JSEncoder, safe=False)
 
 
 @login_required(login_url=LOGIN_URL)
@@ -69,6 +65,14 @@ def alter_url_in_urllist_(request):
 @login_required(login_url=LOGIN_URL)
 def add_urls_to_urllist(request):
     return JsonResponse(save_urllist_content(get_account(request), get_json_body(request)))
+
+
+@login_required(login_url=LOGIN_URL)
+def delete_url_from_urllist_(request):
+    account = get_account(request)
+    request = get_json_body(request)
+    items_deleted, item_details = delete_url_from_urllist(account, request.get('list_id'), request.get('url_id'))
+    return JsonResponse({'items_deleted': items_deleted, 'success': items_deleted})
 
 
 @login_required(login_url=LOGIN_URL)
