@@ -145,7 +145,7 @@
 
                 <server-response :response="delete_response"></server-response>
 
-                <p class="warning">{{ $t("domain_management.delete_form.message") }}</p>
+                <p class="dialog_warning">{{ $t("domain_management.delete_form.message") }}</p>
 
                 <label for="name">{{ $t("urllist.field_label_name") }}:</label><br>
                 {{ list.name }}<br>

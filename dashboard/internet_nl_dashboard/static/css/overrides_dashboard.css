@@ -235,6 +235,9 @@ label {
     text-align: center;
 }
 
+.dialog_warning{
+    font-weight: bold;
+}
 
 .testresultcell span{
     background-size: 1.125em 1.125em;
