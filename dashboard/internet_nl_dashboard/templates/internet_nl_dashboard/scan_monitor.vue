@@ -25,6 +25,9 @@
                             📊 <a :href="'/reports/' + scan.last_report_id">{{ $t("scan_monitor.open_report") }}</a><br>
                             <br>
                         </template>
+                        <template v-if="!scan.last_report_id">
+                            📊 {{ $t("scan_monitor.report_is_being_generated") }}
+                        </template>
                         <b>{{ $t("scan_monitor.finished_on") }}</b><br>
                         <span :title="scan.finished_on">{{ humanize_date(scan.finished_on) }},<br>{{ humanize_relative_date(scan.finished_on) }}</span><br>
                         <br>

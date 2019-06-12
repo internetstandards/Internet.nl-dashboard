@@ -74,3 +74,4 @@ def add_urls_to_urllist(request):
 @login_required(login_url=LOGIN_URL)
 def scan_now_(request):
     return JsonResponse(scan_now(get_account(request), get_json_body(request)))
+

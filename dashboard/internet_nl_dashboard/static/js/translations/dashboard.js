@@ -478,7 +478,8 @@ const messages = {
             runtime: 'Runtime',
             open_in_api: 'Open on internet.nl API',
             open_report: 'Open report',
-            last_check: 'Last status update'
+            last_check: 'Last status update',
+            report_is_being_generated: 'Report is being generated...',
         },
         auto_refresh: {
             refresh_happening_in: 'Auto refresh in:',
@@ -942,7 +943,8 @@ const messages = {
             runtime: 'Looptijd',
             open_in_api: 'Open internet.nl API resultaat',
             open_report: 'Open rapport',
-            last_check: 'Laatste status update'
+            last_check: 'Laatste status update',
+            report_is_being_generated: 'Report wordt gemaakt...',
         },
         auto_refresh: {
             refresh_happening_in: 'Lijst wordt ververst over:',
