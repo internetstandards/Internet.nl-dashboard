@@ -16,7 +16,7 @@
             </multiselect>
         </div>
 
-        <div v-if="selected_report">
+        <div v-if="selected_report && selected_report.length">
             <div class="block fullwidth">
                 <div>
                 <a class="anchorlink" href="#charts"><button role="button">{{ $t("report.buttons.charts") }}</button></a>
@@ -759,6 +759,11 @@ vueReport = new Vue({
     watch: {
         selected_report: function (new_value, old_value) {
 
+            // totally empty list, list was emptied by clicking the crosshair everywhere.
+            if (new_value[0] === undefined){
+                return;
+            }
+
             // First load
             if (!old_value){
                 this.load(new_value[0].id);
@@ -766,7 +771,7 @@ vueReport = new Vue({
             }
 
             // Change of first value (the main report) after first load
-            if (new_value[0].id !== old_value[0].id)
+            if (old_value[0] !== undefined && new_value[0].id !== old_value[0].id)
                 this.load(new_value[0].id);
 
             // If other values after the first value changed.
