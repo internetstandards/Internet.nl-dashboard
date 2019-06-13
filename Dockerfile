@@ -17,7 +17,7 @@ WORKDIR /source/
 # Install app and dependencies in a artifact-able directory
 # App is installed by linking source into virtualenv. This is against convention
 # but allows the source to be overwritten by a volume during development.
-RUN poetry install -v --no-dev --develop dashboard
+RUN poetry install -v --no-dev --develop dashboard --extras=deploy
 
 RUN ln -s /pyenv/bin/dashboard /usr/local/bin/
 
