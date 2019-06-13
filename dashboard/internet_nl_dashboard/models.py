@@ -42,7 +42,11 @@ class Account(models.Model):
         help_text="Internet.nl API Username"
     )
 
-    internet_nl_api_password = models.BinaryField(
+    # BinaryFields become MemoryView objects in postgres, which handle differently than normal strings.
+    # For one, it's impossible to serialize them, which makes using Account objects impossible. Therefore
+    # bytes are stored as a string, while ugly, it might just function better and more consistent.
+    # https://code.djangoproject.com/ticket/27813
+    internet_nl_api_password = models.TextField(
         blank=True,
         null=True,
         help_text="New values will automatically be encrypted.",
@@ -67,7 +71,7 @@ class Account(models.Model):
     @staticmethod
     def encrypt_password(password):
         f = Fernet(settings.FIELD_ENCRYPTION_KEY)
-        return f.encrypt(password.encode())
+        return str(f.encrypt(password.encode()))
 
     @staticmethod
     def connect_to_internet_nl_api(username: str, password: str):
@@ -93,17 +97,10 @@ class Account(models.Model):
         if not self.internet_nl_api_password:
             raise ValueError('Password was not set.')
 
-        if type(self.internet_nl_api_password) not in [memoryview, bytes]:
-            raise ValueError('Password was not encrypted, cannot retrieve unencrypted passwords. Encrypt it first.')
-
-        # postgres saves it as memoryview, sqlite as bytes.
-        if type(self.internet_nl_api_password) is memoryview:
-            password = bytes(self.internet_nl_api_password)
-        else:
-            password = self.internet_nl_api_password
-
         f = Fernet(settings.FIELD_ENCRYPTION_KEY)
-        return f.decrypt(password).decode('utf-8')
+        # Convert the string back to bytes again is not beautiful. But it's a bit more reliable than
+        # storing the encrypted password in 'bytes', which somewhere goes wrong.
+        return f.decrypt(bytes(self.internet_nl_api_password[2:-1], encoding='UTF-8')).decode('utf-8')
 
     def __str__(self):
         return "%s" % self.name

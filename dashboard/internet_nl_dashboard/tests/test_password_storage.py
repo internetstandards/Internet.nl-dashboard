@@ -4,7 +4,6 @@ Checks that the password in the Account can be stored and retrieved, and results
 Run these tests with tox -e test -- -k test_password_storage
 """
 import pytest
-from django.db import transaction
 
 from dashboard.internet_nl_dashboard.models import Account
 
@@ -22,17 +21,6 @@ def test_password_storage(db) -> None:
     # no password set, should throw a valueError
     with pytest.raises(ValueError, match=r'.*not set.*'):
         account, created = Account.objects.all().get_or_create(name="value error")
-        account.decrypt_password()
-
-    with transaction.atomic():
-        # there is no magic going on. Passwords have to be encrypted manually.
-        # Warning: the transaction is broken here.
-        # An error occurred in the current transaction. You can't execute queries until the end of the 'atomic' block.
-        with pytest.raises(TypeError, match=r'.*bytes-like.*'):
-            account.internet_nl_api_password = "bla"
-            account.save()
-
-    with pytest.raises(ValueError, match=r'.*not encrypted.*'):
         account.decrypt_password()
 
     # can create at once:
