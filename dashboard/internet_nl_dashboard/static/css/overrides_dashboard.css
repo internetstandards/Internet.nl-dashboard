@@ -298,12 +298,31 @@ label {
     background-image: url("/static/images/vendor/internet_nl/icon-not-tested.svg"), none;
 }
 
-#site-title a {
-    height: 25px;
-    background: url("/static/images/vendor/internet_nl/logo_en.png") !important;
-    background: url("/static/images/vendor/internet_nl/logo_en.svg") !important;
-    background-repeat: no-repeat !important;
-    background-size: auto;
+
+@media (max-width: 499px) {
+    #site-title a {
+        background-image: url("/static/images/vendor/internet_nl/logo_en.png") !important;
+        background-image: url("/static/images/vendor/internet_nl/logo_en.svg") !important;
+    }
+}
+
+@media (min-width: 500px) and (max-width: 739px) {
+    #site-title a {
+        background-image: url("/static/images/vendor/internet_nl/logo-tablet_en.png") !important;
+        background-image: url("/static/images/vendor/internet_nl/logo-tablet_en.svg") !important;
+    }
+}
+
+@media (min-width: 740px) {
+    #site-title a {
+        background-image: url("/static/images/vendor/internet_nl/logo_en.png") !important;
+        background-image: url("/static/images/vendor/internet_nl/logo_en.svg") !important;
+    }
+}
+
+#menu-button i {
+    background-image: url("/static/images/vendor/internet_nl/icon-menu.png") !important;
+    background-image: url("/static/images/vendor/internet_nl/icon-menu.svg") !important;
 }
 
 

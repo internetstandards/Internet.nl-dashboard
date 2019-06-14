@@ -378,21 +378,21 @@ Todo: digitoegankelijk: how to select links with the keyboard? How can we make t
     Ga naar de footer
 </a></div>
 
-<header class="header-js-animated headroom--top headroom--not-bottom">
-    <div class="wrap no-menu-button">
+<header>
+    <div class="wrap">
         <div id="masthead">
             <p id="site-title"><a href="/"><span class="hidden">{% trans "Internet.nl" %}</span></a></p>
             <p id="site-description"><span class="hidden">{% trans "Is your internet up-to-date?" %}</span></p>
         </div>
 
-        <div id="language-switch-header-container" aria-hidden="false">
+        <div id="language-switch-header-container">
             <ul class="language-switch-list">
                 <li><a onclick="set_language('en')">{% trans "English" %}</a></li>
                 <li><a onclick="set_language('nl')">{% trans "Nederlands" %}</a></li>
             </ul>
         </div>
 
-        <nav id="sitenav" aria-hidden="false">
+        <nav id="sitenav">
             <ul>
                 {% if user.is_authenticated %}
 
@@ -416,14 +416,6 @@ Todo: digitoegankelijk: how to select links with the keyboard? How can we make t
 <main id="content" class="clearfix" tabindex="-1">
     <div class="mainwrap">
 
-        <!-- <div class="wrap">
-            <section class="block websitetest">
-                <div class="wrapper">
-
-                </div>
-            </section>
-        </div> -->
-
     </div>
     <div class="wrap">
         {% block logicontent_wrapper_hack_begin %}{% endblock %}
@@ -431,6 +423,19 @@ Todo: digitoegankelijk: how to select links with the keyboard? How can we make t
         {% endblock %}
         {% block logicontent_wrapper_hack_end %}{% endblock %}
     </div>
+
+    <!-- todo: remove this block when the beta is over -->
+    <div class="wrap">
+        <section class="block">
+            <div class="wrapper">
+                <p>
+                    Thank you for trying out the dashboard. Please report issues on <a href="https://github.com/internetstandards/Internet.nl-dashboard/issues" target="_blank">Github, here.</a>.
+                    If possible, also add screenshots (these can be pasted from the clipboard(!)).
+                </p>
+            </div>
+        </section>
+    </div>
+    <!-- todo: end remove -->
 </main>
 
 <footer id="footer">
@@ -454,6 +459,8 @@ Todo: digitoegankelijk: how to select links with the keyboard? How can we make t
         </ul>
     </div>
 </footer>
+<script type="text/javascript" src="/static/js/vendor/internet_nl/menu-min.js" defer></script>
+<script type="text/javascript" src="/static/js/vendor/internet_nl/accordion-min.js" defer></script>
 <script type="text/javascript" src="/static/js/vendor/internet_nl/matomo-min.js"></script>
 </body>
 </html>

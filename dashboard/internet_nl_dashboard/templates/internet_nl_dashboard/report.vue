@@ -776,12 +776,12 @@ vueReport = new Vue({
     },
     watch: {
         selected_report: function (new_value, old_value) {
-            console.log(`New value: ${new_value}`);
-            console.log(`Old value: ${old_value}`);
+            // console.log(`New value: ${new_value}`);
+            // console.log(`Old value: ${old_value}`);
 
             // totally empty list, list was emptied by clicking the crosshair everywhere.
             if (new_value[0] === undefined){
-                console.log('List was emptied');
+                // console.log('List was emptied');
                 this.reports=[];
                 return;
             }
@@ -789,7 +789,7 @@ vueReport = new Vue({
             this.load(new_value[0].id);
             this.compare_charts = [];
             for(let i=0; i<new_value.length; i++){
-                console.log(`Comparing with report ${new_value[i].id}`);
+                // console.log(`Comparing with report ${new_value[i].id}`);
                 this.compare_with(new_value[i].id);
             }
         },
