@@ -285,53 +285,63 @@ vueReport = new Vue({
                 'web',
             ],
             'web': [
-                'internet_nl_web_tls',
-                'internet_nl_web_dnssec',
                 'internet_nl_web_ipv6',
+                'internet_nl_web_dnssec',
+                'internet_nl_web_tls',
                 'internet_nl_web_appsecpriv',  // Added 24 May 2019
                 'web_legacy'
             ],
-            'internet_nl_web_appsecpriv': [
-                'internet_nl_web_appsecpriv_csp',  // Added 24 May 2019
-                'internet_nl_web_appsecpriv_referrer_policy',  // Added 24 May 2019
-                'internet_nl_web_appsecpriv_x_content_type_options',  // Added 24 May 2019
-                'internet_nl_web_appsecpriv_x_frame_options',  // Added 24 May 2019
-                'internet_nl_web_appsecpriv_x_xss_protection',  // Added 24 May 2019
-            ],
-            'internet_nl_web_tls': [
-                'internet_nl_web_https_tls_version',
-                'internet_nl_web_https_tls_clientreneg',
-                'internet_nl_web_https_tls_ciphers',
-                'internet_nl_web_https_tls_secreneg',
-                'internet_nl_web_https_tls_compress',
-                'internet_nl_web_https_tls_keyexchange',
 
-                'internet_nl_web_https_http_redirect',
+            'internet_nl_web_ipv6': [
+                'internet_nl_web_ipv6_ns_address',
+                'internet_nl_web_ipv6_ns_reach',
+
+                'internet_nl_web_ipv6_ws_address',
+                'internet_nl_web_ipv6_ws_reach',
+                'internet_nl_web_ipv6_ws_similar',
+            ],
+
+            'internet_nl_web_dnssec': [
+                'internet_nl_web_dnssec_exist',
+                'internet_nl_web_dnssec_valid',
+            ],
+
+            'internet_nl_web_tls': [
+                // HTTP
                 'internet_nl_web_https_http_available',
+                'internet_nl_web_https_http_redirect',
                 'internet_nl_web_https_http_compress',
                 'internet_nl_web_https_http_hsts',
 
-                'internet_nl_web_https_dane_exist',
-                'internet_nl_web_https_dane_valid',
+                // TLS
+                'internet_nl_web_https_tls_version',
+                'internet_nl_web_https_tls_ciphers',
+                'internet_nl_web_https_tls_keyexchange',
+                'internet_nl_web_https_tls_compress',
+                'internet_nl_web_https_tls_secreneg',
+                'internet_nl_web_https_tls_clientreneg',
 
-                'internet_nl_web_https_cert_domain',
+                // Certificate
                 'internet_nl_web_https_cert_chain',
                 'internet_nl_web_https_cert_pubkey',
                 'internet_nl_web_https_cert_sig',
+                'internet_nl_web_https_cert_domain',
 
-            ],
-            'internet_nl_web_dnssec': [
-                'internet_nl_web_dnssec_valid',
-                'internet_nl_web_dnssec_exist'
-            ],
-            'internet_nl_web_ipv6': [
-                'internet_nl_web_ipv6_ws_similar',
-                'internet_nl_web_ipv6_ws_address',
-                'internet_nl_web_ipv6_ns_reach',
-                'internet_nl_web_ipv6_ws_reach',
-                'internet_nl_web_ipv6_ns_address'
+                // DANE
+                'internet_nl_web_https_dane_exist',
+                'internet_nl_web_https_dane_valid',
             ],
 
+            // Added 24 May 2019
+            'internet_nl_web_appsecpriv': [
+                'internet_nl_web_appsecpriv_x_frame_options',
+                'internet_nl_web_appsecpriv_x_content_type_options',
+                'internet_nl_web_appsecpriv_x_xss_protection',
+                'internet_nl_web_appsecpriv_csp',
+                'internet_nl_web_appsecpriv_referrer_policy',
+            ],
+
+            // order as in the magazine
             'web_legacy': [
                 'internet_nl_web_legacy_dnssec',
                 'internet_nl_web_legacy_tls_available',
@@ -344,66 +354,71 @@ vueReport = new Vue({
             ],
 
             'mail': [
-                'internet_nl_mail_dashboard_tls',
-                'internet_nl_mail_dashboard_auth',
-                'internet_nl_mail_dashboard_dnssec',
                 'internet_nl_mail_dashboard_ipv6',
+                'internet_nl_mail_dashboard_dnssec',
+                'internet_nl_mail_dashboard_auth',
+                'internet_nl_mail_dashboard_tls',
                 'mail_legacy'
             ],
 
-            'internet_nl_mail_dashboard_tls': [
-                // feature flags are not relevant in reporting
-                // 'internet_nl_mail_server_configured',  // Added 24th of May 2019
-                // 'internet_nl_mail_servers_testable',  // Added 24th of May 2019
+            'internet_nl_mail_dashboard_ipv6': [
+                // name servers
+                'internet_nl_mail_ipv6_ns_address',
+                'internet_nl_mail_ipv6_ns_reach',
 
-                'internet_nl_mail_starttls_tls_version',
-                'internet_nl_mail_starttls_tls_ciphers',
-                'internet_nl_mail_starttls_tls_secreneg',
-                'internet_nl_mail_starttls_tls_clientreneg',
-                'internet_nl_mail_starttls_tls_keyexchange',
-                'internet_nl_mail_starttls_tls_compress',
-
-                'internet_nl_mail_starttls_cert_domain',
-                'internet_nl_mail_starttls_cert_chain',
-                'internet_nl_mail_starttls_cert_sig',
-                'internet_nl_mail_starttls_cert_pubkey',
-
-                'internet_nl_mail_starttls_dane_exist',
-                'internet_nl_mail_starttls_dane_valid',
-                'internet_nl_mail_starttls_dane_rollover',
-
-                // feature flag are not relevant in reporting
-                // 'internet_nl_mail_starttls_dane_ta',  // Added 24th of May 2019
-
+                // mail server(s)
+                'internet_nl_mail_ipv6_mx_address',
+                'internet_nl_mail_ipv6_mx_reach',
             ],
-            'internet_nl_mail_dashboard_auth': [
-                // feature flag are not relevant in reporting
-                // 'internet_nl_mail_non_sending_domain',  // Added 24th of May 2019
 
+            'internet_nl_mail_dashboard_dnssec': [
+                // email address domain
+                'internet_nl_mail_dnssec_mailto_exist',
+                'internet_nl_mail_dnssec_mailto_valid',
+
+                // mail server domain(s)
+                'internet_nl_mail_dnssec_mx_exist',
+                'internet_nl_mail_dnssec_mx_valid',
+            ],
+
+            'internet_nl_mail_dashboard_auth': [
+                // DMARC
                 'internet_nl_mail_auth_dmarc_exist',
                 'internet_nl_mail_auth_dmarc_policy',
                 'internet_nl_mail_auth_dmarc_policy_only',  // Added 24th of May 2019
                 'internet_nl_mail_auth_dmarc_ext_destination',  // Added 24th of May 2019
 
+                // DKIM
                 'internet_nl_mail_auth_dkim_exist',
 
+                // SPF
                 'internet_nl_mail_auth_spf_exist',
                 'internet_nl_mail_auth_spf_policy',
             ],
-            'internet_nl_mail_dashboard_dnssec': [
-                'internet_nl_mail_dnssec_mailto_exist',
-                'internet_nl_mail_dnssec_mailto_valid',
 
-                'internet_nl_mail_dnssec_mx_exist',
-                'internet_nl_mail_dnssec_mx_valid',
-            ],
-            'internet_nl_mail_dashboard_ipv6': [
-                'internet_nl_mail_ipv6_ns_reach',
-                'internet_nl_mail_ipv6_ns_address',
+            'internet_nl_mail_dashboard_tls': [
+                // TLS
+                'internet_nl_mail_starttls_tls_available',
+                'internet_nl_mail_starttls_tls_version',
+                'internet_nl_mail_starttls_tls_ciphers',
+                'internet_nl_mail_starttls_tls_keyexchange',
+                'internet_nl_mail_starttls_tls_compress',
+                'internet_nl_mail_starttls_tls_secreneg',
+                'internet_nl_mail_starttls_tls_clientreneg',
 
-                'internet_nl_mail_ipv6_mx_reach',
-                'internet_nl_mail_ipv6_mx_address',
+                // Certificate
+                'internet_nl_mail_starttls_cert_chain',
+                'internet_nl_mail_starttls_cert_pubkey',
+                'internet_nl_mail_starttls_cert_sig',
+                'internet_nl_mail_starttls_cert_domain',
+
+                // DANE
+                'internet_nl_mail_starttls_dane_exist',
+                'internet_nl_mail_starttls_dane_valid',
+                'internet_nl_mail_starttls_dane_rollover',
             ],
+
+            
             'mail_legacy': [
                 'internet_nl_mail_legacy_dmarc',
                 'internet_nl_mail_legacy_dkim',
