@@ -25,6 +25,7 @@
                         </template>
                         <template v-if="!scan.last_report_id">
                             📊 {{ $t("scan_monitor.report_is_being_generated") }}<br>
+                            <br>
                         </template>
                     </template>
                     📘 <a :href="'/domains/' + scan.list_id + '/#' + scan.list_id">{{ scan.list }}</a><br>
