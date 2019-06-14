@@ -203,9 +203,10 @@
                         <span v-if="bulk_add_new_server_response.data.already_in_list">
                             {{ $t("domain_management.bulk_add_form.ignored_n", [bulk_add_new_server_response.data.already_in_list]) }}<br>
                         </span>
+                        <br>
                         <span v-if="bulk_add_new_server_response.data.incorrect_urls.length">
                             <br><b>{{ $t("domain_management.bulk_add_form.warning") }}</b><br>
-                            {{ $t("domain_management.bulk_add_form.warning_message") }}
+                            <span v-html='$t("domain_management.bulk_add_form.warning_message")'></span>
                             {{ bulk_add_new_server_response.data.incorrect_urls.join(', ') }}<br>
                         </span>
                     </span>
