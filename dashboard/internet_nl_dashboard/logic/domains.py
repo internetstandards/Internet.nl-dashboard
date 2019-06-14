@@ -138,6 +138,7 @@ def get_url(new_url_string: str):
     return new_url, True
 
 
+# todo: validation of url? Why is that missing here?
 def add_url(new_url_string: str):
     new_url = Url()
     new_url.url = new_url_string
