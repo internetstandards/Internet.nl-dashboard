@@ -386,3 +386,9 @@ a.anchor {
     margin-top: .5em;
     height: 1.875em
 }
+
+
+.twitterfollow {
+    background: url("/static/images/vendor/internet_nl/icon-twitterfollow.svg") !important;
+    background: url("/static/images/vendor/internet_nl/icon-twitterfollow.png") !important;
+}

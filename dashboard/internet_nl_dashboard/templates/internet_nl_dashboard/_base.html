@@ -22,7 +22,6 @@ Todo: digitoegankelijk: how to select links with the keyboard? How can we make t
         <link rel="stylesheet" type="text/css" href="{% static 'css/vendor/vue-multiselect@2.1.6/vue-multiselect.min.css'%}">
         <link rel="stylesheet" type="text/css" href="{% static 'css/vendor/chartjs@2.8.0/Chart.css'%}">
         <link rel="stylesheet" type="text/css" media="print" href="{% static 'css/vendor/internet_nl/print-min.css' %}">
-        <link rel="stylesheet" type="text/css" id="noimages" href="{% static 'css/vendor/internet_nl/alt-min.css' %}" >
         <link rel="stylesheet" type="text/css" id="overrides" href="{% static 'css/overrides_dashboard.css' %}">
 
     {% endcompress %}
@@ -41,7 +40,6 @@ Todo: digitoegankelijk: how to select links with the keyboard? How can we make t
         <script type="text/javascript" src="{% static 'js/vendor/select2@4.0.6-rc.0/select2.min.js' %}"></script>
         <script type="text/javascript" src="{% static 'js/vendor/chartjs@2.8.0/Chart.js' %}"></script>
         <script type="text/javascript" src="{% static 'js/vendor/chartjs-plugin-datalabels@v0.6.0/chartjs-plugin-datalabels.js' %}"></script>
-
     {% else %}{% compress js %}
         <script type="text/javascript" src="{% static 'js/vendor/jquery@3.4.0/jquery-3.4.0.js' %}"></script>
         <script type="text/javascript" src="{% static 'js/vendor/internet_nl/headroom-min.js' %}"></script>
