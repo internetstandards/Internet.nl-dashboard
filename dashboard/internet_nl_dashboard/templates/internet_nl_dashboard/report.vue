@@ -418,7 +418,6 @@ vueReport = new Vue({
                 'internet_nl_mail_starttls_dane_rollover',
             ],
 
-            
             'mail_legacy': [
                 'internet_nl_mail_legacy_dmarc',
                 'internet_nl_mail_legacy_dkim',

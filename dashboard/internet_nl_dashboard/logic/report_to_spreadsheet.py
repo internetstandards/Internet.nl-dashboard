@@ -25,56 +25,157 @@ log = logging.getLogger(__package__)
 
 SANE_COLUMN_ORDER = {
     # scanner
+    'dns_a_aaaa': {
+        'overall': [
+            'internet_nl_web_overall_score',
+        ],
+
+        'ipv6': [
+            # Category
+            'internet_nl_web_ipv6',
+
+            'internet_nl_web_ipv6_ns_address',
+            'internet_nl_web_ipv6_ns_reach',
+
+            'internet_nl_web_ipv6_ws_address',
+            'internet_nl_web_ipv6_ws_reach',
+            'internet_nl_web_ipv6_ws_similar',
+        ],
+
+        'dnssec': [
+            # Category
+            'internet_nl_web_dnssec',
+
+            'internet_nl_web_dnssec_exist',
+            'internet_nl_web_dnssec_valid',
+        ],
+
+        'tls': [
+            # Category
+            'internet_nl_web_tls',
+
+            # HTTP
+            'internet_nl_web_https_http_available',
+            'internet_nl_web_https_http_redirect',
+            'internet_nl_web_https_http_compress',
+            'internet_nl_web_https_http_hsts',
+
+            # TLS
+            'internet_nl_web_https_tls_version',
+            'internet_nl_web_https_tls_ciphers',
+            'internet_nl_web_https_tls_keyexchange',
+            'internet_nl_web_https_tls_compress',
+            'internet_nl_web_https_tls_secreneg',
+            'internet_nl_web_https_tls_clientreneg',
+
+            # Certificate
+            'internet_nl_web_https_cert_chain',
+            'internet_nl_web_https_cert_pubkey',
+            'internet_nl_web_https_cert_sig',
+            'internet_nl_web_https_cert_domain',
+
+            # DANE
+            'internet_nl_web_https_dane_exist',
+            'internet_nl_web_https_dane_valid',
+        ],
+
+        # Added 24th of May 2019
+        'appsecpriv': [
+            # Category
+            'internet_nl_web_appsecpriv',
+
+            'internet_nl_web_appsecpriv_x_frame_options',
+            'internet_nl_web_appsecpriv_x_content_type_options',
+            'internet_nl_web_appsecpriv_x_xss_protection',
+            'internet_nl_web_appsecpriv_csp',
+            'internet_nl_web_appsecpriv_referrer_policy',
+        ],
+
+        'legacy': [
+            'internet_nl_web_legacy_dnssec',
+            'internet_nl_web_legacy_tls_available',
+            'internet_nl_web_legacy_tls_ncsc_web',
+            'internet_nl_web_legacy_https_enforced',
+            'internet_nl_web_legacy_hsts',
+            'internet_nl_web_legacy_ipv6_nameserver',
+            'internet_nl_web_legacy_ipv6_webserver',
+            'internet_nl_web_legacy_dane',
+        ]
+    },
     'dns_soa': {
         # any grouping, every group has a empty column between them. The label is not used.
         'overall': [
             'internet_nl_mail_dashboard_overall_score'
         ],
+        'ipv6': [
+            # Category
+            'internet_nl_mail_dashboard_ipv6',
+
+            # name servers
+            'internet_nl_mail_ipv6_ns_address',
+            'internet_nl_mail_ipv6_ns_reach',
+
+            # mail server(s)
+            'internet_nl_mail_ipv6_mx_address',
+            'internet_nl_mail_ipv6_mx_reach',
+        ],
+
+        'dnssec': [
+            # Category
+            'internet_nl_mail_dashboard_dnssec',
+
+            # email address domain
+            'internet_nl_mail_dnssec_mailto_exist',
+            'internet_nl_mail_dnssec_mailto_valid',
+
+            # mail server domain(s)
+            'internet_nl_mail_dnssec_mx_exist',
+            'internet_nl_mail_dnssec_mx_valid',
+        ],
+
         'auth': [
+            # Category
             'internet_nl_mail_dashboard_auth',
-            'internet_nl_mail_auth_spf_exist',
-            'internet_nl_mail_auth_spf_policy',
-            'internet_nl_mail_auth_dkim_exist',
+
+            # DMARC
             'internet_nl_mail_auth_dmarc_exist',
             'internet_nl_mail_auth_dmarc_policy',
             'internet_nl_mail_auth_dmarc_policy_only',  # Added 24th of May 2019
             'internet_nl_mail_auth_dmarc_ext_destination',  # Added 24th of May 2019
-            'internet_nl_mail_non_sending_domain',  # Added 24th of May 2019
+
+            # DKIM
+            'internet_nl_mail_auth_dkim_exist',
+
+            # SPF
+            'internet_nl_mail_auth_spf_exist',
+            'internet_nl_mail_auth_spf_policy',
         ],
-        'ipv6': [
-            'internet_nl_mail_dashboard_ipv6',
-            'internet_nl_mail_ipv6_ns_reach',
-            'internet_nl_mail_ipv6_ns_address',
-            'internet_nl_mail_ipv6_mx_reach',
-            'internet_nl_mail_ipv6_mx_address',
-        ],
-        'dnssec': [
-            'internet_nl_mail_dashboard_dnssec',
-            'internet_nl_mail_dnssec_mx_exist',
-            'internet_nl_mail_dnssec_mx_valid',
-            'internet_nl_mail_dnssec_mailto_exist',
-            'internet_nl_mail_dnssec_mailto_valid',
-        ],
+
         # perhaps split these into multiple groups.
         'tls': [
             'internet_nl_mail_dashboard_tls',
-            'internet_nl_mail_server_configured',  # Added 24th of May 2019
-            'internet_nl_mail_servers_testable',  # Added 24th of May 2019
+
+            # TLS
+            'internet_nl_mail_starttls_tls_available',
             'internet_nl_mail_starttls_tls_version',
             'internet_nl_mail_starttls_tls_ciphers',
-            'internet_nl_mail_starttls_tls_secreneg',
-            'internet_nl_mail_starttls_tls_clientreneg',
             'internet_nl_mail_starttls_tls_keyexchange',
             'internet_nl_mail_starttls_tls_compress',
-            'internet_nl_mail_starttls_cert_domain',
+            'internet_nl_mail_starttls_tls_secreneg',
+            'internet_nl_mail_starttls_tls_clientreneg',
+
+            # Certificate
             'internet_nl_mail_starttls_cert_chain',
-            'internet_nl_mail_starttls_cert_sig',
             'internet_nl_mail_starttls_cert_pubkey',
+            'internet_nl_mail_starttls_cert_sig',
+            'internet_nl_mail_starttls_cert_domain',
+
+            # DANE
             'internet_nl_mail_starttls_dane_exist',
             'internet_nl_mail_starttls_dane_valid',
             'internet_nl_mail_starttls_dane_rollover',
-            'internet_nl_mail_starttls_dane_ta',  # Added 24th of May 2019
         ],
+
         'legacy': [
             'internet_nl_mail_legacy_dmarc',
             'internet_nl_mail_legacy_dkim',
@@ -90,69 +191,6 @@ SANE_COLUMN_ORDER = {
             'internet_nl_mail_legacy_ipv6_mailserver',
         ]
     },
-    'dns_a_aaaa': {
-        'overall': [
-            'internet_nl_web_overall_score',
-        ],
-
-        'ipv6': [
-            'internet_nl_web_ipv6',
-            'internet_nl_web_ipv6_ws_address',
-            'internet_nl_web_ipv6_ns_reach',
-            'internet_nl_web_ipv6_ns_address',
-            'internet_nl_web_ipv6_ws_reach',
-            'internet_nl_web_ipv6_ws_similar',
-        ],
-
-        'dnssec': [
-            'internet_nl_web_dnssec',
-            'internet_nl_web_dnssec_exist',
-            'internet_nl_web_dnssec_valid',
-        ],
-
-        'tls': [
-            'internet_nl_web_tls',
-            'internet_nl_web_https_http_available',
-            'internet_nl_web_https_http_redirect',
-            'internet_nl_web_https_http_hsts',
-            'internet_nl_web_https_http_compress',
-
-            'internet_nl_web_https_tls_version',
-            'internet_nl_web_https_tls_ciphers',
-            'internet_nl_web_https_tls_secreneg',
-            'internet_nl_web_https_tls_clientreneg',
-            'internet_nl_web_https_tls_keyexchange',
-            'internet_nl_web_https_tls_compress',
-
-            'internet_nl_web_https_cert_domain',
-            'internet_nl_web_https_cert_chain',
-            'internet_nl_web_https_cert_sig',
-            'internet_nl_web_https_cert_pubkey',
-
-            'internet_nl_web_https_dane_exist',
-            'internet_nl_web_https_dane_valid',
-        ],
-
-        'appsecpriv': [
-            'internet_nl_web_appsecpriv',  # Added 24th of May 2019
-            'internet_nl_web_appsecpriv_csp',  # Added 24th of May 2019
-            'internet_nl_web_appsecpriv_referrer_policy',  # Added 24th of May 2019
-            'internet_nl_web_appsecpriv_x_content_type_options',  # Added 24th of May 2019
-            'internet_nl_web_appsecpriv_x_frame_options',  # Added 24th of May 2019
-            'internet_nl_web_appsecpriv_x_xss_protection',  # Added 24th of May 2019
-        ],
-
-        'legacy': [
-            'internet_nl_web_legacy_dnssec',
-            'internet_nl_web_legacy_tls_available',
-            'internet_nl_web_legacy_tls_ncsc_web',
-            'internet_nl_web_legacy_https_enforced',
-            'internet_nl_web_legacy_hsts',
-            'internet_nl_web_legacy_ipv6_nameserver',
-            'internet_nl_web_legacy_ipv6_webserver',
-            'internet_nl_web_legacy_dane',
-        ]
-    }
 }
 
 
