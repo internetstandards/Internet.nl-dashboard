@@ -115,6 +115,8 @@ const messages = {
                 title: 'Reports',
                 intro: '',
                 select_report: 'Select report...',
+                max_elements: 'Maximum number of reports selected.',
+                noOptions: 'No reports available.',
             },
 
             buttons: {
@@ -638,6 +640,8 @@ const messages = {
                 title: 'Rapporten',
                 intro: '',
                 select_report: 'Selecteer rapport...',
+                max_elements: 'Maximum aantal rapporten geselecteerd.',
+                noOptions: 'Geen rapporten beschikbaar.',
             },
 
             buttons: {

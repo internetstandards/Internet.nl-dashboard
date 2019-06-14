@@ -12,6 +12,9 @@
                     label="label"
                     :multiple="true"
                     :track-by="'label'"
+                    :limit="5"
+                    :maxElements="$t('report.header.max_elements')"
+                    :noOptions="$t('report.header.no_options')"
                     :placeholder="$t('report.header.select_report')">
             </multiselect>
         </div>
