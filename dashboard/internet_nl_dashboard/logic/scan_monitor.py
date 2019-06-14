@@ -1,6 +1,8 @@
 from datetime import timedelta
 from typing import List
 
+from django.utils import timezone
+
 from dashboard.internet_nl_dashboard.models import Account, AccountInternetNLScan, UrlListReport
 
 
@@ -36,10 +38,12 @@ def get_running_scans(account: Account) -> List:
             if last_report:
                 last_report_id = last_report.id
 
-        runtime = None
         if scan.scan.finished:
             runtime = scan.scan.finished_on - scan.scan.started_on
-            runtime = runtime.total_seconds() * 1000
+        else:
+            runtime = timezone.now() - scan.scan.started_on
+
+        runtime = runtime.total_seconds() * 1000
 
         response.append({
             'id': scan.id,
