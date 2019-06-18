@@ -304,7 +304,7 @@ Todo: digitoegankelijk: how to select links with the keyboard? How can we make t
     <p>
         {{ $t("auto_refresh.refresh_happening_in") }} <span v-html="this.current_step_inverted"></span>
         {{ $t("auto_refresh.units") }}
-        <a @click="reload_now()">({{ $t("auto_refresh.refresh_now") }})</a>
+        <button @click="reload_now()">{{ $t("auto_refresh.refresh_now") }}</button>
     </p>
 </div>`,
 
