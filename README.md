@@ -30,10 +30,12 @@ yum install git python3 direnv
 
 Or download and install each package separately:
 
-- [git](https://git-scm.com/downloads) (download and install)
-- [python3.6](https://www.python.org/downloads/) (download and install)
-- [Tox](http://tox.readthedocs.io/) (`pip3 install --user tox`)
-- [direnv](https://direnv.net/) (download and install, then follow [setup instructions](https://direnv.net/), see Direnv section below)
+- [make](https://www.gnu.org/software/make/) (required, pre-installed on most systems)
+- [git](https://git-scm.com/downloads) (required, download and install)
+- [python3](https://www.python.org/downloads/) (required, download and install, 3.6 or higher)
+- [direnv](https://direnv.net/) (recommended, download and install, then follow [setup instructions](https://direnv.net/), see Direnv section below)
+- [Docker](https://docs.docker.com/engine/installation/) (recommended, follow instructions to install.)
+- [ShellCheck](https://github.com/koalaman/shellcheck#installing) (recommended, follow instructions to install
 
 ## 2: Install direnv correctly
 Then set up direnv, the right command depends on your shell:
@@ -68,36 +70,39 @@ eval `direnv hook tcsh`
 
 
 ## 3: Generic install steps
-Install Tox, which helps to install the rest of the dependencies of this project:
+
+In a directory of your choosing, download the software and enter the directory:
 
 ```bash
-pip3 install --user tox
+git clone --recursive https://https://github.com/internetstandards/Internet.nl-dashboard && cd Internet.nl-dashboard/
 ```
 
-In a directory of your choosing:
-
-download the software
+Running `make` once to create a development Virtualenv and setup the App and its dependencies. Running `make` without arguments by default also runs basic checks and tests to verify project code quality.
 
 ```bash
-git clone --recursive https://https://github.com/internetstandards/Internet.nl-dashboard
+make
 ```
 
-enter the directory of the downloaded software
+After completing successfully Web Security Map development server is available to run:
 
 ```bash
-cd Internet.nl-dashboard/
+make run
 ```
 
-This prepares the shell environment for local development.
+If you want to run the frontend, or a worker, or the broker, run:
+
+```bash
+make run-frontend
+```
+
+Now visit the [website](http://127.0.0.1:8000/) and/or the
+[admin website](http://127.0.0.1:8000/admin/) at http://127.0.0.1:8000 (credentials: dashboard_admin:admin).
+
+
+To prepare the shell environment for local development. This way you can run 'poetry' and 'dashboard' commands.
 
 ```bash
 direnv allow
-```
-
-Running Tox once creates a development Virtualenv in .tox/default/ which is automatically used after creation due to Direnv setup. Running Tox without arguments by default also runs basic checks and tests to verify project code quality.
-
-```bash
-tox
 ```
 
 After completing successfully Dashboard is available to run. For example, to show a list of commands:
@@ -112,8 +117,36 @@ To create your first user:
 dashboard createsuperuser
 ```
 
-Now run the following command to start a full development server.
+
+#### Optional Steps
+
+If your shell support tab completion you can get a complete list of supported commands by tabbing `make`:
 
 ```bash
-dashboard runserver
+make <tab><tab>
 ```
+
+## FAQ / Troubleshooting
+
+### Missing xcode (mac users)
+During installation mac users might get the following error, due to not having xcode installed or updated.
+
+```
+xcrun: error: invalid active developer path (/Library/Developer/CommandLineTools), missing xcrun at: /Library/Developer/CommandLineTools/usr/bin/xcrun
+```
+
+You can update / install xcode tools with the following command:
+
+```
+xcode-select --install
+```
+
+### Missing Docker Daemon (mac users)
+While docker is installed using brew in prior steps, you probably want to have
+a gui controlling docker.
+
+Docker for mac can be downloaded here:
+https://download.docker.com/mac/stable/Docker.dmg
+
+You can also visit the docker website and get the link using the time tested Oracle(tm) download strategy, here:
+https://hub.docker.com/editions/community/docker-ce-desktop-mac
