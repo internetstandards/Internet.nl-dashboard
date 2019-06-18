@@ -65,9 +65,9 @@
                 <h2>{{ $t("report.download.title") }}</h2>
                 <p>{{ $t("report.download.intro") }}</p>
                 <ul>
-                    <li><a :href="'/data/download-spreadsheet/' + selected_report.report + '/xlsx/'">{{ $t("report.download.xlsx") }}</a></li>
-                    <li><a :href="'/data/download-spreadsheet/' + selected_report.report + '/ods/'">{{ $t("report.download.ods") }}</a></li>
-                    <li><a :href="'/data/download-spreadsheet/' + selected_report.report + '/csv/'">{{ $t("report.download.csv") }}</a></li>
+                    <li><a :href="'/data/download-spreadsheet/' + reports[0].id + '/xlsx/'">{{ $t("report.download.xlsx") }}</a></li>
+                    <li><a :href="'/data/download-spreadsheet/' + reports[0].id + '/ods/'">{{ $t("report.download.ods") }}</a></li>
+                    <li><a :href="'/data/download-spreadsheet/' + reports[0].id + '/csv/'">{{ $t("report.download.csv") }}</a></li>
                 </ul>
             </div>
 

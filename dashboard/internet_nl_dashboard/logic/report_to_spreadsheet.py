@@ -209,7 +209,7 @@ def create_spreadsheet(account: Account, report_id: int):
         pk=report_id).select_related('urllist').first()
 
     if not report:
-        return []
+        return None, None
 
     calculation = report.calculation
     urls = calculation["urls"]
