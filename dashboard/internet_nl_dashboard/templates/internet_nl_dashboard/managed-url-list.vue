@@ -181,7 +181,12 @@
             </div>
             <div slot="footer">
                 <button @click="stop_scan_now()">{{ $t("domain_management.scan_now_form.cancel") }}</button>
-                <button class="modal-default-button" @click="confirm_scan_now()">{{ $t("domain_management.scan_now_form.ok") }}</button>
+                <button class="modal-default-button"
+                        :disabled="scan_now_confirmed"
+                        @click="confirm_scan_now()">
+                    <template v-if="!scan_now_confirmed">{{ $t("domain_management.scan_now_form.ok") }}</template>
+                    <template v-if="scan_now_confirmed">{{ $t("domain_management.scan_now_form.starting") }}</template>
+                </button>
             </div>
         </modal>
 
@@ -266,7 +271,8 @@ Vue.component('managed-url-list', {
 
             // scan now feature:
             show_scan_now: false,
-            scan_now_server_response: {}
+            scan_now_server_response: {},
+            scan_now_confirmed: false,
         }
     },
     props: {
@@ -468,13 +474,17 @@ Vue.component('managed-url-list', {
         confirm_scan_now: function(){
             data = {'id': this.list.id};
 
+            // disable the button to prevent double scans (todo: api should fix this)
+            this.scan_now_confirmed = true;
+
             this.asynchronous_json_post(
                 '/data/urllist/scan_now/', data, (server_response) => {
                     this.scan_now_server_response = server_response;
 
                     if (server_response.success) {
                         this.list.scan_now_available = false;
-                        this.stop_scan_now()
+                        this.stop_scan_now();
+                        this.scan_now_confirmed = false;
                     }
                 }
             );

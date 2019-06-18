@@ -72,7 +72,8 @@ const messages = {
                 message: 'To start a scan now, please take the following in consideration: <br>' +
                     'A scan can only be started once a day, and only when no scan is already running. Note that a scan cannot be cancelled.',
                 cancel: 'Cancel',
-                ok: 'Scan now'
+                ok: 'Scan now',
+                starting: 'Starting...',
             },
 
             bulk_add_form: {
@@ -598,7 +599,8 @@ const messages = {
                 message: 'Een scan die nu wordt gestart heeft de volgende eigenschappen: <br>' +
                     'Een handmatige scan kan eens per dag worden gestart, mits er nog geen scan wordt uitgevoerd op deze lijst.',
                 cancel: 'Annuleer',
-                ok: 'Nu scannen'
+                ok: 'Nu scannen',
+                starting: 'Opstarten...',
             },
 
             bulk_add_form: {
