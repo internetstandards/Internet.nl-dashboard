@@ -125,7 +125,7 @@ run-worker: ${app}  ## only run worker component
 	DEBUG=1 NETWORK_SUPPORTS_IPV6=1 ${env} ${app} celery worker -ldebug -Q storage,celery
 
 run-broker:  ## only run broker
-	docker run --rm --name=redis -p 6379 redis
+	docker run --rm --name=redis -p 6379:6379 redis
 
 ## Testing
 test_integration: ${app}  ## perform integration test suite
