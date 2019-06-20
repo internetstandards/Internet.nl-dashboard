@@ -187,8 +187,8 @@
                         <tbody v-if="filtered_urls.length" class="gridtable">
                             <tr v-for="url in filtered_urls" v-if="url.endpoints.length">
                                 <td>{{url.url}}
-                                    <span v-if="selected_report.type === 'web'" v-html="original_report_link_from_score(url.endpoints[0].ratings_by_type['internet_nl_web_overall_score'].explanation)"></span>
-                                    <span v-if="selected_report.type === 'mail'" v-html="original_report_link_from_score(url.endpoints[0].ratings_by_type['internet_nl_mail_dashboard_overall_score'].explanation)"></span>
+                                    <span v-if="selected_report[0].type === 'web'" v-html="original_report_link_from_score(url.endpoints[0].ratings_by_type['internet_nl_web_overall_score'].explanation)"></span>
+                                    <span v-if="selected_report[0].type === 'mail'" v-html="original_report_link_from_score(url.endpoints[0].ratings_by_type['internet_nl_mail_dashboard_overall_score'].explanation)"></span>
                                 </td>
                                 <td class="testresultcell" v-for="category_name in relevant_categories_based_on_settings()" @click="select_category(category_name)">
                                     <template v-if="['web', 'mail'].includes(selected_category)">
