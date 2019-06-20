@@ -50,7 +50,7 @@
                 <div v-if="this.selected_category">
                     <!-- Only shows mail or web settings if you're looking at that type of report. -->
                     <div v-for="(category_group, category_name, y) in categories" style="width: calc(33% - 1em); float: left;">
-                        <div v-if="issue_filters[category_name] && categories[selected_category].includes(category_name)">
+                        <div v-if="issue_filters[category_name] && categories[selected_report[0]['type']].includes(category_name)">
                             <h3><input type="checkbox" v-model='issue_filters[category_name].visible'> {{ $t("report." + category_name) }}</h3>
                             <span v-for="category_name in category_group">
                                 <input type="checkbox" v-model='issue_filters[category_name].visible' :id="category_name + '_visible'">
@@ -213,6 +213,7 @@
                                         </span>
                                     </template>
                                     <template v-if="!['web', 'mail'].includes(selected_category)">
+
                                         <template v-if="category_name in url.endpoints[0].ratings_by_type">
                                             <span class="not_applicable" v-if="url.endpoints[0].ratings_by_type[category_name].not_applicable > 0" :title="$t('report.not_applicable')">
                                                 {{ $t("report.report.results.not_applicable") }}
@@ -790,6 +791,8 @@ vueReport = new Vue({
             this.compare_charts = [];
             for(let i=0; i<new_value.length; i++){
                 // console.log(`Comparing with report ${new_value[i].id}`);
+                // todo: this causes an extra load of the data, which is slow... At least it always works
+                // without syncing issues etc...
                 this.compare_with(new_value[i].id);
             }
         },
