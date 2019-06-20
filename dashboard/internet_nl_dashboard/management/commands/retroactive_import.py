@@ -1,12 +1,12 @@
 import logging
 from argparse import ArgumentTypeError
-from django.db import transaction
 
 from django.core.management.base import BaseCommand
+from django.db import transaction
 from django.utils import timezone
 from websecmap.organizations.models import Url
 from websecmap.scanners.models import Endpoint, InternetNLScan
-from websecmap.scanners.scanner.internet_nl_mail import get_scan_status, API_URL_MAIL
+from websecmap.scanners.scanner.internet_nl_mail import get_scan_status
 
 from dashboard.internet_nl_dashboard.logic.domains import _add_to_urls_to_urllist
 from dashboard.internet_nl_dashboard.models import Account, AccountInternetNLScan, UrlList
