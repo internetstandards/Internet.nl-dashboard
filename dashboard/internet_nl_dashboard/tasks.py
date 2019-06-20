@@ -59,12 +59,14 @@ def create_reports_on_finished_scans(urllist: UrlList):
     It's ok to run this every minute. As this is a per scan basis and it's known that all scan results have been
     processed. This means you can have a report before the end of the day, nearly as soon as a scan is finished.
 
+    # Todo: This is problematic, as the report might be finished but the results are still being processed on
+      the worker. That will result in incomplete reports, for example when the task is added halfway when the
+      results are added. This should be done in another way... for example with a flag that says that the
+      report values have been read and processed.
+
     :param urllist:
     :return:
     """
-
-    # make sure that the latest urlreports are created... otherwise outdated data / no data will be used.
-    recreate_url_reports(list(urllist.urls.all()))
 
     scan_dates = set(AccountInternetNLScan.objects.all().filter(
         urllist=urllist,
@@ -83,6 +85,12 @@ def create_reports_on_finished_scans(urllist: UrlList):
     ).values_list('at_when', flat=True))
 
     missing_report_dates = scan_dates - report_dates
+
+    log.debug(f"Missing reports on list {urllist}: {missing_report_dates}")
+
+    if missing_report_dates:
+        # make sure that the latest urlreports are created... otherwise outdated data / no data will be used.
+        recreate_url_reports(list(urllist.urls.all()))
 
     for missing_report_date in missing_report_dates:
         # this will also find moments that had a scan completed, but nothing has changed.

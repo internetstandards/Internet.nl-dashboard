@@ -27,8 +27,9 @@ dashboard retroactive_import --report-id=6de3fda3265c4c0e83fbafdd56401cd5 --scan
 dashboard retroactive_import --report-id=b7dd7f5b7d4049c79ee6e40c12cd6495 --scan-type=mail_dashboard --account-id=2
 dashboard retroactive_import --report-id=f95466dfd1de42ebbe809d12145f3fe0 --scan-type=mail_dashboard --account-id=2
 dashboard retroactive_import --report-id=300958ee114946cb8bda18118f86d7d6 --scan-type=mail_dashboard --account-id=2
-dashboard retroactive_import --report-id=af6f08a240224f9aa30840e5ecc2ce59 --scan-type=mail_dashboard --account-id=2
 dashboard retroactive_import --report-id=600747412c2b48f796b43acd7c5e79dc --scan-type=mail_dashboard --account-id=2
+
+dashboard retroactive_import --report-id=af6f08a240224f9aa30840e5ecc2ce59 --scan-type=mail_dashboard --account-id=2
 """
 
 # todo: the reachability of the reported urls might be different on the scan day. This might result that
@@ -53,6 +54,9 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         retroactively_import(options)
         log.info('All done!')
+        log.info("To import the results of these scans, run: dashboard check_running_dashboard_scans. "
+                 "(This is done automatically on the live server every minute)")
+        log.info("To create reports afterwards: dashboard create_reports_on_finished_scans")
 
 
 def validate_account(s):
@@ -80,6 +84,8 @@ def validate_scan_type(s):
 
 @transaction.atomic
 def retroactively_import(report):
+    log.debug(report)
+
     account = Account.objects.all().get(pk=report['account_id'])
     log.debug(f"Retroactively trying to import a scan from account "
               f"{account} with username {account.internet_nl_api_username}")
@@ -117,10 +123,11 @@ def valid_response(report_response):
 def retroactively_add_scan(report, account, urllist):
     scan = InternetNLScan()
 
-    # The scan is already perfomed and complete. This means finished=True.
-    scan.finished = True
-    scan.success = True
-    scan.status_url = f"{REPORT_BASE_URL}/{report['report_id']}/"
+    # The scan is already perfomed and complete, but the values from the scan still have to be imported(!)
+    # therefore this is set to false...
+    scan.finished = False
+    scan.success = False
+    scan.status_url = f"{REPORT_BASE_URL}{report['report_id']}/"
     scan.type = report['scan_type']
     scan.finished_on = timezone.now()
     scan.started_on = timezone.now()
@@ -142,7 +149,7 @@ def retroactively_add_domains_and_endpoints_from_report(http_response, scan_type
     new_list = UrlList()
     new_list.name = http_response.get('data', {}).get('name', 'unnamed list')
     new_list.account = account
-    new_list.scan_type = scan_type
+    new_list.scan_type = scan_type if scan_type == 'web' else 'mail'
     new_list.enable_scans = False
     new_list.save()
 

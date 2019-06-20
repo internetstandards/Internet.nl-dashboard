@@ -8,7 +8,7 @@ import requests
 from websecmap.organizations.models import Url
 from websecmap.scanners.models import Endpoint, InternetNLScan
 
-from dashboard.internet_nl_dashboard.management.commands.retroactively_import_reports_from_api import \
+from dashboard.internet_nl_dashboard.management.commands.retroactive_import import \
     retroactively_import
 from dashboard.internet_nl_dashboard.models import Account, AccountInternetNLScan
 
@@ -35,10 +35,6 @@ def mocked_requests_get(*args, **kwargs):
 def test_retroactive_import(db, monkeypatch):
     monkeypatch.setattr(requests, 'get', mocked_requests_get)
 
-    test_reports = [
-        {'url': 'https://batch.internet.nl/api/batch/v1.1/results/e738da28c0724e188dc808580fdcdf0e/', 'type': 'web'},
-    ]
-
     account = Account()
     account.id = 2
     account.name = "test"
@@ -46,7 +42,8 @@ def test_retroactive_import(db, monkeypatch):
     account.internet_nl_api_password = account.encrypt_password("test")
     account.save()
 
-    retroactively_import(test_reports, account)
+    retroactively_import(
+        {'account_id': account.id, 'report_id': 'e738da28c0724e188dc808580fdcdf0e', 'scan_type': 'web'})
 
     assert Url.objects.all().count() == 18
     assert Endpoint.objects.all().count() == 18
