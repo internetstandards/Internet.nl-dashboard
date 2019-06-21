@@ -32,7 +32,7 @@ def mocked_requests_get(*args, **kwargs):
 
 
 # pytest mock fixtures overwrite the db signature, i mean... why?!
-def test_retroactive_import(db, monkeypatch):
+def test_retroactive_import(db, monkeypatch, redis_server):
     monkeypatch.setattr(requests, 'get', mocked_requests_get)
 
     account = Account()
