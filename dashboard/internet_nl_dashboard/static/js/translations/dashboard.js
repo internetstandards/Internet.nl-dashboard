@@ -4,6 +4,9 @@ function internet_nl_translate(language_code, key){
 // changed on the fly during the creation of the translation object, as i cannot get the this.language_code to work.
 const messages = {
     en: {
+        loading: {
+            loading: "Loading...",
+        },
         domains: {
             add_new_list: 'Add new list',
             button_close_label: 'Close',
@@ -531,7 +534,9 @@ const messages = {
         }
     },
     nl: {
-
+        loading: {
+            loading: "Laden...",
+        },
         domains: {
             add_new_list: 'Lijst toevoegen',
             button_close_label: 'Sluiten',

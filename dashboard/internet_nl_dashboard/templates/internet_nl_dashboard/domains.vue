@@ -70,10 +70,9 @@ Fixed: when deleting a list, it is re-added to the list of lists when adding a n
                 <button @click="start_adding_new()" accesskey="n">{{ $t("domains.add_new_list") }}</button>
             </div>
 
-            <div v-if="loading" class="loading">
-                <div class="lds-dual-ring"><div></div><div></div></div> <span>Loading...</span>
-            </div>
         </div>
+
+        <loading :loading="loading"></loading>
 
         <!--
         The usage of v-bind:key="list.id" makes sure that data + props match. Would you not use a key, the

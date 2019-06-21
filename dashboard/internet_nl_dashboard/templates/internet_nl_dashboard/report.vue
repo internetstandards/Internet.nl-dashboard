@@ -19,7 +19,9 @@
             </multiselect>
         </div>
 
-        <div v-if="selected_report && selected_report.length">
+        <loading :loading="is_loading"></loading>
+
+        <div v-if="reports.length && !is_loading">
             <div class="block fullwidth">
                 <div>
                 <a class="anchorlink" href="#charts"><button role="button">{{ $t("report.buttons.charts") }}</button></a>
@@ -272,6 +274,8 @@ vueReport = new Vue({
     template: '#report_template',
     mixins: [humanize_mixin, http_mixin],
     data: {
+        is_loading: false,
+
         // Supporting multiple reports at the same time is hard to understand. Don't know how / if we can do
         // comparisons.
         reports: [],
@@ -608,6 +612,7 @@ vueReport = new Vue({
             this.get_report_data(report_id);
         },
         get_report_data: function(report_id){
+            this.is_loading = true;
             fetch(`/data/report/get/${report_id}/`, {credentials: 'include'}).then(response => response.json()).then(data => {
                 this.reports = data;
                 // remove implicit behavior
@@ -622,6 +627,7 @@ vueReport = new Vue({
                 // we'll probably just need a table control that does sorting, filtering and such instead of coding it ourselves.
                 this.filtered_urls = data[0].calculation.urls.sort(this.alphabet_sorting);
                 this.get_timeline();
+                this.is_loading = false;
             }).catch((fail) => {console.log('A loading error occurred: ' + fail);});
         },
         save_issue_filters: function(){
@@ -784,6 +790,7 @@ vueReport = new Vue({
             if (new_value[0] === undefined){
                 // console.log('List was emptied');
                 this.reports=[];
+                this.is_loading = false;
                 return;
             }
 

@@ -358,6 +358,27 @@ Todo: digitoegankelijk: how to select links with the keyboard? How can we make t
                 }
             }
         });
+
+        Vue.component('loading', {
+            i18n,
+
+            template: `
+            <div v-if="loading" class="block fullwidth loading">
+                <div class="loading">
+                     <div class="lds-dual-ring"><div></div><div></div></div> <span>{{ $t("loading.loading") }}</span>
+                </div>
+            </div>`,
+
+            data: function () {
+                return {
+                    // loading: false,
+                }
+            },
+
+            props:{
+                loading: false,
+            },
+        });
         {% endverbatim %}
     </script>
 

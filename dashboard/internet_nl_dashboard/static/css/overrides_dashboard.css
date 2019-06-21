@@ -215,12 +215,8 @@ label {
 }
 
 .loading {
-    background-color: ghostwhite;
-    border: 1px solid silver;
-    border-radius: 5px;
     padding-top: 17px;
     text-align: center;
-    margin-bottom: 20px;
 }
 
 .loading span {
