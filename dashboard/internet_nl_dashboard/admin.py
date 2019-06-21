@@ -20,6 +20,7 @@ from websecmap.scanners.models import Endpoint
 
 from dashboard.internet_nl_dashboard import models
 from dashboard.internet_nl_dashboard.forms import CustomAccountModelForm
+from dashboard.internet_nl_dashboard.logic.domains import scan_urllist_now_ignoring_business_rules
 from dashboard.internet_nl_dashboard.models import (Account, AccountInternetNLScan, DashboardUser,
                                                     UploadLog, UrlList)
 
@@ -247,7 +248,7 @@ class AccountAdmin(ImportExportModelAdmin, admin.ModelAdmin):
 @admin.register(UrlList)
 class UrlListAdmin(ImportExportModelAdmin, admin.ModelAdmin):
 
-    list_display = ('name', 'account', 'scan_type', 'no_of_urls', 'no_of_endpoints',
+    list_display = ('pk', 'name', 'account', 'scan_type', 'no_of_urls', 'no_of_endpoints',
                     'automated_scan_frequency', 'last_manual_scan', 'is_deleted', 'is_scan_now_available')
     search_fields = ('name', 'account__name')
     list_filter = ['account', 'is_deleted', 'scan_type', 'enable_scans', 'automated_scan_frequency',
@@ -263,6 +264,20 @@ class UrlListAdmin(ImportExportModelAdmin, admin.ModelAdmin):
     def no_of_endpoints(self, obj):
         return Endpoint.objects.all().filter(url__urls_in_dashboard_list=obj, is_dead=False,
                                              url__is_dead=False, url__not_resolvable=False).count()
+
+    actions = []
+
+    def scan_urllist_now(self, request, queryset):
+        feedback = ""
+        for urllist in queryset:
+            feedback += repr(f"List #{urllist.pk}: {scan_urllist_now_ignoring_business_rules(urllist)} ")
+
+        self.message_user(request, feedback)
+
+    # suppressing error: "Callable[[Any, Any, Any], Any]" has no attribute "short_description"
+    # This comes from the manual... so, well.
+    scan_urllist_now.short_description = "Scan now (bypassing quota and business rules)"   # type: ignore
+    actions.append('scan_urllist_now')
 
 
 @admin.register(AccountInternetNLScan)

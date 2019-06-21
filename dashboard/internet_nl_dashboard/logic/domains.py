@@ -81,7 +81,6 @@ def alter_url_in_urllist(account, data) -> Dict[str, Any]:
 def scan_now(account, user_input) -> Dict[str, Any]:
     urllist = UrlList.objects.all().filter(account=account, id=user_input.get('id', -1), is_deleted=False).first()
 
-    # automated scans do not work.
     if not urllist:
         return operation_response(error=True, message="List could not be found.")
 
@@ -98,6 +97,23 @@ def scan_now(account, user_input) -> Dict[str, Any]:
 
     # done: have to update the list info. On the other hand: there is no guarantee that this task already has started
     # ...to fix this issue, we'll use a 'last_manual_scan' field.
+    urllist.last_manual_scan = timezone.now()
+    urllist.save()
+
+    return operation_response(success=True, message="Scan started")
+
+
+def scan_urllist_now_ignoring_business_rules(urllist: UrlList):
+    urllist = UrlList.objects.all().filter(pk=urllist.id).first()
+
+    if not urllist:
+        return operation_response(error=True, message="List could not be found.")
+
+    try:
+        create_dashboard_scan_tasks(urllist).apply_async()
+    except ValueError:
+        return operation_response(error=True, message="Password to the internet.nl API is not set or incorrect.")
+
     urllist.last_manual_scan = timezone.now()
     urllist.save()
 
