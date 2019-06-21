@@ -10,4 +10,13 @@ matrix:
     - python: "3.4"
     - python: "3.8-dev"
 
-script: make
+jobs:
+  include:
+    - stage: test
+      script: make
+    - stage: build
+      script: make image
+      if: branch = master
+    - stage: upload
+      script: upload_image
+      if: branch = master
