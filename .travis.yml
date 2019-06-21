@@ -16,9 +16,6 @@ jobs:
   include:
     - stage: test
       script: make
-    - stage: build
-      script: make image
-      if: branch = master
-    - stage: upload
-      script: upload_image
+    - stage: build & push
+      script: make pull_image image push_image
       if: branch = master

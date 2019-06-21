@@ -145,10 +145,13 @@ test_datasets: ${app}
 test_deterministic: | ${VIRTUAL_ENV}
 	${env} /bin/bash tools/compare_differences.sh HEAD HEAD tools/show_ratings.sh testdata
 
+pull_image: image
+	docker pull ${docker_image_name}
+
 push_image: image
 	docker push ${docker_image_name}
 
-image:  ## Create Docker image
+image build_image:  ## Create Docker image
 	docker build -t ${docker_image_name} .
 
 ## Housekeeping
