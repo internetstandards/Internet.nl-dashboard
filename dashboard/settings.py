@@ -5,6 +5,8 @@ from typing import Dict, Tuple
 
 from django.utils.translation import gettext_lazy as _
 
+__version__ = '0.0.0'
+
 """
 Django settings for dashboard project.
 
