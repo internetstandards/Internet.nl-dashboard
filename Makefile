@@ -32,7 +32,7 @@ $(info )
 $(info Run `make help` for available commands or use tab-completion.)
 $(info )
 
-pysrcdirs = ${app_name}/ tests/
+pysrcdirs = ${app_name}/
 pysrc = $(shell find ${pysrcdirs} -name *.py)
 shsrc = $(shell find * ! -path vendor\* -name *.sh)
 
@@ -137,10 +137,6 @@ testcase: ${app}
 	${env} DJANGO_SETTINGS_MODULE=${app_name}.settings DB_NAME=test.sqlite3 \
 		${env} pytest -k ${case}
 
-test_system:
-	# run system tests
-	${env} pytest tests/system ${testargs}
-
 test_datasets: ${app}
 	${env} /bin/sh -ec "find ${app_name}/ -path '*/fixtures/*.yaml' -print0 | \
 		xargs -0n1 basename -s .yaml | uniq | \
@@ -148,26 +144,6 @@ test_datasets: ${app}
 
 test_deterministic: | ${VIRTUAL_ENV}
 	${env} /bin/bash tools/compare_differences.sh HEAD HEAD tools/show_ratings.sh testdata
-
-test_mysql:
-	docker run --name mysql -d --rm -p 3306:3306 \
-		-e MYSQL_ROOT_PASSWORD=failmap \
-		-e MYSQL_DATABASE=failmap \
-		-e MYSQL_USER=failmap \
-		-e MYSQL_PASSWORD=failmap \
-		-v $$PWD/tests/etc/mysql-minimal-memory.cnf:/etc/mysql/conf.d/mysql.cnf \
-		mysql:5.6
-	DJANGO_DATABASE=production DB_USER=root DB_HOST=127.0.0.1 \
-		$(MAKE) test; e=$$?; docker stop mysql; exit $$e
-
-test_postgres:
-	docker run --name postgres -d --rm -p 5432:5432 \
-		-e POSTGRES_DB=failmap \
-		-e POSTGRES_USER=root \
-		-e POSTGRES_PASSWORD=failmap \
-		postgres:9.4
-	DJANGO_DATABASE=production DB_ENGINE=postgresql_psycopg2 DB_USER=root DB_HOST=127.0.0.1 \
-		$(MAKE) test; e=$$?; docker stop postgres; exit $$e
 
 push_image: image
 	docker push ${docker_image_name}
