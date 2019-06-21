@@ -1,8 +1,10 @@
 # dashboard-internet.nl
-Dashboard Internet.nl
 
-[![Actions Status](https://wdp9fww0r9.execute-api.us-west-2.amazonaws.com/production/badge/aequitas/Internet.nl-dashboard)](https://wdp9fww0r9.execute-api.us-west-2.amazonaws.com/production/results/aequitas/Internet.nl-dashboard)
+[![Build Status](https://travis-ci.com/internetstandards/Internet.nl-dashboard.svg?branch=master)](https://travis-ci.com/internetstandards/Internet.nl-dashboard)
 
+[![Badges](https://img.shields.io/badge/badges-3-yellowgreen.svg)](https://shields.io)
+
+[![Cyberveiligheid](https://img.shields.io/badge/Cyberveiligheid-97%25-yellow.svg)](https://eurocyber.nl)
 
 These instructions will help you set up a development version of the dashboard.
 
