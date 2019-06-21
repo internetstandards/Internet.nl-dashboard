@@ -3,6 +3,8 @@ from collections import OrderedDict
 from datetime import timedelta
 from typing import Dict, Tuple
 
+import raven
+import raven.contrib.celery
 from django.utils.translation import gettext_lazy as _
 
 __version__ = '0.0.0'

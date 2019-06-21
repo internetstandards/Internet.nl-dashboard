@@ -169,6 +169,9 @@ test_postgres:
 	DJANGO_DATABASE=production DB_ENGINE=postgresql_psycopg2 DB_USER=root DB_HOST=127.0.0.1 \
 		$(MAKE) test; e=$$?; docker stop postgres; exit $$e
 
+push_image: image
+	docker push ${docker_image_name}
+
 image:  ## Create Docker image
 	docker build -t ${docker_image_name} .
 

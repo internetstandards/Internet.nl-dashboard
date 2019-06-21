@@ -10,14 +10,18 @@ RUN virtualenv /pyenv
 ENV VIRTUAL_ENV /pyenv
 ENV PATH=/pyenv/bin:$PATH
 
-COPY dashboard/ /source/dashboard/
-COPY pyproject.toml poetry.lock README.md /source/
-
 WORKDIR /source/
-# Install app and dependencies in a artifact-able directory
-# App is installed by linking source into virtualenv. This is against convention
-# but allows the source to be overwritten by a volume during development.
+
+# first install the dependencies without the actual source so we better leverage docker cache
+# since otherwise every change in the source would result into reinstalling everything
+COPY pyproject.toml poetry.lock README.md /source/
+RUN mkdir /source/dashboard
+RUN touch /source/dashboard/__init__.py
 RUN poetry install -v --no-dev --develop dashboard --extras=deploy
+
+# The app is installed in development mode above. This allow us to replace the fake source
+# used there with the real source here, or use a docker volume to override the source.
+COPY dashboard/ /source/dashboard/
 
 RUN ln -s /pyenv/bin/dashboard /usr/local/bin/
 
