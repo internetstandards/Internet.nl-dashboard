@@ -164,6 +164,17 @@ def convert_vue_i18n_format(translated_locales: List[Dict[str, List[Any]]]) -> s
     return content
 
 
+def get_po_as_dictionary(file):
+    structured_content = polib.pofile(file)
+    po_file_as_dictionary = {}
+    for entry in structured_content:
+        if entry.msgid.endswith('content'):
+            continue
+        po_file_as_dictionary[_js_safe_msgid(entry.msgid)] = _js_safe_msgstr(entry.msgstr)
+
+    return po_file_as_dictionary
+
+
 def _vue_format_start():
     return """const internet_nl_messages = {
 """

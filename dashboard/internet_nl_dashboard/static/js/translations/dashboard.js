@@ -1,7 +1,3 @@
-function internet_nl_translate(language_code, key){
-    return internet_nl_messages[language_code].internet_nl[key]
-}
-// changed on the fly during the creation of the translation object, as i cannot get the this.language_code to work.
 const messages = {
     en: {
         menu: {
@@ -149,8 +145,6 @@ const messages = {
                     title: 'Average adoption of standards. Overall.',
                     yAxis_label: 'Adoption',
                 },
-                // todo downloads en relevant fields
-
                 adoption_bar_chart: {
                     annotation: {
                         title: 'Average adoption of standards ',
@@ -259,11 +253,8 @@ const messages = {
             internet_nl_web_legacy_ipv6_nameserver: 'IPv6 nameserver',
             internet_nl_web_legacy_ipv6_webserver: 'IPv6 websever',
             internet_nl_web_legacy_dane: 'DANE',
-            // types of tests
-            // todo: can we replace 'internet_nl_messages.en.internet_nl.' by a function call
-            //  that takes in account the .en part, so it's easier to maintain between languages?
-            // this function call does not neccicerily imporove working with this code...
-            internet_nl_web_tls: internet_nl_translate('en', 'test_sitetls_label'),
+
+            internet_nl_web_tls: internet_nl_messages.en.internet_nl.test_sitetls_label,
             internet_nl_web_dnssec: internet_nl_messages.en.internet_nl.test_sitednssec_label,
             internet_nl_web_ipv6: internet_nl_messages.en.internet_nl.test_siteipv6_label,
 
