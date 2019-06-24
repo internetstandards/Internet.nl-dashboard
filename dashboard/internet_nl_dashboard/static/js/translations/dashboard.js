@@ -494,7 +494,8 @@ const messages = {
             open_in_api: 'Open on internet.nl API',
             open_report: 'Open report',
             last_check: 'Last status update',
-            report_is_being_generated: 'Report is being generated...',
+            report_is_being_generated: 'Report is being generated.',
+            processing_results: 'Processing results.',
         },
         auto_refresh: {
             refresh_happening_in: 'Auto refresh in:',
@@ -974,7 +975,8 @@ const messages = {
             open_in_api: 'Open internet.nl API resultaat',
             open_report: 'Open rapport',
             last_check: 'Laatste status update',
-            report_is_being_generated: 'Report wordt gemaakt...',
+            report_is_being_generated: 'Report wordt gemaakt.',
+            processing_results: 'Resultaten worden verwerkt.',
         },
         auto_refresh: {
             refresh_happening_in: 'Lijst wordt ververst over:',

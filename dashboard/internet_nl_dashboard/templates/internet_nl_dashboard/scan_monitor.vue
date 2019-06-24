@@ -31,13 +31,24 @@
                     📘 <a :href="'/domains/' + scan.list_id + '/#' + scan.list_id">{{ scan.list }}</a><br>
                     <br>
                     <template v-if="scan.finished">
-                        <b>{{ $t("scan_monitor.finished_on") }}</b><br>
-                        <span :title="scan.finished_on">{{ humanize_date(scan.finished_on) }},<br>{{ humanize_relative_date(scan.finished_on) }}</span><br>
-                        <br>
+                        <template v-if="scan.finished_on">
+                            <b>{{ $t("scan_monitor.finished_on") }}</b><br>
+                            <span :title="scan.finished_on">{{ humanize_date(scan.finished_on) }},<br>{{ humanize_relative_date(scan.finished_on) }}</span><br>
+                            <br>
+                        </template>
                     </template>
                     <b>{{ $t("scan_monitor.runtime") }}</b><br>
                         {{ humanize_duration(scan.runtime) }}<br>
                         <br>
+                    <template v-if="scan.finished">
+                        <template v-if="!scan.finished_on">
+                            <b>{{ $t("scan_monitor.message") }}</b>
+                            <p>{{ $t("scan_monitor.processing_results") }}</p>
+                            <b>{{ $t("scan_monitor.last_check") }}</b><br>
+                            <span :title="scan.last_check">{{ humanize_date(scan.last_check) }},<br>{{ humanize_relative_date(scan.last_check) }}</span><br>
+                            <br>
+                        </template>
+                    </template>
                     <template v-if="!scan.finished">
                         <b>{{ $t("scan_monitor.message") }}</b>
                         <p>{{ scan.message }}</p>
