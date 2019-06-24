@@ -6,7 +6,8 @@ from django.http import HttpResponse, JsonResponse
 from django.utils.text import slugify
 from websecmap.app.common import JSEncoder
 
-from dashboard.internet_nl_dashboard.logic.report_to_spreadsheet import create_spreadsheet
+from dashboard.internet_nl_dashboard.logic.report_to_spreadsheet import (create_spreadsheet,
+                                                                         upgrade_excel_spreadsheet)
 from dashboard.internet_nl_dashboard.views.__init__ import LOGIN_URL, get_account
 
 log = logging.getLogger(__package__)
@@ -22,10 +23,14 @@ def download_spreadsheet(request, report_id, file_type) -> HttpResponse:
         return JsonResponse({}, encoder=JSEncoder)
 
     if file_type == "xlsx":
-        http_response = excel.make_response(spreadsheet, file_type)
-        http_response["Content-Disposition"] = "attachment; filename=%s.xlsx" % slugify(filename)
-        http_response["Content-type"] = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-        return http_response
+        # todo: requesting infinite files will flood the system as temp files are saved. Probably load file into
+        #   memory and then remove the original file. With the current group of users the risk is minimal, so no bother
+        tmp_file_handle = upgrade_excel_spreadsheet(spreadsheet)
+        with open(tmp_file_handle.name, 'rb') as fh:
+            response = HttpResponse(fh.read(),
+                                    content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+            response["Content-Disposition"] = "attachment; filename=%s.xlsx" % slugify(filename)
+        return response
 
     if file_type == "ods":
         output = excel.make_response(spreadsheet, file_type)

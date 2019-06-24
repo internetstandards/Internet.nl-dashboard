@@ -199,6 +199,7 @@ class UrlList(models.Model):
 
     last_manual_scan = models.DateTimeField(
         null=True,
+        blank=True
     )
 
     def __str__(self):

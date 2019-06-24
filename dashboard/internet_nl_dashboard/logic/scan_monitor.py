@@ -38,7 +38,7 @@ def get_running_scans(account: Account) -> List:
             if last_report:
                 last_report_id = last_report.id
 
-        if scan.scan.finished:
+        if scan.scan.finished_on:
             runtime = scan.scan.finished_on - scan.scan.started_on
         else:
             runtime = timezone.now() - scan.scan.started_on

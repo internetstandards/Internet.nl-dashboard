@@ -1,9 +1,14 @@
-function internet_nl_translate(language_code, key){
-    return internet_nl_messages[language_code].internet_nl[key]
-}
-// changed on the fly during the creation of the translation object, as i cannot get the this.language_code to work.
 const messages = {
     en: {
+        menu: {
+            admin: 'Admin',
+            domains: "Domains",
+            scans: "Scans",
+            reports: "Reports",
+            account: "Account",
+            log_off: "Log off",
+            log_in: "Log in",
+        },
         loading: {
             loading: "Loading...",
         },
@@ -140,8 +145,6 @@ const messages = {
                     title: 'Average adoption of standards. Overall.',
                     yAxis_label: 'Adoption',
                 },
-                // todo downloads en relevant fields
-
                 adoption_bar_chart: {
                     annotation: {
                         title: 'Average adoption of standards ',
@@ -250,11 +253,8 @@ const messages = {
             internet_nl_web_legacy_ipv6_nameserver: 'IPv6 nameserver',
             internet_nl_web_legacy_ipv6_webserver: 'IPv6 websever',
             internet_nl_web_legacy_dane: 'DANE',
-            // types of tests
-            // todo: can we replace 'internet_nl_messages.en.internet_nl.' by a function call
-            //  that takes in account the .en part, so it's easier to maintain between languages?
-            // this function call does not neccicerily imporove working with this code...
-            internet_nl_web_tls: internet_nl_translate('en', 'test_sitetls_label'),
+
+            internet_nl_web_tls: internet_nl_messages.en.internet_nl.test_sitetls_label,
             internet_nl_web_dnssec: internet_nl_messages.en.internet_nl.test_sitednssec_label,
             internet_nl_web_ipv6: internet_nl_messages.en.internet_nl.test_siteipv6_label,
 
@@ -485,7 +485,8 @@ const messages = {
             open_in_api: 'Open on internet.nl API',
             open_report: 'Open report',
             last_check: 'Last status update',
-            report_is_being_generated: 'Report is being generated...',
+            report_is_being_generated: 'Report is being generated.',
+            processing_results: 'Processing results.',
         },
         auto_refresh: {
             refresh_happening_in: 'Auto refresh in:',
@@ -534,6 +535,16 @@ const messages = {
         }
     },
     nl: {
+        menu: {
+            admin: 'Beheer',
+            domains: "Domeinen",
+            scans: "Scans",
+            reports: "Rapporten",
+            account: "Account",
+            log_off: "Uitloggen",
+            log_in: "Inloggen",
+        },
+
         loading: {
             loading: "Laden...",
         },
@@ -955,7 +966,8 @@ const messages = {
             open_in_api: 'Open internet.nl API resultaat',
             open_report: 'Open rapport',
             last_check: 'Laatste status update',
-            report_is_being_generated: 'Report wordt gemaakt...',
+            report_is_being_generated: 'Report wordt gemaakt.',
+            processing_results: 'Resultaten worden verwerkt.',
         },
         auto_refresh: {
             refresh_happening_in: 'Lijst wordt ververst over:',

@@ -1,6 +1,5 @@
 import logging
 
-from django.conf import settings
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render
@@ -18,7 +17,6 @@ def scan_monitor(request) -> HttpResponse:
 
     response = render(request, 'internet_nl_dashboard/templates/internet_nl_dashboard/scan_monitor.html', {
         'menu_item_scan_monitor': "current",
-        'debug': settings.DEBUG
     })
 
     return inject_default_language_cookie(request, response)

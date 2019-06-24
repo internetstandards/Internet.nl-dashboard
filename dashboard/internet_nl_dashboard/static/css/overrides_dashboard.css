@@ -406,4 +406,9 @@ a.anchor {
 .twitterfollow {
     background: url("/static/images/vendor/internet_nl/icon-twitterfollow.svg") !important;
     background: url("/static/images/vendor/internet_nl/icon-twitterfollow.png") !important;
+    background-color: transparent  !important;
+    background-repeat: no-repeat  !important;
+    background-position: 5px center  !important;
+    background-size: 1.25em 1.25em  !important;
+    padding-left: 2em  !important;
 }

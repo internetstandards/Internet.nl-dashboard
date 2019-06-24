@@ -1,12 +1,22 @@
 import itertools
 import logging
 from string import ascii_uppercase
+from tempfile import NamedTemporaryFile
 from typing import Any, Dict, List
 
 import pyexcel as p
 from django.utils.text import slugify
+from openpyxl import load_workbook
+from openpyxl.formatting.rule import ColorScaleRule
+from openpyxl.styles import Font
 
+from dashboard.internet_nl_dashboard.logic.internet_nl_translations import (DJANGO_I18N_OUTPUT_PATH,
+                                                                            get_po_as_dictionary)
 from dashboard.internet_nl_dashboard.models import Account, UrlListReport
+
+# Hack to get internet.nl translations (which are inconsistent in naming) to a similar level as it's json counterpart.
+# Todo: Perhaps we should just export the translations to JSON anyway...
+po_file_as_dictionary = get_po_as_dictionary(f"{DJANGO_I18N_OUTPUT_PATH}en/LC_MESSAGES/django.po")
 
 """
 Creates spreadsheets containing report data.
@@ -194,9 +204,116 @@ SANE_COLUMN_ORDER = {
 }
 
 
-# https://stackoverflow.com/questions/29351492/how-to-make-a-continuous-alphabetic-list-python-from-a-z-then-from-aa-ab
+def translate_field(field_label):
+    """
+    Try to solve the very inconsistent naming from the internet.nl translations (random dashes, case mixes etc)
+
+    :param field_label:
+    :return:
+    """
+    field_mapping = {
+        # mail fields, see dashboard.js
+        'internet_nl_mail_starttls_cert_domain': 'detail_mail_tls_cert_hostmatch_label',
+        'internet_nl_mail_starttls_tls_version': 'detail_mail_tls_version_label',
+        'internet_nl_mail_starttls_cert_chain': 'detail_mail_tls_cert_trust_label',
+        'internet_nl_mail_starttls_tls_available': 'detail_mail_tls_starttls_exists_label',
+        'internet_nl_mail_starttls_tls_clientreneg': 'detail_mail_tls_renegotiation_client_label',
+        'internet_nl_mail_starttls_tls_ciphers': 'detail_mail_tls_ciphers_label',
+        'internet_nl_mail_starttls_dane_valid': 'detail_mail_tls_dane_valid_label',
+        'internet_nl_mail_starttls_dane_exist': 'detail_mail_tls_dane_exists_label',
+        'internet_nl_mail_starttls_tls_secreneg': 'detail_mail_tls_renegotiation_secure_label',
+        'internet_nl_mail_starttls_dane_rollover': 'detail_mail_tls_dane_rollover_label',
+        'internet_nl_mail_starttls_cert_pubkey': 'detail_mail_tls_cert_pubkey_label',
+        'internet_nl_mail_starttls_cert_sig': 'detail_mail_tls_cert_signature_label',
+        'internet_nl_mail_starttls_tls_compress': 'detail_mail_tls_compression_label',
+        'internet_nl_mail_starttls_tls_keyexchange': 'detail_mail_tls_fs_params_label',
+        'internet_nl_mail_auth_dmarc_policy': 'detail_mail_auth_dmarc_policy_label',
+        'internet_nl_mail_auth_dmarc_exist': 'detail_mail_auth_dmarc_label',
+        'internet_nl_mail_auth_spf_policy': 'detail_mail_auth_spf_policy_label',
+        'internet_nl_mail_auth_dkim_exist': 'detail_mail_auth_dkim_label',
+        'internet_nl_mail_auth_spf_exist': 'detail_mail_auth_spf_label',
+        'internet_nl_mail_dnssec_mailto_exist': 'detail_mail_dnssec_exists_label',
+        'internet_nl_mail_dnssec_mailto_valid': 'detail_mail_dnssec_valid_label',
+        'internet_nl_mail_dnssec_mx_valid': 'detail_mail_dnssec_mx_valid_label',
+        'internet_nl_mail_dnssec_mx_exist': 'detail_mail_dnssec_mx_exists_label',
+        'internet_nl_mail_ipv6_mx_address': 'detail_mail_ipv6_mx_aaaa_label',
+        'internet_nl_mail_ipv6_mx_reach': 'detail_mail_ipv6_mx_reach_label',
+        'internet_nl_mail_ipv6_ns_reach': 'detail_web_mail_ipv6_ns_reach_label',
+        'internet_nl_mail_ipv6_ns_address': 'detail_web_mail_ipv6_ns_aaaa_label',
+
+
+        # web fields, see dashboard.js
+        'internet_nl_web_appsecpriv': 'results_domain_appsecpriv_http_headers_label',
+        'internet_nl_web_appsecpriv_csp': 'detail_web_appsecpriv_http_csp_label',
+        'internet_nl_web_appsecpriv_referrer_policy': 'detail_web_appsecpriv_http_referrer_policy_label',
+        'internet_nl_web_appsecpriv_x_content_type_options': 'detail_web_appsecpriv_http_x_content_type_label',
+        'internet_nl_web_appsecpriv_x_frame_options': 'detail_web_appsecpriv_http_x_frame_label',
+        'internet_nl_web_appsecpriv_x_xss_protection': 'detail_web_appsecpriv_http_x_xss_label',
+        'internet_nl_web_https_cert_domain': 'detail_web_tls_cert_hostmatch_label',
+        'internet_nl_web_https_http_redirect': 'detail_web_tls_https_forced_label',
+        'internet_nl_web_https_cert_chain': 'detail_web_tls_cert_trust_label',
+        'internet_nl_web_https_tls_version': 'detail_web_tls_version_label',
+        'internet_nl_web_https_tls_clientreneg': 'detail_web_tls_renegotiation_client_label',
+        'internet_nl_web_https_tls_ciphers': 'detail_web_tls_ciphers_label',
+        'internet_nl_web_https_http_available': 'detail_web_tls_https_exists_label',
+        'internet_nl_web_https_dane_exist': 'detail_web_tls_dane_exists_label',
+        'internet_nl_web_https_http_compress': 'detail_web_tls_http_compression_label',
+        'internet_nl_web_https_http_hsts': 'detail_web_tls_https_hsts_label',
+        'internet_nl_web_https_tls_secreneg': 'detail_web_tls_renegotiation_secure_label',
+        'internet_nl_web_https_dane_valid': 'detail_web_tls_dane_valid_label',
+        'internet_nl_web_https_cert_pubkey': 'detail_web_tls_cert_pubkey_label',
+        'internet_nl_web_https_cert_sig': 'detail_web_tls_cert_signature_label',
+        'internet_nl_web_https_tls_compress': 'detail_web_tls_compression_label',
+        'internet_nl_web_https_tls_keyexchange': 'detail_web_tls_fs_params_label',
+        'internet_nl_web_dnssec_valid': 'detail_web_dnssec_valid_label',
+        'internet_nl_web_dnssec_exist': 'detail_web_dnssec_exists_label',
+        'internet_nl_web_ipv6_ws_similar': 'detail_web_ipv6_web_ipv46_label',
+        'internet_nl_web_ipv6_ws_address': 'detail_web_ipv6_web_aaaa_label',
+        'internet_nl_web_ipv6_ns_reach': 'detail_web_mail_ipv6_ns_reach_label',
+        'internet_nl_web_ipv6_ws_reach': 'detail_web_ipv6_web_reach_label',
+        'internet_nl_web_ipv6_ns_address': 'detail_web_mail_ipv6_ns_aaaa_label',
+
+        'internet_nl_web_tls': 'test_sitetls_label',
+        'internet_nl_web_dnssec': 'test_sitednssec_label',
+        'internet_nl_web_ipv6': 'test_siteipv6_label',
+        'internet_nl_mail_dashboard_tls': 'test_mailtls_label',
+        'internet_nl_mail_dashboard_auth': 'test_mailauth_label',
+        'internet_nl_mail_dashboard_dnssec': 'test_maildnssec_label',
+        'internet_nl_mail_dashboard_ipv6': 'test_mailipv6_label',
+
+        # directly translated fields.
+        'internet_nl_mail_legacy_dmarc': 'DMARC',
+        'internet_nl_mail_legacy_dkim': 'DKIM',
+        'internet_nl_mail_legacy_spf': 'SPF',
+        'internet_nl_mail_legacy_dmarc_policy': 'DMARC policy',
+        'internet_nl_mail_legacy_spf_policy': 'SPF policy',
+        'internet_nl_mail_legacy_start_tls': 'STARTTLS',
+        'internet_nl_mail_legacy_start_tls_ncsc': 'STARTTLS NCSC',
+        'internet_nl_mail_legacy_dnssec_email_domain': 'DNSSEC e-mail domain',
+        'internet_nl_mail_legacy_dnssec_mx': 'DNSSEC MX',
+        'internet_nl_mail_legacy_dane': 'DANE',
+        'internet_nl_mail_legacy_ipv6_nameserver': 'IPv6 nameserver',
+        'internet_nl_mail_legacy_ipv6_mailserver': 'IPv6 mailserver',
+
+        'internet_nl_web_legacy_dnssec': 'DNSSEC',
+        'internet_nl_web_legacy_tls_available': 'TLS available',
+        'internet_nl_web_legacy_tls_ncsc_web': 'TLS NCSC web',
+        'internet_nl_web_legacy_https_enforced': 'HTTPS enforced',
+        'internet_nl_web_legacy_hsts': 'HSTS',
+        'internet_nl_web_legacy_ipv6_nameserver': 'IPv6 nameserver',
+        'internet_nl_web_legacy_ipv6_webserver': 'IPv6 websever',
+        'internet_nl_web_legacy_dane': 'DANE',
+    }
+
+    # handle inconsistent naming and (why cannot i load something else than django.po?)
+    try:
+        return po_file_as_dictionary.get(field_mapping[field_label], field_mapping[field_label])
+    except KeyError:
+        return field_label
+
 
 def iter_all_strings():
+    # https://stackoverflow.com/questions/29351492/how-to-make-a-continuous-alphabetic-list-python-from-a-z-then-from-aa-ab
     for size in itertools.count(1):
         for s in itertools.product(ascii_uppercase, repeat=size):
             yield "".join(s)
@@ -227,19 +344,84 @@ def create_spreadsheet(account: Account, report_id: int):
     # data += [formula_row(protocol=protocol, function="=COUNTIF(%(column_name)s8:%(column_name)s9999,\"?\")")]
     # add an empty row for clarity
     data += [[]]
-    data += [category_headers('dns_soa')]
-    data += [headers('dns_soa')]
+    data += [category_headers(protocol)]
+    data += [headers(protocol)]
     data += urllistreport_to_spreadsheet_data(category_name=report.urllist.name, urls=urls, protocol=protocol)
 
     filename = "internet nl dashboard report %s %s %s %s" % (
-        report.pk, report.urllist.name, report.urllist.scan_type, report.at_when)
+        report.pk, report.urllist.name, report.urllist.scan_type, report.at_when.date())
 
     # The sheet is created into memory and then passed to the caller. They may save it, or serve it, etc...
     # http://docs.pyexcel.org/en/latest/tutorial06.html?highlight=memory
     # An issue with Sheet prevents uneven row lengths to be added. But that works fine with bookdicts
-    book = p.get_book(bookdict={slugify(filename): data})
+    # The name of a sheet can only be 32 characters, make sure the most significant info is in the title first.
+    tabname = f"{report.pk} {report.urllist.scan_type} {report.at_when.date()} {report.urllist.name}"[0:31]
+    book = p.get_book(bookdict={slugify(tabname): data})
 
     return filename, book
+
+
+def upgrade_excel_spreadsheet(spreadsheet_data):
+
+    with NamedTemporaryFile(suffix=".xlsx", delete=False) as tmp:
+        log.debug(f"Saving temp outout to {tmp.name}")
+        spreadsheet_data.save_as(array=spreadsheet_data, filename=tmp.name)
+
+        wb = load_workbook(tmp.name)
+        ws = wb.active
+
+        # nicer columns
+        ws.column_dimensions["A"].width = "30"
+        ws.column_dimensions["B"].width = "30"
+
+        # Add statistic rows:
+        ws.insert_rows(0, amount=5)
+
+        ws[f'B1'] = "Total"
+        ws[f'B2'] = "Contains 1"
+        ws[f'B3'] = "Contains 0"
+        ws[f'B4'] = "Contains ?"
+        ws[f'B5'] = "Percentage 1"
+
+        for cell in ['H', 'I', 'J', 'K', 'L', "M", "N", 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z',
+                     'AA', 'AB', 'AC', 'AD', 'AE', 'AF', 'AG', 'AH', 'AI', 'AJ', 'AK', 'AL', 'AM', 'AN', 'AO',
+                     'AP', 'AQ', 'AR', 'AS', 'AT', 'AU', 'AV', 'AW', 'AX', 'AY', 'AZ', 'BA', 'BB', 'BC', 'BD',
+                     'BE', 'BF', 'BG', 'BH', 'BI', 'BJ', 'BK', 'BL', 'BM', 'BN', 'BO', 'BP', 'BQ', 'BR', 'BS',
+                     'BT', 'BU', 'BV', 'BW', 'BX', 'BY', 'BZ']:
+            # if header, then aggregate
+            if ws[f'{cell}8'].value:
+                ws[f'{cell}1'] = f'=COUNTA({cell}9:{cell}9999)'
+                ws[f'{cell}2'] = f'=COUNTIF({cell}9:{cell}9999, 1)'
+                ws[f'{cell}3'] = f'=COUNTIF({cell}9:{cell}9999, 0)'
+                ws[f'{cell}4'] = f'=COUNTIF({cell}9:{cell}9999, "?")'
+                ws[f'{cell}5'] = f'=ROUND({cell}2/{cell}1, 2)'
+                ws[f'{cell}5'].number_format = '0.00%'
+
+        # fold port and ip-version (and protocol?) from report as it's not useful in this case?
+        ws.column_dimensions.group('C', 'G', hidden=True)
+
+        # make headers bold
+        for cell in ['H', 'I', 'J', 'K', 'L', "M", "N", 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z',
+                     'AA', 'AB', 'AC', 'AD', 'AE', 'AF', 'AG', 'AH', 'AI', 'AJ', 'AK', 'AL', 'AM', 'AN', 'AO',
+                     'AP', 'AQ', 'AR', 'AS', 'AT', 'AU', 'AV', 'AW', 'AX', 'AY', 'AZ', 'BA', 'BB', 'BC', 'BD',
+                     'BE', 'BF', 'BG', 'BH', 'BI', 'BJ', 'BK', 'BL', 'BM', 'BN', 'BO', 'BP', 'BQ', 'BR', 'BS',
+                     'BT', 'BU', 'BV', 'BW', 'BX', 'BY', 'BZ']:
+            ws[f'{cell}7'].font = Font(bold=True)
+            ws[f'{cell}8'].font = Font(bold=True)
+
+        # Freeze pane to make navigation easier.
+        ws.freeze_panes = ws['H9']
+
+        # Set the measurements to green/red depending on value using conditional formatting.
+        ws.conditional_formatting.add(
+            'H9:CD9999',
+            ColorScaleRule(start_type='min', start_color='FFDDDD', end_type='max', end_color='DDFFDD')
+        )
+
+        log.debug(ws.title)
+        wb.save(tmp.name)
+
+        return tmp
 
 
 def category_headers(protocol: str = 'dns_soa'):
@@ -257,11 +439,14 @@ def category_headers(protocol: str = 'dns_soa'):
 
 
 def headers(protocol: str = 'dns_soa'):
-    headers = ['Category', 'Url', 'Port', 'Ip Version', '']
+    headers = ['List', 'Url', 'Port', 'Ip Version', '']
     for group in SANE_COLUMN_ORDER[protocol]:
         headers += SANE_COLUMN_ORDER[protocol][group]
         # add empty thing after each group to make distinction per group clearer
         headers += ['']
+
+    # translate them:
+    headers = [translate_field(header) for header in headers]
 
     return headers
 
