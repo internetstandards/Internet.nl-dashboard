@@ -232,12 +232,14 @@ def create_spreadsheet(account: Account, report_id: int):
     data += urllistreport_to_spreadsheet_data(category_name=report.urllist.name, urls=urls, protocol=protocol)
 
     filename = "internet nl dashboard report %s %s %s %s" % (
-        report.pk, report.urllist.name, report.urllist.scan_type, report.at_when)
+        report.pk, report.urllist.name, report.urllist.scan_type, report.at_when.date())
 
     # The sheet is created into memory and then passed to the caller. They may save it, or serve it, etc...
     # http://docs.pyexcel.org/en/latest/tutorial06.html?highlight=memory
     # An issue with Sheet prevents uneven row lengths to be added. But that works fine with bookdicts
-    book = p.get_book(bookdict={slugify(filename): data})
+    # The name of a sheet can only be 32 characters, make sure the most significant info is in the title first.
+    tabname = f"{report.pk} {report.urllist.scan_type} {report.at_when.date()} {report.urllist.name}"[0:31]
+    book = p.get_book(bookdict={slugify(tabname): data})
 
     return filename, book
 
