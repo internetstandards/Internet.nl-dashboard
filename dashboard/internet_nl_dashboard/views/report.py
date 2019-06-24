@@ -1,5 +1,4 @@
 
-from django.conf import settings
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render
@@ -16,7 +15,6 @@ def dashboard(request, report_id=0) -> HttpResponse:
 
     response = render(request, 'internet_nl_dashboard/templates/internet_nl_dashboard/report.html', {
         'menu_item_dashboard': "current",
-        'debug': settings.DEBUG
     })
 
     return inject_default_language_cookie(request, response)

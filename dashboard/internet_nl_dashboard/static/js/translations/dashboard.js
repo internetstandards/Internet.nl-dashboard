@@ -4,6 +4,15 @@ function internet_nl_translate(language_code, key){
 // changed on the fly during the creation of the translation object, as i cannot get the this.language_code to work.
 const messages = {
     en: {
+        menu: {
+            admin: 'Admin',
+            domains: "Domains",
+            scans: "Scans",
+            reports: "Reports",
+            account: "Account",
+            log_off: "Log off",
+            log_in: "Log in",
+        },
         loading: {
             loading: "Loading...",
         },
@@ -534,6 +543,16 @@ const messages = {
         }
     },
     nl: {
+        menu: {
+            admin: 'Beheer',
+            domains: "Domeinen",
+            scans: "Scans",
+            reports: "Rapporten",
+            account: "Account",
+            log_off: "Uitloggen",
+            log_in: "Inloggen",
+        },
+
         loading: {
             loading: "Laden...",
         },

@@ -1,4 +1,6 @@
+import os
 import tempfile
+from pathlib import Path
 from typing import Any, Dict, List
 
 import markdown
@@ -7,7 +9,8 @@ import requests
 from django.utils.text import slugify
 
 SUPPORTED_LOCALES = ['nl', 'en']
-OUTPUT_PATH = 'dashboard/internet_nl_dashboard/static/js/translations/'
+VUE_I18N_OUTPUT_PATH = 'dashboard/internet_nl_dashboard/static/js/translations/'
+DJANGO_I18N_OUTPUT_PATH = 'dashboard/internet_nl_dashboard/locale/'
 
 
 def convert_internet_nl_content_to_vue():
@@ -43,6 +46,7 @@ def convert_internet_nl_content_to_vue():
 
     for locale in SUPPORTED_LOCALES:
         raw_content = get_locale_content(locale)
+        store_as_django_locale(locale, raw_content)
         structured_content = load_as_po_file(raw_content)
         translated_locales.append({'locale': locale, 'content': structured_content})
 
@@ -73,6 +77,27 @@ def get_locale_content(locale: str) -> bytes:
     url = "https://raw.githubusercontent.com/NLnetLabs/Internet.nl/master/translations/%s/main.po" % locale
     response = requests.get(url)
     return response.content
+
+
+def store_as_django_locale(locale, content):
+    """
+    Stores content from internet.nl translations (or any content) in the appropriate locale folder
+    in this project. If the locale folder does not exist, it will be created.
+
+    These texts are used on the main pages, up until when this is converted to a Vue at some point.
+
+    :param content:
+    :param locale:
+    :return:
+    """
+
+    filepath = "%s%s" % (DJANGO_I18N_OUTPUT_PATH, f"%s/LC_MESSAGES/django.po" % locale)
+
+    # If the language does not exist yet, make the folder supporting this language.
+    os.makedirs(Path(filepath).parent, exist_ok=True)
+
+    with open(filepath, 'w') as f:
+        f.write(content.decode('UTF-8'))
 
 
 def load_as_po_file(raw_content: bytes) -> List[Any]:
@@ -200,7 +225,7 @@ def store_vue_i18n_file(filename: str, content: str) -> None:
     :return:
     """
 
-    filepath = "%s%s.js" % (OUTPUT_PATH, filename)
+    filepath = "%s%s.js" % (VUE_I18N_OUTPUT_PATH, filename)
 
     with open(filepath, 'w') as f:
         f.write(content)

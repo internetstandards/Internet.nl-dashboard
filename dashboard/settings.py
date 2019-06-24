@@ -132,6 +132,7 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'dashboard.internet_nl_dashboard.context_processors.template_settings_processor',
             ],
         },
     },
@@ -519,3 +520,14 @@ if SENTRY_DSN:
     client = raven.Client(SENTRY_DSN)
     raven.contrib.celery.register_logger_signal(client)
     raven.contrib.celery.register_signal(client)
+
+
+# Copied from internet.nl
+
+# Supported languages.
+# NOTE: Make sure that a DNS record for each language exists.
+#       More information can be found in the README file.
+LANGUAGES = sorted([
+    ('nl', 'Dutch'),
+    ('en', 'English'),
+], key=lambda x: x[0])

@@ -6,7 +6,7 @@ Todo: digitoegankelijk: how to select links with the keyboard? How can we make t
 <head>
     <meta http-equiv="content-type" content="text/html; charset=UTF-8">
     <meta charset="utf-8">
-    <title>{% trans "Dashboard for modern Internet Standards like IPv6, DNSSEC, HTTPS, TLS, HSTS, DMARC, DKIM, SPF, STARTTLS and DANE." %}</title>
+    <title>{% trans "home pagetitle" %}</title>
     <meta name="viewport" content="width=device-width,initial-scale=1.0">
     <meta name="author" content="Platform Internetstandaarden / Internet Standards Platform">
     <link rel="icon" href="https://www.internet.nl/static/favicon.png" sizes="32x32">
@@ -379,8 +379,40 @@ Todo: digitoegankelijk: how to select links with the keyboard? How can we make t
                 loading: false,
             },
         });
+
+        $( document ).ready(function() {
+            vueMenu = new Vue({
+                i18n,
+                name: 'menu',
+                el: '#menu',
+                template: '#menu_template',
+            });
+        });
+
         {% endverbatim %}
     </script>
+
+
+
+<template type="x-template" id="menu_template">
+    <ul>
+        {% if user.is_authenticated %}
+
+            {% if user.is_superuser %}
+                <li class="{{menu_item_powertools}}"><a href="/powertools/" accesskey="a">{% verbatim %}{{ $t("menu.admin") }}{% endverbatim %}</a></li>
+            {% endif %}
+
+            <li class="{{menu_item_addressmanager}}"><a href="/domains/" accesskey="d">{% verbatim %}{{ $t("menu.domains") }}{% endverbatim %}</a></li>
+            <li class="{{menu_item_scan_monitor}}"><a href="/scans/" accesskey="s">{% verbatim %}{{ $t("menu.scans") }}{% endverbatim %}</a></li>
+            <li class="{{menu_item_dashboard}}"><a href="/reports/" accesskey="r">{% verbatim %}{{ $t("menu.reports") }}{% endverbatim %}</a></li>
+            <li class=""><a href="/account/two_factor/" accesskey="a">{% verbatim %}{{ $t("menu.account") }}{% endverbatim %}</a></li>
+            <li class=""><a href="/logout/" accesskey="l">{% verbatim %}{{ $t("menu.log_off") }}{% endverbatim %}</a></li>
+        {% else %}
+            <li class="current"><a href="/account/login/" accesskey="l">{% verbatim %}{{ $t("menu.log_in") }}{% endverbatim %}</a></li>
+        {% endif %}
+    </ul>
+</template>
+
 
 </head>
 <body class="home body-with-semifixed-header" cz-shortcut-listen="true">
@@ -390,46 +422,42 @@ Todo: digitoegankelijk: how to select links with the keyboard? How can we make t
     <span id="matomo-subdomain-tracking">*.internet.nl</span>
   </div>
 <div class="skiplink"><a href="#content">
-    Ga naar tekst-inhoud
+    {% trans "page gotocontents" %}
 </a></div>
 <div class="skiplink"><a href="#sitenav">
-    Ga naar het hoofd-menu
+    {% trans "page gotomainmenu" %}
 </a></div>
 <div class="skiplink"><a href="#footer">
-    Ga naar de footer
+    {% trans "page gotofooter" %}
 </a></div>
 
 <header>
     <div class="wrap">
         <div id="masthead">
-            <p id="site-title"><a href="/"><span class="hidden">{% trans "Internet.nl" %}</span></a></p>
-            <p id="site-description"><span class="hidden">{% trans "Is your internet up-to-date?" %}</span></p>
+            <p id="site-title"><a href="/"><span class="hidden">{% trans "page sitetitle" %}</span></a></p>
+            <p id="site-description"><span class="hidden">{% trans "page sitedescription" %}</span></p>
         </div>
 
         <div id="language-switch-header-container">
             <ul class="language-switch-list">
-                <li><a onclick="set_language('en')">{% trans "English" %}</a></li>
-                <li><a onclick="set_language('nl')">{% trans "Nederlands" %}</a></li>
+                {% with user_language=request.LANGUAGE_CODE %}
+                    {% get_language_info_list for LANGUAGES as languages %}
+
+                    {% for language in languages %}
+                        <li>
+                        {% if language.code == user_language %}
+                            <button class="active-language" disabled>{{language.name_local}}</button>
+                        {% else %}
+                            <a onclick="set_language('{{language.code}}')">{{language.name_local}}</a>
+                        {% endif %}
+                        </li>
+                    {% endfor %}
+                {% endwith %}
             </ul>
         </div>
 
         <nav id="sitenav">
-            <ul>
-                {% if user.is_authenticated %}
-
-                    {% if user.is_superuser %}
-                        <li class="{{menu_item_powertools}}"><a href="/powertools/" accesskey="a">{% trans "Admin" %}</a></li>
-                    {% endif %}
-
-                    <li class="{{menu_item_addressmanager}}"><a href="/domains/" accesskey="d">{% trans "Domains" %}</a></li>
-                    <li class="{{menu_item_scan_monitor}}"><a href="/scans/" accesskey="s">{% trans "Scans" %}</a></li>
-                    <li class="{{menu_item_dashboard}}"><a href="/reports/" accesskey="r">{% trans "Reports" %}</a></li>
-                    <li class=""><a href="/account/two_factor/" accesskey="a">{% trans "Account" %}</a></li>
-                    <li class=""><a href="/logout/" accesskey="l">{% trans "Log off" %}</a></li>
-                {% else %}
-                    <li class="current"><a href="/account/login/" accesskey="l">{% trans "Log in" %}</a></li>
-                {% endif %}
-            </ul>
+            <div id="menu"></div>
         </nav>
     </div>
 </header>
@@ -462,20 +490,20 @@ Todo: digitoegankelijk: how to select links with the keyboard? How can we make t
 <footer id="footer">
     <img id="flag" src="{% static 'images/vendor/internet_nl/clear.gif' %}" alt="">
     <div class="wrap">
-        {% trans "Internet.nl is an initiative of the Internet community and the Dutch government." %}
+        {% trans "base info" %}
         <hr>
         <ul>
             <li><a class="footlink" href="https://www.internet.nl/disclosure/">
-                {% trans "Responsible disclosure" %}
+                {% trans "base disclosure" %}
             </a></li>
             <li><a class="footlink" href="https://www.internet.nl/privacy/">
-                {% trans "Privacy statement" %}
+                {% trans "base privacy" %}
             </a></li>
             <li><a class="footlink" href="https://www.internet.nl/copyright/">
-                {% trans "Copyright" %}
+                {% trans "base copyright" %}
             </a></li>
             <li class="follow-us"><a class="footlink twitterfollow" href="https://twitter.com/internet_nl">
-                {% trans "Follow us on Twitter" %}
+                {% trans "base followtwitter" %}
             </a></li>
         </ul>
     </div>

@@ -43,7 +43,7 @@ def powertools(request) -> HttpResponse:
         'add_account_and_user_form_state': state,
         'menu_item_powertools': "current",
         'selected_account': selected_account_id,
-        'accounts': list(Account.objects.all().values('id', 'name'))
+        'accounts': list(Account.objects.all().values('id', 'name')),
     })
 
     return inject_default_language_cookie(request, response)
