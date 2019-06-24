@@ -1,10 +1,14 @@
 import itertools
 import logging
 from string import ascii_uppercase
+from tempfile import NamedTemporaryFile
 from typing import Any, Dict, List
 
 import pyexcel as p
 from django.utils.text import slugify
+from openpyxl import load_workbook
+from openpyxl.formatting.rule import ColorScaleRule
+from openpyxl.styles import Font
 
 from dashboard.internet_nl_dashboard.logic.internet_nl_translations import (DJANGO_I18N_OUTPUT_PATH,
                                                                             get_po_as_dictionary)
@@ -355,6 +359,69 @@ def create_spreadsheet(account: Account, report_id: int):
     book = p.get_book(bookdict={slugify(tabname): data})
 
     return filename, book
+
+
+def upgrade_excel_spreadsheet(spreadsheet_data):
+
+    with NamedTemporaryFile(suffix=".xlsx", delete=False) as tmp:
+        log.debug(f"Saving temp outout to {tmp.name}")
+        spreadsheet_data.save_as(array=spreadsheet_data, filename=tmp.name)
+
+        wb = load_workbook(tmp.name)
+        ws = wb.active
+
+        # nicer columns
+        ws.column_dimensions["A"].width = "30"
+        ws.column_dimensions["B"].width = "30"
+
+        # Add statistic rows:
+        ws.insert_rows(0, amount=5)
+
+        ws[f'B1'] = "Total"
+        ws[f'B2'] = "Contains 1"
+        ws[f'B3'] = "Contains 0"
+        ws[f'B4'] = "Contains ?"
+        ws[f'B5'] = "Percentage 1"
+
+        for cell in ['H', 'I', 'J', 'K', 'L', "M", "N", 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z',
+                     'AA', 'AB', 'AC', 'AD', 'AE', 'AF', 'AG', 'AH', 'AI', 'AJ', 'AK', 'AL', 'AM', 'AN', 'AO',
+                     'AP', 'AQ', 'AR', 'AS', 'AT', 'AU', 'AV', 'AW', 'AX', 'AY', 'AZ', 'BA', 'BB', 'BC', 'BD',
+                     'BE', 'BF', 'BG', 'BH', 'BI', 'BJ', 'BK', 'BL', 'BM', 'BN', 'BO', 'BP', 'BQ', 'BR', 'BS',
+                     'BT', 'BU', 'BV', 'BW', 'BX', 'BY', 'BZ']:
+            # if header, then aggregate
+            if ws[f'{cell}8'].value:
+                ws[f'{cell}1'] = f'=COUNTA({cell}9:{cell}9999)'
+                ws[f'{cell}2'] = f'=COUNTIF({cell}9:{cell}9999, 1)'
+                ws[f'{cell}3'] = f'=COUNTIF({cell}9:{cell}9999, 0)'
+                ws[f'{cell}4'] = f'=COUNTIF({cell}9:{cell}9999, "?")'
+                ws[f'{cell}5'] = f'=ROUND({cell}2/{cell}1, 2)'
+                ws[f'{cell}5'].number_format = '0.00%'
+
+        # fold port and ip-version (and protocol?) from report as it's not useful in this case?
+        ws.column_dimensions.group('C', 'G', hidden=True)
+
+        # make headers bold
+        for cell in ['H', 'I', 'J', 'K', 'L', "M", "N", 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z',
+                     'AA', 'AB', 'AC', 'AD', 'AE', 'AF', 'AG', 'AH', 'AI', 'AJ', 'AK', 'AL', 'AM', 'AN', 'AO',
+                     'AP', 'AQ', 'AR', 'AS', 'AT', 'AU', 'AV', 'AW', 'AX', 'AY', 'AZ', 'BA', 'BB', 'BC', 'BD',
+                     'BE', 'BF', 'BG', 'BH', 'BI', 'BJ', 'BK', 'BL', 'BM', 'BN', 'BO', 'BP', 'BQ', 'BR', 'BS',
+                     'BT', 'BU', 'BV', 'BW', 'BX', 'BY', 'BZ']:
+            ws[f'{cell}7'].font = Font(bold=True)
+            ws[f'{cell}8'].font = Font(bold=True)
+
+        # Freeze pane to make navigation easier.
+        ws.freeze_panes = ws['H9']
+
+        # Set the measurements to green/red depending on value using conditional formatting.
+        ws.conditional_formatting.add(
+            'H9:CD9999',
+            ColorScaleRule(start_type='min', start_color='FFDDDD', end_type='max', end_color='DDFFDD')
+        )
+
+        log.debug(ws.title)
+        wb.save(tmp.name)
+
+        return tmp
 
 
 def category_headers(protocol: str = 'dns_soa'):
