@@ -1,10 +1,13 @@
 from datetime import datetime
 
 import pytz
+from django.utils import timezone
 from websecmap.organizations.models import Url
-from websecmap.scanners.models import Endpoint, EndpointGenericScan
+from websecmap.scanners.models import Endpoint, EndpointGenericScan, InternetNLScan
 
-from dashboard.internet_nl_dashboard.models import Account
+from dashboard.internet_nl_dashboard.logic.urllist_dashboard_report import rate_urllists_now
+from dashboard.internet_nl_dashboard.models import Account, AccountInternetNLScan, UrlList
+from dashboard.internet_nl_dashboard.tasks import create_reports_on_finished_scans
 
 
 def make_url_with_endpoint_and_scan():
@@ -25,3 +28,22 @@ def make_url_with_endpoint_and_scan():
         last_scan_moment=day_1, comply_or_explain_is_explained=False, is_the_latest_scan=True)
 
     return account, url, endpoint, scan
+
+
+def create_scan_report(account: Account, urllist: UrlList):
+    rate_urllists_now([urllist])
+
+    # create a scan for this list,
+    scan, created = InternetNLScan.objects.all().get_or_create(
+        pk=1, type='web', success=False, started=False, finished=False)
+
+    ainls = AccountInternetNLScan()
+    ainls.account = account
+    ainls.urllist = urllist
+    ainls.scan = scan
+    scan.finished = True
+    scan.finished_on = timezone.now()
+    ainls.save()
+
+    # finished on is set, so we can make a report now...
+    create_reports_on_finished_scans(urllist)

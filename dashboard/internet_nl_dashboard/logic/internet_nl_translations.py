@@ -1,3 +1,4 @@
+import logging
 import os
 import tempfile
 from pathlib import Path
@@ -8,9 +9,17 @@ import polib
 import requests
 from django.utils.text import slugify
 
+# Todo: refactor this to languages from settings.py
 SUPPORTED_LOCALES = ['nl', 'en']
-VUE_I18N_OUTPUT_PATH = 'dashboard/internet_nl_dashboard/static/js/translations/'
-DJANGO_I18N_OUTPUT_PATH = 'dashboard/internet_nl_dashboard/locale/'
+
+log = logging.getLogger(__package__)
+
+# .parent = logic; .parent.parent = internet_nl_dashboard;
+DASHBOARD_APP_DIRECTORY = Path(__file__).parent.parent
+VUE_I18N_OUTPUT_PATH = f'{DASHBOARD_APP_DIRECTORY}/static/js/translations/'
+DJANGO_I18N_OUTPUT_PATH = f"{DASHBOARD_APP_DIRECTORY}/locale/"
+# log.debug(f"VUE_I18N_OUTPUT_PATH: {VUE_I18N_OUTPUT_PATH}")
+# log.debug(f"DJANGO_I18N_OUTPUT_PATH: {DJANGO_I18N_OUTPUT_PATH}")
 
 
 def convert_internet_nl_content_to_vue():
