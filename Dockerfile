@@ -17,7 +17,8 @@ WORKDIR /source/
 COPY pyproject.toml poetry.lock README.md /source/
 RUN mkdir /source/dashboard
 RUN touch /source/dashboard/__init__.py
-RUN poetry install -v --no-dev --develop dashboard --extras=deploy
+RUN poetry install -v --no-dev --develop dashboard --extras=deploy && \
+	rm -rf /root/.cache/pip /pyenv/src/websecmap/.git
 
 # The app is installed in development mode above. This allow us to replace the fake source
 # used there with the real source here, or use a docker volume to override the source.
