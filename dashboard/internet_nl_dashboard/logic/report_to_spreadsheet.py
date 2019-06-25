@@ -14,9 +14,18 @@ from dashboard.internet_nl_dashboard.logic.internet_nl_translations import (DJAN
                                                                             get_po_as_dictionary)
 from dashboard.internet_nl_dashboard.models import Account, UrlListReport
 
+log = logging.getLogger(__package__)
+
 # Hack to get internet.nl translations (which are inconsistent in naming) to a similar level as it's json counterpart.
 # Todo: Perhaps we should just export the translations to JSON anyway...
-po_file_as_dictionary = get_po_as_dictionary(f"{DJANGO_I18N_OUTPUT_PATH}en/LC_MESSAGES/django.po")
+po_file_location = f"{DJANGO_I18N_OUTPUT_PATH}en/LC_MESSAGES/django.po"
+# log.debug(f"po_file_location: {po_file_location}")
+try:
+    po_file_as_dictionary = get_po_as_dictionary(po_file_location)
+except OSError as e:
+    raise SystemError(f"Missing PO file 'django.po' at {po_file_location}. Note that an exception about "
+                      f"incorrect syntax may be misleading. This is also given when there is no file. "
+                      f"The exception that is given: {e}")
 
 """
 Creates spreadsheets containing report data.
@@ -26,12 +35,9 @@ Done: make sure you can download the spreadsheet in a single click
 Done: add a sane logic to the spreadsheet content
 Done: support ods and xlsx.
 Done: can we support sum rows at the top for boolean values(?), only for excel. Not for ods, which is too bad.
-
-Todo: get column translations. From internet.nl PO files? How do they map to these variables?
-Todo: write some tests for these methods, once they are more table.
+Done: get column translations. From internet.nl PO files? How do they map to these variables?
+Done: write some tests for these methods, once they are more table.
 """
-
-log = logging.getLogger(__package__)
 
 SANE_COLUMN_ORDER = {
     # scanner
