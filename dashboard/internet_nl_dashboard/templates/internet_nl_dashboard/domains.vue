@@ -31,7 +31,6 @@ Fixed: when deleting a list, it is re-added to the list of lists when adding a n
             <p>{{ $t("domain_management.intro") }}</p>
             <p><a href="/upload/">{{ $t("domain_management.bulk_upload_link") }}</a></p>
 
-
             <div class="testresult">
                 <h3 class="panel-title" >
                     <a href="" aria-expanded="false">

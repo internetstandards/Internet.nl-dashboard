@@ -165,7 +165,7 @@
 
         <!-- modal dialogs are below the content to make sure the tab order stays working. -->
         <modal v-if="show_list_settings" @close="cancel_editing_settings()">
-            <h3 slot="header">🖊 {{ $t("domain_management.edit_form.title") }}</h3>
+            <h1 slot="header">🖊 {{ $t("domain_management.edit_form.title") }}</h1>
             <div slot="body">
 
                 <server-response :response="settings_update_response"></server-response>
@@ -202,7 +202,7 @@
         </modal>
 
         <modal v-if="show_deletion" @close="stop_deleting()">
-            <h3 slot="header">{{ $t("domain_management.delete_form.title") }}</h3>
+            <h1 slot="header">{{ $t("domain_management.delete_form.title") }}</h1>
             <div slot="body">
 
                 <server-response :response="delete_response"></server-response>
@@ -233,7 +233,7 @@
         </modal>
 
         <modal v-if="show_scan_now" @close="stop_scan_now()">
-            <h3 slot="header">{{ $t("domain_management.scan_now_form.title") }}</h3>
+            <h1 slot="header">{{ $t("domain_management.scan_now_form.title") }}</h1>
             <div slot="body">
 
                 <server-response :response="scan_now_server_response"></server-response>
@@ -253,7 +253,7 @@
         </modal>
 
         <modal v-if="show_bulk_add_new" @close="stop_bulk_add_new()">
-            <h3 slot="header">{{ $t("domain_management.bulk_add_form.title") }}</h3>
+            <h1 slot="header">{{ $t("domain_management.bulk_add_form.title") }}</h1>
             <div slot="body">
 
                 <server-response :response="bulk_add_new_server_response"></server-response>

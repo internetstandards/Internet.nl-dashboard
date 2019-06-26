@@ -159,13 +159,6 @@ const messages = {
                 no_options: 'No reports available.',
             },
 
-            buttons: {
-                charts: 'Charts',
-                report: 'Report data',
-                download: 'Download data',
-                settings: 'Relevant fields',
-            },
-
             charts: {
                 adoption_timeline: {
                     annotation: {
@@ -209,7 +202,7 @@ const messages = {
                 }
             },
             download: {
-                title: 'Download',
+                title: 'Download raw data',
                 intro: 'Report data is available in the following formats:',
                 xlsx: 'Excel Spreadsheet (Microsoft Office), .xlsx',
                 ods: 'Open Document Spreadsheet (Libre Office), .ods',
@@ -690,13 +683,6 @@ const messages = {
                 select_report: 'Selecteer rapport...',
                 max_elements: 'Maximum aantal rapporten geselecteerd.',
                 no_options: 'Geen rapporten beschikbaar.',
-            },
-
-            buttons: {
-                charts: 'Grafieken',
-                report: 'Metingen',
-                download: 'Download',
-                settings: 'Instellingen',
             },
 
             charts: {

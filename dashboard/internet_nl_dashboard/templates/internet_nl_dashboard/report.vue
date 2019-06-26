@@ -17,61 +17,79 @@
                     :noOptions="$t('report.header.no_options')"
                     :placeholder="$t('report.header.select_report')">
             </multiselect>
+
+            &nbsp;<br>&nbsp;<br>
+
+
+            <template v-if="reports.length && !is_loading">
+
+                <div class="testresult">
+                    <h2 class="panel-title" >
+                        <a href="" aria-expanded="false">
+                            <span class="visuallyhidden">-:</span>
+                            {{ $t("report.download.title") }}
+                            <span class="pre-icon visuallyhidden"></span>
+                            <span class="icon"><img src="/static/images/vendor/internet_nl/push-open.png" alt=""></span>
+                        </a>
+                    </h2>
+                    <div class="panel-content">
+                        <p>{{ $t("report.download.intro") }}</p>
+                        <ul>
+                            <li><a :href="'/data/download-spreadsheet/' + reports[0].id + '/xlsx/'">{{ $t("report.download.xlsx") }}</a></li>
+                            <li><a :href="'/data/download-spreadsheet/' + reports[0].id + '/ods/'">{{ $t("report.download.ods") }}</a></li>
+                            <li><a :href="'/data/download-spreadsheet/' + reports[0].id + '/csv/'">{{ $t("report.download.csv") }}</a></li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="testresult">
+                    <h2 class="panel-title" >
+                        <a href="" aria-expanded="false">
+                            <span class="visuallyhidden">-:</span>
+                            {{ $t("report.settings.title") }}
+                            <span class="pre-icon visuallyhidden"></span>
+                            <span class="icon"><img src="/static/images/vendor/internet_nl/push-open.png" alt=""></span>
+                        </a>
+                    </h2>
+                    <div class="panel-content">
+                        <p>{{ $t("report.settings.intro") }}</p>
+                        <div>
+                            <button @click="load_issue_filters()">{{ $t("report.settings.buttons.reset") }}</button>
+                            <button @click="save_issue_filters()">{{ $t("report.settings.buttons.save") }}</button>
+                        </div>
+                        <div v-if="!this.selected_category">
+                            <div v-for="(category_group, category_name, y) in categories" style="width: 49%; float: left;">
+                                <div v-if="issue_filters[category_name]">
+                                    <h3><input type="checkbox" v-model='issue_filters[category_name].visible'> {{ $t("report." + category_name) }}</h3>
+                                    <span v-for="category_name in category_group">
+                                        <input type="checkbox" v-model='issue_filters[category_name].visible' :id="category_name + '_visible'">
+                                        <label :for="category_name + '_visible'">{{ $t("report." + category_name) }}</label><br />
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                        <div v-if="this.selected_category">
+                            <!-- Only shows mail or web settings if you're looking at that type of report. -->
+                            <div v-for="(category_group, category_name, y) in categories" style="width: calc(33% - 1em); float: left;">
+                                <div v-if="issue_filters[category_name] && categories[selected_report[0]['type']].includes(category_name)">
+                                    <h3><input type="checkbox" v-model='issue_filters[category_name].visible'> {{ $t("report." + category_name) }}</h3>
+                                    <span v-for="category_name in category_group">
+                                        <input type="checkbox" v-model='issue_filters[category_name].visible' :id="category_name + '_visible'">
+                                        <label :for="category_name + '_visible'">{{ $t("report." + category_name) }}</label><br />
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </template>
+
         </div>
 
         <loading :loading="is_loading"></loading>
 
         <div v-if="reports.length && !is_loading">
-            <div class="block fullwidth">
-                <div>
-                <a class="anchorlink" href="#charts"><button role="button">{{ $t("report.buttons.charts") }}</button></a>
-                <a class="anchorlink" href="#report"><button role="button">{{ $t("report.buttons.report") }}</button></a>
-                <button @click="show_downloads = !show_downloads">{{ $t("report.buttons.download") }}</button>
-                <button @click="show_settings = !show_settings">{{ $t("report.buttons.settings") }}</button>
-                </div>
-            </div>
-
-            <div v-if="show_settings" class="block fullwidth">
-                <h2>{{ $t("report.settings.title") }}</h2>
-                <p>{{ $t("report.settings.intro") }}</p>
-                <div>
-                    <button @click="load_issue_filters()">{{ $t("report.settings.buttons.reset") }}</button>
-                    <button @click="save_issue_filters()">{{ $t("report.settings.buttons.save") }}</button>
-                </div>
-                <div v-if="!this.selected_category">
-                    <div v-for="(category_group, category_name, y) in categories" style="width: 49%; float: left;">
-                        <div v-if="issue_filters[category_name]">
-                            <h3><input type="checkbox" v-model='issue_filters[category_name].visible'> {{ $t("report." + category_name) }}</h3>
-                            <span v-for="category_name in category_group">
-                                <input type="checkbox" v-model='issue_filters[category_name].visible' :id="category_name + '_visible'">
-                                <label :for="category_name + '_visible'">{{ $t("report." + category_name) }}</label><br />
-                            </span>
-                        </div>
-                    </div>
-                </div>
-                <div v-if="this.selected_category">
-                    <!-- Only shows mail or web settings if you're looking at that type of report. -->
-                    <div v-for="(category_group, category_name, y) in categories" style="width: calc(33% - 1em); float: left;">
-                        <div v-if="issue_filters[category_name] && categories[selected_report[0]['type']].includes(category_name)">
-                            <h3><input type="checkbox" v-model='issue_filters[category_name].visible'> {{ $t("report." + category_name) }}</h3>
-                            <span v-for="category_name in category_group">
-                                <input type="checkbox" v-model='issue_filters[category_name].visible' :id="category_name + '_visible'">
-                                <label :for="category_name + '_visible'">{{ $t("report." + category_name) }}</label><br />
-                            </span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div v-if="show_downloads" class="block fullwidth">
-                <h2>{{ $t("report.download.title") }}</h2>
-                <p>{{ $t("report.download.intro") }}</p>
-                <ul>
-                    <li><a :href="'/data/download-spreadsheet/' + reports[0].id + '/xlsx/'">{{ $t("report.download.xlsx") }}</a></li>
-                    <li><a :href="'/data/download-spreadsheet/' + reports[0].id + '/ods/'">{{ $t("report.download.ods") }}</a></li>
-                    <li><a :href="'/data/download-spreadsheet/' + reports[0].id + '/csv/'">{{ $t("report.download.csv") }}</a></li>
-                </ul>
-            </div>
 
             <div class="block fullwidth">
                 <h2>{{ $t("report.charts.adoption_timeline.annotation.title") }}</h2>
@@ -443,7 +461,6 @@ vueReport = new Vue({
         },
 
         // settings
-        show_settings: false,
         issue_filters: {
             'web': {'visible': true},
             'web_legacy': {'visible': true},
@@ -592,8 +609,6 @@ vueReport = new Vue({
         compare_oldest_data: "",
         older_data_available: true,
 
-        show_downloads: false,
-
     },
     mounted: function(){
         this.load_issue_filters();
@@ -628,6 +643,9 @@ vueReport = new Vue({
                 this.filtered_urls = data[0].calculation.urls.sort(this.alphabet_sorting);
                 this.get_timeline();
                 this.is_loading = false;
+
+                // new accordions are created, reduce their size.
+                this.$nextTick(() => accordinate());
             }).catch((fail) => {console.log('A loading error occurred: ' + fail);});
         },
         save_issue_filters: function(){
