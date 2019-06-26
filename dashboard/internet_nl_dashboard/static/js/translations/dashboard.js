@@ -68,7 +68,6 @@ const messages = {
                 next_scheduled_scan: 'Next scheduled scan',
                 scanning_disabled: 'Scanning of this list is disabled.',
                 latest_report: 'Latest report',
-                open: 'open',
             },
 
             domains: {
@@ -610,7 +609,6 @@ const messages = {
                 next_scheduled_scan: 'Volgende ingeplande scan',
                 scanning_disabled: 'Scannen van deze lijst is uitgeschakeld.',
                 latest_report: 'Meest actuele rapportage',
-                open: 'openen',
             },
 
             domains: {
