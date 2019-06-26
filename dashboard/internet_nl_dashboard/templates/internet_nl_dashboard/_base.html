@@ -32,6 +32,7 @@ Todo: digitoegankelijk: how to select links with the keyboard? How can we make t
         <script type="text/javascript" src="{% static 'js/vendor/jquery@3.4.0/jquery-3.4.0.js' %}"></script>
         <script type="text/javascript" src="{% static 'js/vendor/internet_nl/headroom-min.js' %}"></script>
         <script type="text/javascript" src="{% static 'js/vendor/internet_nl/functions-min.js' %}"></script>
+        <script type="text/javascript" src="{% static 'js/vendor/internet_nl/internetnl.results-min.js' %}"></script>
         <script type="text/javascript" src="{% static 'js/vendor/vuejs@2.6.8/vue.js' %}"></script>
         <script type="text/javascript" src="{% static 'js/vendor/momentjs@2.24.0/moment-with-locales.js' %}" charset="UTF-8"></script>
         <script type="text/javascript" src="{% static 'js/vendor/vue-i18n@8.9.0/vue-i18n.js' %}"></script>
@@ -44,6 +45,7 @@ Todo: digitoegankelijk: how to select links with the keyboard? How can we make t
         <script type="text/javascript" src="{% static 'js/vendor/jquery@3.4.0/jquery-3.4.0.js' %}"></script>
         <script type="text/javascript" src="{% static 'js/vendor/internet_nl/headroom-min.js' %}"></script>
         <script type="text/javascript" src="{% static 'js/vendor/internet_nl/functions-min.js' %}"></script>
+        <script type="text/javascript" src="{% static 'js/vendor/internet_nl/internetnl.results-min.js' %}"></script>
         <script type="text/javascript" src="{% static 'js/vendor/vuejs@2.6.8/vue.min.js' %}"></script>
         <script type="text/javascript" src="{% static 'js/vendor/momentjs@2.24.0/moment-with-locales.js' %}" charset="UTF-8"></script>
         <script type="text/javascript" src="{% static 'js/vendor/vue-i18n@8.9.0/vue-i18n.js' %}"></script>
@@ -433,6 +435,21 @@ Todo: digitoegankelijk: how to select links with the keyboard? How can we make t
 
 <header>
     <div class="wrap">
+        <div class="hidethis" aria-hidden="true">
+            <span id="panel-button-show">
+                Show details
+            </span>
+            <span id="panel-button-hide">
+                Hide details
+            </span>
+            <span id="panel-item-open">
+                open
+            </span>
+            <span id="panel-item-close">
+                close
+            </span>
+        </div>
+
         <div id="masthead">
             <p id="site-title"><a href="/"><span class="hidden">{% trans "page sitetitle" %}</span></a></p>
             <p id="site-description"><span class="hidden">{% trans "page sitedescription" %}</span></p>

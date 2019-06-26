@@ -3,21 +3,39 @@
     <article class="managed-url-list block fullwidth">
         <span>
             <a :name="list.id"></a>
-            <button v-if="!is_opened" @click="open_list()">📘 {{ list.name }}</button>
-            <button v-if="is_opened" @click="close_list()">📖 {{ list.name }}</button>
+            <h2>
+                <button v-if="!is_opened" @click="open_list()" aria-expanded="false">
+                    <span role="img" :aria-label="$t('icons.list_closed')">📘</span>
+                    {{ list.name }}
+                </button>
+            </h2>
+            <h2>
+                <button v-if="is_opened" @click="close_list()" aria-expanded="true">
+                    <span role="img" :aria-label="$t('icons.list_opened')">📖</span>
+                    {{ list.name }}
+                </button>
+            </h2>
 
             <div v-if="is_opened" style="float:right;">
-                <button @click="start_editing_settings()">📝 {{ $t("domain_management.button_labels.configure") }}</button>
-                <button @click="start_bulk_add_new()">💖 {{ $t("domain_management.button_labels.add_domains") }}</button>
+                <button @click="start_editing_settings()">
+                    <span role="img" :aria-label="$t('icons.settings')">📝</span>
+                    {{ $t("domain_management.button_labels.configure") }}</button>
+                <button @click="start_bulk_add_new()">
+                    <span role="img" :aria-label="$t('icons.bulk_add_new')">💖</span>
+                    {{ $t("domain_management.button_labels.add_domains") }}</button>
                 <template v-if="urls.length">
                     <template v-if="list.enable_scans">
-                        <button v-if="list.scan_now_available" @click="start_scan_now()">🔬 {{ $t("domain_management.button_labels.scan_now") }}</button>
+                        <button v-if="list.scan_now_available" @click="start_scan_now()">
+                            <span role="img" :aria-label="$t('icons.scan')">🔬</span>
+                            {{ $t("domain_management.button_labels.scan_now") }}
+                        </button>
 
                         <button v-if="!list.scan_now_available && !list.last_scan_finished" disabled="disabled"
                         :title='$t("domain_management.button_labels.scan_now_scanning")'>
                             <img width="15" style="border-radius: 50%" src="/static/images/vendor/internet_nl/probe-animation.gif">
                             {{ $t("domain_management.button_labels.scan_now_scanning") }}
                         </button>
+
                         <button v-if="!list.scan_now_available && list.last_scan_finished" disabled="disabled"
                         :title='$t("domain_management.button_labels.timeout_for_24_hours")'>
                             <img width="15" style="border-radius: 50%" src="/static/images/vendor/internet_nl/probe-animation.gif">
@@ -26,7 +44,8 @@
                     </template>
                     <button v-if="!list.enable_scans" disabled="disabled"
                     :title='$t("domain_management.button_labels.scanning_disabled")'>
-                        🔬 {{ $t("domain_management.button_labels.scanning_disabled") }}
+                        <span role="img" :aria-label="$t('icons.scan')">🔬</span>
+                        {{ $t("domain_management.button_labels.scanning_disabled") }}
                     </button>
                 </template>
                 <button @click="start_deleting()">🔪 {{ $t("domain_management.button_labels.delete") }}</button>
@@ -35,67 +54,110 @@
         <br>
 
         <div v-if="is_opened">
-            <h4>{{ $t("domain_management.about_this_list.header") }}</h4>
-            <span v-if="list.last_scan">
-                {{ $t("domain_management.about_this_list.last_scan_started") }}: {{ humanize_date(list.last_scan) }}.
-                <span v-if="!list.last_scan_finished">({{ $t("domain_management.about_this_list.still_running") }})</span>
-                <span v-if="list.last_scan_finished">({{ $t("domain_management.about_this_list.finished") }})</span>
-            </span>
-            <span v-if="!list.last_scan">
-                {{ $t("domain_management.about_this_list.last_scan_started") }}: {{ $t("domain_management.about_this_list.not_scanned_before") }}.
-            </span>
-            <div class="scan-configuration">
-                <div v-if="list.enable_scans">
-                    {{ $t("domain_management.about_this_list.type_of_scan_performed") }}:
-                    <span title="Web scans will be performed" v-if="list.enable_scans && list.scan_type === 'mail'">📨 {{ list.scan_type }}</span>
-                    <span title="Web scans will be performed" v-if="list.enable_scans && list.scan_type === 'web'">🌐 {{ list.scan_type }}</span>
-                    <span title="No scans will be performed" v-if="!list.enable_scans">🚫 {{ list.scan_type }}</span><br>
-                    {{ $t("domain_management.about_this_list.scan_frequency") }}: {{ list.automated_scan_frequency }} <br>
-                    <div v-if="list.automated_scan_frequency !== 'disabled'">
-                        {{ $t("domain_management.about_this_list.next_scheduled_scan") }}: {{ humanize_date(list.scheduled_next_scan) }} <br>
+            <h3>{{ $t("domain_management.about_this_list.header") }}</h3>
+            <p>
+                <span v-if="list.last_scan">
+                    {{ $t("domain_management.about_this_list.last_scan_started") }}: {{ humanize_date(list.last_scan) }}.
+                    <span v-if="!list.last_scan_finished">({{ $t("domain_management.about_this_list.still_running") }})</span>
+                    <span v-if="list.last_scan_finished">({{ $t("domain_management.about_this_list.finished") }})</span>
+                </span>
+                <span v-if="!list.last_scan">
+                    {{ $t("domain_management.about_this_list.last_scan_started") }}: {{ $t("domain_management.about_this_list.not_scanned_before") }}.
+                </span>
+                <template class="scan-configuration">
+                    <div v-if="list.enable_scans">
+                        {{ $t("domain_management.about_this_list.type_of_scan_performed") }}:
+                        <span title="Mail scans will be performed" v-if="list.enable_scans && list.scan_type === 'mail'">
+                            <img src="/static/images/vendor/internet_nl/icon-emailtest.svg" style="height: 16px;">
+                        {{ list.scan_type }}</span>
+                        <span title="Web scans will be performed" v-if="list.enable_scans && list.scan_type === 'web'">
+                            <img src="/static/images/vendor/internet_nl/icon-website-test.svg" style="height: 16px;">
+                            {{ list.scan_type }}</span>
+                        <span title="No scans will be performed" v-if="!list.enable_scans">🚫 {{ list.scan_type }}</span><br>
+                        {{ $t("domain_management.about_this_list.scan_frequency") }}: {{ list.automated_scan_frequency }} <br>
+                        <div v-if="list.automated_scan_frequency !== 'disabled'">
+                            {{ $t("domain_management.about_this_list.next_scheduled_scan") }}: {{ humanize_date(list.scheduled_next_scan) }} <br>
+                        </div>
                     </div>
-                </div>
-                <div v-if="!list.enable_scans">
-                    {{ $t("domain_management.about_this_list.scanning_disabled") }}
-                </div>
-            </div>
-            <span v-if="list.last_report_id">
-                 {{ $t("domain_management.about_this_list.latest_report") }}: {{ humanize_date(list.last_report_date) }}
-                (<a :href="'/reports/' + list.last_report_id" target="_blank">{{ $t("domain_management.about_this_list.open") }}</a>)<br>
-            </span>
+                    <div v-if="!list.enable_scans">
+                        {{ $t("domain_management.about_this_list.scanning_disabled") }}
+                    </div>
+                </template>
+                <span v-if="list.last_report_id">
+                    <a :href="'/reports/' + list.last_report_id" target="_blank">
+                        <span role="img" :aria-label="$t('icons.report')">📊</span>
+                        {{ $t("domain_management.about_this_list.latest_report") }}: {{ humanize_date(list.last_report_date) }}
+                    </a><br>
+                </span>
+            </p>
             <br>
 
-            <h4>{{ $t("domain_management.domains.header") }}</h4>
+            <h3>{{ $t("domain_management.domains.header") }}</h3>
+            <p v-html="$t('domain_management.domains.intro')"></p>
             <br>
+
             <div v-if="!urls.length">
                 <button @click="start_bulk_add_new()">💖 {{ $t("domain_management.button_labels.add_domains") }}</button>
             </div>
-            <div style="column-count: 2;">
-                <div v-for="url in urls" class="url-in-managed-list">
+            <ul style="column-count: 2; list-style: none;">
+                <li v-for="url in urls">
 
-                    <span v-if="url.has_mail_endpoint === true" :title="$t('domain_management.domains.eligeble_mail')">
-                        <a :href="'https://www.internet.nl/mail/' + url.url + '/'" target="_blank">📨</a>
-                    </span>
-                    <span v-if="url.has_mail_endpoint === 'unknown'" :title="$t('domain_management.domains.unknown_eligeble_mail')">❓</span>
-                    <span v-if="url.has_mail_endpoint === false" :title="$t('domain_management.domains.not_eligeble_mail')">🚫</span>
-                    <span v-if="url.has_web_endpoint === true" :title="$t('domain_management.domains.not_eligeble_web')">
-                        <a :href="'https://www.internet.nl/site/' + url.url + '/'" target="_blank">🌐</a>
-                    </span>
-                    <span v-if="url.has_web_endpoint === 'unknown'" :title="$t('domain_management.domains.unknown_eligeble_web')">❓</span>
-                    <span v-if="url.has_web_endpoint === false" :title="$t('domain_management.domains.not_eligeble_web')">🚫</span>
+                    <template v-if="list.scan_type === 'mail'">
+                        <span v-if="url.has_mail_endpoint === true" :title="$t('domain_management.domains.eligeble_mail', [url.url])">
+                            <span role="img" :aria-label="$t('domain_management.domains.eligeble_mail', [url.url])">🌍</span>
+                            <!-- <a :href="'https://www.internet.nl/mail/' + url.url + '/'" target="_blank"></a> -->
+                        </span>
+                        <span v-if="url.has_mail_endpoint === 'unknown'" :title="$t('domain_management.domains.unknown_eligeble_mail', [url.url])">
+                            <span role="img" :aria-label="$t('domain_management.domains.unknown_eligeble_mail', [url.url])">❓</span>
+                        </span>
+                        <span v-if="url.has_mail_endpoint === false" :title="$t('domain_management.domains.not_eligeble_mail', [url.url])">
+                            <span role="img" :aria-label="$t('domain_management.domains.not_eligeble_mail', [url.url])">🚫</span>
+                        </span>
+                    </template>
 
-                    <span title="Edit this domain" @click="start_url_editing(list.id, url.url)">🖊</span>
+                    <template v-if="list.scan_type === 'web'">
+                        <span v-if="url.has_web_endpoint === true" :title="$t('domain_management.domains.not_eligeble_web', [url.url])">
+                            <!-- <a :href="'https://www.internet.nl/site/' + url.url + '/'" target="_blank"></a> -->
+                            <span role="img" :aria-label="$t('domain_management.domains.not_eligeble_web', [url.url])">🌍</span>
+                        </span>
+                        <span v-if="url.has_web_endpoint === 'unknown'" :title="$t('domain_management.domains.unknown_eligeble_web', [url.url])">
+                            <span role="img" :aria-label="$t('domain_management.domains.unknown_eligeble_web', [url.url])">❓</span>
+                        </span>
+                        <span v-if="url.has_web_endpoint === false" :title="$t('domain_management.domains.not_eligeble_web', [url.url])">
+                            <span role="img" :aria-label="$t('domain_management.domains.not_eligeble_web', [url.url])">🚫</span>
+                        </span>
+                    </template>
+
+
+                    <button style="font-size: 12px;" v-if="url_edit !== '' + list.id + url.url" class="inline-edit" :title="$t('domain_management.domains.start_editing_url', [url.url])" @click="start_url_editing(list.id, url.url)" aria-expanded="false">
+                        🖊
+                        <span class="visuallyhidden">{{ $t('domain_management.domains.start_editing_url', [url.url]) }}</span>
+                    </button>
+                    <button style="font-size: 12px;" v-if="url_edit === '' + list.id + url.url" class="inline-edit" :title="$t('domain_management.domains.cancel_editing_url', [url.url])" @click="cancel_edit_url(list.id, url.url)" aria-expanded="true">
+                        🖊
+                        <span class="visuallyhidden">{{ $t('domain_management.domains.cancel_editing_url', [url.url]) }}</span>
+                    </button>
+
                     <a v-if="!url_is_edited(list.id, url.url)" @click="start_url_editing(list.id, url.url)">{{ url.url }}</a>
 
                     <span class="inline-edit" v-if="url_is_edited(list.id, url.url)">
                             <input autofocus :placeholder="url.url" :value="url.url" :id="'' + list.id + url.url">
-                            <button @click="save_edit_url({'list_id': list.id,'url_id': url.id, 'new_url_string': get_url_edit_value()})">{{ $t("domain_management.domains.button_labels.save") }}</button>
-                            <button @click="cancel_edit_url()">{{ $t("domain_management.domains.button_labels.cancel") }}</button>
+                            <button @click="save_edit_url({'list_id': list.id,'url_id': url.id, 'new_url_string': get_url_edit_value()})" :title="$t('domain_management.domains.save_edited_url', [url.url])">
+                                {{ $t("domain_management.domains.button_labels.save") }}
+                                <span class="visuallyhidden">{{ $t('domain_management.domains.save_edited_url', [url.url]) }}</span>
+                            </button>
+                            <button @click="cancel_edit_url()" :title="$t('domain_management.domains.cancel_editing_url', [url.url])">
+                                {{ $t("domain_management.domains.button_labels.cancel") }}
+                                <span class="visuallyhidden">{{ $t('domain_management.domains.cancel_editing_url', [url.url]) }}</span>
+                            </button>
                             <!-- The remove is real, as it will only remove 1 items -->
-                            <button @click="remove_edit_url(list.id, url.id)">{{ $t("domain_management.domains.button_labels.remove") }}</button>
+                            <button @click="remove_edit_url(list.id, url.id)"  :title="$t('domain_management.domains.delete_edited_url', [url.url])">
+                                {{ $t("domain_management.domains.button_labels.remove") }}
+                                <span class="visuallyhidden">{{ $t('domain_management.domains.delete_edited_url', [url.url]) }}</span>
+                            </button>
                     </span>
-                </div>
-            </div>
+                </li>
+            </ul>
             <br>
             <button v-if="urls.length" @click="toggle_view_csv()" value="load">📋 {{ $t("domain_management.button_labels.view_csv") }}</button><br>
             <textarea v-if="view_csv" class="view-csv" :value="csv_value"></textarea>

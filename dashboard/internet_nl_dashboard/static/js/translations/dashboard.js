@@ -1,5 +1,16 @@
 const messages = {
     en: {
+        icons: {
+            list_closed: "List closed",
+            list_opened: "List opened",
+            report: "report",
+            settings: "settings",
+            bulk_add_new: "Add domains in bulk",
+            scan: "scan",
+            can_connect: "Can connect icon",
+            unknown_connectivity: "Unknown connectivity icon",
+            cannot_connect: "Can not connect",
+        },
         menu: {
             admin: 'Admin',
             domains: "Domains",
@@ -18,6 +29,21 @@ const messages = {
             button_create_list_label: 'Create List',
         },
         domain_management: {
+
+            title: "Domains",
+            intro: "Manage lists with domains",
+            bulk_upload_link: "Upload large amount of data by using the Bulk Address uploader, here.",
+
+            icon_legend: {
+                title: "Legend of used icons",
+                intro: "The domains in the lists below will be included in each scan. Before a scan is performed, the eligibility of the " +
+                    "service is checked. This check is always performed for the scan. To give an insight in how connected" +
+                    "these services are, the last known state is presented as the first icon.",
+                can_connect: "Can connect to this service, will (probably) be scanned.",
+                unknown_connectivity: "Unknown if this service is available, will be scanned if available.",
+                cannot_connect: "Service not available, will (probably) not be scanned."
+            },
+
 
             button_labels: {
                 configure: 'Configure',
@@ -47,12 +73,18 @@ const messages = {
 
             domains: {
                 header: 'Domains',
-                eligeble_mail: 'Is eligeble for e-mail scans',
-                unknown_eligeble_mail: 'Not yet known if scanable for mail',
-                not_eligeble_mail: 'Is not eligeble for e-mail scans. Will be checked again when starting a scan.',
-                eligeble_web: 'Is eligeble for web scans',
-                unknown_eligeble_web: 'Not yet known if scannable for web',
-                not_eligeble_web: 'Is not eligeble for web scans. Will be checked again when starting a scan.',
+                intro: "These domains will be included in the scan. Their eligibility for scanning is checked just " +
+                    "before requesting the scan, the information shown here may be outdated.",
+                start_editing_url: 'Edit {0}.',
+                cancel_editing_url: 'Cancel editing and store the original value: {0}',
+                eligeble_mail: '{0} is eligeble for e-mail scans',
+                unknown_eligeble_mail: 'Not yet known if {0} is scanable for mail',
+                not_eligeble_mail: '{0} is not eligeble for e-mail scans. Will be checked again when starting a scan.',
+                eligeble_web: '{0} is eligeble for web scans',
+                unknown_eligeble_web: 'Not yet known if {0} is scannable for web',
+                not_eligeble_web: '{0} is not eligeble for web scans. Will be checked again when starting a scan.',
+                save_edited_url: 'Save changes, the change will be applied to {0}.',
+                delete_edited_url: 'Delete {0} from this list.',
 
                 button_labels: {
                     save: 'Save',

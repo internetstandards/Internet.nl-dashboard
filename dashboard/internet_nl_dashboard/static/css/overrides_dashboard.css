@@ -153,8 +153,22 @@ small {
     color: darkgreen;
 }
 
-.managed-url-list{
-    background-color: ghostwhite;
+.managed-url-list h2 {
+    display: inline;
+    font-size: 1.2em;
+}
+
+.panel-title a .icon {
+    transition: all 200ms ease 0s;
+    width: 1em;
+    height: 1em;
+    background: url("/static/images/vendor/internet_nl/icon-arrow-down.png") center right no-repeat !important;
+    background-image: url("/static/images/vendor/internet_nl/icon-arrow-down.svg"), none !important;
+    background-size: contain
+}
+
+.testresult h3 {
+    margin-top: 0px;
 }
 
 .inline-edit input {
