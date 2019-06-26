@@ -18,8 +18,7 @@
                     :placeholder="$t('report.header.select_report')">
             </multiselect>
 
-            &nbsp;<br>&nbsp;<br>
-
+            &nbsp;<br>
 
             <template v-if="reports.length && !is_loading">
 
@@ -57,32 +56,43 @@
                             <button @click="load_issue_filters()">{{ $t("report.settings.buttons.reset") }}</button>
                             <button @click="save_issue_filters()">{{ $t("report.settings.buttons.save") }}</button>
                         </div>
-                        <div v-if="!this.selected_category">
-                            <div v-for="(category_group, category_name, y) in categories" style="width: 49%; float: left;">
-                                <div v-if="issue_filters[category_name]">
-                                    <h3><input type="checkbox" v-model='issue_filters[category_name].visible'> {{ $t("report." + category_name) }}</h3>
-                                    <span v-for="category_name in category_group">
-                                        <input type="checkbox" v-model='issue_filters[category_name].visible' :id="category_name + '_visible'">
-                                        <label :for="category_name + '_visible'">{{ $t("report." + category_name) }}</label><br />
-                                    </span>
-                                </div>
-                            </div>
-                        </div>
-                        <div v-if="this.selected_category">
-                            <!-- Only shows mail or web settings if you're looking at that type of report. -->
-                            <div v-for="(category_group, category_name, y) in categories" style="width: calc(33% - 1em); float: left;">
-                                <div v-if="issue_filters[category_name] && categories[selected_report[0]['type']].includes(category_name)">
-                                    <h3><input type="checkbox" v-model='issue_filters[category_name].visible'> {{ $t("report." + category_name) }}</h3>
-                                    <span v-for="category_name in category_group">
-                                        <input type="checkbox" v-model='issue_filters[category_name].visible' :id="category_name + '_visible'">
-                                        <label :for="category_name + '_visible'">{{ $t("report." + category_name) }}</label><br />
-                                    </span>
-                                </div>
-                            </div>
-                        </div>
+                        <template v-for="scan_form in scan_methods">
+                            <template v-if="scan_form.name === selected_report[0].type">
+                                <template v-for="category in scan_form.categories">
+                                    <section class="test-header">
+                                        <hr>
+                                        <div class="test-title">
+                                            <h2>
+                                                {{ category.name }}
+                                            </h2>
+                                            <p>
+                                                <template v-for="field in category.fields">
+                                                    <label :for="field.name + '_visible'">
+                                                        <input type="checkbox" v-model="issue_filters[field.name].visible" :id="field.name + '_visible'">
+                                                        View this category.
+                                                    </label>
+                                                </template>
+                                            </p>
+                                        </div>
+                                    </section>
+                                    <section class="testresults">
+                                        <br>
+                                        <template v-for="category in category.categories">
+                                            <div class="test-subsection">{{ category.name }}</div>
+
+                                            <div v-for="field in category.fields" class="testresult">
+                                                <label :for="field.name + '_visible'">
+                                                    <input type="checkbox" v-model="issue_filters[field.name].visible" :id="field.name + '_visible'">
+                                                    {{ $t("report." + field.name) }}
+                                                </label>
+                                            </div>
+                                        </template>
+                                    </section>
+                                </template>
+                            </template>
+                        </template>
                     </div>
                 </div>
-
             </template>
 
         </div>
@@ -129,7 +139,7 @@
                                 :color_scheme="color_scheme"
                                 :chart_data="compare_charts"
                                 @bar_click="select_category"
-                                :axis="relevant_categories_based_on_settings()">
+                                :axis="relevant_categories_based_on_settings">
                         </percentage-bar-chart>
                     </div>
 
@@ -163,111 +173,118 @@
                                 <th style="width: 300px; min-width: 300px; border: 0">
                                     &nbsp;
                                 </th>
-                                <th style="border: 0" class="rotate" v-for="category in relevant_categories_based_on_settings()">
+                                <th style="border: 0" class="rotate" v-for="category in relevant_categories_based_on_settings">
                                     <div>
                                         <span @click="select_category(category)">{{ $t("report." + category) }}</span>
                                     </div>
                                 </th>
                             </tr>
 
-                            <!-- Zoom buttons for accessibility -->
-                            <tr v-if="reports.length" class="summaryrow">
-                                <template v-if="['web', 'mail'].includes(selected_category)">
-                                    <td>
-
-                                    </td>
-                                    <td v-for="category_name in relevant_categories_based_on_settings()">
-                                        <button @click="select_category(category_name)">{{ $t("report.report.zoom.buttons.zoom") }}</button>
-                                    </td>
-                                </template>
-                                <template v-if="!['web', 'mail'].includes(selected_category)">
-                                    <td></td>
-                                    <td :colspan="relevant_categories_based_on_settings().length" style="text-align: center">
-                                    {{ $t("report.report.zoom.zoomed_in_on") }} {{ $t("report." + selected_category) }}.
-                                        <button @click="select_category(selected_report.urllist_scan_type)">
-                                            ❌ {{ $t("report.report.zoom.buttons.remove_zoom") }}
-                                        </button>
-                                    </td>
-                                </template>
-                            </tr>
-
-                            <!-- Summary row, same data as bar chart, but then in numbers.-->
-                            <tr v-if="reports.length" class="summaryrow">
-                                <td>
-                                    <input v-if="selected_report" type="text" v-model="url_filter" id="url_filter" :placeholder="$t('report.report.url_filter')">
-                                </td>
-                                <td v-for="category_name in relevant_categories_based_on_settings()" @click="select_category(category_name)">
-                                    <span v-if="category_name in reports[0].statistics_per_issue_type">
-                                        {{reports[0].statistics_per_issue_type[category_name].pct_ok}}%</span>
-                                </td>
-                            </tr>
-
-
                         </thead>
-                        <tbody v-if="filtered_urls.length" class="gridtable">
-                            <tr v-for="url in filtered_urls" v-if="url.endpoints.length">
-                                <td>{{url.url}}
-                                    <span v-if="selected_report[0].type === 'web'" v-html="original_report_link_from_score(url.endpoints[0].ratings_by_type['internet_nl_web_overall_score'].explanation)"></span>
-                                    <span v-if="selected_report[0].type === 'mail'" v-html="original_report_link_from_score(url.endpoints[0].ratings_by_type['internet_nl_mail_dashboard_overall_score'].explanation)"></span>
-                                </td>
-                                <td class="testresultcell" v-for="category_name in relevant_categories_based_on_settings()" @click="select_category(category_name)">
+
+                        <tbody class="gridtable">
+                            <template>
+                                <!-- Summary row, same data as bar chart, but then in numbers.-->
+                                <tr v-if="reports.length" class="summaryrow">
+                                    <td>
+                                        &nbsp;
+                                    </td>
+                                    <td v-for="category_name in relevant_categories_based_on_settings" @click="select_category(category_name)">
+                                        <span v-if="category_name in reports[0].statistics_per_issue_type">
+                                            {{reports[0].statistics_per_issue_type[category_name].pct_ok}}%</span>
+                                    </td>
+                                </tr>
+
+                                <!-- Zoom buttons for accessibility -->
+                                <tr v-if="reports.length" class="summaryrow">
                                     <template v-if="['web', 'mail'].includes(selected_category)">
-                                        <template v-if="category_name in url.endpoints[0].ratings_by_type">
-                                            <!-- Currently the API just says True or False, we might be able to deduce the right label for a category, but that will take a day or two.
-                                            At the next field update, we'll also make the categories follow the new format of requirement level and testresult so HTTP Security Headers
-                                             here is shown as optional, or info if failed. We can also add a field for baseline NL government then. -->
-                                            <template v-if="url.endpoints[0].ratings_by_type[category_name].ok < 1">
-                                                <span v-if="category_name !== 'internet_nl_web_appsecpriv'" class="category_failed"  :title="$t('report.' + category_name + '_verdict_bad')">
-                                                    {{ $t("report.report.results.failed") }}
-                                                </span>
-                                                <span v-if="category_name === 'internet_nl_web_appsecpriv'" class="category_warning" :title="$t('report.' + category_name + '_verdict_bad')">
-                                                    {{ $t("report.report.results.warning") }}
-                                                </span>
-                                            </template>
-                                            <span class="category_passed" v-if="url.endpoints[0].ratings_by_type[category_name].ok > 0" :title="$t('report.' + category_name + '_verdict_good')">
-                                                {{ $t("report.report.results.passed") }}
-                                            </span>
-                                        </template>
-                                        <span class="" v-if="url.endpoints[0].ratings_by_type[category_name] === undefined">
-                                            {{ $t("report.report.results.unknown") }}
-                                        </span>
+                                        <td>
+                                            <input v-if="selected_report" type="text" v-model="url_filter" id="url_filter" :placeholder="$t('report.report.url_filter')">
+                                        </td>
+                                        <td v-for="category_name in relevant_categories_based_on_settings">
+                                            <button @click="select_category(category_name)">{{ $t("report.report.zoom.buttons.zoom") }}</button>
+                                        </td>
                                     </template>
                                     <template v-if="!['web', 'mail'].includes(selected_category)">
+                                        <td>
+                                            <input v-if="selected_report" type="text" v-model="url_filter" id="url_filter" :placeholder="$t('report.report.url_filter')">
+                                        </td>
+                                        <td :colspan="relevant_categories_based_on_settings.length" style="text-align: center">
+                                        {{ $t("report.report.zoom.zoomed_in_on") }} {{ $t("report." + selected_category) }}.
+                                            <button @click="select_category(selected_report.urllist_scan_type)">
+                                                ❌ {{ $t("report.report.zoom.buttons.remove_zoom") }}
+                                            </button>
+                                        </td>
+                                    </template>
+                                </tr>
+                            </template>
 
-                                        <template v-if="category_name in url.endpoints[0].ratings_by_type">
-                                            <span class="not_applicable" v-if="url.endpoints[0].ratings_by_type[category_name].not_applicable > 0" :title="$t('report.not_applicable')">
-                                                {{ $t("report.report.results.not_applicable") }}
-                                            </span>
-                                            <span class="not_testable" v-if="url.endpoints[0].ratings_by_type[category_name].not_testable > 0" :title="$t('report.not_testable')">
-                                                {{ $t("report.report.results.not_testable") }}
-                                            </span>
-                                            <span class="failed" v-if="url.endpoints[0].ratings_by_type[category_name].high > 0" :title="$t('report.' + category_name + '_verdict_bad')">
-                                                {{ $t("report.report.results.failed") }}
-                                            </span>
-                                            <span class="warning" v-if="url.endpoints[0].ratings_by_type[category_name].medium > 0" :title="$t('report.' + category_name + '_verdict_bad')">
-                                                {{ $t("report.report.results.warning") }}
-                                            </span>
-                                            <span class="info" v-if="url.endpoints[0].ratings_by_type[category_name].low > 0" :title="$t('report.' + category_name + '_verdict_bad')">
-                                                {{ $t("report.report.results.info") }}
-                                            </span>
-                                            <span class="passed" v-if="url.endpoints[0].ratings_by_type[category_name].ok > 0
-                                            && !url.endpoints[0].ratings_by_type[category_name].not_applicable
-                                            && !url.endpoints[0].ratings_by_type[category_name].not_testable" :title="$t('report.' + category_name + '_verdict_good')">
-                                                {{ $t("report.report.results.passed") }}
+                            <template v-if="!filtered_urls.length">
+                                <tr>
+                                    <td :colspan="relevant_categories_based_on_settings.length + 1" style="text-align: center;">😱 {{ $t("report.report.empty_report") }}</td>
+                                </tr>
+                            </template>
+
+                            <template v-if="filtered_urls.length">
+
+                                <tr v-for="url in filtered_urls" v-if="url.endpoints.length">
+                                    <td>{{url.url}}
+                                        <span v-if="selected_report[0].type === 'web'" v-html="original_report_link_from_score(url.endpoints[0].ratings_by_type['internet_nl_web_overall_score'].explanation)"></span>
+                                        <span v-if="selected_report[0].type === 'mail'" v-html="original_report_link_from_score(url.endpoints[0].ratings_by_type['internet_nl_mail_dashboard_overall_score'].explanation)"></span>
+                                    </td>
+                                    <td class="testresultcell" v-for="category_name in relevant_categories_based_on_settings" @click="select_category(category_name)">
+                                        <template v-if="['web', 'mail'].includes(selected_category)">
+                                            <template v-if="category_name in url.endpoints[0].ratings_by_type">
+                                                <!-- Currently the API just says True or False, we might be able to deduce the right label for a category, but that will take a day or two.
+                                                At the next field update, we'll also make the categories follow the new format of requirement level and testresult so HTTP Security Headers
+                                                 here is shown as optional, or info if failed. We can also add a field for baseline NL government then. -->
+                                                <template v-if="url.endpoints[0].ratings_by_type[category_name].ok < 1">
+                                                    <span v-if="category_name !== 'internet_nl_web_appsecpriv'" class="category_failed"  :title="$t('report.' + category_name + '_verdict_bad')">
+                                                        {{ $t("report.report.results.failed") }}
+                                                    </span>
+                                                    <span v-if="category_name === 'internet_nl_web_appsecpriv'" class="category_warning" :title="$t('report.' + category_name + '_verdict_bad')">
+                                                        {{ $t("report.report.results.warning") }}
+                                                    </span>
+                                                </template>
+                                                <span class="category_passed" v-if="url.endpoints[0].ratings_by_type[category_name].ok > 0" :title="$t('report.' + category_name + '_verdict_good')">
+                                                    {{ $t("report.report.results.passed") }}
+                                                </span>
+                                            </template>
+                                            <span class="" v-if="url.endpoints[0].ratings_by_type[category_name] === undefined">
+                                                {{ $t("report.report.results.unknown") }}
                                             </span>
                                         </template>
-                                        <span class="" v-if="url.endpoints[0].ratings_by_type[category_name] === undefined">
-                                            {{ $t("report.report.results.unknown") }}
-                                        </span>
-                                    </template>
-                                </td>
-                            </tr>
+                                        <template v-if="!['web', 'mail'].includes(selected_category)">
 
-                        </tbody>
-                        <tbody v-if="!filtered_urls.length">
-                            <tr>
-                               <td :colspan="relevant_categories_based_on_settings().length + 1" style="text-align: center;">😱 {{ $t("report.report.empty_report") }}</td>
-                            </tr>
+                                            <template v-if="category_name in url.endpoints[0].ratings_by_type">
+                                                <span class="not_applicable" v-if="url.endpoints[0].ratings_by_type[category_name].not_applicable > 0" :title="$t('report.not_applicable')">
+                                                    {{ $t("report.report.results.not_applicable") }}
+                                                </span>
+                                                <span class="not_testable" v-if="url.endpoints[0].ratings_by_type[category_name].not_testable > 0" :title="$t('report.not_testable')">
+                                                    {{ $t("report.report.results.not_testable") }}
+                                                </span>
+                                                <span class="failed" v-if="url.endpoints[0].ratings_by_type[category_name].high > 0" :title="$t('report.' + category_name + '_verdict_bad')">
+                                                    {{ $t("report.report.results.failed") }}
+                                                </span>
+                                                <span class="warning" v-if="url.endpoints[0].ratings_by_type[category_name].medium > 0" :title="$t('report.' + category_name + '_verdict_bad')">
+                                                    {{ $t("report.report.results.warning") }}
+                                                </span>
+                                                <span class="info" v-if="url.endpoints[0].ratings_by_type[category_name].low > 0" :title="$t('report.' + category_name + '_verdict_bad')">
+                                                    {{ $t("report.report.results.info") }}
+                                                </span>
+                                                <span class="passed" v-if="url.endpoints[0].ratings_by_type[category_name].ok > 0
+                                                && !url.endpoints[0].ratings_by_type[category_name].not_applicable
+                                                && !url.endpoints[0].ratings_by_type[category_name].not_testable" :title="$t('report.' + category_name + '_verdict_good')">
+                                                    {{ $t("report.report.results.passed") }}
+                                                </span>
+                                            </template>
+                                            <span class="" v-if="url.endpoints[0].ratings_by_type[category_name] === undefined">
+                                                {{ $t("report.report.results.unknown") }}
+                                            </span>
+                                        </template>
+                                    </td>
+                                </tr>
+                            </template>
                         </tbody>
                     </table>
                 </div>
@@ -304,160 +321,326 @@ vueReport = new Vue({
         // this is the set of urls where filters are applied.
         filtered_urls:[],
 
+        scan_methods: [
+            {
+                name: 'web',
+                categories: [
+                    {
+                        name: 'ipv6',
+                        // key is being used by selected categories to not iterate through fields.
+                        key: 'internet_nl_web_ipv6',
+                        fields: [
+                            {name: 'internet_nl_web_ipv6'}
+                        ],
+
+                        categories: [
+                             {
+                                 name: 'name_servers',
+                                 fields: [
+                                    {name: 'internet_nl_web_ipv6_ns_address'},
+                                    {name: 'internet_nl_web_ipv6_ns_reach'},
+                                ]
+                            },
+                            {
+                                name: 'web_server',
+                                fields: [
+                                    {name: 'internet_nl_web_ipv6_ws_address'},
+                                    {name: 'internet_nl_web_ipv6_ws_reach'},
+                                    {name: 'internet_nl_web_ipv6_ws_similar'},
+                                ]
+                            }
+                        ]
+                    },
+                    {
+                        name: 'dnssec',
+                        key: 'internet_nl_web_dnssec',
+                        fields: [
+                            {
+                                name: 'internet_nl_web_dnssec',
+                            }
+                        ],
+                        categories: [
+                             {
+                                 name: '',
+                                 fields: [
+                                    {name: 'internet_nl_web_dnssec_exist'},
+                                    {name: 'internet_nl_web_dnssec_valid'},
+                                ]
+                            },
+                        ]
+                    },
+                    {
+                        name: 'tls',
+                        key: 'internet_nl_web_tls',
+                        fields: [
+                            {name: 'internet_nl_web_tls'},
+                        ],
+                        categories: [
+                            {
+                                name: 'http',
+                                fields: [
+                                    {name: 'internet_nl_web_https_http_available'},
+                                    {name: 'internet_nl_web_https_http_redirect'},
+                                    {name: 'internet_nl_web_https_http_compress'},
+                                    {name: 'internet_nl_web_https_http_hsts'},
+                                ]
+                            },
+                            {
+                                name: 'tls',
+                                fields: [
+                                    {name: 'internet_nl_web_https_tls_version'},
+                                    {name: 'internet_nl_web_https_tls_ciphers'},
+                                    {name: 'internet_nl_web_https_tls_keyexchange'},
+                                    {name: 'internet_nl_web_https_tls_compress'},
+                                    {name: 'internet_nl_web_https_tls_secreneg'},
+                                    {name: 'internet_nl_web_https_tls_clientreneg'},
+                                ]
+                            },
+                            {
+                                name: 'certificate',
+                                fields: [
+                                    {name: 'internet_nl_web_https_cert_chain'},
+                                    {name: 'internet_nl_web_https_cert_pubkey'},
+                                    {name: 'internet_nl_web_https_cert_sig'},
+                                    {name: 'internet_nl_web_https_cert_domain'},
+                                ]
+                            },
+                            {
+                                name: 'dane',
+                                fields: [
+                                    {name: 'internet_nl_web_https_dane_exist'},
+                                    {name: 'internet_nl_web_https_dane_valid'},
+                                ]
+                            }
+                        ]
+                    },
+                    {
+                        name: 'security_options',
+                        key: 'internet_nl_web_appsecpriv',
+                        fields: [
+                            {
+                                name: 'internet_nl_web_appsecpriv',
+                            },
+                        ],
+
+                        categories: [
+                            {
+                                name: 'HTTP security headers',
+                                fields: [
+                                    {name: 'internet_nl_web_appsecpriv_x_frame_options'},
+                                    {name: 'internet_nl_web_appsecpriv_x_content_type_options'},
+                                    {name: 'internet_nl_web_appsecpriv_x_xss_protection'},
+                                    {name: 'internet_nl_web_appsecpriv_csp'},
+                                    {name: 'internet_nl_web_appsecpriv_referrer_policy'},
+                                ]
+
+                            }
+                        ]
+
+                    },
+                    {
+                        name: 'forum_standardisation',
+                        key: 'web_legacy',
+                        fields: [
+                            {
+                                name: 'web_legacy',
+                            },
+                        ],
+
+                        categories: [
+                            {
+                                name: 'magazine',
+                                fields: [
+                                    {name: 'internet_nl_web_legacy_dnssec'},
+                                    {name: 'internet_nl_web_legacy_tls_available'},
+                                    {name: 'internet_nl_web_legacy_tls_ncsc_web'},
+                                    {name: 'internet_nl_web_legacy_https_enforced'},
+                                    {name: 'internet_nl_web_legacy_hsts'},
+                                    {name: 'internet_nl_web_legacy_ipv6_nameserver'},
+                                    {name: 'internet_nl_web_legacy_ipv6_webserver'},
+                                    {name: 'internet_nl_web_legacy_dane'},
+                                ]
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                name: 'mail',
+                categories: [
+                    {
+                        name: 'IPv6',
+                        key: 'internet_nl_mail_dashboard_ipv6',
+                        fields: [
+                            {
+                                name: 'internet_nl_mail_dashboard_ipv6',
+                            },
+                        ],
+
+                        categories: [
+                             {
+                                 name: 'Name servers',
+                                 fields: [
+                                    {name: 'internet_nl_mail_ipv6_ns_address'},
+                                    {name: 'internet_nl_mail_ipv6_ns_reach'},
+                                ]
+                            },
+                            {
+                                name: 'Mail server(s)',
+                                fields: [
+                                    {name: 'internet_nl_mail_ipv6_mx_address'},
+                                    {name: 'internet_nl_mail_ipv6_mx_reach'},
+                                ]
+                            }
+                        ]
+                    },
+                    {
+                        name: 'DNSSEC',
+                        key: 'internet_nl_mail_dashboard_dnssec',
+                        fields: [
+                            {
+                                name: 'internet_nl_mail_dashboard_dnssec',
+                            }
+                        ],
+                        categories: [
+                             {
+                                 name: 'email address domain',
+                                 fields: [
+                                    {name: 'internet_nl_mail_dnssec_mailto_exist'},
+                                    {name: 'internet_nl_mail_dnssec_mailto_valid'},
+                                ]
+                            },
+                            {
+                                 name: 'mail server domain(s)',
+                                 fields: [
+                                    {name: 'internet_nl_mail_dnssec_mx_exist'},
+                                    {name: 'internet_nl_mail_dnssec_mx_valid'},
+                                ]
+                            },
+                        ]
+                    },
+                    {
+                        name: 'DMARC, DKIM and SPF',
+                        key: 'internet_nl_mail_dashboard_auth',
+                        fields: [
+                            {
+                                name: 'internet_nl_mail_dashboard_auth',
+                            }
+                        ],
+                        categories: [
+                             {
+                                 name: 'DMARC',
+                                 fields: [
+                                     {name: 'internet_nl_mail_auth_dmarc_exist'},
+                                     {name: 'internet_nl_mail_auth_dmarc_policy'},
+                                     {name: 'internet_nl_mail_auth_dmarc_policy_only'},
+                                     {name: 'internet_nl_mail_auth_dmarc_ext_destination'},
+                                ]
+                            },
+                            {
+                                 name: 'DKIM',
+                                 fields: [
+                                    {name: 'internet_nl_mail_auth_dkim_exist'},
+                                ]
+                            },
+                            {
+                                 name: 'SPF',
+                                 fields: [
+                                     {name: 'internet_nl_mail_auth_spf_exist'},
+                                     {name: 'internet_nl_mail_auth_spf_policy'},
+                                ]
+                            },
+                        ]
+                    },
+                    {
+                        name: 'STARTTLS and DANE',
+                        key: 'internet_nl_mail_dashboard_tls',
+                        fields: [
+                            {
+                                name: 'internet_nl_mail_dashboard_tls',
+                            }
+                        ],
+                        categories: [
+                             {
+                                 name: 'TLS',
+                                 fields: [
+                                     {name: 'internet_nl_mail_starttls_tls_available'},
+                                     {name: 'internet_nl_mail_starttls_tls_version'},
+                                     {name: 'internet_nl_mail_starttls_tls_ciphers'},
+                                     {name: 'internet_nl_mail_starttls_tls_keyexchange'},
+                                     {name: 'internet_nl_mail_starttls_tls_compress'},
+                                     {name: 'internet_nl_mail_starttls_tls_secreneg'},
+                                     {name: 'internet_nl_mail_starttls_tls_clientreneg'},
+                                ]
+                            },
+                            {
+                                 name: 'Certificate',
+                                 fields: [
+                                     {name: 'internet_nl_mail_starttls_cert_chain'},
+                                     {name: 'internet_nl_mail_starttls_cert_pubkey'},
+                                     {name: 'internet_nl_mail_starttls_cert_sig'},
+                                     {name: 'internet_nl_mail_starttls_cert_domain'},
+                                ]
+                            },
+                            {
+                                 name: 'DANE',
+                                 fields: [
+                                     {name: 'internet_nl_mail_starttls_dane_exist'},
+                                     {name: 'internet_nl_mail_starttls_dane_valid'},
+                                     {name: 'internet_nl_mail_starttls_dane_rollover'},
+                                ]
+                            },
+                        ]
+                    },
+                    {
+                        name: 'forum_standardisation',
+                        key: 'mail_legacy',
+                        fields: [
+                            {
+                                name: 'mail_legacy',
+                            },
+                        ],
+
+                        categories: [
+                            {
+                                name: 'magazine',
+                                fields: [
+                                    {name: 'internet_nl_mail_legacy_dmarc'},
+                                    {name: 'internet_nl_mail_legacy_dkim'},
+                                    {name: 'internet_nl_mail_legacy_spf'},
+                                    {name: 'internet_nl_mail_legacy_dmarc_policy'},
+                                    {name: 'internet_nl_mail_legacy_spf_policy'},
+                                    {name: 'internet_nl_mail_legacy_start_tls'},
+                                    {name: 'internet_nl_mail_legacy_start_tls_ncsc'},
+                                    {name: 'internet_nl_mail_legacy_dnssec_email_domain'},
+                                    {name: 'internet_nl_mail_legacy_dnssec_mx'},
+                                    {name: 'internet_nl_mail_legacy_dane'},
+                                    {name: 'internet_nl_mail_legacy_ipv6_nameserver'},
+                                    {name: 'internet_nl_mail_legacy_ipv6_mailserver'},
+                                ]
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
+
+        // todo: this could/should be computed.
         categories: {
             // fallback category
-            '': [
-                'mail',
-                'web',
-            ],
-            'web': [
-                'internet_nl_web_ipv6',
-                'internet_nl_web_dnssec',
-                'internet_nl_web_tls',
-                'internet_nl_web_appsecpriv',  // Added 24 May 2019
-                'web_legacy'
-            ],
-
-            'internet_nl_web_ipv6': [
-                'internet_nl_web_ipv6_ns_address',
-                'internet_nl_web_ipv6_ns_reach',
-
-                'internet_nl_web_ipv6_ws_address',
-                'internet_nl_web_ipv6_ws_reach',
-                'internet_nl_web_ipv6_ws_similar',
-            ],
-
-            'internet_nl_web_dnssec': [
-                'internet_nl_web_dnssec_exist',
-                'internet_nl_web_dnssec_valid',
-            ],
-
-            'internet_nl_web_tls': [
-                // HTTP
-                'internet_nl_web_https_http_available',
-                'internet_nl_web_https_http_redirect',
-                'internet_nl_web_https_http_compress',
-                'internet_nl_web_https_http_hsts',
-
-                // TLS
-                'internet_nl_web_https_tls_version',
-                'internet_nl_web_https_tls_ciphers',
-                'internet_nl_web_https_tls_keyexchange',
-                'internet_nl_web_https_tls_compress',
-                'internet_nl_web_https_tls_secreneg',
-                'internet_nl_web_https_tls_clientreneg',
-
-                // Certificate
-                'internet_nl_web_https_cert_chain',
-                'internet_nl_web_https_cert_pubkey',
-                'internet_nl_web_https_cert_sig',
-                'internet_nl_web_https_cert_domain',
-
-                // DANE
-                'internet_nl_web_https_dane_exist',
-                'internet_nl_web_https_dane_valid',
-            ],
-
-            // Added 24 May 2019
-            'internet_nl_web_appsecpriv': [
-                'internet_nl_web_appsecpriv_x_frame_options',
-                'internet_nl_web_appsecpriv_x_content_type_options',
-                'internet_nl_web_appsecpriv_x_xss_protection',
-                'internet_nl_web_appsecpriv_csp',
-                'internet_nl_web_appsecpriv_referrer_policy',
-            ],
-
-            // order as in the magazine
-            'web_legacy': [
-                'internet_nl_web_legacy_dnssec',
-                'internet_nl_web_legacy_tls_available',
-                'internet_nl_web_legacy_tls_ncsc_web',
-                'internet_nl_web_legacy_https_enforced',
-                'internet_nl_web_legacy_hsts',
-                'internet_nl_web_legacy_ipv6_nameserver',
-                'internet_nl_web_legacy_ipv6_webserver',
-                'internet_nl_web_legacy_dane',
-            ],
-
-            'mail': [
-                'internet_nl_mail_dashboard_ipv6',
-                'internet_nl_mail_dashboard_dnssec',
-                'internet_nl_mail_dashboard_auth',
-                'internet_nl_mail_dashboard_tls',
-                'mail_legacy'
-            ],
-
-            'internet_nl_mail_dashboard_ipv6': [
-                // name servers
-                'internet_nl_mail_ipv6_ns_address',
-                'internet_nl_mail_ipv6_ns_reach',
-
-                // mail server(s)
-                'internet_nl_mail_ipv6_mx_address',
-                'internet_nl_mail_ipv6_mx_reach',
-            ],
-
-            'internet_nl_mail_dashboard_dnssec': [
-                // email address domain
-                'internet_nl_mail_dnssec_mailto_exist',
-                'internet_nl_mail_dnssec_mailto_valid',
-
-                // mail server domain(s)
-                'internet_nl_mail_dnssec_mx_exist',
-                'internet_nl_mail_dnssec_mx_valid',
-            ],
-
-            'internet_nl_mail_dashboard_auth': [
-                // DMARC
-                'internet_nl_mail_auth_dmarc_exist',
-                'internet_nl_mail_auth_dmarc_policy',
-                'internet_nl_mail_auth_dmarc_policy_only',  // Added 24th of May 2019
-                'internet_nl_mail_auth_dmarc_ext_destination',  // Added 24th of May 2019
-
-                // DKIM
-                'internet_nl_mail_auth_dkim_exist',
-
-                // SPF
-                'internet_nl_mail_auth_spf_exist',
-                'internet_nl_mail_auth_spf_policy',
-            ],
-
-            'internet_nl_mail_dashboard_tls': [
-                // TLS
-                'internet_nl_mail_starttls_tls_available',
-                'internet_nl_mail_starttls_tls_version',
-                'internet_nl_mail_starttls_tls_ciphers',
-                'internet_nl_mail_starttls_tls_keyexchange',
-                'internet_nl_mail_starttls_tls_compress',
-                'internet_nl_mail_starttls_tls_secreneg',
-                'internet_nl_mail_starttls_tls_clientreneg',
-
-                // Certificate
-                'internet_nl_mail_starttls_cert_chain',
-                'internet_nl_mail_starttls_cert_pubkey',
-                'internet_nl_mail_starttls_cert_sig',
-                'internet_nl_mail_starttls_cert_domain',
-
-                // DANE
-                'internet_nl_mail_starttls_dane_exist',
-                'internet_nl_mail_starttls_dane_valid',
-                'internet_nl_mail_starttls_dane_rollover',
-            ],
-
-            'mail_legacy': [
-                'internet_nl_mail_legacy_dmarc',
-                'internet_nl_mail_legacy_dkim',
-                'internet_nl_mail_legacy_spf',
-                'internet_nl_mail_legacy_dmarc_policy',
-                'internet_nl_mail_legacy_spf_policy',
-                'internet_nl_mail_legacy_start_tls',
-                'internet_nl_mail_legacy_start_tls_ncsc',
-                'internet_nl_mail_legacy_dnssec_email_domain',
-                'internet_nl_mail_legacy_dnssec_mx',
-                'internet_nl_mail_legacy_dane',
-                'internet_nl_mail_legacy_ipv6_nameserver',
-                'internet_nl_mail_legacy_ipv6_mailserver',
-            ],
+            '': [],
+            'web': [],
+            'internet_nl_web_ipv6': [],
+            'internet_nl_web_dnssec': [],
+            'internet_nl_web_tls': [],
+            'internet_nl_web_appsecpriv': [],
+            'web_legacy': [],
+            'mail': [],
+            'internet_nl_mail_dashboard_ipv6': [],
+            'internet_nl_mail_dashboard_dnssec': [],
+            'internet_nl_mail_dashboard_auth': [],
+            'internet_nl_mail_dashboard_tls': [],
+            'mail_legacy': [],
         },
 
         // settings
@@ -738,18 +921,6 @@ vueReport = new Vue({
 
             }).catch((fail) => {console.log('A loading error occurred: ' + fail);});
         },
-        relevant_categories_based_on_settings: function(){
-            let preferred_fields = this.categories[this.selected_category];
-            let returned_fields = [];
-            for(let i = 0; i<preferred_fields.length; i++){
-
-                // When new fields are introduced, the list filters will be outdated and contain missing fields.
-                // todo: fix
-                if(this.issue_filters[preferred_fields[i]].visible)
-                    returned_fields.push(preferred_fields[i])
-            }
-            return returned_fields;
-        },
         select_category: function(category_name){
             if (Object.keys(this.categories).includes(category_name))
                 this.selected_category = category_name;
@@ -842,6 +1013,54 @@ vueReport = new Vue({
                 'list_information': this.selected_report[0].list_name,
                 'number_of_domains': this.original_urls.length
             });
+        },
+
+        relevant_categories_based_on_settings: function(){
+            let preferred_fields = [];  // this.categories[this.selected_category];
+
+            console.log(`Selected category: ${this.selected_category}`);
+
+            this.scan_methods.forEach((scan_method) => {
+                console.log("scan_method " + scan_method.name);
+                if (['web', 'mail'].includes(scan_method.name) && scan_method.name === this.selected_category){
+
+                    scan_method.categories.forEach((category) => {
+
+                        category.fields.forEach((field) => {
+                            console.log(field.name);
+                            preferred_fields.push(field.name);
+                        });
+
+                    });
+
+                } else {
+                    // subcategories, dirty fix using the 'key' field to save a lot of iteration.
+                    scan_method.categories.forEach((category) => {
+                        console.log("category " + category.name);
+                        // Get the fields of the highest level
+                        if (category.key === this.selected_category) {
+                            category.categories.forEach((subcategory) => {
+                                subcategory.fields.forEach((field) => {
+                                    console.log(field.name);
+                                    preferred_fields.push(field.name);
+                                });
+                            });
+                        }
+                    });
+                }
+            });
+
+            console.log(`Preferred fields: ${preferred_fields}`);
+
+            // now determine for each field if they should be visible or not. Perhaps this should be in
+            // the new_categories
+            let returned_fields = [];
+            for(let i = 0; i<preferred_fields.length; i++){
+
+                if(this.issue_filters[preferred_fields[i]].visible)
+                    returned_fields.push(preferred_fields[i])
+            }
+            return returned_fields;
         },
 
     }
