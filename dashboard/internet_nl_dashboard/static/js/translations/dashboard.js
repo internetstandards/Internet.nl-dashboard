@@ -151,6 +151,13 @@ const messages = {
             mail: 'E-Mail',
             web: 'Web',
 
+            fields: {
+                forum_standardistation: {
+                    category_label: 'Forum Standaardisatie',
+                    subcategory_label: 'Magazine',
+                }
+            },
+
             header: {
                 title: 'Reports',
                 intro: '',

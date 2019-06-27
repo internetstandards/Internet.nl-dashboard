@@ -63,7 +63,7 @@
                                         <hr>
                                         <div class="test-title">
                                             <h2>
-                                                {{ category.name }}
+                                                {{ category.label }}
                                             </h2>
                                             <p>
                                                 <template v-for="field in category.fields">
@@ -78,7 +78,7 @@
                                     <section class="testresults">
                                         <br>
                                         <template v-for="category in category.categories">
-                                            <div class="test-subsection">{{ category.name }}</div>
+                                            <div class="test-subsection">{{ category.label }}</div>
 
                                             <div v-for="field in category.fields" class="testresult">
                                                 <label :for="field.name + '_visible'">
@@ -320,310 +320,6 @@ vueReport = new Vue({
 
         // this is the set of urls where filters are applied.
         filtered_urls:[],
-
-        scan_methods: [
-            {
-                name: 'web',
-                categories: [
-                    {
-                        name: 'ipv6',
-                        // key is being used by selected categories to not iterate through fields.
-                        key: 'internet_nl_web_ipv6',
-                        fields: [
-                            {name: 'internet_nl_web_ipv6'}
-                        ],
-
-                        categories: [
-                             {
-                                 name: 'name_servers',
-                                 fields: [
-                                    {name: 'internet_nl_web_ipv6_ns_address'},
-                                    {name: 'internet_nl_web_ipv6_ns_reach'},
-                                ]
-                            },
-                            {
-                                name: 'web_server',
-                                fields: [
-                                    {name: 'internet_nl_web_ipv6_ws_address'},
-                                    {name: 'internet_nl_web_ipv6_ws_reach'},
-                                    {name: 'internet_nl_web_ipv6_ws_similar'},
-                                ]
-                            }
-                        ]
-                    },
-                    {
-                        name: 'dnssec',
-                        key: 'internet_nl_web_dnssec',
-                        fields: [
-                            {
-                                name: 'internet_nl_web_dnssec',
-                            }
-                        ],
-                        categories: [
-                             {
-                                 name: '',
-                                 fields: [
-                                    {name: 'internet_nl_web_dnssec_exist'},
-                                    {name: 'internet_nl_web_dnssec_valid'},
-                                ]
-                            },
-                        ]
-                    },
-                    {
-                        name: 'tls',
-                        key: 'internet_nl_web_tls',
-                        fields: [
-                            {name: 'internet_nl_web_tls'},
-                        ],
-                        categories: [
-                            {
-                                name: 'http',
-                                fields: [
-                                    {name: 'internet_nl_web_https_http_available'},
-                                    {name: 'internet_nl_web_https_http_redirect'},
-                                    {name: 'internet_nl_web_https_http_compress'},
-                                    {name: 'internet_nl_web_https_http_hsts'},
-                                ]
-                            },
-                            {
-                                name: 'tls',
-                                fields: [
-                                    {name: 'internet_nl_web_https_tls_version'},
-                                    {name: 'internet_nl_web_https_tls_ciphers'},
-                                    {name: 'internet_nl_web_https_tls_keyexchange'},
-                                    {name: 'internet_nl_web_https_tls_compress'},
-                                    {name: 'internet_nl_web_https_tls_secreneg'},
-                                    {name: 'internet_nl_web_https_tls_clientreneg'},
-                                ]
-                            },
-                            {
-                                name: 'certificate',
-                                fields: [
-                                    {name: 'internet_nl_web_https_cert_chain'},
-                                    {name: 'internet_nl_web_https_cert_pubkey'},
-                                    {name: 'internet_nl_web_https_cert_sig'},
-                                    {name: 'internet_nl_web_https_cert_domain'},
-                                ]
-                            },
-                            {
-                                name: 'dane',
-                                fields: [
-                                    {name: 'internet_nl_web_https_dane_exist'},
-                                    {name: 'internet_nl_web_https_dane_valid'},
-                                ]
-                            }
-                        ]
-                    },
-                    {
-                        name: 'security_options',
-                        key: 'internet_nl_web_appsecpriv',
-                        fields: [
-                            {
-                                name: 'internet_nl_web_appsecpriv',
-                            },
-                        ],
-
-                        categories: [
-                            {
-                                name: 'HTTP security headers',
-                                fields: [
-                                    {name: 'internet_nl_web_appsecpriv_x_frame_options'},
-                                    {name: 'internet_nl_web_appsecpriv_x_content_type_options'},
-                                    {name: 'internet_nl_web_appsecpriv_x_xss_protection'},
-                                    {name: 'internet_nl_web_appsecpriv_csp'},
-                                    {name: 'internet_nl_web_appsecpriv_referrer_policy'},
-                                ]
-
-                            }
-                        ]
-
-                    },
-                    {
-                        name: 'forum_standardisation',
-                        key: 'web_legacy',
-                        fields: [
-                            {
-                                name: 'web_legacy',
-                            },
-                        ],
-
-                        categories: [
-                            {
-                                name: 'magazine',
-                                fields: [
-                                    {name: 'internet_nl_web_legacy_dnssec'},
-                                    {name: 'internet_nl_web_legacy_tls_available'},
-                                    {name: 'internet_nl_web_legacy_tls_ncsc_web'},
-                                    {name: 'internet_nl_web_legacy_https_enforced'},
-                                    {name: 'internet_nl_web_legacy_hsts'},
-                                    {name: 'internet_nl_web_legacy_ipv6_nameserver'},
-                                    {name: 'internet_nl_web_legacy_ipv6_webserver'},
-                                    {name: 'internet_nl_web_legacy_dane'},
-                                ]
-                            }
-                        ]
-                    }
-                ]
-            },
-            {
-                name: 'mail',
-                categories: [
-                    {
-                        name: 'IPv6',
-                        key: 'internet_nl_mail_dashboard_ipv6',
-                        fields: [
-                            {
-                                name: 'internet_nl_mail_dashboard_ipv6',
-                            },
-                        ],
-
-                        categories: [
-                             {
-                                 name: 'Name servers',
-                                 fields: [
-                                    {name: 'internet_nl_mail_ipv6_ns_address'},
-                                    {name: 'internet_nl_mail_ipv6_ns_reach'},
-                                ]
-                            },
-                            {
-                                name: 'Mail server(s)',
-                                fields: [
-                                    {name: 'internet_nl_mail_ipv6_mx_address'},
-                                    {name: 'internet_nl_mail_ipv6_mx_reach'},
-                                ]
-                            }
-                        ]
-                    },
-                    {
-                        name: 'DNSSEC',
-                        key: 'internet_nl_mail_dashboard_dnssec',
-                        fields: [
-                            {
-                                name: 'internet_nl_mail_dashboard_dnssec',
-                            }
-                        ],
-                        categories: [
-                             {
-                                 name: 'email address domain',
-                                 fields: [
-                                    {name: 'internet_nl_mail_dnssec_mailto_exist'},
-                                    {name: 'internet_nl_mail_dnssec_mailto_valid'},
-                                ]
-                            },
-                            {
-                                 name: 'mail server domain(s)',
-                                 fields: [
-                                    {name: 'internet_nl_mail_dnssec_mx_exist'},
-                                    {name: 'internet_nl_mail_dnssec_mx_valid'},
-                                ]
-                            },
-                        ]
-                    },
-                    {
-                        name: 'DMARC, DKIM and SPF',
-                        key: 'internet_nl_mail_dashboard_auth',
-                        fields: [
-                            {
-                                name: 'internet_nl_mail_dashboard_auth',
-                            }
-                        ],
-                        categories: [
-                             {
-                                 name: 'DMARC',
-                                 fields: [
-                                     {name: 'internet_nl_mail_auth_dmarc_exist'},
-                                     {name: 'internet_nl_mail_auth_dmarc_policy'},
-                                     {name: 'internet_nl_mail_auth_dmarc_policy_only'},
-                                     {name: 'internet_nl_mail_auth_dmarc_ext_destination'},
-                                ]
-                            },
-                            {
-                                 name: 'DKIM',
-                                 fields: [
-                                    {name: 'internet_nl_mail_auth_dkim_exist'},
-                                ]
-                            },
-                            {
-                                 name: 'SPF',
-                                 fields: [
-                                     {name: 'internet_nl_mail_auth_spf_exist'},
-                                     {name: 'internet_nl_mail_auth_spf_policy'},
-                                ]
-                            },
-                        ]
-                    },
-                    {
-                        name: 'STARTTLS and DANE',
-                        key: 'internet_nl_mail_dashboard_tls',
-                        fields: [
-                            {
-                                name: 'internet_nl_mail_dashboard_tls',
-                            }
-                        ],
-                        categories: [
-                             {
-                                 name: 'TLS',
-                                 fields: [
-                                     {name: 'internet_nl_mail_starttls_tls_available'},
-                                     {name: 'internet_nl_mail_starttls_tls_version'},
-                                     {name: 'internet_nl_mail_starttls_tls_ciphers'},
-                                     {name: 'internet_nl_mail_starttls_tls_keyexchange'},
-                                     {name: 'internet_nl_mail_starttls_tls_compress'},
-                                     {name: 'internet_nl_mail_starttls_tls_secreneg'},
-                                     {name: 'internet_nl_mail_starttls_tls_clientreneg'},
-                                ]
-                            },
-                            {
-                                 name: 'Certificate',
-                                 fields: [
-                                     {name: 'internet_nl_mail_starttls_cert_chain'},
-                                     {name: 'internet_nl_mail_starttls_cert_pubkey'},
-                                     {name: 'internet_nl_mail_starttls_cert_sig'},
-                                     {name: 'internet_nl_mail_starttls_cert_domain'},
-                                ]
-                            },
-                            {
-                                 name: 'DANE',
-                                 fields: [
-                                     {name: 'internet_nl_mail_starttls_dane_exist'},
-                                     {name: 'internet_nl_mail_starttls_dane_valid'},
-                                     {name: 'internet_nl_mail_starttls_dane_rollover'},
-                                ]
-                            },
-                        ]
-                    },
-                    {
-                        name: 'forum_standardisation',
-                        key: 'mail_legacy',
-                        fields: [
-                            {
-                                name: 'mail_legacy',
-                            },
-                        ],
-
-                        categories: [
-                            {
-                                name: 'magazine',
-                                fields: [
-                                    {name: 'internet_nl_mail_legacy_dmarc'},
-                                    {name: 'internet_nl_mail_legacy_dkim'},
-                                    {name: 'internet_nl_mail_legacy_spf'},
-                                    {name: 'internet_nl_mail_legacy_dmarc_policy'},
-                                    {name: 'internet_nl_mail_legacy_spf_policy'},
-                                    {name: 'internet_nl_mail_legacy_start_tls'},
-                                    {name: 'internet_nl_mail_legacy_start_tls_ncsc'},
-                                    {name: 'internet_nl_mail_legacy_dnssec_email_domain'},
-                                    {name: 'internet_nl_mail_legacy_dnssec_mx'},
-                                    {name: 'internet_nl_mail_legacy_dane'},
-                                    {name: 'internet_nl_mail_legacy_ipv6_nameserver'},
-                                    {name: 'internet_nl_mail_legacy_ipv6_mailserver'},
-                                ]
-                            }
-                        ]
-                    }
-                ]
-            }
-        ],
 
         // todo: this could/should be computed.
         categories: {
@@ -1013,6 +709,353 @@ vueReport = new Vue({
                 'list_information': this.selected_report[0].list_name,
                 'number_of_domains': this.original_urls.length
             });
+        },
+
+        scan_methods: function() {
+
+            let language = get_cookie('dashboard_language');
+            if (language === undefined || language.length > 3){
+                language = "en"
+            }
+
+            return [
+                {
+                    name: 'web',
+                    label: internet_nl_messages[language].internet_nl.base_test_website_label,
+                    categories: [
+                        {
+                            name: 'ipv6',
+                            label: internet_nl_messages[language].internet_nl.test_siteipv6_label,
+                            // key is being used by selected categories to not iterate through fields.
+                            key: 'internet_nl_web_ipv6',
+                            fields: [
+                                {name: 'internet_nl_web_ipv6'}
+                            ],
+
+                            categories: [
+                                {
+                                    name: 'name_servers',
+                                    // there is NO translations for web, only for mail.
+                                    label: internet_nl_messages[language].internet_nl.results_domain_mail_ipv6_name_servers_label,
+                                    fields: [
+                                        {name: 'internet_nl_web_ipv6_ns_address'},
+                                        {name: 'internet_nl_web_ipv6_ns_reach'},
+                                    ]
+                                },
+                                {
+                                    name: 'web_server',
+                                    label: internet_nl_messages[language].internet_nl.results_domain_ipv6_web_server_label,
+                                    fields: [
+                                        {name: 'internet_nl_web_ipv6_ws_address'},
+                                        {name: 'internet_nl_web_ipv6_ws_reach'},
+                                        {name: 'internet_nl_web_ipv6_ws_similar'},
+                                    ]
+                                }
+                            ]
+                        },
+                        {
+                            name: 'dnssec',
+                            label: internet_nl_messages[language].internet_nl.test_sitednssec_label,
+                            key: 'internet_nl_web_dnssec',
+                            fields: [
+                                {
+                                    name: 'internet_nl_web_dnssec',
+                                }
+                            ],
+                            categories: [
+                                {
+                                    // the exception to the rule
+                                    name: '',
+                                    label: '',
+                                    fields: [
+                                        {name: 'internet_nl_web_dnssec_exist'},
+                                        {name: 'internet_nl_web_dnssec_valid'},
+                                    ]
+                                },
+                            ]
+                        },
+                        {
+                            name: 'tls',
+                            label: internet_nl_messages[language].internet_nl.test_sitetls_label,
+                            key: 'internet_nl_web_tls',
+                            fields: [
+                                {name: 'internet_nl_web_tls'},
+                            ],
+                            categories: [
+                                {
+                                    name: 'http',
+                                    label: internet_nl_messages[language].internet_nl.results_domain_tls_https_label,
+                                    fields: [
+                                        {name: 'internet_nl_web_https_http_available'},
+                                        {name: 'internet_nl_web_https_http_redirect'},
+                                        {name: 'internet_nl_web_https_http_compress'},
+                                        {name: 'internet_nl_web_https_http_hsts'},
+                                    ]
+                                },
+                                {
+                                    name: 'tls',
+                                    label: internet_nl_messages[language].internet_nl.results_domain_tls_tls_label,
+                                    fields: [
+                                        {name: 'internet_nl_web_https_tls_version'},
+                                        {name: 'internet_nl_web_https_tls_ciphers'},
+                                        {name: 'internet_nl_web_https_tls_keyexchange'},
+                                        {name: 'internet_nl_web_https_tls_compress'},
+                                        {name: 'internet_nl_web_https_tls_secreneg'},
+                                        {name: 'internet_nl_web_https_tls_clientreneg'},
+                                    ]
+                                },
+                                {
+                                    name: 'certificate',
+                                    // mail is being reused as there is no alternative translation (!)
+                                    label: internet_nl_messages[language].internet_nl.results_domain_mail_tls_certificate_label,
+                                    fields: [
+                                        {name: 'internet_nl_web_https_cert_chain'},
+                                        {name: 'internet_nl_web_https_cert_pubkey'},
+                                        {name: 'internet_nl_web_https_cert_sig'},
+                                        {name: 'internet_nl_web_https_cert_domain'},
+                                    ]
+                                },
+                                {
+                                    name: 'dane',
+                                    label: internet_nl_messages[language].internet_nl.results_domain_mail_tls_dane_label,
+                                    fields: [
+                                        {name: 'internet_nl_web_https_dane_exist'},
+                                        {name: 'internet_nl_web_https_dane_valid'},
+                                    ]
+                                }
+                            ]
+                        },
+                        {
+                            name: 'security_options',
+                            label: internet_nl_messages[language].internet_nl.test_siteappsecpriv_label,
+                            key: 'internet_nl_web_appsecpriv',
+                            fields: [
+                                {
+                                    name: 'internet_nl_web_appsecpriv',
+                                },
+                            ],
+
+                            categories: [
+                                {
+                                    name: 'HTTP security headers',
+                                    label: internet_nl_messages[language].internet_nl.results_domain_appsecpriv_http_headers_label,
+                                    fields: [
+                                        {name: 'internet_nl_web_appsecpriv_x_frame_options'},
+                                        {name: 'internet_nl_web_appsecpriv_x_content_type_options'},
+                                        {name: 'internet_nl_web_appsecpriv_x_xss_protection'},
+                                        {name: 'internet_nl_web_appsecpriv_csp'},
+                                        {name: 'internet_nl_web_appsecpriv_referrer_policy'},
+                                    ]
+
+                                }
+                            ]
+
+                        },
+                        {
+                            name: 'forum_standardisation',
+                            label: i18n.t('report.fields.forum_standardistation.category_label'),
+                            key: 'web_legacy',
+                            fields: [
+                                {
+                                    name: 'web_legacy',
+                                },
+                            ],
+
+                            categories: [
+                                {
+                                    name: 'magazine',
+                                    label: i18n.t('report.fields.forum_standardistation.subcategory_label'),
+                                    fields: [
+                                        {name: 'internet_nl_web_legacy_dnssec'},
+                                        {name: 'internet_nl_web_legacy_tls_available'},
+                                        {name: 'internet_nl_web_legacy_tls_ncsc_web'},
+                                        {name: 'internet_nl_web_legacy_https_enforced'},
+                                        {name: 'internet_nl_web_legacy_hsts'},
+                                        {name: 'internet_nl_web_legacy_ipv6_nameserver'},
+                                        {name: 'internet_nl_web_legacy_ipv6_webserver'},
+                                        {name: 'internet_nl_web_legacy_dane'},
+                                    ]
+                                }
+                            ]
+                        }
+                    ]
+                },
+                {
+                    name: 'mail',
+                    label: internet_nl_messages[language].internet_nl.base_test_mail_label,
+                    categories: [
+                        {
+                            name: 'IPv6',
+                            label: internet_nl_messages[language].internet_nl.test_mailipv6_label,
+                            key: 'internet_nl_mail_dashboard_ipv6',
+                            fields: [
+                                {
+                                    name: 'internet_nl_mail_dashboard_ipv6',
+                                },
+                            ],
+
+                            categories: [
+                                {
+                                    name: 'Name servers',
+                                    label: internet_nl_messages[language].internet_nl.results_domain_mail_ipv6_name_servers_label,
+                                    fields: [
+                                        {name: 'internet_nl_mail_ipv6_ns_address'},
+                                        {name: 'internet_nl_mail_ipv6_ns_reach'},
+                                    ]
+                                },
+                                {
+                                    name: 'Mail server(s)',
+                                    label: internet_nl_messages[language].internet_nl.results_mail_ipv6_mail_servers_label,
+                                    fields: [
+                                        {name: 'internet_nl_mail_ipv6_mx_address'},
+                                        {name: 'internet_nl_mail_ipv6_mx_reach'},
+                                    ]
+                                }
+                            ]
+                        },
+                        {
+                            name: 'DNSSEC',
+                            label: internet_nl_messages[language].internet_nl.test_maildnssec_label,
+                            key: 'internet_nl_mail_dashboard_dnssec',
+                            fields: [
+                                {
+                                    name: 'internet_nl_mail_dashboard_dnssec',
+                                }
+                            ],
+                            categories: [
+                                {
+                                    name: 'email address domain',
+                                    label: internet_nl_messages[language].internet_nl.results_mail_dnssec_domain_label,
+                                    fields: [
+                                        {name: 'internet_nl_mail_dnssec_mailto_exist'},
+                                        {name: 'internet_nl_mail_dnssec_mailto_valid'},
+                                    ]
+                                },
+                                {
+                                    name: 'mail server domain(s)',
+                                    label: internet_nl_messages[language].internet_nl.results_mail_dnssec_mail_servers_label,
+                                    fields: [
+                                        {name: 'internet_nl_mail_dnssec_mx_exist'},
+                                        {name: 'internet_nl_mail_dnssec_mx_valid'},
+                                    ]
+                                },
+                            ]
+                        },
+                        {
+                            name: 'DMARC, DKIM and SPF',
+                            label: internet_nl_messages[language].internet_nl.test_mailauth_label,
+                            key: 'internet_nl_mail_dashboard_auth',
+                            fields: [
+                                {
+                                    name: 'internet_nl_mail_dashboard_auth',
+                                }
+                            ],
+                            categories: [
+                                {
+                                    name: 'DMARC',
+                                    label: internet_nl_messages[language].internet_nl.results_mail_auth_dmarc_label,
+                                    fields: [
+                                        {name: 'internet_nl_mail_auth_dmarc_exist'},
+                                        {name: 'internet_nl_mail_auth_dmarc_policy'},
+                                        {name: 'internet_nl_mail_auth_dmarc_policy_only'},
+                                        {name: 'internet_nl_mail_auth_dmarc_ext_destination'},
+                                    ]
+                                },
+                                {
+                                    name: 'DKIM',
+                                    label: internet_nl_messages[language].internet_nl.results_mail_auth_dkim_label,
+                                    fields: [
+                                        {name: 'internet_nl_mail_auth_dkim_exist'},
+                                    ]
+                                },
+                                {
+                                    name: 'SPF',
+                                    label: internet_nl_messages[language].internet_nl.results_mail_auth_spf_label,
+                                    fields: [
+                                        {name: 'internet_nl_mail_auth_spf_exist'},
+                                        {name: 'internet_nl_mail_auth_spf_policy'},
+                                    ]
+                                },
+                            ]
+                        },
+                        {
+                            name: 'STARTTLS and DANE',
+                            label: internet_nl_messages[language].internet_nl.test_mailtls_label,
+                            key: 'internet_nl_mail_dashboard_tls',
+                            fields: [
+                                {
+                                    name: 'internet_nl_mail_dashboard_tls',
+                                }
+                            ],
+                            categories: [
+                                {
+                                    name: 'TLS',
+                                    label: internet_nl_messages[language].internet_nl.results_mail_tls_starttls_label,
+                                    fields: [
+                                        {name: 'internet_nl_mail_starttls_tls_available'},
+                                        {name: 'internet_nl_mail_starttls_tls_version'},
+                                        {name: 'internet_nl_mail_starttls_tls_ciphers'},
+                                        {name: 'internet_nl_mail_starttls_tls_keyexchange'},
+                                        {name: 'internet_nl_mail_starttls_tls_compress'},
+                                        {name: 'internet_nl_mail_starttls_tls_secreneg'},
+                                        {name: 'internet_nl_mail_starttls_tls_clientreneg'},
+                                    ]
+                                },
+                                {
+                                    name: 'Certificate',
+                                    label: internet_nl_messages[language].internet_nl.results_domain_mail_tls_certificate_label,
+                                    fields: [
+                                        {name: 'internet_nl_mail_starttls_cert_chain'},
+                                        {name: 'internet_nl_mail_starttls_cert_pubkey'},
+                                        {name: 'internet_nl_mail_starttls_cert_sig'},
+                                        {name: 'internet_nl_mail_starttls_cert_domain'},
+                                    ]
+                                },
+                                {
+                                    name: 'DANE',
+                                    label: internet_nl_messages[language].internet_nl.results_domain_mail_tls_dane_label,
+                                    fields: [
+                                        {name: 'internet_nl_mail_starttls_dane_exist'},
+                                        {name: 'internet_nl_mail_starttls_dane_valid'},
+                                        {name: 'internet_nl_mail_starttls_dane_rollover'},
+                                    ]
+                                },
+                            ]
+                        },
+                        {
+                            name: 'forum_standardisation',
+                            label: i18n.t('report.fields.forum_standardistation.category_label'),
+                            key: 'mail_legacy',
+                            fields: [
+                                {
+                                    name: 'mail_legacy',
+                                },
+                            ],
+
+                            categories: [
+                                {
+                                    name: 'magazine',
+                                    label: i18n.t('report.fields.forum_standardistation.subcategory_label'),
+                                    fields: [
+                                        {name: 'internet_nl_mail_legacy_dmarc'},
+                                        {name: 'internet_nl_mail_legacy_dkim'},
+                                        {name: 'internet_nl_mail_legacy_spf'},
+                                        {name: 'internet_nl_mail_legacy_dmarc_policy'},
+                                        {name: 'internet_nl_mail_legacy_spf_policy'},
+                                        {name: 'internet_nl_mail_legacy_start_tls'},
+                                        {name: 'internet_nl_mail_legacy_start_tls_ncsc'},
+                                        {name: 'internet_nl_mail_legacy_dnssec_email_domain'},
+                                        {name: 'internet_nl_mail_legacy_dnssec_mx'},
+                                        {name: 'internet_nl_mail_legacy_dane'},
+                                        {name: 'internet_nl_mail_legacy_ipv6_nameserver'},
+                                        {name: 'internet_nl_mail_legacy_ipv6_mailserver'},
+                                    ]
+                                }
+                            ]
+                        }
+                    ]
+                }
+            ];
         },
 
         relevant_categories_based_on_settings: function(){
