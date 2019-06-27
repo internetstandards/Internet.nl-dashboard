@@ -164,7 +164,7 @@ const messages = {
 
             header: {
                 title: 'Reports',
-                intro: '',
+                intro: 'Select one or multiple reports, these will be displayed below.',
                 select_report: 'Select report...',
                 max_elements: 'Maximum number of reports selected.',
                 no_options: 'No reports available.',
@@ -175,11 +175,13 @@ const messages = {
                     annotation: {
                         title: 'Adoption of standards over time',
                         intro: 'This graph compares various measurements of the same list over time. ' +
-                            'This provides a visual indication of the progress of standards adoption.'
+                            'This provides a visual indication of the progress of standards adoption. A table with the ' +
+                            'same values is avaiable below.'
                     },
                     title: 'Average adoption of standards. Overall.',
                     yAxis_label: 'Adoption',
                     xAxis_label: 'Date',
+                    accessibility_text: "A table with the content of this graph is shown below.",
                 },
                 adoption_bar_chart: {
                     annotation: {
@@ -188,6 +190,7 @@ const messages = {
                     },
                     title: 'Average adoption of standards, %{list_information}, %{number_of_domains} domains.',
                     yAxis_label: 'Adoption',
+                    accessibility_text: "A table with the content of this graph is shown below.",
                 },
                 cumulative_adoption_bar_chart: {
                     annotation: {
@@ -196,6 +199,7 @@ const messages = {
                     },
                     title: 'Average adoption of standards over %{number_of_reports} reports.',
                     yAxis_label: 'Adoption',
+                    accessibility_text: "A table with the content of this graph is shown below.",
                 }
             },
             report: {
@@ -232,11 +236,13 @@ const messages = {
                 csv: 'Comma Separated (for programmers), .csv',
             },
             settings: {
-                title: 'Select visisble metrics',
+                title: 'Select visible metrics',
                 intro: 'To retain focus, select the fields that are relevant to your organization.',
                 buttons: {
                     reset: 'Reset',
+                    reset_label: 'Resets all values to their original status.',
                     save: 'Save',
+                    reset_label: 'Save the changes made in this form.',
                 }
             },
 

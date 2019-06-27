@@ -5,6 +5,7 @@
             <h1>{{ $t("report.header.title") }}</h1>
             <p>{{ $t("report.header.intro") }}</p>
 
+            <!--
             <multiselect
                     id="select_report"
                     v-model="selected_report"
@@ -17,8 +18,20 @@
                     :noOptions="$t('report.header.no_options')"
                     :placeholder="$t('report.header.select_report')">
             </multiselect>
+            -->
+            <div aria-live="polite">
+                <v-select
+                        v-model="selected_report"
+                        :options="available_recent_reports"
+                        label="label"
+                        :multiple="true"
+                >
+                    <slot name="no-options">{{ $t('report.header.no_options') }}</slot>
 
-            &nbsp;<br>
+                </v-select>
+            </div>
+
+            <br><br>
 
             <template v-if="reports.length && !is_loading">
 
@@ -33,7 +46,7 @@
                     </h2>
                     <div class="panel-content">
                         <p>{{ $t("report.download.intro") }}</p>
-                        <ul>
+                        <ul style="list-style: disc !important;">
                             <li><a :href="'/data/download-spreadsheet/' + reports[0].id + '/xlsx/'">{{ $t("report.download.xlsx") }}</a></li>
                             <li><a :href="'/data/download-spreadsheet/' + reports[0].id + '/ods/'">{{ $t("report.download.ods") }}</a></li>
                             <li><a :href="'/data/download-spreadsheet/' + reports[0].id + '/csv/'">{{ $t("report.download.csv") }}</a></li>
@@ -53,8 +66,8 @@
                     <div class="panel-content">
                         <p>{{ $t("report.settings.intro") }}</p>
                         <div>
-                            <button @click="load_issue_filters()">{{ $t("report.settings.buttons.reset") }}</button>
-                            <button @click="save_issue_filters()">{{ $t("report.settings.buttons.save") }}</button>
+                            <button @click="load_issue_filters()">{{ $t("report.settings.buttons.reset") }}<span class="visuallyhidden"></span></button>
+                            <button @click="save_issue_filters()">{{ $t("report.settings.buttons.save") }}<span class="visuallyhidden"></span></button>
                         </div>
                         <template v-for="scan_form in scan_methods">
                             <template v-if="scan_form.name === selected_report[0].type">
@@ -145,7 +158,7 @@
                                 :color_scheme="color_scheme"
                                 :translation_key="'report.charts.adoption_timeline'"
                                 :chart_data="issue_timeline_of_related_urllist"
-                                :accessibility_text="'A table with the content of this graph is shown below.'"
+                                :accessibility_text="$t('report.charts.adoption_timeline.accessibility_text')"
                                 :axis="['pct_ok']">
                         </line-chart>
 
@@ -198,7 +211,7 @@
                                         :translation_key="'report.charts.adoption_bar_chart'"
                                         :color_scheme="color_scheme"
                                         :chart_data="compare_charts"
-                                        :accessibility_text="'A table with the content of this graph is shown below.'"
+                                        :accessibility_text="$t('report.charts.adoption_bar_chart.accessibility_text')"
                                         @bar_click="select_category"
                                         :axis="fields_from_categories(scan_form)">
                                 </percentage-bar-chart>
@@ -207,31 +220,62 @@
 
 
                         <template v-for="category in scan_form.categories">
-                            <div class="testresult" v-if="is_visible(category.key)">
-                                <h3 class="panel-title">
-                                    <a href="" aria-expanded="false">
-                                        <span class="visuallyhidden">-:</span>
-                                        {{ category.label }}
-                                        <span class="pre-icon visuallyhidden"></span>
-                                        <span class="icon"><img src="/static/images/vendor/internet_nl/push-open.png" alt=""></span>
-                                    </a>
-                                </h3>
-                                <div class="panel-content">
-                                    <div style="overflow: auto; width: 100%">
-                                        <div class="chart-container" style="position: relative; height:500px; width:100%; min-width: 950px;">
-                                            <percentage-bar-chart
-                                                    :title="graph_bar_chart_title"
-                                                    :translation_key="'report.charts.adoption_bar_chart'"
-                                                    :color_scheme="color_scheme"
-                                                    :chart_data="compare_charts"
-                                                    :accessibility_text="'A table with the content of this graph is shown below.'"
-                                                    @bar_click="select_category"
-                                                    :axis="fields_from_categories(category)">
-                                            </percentage-bar-chart>
+                            <template v-if="is_visible(category.key)">
+                                <div class="testresult">
+                                    <h3 class="panel-title">
+                                        <a href="" aria-expanded="false">
+                                            <span class="visuallyhidden">-:</span>
+                                            {{ category.label }}
+                                            <span class="pre-icon visuallyhidden"></span>
+                                            <span class="icon"><img src="/static/images/vendor/internet_nl/push-open.png" alt=""></span>
+                                        </a>
+                                    </h3>
+                                    <div class="panel-content">
+                                        <div style="overflow: auto; width: 100%">
+                                            <div class="chart-container" style="position: relative; height:500px; width:100%; min-width: 950px;">
+                                                <percentage-bar-chart
+                                                        :title="graph_bar_chart_title"
+                                                        :translation_key="'report.charts.adoption_bar_chart'"
+                                                        :color_scheme="color_scheme"
+                                                        :chart_data="compare_charts"
+                                                        :accessibility_text="$t('report.charts.adoption_bar_chart.accessibility_text')"
+                                                        @bar_click="select_category"
+                                                        :axis="fields_from_categories(category)">
+                                                </percentage-bar-chart>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
-                            </div>
+
+                                <template v-for="subcategory in category.categories">
+                                    <!-- Visibility depends on parent category, the labels themselves cannot yet be filtered for visibility. -->
+                                    <div class="testresult" style="margin-left: 2.2em;">
+                                        <h4 class="panel-title">
+                                            <a href="" aria-expanded="false">
+                                                <span class="visuallyhidden">-:</span>
+                                                {{ subcategory.label }}
+                                                <span class="pre-icon visuallyhidden"></span>
+                                                <span class="icon"><img src="/static/images/vendor/internet_nl/push-open.png" alt=""></span>
+                                            </a>
+                                        </h4>
+                                        <div class="panel-content">
+                                            <div style="overflow: auto; width: 100%">
+                                                <div class="chart-container" style="position: relative; height:500px; width:100%; min-width: 950px;">
+                                                    <percentage-bar-chart
+                                                            :title="graph_bar_chart_title"
+                                                            :translation_key="'report.charts.adoption_bar_chart'"
+                                                            :color_scheme="color_scheme"
+                                                            :chart_data="compare_charts"
+                                                            :accessibility_text="$t('report.charts.adoption_bar_chart.accessibility_text')"
+                                                            :axis="fields_from_self(subcategory)">
+                                                    </percentage-bar-chart>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </template>
+
+                            </template>
                         </template>
 
                     </template>
@@ -256,7 +300,7 @@
                                         :translation_key="'report.charts.adoption_bar_chart'"
                                         :color_scheme="color_scheme"
                                         :chart_data="compare_charts"
-                                        :accessibility_text="'A table with the content of this graph is shown below.'"
+                                        :accessibility_text="$t('report.charts.cumulative_adoption_bar_chart.accessibility_text')"
                                         @bar_click="select_category"
                                         :axis="fields_from_categories(scan_form)">
                                 </cumulative-percentage-bar-chart>
@@ -264,32 +308,64 @@
                         </div>
 
                         <template v-for="category in scan_form.categories">
-                            <div class="testresult" v-if="is_visible(category.key)">
-                                <h3 class="panel-title">
-                                    <a href="" aria-expanded="false">
-                                        <span class="visuallyhidden">-:</span>
-                                        {{ category.label }}
-                                        <span class="pre-icon visuallyhidden"></span>
-                                        <span class="icon"><img src="/static/images/vendor/internet_nl/push-open.png" alt=""></span>
-                                    </a>
-                                </h3>
-                                <div class="panel-content">
-                                    <div style="overflow: auto; width: 100%">
-                                        <div class="chart-container" style="position: relative; height:500px; width:100%; min-width: 950px;">
-                                            <cumulative-percentage-bar-chart
-                                                    :title="$t('report.charts.cumulative_adoption_bar_chart.title', {
-                                                        'number_of_reports': compare_charts.length})"
-                                                    :translation_key="'report.charts.adoption_bar_chart'"
-                                                    :color_scheme="color_scheme"
-                                                    :chart_data="compare_charts"
-                                                    :accessibility_text="'A table with the content of this graph is shown below.'"
-                                                    @bar_click="select_category"
-                                                    :axis="fields_from_categories(category)">
-                                            </cumulative-percentage-bar-chart>
+                            <template v-if="is_visible(category.key)">
+                                <div class="testresult">
+                                    <h3 class="panel-title">
+                                        <a href="" aria-expanded="false">
+                                            <span class="visuallyhidden">-:</span>
+                                            {{ category.label }}
+                                            <span class="pre-icon visuallyhidden"></span>
+                                            <span class="icon"><img src="/static/images/vendor/internet_nl/push-open.png" alt=""></span>
+                                        </a>
+                                    </h3>
+                                    <div class="panel-content">
+                                        <div style="overflow: auto; width: 100%">
+                                            <div class="chart-container" style="position: relative; height:500px; width:100%; min-width: 950px;">
+                                                <cumulative-percentage-bar-chart
+                                                        :title="$t('report.charts.cumulative_adoption_bar_chart.title', {
+                                                            'number_of_reports': compare_charts.length})"
+                                                        :translation_key="'report.charts.adoption_bar_chart'"
+                                                        :color_scheme="color_scheme"
+                                                        :chart_data="compare_charts"
+                                                        :accessibility_text="$t('report.charts.cumulative_adoption_bar_chart.accessibility_text')"
+                                                        @bar_click="select_category"
+                                                        :axis="fields_from_categories(category)">
+                                                </cumulative-percentage-bar-chart>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
-                            </div>
+
+                                <template v-for="subcategory in category.categories">
+                                    <!-- Visibility depends on parent category, the labels themselves cannot yet be filtered for visibility. -->
+                                    <div class="testresult" style="margin-left: 2.2em;">
+                                        <h4 class="panel-title">
+                                            <a href="" aria-expanded="false">
+                                                <span class="visuallyhidden">-:</span>
+                                                {{ subcategory.label }}
+                                                <span class="pre-icon visuallyhidden"></span>
+                                                <span class="icon"><img src="/static/images/vendor/internet_nl/push-open.png" alt=""></span>
+                                            </a>
+                                        </h4>
+                                        <div class="panel-content">
+                                            <div style="overflow: auto; width: 100%">
+                                                <div class="chart-container" style="position: relative; height:500px; width:100%; min-width: 950px;">
+                                                    <cumulative-percentage-bar-chart
+                                                            :title="graph_bar_chart_title"
+                                                            :translation_key="'report.charts.adoption_bar_chart'"
+                                                            :color_scheme="color_scheme"
+                                                            :chart_data="compare_charts"
+                                                            :accessibility_text="$t('report.charts.adoption_bar_chart.accessibility_text')"
+                                                            :axis="fields_from_self(subcategory)">
+                                                    </cumulative-percentage-bar-chart>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </template>
+
+
+                            </template>
                         </template>
 
                     </template>
@@ -815,6 +891,24 @@ vueReport = new Vue({
                     fields.push(field.name);
                 });
 
+            });
+
+            let returned_fields = [];
+            for(let i = 0; i<fields.length; i++){
+
+                if(this.issue_filters[fields[i]].visible)
+                    returned_fields.push(fields[i])
+            }
+            return returned_fields;
+        },
+        fields_from_self(category){
+            let fields = [];
+
+            category.fields.forEach((field) => {
+                fields.push(field.name);
+            });
+            category.additional_fields.forEach((field) => {
+                fields.push(field.name);
             });
 
             let returned_fields = [];
