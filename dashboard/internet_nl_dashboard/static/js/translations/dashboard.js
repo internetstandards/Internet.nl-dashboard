@@ -155,7 +155,10 @@ const messages = {
                 forum_standardistation: {
                     category_label: 'Forum Standaardisatie',
                     subcategory_label: 'Magazine',
-                }
+                },
+                additional_fields: {
+                    label: 'Additional fields',
+                },
             },
 
             header: {

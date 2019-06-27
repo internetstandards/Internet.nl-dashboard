@@ -58,20 +58,42 @@
                         </div>
                         <template v-for="scan_form in scan_methods">
                             <template v-if="scan_form.name === selected_report[0].type">
+
+                                <h3 style="font-size: 2em; margin-top: 20px; margin-bottom: 10px;">{{ scan_form.label }}</h3>
+
+                                <template v-if="scan_form.additional_fields.length">
+                                    <div class="test-subsection">{{ $t("report.fields.additional_fields.label") }}</div>
+                                    <div v-for="field in scan_form.additional_fields" class="testresult">
+                                    <label :for="field.name + '_visible'">
+                                        <input type="checkbox" v-model="issue_filters[field.name].visible" :id="field.name + '_visible'">
+                                        {{ $t("report." + field.name) }}
+                                    </label>
+                                    </div>
+                                </template>
+
                                 <template v-for="category in scan_form.categories">
                                     <section class="test-header">
                                         <hr>
                                         <div class="test-title">
-                                            <h2>
-                                                {{ category.label }}
-                                            </h2>
+                                            <h4 style="font-size: 1.6em; margin-top: 20px; margin-bottom: 10px;">{{ category.label }}</h4>
                                             <p>
                                                 <template v-for="field in category.fields">
                                                     <label :for="field.name + '_visible'">
                                                         <input type="checkbox" v-model="issue_filters[field.name].visible" :id="field.name + '_visible'">
-                                                        View this category.
+                                                        View this category
                                                     </label>
                                                 </template>
+
+                                                <template v-if="category.additional_fields.length">
+                                                    <div class="test-subsection">{{ $t("report.fields.additional_fields.label") }}</div>
+                                                    <div v-for="field in category.additional_fields" class="testresult">
+                                                    <label :for="field.name + '_visible'">
+                                                        <input type="checkbox" v-model="issue_filters[field.name].visible" :id="field.name + '_visible'">
+                                                        {{ $t("report." + field.name) }}
+                                                    </label>
+                                                    </div>
+                                                </template>
+
                                             </p>
                                         </div>
                                     </section>
@@ -86,6 +108,17 @@
                                                     {{ $t("report." + field.name) }}
                                                 </label>
                                             </div>
+
+                                            <template v-if="category.additional_fields.length">
+                                                <div class="test-subsection">{{ $t("report.fields.additional_fields.label") }}</div>
+                                                <div v-for="field in category.additional_fields" class="testresult">
+                                                <label :for="field.name + '_visible'">
+                                                    <input type="checkbox" v-model="issue_filters[field.name].visible" :id="field.name + '_visible'">
+                                                    {{ $t("report." + field.name) }}
+                                                </label>
+                                                </div>
+                                            </template>
+
                                         </template>
                                     </section>
                                 </template>
@@ -430,10 +463,10 @@ vueReport = new Vue({
             'internet_nl_mail_auth_dmarc_ext_destination': {'visible': true},  // Added 24th of May 2019
 
             // no feature flags in report
-            //'internet_nl_mail_non_sending_domain': {'visible': true},  // Added 24th of May 2019
-            //'internet_nl_mail_server_configured': {'visible': true},  // Added 24th of May 2019
-            //'internet_nl_mail_servers_testable': {'visible': true},   // Added 24th of May 2019
-            //'internet_nl_mail_starttls_dane_ta': {'visible': true},  // Added 24th of May 2019
+            'internet_nl_mail_non_sending_domain': {'visible': false},  // Added 24th of May 2019
+            'internet_nl_mail_server_configured': {'visible': false},  // Added 24th of May 2019
+            'internet_nl_mail_servers_testable': {'visible': false},   // Added 24th of May 2019
+            'internet_nl_mail_starttls_dane_ta': {'visible': false},  // Added 24th of May 2019
 
             'internet_nl_web_appsecpriv': {'visible': true},  // Added 24th of May 2019
             'internet_nl_web_appsecpriv_csp': {'visible': true},  // Added 24th of May 2019
@@ -441,7 +474,6 @@ vueReport = new Vue({
             'internet_nl_web_appsecpriv_x_content_type_options': {'visible': true},  // Added 24th of May 2019
             'internet_nl_web_appsecpriv_x_frame_options': {'visible': true},  // Added 24th of May 2019
             'internet_nl_web_appsecpriv_x_xss_protection': {'visible': true},  // Added 24th of May 2019
-
         },
 
         issue_filters_save_response: null,
@@ -505,6 +537,16 @@ vueReport = new Vue({
         load: function(report_id) {
             this.get_report_data(report_id);
         },
+
+        get_issue_filter_data(key){
+            try {
+                return this.issue_filters[key];
+            } catch(err) {
+                this.issue_filters[key] = {'visible': true};
+                console.log(`Issue filter for ${key} does not exist. Created it.`)
+            }
+        },
+
         get_report_data: function(report_id){
             this.is_loading = true;
             fetch(`/data/report/get/${report_id}/`, {credentials: 'include'}).then(response => response.json()).then(data => {
@@ -546,8 +588,19 @@ vueReport = new Vue({
             fetch(`/data/account/report_settings/get/`, {credentials: 'include'}).then(response => response.json()).then(data => {
                 if (!jQuery.isEmptyObject(data)) {
                     this.issue_filters = data;
+
+                    // upgrade existing issue filters with new fields:
+                    this.upgrade_issue_filter_with_new_field('internet_nl_mail_non_sending_domain');
+                    this.upgrade_issue_filter_with_new_field('internet_nl_mail_server_configured');
+                    this.upgrade_issue_filter_with_new_field('internet_nl_mail_servers_testable');
+                    this.upgrade_issue_filter_with_new_field('internet_nl_mail_starttls_dane_ta');
                 }
             });
+        },
+
+        upgrade_issue_filter_with_new_field: function(field_name){
+            if (!Object.keys(this.issue_filters).includes(field_name))
+                        this.issue_filters[field_name] = {'visible': false}
         },
         alphabet_sorting: function(a, b){
             // i already mis sorted()
@@ -721,6 +774,8 @@ vueReport = new Vue({
             return [
                 {
                     name: 'web',
+                    fields: [],
+                    additional_fields: [],
                     label: internet_nl_messages[language].internet_nl.base_test_website_label,
                     categories: [
                         {
@@ -731,6 +786,7 @@ vueReport = new Vue({
                             fields: [
                                 {name: 'internet_nl_web_ipv6'}
                             ],
+                            additional_fields: [],
 
                             categories: [
                                 {
@@ -740,7 +796,8 @@ vueReport = new Vue({
                                     fields: [
                                         {name: 'internet_nl_web_ipv6_ns_address'},
                                         {name: 'internet_nl_web_ipv6_ns_reach'},
-                                    ]
+                                    ],
+                                    additional_fields: [],
                                 },
                                 {
                                     name: 'web_server',
@@ -749,7 +806,8 @@ vueReport = new Vue({
                                         {name: 'internet_nl_web_ipv6_ws_address'},
                                         {name: 'internet_nl_web_ipv6_ws_reach'},
                                         {name: 'internet_nl_web_ipv6_ws_similar'},
-                                    ]
+                                    ],
+                                    additional_fields: [],
                                 }
                             ]
                         },
@@ -758,10 +816,9 @@ vueReport = new Vue({
                             label: internet_nl_messages[language].internet_nl.test_sitednssec_label,
                             key: 'internet_nl_web_dnssec',
                             fields: [
-                                {
-                                    name: 'internet_nl_web_dnssec',
-                                }
+                                {name: 'internet_nl_web_dnssec'}
                             ],
+                            additional_fields: [],
                             categories: [
                                 {
                                     // the exception to the rule
@@ -770,7 +827,8 @@ vueReport = new Vue({
                                     fields: [
                                         {name: 'internet_nl_web_dnssec_exist'},
                                         {name: 'internet_nl_web_dnssec_valid'},
-                                    ]
+                                    ],
+                                    additional_fields: [],
                                 },
                             ]
                         },
@@ -781,6 +839,7 @@ vueReport = new Vue({
                             fields: [
                                 {name: 'internet_nl_web_tls'},
                             ],
+                            additional_fields: [],
                             categories: [
                                 {
                                     name: 'http',
@@ -790,7 +849,8 @@ vueReport = new Vue({
                                         {name: 'internet_nl_web_https_http_redirect'},
                                         {name: 'internet_nl_web_https_http_compress'},
                                         {name: 'internet_nl_web_https_http_hsts'},
-                                    ]
+                                    ],
+                                    additional_fields: [],
                                 },
                                 {
                                     name: 'tls',
@@ -802,7 +862,8 @@ vueReport = new Vue({
                                         {name: 'internet_nl_web_https_tls_compress'},
                                         {name: 'internet_nl_web_https_tls_secreneg'},
                                         {name: 'internet_nl_web_https_tls_clientreneg'},
-                                    ]
+                                    ],
+                                    additional_fields: [],
                                 },
                                 {
                                     name: 'certificate',
@@ -813,7 +874,8 @@ vueReport = new Vue({
                                         {name: 'internet_nl_web_https_cert_pubkey'},
                                         {name: 'internet_nl_web_https_cert_sig'},
                                         {name: 'internet_nl_web_https_cert_domain'},
-                                    ]
+                                    ],
+                                    additional_fields: [],
                                 },
                                 {
                                     name: 'dane',
@@ -821,7 +883,8 @@ vueReport = new Vue({
                                     fields: [
                                         {name: 'internet_nl_web_https_dane_exist'},
                                         {name: 'internet_nl_web_https_dane_valid'},
-                                    ]
+                                    ],
+                                    additional_fields: [],
                                 }
                             ]
                         },
@@ -830,10 +893,9 @@ vueReport = new Vue({
                             label: internet_nl_messages[language].internet_nl.test_siteappsecpriv_label,
                             key: 'internet_nl_web_appsecpriv',
                             fields: [
-                                {
-                                    name: 'internet_nl_web_appsecpriv',
-                                },
+                                {name: 'internet_nl_web_appsecpriv'},
                             ],
+                            additional_fields: [],
 
                             categories: [
                                 {
@@ -845,8 +907,8 @@ vueReport = new Vue({
                                         {name: 'internet_nl_web_appsecpriv_x_xss_protection'},
                                         {name: 'internet_nl_web_appsecpriv_csp'},
                                         {name: 'internet_nl_web_appsecpriv_referrer_policy'},
-                                    ]
-
+                                    ],
+                                    additional_fields: [],
                                 }
                             ]
 
@@ -856,10 +918,9 @@ vueReport = new Vue({
                             label: i18n.t('report.fields.forum_standardistation.category_label'),
                             key: 'web_legacy',
                             fields: [
-                                {
-                                    name: 'web_legacy',
-                                },
+                                {name: 'web_legacy'},
                             ],
+                            additional_fields: [],
 
                             categories: [
                                 {
@@ -874,7 +935,8 @@ vueReport = new Vue({
                                         {name: 'internet_nl_web_legacy_ipv6_nameserver'},
                                         {name: 'internet_nl_web_legacy_ipv6_webserver'},
                                         {name: 'internet_nl_web_legacy_dane'},
-                                    ]
+                                    ],
+                                    additional_fields: [],
                                 }
                             ]
                         }
@@ -882,6 +944,11 @@ vueReport = new Vue({
                 },
                 {
                     name: 'mail',
+                    fields: [],
+                    additional_fields: [
+                        {name: 'internet_nl_mail_server_configured'},
+                    ],
+
                     label: internet_nl_messages[language].internet_nl.base_test_mail_label,
                     categories: [
                         {
@@ -889,10 +956,9 @@ vueReport = new Vue({
                             label: internet_nl_messages[language].internet_nl.test_mailipv6_label,
                             key: 'internet_nl_mail_dashboard_ipv6',
                             fields: [
-                                {
-                                    name: 'internet_nl_mail_dashboard_ipv6',
-                                },
+                                {name: 'internet_nl_mail_dashboard_ipv6'}
                             ],
+                            additional_fields: [],
 
                             categories: [
                                 {
@@ -901,7 +967,8 @@ vueReport = new Vue({
                                     fields: [
                                         {name: 'internet_nl_mail_ipv6_ns_address'},
                                         {name: 'internet_nl_mail_ipv6_ns_reach'},
-                                    ]
+                                    ],
+                                    additional_fields: [],
                                 },
                                 {
                                     name: 'Mail server(s)',
@@ -909,7 +976,8 @@ vueReport = new Vue({
                                     fields: [
                                         {name: 'internet_nl_mail_ipv6_mx_address'},
                                         {name: 'internet_nl_mail_ipv6_mx_reach'},
-                                    ]
+                                    ],
+                                    additional_fields: [],
                                 }
                             ]
                         },
@@ -918,10 +986,9 @@ vueReport = new Vue({
                             label: internet_nl_messages[language].internet_nl.test_maildnssec_label,
                             key: 'internet_nl_mail_dashboard_dnssec',
                             fields: [
-                                {
-                                    name: 'internet_nl_mail_dashboard_dnssec',
-                                }
+                                {name: 'internet_nl_mail_dashboard_dnssec',}
                             ],
+                            additional_fields: [],
                             categories: [
                                 {
                                     name: 'email address domain',
@@ -929,7 +996,8 @@ vueReport = new Vue({
                                     fields: [
                                         {name: 'internet_nl_mail_dnssec_mailto_exist'},
                                         {name: 'internet_nl_mail_dnssec_mailto_valid'},
-                                    ]
+                                    ],
+                                    additional_fields: [],
                                 },
                                 {
                                     name: 'mail server domain(s)',
@@ -937,7 +1005,8 @@ vueReport = new Vue({
                                     fields: [
                                         {name: 'internet_nl_mail_dnssec_mx_exist'},
                                         {name: 'internet_nl_mail_dnssec_mx_valid'},
-                                    ]
+                                    ],
+                                    additional_fields: [],
                                 },
                             ]
                         },
@@ -946,9 +1015,10 @@ vueReport = new Vue({
                             label: internet_nl_messages[language].internet_nl.test_mailauth_label,
                             key: 'internet_nl_mail_dashboard_auth',
                             fields: [
-                                {
-                                    name: 'internet_nl_mail_dashboard_auth',
-                                }
+                                {name: 'internet_nl_mail_dashboard_auth'}
+                            ],
+                            additional_fields: [
+                                {name: 'internet_nl_mail_non_sending_domain'}
                             ],
                             categories: [
                                 {
@@ -959,14 +1029,16 @@ vueReport = new Vue({
                                         {name: 'internet_nl_mail_auth_dmarc_policy'},
                                         {name: 'internet_nl_mail_auth_dmarc_policy_only'},
                                         {name: 'internet_nl_mail_auth_dmarc_ext_destination'},
-                                    ]
+                                    ],
+                                    additional_fields: [],
                                 },
                                 {
                                     name: 'DKIM',
                                     label: internet_nl_messages[language].internet_nl.results_mail_auth_dkim_label,
                                     fields: [
                                         {name: 'internet_nl_mail_auth_dkim_exist'},
-                                    ]
+                                    ],
+                                    additional_fields: [],
                                 },
                                 {
                                     name: 'SPF',
@@ -974,7 +1046,8 @@ vueReport = new Vue({
                                     fields: [
                                         {name: 'internet_nl_mail_auth_spf_exist'},
                                         {name: 'internet_nl_mail_auth_spf_policy'},
-                                    ]
+                                    ],
+                                    additional_fields: [],
                                 },
                             ]
                         },
@@ -983,9 +1056,10 @@ vueReport = new Vue({
                             label: internet_nl_messages[language].internet_nl.test_mailtls_label,
                             key: 'internet_nl_mail_dashboard_tls',
                             fields: [
-                                {
-                                    name: 'internet_nl_mail_dashboard_tls',
-                                }
+                                {name: 'internet_nl_mail_dashboard_tls'},
+                            ],
+                            additional_fields: [
+                                {name: 'internet_nl_mail_servers_testable'},
                             ],
                             categories: [
                                 {
@@ -999,7 +1073,8 @@ vueReport = new Vue({
                                         {name: 'internet_nl_mail_starttls_tls_compress'},
                                         {name: 'internet_nl_mail_starttls_tls_secreneg'},
                                         {name: 'internet_nl_mail_starttls_tls_clientreneg'},
-                                    ]
+                                    ],
+                                    additional_fields: [],
                                 },
                                 {
                                     name: 'Certificate',
@@ -1009,7 +1084,8 @@ vueReport = new Vue({
                                         {name: 'internet_nl_mail_starttls_cert_pubkey'},
                                         {name: 'internet_nl_mail_starttls_cert_sig'},
                                         {name: 'internet_nl_mail_starttls_cert_domain'},
-                                    ]
+                                    ],
+                                    additional_fields: [],
                                 },
                                 {
                                     name: 'DANE',
@@ -1018,7 +1094,10 @@ vueReport = new Vue({
                                         {name: 'internet_nl_mail_starttls_dane_exist'},
                                         {name: 'internet_nl_mail_starttls_dane_valid'},
                                         {name: 'internet_nl_mail_starttls_dane_rollover'},
-                                    ]
+                                    ],
+                                    additional_fields: [
+                                        {name: 'internet_nl_mail_starttls_dane_ta'}
+                                    ],
                                 },
                             ]
                         },
@@ -1031,6 +1110,7 @@ vueReport = new Vue({
                                     name: 'mail_legacy',
                                 },
                             ],
+                            additional_fields: [],
 
                             categories: [
                                 {
@@ -1049,7 +1129,8 @@ vueReport = new Vue({
                                         {name: 'internet_nl_mail_legacy_dane'},
                                         {name: 'internet_nl_mail_legacy_ipv6_nameserver'},
                                         {name: 'internet_nl_mail_legacy_ipv6_mailserver'},
-                                    ]
+                                    ],
+                                    additional_fields: [],
                                 }
                             ]
                         }
@@ -1070,7 +1151,9 @@ vueReport = new Vue({
                     scan_method.categories.forEach((category) => {
 
                         category.fields.forEach((field) => {
-                            console.log(field.name);
+                            preferred_fields.push(field.name);
+                        });
+                        category.additional_fields.forEach((field) => {
                             preferred_fields.push(field.name);
                         });
 
@@ -1084,7 +1167,9 @@ vueReport = new Vue({
                         if (category.key === this.selected_category) {
                             category.categories.forEach((subcategory) => {
                                 subcategory.fields.forEach((field) => {
-                                    console.log(field.name);
+                                    preferred_fields.push(field.name);
+                                });
+                                subcategory.additional_fields.forEach((field) => {
                                     preferred_fields.push(field.name);
                                 });
                             });
