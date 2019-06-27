@@ -10,6 +10,7 @@ const messages = {
             can_connect: "Can connect icon",
             unknown_connectivity: "Unknown connectivity icon",
             cannot_connect: "Can not connect",
+            remove_filter: 'Show categories'
         },
         menu: {
             admin: 'Admin',
@@ -178,6 +179,7 @@ const messages = {
                     },
                     title: 'Average adoption of standards. Overall.',
                     yAxis_label: 'Adoption',
+                    xAxis_label: 'Date',
                 },
                 adoption_bar_chart: {
                     annotation: {
@@ -203,11 +205,14 @@ const messages = {
                 zoom: {
                     buttons:
                         {
-                            zoom: 'zoom',
-                            remove_zoom: 'Remove zoom',
+                            zoom: 'details',
+                            remove_zoom: 'Back to the category view',
+                            zoom_in_on: 'View details of {0}',
                         },
-                    zoomed_in_on: 'Zoomed in on'
+                    zoomed_in_on: 'Details from',
+                    explanation: "Using the details buttons, it is possible to see the individual metrics for each category."
                 },
+                link_to_report: 'View score and report from %{url} on internet.nl. These results are not public. You need an API account to be able to see the results.',
                 empty_report: 'It looks like this report is empty... did you filter too much?',
                 results: {
                     not_applicable: "Not applicable",
@@ -220,14 +225,14 @@ const messages = {
                 }
             },
             download: {
-                title: 'Download raw data',
+                title: 'Download all metrics in a spreadsheet',
                 intro: 'Report data is available in the following formats:',
                 xlsx: 'Excel Spreadsheet (Microsoft Office), .xlsx',
                 ods: 'Open Document Spreadsheet (Libre Office), .ods',
                 csv: 'Comma Separated (for programmers), .csv',
             },
             settings: {
-                title: 'Relevant fields',
+                title: 'Select visisble metrics',
                 intro: 'To retain focus, select the fields that are relevant to your organization.',
                 buttons: {
                     reset: 'Reset',
@@ -731,10 +736,10 @@ const messages = {
                 zoom: {
                     buttons:
                         {
-                            zoom: 'zoom',
-                            remove_zoom: 'Verwijder zoom',
+                            zoom: 'details',
+                            remove_zoom: 'Terug naar hoofdniveau',
                         },
-                    zoomed_in_on: 'Ingezoomd op '
+                    zoomed_in_on: 'Details van '
                 },
                 empty_report: 'Geen meetgegevens gevonden, wordt er misschien teveel gefilterd?',
                 results: {

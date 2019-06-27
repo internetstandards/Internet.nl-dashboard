@@ -248,6 +248,10 @@ Todo: digitoegankelijk: how to select links with the keyboard? How can we make t
                     // Uses localized date and time format with day name, which is pretty advanced and complete
                     return moment(date).format('LLLL');
                 },
+                humanize_date_date_only: function (date) {
+                    // Uses localized date and time format with day name, which is pretty advanced and complete
+                    return moment(date).format('LL');
+                },
                 humanize_relative_date: function (date) {
                     // says things like 'days ago'...
                     return moment(date).fromNow();

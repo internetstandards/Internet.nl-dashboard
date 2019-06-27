@@ -23,7 +23,7 @@
             <template v-if="reports.length && !is_loading">
 
                 <div class="testresult">
-                    <h2 class="panel-title" >
+                    <h2 style="font-size: 1.0em;" class="panel-title" >
                         <a href="" aria-expanded="false">
                             <span class="visuallyhidden">-:</span>
                             {{ $t("report.download.title") }}
@@ -42,7 +42,7 @@
                 </div>
 
                 <div class="testresult">
-                    <h2 class="panel-title" >
+                    <h2 style="font-size: 1.0em;" class="panel-title" >
                         <a href="" aria-expanded="false">
                             <span class="visuallyhidden">-:</span>
                             {{ $t("report.settings.title") }}
@@ -139,13 +139,45 @@
                 <a class="anchor" name="charts"></a>
                 <p>{{ $t("report.charts.adoption_timeline.annotation.intro") }}</p>
 
-                <div class="chart-container" style="position: relative; height:300px; width:100%">
-                    <line-chart
-                            :color_scheme="color_scheme"
-                            :translation_key="'report.charts.adoption_timeline'"
-                            :chart_data="issue_timeline_of_related_urllist"
-                            :axis="['pct_ok']">
-                    </line-chart>
+                <div style="overflow: auto; width: 100%">
+                    <div class="chart-container" style="position: relative; height:300px; width:100%; min-width: 950px;">
+                        <line-chart
+                                :color_scheme="color_scheme"
+                                :translation_key="'report.charts.adoption_timeline'"
+                                :chart_data="issue_timeline_of_related_urllist"
+                                :accessibility_text="'A table with the content of this graph is shown below.'"
+                                :axis="['pct_ok']">
+                        </line-chart>
+
+                        <div style="overflow-x: scroll; overflow-y: hidden;">
+                            <table class="table table-striped">
+                                <caption>{{ $t("report.charts.adoption_timeline.title") }}</caption>
+                                <thead>
+                                    <tr>
+                                        <th style="width: 200px;">
+                                            &nbsp;{{ $t("report.charts.adoption_timeline.xAxis_label") }}
+                                        </th>
+                                        <th>
+                                             {{ $t("report.charts.adoption_timeline.yAxis_label") }}
+                                        </th>
+                                    </tr>
+                                </thead>
+
+                                <tbody class="gridtable">
+                                    <tr v-for="stat in issue_timeline_of_related_urllist">
+                                        <td>
+                                            {{ humanize_date_date_only(stat.date) }}
+                                        </td>
+                                        <td>
+                                            {{ stat.pct_ok }}%
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+
+                    </div>
                 </div>
             </div>
 
@@ -159,15 +191,18 @@
                 <template v-for="scan_form in scan_methods">
                     <template v-if="scan_form.name === selected_report[0].type">
 
-                        <div class="chart-container" style="position: relative; height:500px; width:100%; min-width: 500px;">
-                            <percentage-bar-chart
-                                    :title="graph_bar_chart_title"
-                                    :translation_key="'report.charts.adoption_bar_chart'"
-                                    :color_scheme="color_scheme"
-                                    :chart_data="compare_charts"
-                                    @bar_click="select_category"
-                                    :axis="fields_from_categories(scan_form)">
-                            </percentage-bar-chart>
+                        <div style="overflow: auto; width: 100%">
+                            <div class="chart-container" style="position: relative; height:500px; width:100%; min-width: 950px;">
+                                <percentage-bar-chart
+                                        :title="graph_bar_chart_title"
+                                        :translation_key="'report.charts.adoption_bar_chart'"
+                                        :color_scheme="color_scheme"
+                                        :chart_data="compare_charts"
+                                        :accessibility_text="'A table with the content of this graph is shown below.'"
+                                        @bar_click="select_category"
+                                        :axis="fields_from_categories(scan_form)">
+                                </percentage-bar-chart>
+                            </div>
                         </div>
 
 
@@ -182,15 +217,18 @@
                                     </a>
                                 </h3>
                                 <div class="panel-content">
-                                    <div class="chart-container" style="position: relative; height:500px; width:100%; min-width: 500px;">
-                                        <percentage-bar-chart
-                                                :title="graph_bar_chart_title"
-                                                :translation_key="'report.charts.adoption_bar_chart'"
-                                                :color_scheme="color_scheme"
-                                                :chart_data="compare_charts"
-                                                @bar_click="select_category"
-                                                :axis="fields_from_categories(category)">
-                                        </percentage-bar-chart>
+                                    <div style="overflow: auto; width: 100%">
+                                        <div class="chart-container" style="position: relative; height:500px; width:100%; min-width: 950px;">
+                                            <percentage-bar-chart
+                                                    :title="graph_bar_chart_title"
+                                                    :translation_key="'report.charts.adoption_bar_chart'"
+                                                    :color_scheme="color_scheme"
+                                                    :chart_data="compare_charts"
+                                                    :accessibility_text="'A table with the content of this graph is shown below.'"
+                                                    @bar_click="select_category"
+                                                    :axis="fields_from_categories(category)">
+                                            </percentage-bar-chart>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -210,16 +248,19 @@
                 <template v-for="scan_form in scan_methods">
                     <template v-if="scan_form.name === selected_report[0].type">
 
-                        <div class="chart-container" style="position: relative; height:500px; width:100%; min-width: 500px;">
-                            <cumulative-percentage-bar-chart
-                                    :title="$t('report.charts.cumulative_adoption_bar_chart.title', {
-                                                    'number_of_reports': compare_charts.length})"
-                                    :translation_key="'report.charts.adoption_bar_chart'"
-                                    :color_scheme="color_scheme"
-                                    :chart_data="compare_charts"
-                                    @bar_click="select_category"
-                                    :axis="fields_from_categories(scan_form)">
-                            </cumulative-percentage-bar-chart>
+                        <div style="overflow: auto; width: 100%">
+                            <div class="chart-container" style="position: relative; height:500px; width:100%; min-width: 950px;">
+                                <cumulative-percentage-bar-chart
+                                        :title="$t('report.charts.cumulative_adoption_bar_chart.title', {
+                                                        'number_of_reports': compare_charts.length})"
+                                        :translation_key="'report.charts.adoption_bar_chart'"
+                                        :color_scheme="color_scheme"
+                                        :chart_data="compare_charts"
+                                        :accessibility_text="'A table with the content of this graph is shown below.'"
+                                        @bar_click="select_category"
+                                        :axis="fields_from_categories(scan_form)">
+                                </cumulative-percentage-bar-chart>
+                            </div>
                         </div>
 
                         <template v-for="category in scan_form.categories">
@@ -233,16 +274,19 @@
                                     </a>
                                 </h3>
                                 <div class="panel-content">
-                                    <div class="chart-container" style="position: relative; height:500px; width:100%; min-width: 500px;">
-                                        <cumulative-percentage-bar-chart
-                                                :title="$t('report.charts.cumulative_adoption_bar_chart.title', {
-                                                    'number_of_reports': compare_charts.length})"
-                                                :translation_key="'report.charts.adoption_bar_chart'"
-                                                :color_scheme="color_scheme"
-                                                :chart_data="compare_charts"
-                                                @bar_click="select_category"
-                                                :axis="fields_from_categories(category)">
-                                        </cumulative-percentage-bar-chart>
+                                    <div style="overflow: auto; width: 100%">
+                                        <div class="chart-container" style="position: relative; height:500px; width:100%; min-width: 950px;">
+                                            <cumulative-percentage-bar-chart
+                                                    :title="$t('report.charts.cumulative_adoption_bar_chart.title', {
+                                                        'number_of_reports': compare_charts.length})"
+                                                    :translation_key="'report.charts.adoption_bar_chart'"
+                                                    :color_scheme="color_scheme"
+                                                    :chart_data="compare_charts"
+                                                    :accessibility_text="'A table with the content of this graph is shown below.'"
+                                                    @bar_click="select_category"
+                                                    :axis="fields_from_categories(category)">
+                                            </cumulative-percentage-bar-chart>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -277,34 +321,35 @@
                         <tbody class="gridtable">
                             <template>
                                 <!-- Summary row, same data as bar chart, but then in numbers.-->
-                                <tr v-if="reports.length" class="summaryrow">
+                                <tr class="summaryrow">
                                     <td>
                                         &nbsp;
                                     </td>
-                                    <td v-for="category_name in relevant_categories_based_on_settings" @click="select_category(category_name)">
+                                    <td v-for="category_name in relevant_categories_based_on_settings">
                                         <span v-if="category_name in reports[0].statistics_per_issue_type">
                                             {{reports[0].statistics_per_issue_type[category_name].pct_ok}}%</span>
                                     </td>
                                 </tr>
 
                                 <!-- Zoom buttons for accessibility -->
-                                <tr v-if="reports.length" class="summaryrow">
+                                <tr class="summaryrow">
+                                    <td>
+                                        <label class="visuallyhidden" for="url_filter">{{ $t('report.report.url_filter') }}</label>
+                                        <input v-if="selected_report" type="text" v-model="url_filter" id="url_filter" :placeholder="$t('report.report.url_filter')">
+                                        <p class="visuallyhidden">{{ $t('report.report.zoom.explanation') }}</p>
+                                    </td>
                                     <template v-if="['web', 'mail'].includes(selected_category)">
-                                        <td>
-                                            <input v-if="selected_report" type="text" v-model="url_filter" id="url_filter" :placeholder="$t('report.report.url_filter')">
-                                        </td>
                                         <td v-for="category_name in relevant_categories_based_on_settings">
-                                            <button @click="select_category(category_name)">{{ $t("report.report.zoom.buttons.zoom") }}</button>
+                                            <button @click="select_category(category_name)">{{ $t("report.report.zoom.buttons.zoom") }}
+                                            <span class="visuallyhidden">{{ $t("report.report.zoom.buttons.zoom_in_on", [$t("report." + category_name)]) }}</span>
+                                            </button>
                                         </td>
                                     </template>
                                     <template v-if="!['web', 'mail'].includes(selected_category)">
-                                        <td>
-                                            <input v-if="selected_report" type="text" v-model="url_filter" id="url_filter" :placeholder="$t('report.report.url_filter')">
-                                        </td>
                                         <td :colspan="relevant_categories_based_on_settings.length" style="text-align: center">
                                         {{ $t("report.report.zoom.zoomed_in_on") }} {{ $t("report." + selected_category) }}.
                                             <button @click="select_category(selected_report.urllist_scan_type)">
-                                                ❌ {{ $t("report.report.zoom.buttons.remove_zoom") }}
+                                                <span role="img" :aria-label="$t('icons.remove_filter')">❌</span> {{ $t("report.report.zoom.buttons.remove_zoom") }}
                                             </button>
                                         </td>
                                     </template>
@@ -321,25 +366,25 @@
 
                                 <tr v-for="url in filtered_urls" v-if="url.endpoints.length">
                                     <td>{{url.url}}
-                                        <span v-if="selected_report[0].type === 'web'" v-html="original_report_link_from_score(url.endpoints[0].ratings_by_type['internet_nl_web_overall_score'].explanation)"></span>
-                                        <span v-if="selected_report[0].type === 'mail'" v-html="original_report_link_from_score(url.endpoints[0].ratings_by_type['internet_nl_mail_dashboard_overall_score'].explanation)"></span>
+                                        <span v-if="selected_report[0].type === 'web'" v-html="original_report_link_from_score(url.endpoints[0].ratings_by_type['internet_nl_web_overall_score'].explanation, url.url)"></span>
+                                        <span v-if="selected_report[0].type === 'mail'" v-html="original_report_link_from_score(url.endpoints[0].ratings_by_type['internet_nl_mail_dashboard_overall_score'].explanation, url.url)"></span>
                                     </td>
-                                    <td class="testresultcell" v-for="category_name in relevant_categories_based_on_settings" @click="select_category(category_name)">
+                                    <td class="testresultcell" v-for="category_name in relevant_categories_based_on_settings">
                                         <template v-if="['web', 'mail'].includes(selected_category)">
                                             <template v-if="category_name in url.endpoints[0].ratings_by_type">
                                                 <!-- Currently the API just says True or False, we might be able to deduce the right label for a category, but that will take a day or two.
                                                 At the next field update, we'll also make the categories follow the new format of requirement level and testresult so HTTP Security Headers
                                                  here is shown as optional, or info if failed. We can also add a field for baseline NL government then. -->
                                                 <template v-if="url.endpoints[0].ratings_by_type[category_name].ok < 1">
-                                                    <span v-if="category_name !== 'internet_nl_web_appsecpriv'" class="category_failed"  :title="$t('report.' + category_name + '_verdict_bad')">
-                                                        {{ $t("report.report.results.failed") }}
+                                                    <span v-if="category_name !== 'internet_nl_web_appsecpriv'" class="category_failed">
+                                                        {{ $t('report.' + category_name + '_verdict_bad') }}
                                                     </span>
-                                                    <span v-if="category_name === 'internet_nl_web_appsecpriv'" class="category_warning" :title="$t('report.' + category_name + '_verdict_bad')">
-                                                        {{ $t("report.report.results.warning") }}
+                                                    <span v-if="category_name === 'internet_nl_web_appsecpriv'" class="category_warning">
+                                                        {{ $t('report.' + category_name + '_verdict_bad') }}
                                                     </span>
                                                 </template>
-                                                <span class="category_passed" v-if="url.endpoints[0].ratings_by_type[category_name].ok > 0" :title="$t('report.' + category_name + '_verdict_good')">
-                                                    {{ $t("report.report.results.passed") }}
+                                                <span class="category_passed" v-if="url.endpoints[0].ratings_by_type[category_name].ok > 0">
+                                                    {{ $t('report.' + category_name + '_verdict_good') }}
                                                 </span>
                                             </template>
                                             <span class="" v-if="url.endpoints[0].ratings_by_type[category_name] === undefined">
@@ -349,25 +394,25 @@
                                         <template v-if="!['web', 'mail'].includes(selected_category)">
 
                                             <template v-if="category_name in url.endpoints[0].ratings_by_type">
-                                                <span class="not_applicable" v-if="url.endpoints[0].ratings_by_type[category_name].not_applicable > 0" :title="$t('report.not_applicable')">
+                                                <span class="not_applicable" v-if="url.endpoints[0].ratings_by_type[category_name].not_applicable > 0">
                                                     {{ $t("report.report.results.not_applicable") }}
                                                 </span>
-                                                <span class="not_testable" v-if="url.endpoints[0].ratings_by_type[category_name].not_testable > 0" :title="$t('report.not_testable')">
+                                                <span class="not_testable" v-if="url.endpoints[0].ratings_by_type[category_name].not_testable > 0">
                                                     {{ $t("report.report.results.not_testable") }}
                                                 </span>
-                                                <span class="failed" v-if="url.endpoints[0].ratings_by_type[category_name].high > 0" :title="$t('report.' + category_name + '_verdict_bad')">
-                                                    {{ $t("report.report.results.failed") }}
+                                                <span class="failed" v-if="url.endpoints[0].ratings_by_type[category_name].high > 0">
+                                                    {{ $t("report.report.results.failed") }} {{ $t('report.' + category_name + '_verdict_bad') }}
                                                 </span>
-                                                <span class="warning" v-if="url.endpoints[0].ratings_by_type[category_name].medium > 0" :title="$t('report.' + category_name + '_verdict_bad')">
-                                                    {{ $t("report.report.results.warning") }}
+                                                <span class="warning" v-if="url.endpoints[0].ratings_by_type[category_name].medium > 0">
+                                                    {{ $t("report.report.results.warning") }} {{ $t('report.' + category_name + '_verdict_bad') }}
                                                 </span>
-                                                <span class="info" v-if="url.endpoints[0].ratings_by_type[category_name].low > 0" :title="$t('report.' + category_name + '_verdict_bad')">
-                                                    {{ $t("report.report.results.info") }}
+                                                <span class="info" v-if="url.endpoints[0].ratings_by_type[category_name].low > 0">
+                                                    {{ $t("report.report.results.info") }} {{ $t('report.' + category_name + '_verdict_bad') }}
                                                 </span>
                                                 <span class="passed" v-if="url.endpoints[0].ratings_by_type[category_name].ok > 0
                                                 && !url.endpoints[0].ratings_by_type[category_name].not_applicable
-                                                && !url.endpoints[0].ratings_by_type[category_name].not_testable" :title="$t('report.' + category_name + '_verdict_good')">
-                                                    {{ $t("report.report.results.passed") }}
+                                                && !url.endpoints[0].ratings_by_type[category_name].not_testable">
+                                                    {{ $t("report.report.results.passed") }} {{ $t('report.' + category_name + '_verdict_good') }}
                                                 </span>
                                             </template>
                                             <span class="" v-if="url.endpoints[0].ratings_by_type[category_name] === undefined">
@@ -558,22 +603,20 @@ vueReport = new Vue({
             'low_background': 'rgba(255, 255, 0, 0.2)',
             'low_border': 'rgba(255,255,0,1)',
             'ok_background': 'rgba(50, 255, 50, 0.2)',
-            'ok_border': 'rgba(50, 255, 50, 1)',
+            'ok_border': 'rgba(209, 63, 0, 1)',
             'addresses_background': 'rgba(0, 0, 0, 0.2)',
             'addresses_border': 'rgba(0,0,0,1)',
             'services_background': 'rgba(0, 40, 255, 0.2)',
             'services_border': 'rgba(0,40,255,1)',
-            'primary_background': 'rgba(255, 112, 50, 0.6)',
-            'primary_border': 'rgba(255, 112, 50, 1)',
-            'secondary_background': 'rgba(21, 66, 115, 0.6)',
-            'secondary_border': 'rgba(21, 66, 115, 1)',
+
             // https://github.com/ashiguruma/patternomaly/blob/master/assets/pattern-list.png
+            // The first one can be defined without a pattern to give a consistent look/feel to all first graphs.
             incremental: [
-                {background: pattern.draw('weave',  'rgba(255, 112, 50, 0.6)'), border: 'rgba(255, 112, 50, 1)'},
-                {background: pattern.draw('dot',  'rgba(21, 66, 115, 0.6)'), border: 'rgba(21, 66, 115, 1)'},
-                {background: pattern.draw('ring',  'rgba(43, 151, 89, 0.6)'), border: 'rgba(43, 151, 89, 1)'},
-                {background: pattern.draw('dash',  'rgba(0, 255, 246, 0.6)'), border: 'rgba(0, 255, 246, 1)'},
-                {background: pattern.draw('triangle',  'rgba(255, 0, 246, 0.6)'), border: 'rgba(255, 0, 246, 1)'},
+                {background: 'rgba(255, 112, 50, 0.6)', border: 'rgba(209, 63, 0, 1)'},
+                {background: pattern.draw('weave',  'rgba(21, 66, 115, 0.6)'), border: 'rgba(21, 66, 115, 1)'},
+                {background: pattern.draw('dot',  'rgba(43, 151, 89, 0.6)'), border: 'rgb(28, 94, 56)'},
+                {background: pattern.draw('dash',  'rgba(0, 255, 246, 0.6)'), border: 'rgb(0, 92, 89)'},
+                {background: pattern.draw('ring',  'rgba(255, 0, 246, 0.6)'), border: 'rgb(158, 0, 153)'},
                 ]
         },
         compare_charts: [],
@@ -739,7 +782,7 @@ vueReport = new Vue({
             }).catch((fail) => {console.log('A loading error occurred: ' + fail);});
 
         },
-        original_report_link_from_score: function(score){
+        original_report_link_from_score: function(score, url){
             if (!score){
                 return ""
             }
@@ -755,7 +798,10 @@ vueReport = new Vue({
                 return ""
             }
 
-            return `<a class='direct_link_to_report' href='${sc[1]}' target="_blank">${sc[0]}%</a>`
+            return `<a class='direct_link_to_report' href='${sc[1]}' target="_blank">
+                        <img src="/static/images/vendor/internet_nl/favicon.png" style="height: 16px;" alt="${i18n.t('report.report.link_to_report', {'url': url})}"> ${sc[0]}%
+                        <span class="visuallyhidden">${i18n.t('report.report.link_to_report', {'url': url})}</span>
+                    </a>`
         },
         fields_from_categories(categories){
             let fields = [];
@@ -1270,7 +1316,8 @@ const chart_mixin = {
         axis: {type: Array, required: false},
         color_scheme: {type: Object, required: false},
         title: {type: String, required: false},
-        translation_key: {type: String, required: false}
+        translation_key: {type: String, required: false},
+        accessibility_text: {type: String, required: true}
     },
     data: function () {
         return {
@@ -1287,12 +1334,12 @@ const chart_mixin = {
                 // Using createElement features: https://vuejs.org/v2/guide/render-function.html#createElement-Arguments
                 attrs: {
                     role: "img",
-                    'aria-label': this.title
+                    "aria-label": this.title
                 },
-                // todo: add child element with title, probably not updateable with data in graph
             },
             [
-                createElement('p', this.title),
+                // Limited to a paragraph only. So give a hint where you can find more data.
+                createElement('p', this.accessibility_text),
             ]
         )
     },
@@ -1379,6 +1426,7 @@ Vue.component('percentage-bar-chart', {
                             clamp: true, // always shows the number, also when the number 100%
                             anchor: 'end', // show the number at the top of the bar.
                             align: 'end', // shows the value outside of the bar,
+                            display: 'auto',
                             // format as a percentage
                             formatter: function(value, context) {
                                 return value + '%';
@@ -1672,130 +1720,12 @@ Vue.component('cumulative-percentage-bar-chart', {
     }
 });
 
-Vue.component('radar-chart', {
-    mixins: [chart_mixin],
 
-    methods: {
-        buildChart: function(){
-            let context = this.$refs.canvas.getContext('2d');
-            this.chart = new Chart(context, {
-                type: 'radar',
-                data: {
-
-                },
-                options: {
-                    plugins:{
-                        datalabels: {
-                            // todo: when the value > 50, the label should be placed on the inside to not overlap labels
-                            color: '#262626',
-                            clamp: true, // always shows the number, also when the number 100%
-                            anchor: 'end', // show the number at the top of the bar.
-                            align: 'end', // shows the value outside of the bar,
-                            // format as a percentage
-                            formatter: function(value, context) {
-                                return value + '%';
-                            }
-                        }
-                    },
-
-                    legend: {
-                        display: true,
-                        position: 'top',
-                    },
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    title: {
-                        display: true,
-                        text: this.title
-                    },
-                    tooltips: {
-                        mode: 'index',
-                        intersect: false,
-                    },
-                    hover: {
-                        mode: 'nearest',
-                        intersect: true
-                    },
-                    scale: {
-                            ticks: {
-                                min: 0,
-                                max: 100,
-                                callback: function(label, index, labels) {
-                                    // not needed anymore, but code kept as reference if datalabels breaks
-                                    return '';
-                                    // return label + '%';
-                                }
-                            },
-                            scaleLabel: {
-								display: true,
-							},
-
-				    },
-                }
-            });
-
-        },
-        renderData: function(){
-
-            this.chart.data.labels = [];
-            this.chart.data.datasets = [];
-
-            for(let i=0; i < this.chart_data.length; i++){
-
-                let data = this.chart_data[i].statistics_per_issue_type;
-
-                if (data === undefined) {
-                    // nothing to show
-                    this.chart.data.labels = [];
-                    this.chart.data.datasets = [];
-                    this.chart.update();
-                    return;
-                }
-
-                let labels = Array();
-                let chartdata = [];
-
-                this.axis.forEach((ax) => {
-                    if (ax in data) {
-                        labels.push(i18n.t("report." + ax));
-                        chartdata.push(data[ax].pct_ok);
-                    }
-                });
-
-                this.chart.data.labels = labels;
-                this.chart.data.datasets.push({
-                    data: chartdata,
-                    backgroundColor: this.color_scheme.incremental[i].background,
-                    borderColor: this.color_scheme.incremental[i].border,
-                    borderWidth: 1,
-                    lineTension: 0,
-                    label: `${moment(this.chart_data[i].at_when).format('LL')}`,
-                });
-
-            }
-
-            // the ordering is from important to none important, and we want to reverse it so the reader sees that
-            // the right most value is the most important instead of the left one.
-            this.chart.data.datasets.reverse();
-            // the same goes for colors
-            // this.chart.data.labels.reverse();
-
-            this.chart.update();
-        },
-        renderTitle: function(){
-            this.chart.options.title.text = this.title;
-        },
-    }
-});
-
-// done: translations
-// todo: add alt description of last values for usability. Is this needed?
 // done: place different labels  (add info about date in image)
 Vue.component('line-chart', {
     mixins: [chart_mixin],
 
     methods: {
-        // let's see if we can do it even better.
         buildChart: function(){
             let context = this.$refs.canvas.getContext('2d');
             this.chart = new Chart(context, {
@@ -1833,8 +1763,19 @@ Vue.component('line-chart', {
                         mode: 'nearest',
                         intersect: true
                     },
+                    layout: {
+                        padding: {
+                            left: 0,
+                            right: 20,
+                            top: 0,
+                            bottom: 0
+                        }
+                    },
                     scales: {
                         xAxes: [{
+                            barPercentage: 0.9,
+                            categoryPercentage: 0.55,
+
                             display: true,
                             type: 'time',
                             distribution: 'linear',
@@ -1850,6 +1791,7 @@ Vue.component('line-chart', {
                             display: true,
                             stacked: true,
                             ticks: {
+                                padding: 20,
                                 min: 0,
                                 max: 100,
                                 callback: function(label, index, labels) {
@@ -1858,7 +1800,7 @@ Vue.component('line-chart', {
                             },
                             scaleLabel: {
 								display: true,
-								labelString: i18n.t(this.translation_key + '.yAxis_label')
+								labelString: i18n.t(this.translation_key + '.yAxis_label'),
 							},
                         }]
                     }
@@ -1912,8 +1854,8 @@ Vue.component('line-chart', {
                 {
                     label: '% OK',
                     data: pct_ok,
-                    backgroundColor: this.color_scheme.primary_background,
-                    borderColor: this.color_scheme.primary_border,
+                    backgroundColor: this.color_scheme.incremental[0].background,
+                    borderColor: this.color_scheme.incremental[0].border,
                     borderWidth: 1,
                     lineTension: 0,
                     hidden: !this.axis.includes('pct_ok')
