@@ -182,11 +182,19 @@ const messages = {
                 adoption_bar_chart: {
                     annotation: {
                         title: 'Average adoption of standards ',
-                        intro: 'This graph shows the average adoption per standard in this report.',
+                        intro: 'This graph shows the average adoption per standard per report.',
                     },
                     title: 'Average adoption of standards, %{list_information}, %{number_of_domains} domains.',
                     yAxis_label: 'Adoption',
                 },
+                cumulative_adoption_bar_chart: {
+                    annotation: {
+                        title: 'Average adoption of standards over multiple reports',
+                        intro: 'This graph shows the average adoption per standard averaged over multiple reports.',
+                    },
+                    title: 'Average adoption of standards over %{number_of_reports} reports.',
+                    yAxis_label: 'Adoption',
+                }
             },
             report: {
                 title: 'Report',

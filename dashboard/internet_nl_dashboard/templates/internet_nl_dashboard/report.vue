@@ -149,48 +149,107 @@
                 </div>
             </div>
 
-            <div class="block fullwidth">
+            <div class="block fullwidth" v-if='reports.length && "statistics_per_issue_type" in reports[0]'>
+                <!-- Accessible alternative for the data is available in the table below. -->
                 <h2>
                     {{ $t("report.charts.adoption_bar_chart.annotation.title") }}
                 </h2>
                 <p>{{ $t("report.charts.adoption_bar_chart.annotation.intro") }}</p>
 
-                <!--
-                Let's see if the compare with previous is still needed while it's possible to compare arbitrary reports...
-                <div v-if="older_data_available">
-                    <button @click="compare_with_previous()">Compare with previous (beta)</button>
-                </div>
-                <div v-if="!older_data_available">
-                    <button disabled="disabled">Compare with previous (beta)</button>
-                </div>
-                -->
-                <div v-if='reports.length && "statistics_per_issue_type" in reports[0]'>
-                    <div class="chart-container" style="position: relative; height:500px; width:100%">
-                        <percentage-bar-chart
-                                :title="graph_bar_chart_title"
-                                :translation_key="'report.charts.adoption_bar_chart'"
-                                :color_scheme="color_scheme"
-                                :chart_data="compare_charts"
-                                @bar_click="select_category"
-                                :axis="relevant_categories_based_on_settings">
-                        </percentage-bar-chart>
-                    </div>
+                <template v-for="scan_form in scan_methods">
+                    <template v-if="scan_form.name === selected_report[0].type">
 
-                    <!--
-                    The radar is just another way of expressing the same data. It's nice, but not as good as the bar chart.
-                    Code left here in case a graph demo is needed.
-                    <div class="chart-container" style="position: relative; height:500px; width:100%">
-                        <radar-chart
-                                :title="graph_radar_chart_title"
-                                :translation_key="'charts.report_radar_chart'"
-                                :color_scheme="color_scheme"
-                                :chart_data="compare_charts"
-                                :axis="relevant_categories_based_on_settings()">
-                        </radar-chart>
-                    </div>
-                    -->
+                        <div class="chart-container" style="position: relative; height:500px; width:100%; min-width: 500px;">
+                            <percentage-bar-chart
+                                    :title="graph_bar_chart_title"
+                                    :translation_key="'report.charts.adoption_bar_chart'"
+                                    :color_scheme="color_scheme"
+                                    :chart_data="compare_charts"
+                                    @bar_click="select_category"
+                                    :axis="fields_from_categories(scan_form)">
+                            </percentage-bar-chart>
+                        </div>
 
-                </div>
+
+                        <template v-for="category in scan_form.categories">
+                            <div class="testresult" v-if="is_visible(category.key)">
+                                <h3 class="panel-title">
+                                    <a href="" aria-expanded="false">
+                                        <span class="visuallyhidden">-:</span>
+                                        {{ category.label }}
+                                        <span class="pre-icon visuallyhidden"></span>
+                                        <span class="icon"><img src="/static/images/vendor/internet_nl/push-open.png" alt=""></span>
+                                    </a>
+                                </h3>
+                                <div class="panel-content">
+                                    <div class="chart-container" style="position: relative; height:500px; width:100%; min-width: 500px;">
+                                        <percentage-bar-chart
+                                                :title="graph_bar_chart_title"
+                                                :translation_key="'report.charts.adoption_bar_chart'"
+                                                :color_scheme="color_scheme"
+                                                :chart_data="compare_charts"
+                                                @bar_click="select_category"
+                                                :axis="fields_from_categories(category)">
+                                        </percentage-bar-chart>
+                                    </div>
+                                </div>
+                            </div>
+                        </template>
+
+                    </template>
+                </template>
+            </div>
+
+            <div class="block fullwidth" aria-hidden="true" v-if='compare_charts.length > 1 && "statistics_per_issue_type" in reports[0]'>
+                <!-- Todo: there is no cumulative view in the table below, so cumulative data is not (yet) accessible :( -->
+                <h2>
+                    {{ $t("report.charts.cumulative_adoption_bar_chart.annotation.title") }}
+                </h2>
+                <p>{{ $t("report.charts.cumulative_adoption_bar_chart.annotation.intro") }}</p>
+
+                <template v-for="scan_form in scan_methods">
+                    <template v-if="scan_form.name === selected_report[0].type">
+
+                        <div class="chart-container" style="position: relative; height:500px; width:100%; min-width: 500px;">
+                            <cumulative-percentage-bar-chart
+                                    :title="$t('report.charts.cumulative_adoption_bar_chart.title', {
+                                                    'number_of_reports': compare_charts.length})"
+                                    :translation_key="'report.charts.adoption_bar_chart'"
+                                    :color_scheme="color_scheme"
+                                    :chart_data="compare_charts"
+                                    @bar_click="select_category"
+                                    :axis="fields_from_categories(scan_form)">
+                            </cumulative-percentage-bar-chart>
+                        </div>
+
+                        <template v-for="category in scan_form.categories">
+                            <div class="testresult" v-if="is_visible(category.key)">
+                                <h3 class="panel-title">
+                                    <a href="" aria-expanded="false">
+                                        <span class="visuallyhidden">-:</span>
+                                        {{ category.label }}
+                                        <span class="pre-icon visuallyhidden"></span>
+                                        <span class="icon"><img src="/static/images/vendor/internet_nl/push-open.png" alt=""></span>
+                                    </a>
+                                </h3>
+                                <div class="panel-content">
+                                    <div class="chart-container" style="position: relative; height:500px; width:100%; min-width: 500px;">
+                                        <cumulative-percentage-bar-chart
+                                                :title="$t('report.charts.cumulative_adoption_bar_chart.title', {
+                                                    'number_of_reports': compare_charts.length})"
+                                                :translation_key="'report.charts.adoption_bar_chart'"
+                                                :color_scheme="color_scheme"
+                                                :chart_data="compare_charts"
+                                                @bar_click="select_category"
+                                                :axis="fields_from_categories(category)">
+                                        </cumulative-percentage-bar-chart>
+                                    </div>
+                                </div>
+                            </div>
+                        </template>
+
+                    </template>
+                </template>
             </div>
 
             <div v-if="filtered_urls !== undefined" class="block fullwidth">
@@ -508,12 +567,13 @@ vueReport = new Vue({
             'primary_border': 'rgba(255, 112, 50, 1)',
             'secondary_background': 'rgba(21, 66, 115, 0.6)',
             'secondary_border': 'rgba(21, 66, 115, 1)',
+            // https://github.com/ashiguruma/patternomaly/blob/master/assets/pattern-list.png
             incremental: [
-                {background: 'rgba(255, 112, 50, 0.6)', border: 'rgba(255, 112, 50, 1)'},
-                {background: 'rgba(21, 66, 115, 0.6)', border: 'rgba(21, 66, 115, 1)'},
-                {background: 'rgba(255, 246, 0, 0.6)', border: 'rgba(255, 246, 0, 1)'},
-                {background: 'rgba(0, 255, 246, 0.6)', border: 'rgba(0, 255, 246, 1)'},
-                {background: 'rgba(255, 0, 246, 0.6)', border: 'rgba(255, 0, 246, 1)'},
+                {background: pattern.draw('weave',  'rgba(255, 112, 50, 0.6)'), border: 'rgba(255, 112, 50, 1)'},
+                {background: pattern.draw('dot',  'rgba(21, 66, 115, 0.6)'), border: 'rgba(21, 66, 115, 1)'},
+                {background: pattern.draw('ring',  'rgba(43, 151, 89, 0.6)'), border: 'rgba(43, 151, 89, 1)'},
+                {background: pattern.draw('dash',  'rgba(0, 255, 246, 0.6)'), border: 'rgba(0, 255, 246, 1)'},
+                {background: pattern.draw('triangle',  'rgba(255, 0, 246, 0.6)'), border: 'rgba(255, 0, 246, 1)'},
                 ]
         },
         compare_charts: [],
@@ -551,8 +611,6 @@ vueReport = new Vue({
             this.is_loading = true;
             fetch(`/data/report/get/${report_id}/`, {credentials: 'include'}).then(response => response.json()).then(data => {
                 this.reports = data;
-                // remove implicit behavior
-                // this.reset_comparison_charts(this.reports[0]);
 
                 this.selected_category = this.selected_report[0].urllist_scan_type;
 
@@ -612,31 +670,12 @@ vueReport = new Vue({
             }
             return 0;
         },
-        reset_comparison_charts: function(report){
-            this.compare_charts = [report];
-            this.compare_oldest_data = report.at_when;
-        },
-        compare_with_previous: function(){
-            // can be clicked on as long as there are previous reports. Which we don't know in advance.
-
-            fetch(`/data/report/get_previous/${this.selected_report[0].urllist_id}/${this.compare_oldest_data}/`, {credentials: 'include'}).then(response => response.json()).then(report => {
-
-                if (!jQuery.isEmptyObject(report)) {
-                    this.compare_charts.push(report);
-                    this.compare_oldest_data = report.at_when;
-                } else {
-                    this.older_data_available = false;
-                }
-
-            }).catch((fail) => {console.log('A loading error occurred: ' + fail);});
-
-
-        },
         compare_with: function(id){
             fetch(`/data/report/get/${id}/`, {credentials: 'include'}).then(response => response.json()).then(report => {
 
                 if (!jQuery.isEmptyObject(report)) {
                     this.compare_charts.push(report[0]);
+                    this.$nextTick(() => accordinate());
                 }
 
             }).catch((fail) => {console.log('A loading error occurred: ' + fail);});
@@ -717,6 +756,35 @@ vueReport = new Vue({
             }
 
             return `<a class='direct_link_to_report' href='${sc[1]}' target="_blank">${sc[0]}%</a>`
+        },
+        fields_from_categories(categories){
+            let fields = [];
+
+            categories.categories.forEach((category) => {
+
+                category.fields.forEach((field) => {
+                    fields.push(field.name);
+                });
+                category.additional_fields.forEach((field) => {
+                    fields.push(field.name);
+                });
+
+            });
+
+            let returned_fields = [];
+            for(let i = 0; i<fields.length; i++){
+
+                if(this.issue_filters[fields[i]].visible)
+                    returned_fields.push(fields[i])
+            }
+            return returned_fields;
+        },
+        is_visible(field_name){
+            try {
+                return this.issue_filters[field_name].visible;
+            } catch(e) {
+                return false;
+            }
         }
     },
     watch: {
@@ -746,7 +814,7 @@ vueReport = new Vue({
             // aside from debouncing not working, as it doesn't understand the vue context, it is not needed
             // up until 400 + items in the list.
             // this.debounce(function() {this.methods.filter_urls(newValue);});
-        }
+        },
     },
     computed: {
         // graph titles:
@@ -1419,6 +1487,175 @@ Vue.component('percentage-bar-chart', {
                 });
 
             }
+
+            // the ordering is from important to none important, and we want to reverse it so the reader sees that
+            // the right most value is the most important instead of the left one.
+            this.chart.data.datasets.reverse();
+            // the same goes for colors
+            // this.chart.data.labels.reverse();
+
+
+            this.chart.update();
+        },
+        renderTitle: function(){
+            this.chart.options.title.text = this.title;
+        },
+    }
+});
+
+
+Vue.component('cumulative-percentage-bar-chart', {
+    i18n,
+    mixins: [chart_mixin, humanize_mixin],
+
+    methods: {
+
+        buildChart: function(){
+            let context = this.$refs.canvas.getContext('2d');
+            this.chart = new Chart(context, {
+                type: 'bar',
+                data: {},
+                options: {
+
+                    // can prevent data falling off the chart.
+                    layout: {
+                        padding: {
+                            left: 0,
+                            right: 0,
+                            top: 0,
+                            bottom: 0
+                        }
+                    },
+                    plugins:{
+                        datalabels: {
+                            color: '#262626',
+                            clamp: true, // always shows the number, also when the number 100%
+                            anchor: 'end', // show the number at the top of the bar.
+                            align: 'end', // shows the value outside of the bar,
+                            // format as a percentage
+                            formatter: function(value, context) {
+                                return value + '%';
+                            }
+                        }
+                    },
+                    legend: {
+                        display: false,
+                        position: 'top',
+                        labels: {
+                            padding: 15,
+                        }
+                    },
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    title: {
+                        position: 'top',
+                        display: true,
+                        text: this.title,
+                    },
+                    tooltips: {
+                        mode: 'index',
+                        intersect: false,
+                    },
+                    hover: {
+                        mode: 'nearest',
+                        intersect: true
+                    },
+                    // this is now a percentage graph.
+                    scales: {
+                        yAxes: [{
+                            ticks: {
+                                min: 0,
+                                max: 100,
+                                callback: function(label, index, labels) {
+                                    return label + '%';
+                                }
+                            },
+                            scaleLabel: {
+								display: true,
+								labelString: i18n.t(this.translation_key + '.yAxis_label')
+							},
+                        }]
+				    },
+                    onClick: (event, item) => {
+                        if (item[0] === undefined) {
+                            return;
+                        }
+
+                        if (item[0]._chart.tooltip._lastActive[0] === undefined){
+                            return;
+                        }
+
+                        // todo: handle zooming, this is optional / a nice to have.
+                        let localChart = item[0]._chart;
+                        let activeIndex = localChart.tooltip._lastActive[0]._index;
+                        let clickCoordinates = Chart.helpers.getRelativePosition(event, localChart.chart);
+                        if (clickCoordinates.y >= 0) { //custom value, depends on chart style,size, etc
+                            this.$emit('bar_click', localChart.data.axis_names[activeIndex]);
+                            // console.log("clicked on " + localChart.data.labels[activeIndex]);
+                        }
+                    }
+                }
+            });
+        },
+        renderData: function(){
+            // prevent the grapsh from ever growing (it's called twice at first render)
+            this.chart.data.axis_names = [];
+            this.chart.data.labels = [];
+            this.chart.data.datasets = [];
+
+            let cumulative_axis_data = {};
+
+            for(let i=0; i < this.chart_data.length; i++) {
+
+                let data = this.chart_data[i].statistics_per_issue_type;
+
+                if (data === undefined) {
+                    // nothing to show
+                    this.chart.data.axis_names = [];
+                    this.chart.data.labels = [];
+                    this.chart.data.datasets = [];
+                    this.chart.update();
+                    return;
+                }
+
+                this.axis.forEach((ax) => {
+                    if (ax in data) {
+                        if (!Object.keys(cumulative_axis_data).includes(ax)) {
+                            cumulative_axis_data[ax] = 0
+                        }
+                        cumulative_axis_data[ax] += data[ax].pct_ok
+                    }
+                });
+
+            }
+
+            let data = this.chart_data[0].statistics_per_issue_type;
+            let axis_names = [];
+            let labels = [];
+            let chartdata = [];
+
+            this.axis.forEach((ax) => {
+                if (ax in data) {
+                    labels.push(i18n.t("report." + ax));
+                    axis_names.push(ax);
+
+                    // toFixed delivers some 81.32429999999999 results, which is total nonsense.
+                    chartdata.push((Math.round(cumulative_axis_data[ax] * 100) / this.chart_data.length) / 100);
+                }
+            });
+
+            this.chart.data.axis_names = axis_names;
+            this.chart.data.labels = labels;
+            this.chart.data.datasets.push({
+                data: chartdata,
+                backgroundColor: this.color_scheme.incremental[0].background,
+                borderColor: this.color_scheme.incremental[0].border,
+                borderWidth: 1,
+                lineTension: 0,
+                label: `${this.chart_data[0].calculation.name} ${moment(this.chart_data[0].at_when).format('LL')}`,
+            });
+
+
 
             // the ordering is from important to none important, and we want to reverse it so the reader sees that
             // the right most value is the most important instead of the left one.

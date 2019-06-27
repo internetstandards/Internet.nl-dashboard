@@ -60,7 +60,11 @@ function accordinate(){
         setPanelItemFoldText($('.pre-icon', hash), 'close');
         refreshPanelButtonText($(hash), 'open');
     }
-    $('.panel-title a').click(function () {
+
+    // reset onclicks, because adding on-clicks stack: each one will be called causing the panel to open and close multiple times
+    // after calling accordinate multiple times.
+    $('.panel-title a').off("click").click(function () {
+        console.log('Swag');
         if ($(this).attr('aria-expanded') == 'false') {
             $(this).attr('aria-expanded', true).addClass('active').parent().next('.panel-content').slideDown(200).attr('aria-hidden', 'false');
             setPanelItemFoldText($('.pre-icon', this), 'close');
