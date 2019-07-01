@@ -239,7 +239,7 @@ def sum_internet_nl_scores_over_rating(url_ratings):
     for url in url_ratings['urls']:
         for endpoint in url['endpoints']:
             for rating in endpoint['ratings']:
-                if rating['type'] == 'internet_nl_mail_dashboard_overall_score':
+                if rating['type'] in ['internet_nl_mail_dashboard_overall_score', 'internet_nl_web_overall_score']:
                     # explanation":"75 https://batch.internet.nl/mail/portaal.digimelding.nl/289480/",
                     value = rating['explanation'].split(" ")
                     score += int(value[0])
