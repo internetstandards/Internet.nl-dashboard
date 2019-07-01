@@ -155,7 +155,8 @@ const messages = {
             fields: {
                 forum_standardistation: {
                     category_label: 'Forum Standaardisatie',
-                    subcategory_label: 'Magazine',
+                    measurements_on_agreed_security_standards: 'Measurements on agreed security standards',
+                    ipv6_monitor: 'IPv6 monitor',
                 },
                 additional_fields: {
                     label: 'Additional fields',
@@ -176,11 +177,12 @@ const messages = {
                         title: 'Adoption of standards over time',
                         intro: 'This graph compares various measurements of the same list over time. ' +
                             'This provides a visual indication of the progress of standards adoption. A table with the ' +
-                            'same values is avaiable below.'
+                            'same values is avaiable below. This graph shows the average score of internet.nl'
                     },
                     title: 'Average adoption of standards. Overall.',
                     yAxis_label: 'Adoption',
                     xAxis_label: 'Date',
+                    average_internet_nl_score: "Average internet.nl score",
                     accessibility_text: "A table with the content of this graph is shown below.",
                 },
                 adoption_bar_chart: {
@@ -190,6 +192,7 @@ const messages = {
                     },
                     title: 'Average adoption of standards, %{list_information}, %{number_of_domains} domains.',
                     yAxis_label: 'Adoption',
+                    average: "Average",
                     accessibility_text: "A table with the content of this graph is shown below.",
                 },
                 cumulative_adoption_bar_chart: {
@@ -199,6 +202,7 @@ const messages = {
                     },
                     title: 'Average adoption of standards over %{number_of_reports} reports.',
                     yAxis_label: 'Adoption',
+                    average: "Average",
                     accessibility_text: "A table with the content of this graph is shown below.",
                 }
             },
@@ -216,7 +220,7 @@ const messages = {
                     zoomed_in_on: 'Details from',
                     explanation: "Using the details buttons, it is possible to see the individual metrics for each category."
                 },
-                link_to_report: 'View score and report from %{url} on internet.nl. These results are not public. You need an API account to be able to see the results.',
+                link_to_report: 'View score and report from %{url} on internet.nl.',
                 empty_report: 'It looks like this report is empty... did you filter too much?',
                 results: {
                     not_applicable: "Not applicable",
@@ -243,7 +247,9 @@ const messages = {
                     reset_label: 'Resets all values to their original status.',
                     save: 'Save',
                     reset_label: 'Save the changes made in this form.',
-                }
+                },
+                restored_from_database: "Settings restored from database",
+                updated: "Settings updated",
             },
 
             // Nofix: should we use hierarchical translations, which is much prettier? How?
@@ -286,26 +292,40 @@ const messages = {
             web_legacy: 'Web Baseline NL Government',
 
             internet_nl_mail_legacy_dmarc: 'DMARC',
+            internet_nl_mail_legacy_dmarc_explanation: 'Uitleg',
             internet_nl_mail_legacy_dkim: 'DKIM',
+            internet_nl_mail_legacy_dkim_explanation: 'Uitleg',
             internet_nl_mail_legacy_spf: 'SPF',
+            internet_nl_mail_legacy_spf_explanation: 'Uitleg',
             internet_nl_mail_legacy_dmarc_policy: 'DMARC policy',
+            internet_nl_mail_legacy_dmarc_policy_explanation: 'Uitleg',
             internet_nl_mail_legacy_spf_policy: 'SPF policy',
+            internet_nl_mail_legacy_spf_policy_explanation: 'Uitleg',
             internet_nl_mail_legacy_start_tls: 'STARTTLS',
+            internet_nl_mail_legacy_start_tls_explanation: 'Uitleg',
             internet_nl_mail_legacy_start_tls_ncsc: 'STARTTLS NCSC',
-            internet_nl_mail_legacy_dnssec_email_domain: 'DNSSEC e-mail domain',
+            internet_nl_mail_legacy_start_tls_ncsc_explanation: 'Uitleg',
             internet_nl_mail_legacy_dnssec_mx: 'DNSSEC MX',
+            internet_nl_mail_legacy_dnssec_mx_explanation: 'Uitleg',
             internet_nl_mail_legacy_dane: 'DANE',
+            internet_nl_mail_legacy_dane_explanation: 'Uitleg',
             internet_nl_mail_legacy_ipv6_nameserver: 'IPv6 nameserver',
-            internet_nl_mail_legacy_ipv6_mailserver: 'IPv6 mailserver',
+            internet_nl_mail_legacy_ipv6_nameserver_explanation: 'Uitleg',
 
             internet_nl_web_legacy_dnssec: 'DNSSEC',
+            internet_nl_web_legacy_dnssec_explanation: 'Uitleg...',
             internet_nl_web_legacy_tls_available: 'TLS',
+            internet_nl_web_legacy_tls_available_explanation: 'Uitleg...',
             internet_nl_web_legacy_tls_ncsc_web: 'TLS_NCSC',
+            internet_nl_web_legacy_tls_ncsc_web_explanation: 'Uitleg...',
             internet_nl_web_legacy_https_enforced: 'HTTPS',
+            internet_nl_web_legacy_https_enforced_explanation: 'Uitleg...',
             internet_nl_web_legacy_hsts: 'HSTS',
-
+            internet_nl_web_legacy_hsts_explanation: 'Uitleg...',
             internet_nl_web_legacy_ipv6_nameserver: 'IPv6 nameserver',
-            internet_nl_web_legacy_ipv6_webserver: 'IPv6 websever',
+            internet_nl_web_legacy_ipv6_nameserver_explanation: 'Uitleg...',
+            internet_nl_web_legacy_ipv6_webserver: 'IPv6 webserver',
+            internet_nl_web_legacy_ipv6_webserver_explanation: 'Uitleg...',
             // internet_nl_web_legacy_dane: 'DANE',
 
             internet_nl_web_tls: internet_nl_messages.en.internet_nl.test_sitetls_label,
@@ -707,6 +727,17 @@ const messages = {
             mail: 'E-Mail',
             web: 'Web',
 
+            fields: {
+                forum_standardistation: {
+                    category_label: 'Forum Standaardisatie',
+                    measurements_on_agreed_security_standards: 'Measurements on agreed security standards',
+                    ipv6_monitor: 'IPv6 monitor',
+                },
+                additional_fields: {
+                    label: 'Additionele velden',
+                },
+            },
+
             header: {
                 title: 'Rapporten',
                 intro: '',
@@ -724,6 +755,9 @@ const messages = {
                     },
                     title: 'Gemiddelde adoptie van standaarden over tijd.',
                     yAxis_label: 'Adoptiegraad',
+                    xAxis_label: 'Datum',
+                    average_internet_nl_score: "Gemiddelde internet.nl score",
+                    accessibility_text: "Een tabel met de inhoud van deze grafiek wordt hieronder getoond.",
                 },
                 // todo downloads en relevant fields
 
@@ -734,7 +768,19 @@ const messages = {
                     },
                     title: 'Adoptie van standaarden, %{list_information}, %{number_of_domains} domeinen.',
                     yAxis_label: 'Adoptiegraad',
+                    average: "Gemiddeld",
+                    accessibility_text: "Een tabel met de inhoud van deze grafiek wordt hieronder getoond.",
                 },
+                cumulative_adoption_bar_chart: {
+                    annotation: {
+                        title: 'Gemiddelde adoptie, waarbij rapporten bij elkaar worden opgeteld',
+                        intro: 'In deze grafiek worden de geselecteerde rapporten bij elkaar opgeteld, en daar het gemiddelde van getoond.',
+                    },
+                    title: 'Gemiddelde adoptie van standaarden van %{number_of_reports} rapporten.',
+                    yAxis_label: 'Adoptiegraad',
+                    average: "Gemiddeld",
+                    accessibility_text: "Een tabel met de inhoud van deze grafiek wordt hieronder getoond.",
+                }
             },
             report: {
                 title: 'Rapport',
@@ -745,9 +791,12 @@ const messages = {
                         {
                             zoom: 'details',
                             remove_zoom: 'Terug naar hoofdniveau',
+                            zoom_in_on: 'Bekijk de details van {0}',
                         },
-                    zoomed_in_on: 'Details van '
+                    zoomed_in_on: 'Details van ',
+                    explanation: "Met de detail buttons is het mogelijk om details van ieder categorie naar voren te halen."
                 },
+                link_to_report: 'Bekijk de score en rapportage van %{url} op internet.nl.',
                 empty_report: 'Geen meetgegevens gevonden, wordt er misschien teveel gefilterd?',
                 results: {
                     not_applicable: "Niet van toepassing",

@@ -66,8 +66,14 @@
                     <div class="panel-content">
                         <p>{{ $t("report.settings.intro") }}</p>
                         <div>
-                            <button @click="load_issue_filters()">{{ $t("report.settings.buttons.reset") }}<span class="visuallyhidden"></span></button>
+                            <button @click="reset_issue_filters()">{{ $t("report.settings.buttons.reset") }}<span class="visuallyhidden"></span></button>
                             <button @click="save_issue_filters()">{{ $t("report.settings.buttons.save") }}<span class="visuallyhidden"></span></button>
+                            <br>
+                            <template v-if="issue_filters_response.success || issue_filters_response.error">
+                                <div :class="'server-response-' + issue_filters_response.state">
+                                    <span aria-live="assertive">{{ $t(issue_filters_response.message) }} on {{ humanize_date(issue_filters_response.timestamp) }}.</span>
+                                </div>
+                            </template>
                         </div>
                         <template v-for="scan_form in scan_methods">
                             <template v-if="scan_form.name === selected_report[0].type">
@@ -120,15 +126,21 @@
                                                     <input type="checkbox" v-model="issue_filters[field.name].visible" :id="field.name + '_visible'">
                                                     {{ $t("report." + field.name) }}
                                                 </label>
+                                                <template v-if="field.explanation">
+                                                    <p>{{ $t("report." + field.name + "_explanation") }}</p>
+                                                </template>
                                             </div>
 
                                             <template v-if="category.additional_fields.length">
                                                 <div class="test-subsection">{{ $t("report.fields.additional_fields.label") }}</div>
                                                 <div v-for="field in category.additional_fields" class="testresult">
-                                                <label :for="field.name + '_visible'">
-                                                    <input type="checkbox" v-model="issue_filters[field.name].visible" :id="field.name + '_visible'">
-                                                    {{ $t("report." + field.name) }}
-                                                </label>
+                                                    <label :for="field.name + '_visible'">
+                                                        <input type="checkbox" v-model="issue_filters[field.name].visible" :id="field.name + '_visible'">
+                                                        {{ $t("report." + field.name) }}
+                                                    </label>
+                                                    <template v-if="field.explanation">
+                                                        <p>{{ $t("report." + field.name + "_explanation") }}</p>
+                                                    </template>
                                                 </div>
                                             </template>
 
@@ -204,7 +216,7 @@
                 <template v-for="scan_form in scan_methods">
                     <template v-if="scan_form.name === selected_report[0].type">
 
-                        <div style="overflow: auto; width: 100%">
+                        <div style="overflow: auto; width: 100%" v-if="fields_from_categories(scan_form).length">
                             <div class="chart-container" style="position: relative; height:500px; width:100%; min-width: 950px;">
                                 <percentage-bar-chart
                                         :title="graph_bar_chart_title"
@@ -221,7 +233,7 @@
 
                         <template v-for="category in scan_form.categories">
                             <template v-if="is_visible(category.key)">
-                                <div class="testresult">
+                                <div class="testresult" v-if="fields_from_categories(category).length">
                                     <h3 class="panel-title">
                                         <a href="" aria-expanded="false">
                                             <span class="visuallyhidden">-:</span>
@@ -249,7 +261,7 @@
 
                                 <template v-for="subcategory in category.categories">
                                     <!-- Visibility depends on parent category, the labels themselves cannot yet be filtered for visibility. -->
-                                    <div class="testresult" style="margin-left: 2.2em;">
+                                    <div class="testresult" v-if="fields_from_self(subcategory)">
                                         <h4 class="panel-title">
                                             <a href="" aria-expanded="false">
                                                 <span class="visuallyhidden">-:</span>
@@ -292,7 +304,7 @@
                 <template v-for="scan_form in scan_methods">
                     <template v-if="scan_form.name === selected_report[0].type">
 
-                        <div style="overflow: auto; width: 100%">
+                        <div style="overflow: auto; width: 100%" v-if="fields_from_categories(scan_form).length">
                             <div class="chart-container" style="position: relative; height:500px; width:100%; min-width: 950px;">
                                 <cumulative-percentage-bar-chart
                                         :title="$t('report.charts.cumulative_adoption_bar_chart.title', {
@@ -309,7 +321,7 @@
 
                         <template v-for="category in scan_form.categories">
                             <template v-if="is_visible(category.key)">
-                                <div class="testresult">
+                                <div class="testresult" v-if="fields_from_categories(subcategory).length">
                                     <h3 class="panel-title">
                                         <a href="" aria-expanded="false">
                                             <span class="visuallyhidden">-:</span>
@@ -338,7 +350,7 @@
 
                                 <template v-for="subcategory in category.categories">
                                     <!-- Visibility depends on parent category, the labels themselves cannot yet be filtered for visibility. -->
-                                    <div class="testresult" style="margin-left: 2.2em;">
+                                    <div class="testresult" v-if="fields_from_self(subcategory).length">
                                         <h4 class="panel-title">
                                             <a href="" aria-expanded="false">
                                                 <span class="visuallyhidden">-:</span>
@@ -656,7 +668,7 @@ vueReport = new Vue({
             'internet_nl_web_appsecpriv_x_xss_protection': {'visible': true},  // Added 24th of May 2019
         },
 
-        issue_filters_save_response: null,
+        issue_filters_response: {},
 
         // url_filter allows the filtering of names in the list of urls.
         url_filter: '',
@@ -757,14 +769,24 @@ vueReport = new Vue({
             * */
             this.asynchronous_json_post(
                 '/data/account/report_settings/save/', {'filters': this.issue_filters}, (server_response) => {
-                    this.issue_filters_save_response = server_response;
+                    this.issue_filters_response = server_response;
                 }
             );
         },
-        load_issue_filters: function(){
+        reset_issue_filters: function(){
             fetch(`/data/account/report_settings/get/`, {credentials: 'include'}).then(response => response.json()).then(data => {
                 if (!jQuery.isEmptyObject(data)) {
-                    this.issue_filters = data;
+                    this.issue_filters = data.data;
+                    this.issue_filters_response = data;
+                }
+            });
+            this.load_issue_filters();
+
+        },
+        load_issue_filters: function(){
+            fetch(`/data/account/report_settings/get/`, {credentials: 'include'}).then(response => response.json()).then(data => {
+                if (!jQuery.isEmptyObject(data.data)) {
+                    this.issue_filters = data.data;
 
                     // upgrade existing issue filters with new fields:
                     this.upgrade_issue_filter_with_new_field('internet_nl_mail_non_sending_domain');
@@ -1133,25 +1155,30 @@ vueReport = new Vue({
                             categories: [
                                 {
                                     name: 'Measurements on agreed security standards',
-                                    // todo: translate label
-                                    label: 'Measurements on agreed security standards',
+                                    label: i18n.t('report.fields.forum_standardistation.measurements_on_agreed_security_standards'),
                                     fields: [
-                                        {name: 'internet_nl_web_legacy_dnssec'},
-                                        {name: 'internet_nl_web_legacy_tls_available'},
-                                        {name: 'internet_nl_web_legacy_tls_ncsc_web'},
-                                        {name: 'internet_nl_web_legacy_https_enforced'},
-                                        {name: 'internet_nl_web_legacy_hsts'},
+                                        {name: 'internet_nl_web_legacy_dnssec',
+                                        explanation: 'report.fields.forum_standardistation.internet_nl_web_legacy_dnssec_explanation'},
+                                        {name: 'internet_nl_web_legacy_tls_available',
+                                        explanation: 'report.fields.forum_standardistation.internet_nl_web_legacy_tls_available_explanation'},
+                                        {name: 'internet_nl_web_legacy_tls_ncsc_web',
+                                        explanation: 'report.fields.forum_standardistation.internet_nl_web_legacy_tls_ncsc_web_explanation'},
+                                        {name: 'internet_nl_web_legacy_https_enforced',
+                                        explanation: 'report.fields.forum_standardistation.internet_nl_web_legacy_https_enforced_explanation'},
+                                        {name: 'internet_nl_web_legacy_hsts',
+                                        explanation: 'report.fields.forum_standardistation.internet_nl_web_legacy_hsts_explanation'},
                                         // {name: 'internet_nl_web_legacy_dane'},
                                     ],
                                     additional_fields: [],
                                 },
                                 {
                                     name: 'IPv6 Monitor',
-                                    // todo: translate label
-                                    label: 'IPv6 Monitor',
+                                    label: i18n.t('report.fields.forum_standardistation.ipv6_monitor'),
                                     fields: [
-                                        {name: 'internet_nl_web_legacy_ipv6_nameserver'},
-                                        {name: 'internet_nl_web_legacy_ipv6_webserver'},
+                                        {name: 'internet_nl_web_legacy_ipv6_nameserver',
+                                        explanation: 'report.fields.forum_standardistation.internet_nl_web_legacy_ipv6_nameserver_explanation'},
+                                        {name: 'internet_nl_web_legacy_ipv6_webserver',
+                                        explanation: 'report.fields.forum_standardistation.internet_nl_web_legacy_ipv6_webserver_explanation'},
                                         // {name: 'internet_nl_web_legacy_dane'},
                                     ],
                                     additional_fields: [],
@@ -1339,16 +1366,25 @@ vueReport = new Vue({
                                     name: 'magazine',
                                     label: 'Measurements on agreed security standards',
                                     fields: [
-                                        {name: 'internet_nl_mail_legacy_dmarc', explanation: 'tekst...'},
-                                        {name: 'internet_nl_mail_legacy_dkim'},
-                                        {name: 'internet_nl_mail_legacy_spf'},
-                                        {name: 'internet_nl_mail_legacy_dmarc_policy'},
-                                        {name: 'internet_nl_mail_legacy_spf_policy'},
-                                        {name: 'internet_nl_mail_legacy_start_tls'},
-                                        {name: 'internet_nl_mail_legacy_start_tls_ncsc'},
+                                        {name: 'internet_nl_mail_legacy_dmarc',
+                                        explanation: 'report.fields.forum_standardistation.internet_nl_mail_legacy_dmarc_explanation'},
+                                        {name: 'internet_nl_mail_legacy_dkim',
+                                        explanation: 'report.fields.forum_standardistation.internet_nl_mail_legacy_dkim_explanation'},
+                                        {name: 'internet_nl_mail_legacy_spf',
+                                        explanation: 'report.fields.forum_standardistation.internet_nl_mail_legacy_spf_explanation'},
+                                        {name: 'internet_nl_mail_legacy_dmarc_policy',
+                                        explanation: 'report.fields.forum_standardistation.internet_nl_mail_legacy_dmarc_policy_explanation'},
+                                        {name: 'internet_nl_mail_legacy_spf_policy',
+                                        explanation: 'report.fields.forum_standardistation.internet_nl_mail_legacy_spf_policy_explanation'},
+                                        {name: 'internet_nl_mail_legacy_start_tls',
+                                        explanation: 'report.fields.forum_standardistation.internet_nl_mail_legacy_start_tls_explanation'},
+                                        {name: 'internet_nl_mail_legacy_start_tls_ncsc',
+                                        explanation: 'report.fields.forum_standardistation.internet_nl_mail_legacy_start_tls_ncsc_explanation'},
                                         // {name: 'internet_nl_mail_legacy_dnssec_email_domain'},
-                                        {name: 'internet_nl_mail_legacy_dnssec_mx'},
-                                        {name: 'internet_nl_mail_legacy_dane'},
+                                        {name: 'internet_nl_mail_legacy_dnssec_mx',
+                                        explanation: 'report.fields.forum_standardistation.internet_nl_mail_legacy_dnssec_mx_explanation'},
+                                        {name: 'internet_nl_mail_legacy_dane',
+                                        explanation: 'report.fields.forum_standardistation.internet_nl_mail_legacy_dane_explanation'},
                                     ],
                                     additional_fields: [],
                                 },
@@ -1357,8 +1393,10 @@ vueReport = new Vue({
                                     // todo: translate label
                                     label: 'IPv6 Monitor',
                                     fields: [
-                                        {name: 'internet_nl_mail_legacy_ipv6_nameserver'},
-                                        {name: 'internet_nl_web_legacy_ipv6_webserver'},
+                                        {name: 'internet_nl_mail_legacy_ipv6_nameserver',
+                                        explanation: 'report.fields.forum_standardistation.internet_nl_mail_legacy_ipv6_nameserver_explanation'},
+                                        {name: 'internet_nl_web_legacy_ipv6_webserver',
+                                        explanation: 'report.fields.forum_standardistation.internet_nl_web_legacy_ipv6_webserver_explanation'},
                                         // {name: 'internet_nl_mail_legacy_ipv6_mailserver'},
                                     ],
                                     additional_fields: [],
@@ -1631,14 +1669,24 @@ Vue.component('percentage-bar-chart', {
                 let axis_names = [];
                 let labels = [];
                 let chartdata = [];
+                let average = 0;
 
                 this.axis.forEach((ax) => {
                     if (ax in data) {
                         labels.push(i18n.t("report." + ax));
                         axis_names.push(ax);
                         chartdata.push(data[ax].pct_ok);
+                        average += parseFloat(data[ax].pct_ok);
                     }
                 });
+
+                // add the average of all these to the report, not as a line, but as an additional bar
+                // todo: translate label
+                if (labels.length > 1) {
+                    chartdata.push(Math.round((average / labels.length) * 100) / 100);
+                    labels.push(i18n.t(this.translation_key + '.average'));
+                    axis_names.push("Average");
+                }
 
                 this.chart.data.axis_names = axis_names;
                 this.chart.data.labels = labels;
@@ -1694,6 +1742,7 @@ Vue.component('cumulative-percentage-bar-chart', {
                     plugins:{
                         datalabels: {
                             color: '#262626',
+                            display: 'auto',
                             clamp: true, // always shows the number, also when the number 100%
                             anchor: 'end', // show the number at the top of the bar.
                             align: 'end', // shows the value outside of the bar,
@@ -1798,6 +1847,7 @@ Vue.component('cumulative-percentage-bar-chart', {
             let axis_names = [];
             let labels = [];
             let chartdata = [];
+            let average = 0;
 
             this.axis.forEach((ax) => {
                 if (ax in data) {
@@ -1805,9 +1855,17 @@ Vue.component('cumulative-percentage-bar-chart', {
                     axis_names.push(ax);
 
                     // toFixed delivers some 81.32429999999999 results, which is total nonsense.
+                    average += (Math.round(cumulative_axis_data[ax] / this.chart_data.length * 100)) / 100;
                     chartdata.push((Math.round(cumulative_axis_data[ax] / this.chart_data.length * 100)) / 100);
                 }
             });
+
+            // add the average of all these to the report, not as a line, but as an additional bar
+            if (labels.length > 1) {
+                chartdata.push(Math.round((average / labels.length) * 100) / 100);
+                labels.push(i18n.t(this.translation_key + '.average'));
+                axis_names.push("Average");
+            }
 
             this.chart.data.axis_names = axis_names;
             this.chart.data.labels = labels;
@@ -1854,6 +1912,7 @@ Vue.component('line-chart', {
                     plugins:{
                         datalabels: {
                             color: '#262626',
+                            display: 'auto',
                             clamp: true, // always shows the number, also when the number 100%
                             anchor: 'end', // show the number at the top of the bar.
                             align: 'end', // shows the value outside of the bar,
@@ -1900,7 +1959,7 @@ Vue.component('line-chart', {
                                 unit: 'month'
                             },
                             scaleLabel: {
-                                display: false,
+                                display: true,
                                 labelString: 'Month'
                             }
                         }],
@@ -1980,8 +2039,7 @@ Vue.component('line-chart', {
                     hidden: !this.axis.includes('pct_ok')
                 },
                 {
-                    // todo: translate label(!)
-                    label: 'Average internet.nl score',
+                    label: i18n.t(this.translation_key + '.average_internet_nl_score'),
                     data: average_internet_nl_score,
                     backgroundColor: this.color_scheme.incremental[1].background,
                     borderColor: this.color_scheme.incremental[1].border,
