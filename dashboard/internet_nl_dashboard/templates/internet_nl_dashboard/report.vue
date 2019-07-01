@@ -182,7 +182,7 @@
                                             {{ humanize_date_date_only(stat.date) }}
                                         </td>
                                         <td>
-                                            {{ stat.pct_ok }}%
+                                            {{ stat.average_internet_nl_score }}%
                                         </td>
                                     </tr>
                                 </tbody>
@@ -1805,7 +1805,7 @@ Vue.component('cumulative-percentage-bar-chart', {
                     axis_names.push(ax);
 
                     // toFixed delivers some 81.32429999999999 results, which is total nonsense.
-                    chartdata.push((Math.round(cumulative_axis_data[ax] * 100) / this.chart_data.length) / 100);
+                    chartdata.push((Math.round(cumulative_axis_data[ax] / this.chart_data.length * 100)) / 100);
                 }
             });
 
