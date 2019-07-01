@@ -91,6 +91,7 @@ def get_urllist_report_graph_data(account: Account, urllist_id: int):
             'medium': per_report_statistcs.medium,
             'low': per_report_statistcs.low,
             'ok': per_report_statistcs.ok,
+            'average_internet_nl_score': per_report_statistcs.average_internet_nl_score,
 
             # todo: these numbers might be added to the statics calculation?
             'not_ok': not_ok,

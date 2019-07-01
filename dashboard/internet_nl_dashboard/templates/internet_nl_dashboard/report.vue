@@ -159,7 +159,7 @@
                                 :translation_key="'report.charts.adoption_timeline'"
                                 :chart_data="issue_timeline_of_related_urllist"
                                 :accessibility_text="$t('report.charts.adoption_timeline.accessibility_text')"
-                                :axis="['pct_ok']">
+                                :axis="['average_internet_nl_score']">
                         </line-chart>
 
                         <div style="overflow-x: scroll; overflow-y: hidden;">
@@ -555,9 +555,9 @@ vueReport = new Vue({
         // settings
         issue_filters: {
             'web': {'visible': true},
-            'web_legacy': {'visible': true},
+            'web_legacy': {'visible': false},
             'mail': {'visible': true},
-            'mail_legacy': {'visible': true},
+            'mail_legacy': {'visible': false},
             'internet_nl_web_tls': {'visible': true},
             'internet_nl_web_dnssec': {'visible': true},
             'internet_nl_web_ipv6': {'visible': true},
@@ -616,31 +616,31 @@ vueReport = new Vue({
             'internet_nl_mail_ipv6_ns_reach': {'visible': true},
             'internet_nl_mail_ipv6_ns_address': {'visible': true},
 
-            'internet_nl_mail_legacy_dmarc': {'visible': true},
-            'internet_nl_mail_legacy_dkim': {'visible': true},
-            'internet_nl_mail_legacy_spf': {'visible': true},
-            'internet_nl_mail_legacy_dmarc_policy': {'visible': true},
-            'internet_nl_mail_legacy_spf_policy': {'visible': true},
-            'internet_nl_mail_legacy_start_tls': {'visible': true},
-            'internet_nl_mail_legacy_start_tls_ncsc': {'visible': true},
-            'internet_nl_mail_legacy_dnssec_email_domain': {'visible': true},
-            'internet_nl_mail_legacy_dnssec_mx': {'visible': true},
-            'internet_nl_mail_legacy_dane': {'visible': true},
-            'internet_nl_mail_legacy_ipv6_nameserver': {'visible': true},
-            'internet_nl_mail_legacy_ipv6_mailserver': {'visible': true},
+            'internet_nl_mail_legacy_dmarc': {'visible': false},
+            'internet_nl_mail_legacy_dkim': {'visible': false},
+            'internet_nl_mail_legacy_spf': {'visible': false},
+            'internet_nl_mail_legacy_dmarc_policy': {'visible': false},
+            'internet_nl_mail_legacy_spf_policy': {'visible': false},
+            'internet_nl_mail_legacy_start_tls': {'visible': false},
+            'internet_nl_mail_legacy_start_tls_ncsc': {'visible': false},
+            'internet_nl_mail_legacy_dnssec_email_domain': {'visible': false},
+            'internet_nl_mail_legacy_dnssec_mx': {'visible': false},
+            'internet_nl_mail_legacy_dane': {'visible': false},
+            'internet_nl_mail_legacy_ipv6_nameserver': {'visible': false},
+            'internet_nl_mail_legacy_ipv6_mailserver': {'visible': false},
 
-            'internet_nl_web_legacy_dnssec': {'visible': true},
-            'internet_nl_web_legacy_tls_available': {'visible': true},
-            'internet_nl_web_legacy_tls_ncsc_web': {'visible': true},
-            'internet_nl_web_legacy_https_enforced': {'visible': true},
-            'internet_nl_web_legacy_hsts': {'visible': true},
-            'internet_nl_web_legacy_ipv6_nameserver': {'visible': true},
-            'internet_nl_web_legacy_ipv6_webserver': {'visible': true},
-            'internet_nl_web_legacy_dane': {'visible': true},
+            'internet_nl_web_legacy_dnssec': {'visible': false},
+            'internet_nl_web_legacy_tls_available': {'visible': false},
+            'internet_nl_web_legacy_tls_ncsc_web': {'visible': false},
+            'internet_nl_web_legacy_https_enforced': {'visible': false},
+            'internet_nl_web_legacy_hsts': {'visible': false},
+            'internet_nl_web_legacy_ipv6_nameserver': {'visible': false},
+            'internet_nl_web_legacy_ipv6_webserver': {'visible': false},
+            'internet_nl_web_legacy_dane': {'visible': false},
 
             // Fields added on the 24th of May 2019
-            'internet_nl_mail_auth_dmarc_policy_only': {'visible': true},  // Added 24th of May 2019
-            'internet_nl_mail_auth_dmarc_ext_destination': {'visible': true},  // Added 24th of May 2019
+            'internet_nl_mail_auth_dmarc_policy_only': {'visible': false},  // Added 24th of May 2019
+            'internet_nl_mail_auth_dmarc_ext_destination': {'visible': false},  // Added 24th of May 2019
 
             // no feature flags in report
             'internet_nl_mail_non_sending_domain': {'visible': false},  // Added 24th of May 2019
@@ -1031,7 +1031,7 @@ vueReport = new Vue({
                                 {
                                     // the exception to the rule
                                     name: '',
-                                    label: '',
+                                    label: internet_nl_messages[language].internet_nl.test_sitednssec_label,
                                     fields: [
                                         {name: 'internet_nl_web_dnssec_exist'},
                                         {name: 'internet_nl_web_dnssec_valid'},
@@ -1132,17 +1132,27 @@ vueReport = new Vue({
 
                             categories: [
                                 {
-                                    name: 'magazine',
-                                    label: i18n.t('report.fields.forum_standardistation.subcategory_label'),
+                                    name: 'Measurements on agreed security standards',
+                                    // todo: translate label
+                                    label: 'Measurements on agreed security standards',
                                     fields: [
                                         {name: 'internet_nl_web_legacy_dnssec'},
                                         {name: 'internet_nl_web_legacy_tls_available'},
                                         {name: 'internet_nl_web_legacy_tls_ncsc_web'},
                                         {name: 'internet_nl_web_legacy_https_enforced'},
                                         {name: 'internet_nl_web_legacy_hsts'},
+                                        // {name: 'internet_nl_web_legacy_dane'},
+                                    ],
+                                    additional_fields: [],
+                                },
+                                {
+                                    name: 'IPv6 Monitor',
+                                    // todo: translate label
+                                    label: 'IPv6 Monitor',
+                                    fields: [
                                         {name: 'internet_nl_web_legacy_ipv6_nameserver'},
                                         {name: 'internet_nl_web_legacy_ipv6_webserver'},
-                                        {name: 'internet_nl_web_legacy_dane'},
+                                        // {name: 'internet_nl_web_legacy_dane'},
                                     ],
                                     additional_fields: [],
                                 }
@@ -1154,7 +1164,6 @@ vueReport = new Vue({
                     name: 'mail',
                     fields: [],
                     additional_fields: [
-                        {name: 'internet_nl_mail_server_configured'},
                     ],
 
                     label: internet_nl_messages[language].internet_nl.base_test_mail_label,
@@ -1185,7 +1194,9 @@ vueReport = new Vue({
                                         {name: 'internet_nl_mail_ipv6_mx_address'},
                                         {name: 'internet_nl_mail_ipv6_mx_reach'},
                                     ],
-                                    additional_fields: [],
+                                    additional_fields: [
+                                        {name: 'internet_nl_mail_server_configured'},
+                                    ],
                                 }
                             ]
                         },
@@ -1226,7 +1237,7 @@ vueReport = new Vue({
                                 {name: 'internet_nl_mail_dashboard_auth'}
                             ],
                             additional_fields: [
-                                {name: 'internet_nl_mail_non_sending_domain'}
+
                             ],
                             categories: [
                                 {
@@ -1235,8 +1246,6 @@ vueReport = new Vue({
                                     fields: [
                                         {name: 'internet_nl_mail_auth_dmarc_exist'},
                                         {name: 'internet_nl_mail_auth_dmarc_policy'},
-                                        {name: 'internet_nl_mail_auth_dmarc_policy_only'},
-                                        {name: 'internet_nl_mail_auth_dmarc_ext_destination'},
                                     ],
                                     additional_fields: [],
                                 },
@@ -1255,7 +1264,11 @@ vueReport = new Vue({
                                         {name: 'internet_nl_mail_auth_spf_exist'},
                                         {name: 'internet_nl_mail_auth_spf_policy'},
                                     ],
-                                    additional_fields: [],
+                                    additional_fields: [
+                                        {name: 'internet_nl_mail_non_sending_domain'},
+                                        {name: 'internet_nl_mail_auth_dmarc_policy_only'},
+                                        {name: 'internet_nl_mail_auth_dmarc_ext_destination'},
+                                    ],
                                 },
                             ]
                         },
@@ -1267,7 +1280,7 @@ vueReport = new Vue({
                                 {name: 'internet_nl_mail_dashboard_tls'},
                             ],
                             additional_fields: [
-                                {name: 'internet_nl_mail_servers_testable'},
+
                             ],
                             categories: [
                                 {
@@ -1304,7 +1317,8 @@ vueReport = new Vue({
                                         {name: 'internet_nl_mail_starttls_dane_rollover'},
                                     ],
                                     additional_fields: [
-                                        {name: 'internet_nl_mail_starttls_dane_ta'}
+                                        {name: 'internet_nl_mail_starttls_dane_ta'},
+                                        {name: 'internet_nl_mail_servers_testable'},
                                     ],
                                 },
                             ]
@@ -1323,20 +1337,29 @@ vueReport = new Vue({
                             categories: [
                                 {
                                     name: 'magazine',
-                                    label: i18n.t('report.fields.forum_standardistation.subcategory_label'),
+                                    label: 'Measurements on agreed security standards',
                                     fields: [
-                                        {name: 'internet_nl_mail_legacy_dmarc'},
+                                        {name: 'internet_nl_mail_legacy_dmarc', explanation: 'tekst...'},
                                         {name: 'internet_nl_mail_legacy_dkim'},
                                         {name: 'internet_nl_mail_legacy_spf'},
                                         {name: 'internet_nl_mail_legacy_dmarc_policy'},
                                         {name: 'internet_nl_mail_legacy_spf_policy'},
                                         {name: 'internet_nl_mail_legacy_start_tls'},
                                         {name: 'internet_nl_mail_legacy_start_tls_ncsc'},
-                                        {name: 'internet_nl_mail_legacy_dnssec_email_domain'},
+                                        // {name: 'internet_nl_mail_legacy_dnssec_email_domain'},
                                         {name: 'internet_nl_mail_legacy_dnssec_mx'},
                                         {name: 'internet_nl_mail_legacy_dane'},
+                                    ],
+                                    additional_fields: [],
+                                },
+                                {
+                                    name: 'IPv6 Monitor',
+                                    // todo: translate label
+                                    label: 'IPv6 Monitor',
+                                    fields: [
                                         {name: 'internet_nl_mail_legacy_ipv6_nameserver'},
-                                        {name: 'internet_nl_mail_legacy_ipv6_mailserver'},
+                                        {name: 'internet_nl_web_legacy_ipv6_webserver'},
+                                        // {name: 'internet_nl_mail_legacy_ipv6_mailserver'},
                                     ],
                                     additional_fields: [],
                                 }
@@ -1883,7 +1906,7 @@ Vue.component('line-chart', {
                         }],
                         yAxes: [{
                             display: true,
-                            stacked: true,
+                            stacked: false,
                             ticks: {
                                 padding: 20,
                                 min: 0,
@@ -1913,6 +1936,7 @@ Vue.component('line-chart', {
             let not_ok = Array();
             let pct_ok = Array();
             let pct_not_ok = Array();
+            let average_internet_nl_score = [];
 
             for(let i=0; i<data.length; i++){
                 labels.push(data[i].date);
@@ -1923,6 +1947,7 @@ Vue.component('line-chart', {
                 not_ok.push(data[i].not_ok);
                 pct_ok.push(data[i].pct_ok);
                 pct_not_ok.push(data[i].pct_not_ok);
+                average_internet_nl_score.push(data[i].average_internet_nl_score);
             }
 
             this.chart.data.labels = labels;
@@ -1953,6 +1978,16 @@ Vue.component('line-chart', {
                     borderWidth: 1,
                     lineTension: 0,
                     hidden: !this.axis.includes('pct_ok')
+                },
+                {
+                    // todo: translate label(!)
+                    label: 'Average internet.nl score',
+                    data: average_internet_nl_score,
+                    backgroundColor: this.color_scheme.incremental[1].background,
+                    borderColor: this.color_scheme.incremental[1].border,
+                    borderWidth: 1,
+                    lineTension: 0,
+                    hidden: !this.axis.includes('average_internet_nl_score')
                 },
                 {
                     label: '% NOT OK',

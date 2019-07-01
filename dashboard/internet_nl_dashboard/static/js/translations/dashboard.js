@@ -299,13 +299,14 @@ const messages = {
             internet_nl_mail_legacy_ipv6_mailserver: 'IPv6 mailserver',
 
             internet_nl_web_legacy_dnssec: 'DNSSEC',
-            internet_nl_web_legacy_tls_available: 'TLS available',
-            internet_nl_web_legacy_tls_ncsc_web: 'TLS NCSC web',
-            internet_nl_web_legacy_https_enforced: 'HTTPS enforced',
+            internet_nl_web_legacy_tls_available: 'TLS',
+            internet_nl_web_legacy_tls_ncsc_web: 'TLS_NCSC',
+            internet_nl_web_legacy_https_enforced: 'HTTPS',
             internet_nl_web_legacy_hsts: 'HSTS',
+
             internet_nl_web_legacy_ipv6_nameserver: 'IPv6 nameserver',
             internet_nl_web_legacy_ipv6_webserver: 'IPv6 websever',
-            internet_nl_web_legacy_dane: 'DANE',
+            // internet_nl_web_legacy_dane: 'DANE',
 
             internet_nl_web_tls: internet_nl_messages.en.internet_nl.test_sitetls_label,
             internet_nl_web_dnssec: internet_nl_messages.en.internet_nl.test_sitednssec_label,

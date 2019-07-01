@@ -411,6 +411,13 @@ class UrlListReport(SeriesOfUrlsReportMixin):
     """
     urllist = models.ForeignKey(UrlList, on_delete=models.CASCADE)
 
+    average_internet_nl_score = models.FloatField(
+        help_text="Internet.nl scores are retrieved in point. The calculation done for that is complex and "
+                  "subject to change over time. Therefore it is impossible to re-calculate that score here."
+                  "Instead the score is stored as a given.",
+        default=0,
+    )
+
     class Meta:
         get_latest_by = "at_when"
         index_together = [
