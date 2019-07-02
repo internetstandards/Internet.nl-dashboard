@@ -221,6 +221,7 @@ def rate_urllist_on_moment(urllist: UrlList, when: datetime = None, prevent_dupl
     report = UrlListReport(**init_scores)
     report.urllist = urllist
     report.at_when = when
+    report.average_internet_nl_score = sum_internet_nl_scores_over_rating(calculation)
     report.calculation = calculation
     report.save()
 
@@ -229,3 +230,22 @@ def relevant_urls_at_timepoint_urllist(urllist: UrlList, when: datetime):
     queryset = Url.objects.filter(urls_in_dashboard_list=urllist)
 
     return relevant_urls_at_timepoint(queryset=queryset, when=when)
+
+
+def sum_internet_nl_scores_over_rating(url_ratings):
+    score = 0
+    number_of_scores = 0
+
+    for url in url_ratings['urls']:
+        for endpoint in url['endpoints']:
+            for rating in endpoint['ratings']:
+                if rating['type'] in ['internet_nl_mail_dashboard_overall_score', 'internet_nl_web_overall_score']:
+                    # explanation":"75 https://batch.internet.nl/mail/portaal.digimelding.nl/289480/",
+                    value = rating['explanation'].split(" ")
+                    score += int(value[0])
+                    number_of_scores += 1
+
+    if not number_of_scores:
+        return 0
+
+    return round(score / number_of_scores, 2)

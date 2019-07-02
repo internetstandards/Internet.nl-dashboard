@@ -328,13 +328,14 @@ class UrlListReportAdmin(ImportExportModelAdmin, admin.ModelAdmin):
         return format_html('<a href="../../internet_nl_dashboard/urllist/{id}/change">inspect</a>',
                            id=format(obj.id))
 
-    list_display = ('urllist', 'high', 'medium', 'low', 'ok', 'total_endpoints', 'ok_endpoints',
-                    'at_when', 'inspect_list')
+    list_display = ('urllist', 'average_internet_nl_score', 'high', 'medium', 'low', 'ok', 'total_endpoints',
+                    'ok_endpoints', 'at_when', 'inspect_list')
     search_fields = (['at_when'])
     list_filter = ['urllist', 'at_when'][::-1]
     fields = ('urllist',
               'at_when',
               'calculation',
+              'average_internet_nl_score',
 
               'total_endpoints',
               'total_issues',

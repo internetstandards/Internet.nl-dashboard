@@ -93,9 +93,8 @@ Vue Modal
   font-family: Helvetica, Arial, sans-serif;
 }
 
-.modal-header h3 {
+.modal-header h1 {
   margin-top: 0;
-  color: #42b983;
 }
 
 .modal-body {
@@ -150,15 +149,25 @@ small {
     padding: 10px;
     margin-bottom: 10px;
     background-color: lightgreen;
-    color: darkgreen;
+    color: #004f00;
 }
 
-label {
-    font-weight: 600;
+.managed-url-list h2 {
+    display: inline;
+    font-size: 1.2em;
 }
 
-.managed-url-list{
-    background-color: ghostwhite;
+.panel-title a .icon {
+    transition: all 200ms ease 0s;
+    width: 1em;
+    height: 1em;
+    background: url("/static/images/vendor/internet_nl/icon-arrow-down.png") center right no-repeat !important;
+    background-image: url("/static/images/vendor/internet_nl/icon-arrow-down.svg"), none !important;
+    background-size: contain
+}
+
+.testresult h3 {
+    margin-top: 0px;
 }
 
 .inline-edit input {
@@ -369,13 +378,6 @@ th.rotate > div > span {
 
 .table .summaryrow {
     font-size: 0.8em;
-}
-
-
-.anchorlink {
-    color: black;
-    text-decoration: none;
-    
 }
 
 /* https://stackoverflow.com/questions/10732690/offsetting-an-html-anchor-to-adjust-for-fixed-header */

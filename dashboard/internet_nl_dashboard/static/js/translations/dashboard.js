@@ -1,5 +1,17 @@
 const messages = {
     en: {
+        icons: {
+            list_closed: "List closed",
+            list_opened: "List opened",
+            report: "report",
+            settings: "settings",
+            bulk_add_new: "Add domains in bulk",
+            scan: "scan",
+            can_connect: "Can connect icon",
+            unknown_connectivity: "Unknown connectivity icon",
+            cannot_connect: "Can not connect",
+            remove_filter: 'Show categories'
+        },
         menu: {
             admin: 'Admin',
             domains: "Domains",
@@ -18,6 +30,21 @@ const messages = {
             button_create_list_label: 'Create List',
         },
         domain_management: {
+
+            title: "Domains",
+            intro: "Manage lists with domains",
+            bulk_upload_link: "Upload large amount of data by using the Bulk Address uploader, here.",
+
+            icon_legend: {
+                title: "Legend of used icons",
+                intro: "The domains in the lists below will be included in each scan. Before a scan is performed, the eligibility of the " +
+                    "service is checked. This check is always performed for the scan. To give an insight in how connected" +
+                    "these services are, the last known state is presented as the first icon.",
+                can_connect: "Can connect to this service, will (probably) be scanned.",
+                unknown_connectivity: "Unknown if this service is available, will be scanned if available.",
+                cannot_connect: "Service not available, will (probably) not be scanned."
+            },
+
 
             button_labels: {
                 configure: 'Configure',
@@ -42,17 +69,22 @@ const messages = {
                 next_scheduled_scan: 'Next scheduled scan',
                 scanning_disabled: 'Scanning of this list is disabled.',
                 latest_report: 'Latest report',
-                open: 'open',
             },
 
             domains: {
                 header: 'Domains',
-                eligeble_mail: 'Is eligeble for e-mail scans',
-                unknown_eligeble_mail: 'Not yet known if scanable for mail',
-                not_eligeble_mail: 'Is not eligeble for e-mail scans. Will be checked again when starting a scan.',
-                eligeble_web: 'Is eligeble for web scans',
-                unknown_eligeble_web: 'Not yet known if scannable for web',
-                not_eligeble_web: 'Is not eligeble for web scans. Will be checked again when starting a scan.',
+                intro: "These domains will be included in the scan. Their eligibility for scanning is checked just " +
+                    "before requesting the scan, the information shown here may be outdated.",
+                start_editing_url: 'Edit {0}.',
+                cancel_editing_url: 'Cancel editing and store the original value: {0}',
+                eligeble_mail: '{0} is eligeble for e-mail scans',
+                unknown_eligeble_mail: 'Not yet known if {0} is scanable for mail',
+                not_eligeble_mail: '{0} is not eligeble for e-mail scans. Will be checked again when starting a scan.',
+                eligeble_web: '{0} is eligeble for web scans',
+                unknown_eligeble_web: 'Not yet known if {0} is scannable for web',
+                not_eligeble_web: '{0} is not eligeble for web scans. Will be checked again when starting a scan.',
+                save_edited_url: 'Save changes, the change will be applied to {0}.',
+                delete_edited_url: 'Delete {0} from this list.',
 
                 button_labels: {
                     save: 'Save',
@@ -120,19 +152,23 @@ const messages = {
             mail: 'E-Mail',
             web: 'Web',
 
+            fields: {
+                forum_standardistation: {
+                    category_label: 'Forum Standaardisatie',
+                    measurements_on_agreed_security_standards: 'Measurements on agreed security standards',
+                    ipv6_monitor: 'IPv6 monitor',
+                },
+                additional_fields: {
+                    label: 'Additional fields',
+                },
+            },
+
             header: {
                 title: 'Reports',
-                intro: '',
+                intro: 'Select one or multiple reports, these will be displayed below.',
                 select_report: 'Select report...',
                 max_elements: 'Maximum number of reports selected.',
                 no_options: 'No reports available.',
-            },
-
-            buttons: {
-                charts: 'Charts',
-                report: 'Report data',
-                download: 'Download data',
-                settings: 'Relevant fields',
             },
 
             charts: {
@@ -140,19 +176,35 @@ const messages = {
                     annotation: {
                         title: 'Adoption of standards over time',
                         intro: 'This graph compares various measurements of the same list over time. ' +
-                            'This provides a visual indication of the progress of standards adoption.'
+                            'This provides a visual indication of the progress of standards adoption. A table with the ' +
+                            'same values is avaiable below. This graph shows the average score of internet.nl'
                     },
                     title: 'Average adoption of standards. Overall.',
                     yAxis_label: 'Adoption',
+                    xAxis_label: 'Date',
+                    average_internet_nl_score: "Average internet.nl score",
+                    accessibility_text: "A table with the content of this graph is shown below.",
                 },
                 adoption_bar_chart: {
                     annotation: {
                         title: 'Average adoption of standards ',
-                        intro: 'This graph shows the average adoption per standard in this report.',
+                        intro: 'This graph shows the average adoption per standard per report.',
                     },
                     title: 'Average adoption of standards, %{list_information}, %{number_of_domains} domains.',
                     yAxis_label: 'Adoption',
+                    average: "Average",
+                    accessibility_text: "A table with the content of this graph is shown below.",
                 },
+                cumulative_adoption_bar_chart: {
+                    annotation: {
+                        title: 'Average adoption of standards over multiple reports',
+                        intro: 'This graph shows the average adoption per standard averaged over multiple reports.',
+                    },
+                    title: 'Average adoption of standards over %{number_of_reports} reports.',
+                    yAxis_label: 'Adoption',
+                    average: "Average",
+                    accessibility_text: "A table with the content of this graph is shown below.",
+                }
             },
             report: {
                 title: 'Report',
@@ -161,11 +213,14 @@ const messages = {
                 zoom: {
                     buttons:
                         {
-                            zoom: 'zoom',
-                            remove_zoom: 'Remove zoom',
+                            zoom: 'details',
+                            remove_zoom: 'Back to the category view',
+                            zoom_in_on: 'View details of {0}',
                         },
-                    zoomed_in_on: 'Zoomed in on'
+                    zoomed_in_on: 'Details from',
+                    explanation: "Using the details buttons, it is possible to see the individual metrics for each category."
                 },
+                link_to_report: 'View score and report from %{url} on internet.nl.',
                 empty_report: 'It looks like this report is empty... did you filter too much?',
                 results: {
                     not_applicable: "Not applicable",
@@ -178,19 +233,23 @@ const messages = {
                 }
             },
             download: {
-                title: 'Download',
+                title: 'Download all metrics in a spreadsheet',
                 intro: 'Report data is available in the following formats:',
                 xlsx: 'Excel Spreadsheet (Microsoft Office), .xlsx',
                 ods: 'Open Document Spreadsheet (Libre Office), .ods',
                 csv: 'Comma Separated (for programmers), .csv',
             },
             settings: {
-                title: 'Relevant fields',
+                title: 'Select visible metrics',
                 intro: 'To retain focus, select the fields that are relevant to your organization.',
                 buttons: {
                     reset: 'Reset',
+                    reset_label: 'Resets all values to their original status.',
                     save: 'Save',
-                }
+                    reset_label: 'Save the changes made in this form.',
+                },
+                restored_from_database: "Settings restored from database",
+                updated: "Settings updated",
             },
 
             // Nofix: should we use hierarchical translations, which is much prettier? How?
@@ -233,26 +292,41 @@ const messages = {
             web_legacy: 'Web Baseline NL Government',
 
             internet_nl_mail_legacy_dmarc: 'DMARC',
+            internet_nl_mail_legacy_dmarc_explanation: 'Explanation',
             internet_nl_mail_legacy_dkim: 'DKIM',
+            internet_nl_mail_legacy_dkim_explanation: 'Explanation',
             internet_nl_mail_legacy_spf: 'SPF',
+            internet_nl_mail_legacy_spf_explanation: 'Explanation',
             internet_nl_mail_legacy_dmarc_policy: 'DMARC policy',
+            internet_nl_mail_legacy_dmarc_policy_explanation: 'Explanation',
             internet_nl_mail_legacy_spf_policy: 'SPF policy',
+            internet_nl_mail_legacy_spf_policy_explanation: 'Explanation',
             internet_nl_mail_legacy_start_tls: 'STARTTLS',
+            internet_nl_mail_legacy_start_tls_explanation: 'Explanation',
             internet_nl_mail_legacy_start_tls_ncsc: 'STARTTLS NCSC',
-            internet_nl_mail_legacy_dnssec_email_domain: 'DNSSEC e-mail domain',
+            internet_nl_mail_legacy_start_tls_ncsc_explanation: 'Explanation',
             internet_nl_mail_legacy_dnssec_mx: 'DNSSEC MX',
+            internet_nl_mail_legacy_dnssec_mx_explanation: 'Explanation',
             internet_nl_mail_legacy_dane: 'DANE',
+            internet_nl_mail_legacy_dane_explanation: 'Explanation',
             internet_nl_mail_legacy_ipv6_nameserver: 'IPv6 nameserver',
-            internet_nl_mail_legacy_ipv6_mailserver: 'IPv6 mailserver',
+            internet_nl_mail_legacy_ipv6_nameserver_explanation: 'Explanation',
 
             internet_nl_web_legacy_dnssec: 'DNSSEC',
-            internet_nl_web_legacy_tls_available: 'TLS available',
-            internet_nl_web_legacy_tls_ncsc_web: 'TLS NCSC web',
-            internet_nl_web_legacy_https_enforced: 'HTTPS enforced',
+            internet_nl_web_legacy_dnssec_explanation: 'Explanation...',
+            internet_nl_web_legacy_tls_available: 'TLS',
+            internet_nl_web_legacy_tls_available_explanation: 'Explanation...',
+            internet_nl_web_legacy_tls_ncsc_web: 'TLS_NCSC',
+            internet_nl_web_legacy_tls_ncsc_web_explanation: 'Explanation...',
+            internet_nl_web_legacy_https_enforced: 'HTTPS',
+            internet_nl_web_legacy_https_enforced_explanation: 'Explanation...',
             internet_nl_web_legacy_hsts: 'HSTS',
+            internet_nl_web_legacy_hsts_explanation: 'Explanation...',
             internet_nl_web_legacy_ipv6_nameserver: 'IPv6 nameserver',
-            internet_nl_web_legacy_ipv6_webserver: 'IPv6 websever',
-            internet_nl_web_legacy_dane: 'DANE',
+            internet_nl_web_legacy_ipv6_nameserver_explanation: 'Explanation...',
+            internet_nl_web_legacy_ipv6_webserver: 'IPv6 webserver',
+            internet_nl_web_legacy_ipv6_webserver_explanation: 'Explanation...',
+            // internet_nl_web_legacy_dane: 'DANE',
 
             internet_nl_web_tls: internet_nl_messages.en.internet_nl.test_sitetls_label,
             internet_nl_web_dnssec: internet_nl_messages.en.internet_nl.test_sitednssec_label,
@@ -284,7 +358,7 @@ const messages = {
             internet_nl_mail_dashboard_ipv6_verdict_bad: internet_nl_messages.en.internet_nl.test_mailipv6_failed_summary,
 
             // https://github.com/NLnetLabs/Internet.nl/blob/cece8255ac7f39bded137f67c94a10748970c3c7/checks/templates/domain-results.html
-            internet_nl_web_appsecpriv: internet_nl_messages.en.internet_nl.results_domain_appsecpriv_http_headers_label,  // Added 24 May 2019
+            internet_nl_web_appsecpriv: internet_nl_messages.en.internet_nl.test_siteappsecpriv_label,  // Added 24 May 2019
             internet_nl_web_appsecpriv_csp: internet_nl_messages.en.internet_nl.detail_web_appsecpriv_http_csp_label,  // Added 24 May 2019
             internet_nl_web_appsecpriv_referrer_policy: internet_nl_messages.en.internet_nl.detail_web_appsecpriv_http_referrer_policy_label,  // Added 24 May 2019
             internet_nl_web_appsecpriv_x_content_type_options: internet_nl_messages.en.internet_nl.detail_web_appsecpriv_http_x_content_type_label,  // Added 24 May 2019
@@ -578,7 +652,6 @@ const messages = {
                 next_scheduled_scan: 'Volgende ingeplande scan',
                 scanning_disabled: 'Scannen van deze lijst is uitgeschakeld.',
                 latest_report: 'Meest actuele rapportage',
-                open: 'openen',
             },
 
             domains: {
@@ -654,19 +727,23 @@ const messages = {
             mail: 'E-Mail',
             web: 'Web',
 
+            fields: {
+                forum_standardistation: {
+                    category_label: 'Forum Standaardisatie',
+                    measurements_on_agreed_security_standards: 'Measurements on agreed security standards',
+                    ipv6_monitor: 'IPv6 monitor',
+                },
+                additional_fields: {
+                    label: 'Additionele velden',
+                },
+            },
+
             header: {
                 title: 'Rapporten',
                 intro: '',
                 select_report: 'Selecteer rapport...',
                 max_elements: 'Maximum aantal rapporten geselecteerd.',
                 no_options: 'Geen rapporten beschikbaar.',
-            },
-
-            buttons: {
-                charts: 'Grafieken',
-                report: 'Metingen',
-                download: 'Download',
-                settings: 'Instellingen',
             },
 
             charts: {
@@ -678,8 +755,10 @@ const messages = {
                     },
                     title: 'Gemiddelde adoptie van standaarden over tijd.',
                     yAxis_label: 'Adoptiegraad',
+                    xAxis_label: 'Datum',
+                    average_internet_nl_score: "Gemiddelde internet.nl score",
+                    accessibility_text: "Een tabel met de inhoud van deze grafiek wordt hieronder getoond.",
                 },
-                // todo downloads en relevant fields
 
                 adoption_bar_chart: {
                     annotation: {
@@ -688,7 +767,19 @@ const messages = {
                     },
                     title: 'Adoptie van standaarden, %{list_information}, %{number_of_domains} domeinen.',
                     yAxis_label: 'Adoptiegraad',
+                    average: "Gemiddeld",
+                    accessibility_text: "Een tabel met de inhoud van deze grafiek wordt hieronder getoond.",
                 },
+                cumulative_adoption_bar_chart: {
+                    annotation: {
+                        title: 'Gemiddelde adoptie, waarbij rapporten bij elkaar worden opgeteld',
+                        intro: 'In deze grafiek worden de geselecteerde rapporten bij elkaar opgeteld, en daar het gemiddelde van getoond.',
+                    },
+                    title: 'Gemiddelde adoptie van standaarden van %{number_of_reports} rapporten.',
+                    yAxis_label: 'Adoptiegraad',
+                    average: "Gemiddeld",
+                    accessibility_text: "Een tabel met de inhoud van deze grafiek wordt hieronder getoond.",
+                }
             },
             report: {
                 title: 'Rapport',
@@ -697,11 +788,14 @@ const messages = {
                 zoom: {
                     buttons:
                         {
-                            zoom: 'zoom',
-                            remove_zoom: 'Verwijder zoom',
+                            zoom: 'details',
+                            remove_zoom: 'Terug naar hoofdniveau',
+                            zoom_in_on: 'Bekijk de details van {0}',
                         },
-                    zoomed_in_on: 'Ingezoomd op '
+                    zoomed_in_on: 'Details van ',
+                    explanation: "Met de detail buttons is het mogelijk om details van ieder categorie naar voren te halen."
                 },
+                link_to_report: 'Bekijk de score en rapportage van %{url} op internet.nl.',
                 empty_report: 'Geen meetgegevens gevonden, wordt er misschien teveel gefilterd?',
                 results: {
                     not_applicable: "Niet van toepassing",
@@ -732,6 +826,42 @@ const messages = {
             // legacy values
             mail_legacy: 'Mail Baseline NL Overheid',
             web_legacy: 'Web Baseline NL Overheid',
+
+            internet_nl_mail_legacy_dmarc: 'DMARC',
+            internet_nl_mail_legacy_dmarc_explanation: 'Uitleg',
+            internet_nl_mail_legacy_dkim: 'DKIM',
+            internet_nl_mail_legacy_dkim_explanation: 'Uitleg',
+            internet_nl_mail_legacy_spf: 'SPF',
+            internet_nl_mail_legacy_spf_explanation: 'Uitleg',
+            internet_nl_mail_legacy_dmarc_policy: 'DMARC policy',
+            internet_nl_mail_legacy_dmarc_policy_explanation: 'Uitleg',
+            internet_nl_mail_legacy_spf_policy: 'SPF policy',
+            internet_nl_mail_legacy_spf_policy_explanation: 'Uitleg',
+            internet_nl_mail_legacy_start_tls: 'STARTTLS',
+            internet_nl_mail_legacy_start_tls_explanation: 'Uitleg',
+            internet_nl_mail_legacy_start_tls_ncsc: 'STARTTLS NCSC',
+            internet_nl_mail_legacy_start_tls_ncsc_explanation: 'Uitleg',
+            internet_nl_mail_legacy_dnssec_mx: 'DNSSEC MX',
+            internet_nl_mail_legacy_dnssec_mx_explanation: 'Uitleg',
+            internet_nl_mail_legacy_dane: 'DANE',
+            internet_nl_mail_legacy_dane_explanation: 'Uitleg',
+            internet_nl_mail_legacy_ipv6_nameserver: 'IPv6 nameserver',
+            internet_nl_mail_legacy_ipv6_nameserver_explanation: 'Uitleg',
+
+            internet_nl_web_legacy_dnssec: 'DNSSEC',
+            internet_nl_web_legacy_dnssec_explanation: 'Uitleg...',
+            internet_nl_web_legacy_tls_available: 'TLS',
+            internet_nl_web_legacy_tls_available_explanation: 'Uitleg...',
+            internet_nl_web_legacy_tls_ncsc_web: 'TLS_NCSC',
+            internet_nl_web_legacy_tls_ncsc_web_explanation: 'Uitleg...',
+            internet_nl_web_legacy_https_enforced: 'HTTPS',
+            internet_nl_web_legacy_https_enforced_explanation: 'Uitleg...',
+            internet_nl_web_legacy_hsts: 'HSTS',
+            internet_nl_web_legacy_hsts_explanation: 'Uitleg...',
+            internet_nl_web_legacy_ipv6_nameserver: 'IPv6 nameserver',
+            internet_nl_web_legacy_ipv6_nameserver_explanation: 'Uitleg...',
+            internet_nl_web_legacy_ipv6_webserver: 'IPv6 webserver',
+            internet_nl_web_legacy_ipv6_webserver_explanation: 'Uitleg...',
 
             // use the labels from fallback language.
 
@@ -779,7 +909,7 @@ const messages = {
             internet_nl_web_https_tls_version: internet_nl_messages.nl.internet_nl.detail_web_tls_version_label,
             internet_nl_web_https_tls_clientreneg: internet_nl_messages.nl.internet_nl.detail_web_tls_renegotiation_client_label,
             internet_nl_web_https_tls_ciphers: internet_nl_messages.nl.internet_nl.detail_web_tls_ciphers_label,
-            internet_nl_web_https_http_available: internet_nl_messages.nl.internet_nl.todo,
+            internet_nl_web_https_http_available: internet_nl_messages.nl.internet_nl.detail_web_tls_https_exists_label,
             internet_nl_web_https_dane_exist: internet_nl_messages.nl.internet_nl.detail_web_tls_dane_exists_label,
             internet_nl_web_https_http_compress: internet_nl_messages.nl.internet_nl.detail_web_tls_http_compression_label,
             internet_nl_web_https_http_hsts: internet_nl_messages.nl.internet_nl.detail_web_tls_https_hsts_label,
@@ -882,8 +1012,8 @@ const messages = {
             internet_nl_mail_auth_spf_policy: internet_nl_messages.nl.internet_nl.detail_mail_auth_spf_policy_label,
             internet_nl_mail_auth_dkim_exist: internet_nl_messages.nl.internet_nl.detail_mail_auth_dkim_label,
             internet_nl_mail_auth_spf_exist: internet_nl_messages.nl.internet_nl.detail_mail_auth_spf_label,
-            internet_nl_mail_dnssec_mailto_exist: internet_nl_messages.nl.internet_nl.todo,
-            internet_nl_mail_dnssec_mailto_valid: internet_nl_messages.nl.internet_nl.todo,
+            internet_nl_mail_dnssec_mailto_exist: internet_nl_messages.en.internet_nl.detail_mail_dnssec_exists_label,
+            internet_nl_mail_dnssec_mailto_valid: internet_nl_messages.en.internet_nl.detail_mail_dnssec_valid_label,
             internet_nl_mail_dnssec_mx_valid: internet_nl_messages.nl.internet_nl.detail_mail_dnssec_mx_valid_label,
             internet_nl_mail_dnssec_mx_exist: internet_nl_messages.nl.internet_nl.detail_mail_dnssec_mx_exists_label,
             internet_nl_mail_ipv6_mx_address: internet_nl_messages.nl.internet_nl.detail_mail_ipv6_mx_aaaa_label,

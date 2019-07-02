@@ -15,4 +15,4 @@ def test_urllists(db) -> None:
     save_report_settings(account, settings)
     retrieved_settings = get_report_settings(account)
 
-    assert retrieved_settings == settings['filters']
+    assert retrieved_settings['data'] == settings['filters']

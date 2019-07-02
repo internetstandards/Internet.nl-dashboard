@@ -9,8 +9,12 @@ def save_report_settings(account, report_settings):
     account.report_settings = report_settings.get('filters', {})
     account.save()
 
-    return operation_response(success=True, message="Settings updated")
+    return operation_response(success=True, message="report.settings.updated")
 
 
 def get_report_settings(account):
-    return account.report_settings if account.report_settings else {}
+    return operation_response(
+        success=True,
+        message="report.settings.restored_from_database",
+        data=account.report_settings if account.report_settings else {}
+    )

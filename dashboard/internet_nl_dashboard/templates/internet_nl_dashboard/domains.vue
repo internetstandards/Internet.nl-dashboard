@@ -27,9 +27,33 @@ Fixed: when deleting a list, it is re-added to the list of lists when adding a n
 <template type="x-template" id="lists">
     <div style="width: 100%">
         <div class="block fullwidth">
-            <h1>Domains</h1>
-            <p>Upload large amount of data: <a href="/upload/">Bulk Address Uploader</a></p>
+            <h1>{{ $t("domain_management.title") }}</h1>
+            <p>{{ $t("domain_management.intro") }}</p>
+            <p><a href="/upload/">{{ $t("domain_management.bulk_upload_link") }}</a></p>
 
+            <div class="testresult">
+                <h3 class="panel-title" >
+                    <a href="" aria-expanded="false">
+                        <span class="visuallyhidden">-:</span>
+                        {{ $t("domain_management.icon_legend.title") }}
+                        <span class="pre-icon visuallyhidden"></span>
+                        <span class="icon"><img src="/static/images/vendor/internet_nl/push-open.png" alt=""></span>
+                    </a>
+                </h3>
+                <div class="panel-content">
+                    <p>{{ $t("domain_management.icon_legend.intro") }}</p>
+                    <ul>
+                        <li>
+                            <span role="img" :aria-label="$t('icons.can_connect')">🌍️</span>
+                            {{ $t("domain_management.icon_legend.can_connect") }}</li>
+                        <li>
+                            <span role="img" :aria-label="$t('icons.unknown_connectivity')">❓</span>
+                            {{ $t("domain_management.icon_legend.unknown_connectivity") }}</li>
+                        <li><span role="img" :aria-label="$t('icons.cannot_connect')">🚫</span>
+                            {{ $t("domain_management.icon_legend.cannot_connect") }}</li>
+                    </ul>
+                </div>
+            </div>
 
             <modal v-if="show_add_new" @close="stop_adding_new()">
                 <h3 slot="header">{{ $t("domains.add_new_list") }}</h3>
