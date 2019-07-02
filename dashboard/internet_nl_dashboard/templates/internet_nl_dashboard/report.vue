@@ -321,7 +321,7 @@
 
                         <template v-for="category in scan_form.categories">
                             <template v-if="is_visible(category.key)">
-                                <div class="testresult" v-if="fields_from_categories(subcategory).length">
+                                <div class="testresult" v-if="fields_from_categories(category).length">
                                     <h3 class="panel-title">
                                         <a href="" aria-expanded="false">
                                             <span class="visuallyhidden">-:</span>
@@ -754,6 +754,9 @@ vueReport = new Vue({
                 this.get_timeline();
                 this.is_loading = false;
 
+                // we already have the first report, so don't request it again.
+                this.compare_charts.push(this.reports[0]);
+
                 // new accordions are created, reduce their size.
                 this.$nextTick(() => accordinate());
             }).catch((fail) => {console.log('A loading error occurred: ' + fail);});
@@ -962,9 +965,12 @@ vueReport = new Vue({
                 return;
             }
 
-            this.load(new_value[0].id);
             this.compare_charts = [];
-            for(let i=0; i<new_value.length; i++){
+            this.load(new_value[0].id);
+
+            // we already have the first chart, don't load that again.
+            // the first chart is always loaded through the load method.
+            for(let i=1; i<new_value.length; i++){
                 // console.log(`Comparing with report ${new_value[i].id}`);
                 // todo: this causes an extra load of the data, which is slow... At least it always works
                 // without syncing issues etc...
@@ -2032,8 +2038,8 @@ Vue.component('line-chart', {
                 {
                     label: '% OK',
                     data: pct_ok,
-                    backgroundColor: this.color_scheme.incremental[0].background,
-                    borderColor: this.color_scheme.incremental[0].border,
+                    backgroundColor: this.color_scheme.incremental[1].background,
+                    borderColor: this.color_scheme.incremental[1].border,
                     borderWidth: 1,
                     lineTension: 0,
                     hidden: !this.axis.includes('pct_ok')
@@ -2041,8 +2047,8 @@ Vue.component('line-chart', {
                 {
                     label: i18n.t(this.translation_key + '.average_internet_nl_score'),
                     data: average_internet_nl_score,
-                    backgroundColor: this.color_scheme.incremental[1].background,
-                    borderColor: this.color_scheme.incremental[1].border,
+                    backgroundColor: this.color_scheme.incremental[0].background,
+                    borderColor: this.color_scheme.incremental[0].border,
                     borderWidth: 1,
                     lineTension: 0,
                     hidden: !this.axis.includes('average_internet_nl_score')
