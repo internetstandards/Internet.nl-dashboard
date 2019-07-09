@@ -127,6 +127,10 @@ def get_data(file: str) -> dict:
 
     # Skips the first entry
     for row in sheet:
+        # Do not handle CSV files that only contain urls on a newline. Return nothing.
+        if len(row) < 2:
+            continue
+
         # Data is parsed to python-like datatype. In this case we only expect strings and cast them as such.
         found_categories = str(row[0]).lower().strip().split(',')
         found_urls = str(row[1]).lower().strip().split(',')

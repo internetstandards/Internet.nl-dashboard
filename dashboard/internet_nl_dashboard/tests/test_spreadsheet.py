@@ -56,6 +56,11 @@ def test_spreadsheet(db, redis_server) -> None:
         upload_history = get_upload_history(account)
         assert len(upload_history) > 0
 
+    # Try to work with a malformed CSV file
+    file = f'{path}/test spreadsheet uploads/incorrect.csv'
+    data = get_data(file)
+    assert len(data) == 0
+
     # Run all tests on a valid file, that complies with the standard etc...
     file = f'{path}/test spreadsheet uploads/waterschappen.ods'
     test_valid(file)
