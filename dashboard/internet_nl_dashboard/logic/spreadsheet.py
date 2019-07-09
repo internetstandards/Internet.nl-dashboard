@@ -195,10 +195,10 @@ def log_spreadsheet_upload(user: DashboardUser, file: str, status: str = "", mes
         original_filename = internal_filename
 
     upload = {'user': user,
-              'original_filename': original_filename,
-              'internal_filename': internal_filename,
-              'status': status,
-              'message': message,
+              'original_filename': original_filename[0:250],
+              'internal_filename': internal_filename[0:250],
+              'status': status[0:250],
+              'message': message[0:250],
               'upload_date': datetime.now(pytz.utc),
               'filesize': os.path.getsize(file)}
 
