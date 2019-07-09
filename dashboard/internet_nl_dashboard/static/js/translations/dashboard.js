@@ -163,6 +163,25 @@ const messages = {
                 },
             },
 
+            icon_legend: {
+                title: "Legend of used icons",
+
+                // this has been placed here, because not_applicable and not_testable reuse icons and have
+                // a different meaning. That translation is not available in internet.nl
+                test_title: internet_nl_messages.en.internet_nl.faqs_report_test_title,
+                test_good: internet_nl_messages.en.internet_nl.faqs_report_test_good,
+                test_bad: internet_nl_messages.en.internet_nl.faqs_report_test_bad,
+                test_warning: internet_nl_messages.en.internet_nl.faqs_report_test_warning,
+                test_info: internet_nl_messages.en.internet_nl.faqs_report_test_info,
+                subtest_title: internet_nl_messages.en.internet_nl.faqs_report_subtest_title,
+                subtest_good: internet_nl_messages.en.internet_nl.faqs_report_subtest_good,
+                subtest_bad: internet_nl_messages.en.internet_nl.faqs_report_subtest_bad,
+                subtest_warning: internet_nl_messages.en.internet_nl.faqs_report_subtest_warning,
+                subtest_info: internet_nl_messages.en.internet_nl.faqs_report_subtest_info,
+                subtest_not_applicable:  "Not applicable ⇒ no score impact",
+                subtest_not_testable:  "Not testable ⇒ no score impact",
+            },
+
             header: {
                 title: 'Reports',
                 intro: 'Select one or multiple reports, these will be displayed below.',
@@ -629,6 +648,21 @@ const messages = {
         },
         domain_management: {
 
+            title: "Domeinen",
+            intro: "Beheer lijsten met domeinen",
+            bulk_upload_link: "Een groot aantal domeinen kan worden geüpload met de Bulk Addressen Uploader, hier.",
+
+            icon_legend: {
+                title: "Legenda van gebruikte pictogrammen",
+                intro: "De domeinen in de lijsten hieronder worden gebruikt bij iedere scan. Voordat een scan is uitgevoerd " +
+                    "wordt per domein gekeken of het domein aan de voorwaarden voldoet om gescand te worden. In de lijst " +
+                    "hieronder wordt daarvan een beeld gegeven, echter kan dat beeld verouderd zijn: dit wordt ververst " +
+                    "voor iedere scan.",
+                can_connect: "Deze dienst is bereikbaar en wordt (waarschijnlijk) gescanned.",
+                unknown_connectivity: "Niet bekend of deze dienst beschikbaar is, dit wordt later gecontroleerd.",
+                cannot_connect: "Deze dienst is niet beschikbaar, en wordt (waarschijnlijk) niet gescand."
+            },
+
             button_labels: {
                 configure: 'Instellingen',
                 add_domains: 'Domeinen toevoegen',
@@ -736,6 +770,25 @@ const messages = {
                 additional_fields: {
                     label: 'Additionele velden',
                 },
+            },
+
+            icon_legend: {
+                title: "Legenda van gebruikte pictogrammen",
+
+                // this has been placed here, because not_applicable and not_testable reuse icons and have
+                // a different meaning. That translation is not available in internet.nl
+                test_title: internet_nl_messages.nl.internet_nl.faqs_report_test_title,
+                test_good: internet_nl_messages.nl.internet_nl.faqs_report_test_good,
+                test_bad: internet_nl_messages.nl.internet_nl.faqs_report_test_bad,
+                test_warning: internet_nl_messages.nl.internet_nl.faqs_report_test_warning,
+                test_info: internet_nl_messages.nl.internet_nl.faqs_report_test_info,
+                subtest_title: internet_nl_messages.nl.internet_nl.faqs_report_subtest_title,
+                subtest_good: internet_nl_messages.nl.internet_nl.faqs_report_subtest_good,
+                subtest_bad: internet_nl_messages.nl.internet_nl.faqs_report_subtest_bad,
+                subtest_warning: internet_nl_messages.nl.internet_nl.faqs_report_subtest_warning,
+                subtest_info: internet_nl_messages.nl.internet_nl.faqs_report_subtest_info,
+                subtest_not_applicable:  "Niet van toepassing ⇒ geen score impact",
+                subtest_not_testable:  "Niet testbaar ⇒ geen score impact",
             },
 
             header: {

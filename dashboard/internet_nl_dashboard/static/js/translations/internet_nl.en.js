@@ -407,7 +407,7 @@ const internet_nl_messages = {
             mail_title: 'Email test: {{prettyaddr}}',
             mail_tweetmessage: 'The%20mail%20server%20at%20{{report.domain}}%20scores%20{{score}}%25%20in%20the%20email%20test%20of%20%40Internet_nl%3A',
             page_gotocontents: 'Go to the content',
-            page_gotofooter: 'Go to the footer',
+            page_gotofooter: 'Go to the fFailed at least one REQUIRED subtestooter',
             page_gotomainmenu: 'Go to the main menu',
             page_metadescription: 'Test for modern Internet Standards like IPv6, DNSSEC, HTTPS, TLS, HSTS, DMARC, DKIM, SPF, STARTTLS and DANE.',
             page_metakeywords: 'IPv6, DNSSEC, HTTPS, HSTS, TLS, DMARC, DKIM, SPF, STARTTLS, DANE, test, test tool, check, validation, Internet, Internet Standards, open standards, modern standards, security, internet security, mail, email security, website, website security, internet connection, secure connection, email authentication, encryption, ciphers, cipher suites, PKI, SSL certificate, TLS certificate, website certificaat, Internet Standards Platform',
