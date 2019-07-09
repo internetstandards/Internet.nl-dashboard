@@ -19,7 +19,7 @@
                     :placeholder="$t('report.header.select_report')">
             </multiselect>
             -->
-            <div aria-live="polite">
+            <div aria-live="polite" style="margin-bottom: 30px;">
                 <v-select
                         v-model="selected_report"
                         :options="available_recent_reports"
@@ -31,9 +31,35 @@
                 </v-select>
             </div>
 
-            <br><br>
-
             <template v-if="reports.length && !is_loading">
+
+                <div class="testresult faq-report">
+                    <h2 style="font-size: 1.0em;"  class="panel-title" >
+                        <a href="" aria-expanded="false">
+                            <span class="visuallyhidden">-:</span>
+                            {{ $t("report.icon_legend.title") }}
+                            <span class="pre-icon visuallyhidden"></span>
+                            <span class="icon"><img src="/static/images/vendor/internet_nl/push-open.png" alt=""></span>
+                        </a>
+                    </h2>
+                    <div class="panel-content">
+                        <h3>{{ $t("report.icon_legend.test_title") }}</h3>
+                        <ul>
+                            <li><span class="faq-test category_passed"><span class="visuallyhidden">{{ $t("report.report.results.passed") }}</span>{{ $t("report.icon_legend.test_good") }}</span></li>
+                            <li><span class="faq-test category_failed"><span class="visuallyhidden">{{ $t("report.report.results.failed") }}</span>{{ $t("report.icon_legend.test_bad") }}</span></li>
+                            <li><span class="faq-test category_warning"><span class="visuallyhidden">{{ $t("report.report.results.warning") }}</span>{{ $t("report.icon_legend.test_warning") }}</span></li>
+                        </ul>
+                        <h3>{{ $t("report.icon_legend.subtest_title") }}</h3>
+                        <ul>
+                            <li><span class="faq-subtest passed"><span class="visuallyhidden">{{ $t("report.report.results.passed") }}</span>{{ $t("report.icon_legend.subtest_good") }}</span></li>
+                            <li><span class="faq-subtest failed"><span class="visuallyhidden">{{ $t("report.report.results.failed") }}</span>{{ $t("report.icon_legend.subtest_bad") }}</span></li>
+                            <li><span class="faq-subtest warning"><span class="visuallyhidden">{{ $t("report.report.results.warning") }}</span>{{ $t("report.icon_legend.subtest_warning") }}</span></li>
+                            <li><span class="faq-subtest info"><span class="visuallyhidden">{{ $t("report.report.results.info") }}</span>{{ $t("report.icon_legend.subtest_info") }}</span></li>
+                            <li><span class="faq-test not_applicable"><span class="visuallyhidden">{{ $t("report.report.results.not_applicable") }}</span>{{ $t("report.icon_legend.subtest_not_applicable") }}</span></li>
+                            <li><span class="faq-test not_testable"><span class="visuallyhidden">{{ $t("report.report.results.not_testable") }}</span>{{ $t("report.icon_legend.subtest_not_testable") }}</span></li>
+                        </ul>
+                    </div>
+                </div>
 
                 <div class="testresult">
                     <h2 style="font-size: 1.0em;" class="panel-title" >
