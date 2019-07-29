@@ -138,7 +138,12 @@
                         <span class="visuallyhidden">{{ $t('domain_management.domains.cancel_editing_url', [url.url]) }}</span>
                     </button>
 
-                    <a v-if="!url_is_edited(list.id, url.url)" @click="start_url_editing(list.id, url.url)">{{ url.url }}</a>
+                    <template v-if="url.subdomain">
+                        <a v-if="!url_is_edited(list.id, url.url)" @click="start_url_editing(list.id, url.url)">{{ url.subdomain }}.<b>{{ url.domain }}.{{ url.suffix }}</b></a>
+                    </template>
+                    <template v-if="!url.subdomain">
+                        <a v-if="!url_is_edited(list.id, url.url)" @click="start_url_editing(list.id, url.url)"><b>{{ url.domain }}.{{ url.suffix }}</b></a>
+                    </template>
 
                     <span class="inline-edit" v-if="url_is_edited(list.id, url.url)">
                             <input autofocus :placeholder="url.url" :value="url.url" :id="'' + list.id + url.url">

@@ -424,6 +424,9 @@ def get_urllist_content(account: Account, urllist_id: int) -> dict:
         response['urls'].append({
             'id': url.id,
             'url': url.url,
+            'subdomain': url.computed_subdomain,
+            'domain': url.computed_domain,
+            'suffix': url.computed_suffix,
             'created_on': url.created_on,
             'resolves': not url.not_resolvable,
             'has_mail_endpoint': has_mail_endpoint,
