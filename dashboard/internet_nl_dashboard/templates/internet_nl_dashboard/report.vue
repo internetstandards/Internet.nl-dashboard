@@ -22,7 +22,7 @@
             <div aria-live="polite" style="margin-bottom: 30px;">
                 <v-select
                         v-model="selected_report"
-                        :options="available_recent_reports"
+                        :options="filtered_recent_reports"
                         label="label"
                         :multiple="true"
                 >
@@ -705,6 +705,12 @@ vueReport = new Vue({
         debounce_timer: 0,
 
         available_recent_reports: [],
+
+        // the filtered set only shows the same type as the first scan shown. It's not possible to open
+        // two reports of the same type, as the UI is not capable ofhandling that ... as all fields differ and there
+        // is really no comparison possible.
+        filtered_recent_reports: [],
+
         selected_report: null,
 
         // graphs:
@@ -858,6 +864,7 @@ vueReport = new Vue({
                     options.push(data[i])
                 }
                 this.available_recent_reports = options;
+                this.filtered_recent_reports = options;
 
                 // if the page was requested with a page ID, start loading that report.
                 // this supports: http://localhost:8000/reports/83/
@@ -865,7 +872,7 @@ vueReport = new Vue({
                     get_id = window.location.href.split('/')[4];
                     // can we change the select2 to a certain value?
 
-                    this.available_recent_reports.forEach((option) => {
+                    this.filtered_recent_reports.forEach((option) => {
                        if (option.id + "" === get_id){
                            // also re-create label
                            option.label = `#${option.id} - ${option.list_name} - type: ${option.type} - from: ${this.humanize_date(option.at_when)}`;
@@ -986,6 +993,10 @@ vueReport = new Vue({
             // totally empty list, list was emptied by clicking the crosshair everywhere.
             if (new_value[0] === undefined){
                 // console.log('List was emptied');
+
+                // all reports are available again:
+                this.filtered_recent_reports = this.available_recent_reports;
+
                 this.reports=[];
                 this.is_loading = false;
                 return;
@@ -993,6 +1004,15 @@ vueReport = new Vue({
 
             this.compare_charts = [];
             this.load(new_value[0].id);
+
+            // filter reports on type:
+            let filtered_reports = [];
+            this.available_recent_reports.forEach((item) => {
+                if (item.type === new_value[0].type){
+                    filtered_reports.push(item);
+                }
+            });
+            this.filtered_recent_reports = filtered_reports;
 
             // we already have the first chart, don't load that again.
             // the first chart is always loaded through the load method.
