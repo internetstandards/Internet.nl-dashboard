@@ -330,6 +330,8 @@ const messages = {
             internet_nl_mail_legacy_dane_explanation: 'Explanation',
             internet_nl_mail_legacy_ipv6_nameserver: 'IPv6 nameserver',
             internet_nl_mail_legacy_ipv6_nameserver_explanation: 'Explanation',
+            internet_nl_mail_legacy_ipv6_mailserver: "IPv6 mailserver",
+            internet_nl_mail_legacy_ipv6_mailserver_explanation: 'Explanation',
 
             internet_nl_web_legacy_dnssec: 'DNSSEC',
             internet_nl_web_legacy_dnssec_explanation: 'Explanation...',
@@ -900,6 +902,8 @@ const messages = {
             internet_nl_mail_legacy_dane_explanation: 'Uitleg',
             internet_nl_mail_legacy_ipv6_nameserver: 'IPv6 nameserver',
             internet_nl_mail_legacy_ipv6_nameserver_explanation: 'Uitleg',
+            internet_nl_mail_legacy_ipv6_mailserver: "IPv6 mailserver",
+            internet_nl_mail_legacy_ipv6_mailserver_explanation: 'Uitleg',
 
             internet_nl_web_legacy_dnssec: 'DNSSEC',
             internet_nl_web_legacy_dnssec_explanation: 'Uitleg...',

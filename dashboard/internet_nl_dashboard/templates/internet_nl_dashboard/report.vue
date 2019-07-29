@@ -1466,8 +1466,8 @@ vueReport = new Vue({
                                     fields: [
                                         {name: 'internet_nl_mail_legacy_ipv6_nameserver',
                                         explanation: 'report.fields.forum_standardistation.internet_nl_mail_legacy_ipv6_nameserver_explanation'},
-                                        {name: 'internet_nl_web_legacy_ipv6_webserver',
-                                        explanation: 'report.fields.forum_standardistation.internet_nl_web_legacy_ipv6_webserver_explanation'},
+                                        {name: 'internet_nl_mail_legacy_ipv6_mailserver',
+                                        explanation: 'report.fields.forum_standardistation.internet_nl_mail_legacy_ipv6_mailserver_explanation'},
                                         // {name: 'internet_nl_mail_legacy_ipv6_mailserver'},
                                     ],
                                     additional_fields: [],
