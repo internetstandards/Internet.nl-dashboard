@@ -787,10 +787,14 @@ vueReport = new Vue({
                 this.is_loading = false;
 
                 // we already have the first report, so don't request it again.
-                this.compare_charts.push(this.reports[0]);
+                // note that when setting the first chart, the subsequent updates do not "point ot a new object"
+                // so a state change doesn not happen automatically using a wathcer, you have to watch deep.
+                console.log(`First compare chart set...`);
+                this.$set(this.compare_charts, 0, this.reports[0]);
+                // this.compare_charts.$set(0, );
 
                 // new accordions are created, reduce their size.
-                this.$nextTick(() => accordinate());
+                this.$nextTick(() => {accordinate(); this.$forceUpdate()});
             }).catch((fail) => {console.log('A loading error occurred: ' + fail);});
         },
         save_issue_filters: function(){
@@ -846,12 +850,24 @@ vueReport = new Vue({
             }
             return 0;
         },
-        compare_with: function(id){
+        compare_with: function(id, compare_chart_id){
             fetch(`/data/report/get/${id}/`, {credentials: 'include'}).then(response => response.json()).then(report => {
 
                 if (!jQuery.isEmptyObject(report)) {
-                    this.compare_charts.push(report[0]);
-                    this.$nextTick(() => accordinate());
+                    // this will work fine, as all the prior id's will be filled with reports too...
+                    // js behaves unacceptably, but in this case it's fine.
+                    // example: i = [];
+                    // i[3] = "a"
+                    // i is then Array(4) [ undefined, undefined, undefined, "a" ]...
+                    // https://vuejs.org/2016/02/06/common-gotchas/#Why-isn%E2%80%99t-the-DOM-updating
+                    // note that the documentation is plain wrong, as arr.$set is NOT a method on the array,
+                    // but on the vm. And thus the syntax for using it differs from the docs.
+                    console.log(`Compare chart ${compare_chart_id} set...`);
+                    this.$set(this.compare_charts, compare_chart_id, report[0]);
+
+                    // given the charts are on a fixed number in the array, vue doesn't pick up changes.
+                    // and as the order matters, this is a solution that fixes that.
+                    this.$nextTick(() => {accordinate(); this.$forceUpdate();});
                 }
 
             }).catch((fail) => {console.log('A loading error occurred: ' + fail);});
@@ -1002,6 +1018,7 @@ vueReport = new Vue({
                 return;
             }
 
+            // when deleting any report, we will need to rebuild the compare charts...
             this.compare_charts = [];
             this.load(new_value[0].id);
 
@@ -1020,7 +1037,9 @@ vueReport = new Vue({
                 // console.log(`Comparing with report ${new_value[i].id}`);
                 // todo: this causes an extra load of the data, which is slow... At least it always works
                 // without syncing issues etc...
-                this.compare_with(new_value[i].id);
+                // i = the compare chart id, so even if the reports load asyncronous, the array order is
+                // maintained in the compare charts, and thus in the graphs.
+                this.compare_with(new_value[i].id, i);
             }
         },
         url_filter: function(newValue, oldValue){
@@ -1575,8 +1594,14 @@ const chart_mixin = {
         }
     },
     watch: {
-        chart_data: function(new_value, old_value){
-            this.renderData();
+        chart_data: {
+
+            // Note that you don’t need to do so to listen for Array mutations...
+            deep: false,
+            handler (new_value, old_value){
+                console.log(`Chart data updated to ${new_value.length} items...`);
+                this.renderData();
+            }
         },
         axis: function(new_value, old_value){
             if (!this.arraysEqual(old_value, new_value)) {
@@ -1700,17 +1725,26 @@ Vue.component('percentage-bar-chart', {
             });
         },
         renderData: function(){
+            console.log("Rendering bar chart.");
+
             // prevent the grapsh from ever growing (it's called twice at first render)
             this.chart.data.axis_names = [];
             this.chart.data.labels = [];
             this.chart.data.datasets = [];
 
             for(let i=0; i < this.chart_data.length; i++){
+                console.log(`Rendering set ${i}`);
+
+                // it's possible the report data is not yet in, but the item in the array has been made.
+                // so well:
+                if (this.chart_data[i] === undefined)
+                    return;
 
                 let data = this.chart_data[i].statistics_per_issue_type;
 
                 if (data === undefined) {
                     // nothing to show
+                    console.log('nothing to show, probably because not all reports in compare charts are in...');
                     this.chart.data.axis_names = [];
                     this.chart.data.labels = [];
                     this.chart.data.datasets = [];
@@ -1752,13 +1786,6 @@ Vue.component('percentage-bar-chart', {
                 });
 
             }
-
-            // the ordering is from important to none important, and we want to reverse it so the reader sees that
-            // the right most value is the most important instead of the left one.
-            this.chart.data.datasets.reverse();
-            // the same goes for colors
-            // this.chart.data.labels.reverse();
-
 
             this.chart.update();
         },
@@ -1873,6 +1900,11 @@ Vue.component('cumulative-percentage-bar-chart', {
 
             for(let i=0; i < this.chart_data.length; i++) {
 
+                // it's possible the report data is not yet in, but the item in the array has been made.
+                // so well:
+                if (this.chart_data[i] === undefined)
+                    return;
+
                 let data = this.chart_data[i].statistics_per_issue_type;
 
                 if (data === undefined) {
@@ -1929,15 +1961,6 @@ Vue.component('cumulative-percentage-bar-chart', {
                 lineTension: 0,
                 label: `${this.chart_data[0].calculation.name} ${moment(this.chart_data[0].at_when).format('LL')}`,
             });
-
-
-
-            // the ordering is from important to none important, and we want to reverse it so the reader sees that
-            // the right most value is the most important instead of the left one.
-            this.chart.data.datasets.reverse();
-            // the same goes for colors
-            // this.chart.data.labels.reverse();
-
 
             this.chart.update();
         },

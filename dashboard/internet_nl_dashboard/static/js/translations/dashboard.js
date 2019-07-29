@@ -877,8 +877,8 @@ const messages = {
             },
 
             // legacy values
-            mail_legacy: 'Mail Baseline NL Overheid',
-            web_legacy: 'Web Baseline NL Overheid',
+            mail_legacy: 'Measurements on agreed security standards + IPv6 Monitor',
+            web_legacy: 'Measurements on agreed security standards + IPv6 Monitor',
 
             internet_nl_mail_legacy_dmarc: 'DMARC',
             internet_nl_mail_legacy_dmarc_explanation: 'Uitleg',
