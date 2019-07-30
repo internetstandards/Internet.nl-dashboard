@@ -309,6 +309,9 @@ def translate_field(field_label):
         'internet_nl_web_legacy_ipv6_nameserver': 'IPv6 nameserver',
         'internet_nl_web_legacy_ipv6_webserver': 'IPv6 websever',
         'internet_nl_web_legacy_dane': 'DANE',
+
+        'internet_nl_mail_dashboard_overall_score': 'Score',
+        'internet_nl_web_overall_score': 'Score',
     }
 
     # handle inconsistent naming and (why cannot i load something else than django.po?)
@@ -404,7 +407,7 @@ def upgrade_excel_spreadsheet(spreadsheet_data):
                 ws[f'{cell}5'].number_format = '0.00%'
 
         # fold port and ip-version (and protocol?) from report as it's not useful in this case?
-        ws.column_dimensions.group('C', 'G', hidden=True)
+        ws.column_dimensions.group('C', 'E', hidden=True)
 
         # make headers bold
         for cell in ['H', 'I', 'J', 'K', 'L', "M", "N", 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z',
@@ -511,16 +514,62 @@ def urllistreport_to_spreadsheet_data(category_name: str, urls: List[Any], proto
 
 
 def keyed_values_as_boolean(keyed_ratings: Dict[str, Any], protocol: str = 'dns_soa'):
+    """
+    Keyed rating:
+    {'internet_nl_mail_auth_dkim_exist': {'comply_or_explain_explained_on': '',
+                                      'comply_or_explain_explanation': '',
+                                      'comply_or_explain_explanation_valid_until': '',
+                                      'comply_or_explain_valid_at_time_of_report': False,
+                                      'explanation': 'Test '
+                                                     'internet_nl_mail_auth_dkim_exist '
+                                                     'resulted in failed.',
+                                      'high': 1,
+                                      'is_explained': False,
+                                      'last_scan': '2019-07-09T11:07:43.510452+00:00',
+                                      'low': 0,
+                                      'medium': 0,
+                                      'not_applicable': False,
+                                      'not_testable': False,
+                                      'ok': 0,
+                                      'scan': 43945,
+                                      'scan_type': 'internet_nl_mail_auth_dkim_exist',
+                                      'since': '2019-07-09T11:07:43.510175+00:00',
+                                      'type': 'internet_nl_mail_auth_dkim_exist'},...
+
+    :param keyed_ratings:
+    :param protocol:
+    :return:
+    """
+
     values = []
 
     for group in SANE_COLUMN_ORDER[protocol]:
 
         for issue_name in SANE_COLUMN_ORDER[protocol][group]:
-            # the issue name might not exist, the 'ok' value might not exist. In those cases replace it with a ?
-            values.append(keyed_ratings.get(issue_name, {'ok': '?'}).get('ok', '?'))
+
+            if issue_name in ['internet_nl_mail_dashboard_overall_score', 'internet_nl_web_overall_score']:
+                # Handle the special case of the score column.
+                # explanation":"75 https://batch.internet.nl/mail/portaal.digimelding.nl/289480/",
+                value = keyed_ratings[issue_name]['explanation'].split(" ")
+                # Not steadily convertable to a percentage, so printing it as an integer instead.
+                values.append(int(value[0]))
+                values.append(value[1])
+            else:
+                # the issue name might not exist, the 'ok' value might not exist. In those cases replace it with a ?
+                value = keyed_ratings.get(issue_name, {'ok': '?', 'not_testable': False, 'not_applicable': False})
+
+                if value['not_testable']:
+                    values.append('not_testable')
+                elif value['not_applicable']:
+                    values.append('not_applicable')
+                else:
+                    # When the value doesn't exist at all, we'll get a questionmark.
+                    values.append(value.get('ok', '?'))
 
         # add empty thing after each group to make distinction per group clearer
-        values += ['']
+        # overall group already adds an extra value (url), so we don't need this.
+        if group != "overall":
+            values += ['']
 
     return values
 

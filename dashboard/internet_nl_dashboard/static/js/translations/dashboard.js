@@ -196,13 +196,18 @@ const messages = {
                         title: 'Adoption of standards over time',
                         intro: 'This graph compares various measurements of the same list over time. ' +
                             'This provides a visual indication of the progress of standards adoption. A table with the ' +
-                            'same values is avaiable below. This graph shows the average score of internet.nl'
+                            'same values is avaiable below. This graph shows the average score of internet.nl. Note that ' +
+                            'only the values of the first selected report are shown.'
                     },
                     title: 'Average adoption of standards. Overall.',
                     yAxis_label: 'Adoption',
                     xAxis_label: 'Date',
                     average_internet_nl_score: "Average internet.nl score",
                     accessibility_text: "A table with the content of this graph is shown below.",
+                },
+                magazine: {
+                    intro: "Below graph only shows the average of all magazine fields. Other fields cannot be enabled/disabled and changing their visibility does " +
+                        "not influence this average.",
                 },
                 adoption_bar_chart: {
                     annotation: {
@@ -227,7 +232,7 @@ const messages = {
             },
             report: {
                 title: 'Report',
-                intro: '',
+                intro: 'This shows the results of the first selected report only.',
                 url_filter: 'Filter on domain...',
                 zoom: {
                     buttons:
@@ -265,10 +270,14 @@ const messages = {
                     reset: 'Reset',
                     reset_label: 'Resets all values to their original status.',
                     save: 'Save',
-                    reset_label: 'Save the changes made in this form.',
+                    save_label: 'Save the changes made in this form.',
                 },
                 restored_from_database: "Settings restored from database",
                 updated: "Settings updated",
+
+                show_category: "Show this category",
+                show_dynamic_average: "Show dynamic average",
+                only_show_dynamic_average: "Only show dynamic average",
             },
 
             // Nofix: should we use hierarchical translations, which is much prettier? How?
@@ -330,6 +339,8 @@ const messages = {
             internet_nl_mail_legacy_dane_explanation: 'Explanation',
             internet_nl_mail_legacy_ipv6_nameserver: 'IPv6 nameserver',
             internet_nl_mail_legacy_ipv6_nameserver_explanation: 'Explanation',
+            internet_nl_mail_legacy_ipv6_mailserver: "IPv6 mailserver",
+            internet_nl_mail_legacy_ipv6_mailserver_explanation: 'Explanation',
 
             internet_nl_web_legacy_dnssec: 'DNSSEC',
             internet_nl_web_legacy_dnssec_explanation: 'Explanation...',
@@ -804,7 +815,8 @@ const messages = {
                     annotation: {
                         title: 'Adoptie van standaarden over tijd.',
                         intro: 'Deze grafiek toont verschillende metingen van dezelfde lijst over tijd. ' +
-                            'Dit geeft zicht over de voortgang van de adoptie van standaarden.'
+                            'Dit geeft zicht over de voortgang van de adoptie van standaarden. Het toont de gemiddelde score van internet.nl. ' +
+                            'Deze grafiek toont alleen de gemiddelden van het eerst geselecteerde rapport.'
                     },
                     title: 'Gemiddelde adoptie van standaarden over tijd.',
                     yAxis_label: 'Adoptiegraad',
@@ -812,7 +824,9 @@ const messages = {
                     average_internet_nl_score: "Gemiddelde internet.nl score",
                     accessibility_text: "Een tabel met de inhoud van deze grafiek wordt hieronder getoond.",
                 },
-
+                magazine: {
+                    intro: "Onderstaande grafiek toont het gemiddelde van alle magazine velden. Deze grafiek kan niet worden aangepast, ook niet door de zichtbaarheid van velden aan te passen.",
+                },
                 adoption_bar_chart: {
                     annotation: {
                         title: 'Adoptie van standaarden',
@@ -836,7 +850,7 @@ const messages = {
             },
             report: {
                 title: 'Rapport',
-                intro: '',
+                intro: 'Dit overzicht laat alleen de resultaten van het het eerst geselecteerde rapport zien.',
                 url_filter: 'Filter op domein...',
                 zoom: {
                     buttons:
@@ -868,17 +882,25 @@ const messages = {
                 csv: 'Comma Separated (voor programmeurs), .csv',
             },
             settings: {
-                title: 'Instellingen',
+                title: 'Selecteer zichtbare meetwaarden',
                 intro: 'Selecteer de velden die relevant zijn voor uw organisatie.',
                 buttons: {
                     reset: 'Reset',
+                    reset_label: 'Zet de originele waardes terug naar de waardes in de database',
                     save: 'Opslaan',
-                }
+                    save_label: 'Sla de wijzigingen in de zichtbare meetwaarden op.',
+                },
+                restored_from_database: "Zichtbare meetwaarden zijn teruggezet naar de waardes in de database",
+                updated: "Zichtbare meetwaarden opgeslagen",
+
+                show_category: "Toon deze categorie",
+                show_dynamic_average: "Bereken dynamisch het gemiddelde van alle zichtbare velden",
+                only_show_dynamic_average: "Toon alleen het dynamisch berekende gemiddelde",
             },
 
             // legacy values
-            mail_legacy: 'Mail Baseline NL Overheid',
-            web_legacy: 'Web Baseline NL Overheid',
+            mail_legacy: 'Measurements on agreed security standards + IPv6 Monitor',
+            web_legacy: 'Measurements on agreed security standards + IPv6 Monitor',
 
             internet_nl_mail_legacy_dmarc: 'DMARC',
             internet_nl_mail_legacy_dmarc_explanation: 'Uitleg',
@@ -900,6 +922,8 @@ const messages = {
             internet_nl_mail_legacy_dane_explanation: 'Uitleg',
             internet_nl_mail_legacy_ipv6_nameserver: 'IPv6 nameserver',
             internet_nl_mail_legacy_ipv6_nameserver_explanation: 'Uitleg',
+            internet_nl_mail_legacy_ipv6_mailserver: "IPv6 mailserver",
+            internet_nl_mail_legacy_ipv6_mailserver_explanation: 'Uitleg',
 
             internet_nl_web_legacy_dnssec: 'DNSSEC',
             internet_nl_web_legacy_dnssec_explanation: 'Uitleg...',

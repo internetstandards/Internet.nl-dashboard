@@ -22,7 +22,7 @@
             <div aria-live="polite" style="margin-bottom: 30px;">
                 <v-select
                         v-model="selected_report"
-                        :options="available_recent_reports"
+                        :options="filtered_recent_reports"
                         label="label"
                         :multiple="true"
                 >
@@ -106,6 +106,15 @@
 
                                 <h3 style="font-size: 2em; margin-top: 20px; margin-bottom: 10px;">{{ scan_form.label }}</h3>
 
+                                <label :for="scan_form.name + '_show_dynamic_average'">
+                                    <input type="checkbox" v-model="issue_filters[scan_form.name].show_dynamic_average" :id="scan_form.name + '_show_dynamic_average'">
+                                    {{ $t("report.settings.show_dynamic_average") }}
+                                </label><br>
+                                <label :for="scan_form.name + '_only_show_dynamic_average'">
+                                    <input type="checkbox" v-model="issue_filters[scan_form.name].only_show_dynamic_average" :id="scan_form.name + '_only_show_dynamic_average'">
+                                    {{ $t("report.settings.only_show_dynamic_average") }}
+                                </label>
+
                                 <template v-if="scan_form.additional_fields.length">
                                     <div class="test-subsection">{{ $t("report.fields.additional_fields.label") }}</div>
                                     <div v-for="field in scan_form.additional_fields" class="testresult">
@@ -125,7 +134,15 @@
                                                 <template v-for="field in category.fields">
                                                     <label :for="field.name + '_visible'">
                                                         <input type="checkbox" v-model="issue_filters[field.name].visible" :id="field.name + '_visible'">
-                                                        View this category
+                                                        {{ $t("report.settings.show_category") }}
+                                                    </label><br>
+                                                    <label :for="field.name + '_show_dynamic_average'">
+                                                        <input type="checkbox" v-model="issue_filters[field.name].show_dynamic_average" :id="field.name + '_show_dynamic_average'">
+                                                        {{ $t("report.settings.show_dynamic_average") }}
+                                                    </label><br>
+                                                    <label :for="field.name + '_only_show_dynamic_average'">
+                                                        <input type="checkbox" v-model="issue_filters[field.name].only_show_dynamic_average" :id="field.name + '_only_show_dynamic_average'">
+                                                        {{ $t("report.settings.only_show_dynamic_average") }}
                                                     </label>
                                                 </template>
 
@@ -145,7 +162,17 @@
                                     <section class="testresults">
                                         <br>
                                         <template v-for="category in category.categories">
-                                            <div class="test-subsection">{{ category.label }}</div>
+                                            <div class="test-subsection">{{ category.label }}<br>
+
+                                                <label :for="category.key + '_show_dynamic_average'">
+                                                    <input type="checkbox" v-model="issue_filters[category.key].show_dynamic_average" :id="category.key + '_show_dynamic_average'">
+                                                    {{ $t("report.settings.show_dynamic_average") }}
+                                                </label><br>
+                                                <label :for="category.key + '_only_show_dynamic_average'">
+                                                    <input type="checkbox" v-model="issue_filters[category.key].only_show_dynamic_average" :id="category.key + '_only_show_dynamic_average'">
+                                                    {{ $t("report.settings.only_show_dynamic_average") }}
+                                                </label>
+                                            </div>
 
                                             <div v-for="field in category.fields" class="testresult">
                                                 <label :for="field.name + '_visible'">
@@ -251,6 +278,8 @@
                                         :chart_data="compare_charts"
                                         :accessibility_text="$t('report.charts.adoption_bar_chart.accessibility_text')"
                                         @bar_click="select_category"
+                                        :show_dynamic_average="issue_filters[scan_form.name].show_dynamic_average"
+                                        :only_show_dynamic_average="issue_filters[scan_form.name].only_show_dynamic_average"
                                         :axis="fields_from_categories(scan_form)">
                                 </percentage-bar-chart>
                             </div>
@@ -278,6 +307,8 @@
                                                         :chart_data="compare_charts"
                                                         :accessibility_text="$t('report.charts.adoption_bar_chart.accessibility_text')"
                                                         @bar_click="select_category"
+                                                        :show_dynamic_average="issue_filters[category.key].show_dynamic_average"
+                                                        :only_show_dynamic_average="issue_filters[category.key].only_show_dynamic_average"
                                                         :axis="fields_from_categories(category)">
                                                 </percentage-bar-chart>
                                             </div>
@@ -305,7 +336,25 @@
                                                             :color_scheme="color_scheme"
                                                             :chart_data="compare_charts"
                                                             :accessibility_text="$t('report.charts.adoption_bar_chart.accessibility_text')"
+                                                            :show_dynamic_average="issue_filters[subcategory.key].show_dynamic_average"
+                                                            :only_show_dynamic_average="issue_filters[subcategory.key].only_show_dynamic_average"
                                                             :axis="fields_from_self(subcategory)">
+                                                    </percentage-bar-chart>
+                                                </div>
+                                            </div>
+                                            <!-- Special graph for Forum standardisation, that cannot have the items disabled -->
+                                            <div style="overflow: auto; width: 100%" v-if="['category_mail_forum_standardisation_magazine', 'category_web_forum_standardisation_magazine'].includes(subcategory.key)">
+                                                <p>{{ $t("report.charts.magazine.intro") }}</p>
+                                                <div class="chart-container" style="position: relative; height:500px; width:100%; min-width: 950px;">
+                                                    <percentage-bar-chart
+                                                            :title="graph_bar_chart_title"
+                                                            :translation_key="'report.charts.adoption_bar_chart'"
+                                                            :color_scheme="color_scheme"
+                                                            :chart_data="compare_charts"
+                                                            :accessibility_text="$t('report.charts.adoption_bar_chart.accessibility_text')"
+                                                            :show_dynamic_average="true"
+                                                            :only_show_dynamic_average="true"
+                                                            :axis="fields_from_self_and_do_not_filter(subcategory)">
                                                     </percentage-bar-chart>
                                                 </div>
                                             </div>
@@ -340,6 +389,8 @@
                                         :chart_data="compare_charts"
                                         :accessibility_text="$t('report.charts.cumulative_adoption_bar_chart.accessibility_text')"
                                         @bar_click="select_category"
+                                        :show_dynamic_average="issue_filters[scan_form.name].show_dynamic_average"
+                                        :only_show_dynamic_average="issue_filters[scan_form.name].only_show_dynamic_average"
                                         :axis="fields_from_categories(scan_form)">
                                 </cumulative-percentage-bar-chart>
                             </div>
@@ -367,6 +418,8 @@
                                                         :chart_data="compare_charts"
                                                         :accessibility_text="$t('report.charts.cumulative_adoption_bar_chart.accessibility_text')"
                                                         @bar_click="select_category"
+                                                        :show_dynamic_average="issue_filters[category.key].show_dynamic_average"
+                                                        :only_show_dynamic_average="issue_filters[category.key].only_show_dynamic_average"
                                                         :axis="fields_from_categories(category)">
                                                 </cumulative-percentage-bar-chart>
                                             </div>
@@ -394,7 +447,26 @@
                                                             :color_scheme="color_scheme"
                                                             :chart_data="compare_charts"
                                                             :accessibility_text="$t('report.charts.adoption_bar_chart.accessibility_text')"
+                                                            :show_dynamic_average="issue_filters[subcategory.key].show_dynamic_average"
+                                                            :only_show_dynamic_average="issue_filters[subcategory.key].only_show_dynamic_average"
                                                             :axis="fields_from_self(subcategory)">
+                                                    </cumulative-percentage-bar-chart>
+                                                </div>
+                                            </div>
+                                            <!-- Special graph for Forum standardisation, that cannot have the items disabled -->
+                                            <div style="overflow: auto; width: 100%" v-if="['category_mail_forum_standardisation_magazine', 'category_web_forum_standardisation_magazine'].includes(subcategory.key)">
+                                                <p>This shows the average for Forum Standardisation, it is not possible to
+                                                show the average or to select what fields should be visible.</p>
+                                                <div class="chart-container" style="position: relative; height:500px; width:100%; min-width: 950px;">
+                                                    <cumulative-percentage-bar-chart
+                                                            :title="graph_bar_chart_title"
+                                                            :translation_key="'report.charts.adoption_bar_chart'"
+                                                            :color_scheme="color_scheme"
+                                                            :chart_data="compare_charts"
+                                                            :accessibility_text="$t('report.charts.adoption_bar_chart.accessibility_text')"
+                                                            :show_dynamic_average="true"
+                                                            :only_show_dynamic_average="true"
+                                                            :axis="fields_from_self_and_do_not_filter(subcategory)">
                                                     </cumulative-percentage-bar-chart>
                                                 </div>
                                             </div>
@@ -420,7 +492,8 @@
                         <thead>
 
                             <tr>
-                                <th style="width: 300px; min-width: 300px; border: 0">
+                                <th style="width: 75px; min-width: 75px; border: 0"></th>
+                                <th style="width: 225px; min-width: 225px; border: 0">
                                     &nbsp;
                                 </th>
                                 <th style="border: 0" class="rotate" v-for="category in relevant_categories_based_on_settings">
@@ -436,7 +509,7 @@
                             <template>
                                 <!-- Summary row, same data as bar chart, but then in numbers.-->
                                 <tr class="summaryrow">
-                                    <td>
+                                    <td colspan="2">
                                         &nbsp;
                                     </td>
                                     <td v-for="category_name in relevant_categories_based_on_settings">
@@ -447,7 +520,7 @@
 
                                 <!-- Zoom buttons for accessibility -->
                                 <tr class="summaryrow">
-                                    <td>
+                                    <td colspan="2">
                                         <label class="visuallyhidden" for="url_filter">{{ $t('report.report.url_filter') }}</label>
                                         <input v-if="selected_report" type="text" v-model="url_filter" id="url_filter" :placeholder="$t('report.report.url_filter')">
                                         <p class="visuallyhidden">{{ $t('report.report.zoom.explanation') }}</p>
@@ -472,17 +545,18 @@
 
                             <template v-if="!filtered_urls.length">
                                 <tr>
-                                    <td :colspan="relevant_categories_based_on_settings.length + 1" style="text-align: center;">😱 {{ $t("report.report.empty_report") }}</td>
+                                    <td :colspan="relevant_categories_based_on_settings.length + 2" style="text-align: center;">😱 {{ $t("report.report.empty_report") }}</td>
                                 </tr>
                             </template>
 
                             <template v-if="filtered_urls.length">
 
                                 <tr v-for="url in filtered_urls" v-if="url.endpoints.length">
-                                    <td>{{url.url}}
+                                    <td>
                                         <span v-if="selected_report[0].type === 'web'" v-html="original_report_link_from_score(url.endpoints[0].ratings_by_type['internet_nl_web_overall_score'].explanation, url.url)"></span>
                                         <span v-if="selected_report[0].type === 'mail'" v-html="original_report_link_from_score(url.endpoints[0].ratings_by_type['internet_nl_mail_dashboard_overall_score'].explanation, url.url)"></span>
                                     </td>
+                                    <td>{{url.url}}</td>
                                     <td class="testresultcell" v-for="category_name in relevant_categories_based_on_settings">
                                         <template v-if="['web', 'mail'].includes(selected_category)">
                                             <template v-if="category_name in url.endpoints[0].ratings_by_type">
@@ -592,106 +666,136 @@ vueReport = new Vue({
 
         // settings
         issue_filters: {
-            'web': {'visible': true},
-            'web_legacy': {'visible': false},
-            'mail': {'visible': true},
-            'mail_legacy': {'visible': false},
-            'internet_nl_web_tls': {'visible': true},
-            'internet_nl_web_dnssec': {'visible': true},
-            'internet_nl_web_ipv6': {'visible': true},
-            'internet_nl_mail_dashboard_tls': {'visible': true},
-            'internet_nl_mail_dashboard_auth': {'visible': true},
-            'internet_nl_mail_dashboard_dnssec': {'visible': true},
-            'internet_nl_mail_dashboard_ipv6': {'visible': true},
-            'internet_nl_web_https_cert_domain': {'visible': true},
-            'internet_nl_web_https_http_redirect': {'visible': true},
-            'internet_nl_web_https_cert_chain': {'visible': true},
-            'internet_nl_web_https_tls_version': {'visible': true},
-            'internet_nl_web_https_tls_clientreneg': {'visible': true},
-            'internet_nl_web_https_tls_ciphers': {'visible': true},
-            'internet_nl_web_https_http_available': {'visible': true},
-            'internet_nl_web_https_dane_exist': {'visible': true},
-            'internet_nl_web_https_http_compress': {'visible': true},
-            'internet_nl_web_https_http_hsts': {'visible': true},
-            'internet_nl_web_https_tls_secreneg': {'visible': true},
-            'internet_nl_web_https_dane_valid': {'visible': true},
-            'internet_nl_web_https_cert_pubkey': {'visible': true},
-            'internet_nl_web_https_cert_sig': {'visible': true},
-            'internet_nl_web_https_tls_compress': {'visible': true},
-            'internet_nl_web_https_tls_keyexchange': {'visible': true},
-            'internet_nl_web_dnssec_valid': {'visible': true},
-            'internet_nl_web_dnssec_exist': {'visible': true},
-            'internet_nl_web_ipv6_ws_similar': {'visible': true},
-            'internet_nl_web_ipv6_ws_address': {'visible': true},
-            'internet_nl_web_ipv6_ns_reach': {'visible': true},
-            'internet_nl_web_ipv6_ws_reach': {'visible': true},
-            'internet_nl_web_ipv6_ns_address': {'visible': true},
-            'internet_nl_mail_starttls_cert_domain': {'visible': true},
-            'internet_nl_mail_starttls_tls_version': {'visible': true},
-            'internet_nl_mail_starttls_cert_chain': {'visible': true},
-            'internet_nl_mail_starttls_tls_available': {'visible': true},
-            'internet_nl_mail_starttls_tls_clientreneg': {'visible': true},
-            'internet_nl_mail_starttls_tls_ciphers': {'visible': true},
-            'internet_nl_mail_starttls_dane_valid': {'visible': true},
-            'internet_nl_mail_starttls_dane_exist': {'visible': true},
-            'internet_nl_mail_starttls_tls_secreneg': {'visible': true},
-            'internet_nl_mail_starttls_dane_rollover': {'visible': true},
-            'internet_nl_mail_starttls_cert_pubkey': {'visible': true},
-            'internet_nl_mail_starttls_cert_sig': {'visible': true},
-            'internet_nl_mail_starttls_tls_compress': {'visible': true},
-            'internet_nl_mail_starttls_tls_keyexchange': {'visible': true},
-            'internet_nl_mail_auth_dmarc_policy': {'visible': true},
-            'internet_nl_mail_auth_dmarc_exist': {'visible': true},
-            'internet_nl_mail_auth_spf_policy': {'visible': true},
-            'internet_nl_mail_auth_dkim_exist': {'visible': true},
-            'internet_nl_mail_auth_spf_exist': {'visible': true},
-            'internet_nl_mail_dnssec_mailto_exist': {'visible': true},
-            'internet_nl_mail_dnssec_mailto_valid': {'visible': true},
-            'internet_nl_mail_dnssec_mx_valid': {'visible': true},
-            'internet_nl_mail_dnssec_mx_exist': {'visible': true},
-            'internet_nl_mail_ipv6_mx_address': {'visible': true},
-            'internet_nl_mail_ipv6_mx_reach': {'visible': true},
-            'internet_nl_mail_ipv6_ns_reach': {'visible': true},
-            'internet_nl_mail_ipv6_ns_address': {'visible': true},
+            web: {visible: true, show_dynamic_average: true, only_show_dynamic_average: false},
+            web_legacy: {visible: false, show_dynamic_average: true, only_show_dynamic_average: false},
+            internet_nl_web_tls: {visible: true, show_dynamic_average: true, only_show_dynamic_average: false},
+            internet_nl_web_dnssec: {visible: true, show_dynamic_average: true, only_show_dynamic_average: false},
+            internet_nl_web_ipv6: {visible: true, show_dynamic_average: true, only_show_dynamic_average: false},
+            internet_nl_web_appsecpriv: {visible: true, show_dynamic_average: true, only_show_dynamic_average: false},  // Added 24th of May 2019
 
-            'internet_nl_mail_legacy_dmarc': {'visible': false},
-            'internet_nl_mail_legacy_dkim': {'visible': false},
-            'internet_nl_mail_legacy_spf': {'visible': false},
-            'internet_nl_mail_legacy_dmarc_policy': {'visible': false},
-            'internet_nl_mail_legacy_spf_policy': {'visible': false},
-            'internet_nl_mail_legacy_start_tls': {'visible': false},
-            'internet_nl_mail_legacy_start_tls_ncsc': {'visible': false},
-            'internet_nl_mail_legacy_dnssec_email_domain': {'visible': false},
-            'internet_nl_mail_legacy_dnssec_mx': {'visible': false},
-            'internet_nl_mail_legacy_dane': {'visible': false},
-            'internet_nl_mail_legacy_ipv6_nameserver': {'visible': false},
-            'internet_nl_mail_legacy_ipv6_mailserver': {'visible': false},
+            mail: {visible: true, show_dynamic_average: true, only_show_dynamic_average: false},
+            mail_legacy: {visible: false, show_dynamic_average: true, only_show_dynamic_average: false},
+            internet_nl_mail_dashboard_tls: {visible: true, show_dynamic_average: true, only_show_dynamic_average: false},
+            internet_nl_mail_dashboard_auth: {visible: true, show_dynamic_average: true, only_show_dynamic_average: false},
+            internet_nl_mail_dashboard_dnssec: {visible: true, show_dynamic_average: true, only_show_dynamic_average: false},
+            internet_nl_mail_dashboard_ipv6: {visible: true, show_dynamic_average: true, only_show_dynamic_average: false},
 
-            'internet_nl_web_legacy_dnssec': {'visible': false},
-            'internet_nl_web_legacy_tls_available': {'visible': false},
-            'internet_nl_web_legacy_tls_ncsc_web': {'visible': false},
-            'internet_nl_web_legacy_https_enforced': {'visible': false},
-            'internet_nl_web_legacy_hsts': {'visible': false},
-            'internet_nl_web_legacy_ipv6_nameserver': {'visible': false},
-            'internet_nl_web_legacy_ipv6_webserver': {'visible': false},
-            'internet_nl_web_legacy_dane': {'visible': false},
+            // a request was made to enable/disable dynamic averages on every graph. For this each graph
+            // needed an identifier, which became "category" -> thing. In this, values are stored.
+            // todo: make sure the values are initialized properly if they don't exist.
+            category_web_ipv6_name_server: {show_dynamic_average: true, only_show_dynamic_average: false},
+            category_web_ipv6_web_server: {show_dynamic_average: true, only_show_dynamic_average: false},
+            category_web_dnssec_dnssec: {show_dynamic_average: true, only_show_dynamic_average: false},
+            category_web_tls_http: {show_dynamic_average: true, only_show_dynamic_average: false},
+            category_web_tls_tls: {show_dynamic_average: true, only_show_dynamic_average: false},
+            category_web_tls_certificate: {show_dynamic_average: true, only_show_dynamic_average: false},
+            category_web_tls_dane: {show_dynamic_average: true, only_show_dynamic_average: false},
+            category_web_security_options_appsecpriv: {show_dynamic_average: true, only_show_dynamic_average: false},
+            category_web_forum_standardisation_magazine: {show_dynamic_average: true, only_show_dynamic_average: false},
+            category_web_forum_standardisation_ipv6_monitor: {show_dynamic_average: true, only_show_dynamic_average: false},
+
+            category_mail_ipv6_name_servers: {show_dynamic_average: true, only_show_dynamic_average: false},
+            category_mail_ipv6_mail_servers: {show_dynamic_average: true, only_show_dynamic_average: false},
+            category_mail_dnssec_email_address_domain: {show_dynamic_average: true, only_show_dynamic_average: false},
+            category_mail_dnssec_mail_server_domain: {show_dynamic_average: true, only_show_dynamic_average: false},
+            category_mail_dashboard_auth_dmarc: {show_dynamic_average: true, only_show_dynamic_average: false},
+            category_mail_dashboard_aut_dkim: {show_dynamic_average: true, only_show_dynamic_average: false},
+            category_mail_dashboard_aut_spf: {show_dynamic_average: true, only_show_dynamic_average: false},
+            category_mail_starttls_tls: {show_dynamic_average: true, only_show_dynamic_average: false},
+            category_mail_starttls_certificate: {show_dynamic_average: true, only_show_dynamic_average: false},
+            category_mail_starttls_dane: {show_dynamic_average: true, only_show_dynamic_average: false},
+            category_mail_forum_standardisation_magazine: {show_dynamic_average: true, only_show_dynamic_average: false},
+            category_mail_forum_standardisation_ipv6_monitor: {show_dynamic_average: true, only_show_dynamic_average: false},
+
+
+            internet_nl_web_https_cert_domain: {visible: true},
+            internet_nl_web_https_http_redirect: {visible: true},
+            internet_nl_web_https_cert_chain: {visible: true},
+            internet_nl_web_https_tls_version: {visible: true},
+            internet_nl_web_https_tls_clientreneg: {visible: true},
+            internet_nl_web_https_tls_ciphers: {visible: true},
+            internet_nl_web_https_http_available: {visible: true},
+            internet_nl_web_https_dane_exist: {visible: true},
+            internet_nl_web_https_http_compress: {visible: true},
+            internet_nl_web_https_http_hsts: {visible: true},
+            internet_nl_web_https_tls_secreneg: {visible: true},
+            internet_nl_web_https_dane_valid: {visible: true},
+            internet_nl_web_https_cert_pubkey: {visible: true},
+            internet_nl_web_https_cert_sig: {visible: true},
+            internet_nl_web_https_tls_compress: {visible: true},
+            internet_nl_web_https_tls_keyexchange: {visible: true},
+            internet_nl_web_dnssec_valid: {visible: true},
+            internet_nl_web_dnssec_exist: {visible: true},
+            internet_nl_web_ipv6_ws_similar: {visible: true},
+            internet_nl_web_ipv6_ws_address: {visible: true},
+            internet_nl_web_ipv6_ns_reach: {visible: true},
+            internet_nl_web_ipv6_ws_reach: {visible: true},
+            internet_nl_web_ipv6_ns_address: {visible: true},
+            internet_nl_mail_starttls_cert_domain: {visible: true},
+            internet_nl_mail_starttls_tls_version: {visible: true},
+            internet_nl_mail_starttls_cert_chain: {visible: true},
+            internet_nl_mail_starttls_tls_available: {visible: true},
+            internet_nl_mail_starttls_tls_clientreneg: {visible: true},
+            internet_nl_mail_starttls_tls_ciphers: {visible: true},
+            internet_nl_mail_starttls_dane_valid: {visible: true},
+            internet_nl_mail_starttls_dane_exist: {visible: true},
+            internet_nl_mail_starttls_tls_secreneg: {visible: true},
+            internet_nl_mail_starttls_dane_rollover: {visible: true},
+            internet_nl_mail_starttls_cert_pubkey: {visible: true},
+            internet_nl_mail_starttls_cert_sig: {visible: true},
+            internet_nl_mail_starttls_tls_compress: {visible: true},
+            internet_nl_mail_starttls_tls_keyexchange: {visible: true},
+            internet_nl_mail_auth_dmarc_policy: {visible: true},
+            internet_nl_mail_auth_dmarc_exist: {visible: true},
+            internet_nl_mail_auth_spf_policy: {visible: true},
+            internet_nl_mail_auth_dkim_exist: {visible: true},
+            internet_nl_mail_auth_spf_exist: {visible: true},
+            internet_nl_mail_dnssec_mailto_exist: {visible: true},
+            internet_nl_mail_dnssec_mailto_valid: {visible: true},
+            internet_nl_mail_dnssec_mx_valid: {visible: true},
+            internet_nl_mail_dnssec_mx_exist: {visible: true},
+            internet_nl_mail_ipv6_mx_address: {visible: true},
+            internet_nl_mail_ipv6_mx_reach: {visible: true},
+            internet_nl_mail_ipv6_ns_reach: {visible: true},
+            internet_nl_mail_ipv6_ns_address: {visible: true},
+
+            internet_nl_mail_legacy_dmarc: {visible: false},
+            internet_nl_mail_legacy_dkim: {visible: false},
+            internet_nl_mail_legacy_spf: {visible: false},
+            internet_nl_mail_legacy_dmarc_policy: {visible: false},
+            internet_nl_mail_legacy_spf_policy: {visible: false},
+            internet_nl_mail_legacy_start_tls: {visible: false},
+            internet_nl_mail_legacy_start_tls_ncsc: {visible: false},
+            internet_nl_mail_legacy_dnssec_email_domain: {visible: false},
+            internet_nl_mail_legacy_dnssec_mx: {visible: false},
+            internet_nl_mail_legacy_dane: {visible: false},
+            internet_nl_mail_legacy_ipv6_nameserver: {visible: false},
+            internet_nl_mail_legacy_ipv6_mailserver: {visible: false},
+
+            internet_nl_web_legacy_dnssec: {visible: false},
+            internet_nl_web_legacy_tls_available: {visible: false},
+            internet_nl_web_legacy_tls_ncsc_web: {visible: false},
+            internet_nl_web_legacy_https_enforced: {visible: false},
+            internet_nl_web_legacy_hsts: {visible: false},
+            internet_nl_web_legacy_ipv6_nameserver: {visible: false},
+            internet_nl_web_legacy_ipv6_webserver: {visible: false},
+            internet_nl_web_legacy_dane: {visible: false},
 
             // Fields added on the 24th of May 2019
-            'internet_nl_mail_auth_dmarc_policy_only': {'visible': false},  // Added 24th of May 2019
-            'internet_nl_mail_auth_dmarc_ext_destination': {'visible': false},  // Added 24th of May 2019
+            internet_nl_mail_auth_dmarc_policy_only: {visible: false},  // Added 24th of May 2019
+            internet_nl_mail_auth_dmarc_ext_destination: {visible: false},  // Added 24th of May 2019
 
             // no feature flags in report
-            'internet_nl_mail_non_sending_domain': {'visible': false},  // Added 24th of May 2019
-            'internet_nl_mail_server_configured': {'visible': false},  // Added 24th of May 2019
-            'internet_nl_mail_servers_testable': {'visible': false},   // Added 24th of May 2019
-            'internet_nl_mail_starttls_dane_ta': {'visible': false},  // Added 24th of May 2019
+            internet_nl_mail_non_sending_domain: {visible: false},  // Added 24th of May 2019
+            internet_nl_mail_server_configured: {visible: false},  // Added 24th of May 2019
+            internet_nl_mail_servers_testable: {visible: false},   // Added 24th of May 2019
+            internet_nl_mail_starttls_dane_ta: {visible: false},  // Added 24th of May 2019
 
-            'internet_nl_web_appsecpriv': {'visible': true},  // Added 24th of May 2019
-            'internet_nl_web_appsecpriv_csp': {'visible': true},  // Added 24th of May 2019
-            'internet_nl_web_appsecpriv_referrer_policy': {'visible': true},  // Added 24th of May 2019
-            'internet_nl_web_appsecpriv_x_content_type_options': {'visible': true},  // Added 24th of May 2019
-            'internet_nl_web_appsecpriv_x_frame_options': {'visible': true},  // Added 24th of May 2019
-            'internet_nl_web_appsecpriv_x_xss_protection': {'visible': true},  // Added 24th of May 2019
+            internet_nl_web_appsecpriv_csp: {visible: true},  // Added 24th of May 2019
+            internet_nl_web_appsecpriv_referrer_policy: {visible: true},  // Added 24th of May 2019
+            internet_nl_web_appsecpriv_x_content_type_options: {visible: true},  // Added 24th of May 2019
+            internet_nl_web_appsecpriv_x_frame_options: {visible: true},  // Added 24th of May 2019
+            internet_nl_web_appsecpriv_x_xss_protection: {visible: true},  // Added 24th of May 2019
         },
 
         issue_filters_response: {},
@@ -705,6 +809,12 @@ vueReport = new Vue({
         debounce_timer: 0,
 
         available_recent_reports: [],
+
+        // the filtered set only shows the same type as the first scan shown. It's not possible to open
+        // two reports of the same type, as the UI is not capable ofhandling that ... as all fields differ and there
+        // is really no comparison possible.
+        filtered_recent_reports: [],
+
         selected_report: null,
 
         // graphs:
@@ -727,6 +837,8 @@ vueReport = new Vue({
             // The first one can be defined without a pattern to give a consistent look/feel to all first graphs.
             incremental: [
                 {background: 'rgba(255, 112, 50, 0.6)', border: 'rgba(209, 63, 0, 1)'},
+                // try out a nice green background
+                // green: {background: 'rgba(33, 234, 7, 0.6)', border: 'rgb(86, 196, 80)'},
                 {background: pattern.draw('weave',  'rgba(21, 66, 115, 0.6)'), border: 'rgba(21, 66, 115, 1)'},
                 {background: pattern.draw('dot',  'rgba(43, 151, 89, 0.6)'), border: 'rgb(28, 94, 56)'},
                 {background: pattern.draw('dash',  'rgba(0, 255, 246, 0.6)'), border: 'rgb(0, 92, 89)'},
@@ -781,10 +893,14 @@ vueReport = new Vue({
                 this.is_loading = false;
 
                 // we already have the first report, so don't request it again.
-                this.compare_charts.push(this.reports[0]);
+                // note that when setting the first chart, the subsequent updates do not "point ot a new object"
+                // so a state change doesn not happen automatically using a wathcer, you have to watch deep.
+                console.log(`First compare chart set...`);
+                this.$set(this.compare_charts, 0, this.reports[0]);
+                // this.compare_charts.$set(0, );
 
                 // new accordions are created, reduce their size.
-                this.$nextTick(() => accordinate());
+                this.$nextTick(() => {accordinate(); this.$forceUpdate()});
             }).catch((fail) => {console.log('A loading error occurred: ' + fail);});
         },
         save_issue_filters: function(){
@@ -822,13 +938,37 @@ vueReport = new Vue({
                     this.upgrade_issue_filter_with_new_field('internet_nl_mail_server_configured');
                     this.upgrade_issue_filter_with_new_field('internet_nl_mail_servers_testable');
                     this.upgrade_issue_filter_with_new_field('internet_nl_mail_starttls_dane_ta');
+
+                    this.upgrade_issue_filter_with_new_field('category_web_ipv6_name_server');
+                    this.upgrade_issue_filter_with_new_field('category_web_ipv6_web_server');
+                    this.upgrade_issue_filter_with_new_field('category_web_dnssec_dnssec');
+                    this.upgrade_issue_filter_with_new_field('category_web_tls_http');
+                    this.upgrade_issue_filter_with_new_field('category_web_tls_tls');
+                    this.upgrade_issue_filter_with_new_field('category_web_tls_certificate');
+                    this.upgrade_issue_filter_with_new_field('category_web_tls_dane');
+                    this.upgrade_issue_filter_with_new_field('category_web_security_options_appsecpriv');
+                    this.upgrade_issue_filter_with_new_field('category_web_forum_standardisation_magazine');
+                    this.upgrade_issue_filter_with_new_field('category_web_forum_standardisation_ipv6_monitor');
+                    this.upgrade_issue_filter_with_new_field('category_mail_ipv6_name_servers');
+                    this.upgrade_issue_filter_with_new_field('category_mail_ipv6_mail_servers');
+                    this.upgrade_issue_filter_with_new_field('category_mail_dnssec_email_address_domain');
+                    this.upgrade_issue_filter_with_new_field('category_mail_dnssec_mail_server_domain');
+                    this.upgrade_issue_filter_with_new_field('category_mail_dashboard_auth_dmarc');
+                    this.upgrade_issue_filter_with_new_field('category_mail_dashboard_aut_dkim');
+                    this.upgrade_issue_filter_with_new_field('category_mail_dashboard_aut_spf');
+                    this.upgrade_issue_filter_with_new_field('category_mail_starttls_tls');
+                    this.upgrade_issue_filter_with_new_field('category_mail_starttls_certificate');
+                    this.upgrade_issue_filter_with_new_field('category_mail_starttls_dane');
+                    this.upgrade_issue_filter_with_new_field('category_mail_forum_standardisation_magazine');
+                    this.upgrade_issue_filter_with_new_field('category_mail_forum_standardisation_ipv6_monitor');
                 }
             });
         },
 
+
         upgrade_issue_filter_with_new_field: function(field_name){
             if (!Object.keys(this.issue_filters).includes(field_name))
-                        this.issue_filters[field_name] = {'visible': false}
+                        this.issue_filters[field_name] = {visible: false, show_dynamic_average: true, only_show_dynamic_average: false}
         },
         alphabet_sorting: function(a, b){
             // i already mis sorted()
@@ -840,12 +980,24 @@ vueReport = new Vue({
             }
             return 0;
         },
-        compare_with: function(id){
+        compare_with: function(id, compare_chart_id){
             fetch(`/data/report/get/${id}/`, {credentials: 'include'}).then(response => response.json()).then(report => {
 
                 if (!jQuery.isEmptyObject(report)) {
-                    this.compare_charts.push(report[0]);
-                    this.$nextTick(() => accordinate());
+                    // this will work fine, as all the prior id's will be filled with reports too...
+                    // js behaves unacceptably, but in this case it's fine.
+                    // example: i = [];
+                    // i[3] = "a"
+                    // i is then Array(4) [ undefined, undefined, undefined, "a" ]...
+                    // https://vuejs.org/2016/02/06/common-gotchas/#Why-isn%E2%80%99t-the-DOM-updating
+                    // note that the documentation is plain wrong, as arr.$set is NOT a method on the array,
+                    // but on the vm. And thus the syntax for using it differs from the docs.
+                    console.log(`Compare chart ${compare_chart_id} set...`);
+                    this.$set(this.compare_charts, compare_chart_id, report[0]);
+
+                    // given the charts are on a fixed number in the array, vue doesn't pick up changes.
+                    // and as the order matters, this is a solution that fixes that.
+                    this.$nextTick(() => {accordinate(); this.$forceUpdate();});
                 }
 
             }).catch((fail) => {console.log('A loading error occurred: ' + fail);});
@@ -858,6 +1010,7 @@ vueReport = new Vue({
                     options.push(data[i])
                 }
                 this.available_recent_reports = options;
+                this.filtered_recent_reports = options;
 
                 // if the page was requested with a page ID, start loading that report.
                 // this supports: http://localhost:8000/reports/83/
@@ -865,7 +1018,7 @@ vueReport = new Vue({
                     get_id = window.location.href.split('/')[4];
                     // can we change the select2 to a certain value?
 
-                    this.available_recent_reports.forEach((option) => {
+                    this.filtered_recent_reports.forEach((option) => {
                        if (option.id + "" === get_id){
                            // also re-create label
                            option.label = `#${option.id} - ${option.list_name} - type: ${option.type} - from: ${this.humanize_date(option.at_when)}`;
@@ -970,6 +1123,17 @@ vueReport = new Vue({
             }
             return returned_fields;
         },
+        fields_from_self_and_do_not_filter(category){
+            let fields = [];
+
+            category.fields.forEach((field) => {
+                fields.push(field.name);
+            });
+            category.additional_fields.forEach((field) => {
+                fields.push(field.name);
+            });
+            return fields;
+        },
         is_visible(field_name){
             try {
                 return this.issue_filters[field_name].visible;
@@ -986,13 +1150,27 @@ vueReport = new Vue({
             // totally empty list, list was emptied by clicking the crosshair everywhere.
             if (new_value[0] === undefined){
                 // console.log('List was emptied');
+
+                // all reports are available again:
+                this.filtered_recent_reports = this.available_recent_reports;
+
                 this.reports=[];
                 this.is_loading = false;
                 return;
             }
 
+            // when deleting any report, we will need to rebuild the compare charts...
             this.compare_charts = [];
             this.load(new_value[0].id);
+
+            // filter reports on type:
+            let filtered_reports = [];
+            this.available_recent_reports.forEach((item) => {
+                if (item.type === new_value[0].type){
+                    filtered_reports.push(item);
+                }
+            });
+            this.filtered_recent_reports = filtered_reports;
 
             // we already have the first chart, don't load that again.
             // the first chart is always loaded through the load method.
@@ -1000,7 +1178,9 @@ vueReport = new Vue({
                 // console.log(`Comparing with report ${new_value[i].id}`);
                 // todo: this causes an extra load of the data, which is slow... At least it always works
                 // without syncing issues etc...
-                this.compare_with(new_value[i].id);
+                // i = the compare chart id, so even if the reports load asyncronous, the array order is
+                // maintained in the compare charts, and thus in the graphs.
+                this.compare_with(new_value[i].id, i);
             }
         },
         url_filter: function(newValue, oldValue){
@@ -1053,6 +1233,7 @@ vueReport = new Vue({
                             categories: [
                                 {
                                     name: 'name_servers',
+                                    key: 'category_web_ipv6_name_server',
                                     // there is NO translations for web, only for mail.
                                     label: internet_nl_messages[language].internet_nl.results_domain_mail_ipv6_name_servers_label,
                                     fields: [
@@ -1063,6 +1244,7 @@ vueReport = new Vue({
                                 },
                                 {
                                     name: 'web_server',
+                                    key: 'category_web_ipv6_web_server',
                                     label: internet_nl_messages[language].internet_nl.results_domain_ipv6_web_server_label,
                                     fields: [
                                         {name: 'internet_nl_web_ipv6_ws_address'},
@@ -1085,6 +1267,7 @@ vueReport = new Vue({
                                 {
                                     // the exception to the rule
                                     name: '',
+                                    key: 'category_web_dnssec_dnssec',
                                     label: internet_nl_messages[language].internet_nl.test_sitednssec_label,
                                     fields: [
                                         {name: 'internet_nl_web_dnssec_exist'},
@@ -1105,6 +1288,7 @@ vueReport = new Vue({
                             categories: [
                                 {
                                     name: 'http',
+                                    key: 'category_web_tls_http',
                                     label: internet_nl_messages[language].internet_nl.results_domain_tls_https_label,
                                     fields: [
                                         {name: 'internet_nl_web_https_http_available'},
@@ -1116,6 +1300,7 @@ vueReport = new Vue({
                                 },
                                 {
                                     name: 'tls',
+                                    key: 'category_web_tls_tls',
                                     label: internet_nl_messages[language].internet_nl.results_domain_tls_tls_label,
                                     fields: [
                                         {name: 'internet_nl_web_https_tls_version'},
@@ -1129,6 +1314,7 @@ vueReport = new Vue({
                                 },
                                 {
                                     name: 'certificate',
+                                    key: 'category_web_tls_certificate',
                                     // mail is being reused as there is no alternative translation (!)
                                     label: internet_nl_messages[language].internet_nl.results_domain_mail_tls_certificate_label,
                                     fields: [
@@ -1141,6 +1327,7 @@ vueReport = new Vue({
                                 },
                                 {
                                     name: 'dane',
+                                    key: 'category_web_tls_dane',
                                     label: internet_nl_messages[language].internet_nl.results_domain_mail_tls_dane_label,
                                     fields: [
                                         {name: 'internet_nl_web_https_dane_exist'},
@@ -1162,6 +1349,7 @@ vueReport = new Vue({
                             categories: [
                                 {
                                     name: 'HTTP security headers',
+                                    key: 'category_web_security_options_appsecpriv',
                                     label: internet_nl_messages[language].internet_nl.results_domain_appsecpriv_http_headers_label,
                                     fields: [
                                         {name: 'internet_nl_web_appsecpriv_x_frame_options'},
@@ -1187,6 +1375,7 @@ vueReport = new Vue({
                             categories: [
                                 {
                                     name: 'Measurements on agreed security standards',
+                                    key: 'category_web_forum_standardisation_magazine',
                                     label: i18n.t('report.fields.forum_standardistation.measurements_on_agreed_security_standards'),
                                     fields: [
                                         {name: 'internet_nl_web_legacy_dnssec',
@@ -1205,6 +1394,7 @@ vueReport = new Vue({
                                 },
                                 {
                                     name: 'IPv6 Monitor',
+                                    key: 'category_web_forum_standardisation_ipv6_monitor',
                                     label: i18n.t('report.fields.forum_standardistation.ipv6_monitor'),
                                     fields: [
                                         {name: 'internet_nl_web_legacy_ipv6_nameserver',
@@ -1239,6 +1429,7 @@ vueReport = new Vue({
                             categories: [
                                 {
                                     name: 'Name servers',
+                                    key: 'category_mail_ipv6_name_servers',
                                     label: internet_nl_messages[language].internet_nl.results_domain_mail_ipv6_name_servers_label,
                                     fields: [
                                         {name: 'internet_nl_mail_ipv6_ns_address'},
@@ -1248,6 +1439,7 @@ vueReport = new Vue({
                                 },
                                 {
                                     name: 'Mail server(s)',
+                                    key: 'category_mail_ipv6_mail_servers',
                                     label: internet_nl_messages[language].internet_nl.results_mail_ipv6_mail_servers_label,
                                     fields: [
                                         {name: 'internet_nl_mail_ipv6_mx_address'},
@@ -1270,6 +1462,7 @@ vueReport = new Vue({
                             categories: [
                                 {
                                     name: 'email address domain',
+                                    key: 'category_mail_dnssec_email_address_domain',
                                     label: internet_nl_messages[language].internet_nl.results_mail_dnssec_domain_label,
                                     fields: [
                                         {name: 'internet_nl_mail_dnssec_mailto_exist'},
@@ -1279,6 +1472,7 @@ vueReport = new Vue({
                                 },
                                 {
                                     name: 'mail server domain(s)',
+                                    key: 'category_mail_dnssec_mail_server_domain',
                                     label: internet_nl_messages[language].internet_nl.results_mail_dnssec_mail_servers_label,
                                     fields: [
                                         {name: 'internet_nl_mail_dnssec_mx_exist'},
@@ -1301,6 +1495,7 @@ vueReport = new Vue({
                             categories: [
                                 {
                                     name: 'DMARC',
+                                    key: 'category_mail_dashboard_auth_dmarc',
                                     label: internet_nl_messages[language].internet_nl.results_mail_auth_dmarc_label,
                                     fields: [
                                         {name: 'internet_nl_mail_auth_dmarc_exist'},
@@ -1310,6 +1505,7 @@ vueReport = new Vue({
                                 },
                                 {
                                     name: 'DKIM',
+                                    key: 'category_mail_dashboard_aut_dkim',
                                     label: internet_nl_messages[language].internet_nl.results_mail_auth_dkim_label,
                                     fields: [
                                         {name: 'internet_nl_mail_auth_dkim_exist'},
@@ -1318,6 +1514,7 @@ vueReport = new Vue({
                                 },
                                 {
                                     name: 'SPF',
+                                    key: 'category_mail_dashboard_aut_spf',
                                     label: internet_nl_messages[language].internet_nl.results_mail_auth_spf_label,
                                     fields: [
                                         {name: 'internet_nl_mail_auth_spf_exist'},
@@ -1344,6 +1541,7 @@ vueReport = new Vue({
                             categories: [
                                 {
                                     name: 'TLS',
+                                    key: 'category_mail_starttls_tls',
                                     label: internet_nl_messages[language].internet_nl.results_mail_tls_starttls_label,
                                     fields: [
                                         {name: 'internet_nl_mail_starttls_tls_available'},
@@ -1358,6 +1556,7 @@ vueReport = new Vue({
                                 },
                                 {
                                     name: 'Certificate',
+                                    key: 'category_mail_starttls_certificate',
                                     label: internet_nl_messages[language].internet_nl.results_domain_mail_tls_certificate_label,
                                     fields: [
                                         {name: 'internet_nl_mail_starttls_cert_chain'},
@@ -1369,6 +1568,7 @@ vueReport = new Vue({
                                 },
                                 {
                                     name: 'DANE',
+                                    key: 'category_mail_starttls_dane',
                                     label: internet_nl_messages[language].internet_nl.results_domain_mail_tls_dane_label,
                                     fields: [
                                         {name: 'internet_nl_mail_starttls_dane_exist'},
@@ -1397,6 +1597,7 @@ vueReport = new Vue({
                                 {
                                     name: 'magazine',
                                     label: 'Measurements on agreed security standards',
+                                    key: 'category_mail_forum_standardisation_magazine',
                                     fields: [
                                         {name: 'internet_nl_mail_legacy_dmarc',
                                         explanation: 'report.fields.forum_standardistation.internet_nl_mail_legacy_dmarc_explanation'},
@@ -1424,11 +1625,12 @@ vueReport = new Vue({
                                     name: 'IPv6 Monitor',
                                     // todo: translate label
                                     label: 'IPv6 Monitor',
+                                    key: 'category_mail_forum_standardisation_ipv6_monitor',
                                     fields: [
                                         {name: 'internet_nl_mail_legacy_ipv6_nameserver',
                                         explanation: 'report.fields.forum_standardistation.internet_nl_mail_legacy_ipv6_nameserver_explanation'},
-                                        {name: 'internet_nl_web_legacy_ipv6_webserver',
-                                        explanation: 'report.fields.forum_standardistation.internet_nl_web_legacy_ipv6_webserver_explanation'},
+                                        {name: 'internet_nl_mail_legacy_ipv6_mailserver',
+                                        explanation: 'report.fields.forum_standardistation.internet_nl_mail_legacy_ipv6_mailserver_explanation'},
                                         // {name: 'internet_nl_mail_legacy_ipv6_mailserver'},
                                     ],
                                     additional_fields: [],
@@ -1504,7 +1706,9 @@ const chart_mixin = {
         color_scheme: {type: Object, required: false},
         title: {type: String, required: false},
         translation_key: {type: String, required: false},
-        accessibility_text: {type: String, required: true}
+        accessibility_text: {type: String, required: true},
+        show_dynamic_average: {type: Boolean, required: false},
+        only_show_dynamic_average: {type: Boolean, required: false},
     },
     data: function () {
         return {
@@ -1555,15 +1759,26 @@ const chart_mixin = {
         }
     },
     watch: {
-        chart_data: function(new_value, old_value){
-            this.renderData();
+        chart_data: {
+
+            // Note that you don’t need to do so to listen for Array mutations...
+            deep: false,
+            handler (new_value, old_value){
+                console.log(`Chart data updated to ${new_value.length} items...`);
+                this.renderData();
+            }
         },
         axis: function(new_value, old_value){
             if (!this.arraysEqual(old_value, new_value)) {
                 this.renderData();
             }
         },
-
+        show_dynamic_average: function(){
+            this.renderData();
+        },
+        only_show_dynamic_average: function(){
+            this.renderData();
+        },
         title: function(new_value, old_value){
             if (!this.arraysEqual(old_value, new_value)) {
                 this.renderTitle();
@@ -1680,17 +1895,26 @@ Vue.component('percentage-bar-chart', {
             });
         },
         renderData: function(){
+            console.log("Rendering bar chart.");
+
             // prevent the grapsh from ever growing (it's called twice at first render)
             this.chart.data.axis_names = [];
             this.chart.data.labels = [];
             this.chart.data.datasets = [];
 
             for(let i=0; i < this.chart_data.length; i++){
+                console.log(`Rendering set ${i}`);
+
+                // it's possible the report data is not yet in, but the item in the array has been made.
+                // so well:
+                if (this.chart_data[i] === undefined)
+                    return;
 
                 let data = this.chart_data[i].statistics_per_issue_type;
 
                 if (data === undefined) {
                     // nothing to show
+                    console.log('nothing to show, probably because not all reports in compare charts are in...');
                     this.chart.data.axis_names = [];
                     this.chart.data.labels = [];
                     this.chart.data.datasets = [];
@@ -1705,17 +1929,18 @@ Vue.component('percentage-bar-chart', {
 
                 this.axis.forEach((ax) => {
                     if (ax in data) {
-                        labels.push(i18n.t("report." + ax));
-                        axis_names.push(ax);
-                        chartdata.push(data[ax].pct_ok);
+                        if (!this.only_show_dynamic_average) {
+                            labels.push(i18n.t("report." + ax));
+                            axis_names.push(ax);
+                            chartdata.push(data[ax].pct_ok);
+                        }
                         average += parseFloat(data[ax].pct_ok);
                     }
                 });
 
                 // add the average of all these to the report, not as a line, but as an additional bar
-                // todo: translate label
-                if (labels.length > 1) {
-                    chartdata.push(Math.round((average / labels.length) * 100) / 100);
+                if ((labels.length > 1 && this.show_dynamic_average) || this.only_show_dynamic_average) {
+                    chartdata.push(Math.round((average / this.axis.length) * 100) / 100);
                     labels.push(i18n.t(this.translation_key + '.average'));
                     axis_names.push("Average");
                 }
@@ -1732,13 +1957,6 @@ Vue.component('percentage-bar-chart', {
                 });
 
             }
-
-            // the ordering is from important to none important, and we want to reverse it so the reader sees that
-            // the right most value is the most important instead of the left one.
-            this.chart.data.datasets.reverse();
-            // the same goes for colors
-            // this.chart.data.labels.reverse();
-
 
             this.chart.update();
         },
@@ -1853,6 +2071,11 @@ Vue.component('cumulative-percentage-bar-chart', {
 
             for(let i=0; i < this.chart_data.length; i++) {
 
+                // it's possible the report data is not yet in, but the item in the array has been made.
+                // so well:
+                if (this.chart_data[i] === undefined)
+                    return;
+
                 let data = this.chart_data[i].statistics_per_issue_type;
 
                 if (data === undefined) {
@@ -1883,18 +2106,19 @@ Vue.component('cumulative-percentage-bar-chart', {
 
             this.axis.forEach((ax) => {
                 if (ax in data) {
-                    labels.push(i18n.t("report." + ax));
-                    axis_names.push(ax);
-
+                    if (!this.only_show_dynamic_average) {
+                        labels.push(i18n.t("report." + ax));
+                        axis_names.push(ax);
+                        chartdata.push((Math.round(cumulative_axis_data[ax] / this.chart_data.length * 100)) / 100);
+                    }
                     // toFixed delivers some 81.32429999999999 results, which is total nonsense.
                     average += (Math.round(cumulative_axis_data[ax] / this.chart_data.length * 100)) / 100;
-                    chartdata.push((Math.round(cumulative_axis_data[ax] / this.chart_data.length * 100)) / 100);
                 }
             });
 
             // add the average of all these to the report, not as a line, but as an additional bar
-            if (labels.length > 1) {
-                chartdata.push(Math.round((average / labels.length) * 100) / 100);
+            if ((labels.length > 1 && this.show_dynamic_average) || this.only_show_dynamic_average) {
+                chartdata.push(Math.round((average / this.axis.length) * 100) / 100);
                 labels.push(i18n.t(this.translation_key + '.average'));
                 axis_names.push("Average");
             }
@@ -1909,15 +2133,6 @@ Vue.component('cumulative-percentage-bar-chart', {
                 lineTension: 0,
                 label: `${this.chart_data[0].calculation.name} ${moment(this.chart_data[0].at_when).format('LL')}`,
             });
-
-
-
-            // the ordering is from important to none important, and we want to reverse it so the reader sees that
-            // the right most value is the most important instead of the left one.
-            this.chart.data.datasets.reverse();
-            // the same goes for colors
-            // this.chart.data.labels.reverse();
-
 
             this.chart.update();
         },
