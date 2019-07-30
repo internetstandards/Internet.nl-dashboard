@@ -204,6 +204,10 @@ const messages = {
                     average_internet_nl_score: "Average internet.nl score",
                     accessibility_text: "A table with the content of this graph is shown below.",
                 },
+                magazine: {
+                    intro: "Below graph only shows the average of all magazine fields. Other fields cannot be enabled/disabled and changing their visibility does " +
+                        "not influence this average.",
+                },
                 adoption_bar_chart: {
                     annotation: {
                         title: 'Average adoption of standards ',
@@ -265,10 +269,14 @@ const messages = {
                     reset: 'Reset',
                     reset_label: 'Resets all values to their original status.',
                     save: 'Save',
-                    reset_label: 'Save the changes made in this form.',
+                    save_label: 'Save the changes made in this form.',
                 },
                 restored_from_database: "Settings restored from database",
                 updated: "Settings updated",
+
+                show_category: "Show this category",
+                show_dynamic_average: "Show dynamic average",
+                only_show_dynamic_average: "Only show dynamic average",
             },
 
             // Nofix: should we use hierarchical translations, which is much prettier? How?
@@ -814,7 +822,9 @@ const messages = {
                     average_internet_nl_score: "Gemiddelde internet.nl score",
                     accessibility_text: "Een tabel met de inhoud van deze grafiek wordt hieronder getoond.",
                 },
-
+                magazine: {
+                    intro: "Onderstaande grafiek toont het gemiddelde van alle magazine velden. Deze grafiek kan niet worden aangepast, ook niet door de zichtbaarheid van velden aan te passen.",
+                },
                 adoption_bar_chart: {
                     annotation: {
                         title: 'Adoptie van standaarden',
@@ -870,12 +880,20 @@ const messages = {
                 csv: 'Comma Separated (voor programmeurs), .csv',
             },
             settings: {
-                title: 'Instellingen',
+                title: 'Selecteer zichtbare meetwaarden',
                 intro: 'Selecteer de velden die relevant zijn voor uw organisatie.',
                 buttons: {
                     reset: 'Reset',
+                    reset_label: 'Zet de originele waardes terug naar de waardes in de database',
                     save: 'Opslaan',
-                }
+                    save_label: 'Sla de wijzigingen in de zichtbare meetwaarden op.',
+                },
+                restored_from_database: "Zichtbare meetwaarden zijn teruggezet naar de waardes in de database",
+                updated: "Zichtbare meetwaarden opgeslagen",
+
+                show_category: "Toon deze categorie",
+                show_dynamic_average: "Bereken dynamisch het gemiddelde van alle zichtbare velden",
+                only_show_dynamic_average: "Toon alleen het dynamisch berekende gemiddelde",
             },
 
             // legacy values
