@@ -492,7 +492,8 @@
                         <thead>
 
                             <tr>
-                                <th style="width: 300px; min-width: 300px; border: 0">
+                                <th style="width: 75px; min-width: 75px; border: 0"></th>
+                                <th style="width: 225px; min-width: 225px; border: 0">
                                     &nbsp;
                                 </th>
                                 <th style="border: 0" class="rotate" v-for="category in relevant_categories_based_on_settings">
@@ -508,7 +509,7 @@
                             <template>
                                 <!-- Summary row, same data as bar chart, but then in numbers.-->
                                 <tr class="summaryrow">
-                                    <td>
+                                    <td colspan="2">
                                         &nbsp;
                                     </td>
                                     <td v-for="category_name in relevant_categories_based_on_settings">
@@ -519,7 +520,7 @@
 
                                 <!-- Zoom buttons for accessibility -->
                                 <tr class="summaryrow">
-                                    <td>
+                                    <td colspan="2">
                                         <label class="visuallyhidden" for="url_filter">{{ $t('report.report.url_filter') }}</label>
                                         <input v-if="selected_report" type="text" v-model="url_filter" id="url_filter" :placeholder="$t('report.report.url_filter')">
                                         <p class="visuallyhidden">{{ $t('report.report.zoom.explanation') }}</p>
@@ -544,17 +545,18 @@
 
                             <template v-if="!filtered_urls.length">
                                 <tr>
-                                    <td :colspan="relevant_categories_based_on_settings.length + 1" style="text-align: center;">😱 {{ $t("report.report.empty_report") }}</td>
+                                    <td :colspan="relevant_categories_based_on_settings.length + 2" style="text-align: center;">😱 {{ $t("report.report.empty_report") }}</td>
                                 </tr>
                             </template>
 
                             <template v-if="filtered_urls.length">
 
                                 <tr v-for="url in filtered_urls" v-if="url.endpoints.length">
-                                    <td>{{url.url}}
+                                    <td>
                                         <span v-if="selected_report[0].type === 'web'" v-html="original_report_link_from_score(url.endpoints[0].ratings_by_type['internet_nl_web_overall_score'].explanation, url.url)"></span>
                                         <span v-if="selected_report[0].type === 'mail'" v-html="original_report_link_from_score(url.endpoints[0].ratings_by_type['internet_nl_mail_dashboard_overall_score'].explanation, url.url)"></span>
                                     </td>
+                                    <td>{{url.url}}</td>
                                     <td class="testresultcell" v-for="category_name in relevant_categories_based_on_settings">
                                         <template v-if="['web', 'mail'].includes(selected_category)">
                                             <template v-if="category_name in url.endpoints[0].ratings_by_type">
