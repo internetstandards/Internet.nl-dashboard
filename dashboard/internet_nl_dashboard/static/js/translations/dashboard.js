@@ -196,7 +196,8 @@ const messages = {
                         title: 'Adoption of standards over time',
                         intro: 'This graph compares various measurements of the same list over time. ' +
                             'This provides a visual indication of the progress of standards adoption. A table with the ' +
-                            'same values is avaiable below. This graph shows the average score of internet.nl'
+                            'same values is avaiable below. This graph shows the average score of internet.nl. Note that ' +
+                            'only the values of the first selected report are shown.'
                     },
                     title: 'Average adoption of standards. Overall.',
                     yAxis_label: 'Adoption',
@@ -231,7 +232,7 @@ const messages = {
             },
             report: {
                 title: 'Report',
-                intro: '',
+                intro: 'This shows the results of the first selected report only.',
                 url_filter: 'Filter on domain...',
                 zoom: {
                     buttons:
@@ -814,7 +815,8 @@ const messages = {
                     annotation: {
                         title: 'Adoptie van standaarden over tijd.',
                         intro: 'Deze grafiek toont verschillende metingen van dezelfde lijst over tijd. ' +
-                            'Dit geeft zicht over de voortgang van de adoptie van standaarden.'
+                            'Dit geeft zicht over de voortgang van de adoptie van standaarden. Het toont de gemiddelde score van internet.nl. ' +
+                            'Deze grafiek toont alleen de gemiddelden van het eerst geselecteerde rapport.'
                     },
                     title: 'Gemiddelde adoptie van standaarden over tijd.',
                     yAxis_label: 'Adoptiegraad',
@@ -848,7 +850,7 @@ const messages = {
             },
             report: {
                 title: 'Rapport',
-                intro: '',
+                intro: 'Dit overzicht laat alleen de resultaten van het het eerst geselecteerde rapport zien.',
                 url_filter: 'Filter op domein...',
                 zoom: {
                     buttons:

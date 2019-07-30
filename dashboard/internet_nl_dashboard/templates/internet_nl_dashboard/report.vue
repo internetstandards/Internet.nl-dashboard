@@ -108,11 +108,11 @@
 
                                 <label :for="scan_form.name + '_show_dynamic_average'">
                                     <input type="checkbox" v-model="issue_filters[scan_form.name].show_dynamic_average" :id="scan_form.name + '_show_dynamic_average'">
-                                    Show dynamic average
+                                    {{ $t("report.settings.show_dynamic_average") }}
                                 </label><br>
                                 <label :for="scan_form.name + '_only_show_dynamic_average'">
                                     <input type="checkbox" v-model="issue_filters[scan_form.name].only_show_dynamic_average" :id="scan_form.name + '_only_show_dynamic_average'">
-                                    Only show dynamic average
+                                    {{ $t("report.settings.only_show_dynamic_average") }}
                                 </label>
 
                                 <template v-if="scan_form.additional_fields.length">
@@ -134,15 +134,15 @@
                                                 <template v-for="field in category.fields">
                                                     <label :for="field.name + '_visible'">
                                                         <input type="checkbox" v-model="issue_filters[field.name].visible" :id="field.name + '_visible'">
-                                                        Show this category
+                                                        {{ $t("report.settings.show_category") }}
                                                     </label><br>
                                                     <label :for="field.name + '_show_dynamic_average'">
                                                         <input type="checkbox" v-model="issue_filters[field.name].show_dynamic_average" :id="field.name + '_show_dynamic_average'">
-                                                        Show dynamic average
+                                                        {{ $t("report.settings.show_dynamic_average") }}
                                                     </label><br>
                                                     <label :for="field.name + '_only_show_dynamic_average'">
                                                         <input type="checkbox" v-model="issue_filters[field.name].only_show_dynamic_average" :id="field.name + '_only_show_dynamic_average'">
-                                                        Only show dynamic average
+                                                        {{ $t("report.settings.only_show_dynamic_average") }}
                                                     </label>
                                                 </template>
 
@@ -166,11 +166,11 @@
 
                                                 <label :for="category.key + '_show_dynamic_average'">
                                                     <input type="checkbox" v-model="issue_filters[category.key].show_dynamic_average" :id="category.key + '_show_dynamic_average'">
-                                                    Show dynamic average
+                                                    {{ $t("report.settings.show_dynamic_average") }}
                                                 </label><br>
                                                 <label :for="category.key + '_only_show_dynamic_average'">
                                                     <input type="checkbox" v-model="issue_filters[category.key].only_show_dynamic_average" :id="category.key + '_only_show_dynamic_average'">
-                                                    Only show dynamic average
+                                                    {{ $t("report.settings.only_show_dynamic_average") }}
                                                 </label>
                                             </div>
 
@@ -343,7 +343,7 @@
                                                 </div>
                                             </div>
                                             <!-- Special graph for Forum standardisation, that cannot have the items disabled -->
-                                            <div style="overflow: auto; width: 100%" v-if="subcategory.name === 'magazine'">
+                                            <div style="overflow: auto; width: 100%" v-if="['category_mail_forum_standardisation_magazine', 'category_web_forum_standardisation_magazine'].includes(subcategory.key)">
                                                 <p>{{ $t("report.charts.magazine.intro") }}</p>
                                                 <div class="chart-container" style="position: relative; height:500px; width:100%; min-width: 950px;">
                                                     <percentage-bar-chart
@@ -454,7 +454,7 @@
                                                 </div>
                                             </div>
                                             <!-- Special graph for Forum standardisation, that cannot have the items disabled -->
-                                            <div style="overflow: auto; width: 100%" v-if="subcategory.name === 'magazine'">
+                                            <div style="overflow: auto; width: 100%" v-if="['category_mail_forum_standardisation_magazine', 'category_web_forum_standardisation_magazine'].includes(subcategory.key)">
                                                 <p>This shows the average for Forum Standardisation, it is not possible to
                                                 show the average or to select what fields should be visible.</p>
                                                 <div class="chart-container" style="position: relative; height:500px; width:100%; min-width: 950px;">
@@ -702,7 +702,7 @@ vueReport = new Vue({
             category_mail_starttls_tls: {show_dynamic_average: true, only_show_dynamic_average: false},
             category_mail_starttls_certificate: {show_dynamic_average: true, only_show_dynamic_average: false},
             category_mail_starttls_dane: {show_dynamic_average: true, only_show_dynamic_average: false},
-            category_forum_standardisation_magazine: {show_dynamic_average: true, only_show_dynamic_average: false},
+            category_mail_forum_standardisation_magazine: {show_dynamic_average: true, only_show_dynamic_average: false},
             category_mail_forum_standardisation_ipv6_monitor: {show_dynamic_average: true, only_show_dynamic_average: false},
 
 
@@ -955,7 +955,7 @@ vueReport = new Vue({
                     this.upgrade_issue_filter_with_new_field('category_mail_starttls_tls');
                     this.upgrade_issue_filter_with_new_field('category_mail_starttls_certificate');
                     this.upgrade_issue_filter_with_new_field('category_mail_starttls_dane');
-                    this.upgrade_issue_filter_with_new_field('category_forum_standardisation_magazine');
+                    this.upgrade_issue_filter_with_new_field('category_mail_forum_standardisation_magazine');
                     this.upgrade_issue_filter_with_new_field('category_mail_forum_standardisation_ipv6_monitor');
                 }
             });
@@ -1593,7 +1593,7 @@ vueReport = new Vue({
                                 {
                                     name: 'magazine',
                                     label: 'Measurements on agreed security standards',
-                                    key: 'category_forum_standardisation_magazine',
+                                    key: 'category_mail_forum_standardisation_magazine',
                                     fields: [
                                         {name: 'internet_nl_mail_legacy_dmarc',
                                         explanation: 'report.fields.forum_standardistation.internet_nl_mail_legacy_dmarc_explanation'},
