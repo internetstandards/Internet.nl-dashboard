@@ -835,6 +835,8 @@ vueReport = new Vue({
             // The first one can be defined without a pattern to give a consistent look/feel to all first graphs.
             incremental: [
                 {background: 'rgba(255, 112, 50, 0.6)', border: 'rgba(209, 63, 0, 1)'},
+                // try out a nice green background
+                // green: {background: 'rgba(33, 234, 7, 0.6)', border: 'rgb(86, 196, 80)'},
                 {background: pattern.draw('weave',  'rgba(21, 66, 115, 0.6)'), border: 'rgba(21, 66, 115, 1)'},
                 {background: pattern.draw('dot',  'rgba(43, 151, 89, 0.6)'), border: 'rgb(28, 94, 56)'},
                 {background: pattern.draw('dash',  'rgba(0, 255, 246, 0.6)'), border: 'rgb(0, 92, 89)'},
