@@ -251,6 +251,8 @@
                                         :chart_data="compare_charts"
                                         :accessibility_text="$t('report.charts.adoption_bar_chart.accessibility_text')"
                                         @bar_click="select_category"
+                                        :show_dynamic_average="true"
+                                        :only_show_dynamic_average="false"
                                         :axis="fields_from_categories(scan_form)">
                                 </percentage-bar-chart>
                             </div>
@@ -278,6 +280,8 @@
                                                         :chart_data="compare_charts"
                                                         :accessibility_text="$t('report.charts.adoption_bar_chart.accessibility_text')"
                                                         @bar_click="select_category"
+                                                        :show_dynamic_average="true"
+                                                        :only_show_dynamic_average="false"
                                                         :axis="fields_from_categories(category)">
                                                 </percentage-bar-chart>
                                             </div>
@@ -305,7 +309,26 @@
                                                             :color_scheme="color_scheme"
                                                             :chart_data="compare_charts"
                                                             :accessibility_text="$t('report.charts.adoption_bar_chart.accessibility_text')"
+                                                            :show_dynamic_average="true"
+                                                            :only_show_dynamic_average="false"
                                                             :axis="fields_from_self(subcategory)">
+                                                    </percentage-bar-chart>
+                                                </div>
+                                            </div>
+                                            <!-- Special graph for Forum standardisation, that cannot have the items disabled -->
+                                            <div style="overflow: auto; width: 100%" v-if="subcategory.name === 'magazine'">
+                                                <p>This shows the average for Forum Standardisation, it is not possible to
+                                                show the average or to select what fields should be visible.</p>
+                                                <div class="chart-container" style="position: relative; height:500px; width:100%; min-width: 950px;">
+                                                    <percentage-bar-chart
+                                                            :title="graph_bar_chart_title"
+                                                            :translation_key="'report.charts.adoption_bar_chart'"
+                                                            :color_scheme="color_scheme"
+                                                            :chart_data="compare_charts"
+                                                            :accessibility_text="$t('report.charts.adoption_bar_chart.accessibility_text')"
+                                                            :show_dynamic_average="true"
+                                                            :only_show_dynamic_average="true"
+                                                            :axis="fields_from_self_and_do_not_filter(subcategory)">
                                                     </percentage-bar-chart>
                                                 </div>
                                             </div>
@@ -340,6 +363,8 @@
                                         :chart_data="compare_charts"
                                         :accessibility_text="$t('report.charts.cumulative_adoption_bar_chart.accessibility_text')"
                                         @bar_click="select_category"
+                                        :show_dynamic_average="true"
+                                        :only_show_dynamic_average="false"
                                         :axis="fields_from_categories(scan_form)">
                                 </cumulative-percentage-bar-chart>
                             </div>
@@ -367,6 +392,8 @@
                                                         :chart_data="compare_charts"
                                                         :accessibility_text="$t('report.charts.cumulative_adoption_bar_chart.accessibility_text')"
                                                         @bar_click="select_category"
+                                                        :show_dynamic_average="true"
+                                                        :only_show_dynamic_average="false"
                                                         :axis="fields_from_categories(category)">
                                                 </cumulative-percentage-bar-chart>
                                             </div>
@@ -394,7 +421,26 @@
                                                             :color_scheme="color_scheme"
                                                             :chart_data="compare_charts"
                                                             :accessibility_text="$t('report.charts.adoption_bar_chart.accessibility_text')"
+                                                            :show_dynamic_average="true"
+                                                            :only_show_dynamic_average="false"
                                                             :axis="fields_from_self(subcategory)">
+                                                    </cumulative-percentage-bar-chart>
+                                                </div>
+                                            </div>
+                                            <!-- Special graph for Forum standardisation, that cannot have the items disabled -->
+                                            <div style="overflow: auto; width: 100%" v-if="subcategory.name === 'magazine'">
+                                                <p>This shows the average for Forum Standardisation, it is not possible to
+                                                show the average or to select what fields should be visible.</p>
+                                                <div class="chart-container" style="position: relative; height:500px; width:100%; min-width: 950px;">
+                                                    <cumulative-percentage-bar-chart
+                                                            :title="graph_bar_chart_title"
+                                                            :translation_key="'report.charts.adoption_bar_chart'"
+                                                            :color_scheme="color_scheme"
+                                                            :chart_data="compare_charts"
+                                                            :accessibility_text="$t('report.charts.adoption_bar_chart.accessibility_text')"
+                                                            :show_dynamic_average="true"
+                                                            :only_show_dynamic_average="true"
+                                                            :axis="fields_from_self_and_do_not_filter(subcategory)">
                                                     </cumulative-percentage-bar-chart>
                                                 </div>
                                             </div>
@@ -993,6 +1039,17 @@ vueReport = new Vue({
             }
             return returned_fields;
         },
+        fields_from_self_and_do_not_filter(category){
+            let fields = [];
+
+            category.fields.forEach((field) => {
+                fields.push(field.name);
+            });
+            category.additional_fields.forEach((field) => {
+                fields.push(field.name);
+            });
+            return fields;
+        },
         is_visible(field_name){
             try {
                 return this.issue_filters[field_name].visible;
@@ -1543,7 +1600,9 @@ const chart_mixin = {
         color_scheme: {type: Object, required: false},
         title: {type: String, required: false},
         translation_key: {type: String, required: false},
-        accessibility_text: {type: String, required: true}
+        accessibility_text: {type: String, required: true},
+        show_dynamic_average: {type: Boolean, required: false},
+        only_show_dynamic_average: {type: Boolean, required: false},
     },
     data: function () {
         return {
@@ -1759,17 +1818,18 @@ Vue.component('percentage-bar-chart', {
 
                 this.axis.forEach((ax) => {
                     if (ax in data) {
-                        labels.push(i18n.t("report." + ax));
-                        axis_names.push(ax);
-                        chartdata.push(data[ax].pct_ok);
+                        if (!this.only_show_dynamic_average) {
+                            labels.push(i18n.t("report." + ax));
+                            axis_names.push(ax);
+                            chartdata.push(data[ax].pct_ok);
+                        }
                         average += parseFloat(data[ax].pct_ok);
                     }
                 });
 
                 // add the average of all these to the report, not as a line, but as an additional bar
-                // todo: translate label
-                if (labels.length > 1) {
-                    chartdata.push(Math.round((average / labels.length) * 100) / 100);
+                if ((labels.length > 1 && this.show_dynamic_average) || this.only_show_dynamic_average) {
+                    chartdata.push(Math.round((average / this.axis.length) * 100) / 100);
                     labels.push(i18n.t(this.translation_key + '.average'));
                     axis_names.push("Average");
                 }
@@ -1935,18 +1995,19 @@ Vue.component('cumulative-percentage-bar-chart', {
 
             this.axis.forEach((ax) => {
                 if (ax in data) {
-                    labels.push(i18n.t("report." + ax));
-                    axis_names.push(ax);
-
+                    if (!this.only_show_dynamic_average) {
+                        labels.push(i18n.t("report." + ax));
+                        axis_names.push(ax);
+                        chartdata.push((Math.round(cumulative_axis_data[ax] / this.chart_data.length * 100)) / 100);
+                    }
                     // toFixed delivers some 81.32429999999999 results, which is total nonsense.
                     average += (Math.round(cumulative_axis_data[ax] / this.chart_data.length * 100)) / 100;
-                    chartdata.push((Math.round(cumulative_axis_data[ax] / this.chart_data.length * 100)) / 100);
                 }
             });
 
             // add the average of all these to the report, not as a line, but as an additional bar
-            if (labels.length > 1) {
-                chartdata.push(Math.round((average / labels.length) * 100) / 100);
+            if ((labels.length > 1 && this.show_dynamic_average) || this.only_show_dynamic_average) {
+                chartdata.push(Math.round((average / this.axis.length) * 100) / 100);
                 labels.push(i18n.t(this.translation_key + '.average'));
                 axis_names.push("Average");
             }

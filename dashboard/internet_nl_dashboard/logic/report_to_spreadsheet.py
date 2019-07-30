@@ -541,7 +541,6 @@ def keyed_values_as_boolean(keyed_ratings: Dict[str, Any], protocol: str = 'dns_
     :return:
     """
 
-
     values = []
 
     for group in SANE_COLUMN_ORDER[protocol]:
@@ -569,7 +568,7 @@ def keyed_values_as_boolean(keyed_ratings: Dict[str, Any], protocol: str = 'dns_
 
         # add empty thing after each group to make distinction per group clearer
         # overall group already adds an extra value (url), so we don't need this.
-        if group is not "overall":
+        if group != "overall":
             values += ['']
 
     return values
