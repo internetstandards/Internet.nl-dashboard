@@ -235,6 +235,8 @@ const messages = {
                 title: 'Report',
                 intro: 'This shows the results of the first selected report only.',
                 url_filter: 'Filter on domain...',
+                not_eligeble_for_scanning: 'Domain did not match scanning criteria at the time the scan was initiated. The scanning criteria are an SOA DNS record (not NXERROR) for mail and an A or AAAA DNS record for web.\n' +
+                    '                                                This domain is ignored in all statistics.',
                 zoom: {
                     buttons:
                         {
@@ -853,6 +855,8 @@ const messages = {
             report: {
                 title: 'Rapport',
                 intro: 'Dit overzicht laat alleen de resultaten van het het eerst geselecteerde rapport zien.',
+                not_eligeble_for_scanning: 'Dit domein voldeed niet aan de scan-criteria op het moment van scannen. Deze criteria zijn een SOA DNS record (geen NXERROR) voor mail en een A of AAAA DNS record voor web.\n' +
+                    ' Dit domein komt niet terug in de statistieken.',
                 url_filter: 'Filter op domein...',
                 zoom: {
                     buttons:
