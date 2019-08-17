@@ -1828,7 +1828,7 @@ Vue.component('percentage-bar-chart', {
                             clamp: true, // always shows the number, also when the number 100%
                             anchor: 'end', // show the number at the top of the bar.
                             align: 'end', // shows the value outside of the bar,
-                            display: 'auto',
+                            display: true,
                             // format as a percentage
                             formatter: function(value, context) {
                                 return value + '%';
@@ -1992,7 +1992,7 @@ Vue.component('cumulative-percentage-bar-chart', {
                     plugins:{
                         datalabels: {
                             color: '#262626',
-                            display: 'auto',
+                            display: true,  // auto hides overlapping labels, true always shows them.
                             clamp: true, // always shows the number, also when the number 100%
                             anchor: 'end', // show the number at the top of the bar.
                             align: 'end', // shows the value outside of the bar,
@@ -2159,7 +2159,7 @@ Vue.component('line-chart', {
                     plugins:{
                         datalabels: {
                             color: '#262626',
-                            display: 'auto',
+                            display: true,
                             clamp: true, // always shows the number, also when the number 100%
                             anchor: 'end', // show the number at the top of the bar.
                             align: 'end', // shows the value outside of the bar,
