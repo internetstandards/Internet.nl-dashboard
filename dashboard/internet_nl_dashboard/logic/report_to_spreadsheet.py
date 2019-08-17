@@ -400,14 +400,17 @@ def upgrade_excel_spreadsheet(spreadsheet_data):
                      'BT', 'BU', 'BV', 'BW', 'BX', 'BY', 'BZ']:
             # if header, then aggregate
             if ws[f'{cell}9'].value:
-                ws[f'{cell}1'] = f'=COUNTA({cell}9:{cell}9999)'
-                ws[f'{cell}2'] = f'=COUNTIF({cell}9:{cell}9999, 1)'
-                ws[f'{cell}3'] = f'=COUNTIF({cell}9:{cell}9999, 0)'
-                ws[f'{cell}4'] = f'=COUNTIF({cell}9:{cell}9999, "not_applicable")'
-                ws[f'{cell}5'] = f'=COUNTIF({cell}9:{cell}9999, "not_testable")'
+                ws[f'{cell}1'] = f'=COUNTA({cell}10:{cell}9999)'
+                ws[f'{cell}2'] = f'=COUNTIF({cell}10:{cell}9999, 1)'
+                ws[f'{cell}3'] = f'=COUNTIF({cell}10:{cell}9999, 0)'
+                ws[f'{cell}4'] = f'=COUNTIF({cell}10:{cell}9999, "not_applicable")'
+                ws[f'{cell}5'] = f'=COUNTIF({cell}10:{cell}9999, "not_testable")'
                 # Not applicable and not testable are subtracted from the total.
                 # See https://github.com/internetstandards/Internet.nl-dashboard/issues/68
-                ws[f'{cell}6'] = f'=ROUND({cell}2/({cell}1 - ({cell}4 + {cell}5)), 2)'
+                # Rounding's num digits is NOT the number of digits behind the comma, but the total number of digits.
+                # todo: we should use the calculations in report.py. And there include the "missing" / empty stuff IF
+                # that is missing.
+                ws[f'{cell}6'] = f'=ROUND({cell}2/({cell}1 - ({cell}4 + {cell}5)), 4)'
                 ws[f'{cell}6'].number_format = '0.00%'
 
         # fold port and ip-version (and protocol?) from report as it's not useful in this case?
