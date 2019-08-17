@@ -442,7 +442,8 @@
                                             <div style="overflow: auto; width: 100%">
                                                 <div class="chart-container" style="position: relative; height:500px; width:100%; min-width: 950px;">
                                                     <cumulative-percentage-bar-chart
-                                                            :title="graph_bar_chart_title"
+                                                            :title="$t('report.charts.cumulative_adoption_bar_chart.title', {
+                                                            'number_of_reports': compare_charts.length})"
                                                             :translation_key="'report.charts.adoption_bar_chart'"
                                                             :color_scheme="color_scheme"
                                                             :chart_data="compare_charts"
@@ -459,7 +460,8 @@
                                                 show the average or to select what fields should be visible.</p>
                                                 <div class="chart-container" style="position: relative; height:500px; width:100%; min-width: 950px;">
                                                     <cumulative-percentage-bar-chart
-                                                            :title="graph_bar_chart_title"
+                                                            :title="$t('report.charts.cumulative_adoption_bar_chart.title', {
+                                                            'number_of_reports': compare_charts.length})"
                                                             :translation_key="'report.charts.adoption_bar_chart'"
                                                             :color_scheme="color_scheme"
                                                             :chart_data="compare_charts"
@@ -1204,10 +1206,18 @@ vueReport = new Vue({
         },
 
         graph_bar_chart_title: function(){
-            return i18n.t('report.charts.adoption_bar_chart.title', {
-                'list_information': this.selected_report[0].list_name,
-                'number_of_domains': this.original_urls.length
-            });
+            // fixing https://github.com/internetstandards/Internet.nl-dashboard/issues/65
+            // 1 report:
+            if (this.selected_report.length === 1) {
+                return i18n.t('report.charts.adoption_bar_chart.title_single', {
+                    'list_information': this.selected_report[0].list_name,
+                    'number_of_domains': this.original_urls.length
+                });
+            } else {
+                return i18n.t('report.charts.adoption_bar_chart.title_multiple', {
+                    'number_of_reports': this.selected_report.length,
+                });
+            }
         },
 
         scan_methods: function() {
@@ -1957,7 +1967,7 @@ Vue.component('percentage-bar-chart', {
                     borderColor: this.color_scheme.incremental[i].border,
                     borderWidth: 1,
                     lineTension: 0,
-                    label: `${this.chart_data[i].calculation.name} ${moment(this.chart_data[i].at_when).format('LL')}`,
+                    label: `${this.chart_data[i].calculation.name} ${moment(this.chart_data[i].at_when).format('LL')} 🌍${this.chart_data[i].total_urls}`,
                 });
 
             }
