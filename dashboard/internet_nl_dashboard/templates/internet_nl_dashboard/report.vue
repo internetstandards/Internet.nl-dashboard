@@ -1006,7 +1006,11 @@ vueReport = new Vue({
             fetch(`/data/report/recent/`, {credentials: 'include'}).then(response => response.json()).then(data => {
                 options = [];
                 for(let i = 0; i < data.length; i++){
-                    data[i].label = `#${data[i].id} - ${data[i].list_name} - type: ${data[i].type} - from: ${this.humanize_date(data[i].at_when)}`;
+
+                    // this quick fix might fix the date for dutch people, but not for the rest of the world.
+                    // let my_date = moment(data[i].at_when).subtract(2, 'hours').format('LL');
+
+                    data[i].label = `#${data[i].id} - ${data[i].list_name} - type: ${data[i].type} - from: ${this.humanize_date_date_only(data[i].at_when)}`;
                     options.push(data[i])
                 }
                 this.available_recent_reports = options;
