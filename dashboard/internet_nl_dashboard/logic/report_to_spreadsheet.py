@@ -384,13 +384,14 @@ def upgrade_excel_spreadsheet(spreadsheet_data):
         ws.column_dimensions["B"].width = "30"
 
         # Add statistic rows:
-        ws.insert_rows(0, amount=5)
+        ws.insert_rows(0, amount=6)
 
         ws[f'B1'] = "Total"
         ws[f'B2'] = "Contains 1"
         ws[f'B3'] = "Contains 0"
-        ws[f'B4'] = "Contains ?"
-        ws[f'B5'] = "Percentage 1"
+        ws[f'B4'] = "Contains not_applicable"
+        ws[f'B5'] = "Contains not_testable"
+        ws[f'B6'] = "Percentage 1 (reducing not_testable and not_applicable from total)"
 
         for cell in ['H', 'I', 'J', 'K', 'L', "M", "N", 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z',
                      'AA', 'AB', 'AC', 'AD', 'AE', 'AF', 'AG', 'AH', 'AI', 'AJ', 'AK', 'AL', 'AM', 'AN', 'AO',
@@ -398,13 +399,19 @@ def upgrade_excel_spreadsheet(spreadsheet_data):
                      'BE', 'BF', 'BG', 'BH', 'BI', 'BJ', 'BK', 'BL', 'BM', 'BN', 'BO', 'BP', 'BQ', 'BR', 'BS',
                      'BT', 'BU', 'BV', 'BW', 'BX', 'BY', 'BZ']:
             # if header, then aggregate
-            if ws[f'{cell}8'].value:
-                ws[f'{cell}1'] = f'=COUNTA({cell}9:{cell}9999)'
-                ws[f'{cell}2'] = f'=COUNTIF({cell}9:{cell}9999, 1)'
-                ws[f'{cell}3'] = f'=COUNTIF({cell}9:{cell}9999, 0)'
-                ws[f'{cell}4'] = f'=COUNTIF({cell}9:{cell}9999, "?")'
-                ws[f'{cell}5'] = f'=ROUND({cell}2/{cell}1, 2)'
-                ws[f'{cell}5'].number_format = '0.00%'
+            if ws[f'{cell}9'].value:
+                ws[f'{cell}1'] = f'=COUNTA({cell}10:{cell}9999)'
+                ws[f'{cell}2'] = f'=COUNTIF({cell}10:{cell}9999, 1)'
+                ws[f'{cell}3'] = f'=COUNTIF({cell}10:{cell}9999, 0)'
+                ws[f'{cell}4'] = f'=COUNTIF({cell}10:{cell}9999, "not_applicable")'
+                ws[f'{cell}5'] = f'=COUNTIF({cell}10:{cell}9999, "not_testable")'
+                # Not applicable and not testable are subtracted from the total.
+                # See https://github.com/internetstandards/Internet.nl-dashboard/issues/68
+                # Rounding's num digits is NOT the number of digits behind the comma, but the total number of digits.
+                # todo: we should use the calculations in report.py. And there include the "missing" / empty stuff IF
+                # that is missing.
+                ws[f'{cell}6'] = f'=ROUND({cell}2/({cell}1 - ({cell}4 + {cell}5)), 4)'
+                ws[f'{cell}6'].number_format = '0.00%'
 
         # fold port and ip-version (and protocol?) from report as it's not useful in this case?
         ws.column_dimensions.group('C', 'E', hidden=True)
@@ -415,15 +422,15 @@ def upgrade_excel_spreadsheet(spreadsheet_data):
                      'AP', 'AQ', 'AR', 'AS', 'AT', 'AU', 'AV', 'AW', 'AX', 'AY', 'AZ', 'BA', 'BB', 'BC', 'BD',
                      'BE', 'BF', 'BG', 'BH', 'BI', 'BJ', 'BK', 'BL', 'BM', 'BN', 'BO', 'BP', 'BQ', 'BR', 'BS',
                      'BT', 'BU', 'BV', 'BW', 'BX', 'BY', 'BZ']:
-            ws[f'{cell}7'].font = Font(bold=True)
             ws[f'{cell}8'].font = Font(bold=True)
+            ws[f'{cell}9'].font = Font(bold=True)
 
         # Freeze pane to make navigation easier.
-        ws.freeze_panes = ws['H9']
+        ws.freeze_panes = ws['H10']
 
         # Set the measurements to green/red depending on value using conditional formatting.
         ws.conditional_formatting.add(
-            'H9:CD9999',
+            'H10:CD9999',
             ColorScaleRule(start_type='min', start_color='FFDDDD', end_type='max', end_color='DDFFDD')
         )
 

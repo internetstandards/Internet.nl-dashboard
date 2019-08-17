@@ -178,7 +178,9 @@ def add_statistics_over_ratings(report):
 
     # prepare the stats dict to have less expensive operations in the 3x nested loop
     for issue in possible_issues:
-        report['statistics_per_issue_type'][issue] = {'high': 0, 'medium': 0, 'low': 0, 'ok': 0, 'not_ok': 0}
+        # todo: could be a defaultdict. although explicit initialization is somewhat useful.
+        report['statistics_per_issue_type'][issue] = {'high': 0, 'medium': 0, 'low': 0, 'ok': 0, 'not_ok': 0,
+                                                      'not_testable': 0, 'not_applicable': 0}
 
     # count the numbers, can we do this with some map/add function that is way faster?
     for issue in possible_issues:
@@ -190,9 +192,15 @@ def add_statistics_over_ratings(report):
                 report['statistics_per_issue_type'][issue]['high'] += rating['high']
                 report['statistics_per_issue_type'][issue]['medium'] += rating['medium']
                 report['statistics_per_issue_type'][issue]['low'] += rating['low']
-                report['statistics_per_issue_type'][issue]['ok'] += rating['ok']
-                report['statistics_per_issue_type'][issue]['not_ok'] += \
-                    rating['high'] + rating['medium'] + rating['low']
+                report['statistics_per_issue_type'][issue]['not_testable'] += rating['not_testable']
+                report['statistics_per_issue_type'][issue]['not_applicable'] += rating['not_applicable']
+
+                # things that are not_testable or not_applicable do not have impact on thigns being OK
+                # see: https://github.com/internetstandards/Internet.nl-dashboard/issues/68
+                if not any([rating['not_testable'], rating['not_applicable']]):
+                    report['statistics_per_issue_type'][issue]['ok'] += rating['ok']
+                    report['statistics_per_issue_type'][issue]['not_ok'] += \
+                        rating['high'] + rating['medium'] + rating['low']
 
 
 def add_percentages_to_statistics(report):

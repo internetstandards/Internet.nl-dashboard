@@ -442,7 +442,8 @@
                                             <div style="overflow: auto; width: 100%">
                                                 <div class="chart-container" style="position: relative; height:500px; width:100%; min-width: 950px;">
                                                     <cumulative-percentage-bar-chart
-                                                            :title="graph_bar_chart_title"
+                                                            :title="$t('report.charts.cumulative_adoption_bar_chart.title', {
+                                                            'number_of_reports': compare_charts.length})"
                                                             :translation_key="'report.charts.adoption_bar_chart'"
                                                             :color_scheme="color_scheme"
                                                             :chart_data="compare_charts"
@@ -459,7 +460,8 @@
                                                 show the average or to select what fields should be visible.</p>
                                                 <div class="chart-container" style="position: relative; height:500px; width:100%; min-width: 950px;">
                                                     <cumulative-percentage-bar-chart
-                                                            :title="graph_bar_chart_title"
+                                                            :title="$t('report.charts.cumulative_adoption_bar_chart.title', {
+                                                            'number_of_reports': compare_charts.length})"
                                                             :translation_key="'report.charts.adoption_bar_chart'"
                                                             :color_scheme="color_scheme"
                                                             :chart_data="compare_charts"
@@ -551,63 +553,74 @@
 
                             <template v-if="filtered_urls.length">
 
-                                <tr v-for="url in filtered_urls" v-if="url.endpoints.length">
-                                    <td>
-                                        <span v-if="selected_report[0].type === 'web'" v-html="original_report_link_from_score(url.endpoints[0].ratings_by_type['internet_nl_web_overall_score'].explanation, url.url)"></span>
-                                        <span v-if="selected_report[0].type === 'mail'" v-html="original_report_link_from_score(url.endpoints[0].ratings_by_type['internet_nl_mail_dashboard_overall_score'].explanation, url.url)"></span>
-                                    </td>
-                                    <td>{{url.url}}</td>
-                                    <td class="testresultcell" v-for="category_name in relevant_categories_based_on_settings">
-                                        <template v-if="['web', 'mail'].includes(selected_category)">
-                                            <template v-if="category_name in url.endpoints[0].ratings_by_type">
-                                                <!-- Currently the API just says True or False, we might be able to deduce the right label for a category, but that will take a day or two.
-                                                At the next field update, we'll also make the categories follow the new format of requirement level and testresult so HTTP Security Headers
-                                                 here is shown as optional, or info if failed. We can also add a field for baseline NL government then. -->
-                                                <template v-if="url.endpoints[0].ratings_by_type[category_name].ok < 1">
-                                                    <span v-if="category_name !== 'internet_nl_web_appsecpriv'" class="category_failed">
-                                                        {{ $t('report.' + category_name + '_verdict_bad') }}
-                                                    </span>
-                                                    <span v-if="category_name === 'internet_nl_web_appsecpriv'" class="category_warning">
-                                                        {{ $t('report.' + category_name + '_verdict_bad') }}
+                                <tr v-for="url in filtered_urls">
+                                    <template v-if="!url.endpoints.length">
+                                        <td>
+                                            -
+                                        </td>
+                                        <td>{{url.url}}</td>
+                                        <td colspan="200">
+                                            <small>{{ $t('report.report.not_eligeble_for_scanning') }}</small>
+                                        </td>
+                                    </template>
+                                    <template v-if="url.endpoints.length">
+                                        <td>
+                                            <span v-if="selected_report[0].type === 'web'" v-html="original_report_link_from_score(url.endpoints[0].ratings_by_type['internet_nl_web_overall_score'].explanation, url.url)"></span>
+                                            <span v-if="selected_report[0].type === 'mail'" v-html="original_report_link_from_score(url.endpoints[0].ratings_by_type['internet_nl_mail_dashboard_overall_score'].explanation, url.url)"></span>
+                                        </td>
+                                        <td>{{url.url}}</td>
+                                        <td class="testresultcell" v-for="category_name in relevant_categories_based_on_settings">
+                                            <template v-if="['web', 'mail'].includes(selected_category)">
+                                                <template v-if="category_name in url.endpoints[0].ratings_by_type">
+                                                    <!-- Currently the API just says True or False, we might be able to deduce the right label for a category, but that will take a day or two.
+                                                    At the next field update, we'll also make the categories follow the new format of requirement level and testresult so HTTP Security Headers
+                                                     here is shown as optional, or info if failed. We can also add a field for baseline NL government then. -->
+                                                    <template v-if="url.endpoints[0].ratings_by_type[category_name].ok < 1">
+                                                        <span v-if="category_name !== 'internet_nl_web_appsecpriv'" class="category_failed">
+                                                            {{ $t('report.' + category_name + '_verdict_bad') }}
+                                                        </span>
+                                                        <span v-if="category_name === 'internet_nl_web_appsecpriv'" class="category_warning">
+                                                            {{ $t('report.' + category_name + '_verdict_bad') }}
+                                                        </span>
+                                                    </template>
+                                                    <span class="category_passed" v-if="url.endpoints[0].ratings_by_type[category_name].ok > 0">
+                                                        {{ $t('report.' + category_name + '_verdict_good') }}
                                                     </span>
                                                 </template>
-                                                <span class="category_passed" v-if="url.endpoints[0].ratings_by_type[category_name].ok > 0">
-                                                    {{ $t('report.' + category_name + '_verdict_good') }}
+                                                <span class="" v-if="url.endpoints[0].ratings_by_type[category_name] === undefined">
+                                                    {{ $t("report.report.results.unknown") }}
                                                 </span>
                                             </template>
-                                            <span class="" v-if="url.endpoints[0].ratings_by_type[category_name] === undefined">
-                                                {{ $t("report.report.results.unknown") }}
-                                            </span>
-                                        </template>
-                                        <template v-if="!['web', 'mail'].includes(selected_category)">
+                                            <template v-if="!['web', 'mail'].includes(selected_category)">
 
-                                            <template v-if="category_name in url.endpoints[0].ratings_by_type">
-                                                <span class="not_applicable" v-if="url.endpoints[0].ratings_by_type[category_name].not_applicable > 0">
-                                                    {{ $t("report.report.results.not_applicable") }}
-                                                </span>
-                                                <span class="not_testable" v-if="url.endpoints[0].ratings_by_type[category_name].not_testable > 0">
-                                                    {{ $t("report.report.results.not_testable") }}
-                                                </span>
-                                                <span class="failed" v-if="url.endpoints[0].ratings_by_type[category_name].high > 0">
-                                                    {{ $t("report.report.results.failed") }} {{ $t('report.' + category_name + '_verdict_bad') }}
-                                                </span>
-                                                <span class="warning" v-if="url.endpoints[0].ratings_by_type[category_name].medium > 0">
-                                                    {{ $t("report.report.results.warning") }} {{ $t('report.' + category_name + '_verdict_bad') }}
-                                                </span>
-                                                <span class="info" v-if="url.endpoints[0].ratings_by_type[category_name].low > 0">
-                                                    {{ $t("report.report.results.info") }} {{ $t('report.' + category_name + '_verdict_bad') }}
-                                                </span>
-                                                <span class="passed" v-if="url.endpoints[0].ratings_by_type[category_name].ok > 0
-                                                && !url.endpoints[0].ratings_by_type[category_name].not_applicable
-                                                && !url.endpoints[0].ratings_by_type[category_name].not_testable">
-                                                    {{ $t("report.report.results.passed") }} {{ $t('report.' + category_name + '_verdict_good') }}
+                                                <template v-if="category_name in url.endpoints[0].ratings_by_type">
+                                                    <span class="not_applicable" v-if="url.endpoints[0].ratings_by_type[category_name].not_applicable > 0">
+                                                        {{ $t("report.report.results.not_applicable") }}
+                                                    </span>
+                                                    <span class="not_testable" v-if="url.endpoints[0].ratings_by_type[category_name].not_testable > 0">
+                                                        {{ $t("report.report.results.not_testable") }}
+                                                    </span>
+                                                    <span class="failed" v-if="url.endpoints[0].ratings_by_type[category_name].high > 0">
+                                                        {{ $t("report.report.results.failed") }} {{ $t('report.' + category_name + '_verdict_bad') }}
+                                                    </span>
+                                                    <span class="warning" v-if="url.endpoints[0].ratings_by_type[category_name].medium > 0">
+                                                        {{ $t("report.report.results.warning") }} {{ $t('report.' + category_name + '_verdict_bad') }}
+                                                    </span>
+                                                    <span class="info" v-if="url.endpoints[0].ratings_by_type[category_name].low > 0">
+                                                        {{ $t("report.report.results.info") }} {{ $t('report.' + category_name + '_verdict_bad') }}
+                                                    </span>
+                                                    <span class="passed" v-if="url.endpoints[0].ratings_by_type[category_name].ok > 0
+                                                    && !url.endpoints[0].ratings_by_type[category_name].not_applicable
+                                                    && !url.endpoints[0].ratings_by_type[category_name].not_testable">
+                                                        {{ $t("report.report.results.passed") }} {{ $t('report.' + category_name + '_verdict_good') }}
+                                                    </span>
+                                                </template>
+                                                <span class="" v-if="url.endpoints[0].ratings_by_type[category_name] === undefined">
+                                                    {{ $t("report.report.results.unknown") }}
                                                 </span>
                                             </template>
-                                            <span class="" v-if="url.endpoints[0].ratings_by_type[category_name] === undefined">
-                                                {{ $t("report.report.results.unknown") }}
-                                            </span>
-                                        </template>
-                                    </td>
+                                        </td>
+                                    </template>
                                 </tr>
                             </template>
                         </tbody>
@@ -1006,7 +1019,11 @@ vueReport = new Vue({
             fetch(`/data/report/recent/`, {credentials: 'include'}).then(response => response.json()).then(data => {
                 options = [];
                 for(let i = 0; i < data.length; i++){
-                    data[i].label = `#${data[i].id} - ${data[i].list_name} - type: ${data[i].type} - from: ${this.humanize_date(data[i].at_when)}`;
+
+                    // this quick fix might fix the date for dutch people, but not for the rest of the world.
+                    // let my_date = moment(data[i].at_when).subtract(2, 'hours').format('LL');
+
+                    data[i].label = `#${data[i].id} - ${data[i].list_name} - type: ${data[i].type} - from: ${this.humanize_date_date_only(data[i].at_when)}`;
                     options.push(data[i])
                 }
                 this.available_recent_reports = options;
@@ -1200,10 +1217,18 @@ vueReport = new Vue({
         },
 
         graph_bar_chart_title: function(){
-            return i18n.t('report.charts.adoption_bar_chart.title', {
-                'list_information': this.selected_report[0].list_name,
-                'number_of_domains': this.original_urls.length
-            });
+            // fixing https://github.com/internetstandards/Internet.nl-dashboard/issues/65
+            // 1 report:
+            if (this.selected_report.length === 1) {
+                return i18n.t('report.charts.adoption_bar_chart.title_single', {
+                    'list_information': this.selected_report[0].list_name,
+                    'number_of_domains': this.original_urls.length
+                });
+            } else {
+                return i18n.t('report.charts.adoption_bar_chart.title_multiple', {
+                    'number_of_reports': this.selected_report.length,
+                });
+            }
         },
 
         scan_methods: function() {
@@ -1828,7 +1853,7 @@ Vue.component('percentage-bar-chart', {
                             clamp: true, // always shows the number, also when the number 100%
                             anchor: 'end', // show the number at the top of the bar.
                             align: 'end', // shows the value outside of the bar,
-                            display: 'auto',
+                            display: true,
                             // format as a percentage
                             formatter: function(value, context) {
                                 return value + '%';
@@ -1953,7 +1978,7 @@ Vue.component('percentage-bar-chart', {
                     borderColor: this.color_scheme.incremental[i].border,
                     borderWidth: 1,
                     lineTension: 0,
-                    label: `${this.chart_data[i].calculation.name} ${moment(this.chart_data[i].at_when).format('LL')}`,
+                    label: `${this.chart_data[i].calculation.name} ${moment(this.chart_data[i].at_when).format('LL')} 🌍${this.chart_data[i].total_urls}`,
                 });
 
             }
@@ -1992,7 +2017,7 @@ Vue.component('cumulative-percentage-bar-chart', {
                     plugins:{
                         datalabels: {
                             color: '#262626',
-                            display: 'auto',
+                            display: true,  // auto hides overlapping labels, true always shows them.
                             clamp: true, // always shows the number, also when the number 100%
                             anchor: 'end', // show the number at the top of the bar.
                             align: 'end', // shows the value outside of the bar,
@@ -2159,7 +2184,7 @@ Vue.component('line-chart', {
                     plugins:{
                         datalabels: {
                             color: '#262626',
-                            display: 'auto',
+                            display: true,
                             clamp: true, // always shows the number, also when the number 100%
                             anchor: 'end', // show the number at the top of the bar.
                             align: 'end', // shows the value outside of the bar,
