@@ -33,7 +33,6 @@ websecmap = {git = "https://gitlab.com/internet-cleanup-foundation/web-security-
 django-otp = "^0.6.0"
 django-two-factor-auth = "^1.8"
 django-picklefield = "^2.0"
-validators = "^0.12.6"
 python-magic = "^0.4.15"
 pytz = "^2019.1"
 django = "^2.2"
