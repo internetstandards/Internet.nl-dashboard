@@ -63,7 +63,7 @@ poetry.lock: pyproject.toml | poetry
 	# update package version lock
 	${env} poetry lock
 
-poetry_lock_check:
+poetry_lock_check: | poetry
 	# checking to make sure no updates to the poetry lock are pending	
 	${env} poetry lock
 	@if git ls-files -m | grep poetry.lock >/dev/null; then \
