@@ -5,7 +5,7 @@ python:
 jobs:
   include:
   - stage: test
-    script: make poetry_lock_check && make
+    script: make
   - stage: build & push
     script:
       - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin

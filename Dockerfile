@@ -1,28 +1,20 @@
 FROM python:3.7
 
 ENV PIP_DISABLE_PIP_VERSION_CHECK=1
-# required because pip 19+ breaks pyproject.toml editable builds: https://github.com/pypa/pip/issues/6434
-ENV PIP_USE_PEP517=false
-# Poetry & Pip pinned to latest stable, pip needs to be at least 19+ for installing dashboard as editable
-RUN pip3 install --upgrade poetry==0.12.15 virtualenv pip==19.1.1
 
-RUN virtualenv /pyenv
+RUN python3 -m venv /pyenv
 ENV VIRTUAL_ENV /pyenv
 ENV PATH=/pyenv/bin:$PATH
 
+RUN mkdir /source
 WORKDIR /source/
 
-# first install the dependencies without the actual source so we better leverage docker cache
-# since otherwise every change in the source would result into reinstalling everything
-COPY pyproject.toml poetry.lock README.md /source/
-RUN mkdir /source/dashboard
-RUN touch /source/dashboard/__init__.py
-RUN poetry install -v --no-dev --develop dashboard --extras=deploy && \
-	rm -rf /root/.cache/pip /pyenv/src/websecmap/.git
+COPY requirements.txt /source/
+RUN pip install -r requirements.txt && rm -rf /root/.cache/pip /pyenv/src/dashboard/.git
 
-# The app is installed in development mode above. This allow us to replace the fake source
-# used there with the real source here, or use a docker volume to override the source.
+COPY setup.py README.md /source/
 COPY dashboard/ /source/dashboard/
+RUN pip install --no-deps -e .
 
 RUN ln -s /pyenv/bin/dashboard /usr/local/bin/
 
