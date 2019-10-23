@@ -61,7 +61,7 @@ ${app}: poetry.lock | poetry
 
 poetry.lock: pyproject.toml | poetry
         # clear cache to hopefully prevent ToManyRedirect errors
-	${evn} poetry cache:clear --all pypi
+	yes | ${evn} poetry cache:clear --all pypi
 	# update package version lock
 	${env} poetry lock
 

@@ -53,8 +53,7 @@ autoflake = "*"
 isort = {version = "*", extras = ["pyproject"]}
 pylama = "*"
 coverage = "*"
-# waiting for https://github.com/getsentry/pytest-responses/pull/7
-pytest = "<4.1.0"
+pytest = "*"
 pytest-cov = "*"
 pytest-django = "*"
 # counterpart of requests for mock responses
@@ -66,7 +65,6 @@ django-extensions = "*"
 django-debug-toolbar = "*"
 django-debug-toolbar-request-history = "*"
 pytest-mock = "*"
-pytest-docker = "*"
 
 # docs / readthedocs.io
 sphinx = "*"

@@ -1220,18 +1220,22 @@ category = "dev"
 description = "pytest: simple powerful testing with Python"
 name = "pytest"
 optional = false
-python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*"
-version = "4.0.2"
+python-versions = ">=3.5"
+version = "5.2.1"
 
 [package.dependencies]
 atomicwrites = ">=1.0"
 attrs = ">=17.4.0"
 colorama = "*"
 more-itertools = ">=4.0.0"
-pluggy = ">=0.7"
+packaging = "*"
+pluggy = ">=0.12,<1.0"
 py = ">=1.5.0"
-setuptools = "*"
-six = ">=1.10.0"
+wcwidth = "*"
+
+[package.dependencies.importlib-metadata]
+python = "<3.8"
+version = ">=0.12"
 
 [[package]]
 category = "dev"
@@ -1255,17 +1259,6 @@ version = "3.6.0"
 
 [package.dependencies]
 pytest = ">=3.6"
-
-[[package]]
-category = "dev"
-description = ""
-name = "pytest-docker"
-optional = false
-python-versions = "*"
-version = "0.6.1"
-
-[package.dependencies]
-attrs = ">=16"
 
 [[package]]
 category = "dev"
@@ -1772,6 +1765,14 @@ argh = ">=0.24.1"
 pathtools = ">=0.1.1"
 
 [[package]]
+category = "dev"
+description = "Measures number of Terminal column cells of wide-character codes"
+name = "wcwidth"
+optional = false
+python-versions = "*"
+version = "0.1.7"
+
+[[package]]
 category = "main"
 description = ""
 name = "websecmap"
@@ -1879,7 +1880,7 @@ more-itertools = "*"
 deploy = ["mysqlclient", "psycopg2", "uwsgi"]
 
 [metadata]
-content-hash = "4a989246010460e3075d69522a8d994f210b76b330c5daa4a4139f5dced94bc4"
+content-hash = "1e75988ea06acaa1259330229b7f8f7562e2e31b1cbf6476194ce4a7988de39f"
 python-versions = ">=3.6, <=3.8"
 
 [metadata.hashes]
@@ -2001,10 +2002,9 @@ pygments = ["71e430bc85c88a430f000ac1d9b331d2407f681d6f6aec95e8bcfbc3df5b0127", 
 pylama = ["9bae53ef9c1a431371d6a8dca406816a60d547147b60a4934721898f553b7d8f", "fd61c11872d6256b019ef1235be37b77c922ef37ac9797df6bd489996dddeb15"]
 pyopenssl = ["aeca66338f6de19d1aa46ed634c3b9ae519a64b458f8468aec688e7e3c20f200", "c727930ad54b10fc157015014b666f2d8b41f70c0d03e83ab67624fd3dd5d1e6"]
 pyparsing = ["6f98a7b9397e206d78cc01df10131398f1c8b8510a2f4d97d9abd82e1aacdd80", "d9338df12903bbf5d65a0e4e87c2161968b10d2e489652bb47001d82a9b028b4"]
-pytest = ["f689bf2fc18c4585403348dd56f47d87780bf217c53ed9ae7a3e2d7faa45f8e9", "f812ea39a0153566be53d88f8de94839db1e8a05352ed8a49525d7d7f37861e9"]
+pytest = ["7e4800063ccfc306a53c461442526c5571e1462f61583506ce97e4da6a1d88c8", "ca563435f4941d0cb34767301c27bc65c510cb82e90b9ecf9cb52dc2c63caaa0"]
 pytest-cov = ["cc6742d8bac45070217169f5f72ceee1e0e55b0221f54bcf24845972d3a47f2b", "cdbdef4f870408ebdbfeb44e63e07eb18bb4619fae852f6e760645fa36172626"]
 pytest-django = ["497e8d967d2ec82b3388267b2f1f037761ff34c10ebb13c534d8c5804846e4eb", "b6c900461a6a7c450dcf11736cabc289a90f5d6f28ef74c46e32e86ffd16a4bd"]
-pytest-docker = ["36b1fc03f5124e4532959e2b862183bc4a79f1b0fd328052a614ca74192a9cdd", "7651c04f35ee3929db721aa01de3b5e635984623fc39a6e6b187d1b6b5882ada", "8c443daa81607ec8e0baa7c076682dc923107b38c23a3bb82cd332d7fb0d2294"]
 pytest-logging = ["cec5c85ecf18aab7b2ead5498a31b9f758680ef5a902b9054ab3f2bdbb77c896"]
 pytest-mock = ["34520283d459cdf1d0dbb58a132df804697f1b966ecedf808bbf3d255af8f659", "f1ab8aefe795204efe7a015900296d1719e7bf0f4a0558d71e8599da1d1309d0"]
 pytest-responses = ["1943af2548687c2e1153722f1b2f4a7152d65006ac85508fec8132d3fd5d0c0d", "cef8c360273842700733c7849b75219f425edc3f8e22704114778bde3e08e3f7"]
@@ -2054,6 +2054,7 @@ uwsgi = ["4972ac538800fb2d421027f49b4a1869b66048839507ccf0aa2fda792d99f583"]
 validators = ["f0ac832212e3ee2e9b10e156f19b106888cf1429c291fbc5297aae87685014ae"]
 vine = ["133ee6d7a9016f177ddeaf191c1f58421a1dcc6ee9a42c58b34bed40e1d2cd87", "ea4947cc56d1fd6f2095c8d543ee25dad966f78692528e68b4fada11ba3f98af"]
 watchdog = ["965f658d0732de3188211932aeb0bb457587f04f63ab4c1e33eab878e9de961d"]
+wcwidth = ["3df37372226d6e63e1b1e1eda15c594bca98a22d33a23832a90998faa96bc65e", "f4ebe71925af7b40a864553f761ed559b43544f8f71746c2d756c7fe788ade7c"]
 websecmap = []
 wikidata = ["72998341af4fc3484ae46d6f6e140334325508dcebe3ab80fe5dbe84931c9f66", "895753e98c3f3d8d391249c636ee7af6e7181add50d7c68094e1bad69ab7d422"]
 xlrd = ["546eb36cee8db40c3eaa46c351e67ffee6eeb5fa2650b71bc4c758a29a1b29b2", "e551fb498759fa3a5384a94ccd4c3c02eb7c00ea424426e212ac0c57be9dfbde"]
