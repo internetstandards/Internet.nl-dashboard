@@ -28,9 +28,7 @@ poetry = ${bin}/poetry
 # application binary
 app = ${bin}/${app_name}
 
-$(info )
-$(info Run `make help` for available commands or use tab-completion.)
-$(info )
+$(shell test -z "$$PS1" || echo -e \nRun `make help` for available commands or use tab-completion.\n)
 
 pysrcdirs = ${app_name}/
 pysrc = $(shell find ${pysrcdirs} -name *.py)
@@ -44,14 +42,14 @@ all: check test setup
 ## Setup
 # setup entire dev environment
 setup: ${app}	## setup development environment and application
-	@echo -ne "Development environment is tested and ready."
-	@if command -v dashboard &>/dev/null;then \
+	@test -z "$$PS1" || (echo -ne "Development environment is tested and ready."; \
+	if command -v dashboard &>/dev/null;then \
 		echo -e " Development shell is activated."; \
 	else \
 		echo -e "\n\nTo activate development shell run:"; \
 		echo -e "\n\t. ${VIRTUAL_ENV}/bin/activate$$([[ "$$SHELL" =~ "fish" ]] && echo .fish)\n"; \
 		echo -e "Or refer to Direnv in README.md for automatic activation."; \
-	fi
+	fi)
 
 # install application and all its (python) dependencies
 ${app}: poetry.lock | poetry
@@ -60,10 +58,16 @@ ${app}: poetry.lock | poetry
 	@test -f $@ && touch $@
 
 poetry.lock: pyproject.toml | poetry
-        # clear cache to hopefully prevent ToManyRedirect errors
+	# clear cache to hopefully prevent ToManyRedirect errors
 	yes | ${evn} poetry cache:clear --all pypi
 	# update package version lock
 	${env} poetry lock
+
+poetry_lock_check:
+	# checking to make sure no updates to the poetry lock are pending	
+	@if ! ${MAKE} -n poetry.lock | grep "is up to date." >/dev/null; then \
+		echo "pyproject.toml was updated but poetry.lock file wasn't. Please run 'make poetry.lock' and commit poetry.lock file."; exit 1;\
+	fi 
 
 poetry_update: pyproject.toml | poetry
 	# Updating dependencies and locking them (test before committing)
@@ -115,12 +119,12 @@ run-frontend: ${app}  ## only run frontend component
 	DEBUG=1 NETWORK_SUPPORTS_IPV6=1 ${env} ${app} runserver
 
 app: ${app}  ## perform arbitrary app commands
-    ## For example: make app cmd=migrate
-    # make app cmd="loaddata development"
-    # make app cmd="help"
-    # make app cmd="report -y municipality"
-    # make app cmd="makemigrations"
-    # make app cmd="migrate"
+	## For example: make app cmd=migrate
+	# make app cmd="loaddata development"
+	# make app cmd="help"
+	# make app cmd="report -y municipality"
+	# make app cmd="makemigrations"
+	# make app cmd="migrate"
 	DEBUG=1 NETWORK_SUPPORTS_IPV6=1 ${env} ${app} ${cmd}
 
 run-worker: ${app}  ## only run worker component
