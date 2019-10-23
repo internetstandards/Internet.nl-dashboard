@@ -99,7 +99,7 @@ Now visit the [website](http://127.0.0.1:8000/) and/or the
 [admin website](http://127.0.0.1:8000/admin/) at http://127.0.0.1:8000 (credentials: dashboard_admin:admin).
 
 
-To prepare the shell environment for local development. This way you can run 'poetry' and 'dashboard' commands.
+To prepare the shell environment for local development. This way you can run the 'dashboard' command.
 
 ```bash
 direnv allow

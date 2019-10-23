@@ -1,0 +1,31 @@
+autopep8
+autoflake
+isort
+pylama
+coverage
+pytest
+pytest-cov
+pytest-django
+# counterpart of requests for mock responses
+pytest-responses
+# output logging when test fails
+pytest-logging
+django-coverage
+django-extensions
+django-debug-toolbar
+django-debug-toolbar-request-history
+pytest-mock
+
+# docs / readthedocs.io
+sphinx
+sphinx-autobuild
+recommonmark
+
+# tests (of scanners)
+httmock
+freezegun
+colorama
+pydotplus  # generating graphs with the docs command...
+
+django-cprofile-middleware
+moviepy
