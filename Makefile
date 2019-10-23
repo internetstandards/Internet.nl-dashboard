@@ -65,7 +65,8 @@ poetry.lock: pyproject.toml | poetry
 
 poetry_lock_check:
 	# checking to make sure no updates to the poetry lock are pending	
-	@if ! ${MAKE} -n poetry.lock | grep "is up to date." >/dev/null; then \
+	poetry lock
+	@if git ls-files -m | grep poetry.lock >/dev/null; then \
 		echo "pyproject.toml was updated but poetry.lock file wasn't. Please run 'make poetry.lock' and commit poetry.lock file."; exit 1;\
 	fi 
 
