@@ -23,7 +23,7 @@ env = env PATH=${bin}:$$PATH
 # shortcuts for common used binaries
 python = ${bin}/python
 pip = ${bin}/pip
-poetry = ${bin}/poetry
+pip-compile = ${bin}/pip-compile
 
 # application binary
 app = ${bin}/${app_name}
@@ -34,7 +34,7 @@ pysrcdirs = ${app_name}/
 pysrc = $(shell find ${pysrcdirs} -name *.py)
 shsrc = $(shell find * ! -path vendor\* -name *.sh)
 
-.PHONY: test check setup run fix autofix clean mrproper poetry test_integration
+.PHONY: test check setup run fix autofix clean mrproper test_integration
 
 # default action to run
 all: check test setup
@@ -52,27 +52,19 @@ setup: ${app}	## setup development environment and application
 	fi)
 
 # install application and all its (python) dependencies
-${app}: poetry.lock | poetry
-	# install project and its dependencies
-	VIRTUAL_ENV=${VIRTUAL_ENV} ${poetry} install --develop=${app_name} ${poetry_args}
-	@test -f $@ && touch $@
+${app}: requirements requirements-dev | ${pip}
+	${pip} install -e .
+	@touch $@
 
-poetry.lock: pyproject.toml | poetry
-	# clear cache to hopefully prevent ToManyRedirect errors
-	yes | ${evn} poetry cache:clear --all pypi
-	# update package version lock
-	${env} poetry lock
+requirements requirements-dev: %: ${VIRTUAL_ENV}/.%.txt.installed
 
-poetry_lock_check: | poetry
-	# checking to make sure no updates to the poetry lock are pending	
-	${env} poetry lock
-	@if git ls-files -m | grep poetry.lock >/dev/null; then \
-		echo "pyproject.toml was updated but poetry.lock file wasn't. Please run 'make poetry.lock' and commit poetry.lock file."; exit 1;\
-	fi 
+${VIRTUAL_ENV}/.%.txt.installed: %.txt | ${pip}
+	${pip} install --quiet -r $<
+	@touch $@
 
-poetry_update: pyproject.toml | poetry
-	# Updating dependencies and locking them (test before committing)
-	${env} poetry update
+# perform 'pip freeze' on first class requirements in .in files.
+requirements.txt requirements-dev.txt: %.txt: %.in | ${pip-compile}
+	${pip-compile} ${pip-compile-args} --output-file $@ $<
 
 ## QA
 test: .make.test	## run test suite
@@ -175,8 +167,6 @@ clean:  ## cleanup build artifacts, caches, databases, etc.
 	-rm -rf *.sqlite3
 
 clean_virtualenv:  ## cleanup virtualenv and installed app/dependencies
-	# clear poetry cache
-	-yes yes | poetry cache:clear --all pypi
 	# remove virtualenv
 	-rm -fr ${VIRTUAL_ENV}/
 
@@ -245,15 +235,11 @@ mrproper: clean clean_virtualenv ## thorough cleanup, also removes virtualenv
 
 ## Base requirements
 
-# don't let poetry manage the virtualenv, we do it ourselves to make it deterministic
-poetry: ${poetry}
-poetry_version=0.12.15
-${poetry}: ${python}
-	# install poetry
-	${pip} install -q poetry==${poetry_version}
+${pip-compile}: | ${pip}
+	${pip} install pip-tools
 
 python: ${python}
-${python}:
+${python} ${pip}:
 	@if ! command -v python3 &>/dev/null;then \
 		echo "Python 3 is not available. Please refer to installation instructions in README.md"; \
 	fi

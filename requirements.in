@@ -1,0 +1,11 @@
+git+https://gitlab.com/internet-cleanup-foundation/web-security-map@pip-tools#egg=websecmap
+
+django-otp
+django-two-factor-auth
+django-picklefield
+validators
+python-magic
+pytz
+django
+polib
+
