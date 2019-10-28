@@ -1,4 +1,4 @@
-git+https://gitlab.com/internet-cleanup-foundation/web-security-map@pip-tools#egg=websecmap
+git+https://gitlab.com/internet-cleanup-foundation/web-security-map@acf1e12cc6d896b92fbf3b61d4e41be0a233fce5#egg=websecmap
 
 django-otp
 django-two-factor-auth
