@@ -1,3 +1,12 @@
+# Dependencies for this project are manager using pip-tools (https://github.com/jazzband/pip-tools).
+# This is a simple management tool to manage version pinnin build on top of Pip and requirements.txt.
+
+# In this file only
+# - specify requirements that are needed for Dashboard runtime (no development requirements).
+# - no requirements that are already provided by websecmap itself
+# - no version pinning, unless it is required and explained
+
+# to update websecmap run: make update_requirement_websecmap
 git+https://gitlab.com/internet-cleanup-foundation/web-security-map@acf1e12cc6d896b92fbf3b61d4e41be0a233fce5#egg=websecmap
 
 django-otp

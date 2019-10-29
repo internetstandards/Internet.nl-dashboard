@@ -126,6 +126,20 @@ If your shell support tab completion you can get a complete list of supported co
 make <tab><tab>
 ```
 
+## 4: Common tasks
+
+### Update dependencies/requirements
+
+Python dependencies are managed using [pip-tools](https://github.com/jazzband/pip-tools). See `requirements.in` and `requirements-dev.in`.
+
+For convenience the following command can be used to update all Python dependencies (within their version boundaries):
+
+    make update_requirements
+
+The dependency on Web Security Map is version pinned by a Git SHA in the Websecmap Gitlab repo. The following command will lookup the SHA for the current master in Gitlab, update the `requirements.in` file, update the dependencies, and even commit everything to Git.
+
+    make update_requirement_websecmap
+
 ## FAQ / Troubleshooting
 
 ### Missing xcode (mac users)

@@ -64,7 +64,24 @@ ${VIRTUAL_ENV}/.%.txt.installed: %.txt | ${pip}
 
 # perform 'pip freeze' on first class requirements in .in files.
 requirements.txt requirements-dev.txt: %.txt: %.in | ${pip-compile}
-	${pip-compile} ${pip-compile-args} --output-file $@ $<
+	${pip-compile} --output-file $@ $<
+
+update_requirements: _mark_outdated requirements.txt requirements-dev.txt _commit_update
+
+_mark_outdated:
+	touch requirements*.in
+
+# get latest sha for gitlab.com:icf/websecmap@master and update requirements
+update_requirement_websecmap: _update_websecmap_sha requirements.txt _commit_update
+
+_update_websecmap_sha:
+	sha=$(shell git ls-remote -q git@gitlab.com:internet-cleanup-foundation/web-security-map.git master|cut -f1); \
+	if grep $$sha requirements.in >/dev/null; then echo -e "\nNo update for you, current sha for websecmap in requirements.in is the same as master on Gitlab.\n"; exit 1;fi; \
+	sed -Ei= "s/[a-zA-Z0-9]{40}/$$sha/" requirements.in
+
+_commit_update: requirements.txt
+	git add requirements*.txt requirements*.in
+	git commit -m "Updated requirements."
 
 ## QA
 test: .make.test	## run test suite
