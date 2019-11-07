@@ -1978,7 +1978,7 @@ Vue.component('percentage-bar-chart', {
                     borderColor: this.color_scheme.incremental[i].border,
                     borderWidth: 1,
                     lineTension: 0,
-                    label: `${this.chart_data[i].calculation.name} ${moment(this.chart_data[i].at_when).format('LL')} 🌍${this.chart_data[i].total_urls}`,
+                    label: `${this.chart_data[i].calculation.name} ${moment(this.chart_data[i].at_when).format('LL')} n=${this.chart_data[i].total_urls}`,
                 });
 
             }
