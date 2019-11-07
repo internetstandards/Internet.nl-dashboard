@@ -310,6 +310,7 @@ def translate_field(field_label):
         'internet_nl_web_legacy_ipv6_webserver': 'IPv6 websever',
         'internet_nl_web_legacy_dane': 'DANE',
 
+        'legacy': 'nlgovernment_complyorexplain',
         'internet_nl_mail_dashboard_overall_score': 'Score',
         'internet_nl_web_overall_score': 'Score',
     }
@@ -443,7 +444,7 @@ def upgrade_excel_spreadsheet(spreadsheet_data):
 def category_headers(protocol: str = 'dns_soa'):
     headers: List[str] = ['', '', '', '', '']
     for group in SANE_COLUMN_ORDER[protocol]:
-        headers += [group]
+        headers += [translate_field(group)]
 
         for x in range(len(SANE_COLUMN_ORDER[protocol][group])-1):
             headers += ['']
