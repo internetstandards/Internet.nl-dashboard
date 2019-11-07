@@ -20,6 +20,7 @@
             </multiselect>
             -->
             <div aria-live="polite" style="margin-bottom: 30px;">
+                <!-- limit not yet supported, nov 2019: https://github.com/sagalbot/vue-select/issues/60 -->
                 <v-select
                         v-model="selected_report"
                         :options="filtered_recent_reports"
@@ -828,10 +829,14 @@ vueReport = new Vue({
         // is really no comparison possible.
         filtered_recent_reports: [],
 
+        // a list of reports...
         selected_report: null,
 
         // graphs:
         issue_timeline_of_related_urllist: [],
+
+        pattern_order: ['weave', 'dot', 'ring', 'dash', 'plus', 'zigzag', 'square', 'diagonal', 'disc', 'zigzag-vertical', 'triangle', 'line', 'cross-dash', 'diamond'],
+        color_order: ['rgba(225, 112, 0, 1)', 'rgba(57, 135, 12, 1)', 'rgba(115, 21, 66, 1)', 'rgb(89, 88, 92)', 'rgba(21, 66, 115, 1)', ],
         color_scheme: {
             'high_background': 'rgba(255, 99, 132, 0.2)',
             'high_border': 'rgba(255, 99, 132, 0.2)',
@@ -848,15 +853,16 @@ vueReport = new Vue({
 
             // https://github.com/ashiguruma/patternomaly/blob/master/assets/pattern-list.png
             // The first one can be defined without a pattern to give a consistent look/feel to all first graphs.
-            incremental: [
-                {background: 'rgba(255, 112, 50, 0.6)', border: 'rgba(209, 63, 0, 1)'},
-                // try out a nice green background
-                // green: {background: 'rgba(33, 234, 7, 0.6)', border: 'rgb(86, 196, 80)'},
-                {background: pattern.draw('weave',  'rgba(21, 66, 115, 0.6)'), border: 'rgba(21, 66, 115, 1)'},
-                {background: pattern.draw('dot',  'rgba(43, 151, 89, 0.6)'), border: 'rgb(28, 94, 56)'},
-                {background: pattern.draw('dash',  'rgba(0, 255, 246, 0.6)'), border: 'rgb(0, 92, 89)'},
-                {background: pattern.draw('ring',  'rgba(255, 0, 246, 0.6)'), border: 'rgb(158, 0, 153)'},
-                ]
+            // this can help to explain the colors: https://www.canva.com/colors/color-wheel/
+            // See #18 for the primary sources of these colors.
+            incremental: [],
+            /*[
+                {background: 'rgba(21, 66, 115, 1)', border: 'rgba(21, 66, 115, 1)'},  // #154273
+                {background: pattern.draw(this.pattern_order.pop(),  'rgba(225, 112, 0, 1)'), border: 'rgba(225, 112, 0, 1)'}, // #E17000
+                {background: pattern.draw(this.pattern_order.pop(),  'rgba(57, 135, 12, 1)'), border: 'rgba(57, 135, 12, 1)'}, // #39870C (tetradic of the first blue)
+                {background: pattern.draw(this.pattern_order.pop(),  'rgba(115, 21, 66, 1)'), border: 'rgba(115, 21, 66, 1)'}, // #731542 (tetradic of the first blue)
+                {background: pattern.draw(this.pattern_order.pop(),  'rgb(89,88,92)'), border: 'rgb(89,88,92)'}, // #7e7d82
+                ]*/
         },
         compare_charts: [],
         compare_oldest_data: "",
@@ -864,6 +870,7 @@ vueReport = new Vue({
 
     },
     mounted: function(){
+        this.color_scheme.incremental = this.generate_color_increments(100);
         this.load_issue_filters();
         this.get_recent_reports();
     },
@@ -878,6 +885,23 @@ vueReport = new Vue({
     methods: {
         load: function(report_id) {
             this.get_report_data(report_id);
+        },
+
+        generate_color_increments: function(number){
+            // Generate n colors for charts, rotating over the available options. Returns a list with css properties.
+            // The first item is always the same.
+            let colors = [{background: 'rgba(21, 66, 115, 1)', border: 'rgba(21, 66, 115, 1)'},];
+            for(let i=0; i<number; i++){
+                // make sure we never run out of options.
+                let my_pattern = this.pattern_order.shift();
+                this.pattern_order.push(my_pattern);
+                let my_color = this.color_order.shift();
+                this.color_order.push(my_color);
+
+                colors.push({background: pattern.draw(my_pattern, my_color), border: my_color})
+            }
+
+            return colors;
         },
 
         get_issue_filter_data(key){
@@ -1015,16 +1039,17 @@ vueReport = new Vue({
 
             }).catch((fail) => {console.log('A loading error occurred: ' + fail);});
         },
+
         get_recent_reports: function(){
             fetch(`/data/report/recent/`, {credentials: 'include'}).then(response => response.json()).then(data => {
-                options = [];
+                let options = [];
                 for(let i = 0; i < data.length; i++){
 
                     // this quick fix might fix the date for dutch people, but not for the rest of the world.
                     // let my_date = moment(data[i].at_when).subtract(2, 'hours').format('LL');
 
                     data[i].label = `#${data[i].id} - ${data[i].list_name} - type: ${data[i].type} - from: ${this.humanize_date_date_only(data[i].at_when)}`;
-                    options.push(data[i])
+                    options.push(data[i]);
                 }
                 this.available_recent_reports = options;
                 this.filtered_recent_reports = options;
@@ -1179,6 +1204,10 @@ vueReport = new Vue({
             // when deleting any report, we will need to rebuild the compare charts...
             this.compare_charts = [];
             this.load(new_value[0].id);
+
+            // to test this:
+            // this.compare_with(new_value[0].id, 1);
+            // this.compare_with(new_value[0].id, 2);
 
             // filter reports on type:
             let filtered_reports = [];
@@ -1783,16 +1812,22 @@ const chart_mixin = {
             return true;
         }
     },
+    created(){
+        // When the chart data is downloaded, it might be that a ton of stuff is processed. To prevent
+        // too many renders, we slow the chart building a bit by debouncing it.
+        // This also prevents some of the "me.getDatasetMeta(...).controller is null" errors in charts.js (nov 2019)
+        // You cannot add a debounce on a watch:
+        // https://stackoverflow.com/questions/47172952/vuejs-2-debounce-not-working-on-a-watch-option
+        this.unwatch = this.$watch('chart_data', _.debounce((newVal) => {
+            this.renderData();
+        }, 300), {
+            // Note that you don’t need to do so to listen for in-Array mutations as they won't happen and the
+            // arrays are too complex and big.
+            deep: false
+        })
+    },
     watch: {
-        chart_data: {
 
-            // Note that you don’t need to do so to listen for Array mutations...
-            deep: false,
-            handler (new_value, old_value){
-                console.log(`Chart data updated to ${new_value.length} items...`);
-                this.renderData();
-            }
-        },
         axis: function(new_value, old_value){
             if (!this.arraysEqual(old_value, new_value)) {
                 this.renderData();
@@ -1819,6 +1854,7 @@ const chart_mixin = {
         },
     }
 };
+
 
 // this prevents the legend being written over the 100% scores
 Chart.Legend.prototype.afterFit = function() {
