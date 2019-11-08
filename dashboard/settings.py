@@ -51,7 +51,8 @@ INSTALLED_APPS = [
     # Jet
     'jet.dashboard',
     'jet',
-
+    'nested_admin',
+    
     # Import Export
     'import_export',
 
