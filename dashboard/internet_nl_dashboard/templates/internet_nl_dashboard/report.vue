@@ -1040,9 +1040,11 @@ vueReport = new Vue({
                 for(let i = 0; i < data.length; i++){
 
                     // this quick fix might fix the date for dutch people, but not for the rest of the world.
-                    // let my_date = moment(data[i].at_when).subtract(2, 'hours').format('LL');
+                    // will be properly fixed in a future release. See issue #5.
+                    let my_date = moment(data[i].at_when).subtract(2, 'hours');
+                    console.log(my_date);
 
-                    data[i].label = `#${data[i].id} - ${data[i].list_name} - type: ${data[i].type} - from: ${this.humanize_date_date_only(data[i].at_when)}`;
+                    data[i].label = `#${data[i].id} - ${data[i].list_name} - type: ${data[i].type} - from: ${this.humanize_date_date_only(my_date)}`;
                     options.push(data[i]);
                 }
                 this.available_recent_reports = options;
