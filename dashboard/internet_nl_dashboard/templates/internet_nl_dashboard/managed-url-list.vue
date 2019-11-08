@@ -99,6 +99,9 @@
             <div v-if="!urls.length">
                 <button @click="start_bulk_add_new()">💖 {{ $t("domain_management.button_labels.add_domains") }}</button>
             </div>
+
+            <loading :loading="loading"></loading>
+
             <ul style="column-count: 2; list-style: none;">
                 <li v-for="url in urls">
 
