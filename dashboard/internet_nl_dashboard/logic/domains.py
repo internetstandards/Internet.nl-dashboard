@@ -1,10 +1,8 @@
 import logging
 from typing import Any, Dict, List, Tuple
 
-from django.db.models import Prefetch, Count
+from django.db.models import Count, Prefetch
 from django.utils import timezone
-from tldextract import tldextract
-from validators import domain
 from websecmap.organizations.models import Url
 from websecmap.scanners.models import Endpoint
 from websecmap.scanners.scanner.dns_endpoints import compose_discover_task
