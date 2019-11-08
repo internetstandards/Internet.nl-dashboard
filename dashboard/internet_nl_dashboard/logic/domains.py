@@ -1,7 +1,7 @@
 import logging
 from typing import Any, Dict, List, Tuple
 
-from django.db.models import Prefetch
+from django.db.models import Prefetch, Count
 from django.utils import timezone
 from tldextract import tldextract
 from validators import domain
@@ -225,7 +225,7 @@ def update_list_settings(account: Account, user_input: Dict) -> Dict[str, Any]:
         account=account,
         id=user_input['id'],
         is_deleted=False
-    ).prefetch_related(prefetch_last_scan, last_report_prefetch).first()
+    ).annotate(num_urls=Count('urls')).prefetch_related(prefetch_last_scan, last_report_prefetch).first()
 
     if not urllist:
         return operation_response(error=True, message="No list of urls found.")
@@ -249,6 +249,7 @@ def update_list_settings(account: Account, user_input: Dict) -> Dict[str, Any]:
 
     # make sure the account is serializable.
     data['account'] = account.id
+    data['num_urls'] = urllist.num_urls
 
     # inject the last scan information.
     data['last_scan_id'] = None if not len(urllist.last_scan) else urllist.last_scan[0].scan.id
@@ -333,7 +334,7 @@ def get_urllists_from_account(account: Account) -> List:
     urllists = UrlList.objects.all().filter(
         account=account,
         is_deleted=False
-    ).order_by('name').prefetch_related(last_scan_prefetch, last_report_prefetch)
+    ).annotate(num_urls=Count('urls')).order_by('name').prefetch_related(last_scan_prefetch, last_report_prefetch)
 
     response = []
     # Not needed to check the contest of the list. If it's empty, then there is just an empty list returned.
@@ -341,6 +342,7 @@ def get_urllists_from_account(account: Account) -> List:
         response.append({
             'id': urllist.id,
             'name': urllist.name,
+            'num_urls': urllist.num_urls,
             'enable_scans': urllist.enable_scans,
             'scan_type': urllist.scan_type,
             'automated_scan_frequency': urllist.automated_scan_frequency,

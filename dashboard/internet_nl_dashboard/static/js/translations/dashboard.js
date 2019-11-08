@@ -29,108 +29,7 @@ const messages = {
             button_close_label: 'Close',
             button_create_list_label: 'Create List',
         },
-        domain_management: {
 
-            title: "Domains",
-            intro: "Manage lists with domains",
-            bulk_upload_link: "Upload large amount of data by using the Bulk Address uploader, here.",
-
-            icon_legend: {
-                title: "Legend of used icons",
-                intro: "The domains in the lists below will be included in each scan. Before a scan is performed, the eligibility of the " +
-                    "service is checked. This check is always performed for the scan. To give an insight in how connected" +
-                    "these services are, the last known state is presented as the first icon.",
-                can_connect: "Can connect to this service, will (probably) be scanned.",
-                unknown_connectivity: "Unknown if this service is available, will be scanned if available.",
-                cannot_connect: "Service not available, will (probably) not be scanned."
-            },
-
-
-            button_labels: {
-                configure: 'Configure',
-                add_domains: 'Add domains',
-                scan_now: 'Scan now',
-                scan_now_scanning: 'Scanning',
-                scan_now_scanning_title: 'The scan now option is available only once a day, when no scan is running.',
-                delete: 'Delete',
-                view_csv: 'View .csv',
-                timeout_for_24_hours: 'Max 1 scan/day',
-                scanning_disabled: 'Scanning disabled',
-            },
-
-            about_this_list: {
-                header: 'About this list',
-                last_scan_started: 'Last scan started',
-                still_running: 'still running',
-                finished: 'finished',
-                not_scanned_before: 'Not scanned before',
-                type_of_scan_performed: 'Type of scan performed',
-                scan_frequency: 'Scan frequency',
-                next_scheduled_scan: 'Next scheduled scan',
-                scanning_disabled: 'Scanning of this list is disabled.',
-                latest_report: 'Latest report',
-            },
-
-            domains: {
-                header: 'Domains',
-                intro: "These domains will be included in the scan. Their eligibility for scanning is checked just " +
-                    "before requesting the scan, the information shown here may be outdated.",
-                start_editing_url: 'Edit {0}.',
-                cancel_editing_url: 'Cancel editing and store the original value: {0}',
-                eligeble_mail: '{0} is eligeble for e-mail scans',
-                unknown_eligeble_mail: 'Not yet known if {0} is scanable for mail',
-                not_eligeble_mail: '{0} is not eligeble for e-mail scans. Will be checked again when starting a scan.',
-                eligeble_web: '{0} is eligeble for web scans',
-                unknown_eligeble_web: 'Not yet known if {0} is scannable for web',
-                not_eligeble_web: '{0} is not eligeble for web scans. Will be checked again when starting a scan.',
-                save_edited_url: 'Save changes, the change will be applied to {0}.',
-                delete_edited_url: 'Delete {0} from this list.',
-
-                button_labels: {
-                    save: 'Save',
-                    cancel: 'Cancel',
-                    remove: 'Remove',
-                }
-            },
-
-            edit_form: {
-                title: 'Edit list settings',
-                cancel: 'Cancel',
-                ok: 'Update'
-            },
-
-            delete_form: {
-                title: 'Delete list',
-                message: 'Are you sure you want to\n' +
-                    '                delete this list? Deleting this list cannot be undone.',
-                cancel: 'No, take me back',
-                ok: 'Yes, Delete'
-            },
-
-            scan_now_form: {
-                title: 'Confirm to scan now',
-                message: 'To start a scan now, please take the following in consideration: <br>' +
-                    'A scan can only be started once a day, and only when no scan is already running. Note that a scan cannot be cancelled.',
-                cancel: 'Cancel',
-                ok: 'Scan now',
-                starting: 'Starting...',
-            },
-
-            bulk_add_form: {
-                title: 'Bulk add domains',
-                message: 'You can add many domains in one go. To do this, seperate each domain with a comma.',
-                ok: 'Add the above domains to the list',
-                status: 'Status',
-                nothing_added: 'nothing added yet.',
-                added_n_to_list: 'Added {0} domains to this list.',
-                ignored_n: 'Additionally, {0} domains have been\n' +
-                    '                            ignored as they are already in this list.',
-                warning: 'Warning!',
-                warning_message: 'Some domains where not added because they are in an incorrect format. <br>\n' +
-                    '                            The following domains where not added',
-            }
-
-        },
         // field name translation
         urllist: {
             field_label_id: 'id',
@@ -638,10 +537,48 @@ const messages = {
                 filesize: 'Size',
                 status: 'Status',
                 no_uploads: 'No files uploaded.',
-            }
+            },
+
+
+
+        },
+
+        domain_management: {
+            title: "Domains",
+            intro: "Manage lists with domains",
+            bulk_upload_link: "Upload large amount of data by using the Bulk Address uploader, here.",
+
+            icon_legend: {
+                title: "Legend of used icons",
+                intro: "The domains in the lists below will be included in each scan. Before a scan is performed, the eligibility of the " +
+                    "service is checked. This check is always performed for the scan. To give an insight in how connected" +
+                    "these services are, the last known state is presented as the first icon.",
+                can_connect: "Can connect to this service, will (probably) be scanned.",
+                unknown_connectivity: "Unknown if this service is available, will be scanned if available.",
+                cannot_connect: "Service not available, will (probably) not be scanned."
+            },
         }
+
     },
     nl: {
+        domain_management: {
+            title: "Domeinen",
+            intro: "Beheer lijsten met domeinen",
+            bulk_upload_link: "Een groot aantal domeinen kan worden geüpload met de Bulk Addressen Uploader, hier.",
+
+            icon_legend: {
+                title: "Legenda van gebruikte pictogrammen",
+                intro: "De domeinen in de lijsten hieronder worden gebruikt bij iedere scan. Voordat een scan is uitgevoerd " +
+                    "wordt per domein gekeken of het domein aan de voorwaarden voldoet om gescand te worden. In de lijst " +
+                    "hieronder wordt daarvan een beeld gegeven, echter kan dat beeld verouderd zijn: dit wordt ververst " +
+                    "voor iedere scan.",
+                can_connect: "Deze dienst is bereikbaar en wordt (waarschijnlijk) gescanned.",
+                unknown_connectivity: "Niet bekend of deze dienst beschikbaar is, dit wordt later gecontroleerd.",
+                cannot_connect: "Deze dienst is niet beschikbaar, en wordt (waarschijnlijk) niet gescand."
+            },
+
+        },
+
         menu: {
             admin: 'Beheer',
             domains: "Domeinen",
@@ -660,100 +597,9 @@ const messages = {
             button_close_label: 'Sluiten',
             button_create_list_label: 'Maak deze lijst',
         },
-        domain_management: {
 
-            title: "Domeinen",
-            intro: "Beheer lijsten met domeinen",
-            bulk_upload_link: "Een groot aantal domeinen kan worden geüpload met de Bulk Addressen Uploader, hier.",
 
-            icon_legend: {
-                title: "Legenda van gebruikte pictogrammen",
-                intro: "De domeinen in de lijsten hieronder worden gebruikt bij iedere scan. Voordat een scan is uitgevoerd " +
-                    "wordt per domein gekeken of het domein aan de voorwaarden voldoet om gescand te worden. In de lijst " +
-                    "hieronder wordt daarvan een beeld gegeven, echter kan dat beeld verouderd zijn: dit wordt ververst " +
-                    "voor iedere scan.",
-                can_connect: "Deze dienst is bereikbaar en wordt (waarschijnlijk) gescanned.",
-                unknown_connectivity: "Niet bekend of deze dienst beschikbaar is, dit wordt later gecontroleerd.",
-                cannot_connect: "Deze dienst is niet beschikbaar, en wordt (waarschijnlijk) niet gescand."
-            },
 
-            button_labels: {
-                configure: 'Instellingen',
-                add_domains: 'Domeinen toevoegen',
-                scan_now: 'Nu scannen',
-                scan_now_scanning: 'Aan het scannen',
-                scan_now_scanning_title: 'Nu scannen is alleen beschikbaar als er geen scan draait, en kan maximaal 1x per dag worden aangeroepen.',
-                delete: 'Verwijder',
-                view_csv: 'Bekijk.csv',
-                timeout_for_24_hours: 'Max 1 scan/dag',
-                scanning_disabled: 'Scans uitgeschakeld',
-            },
-
-            about_this_list: {
-                header: 'Over deze lijst',
-                last_scan_started: 'Laatste scan gestart op',
-                still_running: 'loopt nog',
-                finished: 'afgerond',
-                not_scanned_before: 'Niet eerder gescand',
-                type_of_scan_performed: 'Soort scan',
-                scan_frequency: 'Scan frequentie',
-                next_scheduled_scan: 'Volgende ingeplande scan',
-                scanning_disabled: 'Scannen van deze lijst is uitgeschakeld.',
-                latest_report: 'Meest actuele rapportage',
-            },
-
-            domains: {
-                header: 'Domeinen',
-                eligeble_mail: 'E-mail scannen is mogelijk',
-                unknown_eligeble_mail: 'Onbekend of E-mail scannen mogelijk is',
-                not_eligeble_mail: 'Kan geen E-mail scan uitvoeren (wordt opnieuw gecheckt bij het starten van de scan)',
-                eligeble_web: 'Web scan is mogelijk',
-                unknown_eligeble_web: 'Niet bekend of het mogelijk is een web scan uit te voeren',
-                not_eligeble_web: 'Web scan kan niet worden uitgevoerd. Dit wordt opnieuw gecheckt bij het starten van de scan.',
-
-                button_labels: {
-                    save: 'Opslaan',
-                    cancel: 'Annuleren',
-                    remove: 'Verwijderen',
-                }
-            },
-
-            edit_form: {
-                title: 'Lijst instellingen',
-                cancel: 'Annuleer',
-                ok: 'Opslaan'
-            },
-
-            delete_form: {
-                title: 'Lijst verwijderen',
-                message: 'Weet u zeker dat u deze lijst wil verwijderen? Dit kan niet ongedaan worden gemaakt.',
-                cancel: 'Nee, niet verwijderen',
-                ok: 'Ja, verwijder'
-            },
-
-            scan_now_form: {
-                title: 'Bevestig om opnieuw te scannen',
-                message: 'Een scan die nu wordt gestart heeft de volgende eigenschappen: <br>' +
-                    'Een handmatige scan kan eens per dag worden gestart, mits er nog geen scan wordt uitgevoerd op deze lijst.',
-                cancel: 'Annuleer',
-                ok: 'Nu scannen',
-                starting: 'Opstarten...',
-            },
-
-            bulk_add_form: {
-                title: 'Toevoegen van domeinen',
-                message: 'Voeg hieronder een of meerdere domeinen toe, gescheiden door een komma.',
-                ok: 'Voeg bovenstaande domeinen toe aan de lijst',
-                status: 'Status',
-                nothing_added: 'nog niets toegevoegd.',
-                added_n_to_list: 'Er zijn {0} domeinen aan de lijst toegevoegd.',
-                ignored_n: 'Verder zijn er {0} domeinen genegeerd omdat ze al in de lijst zaten.',
-                warning: 'Waarschuwing!',
-                warning_message: 'Sommige domeinen zijn niet in een geldig formaat. Controleer de volgende domeinen en' +
-                    'probeer het opnieuw:',
-            }
-
-        },
         // field name translation
         urllist: {
             field_label_id: 'id',
