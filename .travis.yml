@@ -5,6 +5,7 @@ python:
 jobs:
   include:
   - stage: test
+    install: make setup
     script: make
   - stage: build & push
     script:
