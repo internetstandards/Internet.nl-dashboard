@@ -1888,7 +1888,9 @@ Vue.component('percentage-bar-chart', {
                             display: true,
                             // format as a percentage
                             formatter: function(value, context) {
-                                return value + '%';
+                                // The data labels should be rounded, while the rest of the data on hover etc is not.
+                                // https://github.com/internetstandards/Internet.nl-dashboard/issues/37
+                                return Math.round(value )+ '%';
                             }
                         }
                     },
@@ -2055,7 +2057,8 @@ Vue.component('cumulative-percentage-bar-chart', {
                             align: 'end', // shows the value outside of the bar,
                             // format as a percentage
                             formatter: function(value, context) {
-                                return value + '%';
+                                // https://github.com/internetstandards/Internet.nl-dashboard/issues/37
+                                return Math.round(value )+ '%';
                             }
                         }
                     },
@@ -2222,7 +2225,8 @@ Vue.component('line-chart', {
                             align: 'end', // shows the value outside of the bar,
                             // format as a percentage
                             formatter: function(value, context) {
-                                return value + '%';
+                                // https://github.com/internetstandards/Internet.nl-dashboard/issues/37
+                                return Math.round(value )+ '%';
                             }
                         }
                     },
