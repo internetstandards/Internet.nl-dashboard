@@ -7,6 +7,7 @@
 # - no version pinning, unless it is required and explained
 
 # to update websecmap run: make update_requirement_websecmap
+git+https://github.com/lukas-bednar/pytest-docker@c1040ccc376e1c9efcf527c219bb74ccb03b3468#egg=pytest-docker
 git+https://gitlab.com/internet-cleanup-foundation/web-security-map@acf1e12cc6d896b92fbf3b61d4e41be0a233fce5#egg=websecmap
 
 django-otp
@@ -17,4 +18,3 @@ python-magic
 pytz
 django
 polib
-git+https://github.com/lukas-bednar/pytest-docker#egg=pytest-docker

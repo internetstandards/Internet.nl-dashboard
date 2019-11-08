@@ -5,6 +5,7 @@
 #    pip-compile --output-file=requirements.txt requirements.in
 #
 amqp==2.5.1               # via kombu
+attrs==19.3.0
 babel==2.7.0              # via django-phonenumber-field, flower, wikidata
 billiard==3.6.1.0         # via celery
 celery[eventlet,redis]==4.3.0  # via flower
@@ -70,7 +71,6 @@ numpy==1.17.3             # via colormath, rdp
 odfpy==1.4.0              # via pyexcel-ods, tablib
 openpyxl==2.5.14          # via pyexcel-xlsx, tablib
 ordered-set==3.1.1        # via deepdiff
-phonenumberslite==8.10.21  # via django-phonenumber-field
 pillow==6.2.1             # via python-resize-image
 polib==1.1.0
 psycopg2==2.8.4
@@ -84,6 +84,7 @@ pyexcel-xls==0.5.8
 pyexcel-xlsx==0.5.7
 pyexcel==0.5.15           # via django-excel, pyexcel-text, pyexcel-webio
 pyopenssl==19.0.0
+git+https://github.com/lukas-bednar/pytest-docker@c1040ccc376e1c9efcf527c219bb74ccb03b3468#egg=pytest-docker
 python-crontab==2.3.9     # via django-celery-beat
 python-dateutil==2.8.0    # via python-crontab
 python-magic==0.4.15
