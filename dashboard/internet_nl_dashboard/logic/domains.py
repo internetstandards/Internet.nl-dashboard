@@ -1,6 +1,7 @@
 import logging
 from typing import Any, Dict, List, Tuple
 
+import tldextract
 from django.db.models import Count, Prefetch
 from django.utils import timezone
 from websecmap.organizations.models import Url
@@ -66,13 +67,18 @@ def alter_url_in_urllist(account, data) -> Dict[str, Any]:
         new_url_has_mail_endpoint = 'unknown'
         new_url_has_web_endpoint = 'unknown'
 
+    new_fragments = tldextract.extract(new_url.url)
+    old_fragments = tldextract.extract(old_url.url)
+
     return operation_response(success=True, message="Saved.", data={
         'created': {'id': new_url.id, 'url': new_url.url, 'created_on': new_url.created_on,
                     'has_mail_endpoint': new_url_has_mail_endpoint,
-                    'has_web_endpoint': new_url_has_web_endpoint},
+                    'has_web_endpoint': new_url_has_web_endpoint, 'subdomain': new_fragments.subdomain,
+                    'domain': new_fragments.domain, 'suffix': new_fragments.suffix},
         'removed': {'id': old_url.id, 'url': old_url.url, 'created_on': old_url.created_on,
                     'has_mail_endpoint': old_url_has_mail_endpoint,
-                    'has_web_endpoint': old_url_has_web_endpoint},
+                    'has_web_endpoint': old_url_has_web_endpoint, 'subdomain': old_fragments.subdomain,
+                    'domain': old_fragments.domain, 'suffix': old_fragments.suffix},
     })
 
 

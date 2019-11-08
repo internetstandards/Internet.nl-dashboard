@@ -678,12 +678,12 @@ Vue.component('managed-url-list', {
                         // and make sure the current url list is updated as well. Should'nt this be data bound and
                         // such?
                         this.urls.forEach(function(item, index, object) {
-                        if (server_response.data.removed.id === item.id) {
-                            object[index] = server_response.data.created;
-                            // object.splice(index, 1);
-                            // object.push(server_response.data.created)
-                        }
-                    });
+                            if (server_response.data.removed.id === item.id) {
+                                object[index] = server_response.data.created;
+                                // object.splice(index, 1);
+                                // object.push(server_response.data.created)
+                            }
+                        });
                     } else {
                         document.getElementById(this.url_edit).value=this.original_url_value;
                     }
