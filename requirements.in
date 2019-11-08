@@ -17,4 +17,4 @@ python-magic
 pytz
 django
 polib
-
+git+https://github.com/lukas-bednar/pytest-docker#egg=pytest-docker

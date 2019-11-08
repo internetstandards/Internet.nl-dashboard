@@ -41,7 +41,7 @@ def alter_url_in_urllist(account, data) -> Dict[str, Any]:
         return operation_response(error=True, message="List does not exist.")
 
     # is the url valid?
-    if not is_valid_url(data['new_url_string']):
+    if not Url.is_valid_url(data['new_url_string']):
         return operation_response(error=True, message="New url does not have the correct format.")
 
     # fetch the url, or create it if it doesn't exist.
@@ -120,25 +120,6 @@ def scan_urllist_now_ignoring_business_rules(urllist: UrlList):
     return operation_response(success=True, message="Scan started")
 
 
-def is_valid_url(url):
-    extract = tldextract.extract(url)
-    if not extract.suffix:
-        return False
-
-    # Validators catches 'most' invalid urls, but there are some issues and exceptions that are not really likely
-    # to cause any major issues in our software. The other alternative is another library with other quircks.
-    # see: https://github.com/kvesteri/validators/
-    # Note that this library does not account for 'idna' / punycode encoded domains, so you have to convert
-    # them yourself. luckily:
-    # 'аренда.орг' -> 'xn--80aald4bq.xn--c1avg'
-    # 'google.com' -> 'google.com'
-    valid_domain = domain(url.encode('idna').decode())
-    if valid_domain is not True:
-        return False
-
-    return True
-
-
 def get_url(new_url_string: str):
 
     # first check if one exists, if not, create it.
@@ -146,25 +127,8 @@ def get_url(new_url_string: str):
     if url:
         return url, False
 
-    # url does not exist, create it.
-    if not is_valid_url(new_url_string):
-        raise ValueError('Invalid Url')
-
-    new_url = add_url(new_url_string)
-    return new_url, True
-
-
-# todo: validation of url? Why is that missing here?
-def add_url(new_url_string: str):
-    new_url = Url()
-    new_url.url = new_url_string
-    new_url.created_on = timezone.now()
-    new_url.save()
-
-    # always try to find a few dns endpoints...
-    compose_discover_task(urls_filter={'pk': new_url.id}).apply_async()
-
-    return new_url
+    url = Url.add(new_url_string)
+    return url, True
 
 
 def create_list(account: Account, user_input: Dict) -> Dict[str, Any]:
@@ -522,8 +486,11 @@ def _add_to_urls_to_urllist(account: Account, current_list: UrlList, urls: List[
             current_list.urls.add(existing_url)
             counters['added_to_list'] += 1
         else:
-            # todo: might be wise to use bulk_create to speed up insertion
-            new_url = add_url(url)
+            new_url = Url.add(url)
+
+            # always try to find a few dns endpoints...
+            compose_discover_task(urls_filter={'pk': new_url.id}).apply_async()
+
             current_list.urls.add(new_url)
             counters['added_to_list'] += 1
 
@@ -546,7 +513,7 @@ def clean_urls(urls: List[str]) -> Dict[str, List]:
         # all urls in the system must be lowercase (if applicable to used character)
         url = url.lower()
 
-        if not is_valid_url(url):
+        if not Url.is_valid_url(url):
             result['incorrect'].append(url)
         else:
             result['correct'].append(url)
