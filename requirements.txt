@@ -71,6 +71,7 @@ numpy==1.17.3             # via colormath, rdp
 odfpy==1.4.0              # via pyexcel-ods, tablib
 openpyxl==2.5.14          # via pyexcel-xlsx, tablib
 ordered-set==3.1.1        # via deepdiff
+phonenumberslite==8.10.22  # via django-phonenumber-field
 pillow==6.2.1             # via python-resize-image
 polib==1.1.0
 psycopg2==2.8.4
