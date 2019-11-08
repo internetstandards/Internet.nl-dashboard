@@ -24,6 +24,7 @@ env = env PATH=${bin}:$$PATH
 python = ${bin}/python
 pip = ${bin}/pip
 pip-compile = ${bin}/pip-compile
+pip-sync = ${bin}/pip-sync
 
 # application binary
 app = ${bin}/${app_name}
@@ -34,7 +35,7 @@ pysrcdirs = ${app_name}/
 pysrc = $(shell find ${pysrcdirs} -name *.py)
 shsrc = $(shell find * ! -path vendor\* -name *.sh)
 
-.PHONY: test check setup run fix autofix clean mrproper test_integration
+.PHONY: test check setup run fix autofix clean mrproper test_integration requirements requirements-dev
 
 # default action to run
 all: check test setup
@@ -42,7 +43,7 @@ all: check test setup
 ## Setup
 # setup entire dev environment
 setup: ${app}	## setup development environment and application
-	@test -z "$$PS1" || (echo -ne "Development environment is tested and ready."; \
+	@test \! -z "$$PS1" || (echo -ne "Development environment is tested and ready."; \
 	if command -v dashboard &>/dev/null;then \
 		echo -e " Development shell is activated."; \
 	else \
@@ -52,14 +53,12 @@ setup: ${app}	## setup development environment and application
 	fi)
 
 # install application and all its (python) dependencies
-${app}: requirements requirements-dev | ${pip}
-	${pip} install -e .
+${app}: ${VIRTUAL_ENV}/.requirements.installed | ${python}
+	${python} setup.py develop --no-deps
 	@touch $@
 
-requirements requirements-dev: %: ${VIRTUAL_ENV}/.%.txt.installed
-
-${VIRTUAL_ENV}/.%.txt.installed: %.txt | ${pip}
-	${pip} install --quiet -r $<
+${VIRTUAL_ENV}/.requirements.installed: requirements.txt requirements-dev.txt | ${pip-sync}
+	${pip-sync} $^
 	@touch $@
 
 # perform 'pip freeze' on first class requirements in .in files.
@@ -253,7 +252,7 @@ mrproper: clean clean_virtualenv ## thorough cleanup, also removes virtualenv
 
 ## Base requirements
 
-${pip-compile}: | ${pip}
+${pip-compile} ${pip-sync}: | ${pip}
 	${pip} install pip-tools
 
 python: ${python}

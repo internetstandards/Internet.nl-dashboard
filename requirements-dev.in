@@ -1,3 +1,6 @@
+# make sure there are no version conflicts with requirements.txt
+-c requirements.txt
+
 autopep8
 autoflake
 isort
