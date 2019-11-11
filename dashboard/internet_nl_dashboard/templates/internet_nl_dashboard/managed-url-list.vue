@@ -5,12 +5,14 @@
             <a :name="list.id"></a>
             <h2>
                 <button v-if="!is_opened" @click="open_list()" aria-expanded="false">
+                    <span role="img" v-if="list_contains_warnings" :aria-label="$t('icons.list_warning')">🚨</span>
                     <span role="img" :aria-label="$t('icons.list_closed')">📘</span>
                     {{ list.name }}
                 </button>
             </h2>
             <h2>
                 <button v-if="is_opened" @click="close_list()" aria-expanded="true">
+                    <span role="img" v-if="list_contains_warnings" :aria-label="$t('icons.list_warning')">🚨️</span>
                     <span role="img" :aria-label="$t('icons.list_opened')">📖</span>
                     {{ list.name }}
                 </button>
@@ -19,54 +21,54 @@
             <div v-if="is_opened" style="float:right;">
                 <button @click="start_editing_settings()">
                     <span role="img" :aria-label="$t('icons.settings')">📝</span>
-                    {{ $t("domain_management.button_labels.configure") }}</button>
+                    {{ $t("button_labels.configure") }}</button>
                 <button @click="start_bulk_add_new()">
                     <span role="img" :aria-label="$t('icons.bulk_add_new')">💖</span>
-                    {{ $t("domain_management.button_labels.add_domains") }}</button>
+                    {{ $t("button_labels.add_domains") }}</button>
                 <template v-if="urls.length">
                     <template v-if="list.enable_scans">
                         <button v-if="list.scan_now_available" @click="start_scan_now()">
                             <span role="img" :aria-label="$t('icons.scan')">🔬</span>
-                            {{ $t("domain_management.button_labels.scan_now") }}
+                            {{ $t("button_labels.scan_now") }}
                         </button>
 
                         <button v-if="!list.scan_now_available && !list.last_scan_finished" disabled="disabled"
-                        :title='$t("domain_management.button_labels.scan_now_scanning")'>
+                        :title='$t("button_labels.scan_now_scanning")'>
                             <img width="15" style="border-radius: 50%" src="/static/images/vendor/internet_nl/probe-animation.gif">
-                            {{ $t("domain_management.button_labels.scan_now_scanning") }}
+                            {{ $t("button_labels.scan_now_scanning") }}
                         </button>
 
                         <button v-if="!list.scan_now_available && list.last_scan_finished" disabled="disabled"
-                        :title='$t("domain_management.button_labels.timeout_for_24_hours")'>
+                        :title='$t("button_labels.timeout_for_24_hours")'>
                             <img width="15" style="border-radius: 50%" src="/static/images/vendor/internet_nl/probe-animation.gif">
-                            {{ $t("domain_management.button_labels.timeout_for_24_hours") }}
+                            {{ $t("button_labels.timeout_for_24_hours") }}
                         </button>
                     </template>
                     <button v-if="!list.enable_scans" disabled="disabled"
-                    :title='$t("domain_management.button_labels.scanning_disabled")'>
+                    :title='$t("button_labels.scanning_disabled")'>
                         <span role="img" :aria-label="$t('icons.scan')">🔬</span>
-                        {{ $t("domain_management.button_labels.scanning_disabled") }}
+                        {{ $t("button_labels.scanning_disabled") }}
                     </button>
                 </template>
-                <button @click="start_deleting()">🔪 {{ $t("domain_management.button_labels.delete") }}</button>
+                <button @click="start_deleting()">🔪 {{ $t("button_labels.delete") }}</button>
             </div>
         </span>
         <br>
 
         <div v-if="is_opened">
-            <h3>{{ $t("domain_management.about_this_list.header") }}</h3>
+            <h3>{{ $t("about_this_list.header") }}</h3>
             <p>
                 <span v-if="list.last_scan">
-                    {{ $t("domain_management.about_this_list.last_scan_started") }}: {{ humanize_date(list.last_scan) }}.
-                    <span v-if="!list.last_scan_finished">({{ $t("domain_management.about_this_list.still_running") }})</span>
-                    <span v-if="list.last_scan_finished">({{ $t("domain_management.about_this_list.finished") }})</span>
+                    {{ $t("about_this_list.last_scan_started") }}: {{ humanize_date(list.last_scan) }}.
+                    <span v-if="!list.last_scan_finished">({{ $t("about_this_list.still_running") }})</span>
+                    <span v-if="list.last_scan_finished">({{ $t("about_this_list.finished") }})</span>
                 </span>
                 <span v-if="!list.last_scan">
-                    {{ $t("domain_management.about_this_list.last_scan_started") }}: {{ $t("domain_management.about_this_list.not_scanned_before") }}.
+                    {{ $t("about_this_list.last_scan_started") }}: {{ $t("about_this_list.not_scanned_before") }}.
                 </span>
                 <template class="scan-configuration">
                     <div v-if="list.enable_scans">
-                        {{ $t("domain_management.about_this_list.type_of_scan_performed") }}:
+                        {{ $t("about_this_list.type_of_scan_performed") }}:
                         <span title="Mail scans will be performed" v-if="list.enable_scans && list.scan_type === 'mail'">
                             <img src="/static/images/vendor/internet_nl/icon-emailtest.svg" style="height: 16px;">
                         {{ list.scan_type }}</span>
@@ -75,35 +77,41 @@
                             {{ list.scan_type }}</span>
                         <span title="No scans will be performed" v-if="!list.enable_scans">🚫 {{ list.scan_type }}</span><br>
                         <span v-if="urls">
-                            {{ $t("domain_management.about_this_list.number_of_domains") }}: {{urls.length}}
+                            {{ $t("about_this_list.number_of_domains") }}: {{urls.length}}
                         </span>
                         <span v-if="!urls">
-                            {{ $t("domain_management.about_this_list.number_of_domains") }}: {{list.num_urls}}
+                            {{ $t("about_this_list.number_of_domains") }}: {{list.num_urls}}
                         </span><br>
-                        {{ $t("domain_management.about_this_list.scan_frequency") }}: {{ list.automated_scan_frequency }} <br>
+                        {{ $t("about_this_list.scan_frequency") }}: {{ list.automated_scan_frequency }} <br>
                         <div v-if="list.automated_scan_frequency !== 'disabled'">
-                            {{ $t("domain_management.about_this_list.next_scheduled_scan") }}: {{ humanize_date(list.scheduled_next_scan) }} <br>
+                            {{ $t("about_this_list.next_scheduled_scan") }}: {{ humanize_date(list.scheduled_next_scan) }} <br>
                         </div>
                     </div>
                     <div v-if="!list.enable_scans">
-                        {{ $t("domain_management.about_this_list.scanning_disabled") }}
+                        {{ $t("about_this_list.scanning_disabled") }}
                     </div>
                 </template>
                 <span v-if="list.last_report_id">
                     <a :href="'/reports/' + list.last_report_id" target="_blank">
                         <span role="img" :aria-label="$t('icons.report')">📊</span>
-                        {{ $t("domain_management.about_this_list.latest_report") }}: {{ humanize_date(list.last_report_date) }}
+                        {{ $t("about_this_list.latest_report") }}: {{ humanize_date(list.last_report_date) }}
                     </a><br>
                 </span>
             </p>
             <br>
 
-            <h3>{{ $t("domain_management.domains.header") }}</h3>
-            <p v-html="$t('domain_management.domains.intro')"></p>
+            <h3>{{ $t("domains.header") }}</h3>
+            <p v-html="$t('domains.intro')"></p>
+
+            <template v-if="this.list.list_warnings.indexOf('WARNING_DOMAINS_IN_LIST_EXCEED_MAXIMUM_ALLOWED') > -1">
+                <div class="server-response-error">
+                    <span role="img" :aria-label="$t('icons.list_warning')">🚨</span>{{ $t("warnings.domains_exceed_maximum", [this.maximum_domains]) }}
+                </div>
+            </template>
             <br>
 
             <div v-if="!urls.length">
-                <button @click="start_bulk_add_new()">💖 {{ $t("domain_management.button_labels.add_domains") }}</button>
+                <button @click="start_bulk_add_new()">💖 {{ $t("button_labels.add_domains") }}</button>
             </div>
 
             <loading :loading="loading"></loading>
@@ -112,39 +120,39 @@
                 <li v-for="url in urls">
 
                     <template v-if="list.scan_type === 'mail'">
-                        <span v-if="url.has_mail_endpoint === true" :title="$t('domain_management.domains.eligeble_mail', [url.url])">
-                            <span role="img" :aria-label="$t('domain_management.domains.eligeble_mail', [url.url])">🌍</span>
+                        <span v-if="url.has_mail_endpoint === true" :title="$t('domains.eligeble_mail', [url.url])">
+                            <span role="img" :aria-label="$t('domains.eligeble_mail', [url.url])">🌍</span>
                             <!-- <a :href="'https://www.internet.nl/mail/' + url.url + '/'" target="_blank"></a> -->
                         </span>
-                        <span v-if="url.has_mail_endpoint === 'unknown'" :title="$t('domain_management.domains.unknown_eligeble_mail', [url.url])">
-                            <span role="img" :aria-label="$t('domain_management.domains.unknown_eligeble_mail', [url.url])">❓</span>
+                        <span v-if="url.has_mail_endpoint === 'unknown'" :title="$t('domains.unknown_eligeble_mail', [url.url])">
+                            <span role="img" :aria-label="$t('domains.unknown_eligeble_mail', [url.url])">❓</span>
                         </span>
-                        <span v-if="url.has_mail_endpoint === false" :title="$t('domain_management.domains.not_eligeble_mail', [url.url])">
-                            <span role="img" :aria-label="$t('domain_management.domains.not_eligeble_mail', [url.url])">🚫</span>
+                        <span v-if="url.has_mail_endpoint === false" :title="$t('domains.not_eligeble_mail', [url.url])">
+                            <span role="img" :aria-label="$t('domains.not_eligeble_mail', [url.url])">🚫</span>
                         </span>
                     </template>
 
                     <template v-if="list.scan_type === 'web'">
-                        <span v-if="url.has_web_endpoint === true" :title="$t('domain_management.domains.not_eligeble_web', [url.url])">
+                        <span v-if="url.has_web_endpoint === true" :title="$t('domains.not_eligeble_web', [url.url])">
                             <!-- <a :href="'https://www.internet.nl/site/' + url.url + '/'" target="_blank"></a> -->
-                            <span role="img" :aria-label="$t('domain_management.domains.not_eligeble_web', [url.url])">🌍</span>
+                            <span role="img" :aria-label="$t('domains.not_eligeble_web', [url.url])">🌍</span>
                         </span>
-                        <span v-if="url.has_web_endpoint === 'unknown'" :title="$t('domain_management.domains.unknown_eligeble_web', [url.url])">
-                            <span role="img" :aria-label="$t('domain_management.domains.unknown_eligeble_web', [url.url])">❓</span>
+                        <span v-if="url.has_web_endpoint === 'unknown'" :title="$t('domains.unknown_eligeble_web', [url.url])">
+                            <span role="img" :aria-label="$t('domains.unknown_eligeble_web', [url.url])">❓</span>
                         </span>
-                        <span v-if="url.has_web_endpoint === false" :title="$t('domain_management.domains.not_eligeble_web', [url.url])">
-                            <span role="img" :aria-label="$t('domain_management.domains.not_eligeble_web', [url.url])">🚫</span>
+                        <span v-if="url.has_web_endpoint === false" :title="$t('domains.not_eligeble_web', [url.url])">
+                            <span role="img" :aria-label="$t('domains.not_eligeble_web', [url.url])">🚫</span>
                         </span>
                     </template>
 
 
-                    <button style="font-size: 12px;" v-if="url_edit !== '' + list.id + url.url" class="inline-edit" :title="$t('domain_management.domains.start_editing_url', [url.url])" @click="start_url_editing(list.id, url.url)" aria-expanded="false">
+                    <button style="font-size: 12px;" v-if="url_edit !== '' + list.id + url.url" class="inline-edit" :title="$t('domains.start_editing_url', [url.url])" @click="start_url_editing(list.id, url.url)" aria-expanded="false">
                         🖊
-                        <span class="visuallyhidden">{{ $t('domain_management.domains.start_editing_url', [url.url]) }}</span>
+                        <span class="visuallyhidden">{{ $t('domains.start_editing_url', [url.url]) }}</span>
                     </button>
-                    <button style="font-size: 12px;" v-if="url_edit === '' + list.id + url.url" class="inline-edit" :title="$t('domain_management.domains.cancel_editing_url', [url.url])" @click="cancel_edit_url(list.id, url.url)" aria-expanded="true">
+                    <button style="font-size: 12px;" v-if="url_edit === '' + list.id + url.url" class="inline-edit" :title="$t('domains.cancel_editing_url', [url.url])" @click="cancel_edit_url(list.id, url.url)" aria-expanded="true">
                         🖊
-                        <span class="visuallyhidden">{{ $t('domain_management.domains.cancel_editing_url', [url.url]) }}</span>
+                        <span class="visuallyhidden">{{ $t('domains.cancel_editing_url', [url.url]) }}</span>
                     </button>
 
                     <template v-if="url.subdomain">
@@ -156,30 +164,30 @@
 
                     <span class="inline-edit" v-if="url_is_edited(list.id, url.url)">
                             <input autofocus :placeholder="url.url" :value="url.url" :id="'' + list.id + url.url">
-                            <button @click="save_edit_url({'list_id': list.id,'url_id': url.id, 'new_url_string': get_url_edit_value()})" :title="$t('domain_management.domains.save_edited_url', [url.url])">
-                                {{ $t("domain_management.domains.button_labels.save") }}
-                                <span class="visuallyhidden">{{ $t('domain_management.domains.save_edited_url', [url.url]) }}</span>
+                            <button @click="save_edit_url({'list_id': list.id,'url_id': url.id, 'new_url_string': get_url_edit_value()})" :title="$t('domains.save_edited_url', [url.url])">
+                                {{ $t("domains.button_labels.save") }}
+                                <span class="visuallyhidden">{{ $t('domains.save_edited_url', [url.url]) }}</span>
                             </button>
-                            <button @click="cancel_edit_url()" :title="$t('domain_management.domains.cancel_editing_url', [url.url])">
-                                {{ $t("domain_management.domains.button_labels.cancel") }}
-                                <span class="visuallyhidden">{{ $t('domain_management.domains.cancel_editing_url', [url.url]) }}</span>
+                            <button @click="cancel_edit_url()" :title="$t('domains.cancel_editing_url', [url.url])">
+                                {{ $t("domains.button_labels.cancel") }}
+                                <span class="visuallyhidden">{{ $t('domains.cancel_editing_url', [url.url]) }}</span>
                             </button>
                             <!-- The remove is real, as it will only remove 1 items -->
-                            <button @click="remove_edit_url(list.id, url.id)"  :title="$t('domain_management.domains.delete_edited_url', [url.url])">
-                                {{ $t("domain_management.domains.button_labels.remove") }}
-                                <span class="visuallyhidden">{{ $t('domain_management.domains.delete_edited_url', [url.url]) }}</span>
+                            <button @click="remove_edit_url(list.id, url.id)"  :title="$t('domains.delete_edited_url', [url.url])">
+                                {{ $t("domains.button_labels.remove") }}
+                                <span class="visuallyhidden">{{ $t('domains.delete_edited_url', [url.url]) }}</span>
                             </button>
                     </span>
                 </li>
             </ul>
             <br>
-            <button v-if="urls.length" @click="toggle_view_csv()" value="load">📋 {{ $t("domain_management.button_labels.view_csv") }}</button><br>
+            <button v-if="urls.length" @click="toggle_view_csv()" value="load">📋 {{ $t("button_labels.view_csv") }}</button><br>
             <textarea v-if="view_csv" class="view-csv" :value="csv_value"></textarea>
         </div>
 
         <!-- modal dialogs are below the content to make sure the tab order stays working. -->
         <modal v-if="show_list_settings" @close="cancel_editing_settings()">
-            <h1 slot="header">🖊 {{ $t("domain_management.edit_form.title") }}</h1>
+            <h1 slot="header">🖊 {{ $t("edit_form.title") }}</h1>
             <div slot="body">
 
                 <server-response :response="settings_update_response"></server-response>
@@ -210,18 +218,18 @@
 
             </div>
             <div slot="footer">
-                <button @click="cancel_editing_settings()">{{ $t("domain_management.edit_form.cancel") }}</button>
-                <button class="modal-default-button" @click="update_list_settings()">{{ $t("domain_management.edit_form.ok") }}</button>
+                <button @click="cancel_editing_settings()">{{ $t("edit_form.cancel") }}</button>
+                <button class="modal-default-button" @click="update_list_settings()">{{ $t("edit_form.ok") }}</button>
             </div>
         </modal>
 
         <modal v-if="show_deletion" @close="stop_deleting()">
-            <h1 slot="header">{{ $t("domain_management.delete_form.title") }}</h1>
+            <h1 slot="header">{{ $t("delete_form.title") }}</h1>
             <div slot="body">
 
                 <server-response :response="delete_response"></server-response>
 
-                <p class="dialog_warning">{{ $t("domain_management.delete_form.message") }}</p>
+                <p class="dialog_warning">{{ $t("delete_form.message") }}</p>
 
                 <label for="name">{{ $t("urllist.field_label_name") }}:</label><br>
                 {{ list.name }}<br>
@@ -241,62 +249,62 @@
 
             </div>
             <div slot="footer">
-                <button @click="stop_deleting()">{{ $t("domain_management.delete_form.cancel") }}</button>
-                <button class="modal-default-button" @click="confirm_deletion()">{{ $t("domain_management.delete_form.ok") }}</button>
+                <button @click="stop_deleting()">{{ $t("delete_form.cancel") }}</button>
+                <button class="modal-default-button" @click="confirm_deletion()">{{ $t("delete_form.ok") }}</button>
             </div>
         </modal>
 
         <modal v-if="show_scan_now" @close="stop_scan_now()">
-            <h1 slot="header">{{ $t("domain_management.scan_now_form.title") }}</h1>
+            <h1 slot="header">{{ $t("scan_now_form.title") }}</h1>
             <div slot="body">
 
                 <server-response :response="scan_now_server_response"></server-response>
 
-                <p v-html='$t("domain_management.scan_now_form.message")'></p>
+                <p v-html='$t("scan_now_form.message")'></p>
 
             </div>
             <div slot="footer">
-                <button @click="stop_scan_now()">{{ $t("domain_management.scan_now_form.cancel") }}</button>
+                <button @click="stop_scan_now()">{{ $t("scan_now_form.cancel") }}</button>
                 <button class="modal-default-button"
                         :disabled="scan_now_confirmed"
                         @click="confirm_scan_now()">
-                    <template v-if="!scan_now_confirmed">{{ $t("domain_management.scan_now_form.ok") }}</template>
-                    <template v-if="scan_now_confirmed">{{ $t("domain_management.scan_now_form.starting") }}</template>
+                    <template v-if="!scan_now_confirmed">{{ $t("scan_now_form.ok") }}</template>
+                    <template v-if="scan_now_confirmed">{{ $t("scan_now_form.starting") }}</template>
                 </button>
             </div>
         </modal>
 
         <modal v-if="show_bulk_add_new" @close="stop_bulk_add_new()">
-            <h1 slot="header">{{ $t("domain_management.bulk_add_form.title") }}</h1>
+            <h1 slot="header">{{ $t("bulk_add_form.title") }}</h1>
             <div slot="body">
 
                 <server-response :response="bulk_add_new_server_response"></server-response>
 
-                <p>{{ $t("domain_management.bulk_add_form.message") }}</p>
+                <p>{{ $t("bulk_add_form.message") }}</p>
 
                 <select2-tags-widget v-model="bulk_add_new_urls"></select2-tags-widget>
 
                 <div v-if="bulk_add_new_server_response">
                     <span v-if="bulk_add_new_server_response.success === true">
-                        {{ $t("domain_management.bulk_add_form.status") }}:
-                        {{ $t("domain_management.bulk_add_form.added_n_to_list", [bulk_add_new_server_response.data.added_to_list]) }}
+                        {{ $t("bulk_add_form.status") }}:
+                        {{ $t("bulk_add_form.added_n_to_list", [bulk_add_new_server_response.data.added_to_list]) }}
 
                         <span v-if="bulk_add_new_server_response.data.already_in_list">
-                            {{ $t("domain_management.bulk_add_form.ignored_n", [bulk_add_new_server_response.data.already_in_list]) }}<br>
+                            {{ $t("bulk_add_form.ignored_n", [bulk_add_new_server_response.data.already_in_list]) }}<br>
                         </span>
                         <br>
                         <span v-if="bulk_add_new_server_response.data.incorrect_urls.length">
-                            <br><b>{{ $t("domain_management.bulk_add_form.warning") }}</b><br>
-                            <span v-html='$t("domain_management.bulk_add_form.warning_message")'></span>
+                            <br><b>{{ $t("bulk_add_form.warning") }}</b><br>
+                            <span v-html='$t("bulk_add_form.warning_message")'></span>
                             {{ bulk_add_new_server_response.data.incorrect_urls.join(', ') }}<br>
                         </span>
                     </span>
                 </div>
                 <div v-if="!bulk_add_new_server_response.message">
-                    <p>{{ $t("domain_management.bulk_add_form.status") }}: {{ $t("domain_management.bulk_add_form.nothing_added") }}.</p>
+                    <p>{{ $t("bulk_add_form.status") }}: {{ $t("bulk_add_form.nothing_added") }}.</p>
                 </div>
                 <br>
-                <button class="modal-default-button" @click="bulk_add_new()">{{ $t("domain_management.bulk_add_form.ok") }}</button>
+                <button class="modal-default-button" @click="bulk_add_new()">{{ $t("bulk_add_form.ok") }}</button>
 
             </div>
             <div slot="footer">
@@ -311,182 +319,173 @@ Vue.component('managed-url-list', {
     i18n: { // `i18n` option, setup locale info for component
         messages: {
             en: {
-                domain_management: {
+
+                button_labels: {
+                    configure: 'Configure',
+                    add_domains: 'Add domains',
+                    scan_now: 'Scan now',
+                    scan_now_scanning: 'Scanning',
+                    scan_now_scanning_title: 'The scan now option is available only once a day, when no scan is running.',
+                    delete: 'Delete',
+                    view_csv: 'View .csv',
+                    timeout_for_24_hours: 'Max 1 scan/day',
+                    scanning_disabled: 'Scanning disabled',
+                },
+
+                about_this_list: {
+                    header: 'About this list',
+                    number_of_domains: "Number of domains",
+                    last_scan_started: 'Last scan started',
+                    still_running: 'still running',
+                    finished: 'finished',
+                    not_scanned_before: 'Not scanned before',
+                    type_of_scan_performed: 'Type of scan performed',
+                    scan_frequency: 'Scan frequency',
+                    next_scheduled_scan: 'Next scheduled scan',
+                    scanning_disabled: 'Scanning of this list is disabled.',
+                    latest_report: 'Latest report',
+                },
+
+                domains: {
+                    header: 'Domains',
+                    intro: "These domains will be included in the scan. Their eligibility for scanning is checked just " +
+                        "before requesting the scan, the information shown here may be outdated.",
+                    start_editing_url: 'Edit {0}.',
+                    cancel_editing_url: 'Cancel editing and store the original value: {0}',
+                    eligeble_mail: '{0} is eligeble for e-mail scans',
+                    unknown_eligeble_mail: 'Not yet known if {0} is scanable for mail',
+                    not_eligeble_mail: '{0} is not eligeble for e-mail scans. Will be checked again when starting a scan.',
+                    eligeble_web: '{0} is eligeble for web scans',
+                    unknown_eligeble_web: 'Not yet known if {0} is scannable for web',
+                    not_eligeble_web: '{0} is not eligeble for web scans. Will be checked again when starting a scan.',
+                    save_edited_url: 'Save changes, the change will be applied to {0}.',
+                    delete_edited_url: 'Delete {0} from this list.',
 
                     button_labels: {
-                        configure: 'Configure',
-                        add_domains: 'Add domains',
-                        scan_now: 'Scan now',
-                        scan_now_scanning: 'Scanning',
-                        scan_now_scanning_title: 'The scan now option is available only once a day, when no scan is running.',
-                        delete: 'Delete',
-                        view_csv: 'View .csv',
-                        timeout_for_24_hours: 'Max 1 scan/day',
-                        scanning_disabled: 'Scanning disabled',
-                    },
-
-
-
-
-
-
-                    about_this_list: {
-                        header: 'About this list',
-                        number_of_domains: "Number of domains",
-                        last_scan_started: 'Last scan started',
-                        still_running: 'still running',
-                        finished: 'finished',
-                        not_scanned_before: 'Not scanned before',
-                        type_of_scan_performed: 'Type of scan performed',
-                        scan_frequency: 'Scan frequency',
-                        next_scheduled_scan: 'Next scheduled scan',
-                        scanning_disabled: 'Scanning of this list is disabled.',
-                        latest_report: 'Latest report',
-                    },
-
-                    domains: {
-                        header: 'Domains',
-                        intro: "These domains will be included in the scan. Their eligibility for scanning is checked just " +
-                            "before requesting the scan, the information shown here may be outdated.",
-                        start_editing_url: 'Edit {0}.',
-                        cancel_editing_url: 'Cancel editing and store the original value: {0}',
-                        eligeble_mail: '{0} is eligeble for e-mail scans',
-                        unknown_eligeble_mail: 'Not yet known if {0} is scanable for mail',
-                        not_eligeble_mail: '{0} is not eligeble for e-mail scans. Will be checked again when starting a scan.',
-                        eligeble_web: '{0} is eligeble for web scans',
-                        unknown_eligeble_web: 'Not yet known if {0} is scannable for web',
-                        not_eligeble_web: '{0} is not eligeble for web scans. Will be checked again when starting a scan.',
-                        save_edited_url: 'Save changes, the change will be applied to {0}.',
-                        delete_edited_url: 'Delete {0} from this list.',
-
-                        button_labels: {
-                            save: 'Save',
-                            cancel: 'Cancel',
-                            remove: 'Remove',
-                        }
-                    },
-
-                    edit_form: {
-                        title: 'Edit list settings',
+                        save: 'Save',
                         cancel: 'Cancel',
-                        ok: 'Update'
-                    },
-
-                    delete_form: {
-                        title: 'Delete list',
-                        message: 'Are you sure you want to\n' +
-                            '                delete this list? Deleting this list cannot be undone.',
-                        cancel: 'No, take me back',
-                        ok: 'Yes, Delete'
-                    },
-
-                    scan_now_form: {
-                        title: 'Confirm to scan now',
-                        message: 'To start a scan now, please take the following in consideration: <br>' +
-                            'A scan can only be started once a day, and only when no scan is already running. Note that a scan cannot be cancelled.',
-                        cancel: 'Cancel',
-                        ok: 'Scan now',
-                        starting: 'Starting...',
-                    },
-
-                    bulk_add_form: {
-                        title: 'Bulk add domains',
-                        message: 'You can add many domains in one go. To do this, seperate each domain with a comma.',
-                        ok: 'Add the above domains to the list',
-                        status: 'Status',
-                        nothing_added: 'nothing added yet.',
-                        added_n_to_list: 'Added {0} domains to this list.',
-                        ignored_n: 'Additionally, {0} domains have been\n' +
-                            '                            ignored as they are already in this list.',
-                        warning: 'Warning!',
-                        warning_message: 'Some domains where not added because they are in an incorrect format. <br>\n' +
-                            '                            The following domains where not added',
+                        remove: 'Remove',
                     }
-
                 },
+
+                warnings: {
+                    domains_exceed_maximum: 'The amount of domains in this list exceeds the maximum of {0}. Scanning is paused.',
+                },
+
+                edit_form: {
+                    title: 'Edit list settings',
+                    cancel: 'Cancel',
+                    ok: 'Update'
+                },
+
+                delete_form: {
+                    title: 'Delete list',
+                    message: 'Are you sure you want to\n' +
+                        '                delete this list? Deleting this list cannot be undone.',
+                    cancel: 'No, take me back',
+                    ok: 'Yes, Delete'
+                },
+
+                scan_now_form: {
+                    title: 'Confirm to scan now',
+                    message: 'To start a scan now, please take the following in consideration: <br>' +
+                        'A scan can only be started once a day, and only when no scan is already running. Note that a scan cannot be cancelled.',
+                    cancel: 'Cancel',
+                    ok: 'Scan now',
+                    starting: 'Starting...',
+                },
+
+                bulk_add_form: {
+                    title: 'Bulk add domains',
+                    message: 'You can add many domains in one go. To do this, seperate each domain with a comma.',
+                    ok: 'Add the above domains to the list',
+                    status: 'Status',
+                    nothing_added: 'nothing added yet.',
+                    added_n_to_list: 'Added {0} domains to this list.',
+                    ignored_n: 'Additionally, {0} domains have been\n' +
+                        '                            ignored as they are already in this list.',
+                    warning: 'Warning!',
+                    warning_message: 'Some domains where not added because they are in an incorrect format. <br>\n' +
+                        '                            The following domains where not added',
+                }
             },
             nl: {
-                domain_management: {
+                button_labels: {
+                    configure: 'Instellingen',
+                    add_domains: 'Domeinen toevoegen',
+                    scan_now: 'Nu scannen',
+                    scan_now_scanning: 'Aan het scannen',
+                    scan_now_scanning_title: 'Nu scannen is alleen beschikbaar als er geen scan draait, en kan maximaal 1x per dag worden aangeroepen.',
+                    delete: 'Verwijder',
+                    view_csv: 'Bekijk.csv',
+                    timeout_for_24_hours: 'Max 1 scan/dag',
+                    scanning_disabled: 'Scans uitgeschakeld',
+                },
 
+                about_this_list: {
+                    header: 'Over deze lijst',
+                    number_of_domains: "Aantal domeinen",
+                    last_scan_started: 'Laatste scan gestart op',
+                    still_running: 'loopt nog',
+                    finished: 'afgerond',
+                    not_scanned_before: 'Niet eerder gescand',
+                    type_of_scan_performed: 'Soort scan',
+                    scan_frequency: 'Scan frequentie',
+                    next_scheduled_scan: 'Volgende ingeplande scan',
+                    scanning_disabled: 'Scannen van deze lijst is uitgeschakeld.',
+                    latest_report: 'Meest actuele rapportage',
+                },
+
+                domains: {
+                    header: 'Domeinen',
+                    eligeble_mail: 'E-mail scannen is mogelijk',
+                    unknown_eligeble_mail: 'Onbekend of E-mail scannen mogelijk is',
+                    not_eligeble_mail: 'Kan geen E-mail scan uitvoeren (wordt opnieuw gecheckt bij het starten van de scan)',
+                    eligeble_web: 'Web scan is mogelijk',
+                    unknown_eligeble_web: 'Niet bekend of het mogelijk is een web scan uit te voeren',
+                    not_eligeble_web: 'Web scan kan niet worden uitgevoerd. Dit wordt opnieuw gecheckt bij het starten van de scan.',
 
                     button_labels: {
-                        configure: 'Instellingen',
-                        add_domains: 'Domeinen toevoegen',
-                        scan_now: 'Nu scannen',
-                        scan_now_scanning: 'Aan het scannen',
-                        scan_now_scanning_title: 'Nu scannen is alleen beschikbaar als er geen scan draait, en kan maximaal 1x per dag worden aangeroepen.',
-                        delete: 'Verwijder',
-                        view_csv: 'Bekijk.csv',
-                        timeout_for_24_hours: 'Max 1 scan/dag',
-                        scanning_disabled: 'Scans uitgeschakeld',
-                    },
-
-                    about_this_list: {
-                        header: 'Over deze lijst',
-                        number_of_domains: "Aantal domeinen",
-                        last_scan_started: 'Laatste scan gestart op',
-                        still_running: 'loopt nog',
-                        finished: 'afgerond',
-                        not_scanned_before: 'Niet eerder gescand',
-                        type_of_scan_performed: 'Soort scan',
-                        scan_frequency: 'Scan frequentie',
-                        next_scheduled_scan: 'Volgende ingeplande scan',
-                        scanning_disabled: 'Scannen van deze lijst is uitgeschakeld.',
-                        latest_report: 'Meest actuele rapportage',
-                    },
-
-                    domains: {
-                        header: 'Domeinen',
-                        eligeble_mail: 'E-mail scannen is mogelijk',
-                        unknown_eligeble_mail: 'Onbekend of E-mail scannen mogelijk is',
-                        not_eligeble_mail: 'Kan geen E-mail scan uitvoeren (wordt opnieuw gecheckt bij het starten van de scan)',
-                        eligeble_web: 'Web scan is mogelijk',
-                        unknown_eligeble_web: 'Niet bekend of het mogelijk is een web scan uit te voeren',
-                        not_eligeble_web: 'Web scan kan niet worden uitgevoerd. Dit wordt opnieuw gecheckt bij het starten van de scan.',
-
-                        button_labels: {
-                            save: 'Opslaan',
-                            cancel: 'Annuleren',
-                            remove: 'Verwijderen',
-                        }
-                    },
-
-                    edit_form: {
-                        title: 'Lijst instellingen',
-                        cancel: 'Annuleer',
-                        ok: 'Opslaan'
-                    },
-
-                    delete_form: {
-                        title: 'Lijst verwijderen',
-                        message: 'Weet u zeker dat u deze lijst wil verwijderen? Dit kan niet ongedaan worden gemaakt.',
-                        cancel: 'Nee, niet verwijderen',
-                        ok: 'Ja, verwijder'
-                    },
-
-                    scan_now_form: {
-                        title: 'Bevestig om opnieuw te scannen',
-                        message: 'Een scan die nu wordt gestart heeft de volgende eigenschappen: <br>' +
-                            'Een handmatige scan kan eens per dag worden gestart, mits er nog geen scan wordt uitgevoerd op deze lijst.',
-                        cancel: 'Annuleer',
-                        ok: 'Nu scannen',
-                        starting: 'Opstarten...',
-                    },
-
-                    bulk_add_form: {
-                        title: 'Toevoegen van domeinen',
-                        message: 'Voeg hieronder een of meerdere domeinen toe, gescheiden door een komma.',
-                        ok: 'Voeg bovenstaande domeinen toe aan de lijst',
-                        status: 'Status',
-                        nothing_added: 'nog niets toegevoegd.',
-                        added_n_to_list: 'Er zijn {0} domeinen aan de lijst toegevoegd.',
-                        ignored_n: 'Verder zijn er {0} domeinen genegeerd omdat ze al in de lijst zaten.',
-                        warning: 'Waarschuwing!',
-                        warning_message: 'Sommige domeinen zijn niet in een geldig formaat. Controleer de volgende domeinen en' +
-                            'probeer het opnieuw:',
+                        save: 'Opslaan',
+                        cancel: 'Annuleren',
+                        remove: 'Verwijderen',
                     }
-
                 },
+
+                edit_form: {
+                    title: 'Lijst instellingen',
+                    cancel: 'Annuleer',
+                    ok: 'Opslaan'
+                },
+
+                delete_form: {
+                    title: 'Lijst verwijderen',
+                    message: 'Weet u zeker dat u deze lijst wil verwijderen? Dit kan niet ongedaan worden gemaakt.',
+                    cancel: 'Nee, niet verwijderen',
+                    ok: 'Ja, verwijder'
+                },
+
+                scan_now_form: {
+                    title: 'Bevestig om opnieuw te scannen',
+                    message: 'Een scan die nu wordt gestart heeft de volgende eigenschappen: <br>' +
+                        'Een handmatige scan kan eens per dag worden gestart, mits er nog geen scan wordt uitgevoerd op deze lijst.',
+                    cancel: 'Annuleer',
+                    ok: 'Nu scannen',
+                    starting: 'Opstarten...',
+                },
+
+                bulk_add_form: {
+                    title: 'Toevoegen van domeinen',
+                    message: 'Voeg hieronder een of meerdere domeinen toe, gescheiden door een komma.',
+                    ok: 'Voeg bovenstaande domeinen toe aan de lijst',
+                    status: 'Status',
+                    nothing_added: 'nog niets toegevoegd.',
+                    added_n_to_list: 'Er zijn {0} domeinen aan de lijst toegevoegd.',
+                    ignored_n: 'Verder zijn er {0} domeinen genegeerd omdat ze al in de lijst zaten.',
+                    warning: 'Waarschuwing!',
+                    warning_message: 'Sommige domeinen zijn niet in een geldig formaat. Controleer de volgende domeinen en' +
+                        'probeer het opnieuw:',
+                }
             }
         }
     },
@@ -536,7 +535,10 @@ Vue.component('managed-url-list', {
         // Avoid mutating a prop directly since the value will be overwritten whenever the parent component re-renders.
         // Instead, use a data or computed property based on the prop's value. Prop being mutated: "list".
         // This is updated via a watch below. This allows for adding to the top of the list / real reactivity.
-        initial_list: Object,
+        initial_list: {type: Object, required: true},
+
+        // To emulate and fix warnings that happen server side:
+        maximum_domains: {type: Number, required: true, default: 10000},
     },
     watch: {
         initial_list: function(new_value){
@@ -743,18 +745,48 @@ Vue.component('managed-url-list', {
                         this.stop_scan_now();
                         this.scan_now_confirmed = false;
                     }
+
+                    if (server_response.error){
+                        this.scan_now_confirmed = false;
+                    }
                 }
             );
         }
     },
     computed: {
-       csv_value: function(){
-           urls = [];
-           this.urls.forEach(function(item) {
-               urls.push(item.url);
-           });
-           return urls.join(', ');
-       }
+        csv_value: function(){
+            urls = [];
+            this.urls.forEach(function(item) {
+                urls.push(item.url);
+            });
+            return urls.join(', ');
+        },
+        list_contains_warnings: function(){
+            // As long as we don't have the urls loaded, the warnings as they are stand.
+            console.log("checking warnings");
+            if (!this.urls.length){
+                return this.list.list_warnings.length > 0;
+            }
+
+            //
+            // The list warnings is not automatically updated. So we replicate the behavior here.
+            if (this.urls.length > this.maximum_domains){
+                console.log("adding WARNING_DOMAINS_IN_LIST_EXCEED_MAXIMUM_ALLOWED");
+                if (this.list.list_warnings.indexOf("WARNING_DOMAINS_IN_LIST_EXCEED_MAXIMUM_ALLOWED") === -1) {
+                    console.log("adding WARNING_DOMAINS_IN_LIST_EXCEED_MAXIMUM_ALLOWED really");
+                    this.list.list_warnings.push('WARNING_DOMAINS_IN_LIST_EXCEED_MAXIMUM_ALLOWED');
+                }
+            } else {
+                console.log("Removing WARNING_DOMAINS_IN_LIST_EXCEED_MAXIMUM_ALLOWED");
+                let index = this.list.list_warnings.indexOf("WARNING_DOMAINS_IN_LIST_EXCEED_MAXIMUM_ALLOWED");
+                if (index > -1) {
+                    console.log("Removing WARNING_DOMAINS_IN_LIST_EXCEED_MAXIMUM_ALLOWED really");
+                   this.list.list_warnings.splice("WARNING_DOMAINS_IN_LIST_EXCEED_MAXIMUM_ALLOWED", 1);
+                }
+            }
+
+            return this.list.list_warnings.length > 0;
+        }
     },
 });
 </script>

@@ -3,14 +3,17 @@ const messages = {
         icons: {
             list_closed: "List closed",
             list_opened: "List opened",
-            report: "report",
+
             settings: "settings",
-            bulk_add_new: "Add domains in bulk",
+
             scan: "scan",
             can_connect: "Can connect icon",
             unknown_connectivity: "Unknown connectivity icon",
             cannot_connect: "Can not connect",
-            remove_filter: 'Show categories'
+
+            bulk_add_new: "Add domains in bulk",
+            remove_filter: 'Show categories',
+            report: "report",
         },
         menu: {
             admin: 'Admin',
@@ -24,13 +27,7 @@ const messages = {
         loading: {
             loading: "Loading...",
         },
-        domains: {
-            add_new_list: 'Add new list',
-            button_close_label: 'Close',
-            button_create_list_label: 'Create List',
-        },
 
-        // field name translation
         urllist: {
             field_label_id: 'id',
             field_label_name: 'List Name',
@@ -41,12 +38,15 @@ const messages = {
             scan_type_web: 'web',
             scan_type_mail: 'mail',
             field_label_automated_scan_frequency: 'How often should the scan run?',
-            automated_scan_frequency_disabled: 'Disabled',
-            automated_scan_frequency_every_half_year: 'Every half year',
-            automated_scan_frequency_every_quarter: 'At the start of every quarter',
-            automated_scan_frequency_every_month: 'Every 1st day of the month',
-            automated_scan_frequency_twice_per_month: 'Twice per month',
+            automated_scan_frequency: {
+                disabled: 'Disabled',
+                every_half_year: 'Every half year',
+                every_quarter: 'At the start of every quarter',
+                every_month: 'Every 1st day of the month',
+                twice_per_month: 'Twice per month',
+            },
         },
+
         report: {
             mail: 'E-Mail',
             web: 'Web',
@@ -543,41 +543,9 @@ const messages = {
 
         },
 
-        domain_management: {
-            title: "Domains",
-            intro: "Manage lists with domains",
-            bulk_upload_link: "Upload large amount of data by using the Bulk Address uploader, here.",
-
-            icon_legend: {
-                title: "Legend of used icons",
-                intro: "The domains in the lists below will be included in each scan. Before a scan is performed, the eligibility of the " +
-                    "service is checked. This check is always performed for the scan. To give an insight in how connected" +
-                    "these services are, the last known state is presented as the first icon.",
-                can_connect: "Can connect to this service, will (probably) be scanned.",
-                unknown_connectivity: "Unknown if this service is available, will be scanned if available.",
-                cannot_connect: "Service not available, will (probably) not be scanned."
-            },
-        }
 
     },
     nl: {
-        domain_management: {
-            title: "Domeinen",
-            intro: "Beheer lijsten met domeinen",
-            bulk_upload_link: "Een groot aantal domeinen kan worden geüpload met de Bulk Addressen Uploader, hier.",
-
-            icon_legend: {
-                title: "Legenda van gebruikte pictogrammen",
-                intro: "De domeinen in de lijsten hieronder worden gebruikt bij iedere scan. Voordat een scan is uitgevoerd " +
-                    "wordt per domein gekeken of het domein aan de voorwaarden voldoet om gescand te worden. In de lijst " +
-                    "hieronder wordt daarvan een beeld gegeven, echter kan dat beeld verouderd zijn: dit wordt ververst " +
-                    "voor iedere scan.",
-                can_connect: "Deze dienst is bereikbaar en wordt (waarschijnlijk) gescanned.",
-                unknown_connectivity: "Niet bekend of deze dienst beschikbaar is, dit wordt later gecontroleerd.",
-                cannot_connect: "Deze dienst is niet beschikbaar, en wordt (waarschijnlijk) niet gescand."
-            },
-
-        },
 
         menu: {
             admin: 'Beheer',
@@ -592,15 +560,7 @@ const messages = {
         loading: {
             loading: "Laden...",
         },
-        domains: {
-            add_new_list: 'Lijst toevoegen',
-            button_close_label: 'Sluiten',
-            button_create_list_label: 'Maak deze lijst',
-        },
 
-
-
-        // field name translation
         urllist: {
             field_label_id: 'id',
             field_label_name: 'Lijst naam',
@@ -611,12 +571,15 @@ const messages = {
             scan_type_web: 'Website en webadres',
             scan_type_mail: 'E-Mail',
             field_label_automated_scan_frequency: 'Moet deze scan vaker worden uitgevoerd?',
-            automated_scan_frequency_disabled: 'Nee, niet automatisch scannen',
-            automated_scan_frequency_every_half_year: 'Ja, aan het begin van elk half jaar',
-            automated_scan_frequency_every_quarter: 'Ja, aan het begin van elk kwartaal',
-            automated_scan_frequency_every_month: 'Ja, aan het begin van elke maand',
-            automated_scan_frequency_twice_per_month: 'Ja, om de twee weken vanaf de 1e van de maand',
+            automated_scan_frequency: {
+                disabled: 'Nee, niet automatisch scannen',
+                every_half_year: 'Ja, aan het begin van elk half jaar',
+                every_quarter: 'Ja, aan het begin van elk kwartaal',
+                every_month: 'Ja, aan het begin van elke maand',
+                twice_per_month: 'Ja, om de twee weken vanaf de 1e van de maand',
+            },
         },
+
         report: {
             mail: 'E-Mail',
             web: 'Web',

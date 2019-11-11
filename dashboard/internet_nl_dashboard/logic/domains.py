@@ -2,6 +2,7 @@ import logging
 from typing import Any, Dict, List, Tuple
 
 import tldextract
+from constance import config
 from django.db.models import Count, Prefetch
 from django.utils import timezone
 from websecmap.organizations.models import Url
@@ -83,13 +84,19 @@ def alter_url_in_urllist(account, data) -> Dict[str, Any]:
 
 
 def scan_now(account, user_input) -> Dict[str, Any]:
-    urllist = UrlList.objects.all().filter(account=account, id=user_input.get('id', -1), is_deleted=False).first()
+    urllist = UrlList.objects.all().filter(
+        account=account, id=user_input.get('id', -1), is_deleted=False).annotate(num_urls=Count('urls')).first()
 
     if not urllist:
         return operation_response(error=True, message="List could not be found.")
 
     if not urllist.is_scan_now_available():
         return operation_response(error=True, message="Not all conditions for initiating a scan are met.")
+
+    # make sure there are no errors on this list:
+    max_urls = config.DASHBOARD_MAXIMUM_DOMAINS_PER_LIST
+    if urllist.num_urls > max_urls:
+        return operation_response(error=True, message=f"Cannot scan: Amount of urls exceeds the maximum of {max_urls}.")
 
     # Make sure the fernet key is working fine, you are on the correct queue (-Q storage) and that the correct API
     # version is used.
@@ -309,9 +316,9 @@ def rename_list(account: Account, list_id: int, new_name: str) -> bool:
     return True
 
 
-def get_urllists_from_account(account: Account) -> List:
+def get_urllists_from_account(account: Account) -> Dict:
     """
-    These are lists with some metadata. The metadata is used to give an indication how many urls etc (todo) are
+    These are lists with some metadata. The metadata is used to give an indication how many urls etc (#52) are
     included. Note that this does not return the entire set of urls, given that URLS may be in the thousands.
     A few times a thousand urls will load slowly, which is detrimental to the user experience.
 
@@ -340,10 +347,19 @@ def get_urllists_from_account(account: Account) -> List:
         is_deleted=False
     ).annotate(num_urls=Count('urls')).order_by('name').prefetch_related(last_scan_prefetch, last_report_prefetch)
 
-    response = []
+    # this will create a warning if the number of domains in the list > max_domains
+    # This is placed outside the loop to save a database query per time this is needed.
+    max_domains = config.DASHBOARD_MAXIMUM_DOMAINS_PER_LIST
+
+    url_lists = []
     # Not needed to check the contest of the list. If it's empty, then there is just an empty list returned.
     for urllist in urllists:
-        response.append({
+
+        list_warnings = []
+        if urllist.num_urls > max_domains:
+            list_warnings.append('WARNING_DOMAINS_IN_LIST_EXCEED_MAXIMUM_ALLOWED')
+
+        url_lists.append({
             'id': urllist.id,
             'name': urllist.name,
             'num_urls': urllist.num_urls,
@@ -357,9 +373,10 @@ def get_urllists_from_account(account: Account) -> List:
             'scan_now_available': urllist.is_scan_now_available(),
             'last_report_id': None if not len(urllist.last_report) else urllist.last_report[0].id,
             'last_report_date': None if not len(urllist.last_report) else urllist.last_report[0].at_when,
+            'list_warnings': list_warnings
         })
 
-    return response
+    return {'lists': url_lists, 'maximum_domains_per_list': max_domains}
 
 
 def get_urllist_content(account: Account, urllist_id: int) -> dict:

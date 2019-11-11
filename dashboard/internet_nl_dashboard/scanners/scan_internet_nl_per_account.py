@@ -2,6 +2,8 @@ import logging
 from typing import List
 
 from celery import Task, group
+from constance import config
+from django.db.models import Count
 from websecmap.organizations.models import Url
 from websecmap.scanners.models import InternetNLScan
 from websecmap.scanners.scanner import add_model_filter
@@ -52,11 +54,22 @@ def compose_task(
 
     tasks: List[Task] = []
 
+    # Do not scan lists that exceed the maximum number of domains:
+    max_urls = config.DASHBOARD_MAXIMUM_DOMAINS_PER_LIST
+
     for account in accounts:
 
-        urllists = UrlList.objects.all().filter(account=account, enable_scans=True, is_deleted=False)
+        urllists = UrlList.objects.all().filter(
+            account=account, enable_scans=True, is_deleted=False).annotate(num_urls=Count('urls'))
+
         urllists = add_model_filter(urllists, **kwargs)
         for urllist in urllists:
+
+            # model_filters may circumvent the restriction we set, therefore we check it this way.
+            # (A filter might still overwrite this?)
+            if urllist.num_urls > max_urls:
+                continue
+
             tasks.append(create_dashboard_scan_tasks(urllist))
 
     return group(tasks)
