@@ -5,14 +5,14 @@
             <a :name="list.id"></a>
             <h2>
                 <button v-if="!is_opened" @click="open_list()" aria-expanded="false">
-                    <span role="img" v-if="list_contains_warnings" :aria-label="$t('icons.list_warning')">🚨</span>
+                    <span role="img" v-if="list_contains_warnings" :aria-label="$t('icons.list_warning')">⚠️</span>
                     <span role="img" :aria-label="$t('icons.list_closed')">📘</span>
                     {{ list.name }}
                 </button>
             </h2>
             <h2>
                 <button v-if="is_opened" @click="close_list()" aria-expanded="true">
-                    <span role="img" v-if="list_contains_warnings" :aria-label="$t('icons.list_warning')">🚨️</span>
+                    <span role="img" v-if="list_contains_warnings" :aria-label="$t('icons.list_warning')">⚠️</span>
                     <span role="img" :aria-label="$t('icons.list_opened')">📖</span>
                     {{ list.name }}
                 </button>
@@ -105,7 +105,7 @@
 
             <template v-if="this.list.list_warnings.indexOf('WARNING_DOMAINS_IN_LIST_EXCEED_MAXIMUM_ALLOWED') > -1">
                 <div class="server-response-error">
-                    <span role="img" :aria-label="$t('icons.list_warning')">🚨</span>{{ $t("warnings.domains_exceed_maximum", [this.maximum_domains]) }}
+                    <span role="img" :aria-label="$t('icons.list_warning')">⚠️</span>{{ $t("warnings.domains_exceed_maximum", [this.maximum_domains]) }}
                 </div>
             </template>
             <br>
