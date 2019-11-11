@@ -444,10 +444,27 @@ CONSTANCE_BACKEND = 'constance.backends.database.DatabaseBackend'
 CONSTANCE_CONFIG = {
     'SCAN_AT_ALL': (
         True,
-        'This quickly enables or disabled all scans. Note that scans in the scan queue will still be processed.', bool),
+        'This quickly enables or disabled all scans. Note that scans in the scan queue will still be processed.',
+        bool
+    ),
+    'DASHBOARD_MAXIMUM_DOMAINS_PER_SPREADSHEET': (
+        10000,
+        'The maximum amount of domains that can be imported via a spreadsheet at one time.',
+        int
+    ),
+    'DASHBOARD_MAXIMUM_DOMAINS_PER_LIST': (
+        # The average list is about 300. 90DEV is 600. One exception of 13.000.
+        10000,
+        'The maximum amount of domains that can be in a list. There will be no crash when somebody imports more '
+        'via a spreadsheet: it will be added but the list will refuse to scan and show a warning.',
+        int
+    ),
 }
 
-CONSTANCE_CONFIG_FIELDSETS: Dict[str, Tuple[str]] = OrderedDict()
+CONSTANCE_CONFIG_FIELDSETS: Dict[str, Tuple[str, ...]] = OrderedDict(
+    {'DASHBOARD': ('DASHBOARD_MAXIMUM_DOMAINS_PER_SPREADSHEET', 'DASHBOARD_MAXIMUM_DOMAINS_PER_LIST')}
+)
+
 
 # the try-except makes sure autofix doesn't move the import to the top of the file.
 # Loaded here, otherwise: django.core.exceptions.AppRegistryNotReady: Apps aren't loaded yet.
@@ -468,6 +485,7 @@ JET_SIDE_MENU_ITEMS = [
 
     {'label': _('📊 Dashboard'), 'items': [
         {'name': 'auth.user'},
+        {'name': 'constance.config'},
         {'name': 'internet_nl_dashboard.account'},
         {'name': 'internet_nl_dashboard.uploadlog'},
         {'name': 'internet_nl_dashboard.urllist'},
