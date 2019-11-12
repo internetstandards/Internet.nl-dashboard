@@ -1,6 +1,92 @@
 {% verbatim %}
+<style>
+    #report-template {
+        width: 100%;
+        min-height: 500px;
+    }
+
+    /* Use fixed headers, and search. If you scroll down the headers stay visible. Looks good, even better than aggrid.
+    Note that chrome has issues making thead and tr sticky. Therefore it is applied to td and th (because...). */
+    #report-template .sticky-table-container {
+        max-height: 80vh;
+        overflow-x: scroll;
+        overflow-y: scroll;
+    }
+
+    #report-template th {
+        background-color: white;
+    }
+
+    #report-template th.sticky-header {
+        position: sticky;
+        top: 0px;
+
+    }
+
+    #report-template td.sticky_search {
+        position: sticky;
+        top: 206px;
+
+        /* 100% background is needed to not mix content: this content is on top. */
+        background-color: white;
+    }
+
+    #report-template tr.result_row {
+        /* For testing purposes. */
+        /*height: 200px;*/
+    }
+
+
+    /* https://css-tricks.com/rotated-table-column-headers/*/
+    /* It's not possible to dynamically resize the height of the TH or th container :( */
+    div.rotate {
+        white-space: nowrap;
+        vertical-align: bottom;
+        margin-top: 160px;
+    }
+
+    div.rotate {
+      transform:
+        rotate(315deg);
+      width: 32px;  /*Fits the 100% value too.*/
+    }
+    div.rotate > span {
+        padding: 5px 10px;
+        z-index: 1000;
+    }
+
+    /* Why emulate bootstrap? */
+    .table {
+        width: 100%;
+        max-width: 100%;
+        margin-bottom: 1rem;
+        background-color: transparent;
+    }
+
+    .table-striped tbody tr:nth-of-type(2n+1) {
+        background-color: rgba(0,0,0,.05);
+    }
+
+    .table td, .table th {
+        padding: .75rem;
+        vertical-align: top;
+        border-top: 1px solid #dee2e6;
+    }
+
+    .direct_link_to_report{
+        font-size: 0.8em;
+    }
+
+    .table .summaryrow {
+        font-size: 0.8em;
+    }
+        /*
+
+    */
+</style>
+
 <template type="x-template" id="report_template">
-    <div style="width: 100%; min-height: 500px;">
+    <div id="report-template">
         <div class="block fullwidth">
             <h1>{{ $t("report.header.title") }}</h1>
             <p>{{ $t("report.header.intro") }}</p>
@@ -490,17 +576,15 @@
                 <a class="anchor" name="report"></a>
                 <p>{{ $t("report.report.intro") }}</p>
 
-                <div style="overflow-x: scroll; overflow-y: hidden;">
+                <div class="sticky-table-container">
                     <table class="table table-striped">
-                        <thead>
+                        <thead class="sticky_labels">
 
-                            <tr>
-                                <th style="width: 75px; min-width: 75px; border: 0"></th>
-                                <th style="width: 225px; min-width: 225px; border: 0">
-                                    &nbsp;
-                                </th>
-                                <th style="border: 0" class="rotate" v-for="category in relevant_categories_based_on_settings">
-                                    <div>
+                            <tr class="sticky_labels">
+                                <th style="width: 75px; min-width: 75px; border: 0" class="sticky-header"></th>
+                                <th style="width: 225px; min-width: 225px; border: 0" class="sticky-header"></th>
+                                <th style="border: 0" class="sticky-header" v-for="category in relevant_categories_based_on_settings">
+                                    <div class="rotate">
                                         <span @click="select_category(category)">{{ $t("report." + category) }}</span>
                                     </div>
                                 </th>
@@ -523,20 +607,20 @@
 
                                 <!-- Zoom buttons for accessibility -->
                                 <tr class="summaryrow">
-                                    <td colspan="2">
+                                    <td colspan="2" class="sticky_search">
                                         <label class="visuallyhidden" for="url_filter">{{ $t('report.report.url_filter') }}</label>
                                         <input v-if="selected_report" type="text" v-model="url_filter" id="url_filter" :placeholder="$t('report.report.url_filter')">
                                         <p class="visuallyhidden">{{ $t('report.report.zoom.explanation') }}</p>
                                     </td>
                                     <template v-if="['web', 'mail'].includes(selected_category)">
-                                        <td v-for="category_name in relevant_categories_based_on_settings">
+                                        <td v-for="category_name in relevant_categories_based_on_settings" class="sticky_search">
                                             <button @click="select_category(category_name)">{{ $t("report.report.zoom.buttons.zoom") }}
                                             <span class="visuallyhidden">{{ $t("report.report.zoom.buttons.zoom_in_on", [$t("report." + category_name)]) }}</span>
                                             </button>
                                         </td>
                                     </template>
                                     <template v-if="!['web', 'mail'].includes(selected_category)">
-                                        <td :colspan="relevant_categories_based_on_settings.length" style="text-align: center">
+                                        <td :colspan="relevant_categories_based_on_settings.length" style="text-align: center" class="sticky_search">
                                         {{ $t("report.report.zoom.zoomed_in_on") }} {{ $t("report." + selected_category) }}.
                                             <button @click="select_category(selected_report.urllist_scan_type)">
                                                 <span role="img" :aria-label="$t('icons.remove_filter')">❌</span> {{ $t("report.report.zoom.buttons.remove_zoom") }}
@@ -554,7 +638,7 @@
 
                             <template v-if="filtered_urls.length">
 
-                                <tr v-for="url in filtered_urls">
+                                <tr v-for="url in filtered_urls" class="result_row">
                                     <template v-if="!url.endpoints.length">
                                         <td>
                                             -
