@@ -1,5 +1,8 @@
 {% verbatim %}
 <style>
+    /*
+    Todo: sticky columns. (and perhaps fewer data in https? or wider columns?)
+    */
     #report-template {
         width: 100%;
         min-height: 500px;
@@ -33,7 +36,7 @@
 
     #report-template tr.result_row {
         /* For testing purposes. */
-        /*height: 200px;*/
+        /* height: 200px; */
     }
 
 
@@ -80,6 +83,60 @@
     .table .summaryrow {
         font-size: 0.8em;
     }
+
+
+    #report-template .testresultcell span{
+        background-size: 1.125em 1.125em;
+        background-repeat: no-repeat;
+        /**
+        The reason we're not using padding-left 1.5em is that we want the results to be copy-pasteable.
+        So there is invisible text on the icon that can be copied.
+        */
+        width: 20px;
+        height: 20px;
+        display: block;
+        color: transparent;
+    }
+
+    #report-template .testresultcell span span {
+        font-size: 1px;
+    }
+
+    /**
+     Sortable Tables
+     https://vuejs.org/v2/examples/grid-component.html
+    */
+
+    .arrow {
+        transform: rotate(-315deg);
+        display: inline-block;
+        vertical-align: middle;
+        width: 0;
+        height: 0;
+        margin-left: 5px;
+        opacity: 0.66;
+        padding: 0px 0px !important;
+    }
+
+    .arrow.asc {
+        border-left: 4px solid transparent;
+        border-right: 4px solid transparent;
+        border-bottom: 4px solid #00a0c6;
+    }
+
+    .arrow.dsc {
+        border-left: 4px solid transparent;
+        border-right: 4px solid transparent;
+        border-top: 4px solid #00a0c6;
+    }
+
+    .arrow.unknown {
+        border-left: 4px solid #00a0c6;
+        border-right: 4px solid #00a0c6;
+        border-top: 4px solid #00a0c6;
+    }
+
+
         /*
 
     */
@@ -581,11 +638,22 @@
                         <thead class="sticky_labels">
 
                             <tr class="sticky_labels">
-                                <th style="width: 75px; min-width: 75px; border: 0" class="sticky-header"></th>
-                                <th style="width: 225px; min-width: 225px; border: 0" class="sticky-header"></th>
+                                <th style="width: 75px; min-width: 75px; border: 0" class="sticky-header">
+                                    <div class="rotate">
+                                        <span class="arrow" :class="sortOrders['score'] === -1 ? 'dsc' : (sortOrders['score'] === 1 ? 'asc' : 'unknown')"></span>
+                                        <span @click="sortBy('score')">{{ $t("score") }}</span>
+                                    </div>
+                                </th>
+                                <th style="width: 225px; min-width: 225px; border: 0" class="sticky-header">
+                                    <div class="rotate">
+                                        <span class="arrow" :class="sortOrders['url'] === -1 ? 'dsc' : (sortOrders['url'] === 1 ? 'asc' : 'unknown')"></span>
+                                        <span @click="sortBy('url')">{{ $t("domain") }}</span>
+                                    </div>
+                                </th>
                                 <th style="border: 0" class="sticky-header" v-for="category in relevant_categories_based_on_settings">
                                     <div class="rotate">
-                                        <span @click="select_category(category)">{{ $t("report." + category) }}</span>
+                                        <span class="arrow" :class="sortOrders[category] === -1 ? 'dsc' : (sortOrders[category] === 1 ? 'asc' : 'unknown')"></span>
+                                        <span @click="sortBy(category)">{{ $t("report." + category) }}</span>
                                     </div>
                                 </th>
                             </tr>
@@ -662,14 +730,14 @@
                                                      here is shown as optional, or info if failed. We can also add a field for baseline NL government then. -->
                                                     <template v-if="url.endpoints[0].ratings_by_type[category_name].ok < 1">
                                                         <span v-if="category_name !== 'internet_nl_web_appsecpriv'" class="category_failed">
-                                                            {{ $t('report.' + category_name + '_verdict_bad') }}
+                                                            <span>{{ $t('report.' + category_name + '_verdict_bad') }}</span>
                                                         </span>
                                                         <span v-if="category_name === 'internet_nl_web_appsecpriv'" class="category_warning">
-                                                            {{ $t('report.' + category_name + '_verdict_bad') }}
+                                                            <span>{{ $t('report.' + category_name + '_verdict_bad') }}</span>
                                                         </span>
                                                     </template>
                                                     <span class="category_passed" v-if="url.endpoints[0].ratings_by_type[category_name].ok > 0">
-                                                        {{ $t('report.' + category_name + '_verdict_good') }}
+                                                        <span>{{ $t('report.' + category_name + '_verdict_good') }}</span>
                                                     </span>
                                                 </template>
                                                 <span class="" v-if="url.endpoints[0].ratings_by_type[category_name] === undefined">
@@ -680,28 +748,28 @@
 
                                                 <template v-if="category_name in url.endpoints[0].ratings_by_type">
                                                     <span class="not_applicable" v-if="url.endpoints[0].ratings_by_type[category_name].not_applicable > 0">
-                                                        {{ $t("report.report.results.not_applicable") }}
+                                                        <span>{{ $t("report.report.results.not_applicable") }}</span>
                                                     </span>
                                                     <span class="not_testable" v-if="url.endpoints[0].ratings_by_type[category_name].not_testable > 0">
-                                                        {{ $t("report.report.results.not_testable") }}
+                                                        <span>{{ $t("report.report.results.not_testable") }}</span>
                                                     </span>
                                                     <span class="failed" v-if="url.endpoints[0].ratings_by_type[category_name].high > 0">
-                                                        {{ $t("report.report.results.failed") }} {{ $t('report.' + category_name + '_verdict_bad') }}
+                                                        <span>{{ $t("report.report.results.failed") }} {{ $t('report.' + category_name + '_verdict_bad') }}</span>
                                                     </span>
                                                     <span class="warning" v-if="url.endpoints[0].ratings_by_type[category_name].medium > 0">
-                                                        {{ $t("report.report.results.warning") }} {{ $t('report.' + category_name + '_verdict_bad') }}
+                                                        <span>{{ $t("report.report.results.warning") }} {{ $t('report.' + category_name + '_verdict_bad') }}</span>
                                                     </span>
                                                     <span class="info" v-if="url.endpoints[0].ratings_by_type[category_name].low > 0">
-                                                        {{ $t("report.report.results.info") }} {{ $t('report.' + category_name + '_verdict_bad') }}
+                                                        <span>{{ $t("report.report.results.info") }} {{ $t('report.' + category_name + '_verdict_bad') }}</span>
                                                     </span>
                                                     <span class="passed" v-if="url.endpoints[0].ratings_by_type[category_name].ok > 0
                                                     && !url.endpoints[0].ratings_by_type[category_name].not_applicable
                                                     && !url.endpoints[0].ratings_by_type[category_name].not_testable">
-                                                        {{ $t("report.report.results.passed") }} {{ $t('report.' + category_name + '_verdict_good') }}
+                                                        <span>{{ $t("report.report.results.passed") }} {{ $t('report.' + category_name + '_verdict_good') }}</span>
                                                     </span>
                                                 </template>
                                                 <span class="" v-if="url.endpoints[0].ratings_by_type[category_name] === undefined">
-                                                    {{ $t("report.report.results.unknown") }}
+                                                    <span>{{ $t("report.report.results.unknown") }}</span>
                                                 </span>
                                             </template>
                                         </td>
@@ -946,6 +1014,9 @@ vueReport = new Vue({
         compare_oldest_data: "",
         older_data_available: true,
 
+        // simple sorting a la bootstrapvue.
+        sortKey: 'url',
+        sortOrders: {'url': 1},
     },
     mounted: function(){
         this.color_scheme.incremental = this.generate_color_increments(100);
@@ -963,6 +1034,20 @@ vueReport = new Vue({
     methods: {
         load: function(report_id) {
             this.get_report_data(report_id);
+        },
+
+        sortBy: function (key) {
+            console.log(`Sorting by ${key}.`);
+            this.sortKey = key;
+
+            // dynamically populate the orders
+            if (!(key in this.sortOrders)){
+                console.log('autopopulating sortOrder');
+                this.sortOrders[key] = 1;
+            }
+
+            this.sortOrders[key] = this.sortOrders[key] * -1;
+            this.filtered_urls = this.order_urls(this.filtered_urls);
         },
 
         generate_color_increments: function(number){
@@ -1003,7 +1088,7 @@ vueReport = new Vue({
 
                 // sort urls alphabetically
                 // we'll probably just need a table control that does sorting, filtering and such instead of coding it ourselves.
-                this.filtered_urls = data[0].calculation.urls.sort(this.alphabet_sorting);
+                this.filtered_urls = this.order_urls(data[0].calculation.urls);
                 this.get_timeline();
                 this.is_loading = false;
 
@@ -1085,6 +1170,7 @@ vueReport = new Vue({
             if (!Object.keys(this.issue_filters).includes(field_name))
                         this.issue_filters[field_name] = {visible: false, show_dynamic_average: true, only_show_dynamic_average: false}
         },
+
         alphabet_sorting: function(a, b){
             // i already mis sorted()
             if (a.url < b.url) {
@@ -1095,6 +1181,7 @@ vueReport = new Vue({
             }
             return 0;
         },
+
         compare_with: function(id, compare_chart_id){
             fetch(`/data/report/get/${id}/`, {credentials: 'include'}).then(response => response.json()).then(report => {
 
@@ -1163,13 +1250,63 @@ vueReport = new Vue({
         filter_urls(keyword) {
             let urls = [];
 
-            this.original_urls.forEach(function(value) {
+            // keep the search order, use a correctly ordered set of original urls:
+            let tmp_urls = this.order_urls(this.original_urls);
+            tmp_urls.forEach(function(value) {
                 if (value.url.includes(keyword))
                     urls.push(value)
             });
+            this.filtered_urls = this.order_urls(urls);
 
-            this.filtered_urls = urls;
+        },
+        order_urls: function(data){
+            // todo: add sorting icons :)
+            // todo: transform this to a component too, move translations here.
+            // https://alligator.io/vuejs/grid-component/
+            let sortKey = this.sortKey;
+            if (!sortKey){
+                return data;
+            }
 
+            let order = this.sortOrders[sortKey] || 1;
+
+            // The ordering keys are in different places in the data. See websecmap for the structure of the data.
+            // So filter based on this structure.
+            if (sortKey === "url"){
+                data = data.slice().sort(function (a, b) {
+                    // for everything that is not the url name itself, is neatly tucked away.
+                    a = a[sortKey];
+                    b = b[sortKey];
+                    return (a === b ? 0 : a > b ? 1 : -1) * order
+                });
+
+                return data;
+            }
+            if (sortKey === "score"){
+                // todo: determine web or mail, split the scores etc, not very fast.
+                data = data.slice().sort(function (a, b) {
+                    // for everything that is not the url name itself, is neatly tucked away. Only filter on high? Or on what kind of structure?
+                    if (this.selected_category === 'mail'){
+                        a = parseInt(a.endpoints[0].ratings_by_type['internet_nl_mail_dashboard_overall_score'].explanation.split(" ")[0]);
+                        b = parseInt(b.endpoints[0].ratings_by_type['internet_nl_mail_dashboard_overall_score'].explanation.split(" ")[0]);
+                    } else {
+                        a = parseInt(a.endpoints[0].ratings_by_type['internet_nl_web_overall_score'].explanation.split(" ")[0]);
+                        b = parseInt(b.endpoints[0].ratings_by_type['internet_nl_web_overall_score'].explanation.split(" ")[0]);
+                    }
+                    return (a === b ? 0 : a > b ? 1 : -1) * order
+                });
+                return data;
+            }
+            data = data.slice().sort(function (a, b) {
+                // for everything that is not the url name itself, is neatly tucked away. Only filter on high? Or on what kind of structure?
+                let aref = a.endpoints[0].ratings_by_type[sortKey];
+                let bref = b.endpoints[0].ratings_by_type[sortKey];
+                a = `${aref.high} ${aref.medium} ${aref.low} ${aref.not_applicable}  ${aref.not_testable} ${aref.ok}`;
+                b = `${bref.high} ${bref.medium} ${bref.low} ${bref.not_applicable}  ${bref.not_testable} ${bref.ok}`;
+                return (a === b ? 0 : a > b ? 1 : -1) * order
+            });
+
+            return data;
         },
         get_timeline(){
             // selected_report.urllist_id contains the key to the timeline.

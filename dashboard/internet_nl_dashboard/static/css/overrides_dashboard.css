@@ -244,19 +244,6 @@ small {
     font-weight: bold;
 }
 
-.testresultcell span{
-    background-size: 1.125em 1.125em;
-    background-repeat: no-repeat;
-    /**
-    The reason we're not using padding-left 1.5em is that we want the results to be copy-pasteable.
-    So there is invisible text on the icon that can be copied.
-    */
-    width: 20px;
-    height: 20px;
-    display: block;
-    color: transparent;
-}
-
 /** Testresults in matrix style */
 .category_passed {
     background-image: url("/static/images/vendor/internet_nl/icon-circle-check.png");
