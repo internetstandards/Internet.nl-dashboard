@@ -449,20 +449,29 @@ CONSTANCE_CONFIG = {
     ),
     'DASHBOARD_MAXIMUM_DOMAINS_PER_SPREADSHEET': (
         10000,
-        'The maximum amount of domains that can be imported via a spreadsheet at one time.',
+        'The maximum amount of domains that can be imported via a spreadsheet at one time. '
+        'In normal use cases these limits will not be reached.',
+        int
+    ),
+    'DASHBOARD_MAXIMUM_LISTS_PER_SPREADSHEET': (
+        200,
+        'The maximum amount of lists that can be imported via a spreadsheet at one time. '
+        'In normal usec ases these limits will not be reached.',
         int
     ),
     'DASHBOARD_MAXIMUM_DOMAINS_PER_LIST': (
         # The average list is about 300. 90DEV is 600. One exception of 13.000.
         10000,
         'The maximum amount of domains that can be in a list. There will be no crash when somebody imports more '
-        'via a spreadsheet: it will be added but the list will refuse to scan and show a warning.',
+        'via a spreadsheet: it will be added but the list will refuse to scan and show a warning.'
+        'In normal use cases these limits will not be reached.',
         int
     ),
 }
 
 CONSTANCE_CONFIG_FIELDSETS: Dict[str, Tuple[str, ...]] = OrderedDict(
-    {'DASHBOARD': ('DASHBOARD_MAXIMUM_DOMAINS_PER_SPREADSHEET', 'DASHBOARD_MAXIMUM_DOMAINS_PER_LIST')}
+    {'DASHBOARD': ('DASHBOARD_MAXIMUM_DOMAINS_PER_LIST',
+                   'DASHBOARD_MAXIMUM_DOMAINS_PER_SPREADSHEET', 'DASHBOARD_MAXIMUM_LISTS_PER_SPREADSHEET')}
 )
 
 
