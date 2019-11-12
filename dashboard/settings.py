@@ -467,10 +467,21 @@ CONSTANCE_CONFIG = {
         'In normal use cases these limits will not be reached.',
         int
     ),
+    'DASHBOARD_API_URL_MAIL_SCANS': (
+        'https://batch.internet.nl/api/batch/v1.1/mail/',
+        'The API url for running internet.nl mail scans.',
+        str
+    ),
+    'DASHBOARD_API_URL_WEB_SCANS': (
+        'https://batch.internet.nl/api/batch/v1.1/web/',
+        'The API url for running internet.nl web scans.',
+        str
+    ),
 }
 
 CONSTANCE_CONFIG_FIELDSETS: Dict[str, Tuple[str, ...]] = OrderedDict(
-    {'DASHBOARD': ('DASHBOARD_MAXIMUM_DOMAINS_PER_LIST',
+    {'DASHBOARD': ('DASHBOARD_API_URL_MAIL_SCANS', 'DASHBOARD_API_URL_WEB_SCANS',
+                   'DASHBOARD_MAXIMUM_DOMAINS_PER_LIST',
                    'DASHBOARD_MAXIMUM_DOMAINS_PER_SPREADSHEET', 'DASHBOARD_MAXIMUM_LISTS_PER_SPREADSHEET')}
 )
 

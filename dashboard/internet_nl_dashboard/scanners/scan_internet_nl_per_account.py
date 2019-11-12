@@ -33,10 +33,6 @@ from dashboard.internet_nl_dashboard.models import Account, AccountInternetNLSca
 log = logging.getLogger(__name__)
 
 
-API_URL_MAIL = "https://batch.internet.nl/api/batch/v1.1/mail/"
-API_URL_WEB = "https://batch.internet.nl/api/batch/v1.1/web/"
-
-
 def compose_task(
     **kwargs
 ) -> Task:
@@ -97,13 +93,17 @@ def create_dashboard_scan_tasks(urllist):
 
 
 def create_dashboard_scan_task(account: Account, urllist: UrlList, save_as_scan_type: str, endpoint_type: str) -> Task:
+    # This is done here, because it will be re-initialized every function call instead of every reboot of the dashboard
+    # (as with contants on top in the module). This might not be as efficient, but it saves a django reboot.
+    api_url_mail = config.DASHBOARD_API_URL_MAIL_SCANS
+    api_url_web = config.DASHBOARD_API_URL_WEB_SCANS
 
     # The scan name is arbitrary. Add a lot of info to it so the scan can be tracked.
     # A UUID will be added during registering
     scan_name = "{'source': 'Internet.nl Dashboard', 'type': '%s', 'account': '%s', 'list': '%s'}" % (
         save_as_scan_type, account.name, urllist.name)
 
-    api_url = API_URL_WEB if save_as_scan_type == 'web' else API_URL_MAIL
+    api_url = api_url_web if save_as_scan_type == 'web' else api_url_mail
 
     return (
         # Should we only try to get the specifically needed dns_endpoint? At what volume we should / must?

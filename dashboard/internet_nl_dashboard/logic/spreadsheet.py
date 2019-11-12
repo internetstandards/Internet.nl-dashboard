@@ -26,9 +26,9 @@ from typing import Any, Dict, List
 import magic
 import pyexcel as p
 import pytz
+from constance import config
 from django.db import transaction
 from xlrd import XLRDError
-from constance import config
 
 from dashboard.internet_nl_dashboard.logic.domains import clean_urls, save_urllist_content_by_name
 from dashboard.internet_nl_dashboard.models import Account, DashboardUser, UploadLog
