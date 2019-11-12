@@ -1,5 +1,6 @@
 import logging
 
+from constance import config
 from django.conf import settings
 from django.contrib.auth.decorators import login_required
 from django.core.files.storage import FileSystemStorage
@@ -20,6 +21,8 @@ def upload(request) -> HttpResponse:
 
     response = render(request, 'internet_nl_dashboard/templates/internet_nl_dashboard/upload.html', {
         'menu_item_addressmanager': "current",
+        'max_lists': int(config.DASHBOARD_MAXIMUM_LISTS_PER_SPREADSHEET),
+        'max_urls':  int(config.DASHBOARD_MAXIMUM_DOMAINS_PER_SPREADSHEET)
     })
 
     return inject_default_language_cookie(request, response)
