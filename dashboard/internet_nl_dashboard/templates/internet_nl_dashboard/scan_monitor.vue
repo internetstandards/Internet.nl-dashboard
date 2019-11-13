@@ -7,8 +7,8 @@
 <template type="x-template" id="scan_monitor_template">
     <div style="width: 100%;">
         <div class="block fullwidth">
-            <h1>{{ $t("scan_monitor.title") }}</h1>
-            <p>{{ $t("scan_monitor.intro") }}</p>
+            <h1>{{ $t("title") }}</h1>
+            <p>{{ $t("intro") }}</p>
         </div>
 
         <div class="wrap">
@@ -16,15 +16,15 @@
                 <div class="wrapper">
                     <span v-if="scan.finished">✅</span>
                     <span v-if="!scan.finished"><img width="15" style="border-radius: 50%" src="/static/images/vendor/internet_nl/probe-animation.gif"></span>
-                    <b>{{ scan.type }} {{ $t("scan_monitor.id") }}{{ scan.id }}</b><br>
+                    <b>{{ scan.type }} {{ $t("id") }}{{ scan.id }}</b><br>
                     <br>
                     <template v-if="scan.finished">
                         <template v-if="scan.last_report_id">
-                            📊 <a :href="'/reports/' + scan.last_report_id">{{ $t("scan_monitor.open_report") }}</a><br>
+                            📊 <a :href="'/reports/' + scan.last_report_id">{{ $t("open_report") }}</a><br>
                             <br>
                         </template>
                         <template v-if="!scan.last_report_id">
-                            📊 {{ $t("scan_monitor.report_is_being_generated") }}<br>
+                            📊 {{ $t("report_is_being_generated") }}<br>
                             <br>
                         </template>
                     </template>
@@ -32,40 +32,40 @@
                     <br>
                     <template v-if="scan.finished">
                         <template v-if="scan.finished_on">
-                            <b>{{ $t("scan_monitor.finished_on") }}</b><br>
+                            <b>{{ $t("finished_on") }}</b><br>
                             <span :title="scan.finished_on">{{ humanize_date(scan.finished_on) }},<br>{{ humanize_relative_date(scan.finished_on) }}</span><br>
                             <br>
                         </template>
                     </template>
-                    <b>{{ $t("scan_monitor.runtime") }}</b><br>
+                    <b>{{ $t("runtime") }}</b><br>
                         {{ humanize_duration(scan.runtime) }}<br>
                         <br>
                     <template v-if="scan.finished">
                         <template v-if="!scan.finished_on">
-                            <b>{{ $t("scan_monitor.message") }}</b>
-                            <p>{{ $t("scan_monitor.processing_results") }}</p>
-                            <b>{{ $t("scan_monitor.last_check") }}</b><br>
+                            <b>{{ $t("message") }}</b>
+                            <p>{{ $t("processing_results") }}</p>
+                            <b>{{ $t("last_check") }}</b><br>
                             <span :title="scan.last_check">{{ humanize_date(scan.last_check) }},<br>{{ humanize_relative_date(scan.last_check) }}</span><br>
                             <br>
                         </template>
                     </template>
                     <template v-if="!scan.finished">
-                        <b>{{ $t("scan_monitor.message") }}</b>
+                        <b>{{ $t("message") }}</b>
                         <p>{{ scan.message }}</p>
-                        <b>{{ $t("scan_monitor.last_check") }}</b><br>
+                        <b>{{ $t("last_check") }}</b><br>
                         <span :title="scan.last_check">{{ humanize_date(scan.last_check) }},<br>{{ humanize_relative_date(scan.last_check) }}</span><br>
                         <br>
                     </template>
-                    <b>{{ $t("scan_monitor.started_on") }}</b><br>
+                    <b>{{ $t("started_on") }}</b><br>
                     <span :title="scan.started_on">{{ humanize_date(scan.started_on) }},<br>{{ humanize_relative_date(scan.started_on) }}</span><br>
                     <br>
 
-                    🔖 <a :href="scan.status_url" target="_blank">{{ $t("scan_monitor.open_in_api") }}</a><br>
+                    🔖 <a :href="scan.status_url" target="_blank">{{ $t("open_in_api") }}</a><br>
                 </div>
             </div>
         </div>
 
-        <div class='block fullwidth' v-if="!scans.length">{{ $t("scan_monitor.no_scans") }}</div>
+        <div class='block fullwidth' v-if="!scans.length">{{ $t("no_scans") }}</div>
 
         <autorefresh :visible="true"  :callback="load"></autorefresh>
     </div>
@@ -73,14 +73,59 @@
 
 
 <script>
-vueScanMonitor = new Vue({
-    i18n,
+Vue.component('scan-monitor', {
+    i18n: {
+        messages: {
+            en: {
+                title: 'Scan monitor',
+                intro: 'All scans that have happened for this account are displayed here. It gives an insight into how ' +
+                    'recent the most current information is. It can also help you with comparisons to select the ideal ' +
+                    'scan.',
+                id: ' scan #',
+                type: 'Type',
+                list: 'List',
+                started_on: 'Started',
+                finished_on: 'Finished',
+                message: 'Status',
+                live: 'API',
+                no_scans: 'No scans have been performed yet.',
+                report: 'Report',
+                runtime: 'Runtime',
+                open_in_api: 'Open on internet.nl API',
+                open_report: 'Open report',
+                last_check: 'Last status update',
+                report_is_being_generated: 'Report is being generated.',
+                processing_results: 'Processing results.',
+            },
+            nl: {
+                title: 'Scan monitor',
+                intro: 'Alle scans die zijn uitgevoerd voor dit account staan hier. Het geeft een overzicht in hoe recent ' +
+                    'de data is. Het geeft ook inzicht in of de meest recente scan al is afgerond.',
+                id: 'scan #',
+                type: 'Soort',
+                list: 'Lijst',
+                started_on: 'Gestart',
+                finished_on: 'Klaar',
+                message: 'Status',
+                live: 'API',
+                no_scans: 'Nog geen scans uitgevoerd.',
+                report: 'Rapport',
+                runtime: 'Looptijd',
+                open_in_api: 'Open internet.nl API resultaat',
+                open_report: 'Open rapport',
+                last_check: 'Laatste status update',
+                report_is_being_generated: 'Report wordt gemaakt.',
+                processing_results: 'Resultaten worden verwerkt.',
+            }
+        }
+    },
     name: 'scan_monitor',
-    el: '#scan_monitor',
     template: '#scan_monitor_template',
     mixins: [humanize_mixin],
-    data: {
-        scans: [],
+    data: function() {
+        return {
+            scans: [],
+        }
     },
     mounted: function () {
         this.load();

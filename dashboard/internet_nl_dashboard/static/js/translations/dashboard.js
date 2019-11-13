@@ -15,18 +15,6 @@ const messages = {
             remove_filter: 'Show categories',
             report: "report",
         },
-        menu: {
-            admin: 'Admin',
-            domains: "Domains",
-            scans: "Scans",
-            reports: "Reports",
-            account: "Account",
-            log_off: "Log off",
-            log_in: "Log in",
-        },
-        loading: {
-            loading: "Loading...",
-        },
 
         fields: {
             forum_standardistation: {
@@ -128,52 +116,8 @@ const messages = {
             },
         },
 
-
-        scan_monitor: {
-            title: 'Scan monitor',
-            intro: 'All scans that have happened for this account are displayed here. It gives an insight into how ' +
-                'recent the most current information is. It can also help you with comparisons to select the ideal ' +
-                'scan.',
-            id: ' scan #',
-            type: 'Type',
-            list: 'List',
-            started_on: 'Started',
-            finished_on: 'Finished',
-            message: 'Status',
-            live: 'API',
-            no_scans: 'No scans have been performed yet.',
-            report: 'Report',
-            runtime: 'Runtime',
-            open_in_api: 'Open on internet.nl API',
-            open_report: 'Open report',
-            last_check: 'Last status update',
-            report_is_being_generated: 'Report is being generated.',
-            processing_results: 'Processing results.',
-        },
-        auto_refresh: {
-            refresh_happening_in: 'Auto refresh in:',
-            units: 's',
-            refresh_now: 'refresh now'
-        },
-
-
-
     },
     nl: {
-
-        menu: {
-            admin: 'Beheer',
-            domains: "Domeinen",
-            scans: "Scans",
-            reports: "Rapporten",
-            account: "Account",
-            log_off: "Uitloggen",
-            log_in: "Inloggen",
-        },
-
-        loading: {
-            loading: "Laden...",
-        },
 
         fields: {
             forum_standardistation: {
@@ -273,33 +217,6 @@ const messages = {
                 every_month: 'Ja, aan het begin van elke maand',
                 twice_per_month: 'Ja, om de twee weken vanaf de 1e van de maand',
             },
-        },
-
-
-        scan_monitor: {
-            title: 'Scan monitor',
-            intro: 'Alle scans die zijn uitgevoerd voor dit account staan hier. Het geeft een overzicht in hoe recent ' +
-                'de data is. Het geeft ook inzicht in of de meest recente scan al is afgerond.',
-            id: 'scan #',
-            type: 'Soort',
-            list: 'Lijst',
-            started_on: 'Gestart',
-            finished_on: 'Klaar',
-            message: 'Status',
-            live: 'API',
-            no_scans: 'Nog geen scans uitgevoerd.',
-            report: 'Rapport',
-            runtime: 'Looptijd',
-            open_in_api: 'Open internet.nl API resultaat',
-            open_report: 'Open rapport',
-            last_check: 'Laatste status update',
-            report_is_being_generated: 'Report wordt gemaakt.',
-            processing_results: 'Resultaten worden verwerkt.',
-        },
-        auto_refresh: {
-            refresh_happening_in: 'Lijst wordt ververst over:',
-            units: 's',
-            refresh_now: 'ververs nu'
         },
 
     },

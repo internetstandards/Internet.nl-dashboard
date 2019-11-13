@@ -525,14 +525,27 @@
 
         {% verbatim %}
         Vue.component('autorefresh', {
-            i18n,
+            i18n: {
+                messages: {
+                    en: {
+                        refresh_happening_in: 'Auto refresh in:',
+                        units: 's',
+                        refresh_now: 'refresh now'
+                    },
+                    nl: {
+                        refresh_happening_in: 'Lijst wordt ververst over:',
+                        units: 's',
+                        refresh_now: 'ververs nu'
+                    }
+                }
+            },
 
             template: `
 <div v-if='visible' class='auto_refresh block fullwidth'>
     <p>
-        {{ $t("auto_refresh.refresh_happening_in") }} <span v-html="this.current_step_inverted"></span>
-        {{ $t("auto_refresh.units") }}
-        <button @click="reload_now()">{{ $t("auto_refresh.refresh_now") }}</button>
+        {{ $t("refresh_happening_in") }} <span v-html="this.current_step_inverted"></span>
+        {{ $t("units") }}
+        <button @click="reload_now()">{{ $t("refresh_now") }}</button>
     </p>
 </div>`,
 
@@ -588,12 +601,21 @@
         });
 
         Vue.component('loading', {
-            i18n,
+            i18n: {
+                messages: {
+                    en: {
+                        loading: "Loading...",
+                    },
+                    nl: {
+                        loading: "Laden...",
+                    }
+                }
+            },
 
             template: `
             <div v-if="loading" class="block fullwidth loading">
                 <div class="loading">
-                     <div class="lds-dual-ring"><div></div><div></div></div> <span>{{ $t("loading.loading") }}</span>
+                     <div class="lds-dual-ring"><div></div><div></div></div> <span>{{ $t("loading") }}</span>
                 </div>
             </div>`,
 
@@ -608,13 +630,35 @@
             },
         });
 
+        Vue.component('site-menu', {
+            i18n: {
+                messages: {
+                    en: {
+                        admin: 'Admin',
+                        domains: "Domains",
+                        scans: "Scans",
+                        reports: "Reports",
+                        account: "Account",
+                        log_off: "Log off",
+                        log_in: "Log in",
+                    },
+                    nl: {
+                        admin: 'Beheer',
+                        domains: "Domeinen",
+                        scans: "Scans",
+                        reports: "Rapporten",
+                        account: "Account",
+                        log_off: "Uitloggen",
+                        log_in: "Inloggen",
+                    }
+                }
+            },
+            name: 'site-menu',
+            template: '#menu_template',
+        });
+
         $( document ).ready(function() {
-            vueMenu = new Vue({
-                i18n,
-                name: 'menu',
-                el: '#menu',
-                template: '#menu_template',
-            });
+            new Vue({ el: '#menu', template: `<site-menu></site-menu>`, i18n})
         });
 
         {% endverbatim %}
@@ -627,16 +671,16 @@
         {% if user.is_authenticated %}
 
             {% if user.is_superuser %}
-                <li class="{{menu_item_powertools}}"><a href="/powertools/" accesskey="a">{% verbatim %}{{ $t("menu.admin") }}{% endverbatim %}</a></li>
+                <li class="{{menu_item_powertools}}"><a href="/powertools/" accesskey="a">{% verbatim %}{{ $t("admin") }}{% endverbatim %}</a></li>
             {% endif %}
 
-            <li class="{{menu_item_addressmanager}}"><a href="/domains/" accesskey="d">{% verbatim %}{{ $t("menu.domains") }}{% endverbatim %}</a></li>
-            <li class="{{menu_item_scan_monitor}}"><a href="/scans/" accesskey="s">{% verbatim %}{{ $t("menu.scans") }}{% endverbatim %}</a></li>
-            <li class="{{menu_item_dashboard}}"><a href="/reports/" accesskey="r">{% verbatim %}{{ $t("menu.reports") }}{% endverbatim %}</a></li>
-            <li class=""><a href="/account/two_factor/" accesskey="a">{% verbatim %}{{ $t("menu.account") }}{% endverbatim %}</a></li>
-            <li class=""><a href="/logout/" accesskey="l">{% verbatim %}{{ $t("menu.log_off") }}{% endverbatim %}</a></li>
+            <li class="{{menu_item_addressmanager}}"><a href="/domains/" accesskey="d">{% verbatim %}{{ $t("domains") }}{% endverbatim %}</a></li>
+            <li class="{{menu_item_scan_monitor}}"><a href="/scans/" accesskey="s">{% verbatim %}{{ $t("scans") }}{% endverbatim %}</a></li>
+            <li class="{{menu_item_dashboard}}"><a href="/reports/" accesskey="r">{% verbatim %}{{ $t("reports") }}{% endverbatim %}</a></li>
+            <li class=""><a href="/account/two_factor/" accesskey="a">{% verbatim %}{{ $t("account") }}{% endverbatim %}</a></li>
+            <li class=""><a href="/logout/" accesskey="l">{% verbatim %}{{ $t("log_off") }}{% endverbatim %}</a></li>
         {% else %}
-            <li class="current"><a href="/account/login/" accesskey="l">{% verbatim %}{{ $t("menu.log_in") }}{% endverbatim %}</a></li>
+            <li class="current"><a href="/account/login/" accesskey="l">{% verbatim %}{{ $t("log_in") }}{% endverbatim %}</a></li>
         {% endif %}
     </ul>
 </template>
