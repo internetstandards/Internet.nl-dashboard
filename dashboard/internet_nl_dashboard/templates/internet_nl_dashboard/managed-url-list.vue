@@ -452,6 +452,10 @@ Vue.component('managed-url-list', {
                     }
                 },
 
+                warnings: {
+                    domains_exceed_maximum: 'Het aantal domeinen in deze lijst is meer dan het maximum aantal van {0}. Scanning is gepauzeerd.',
+                },
+
                 edit_form: {
                     title: 'Lijst instellingen',
                     cancel: 'Annuleer',

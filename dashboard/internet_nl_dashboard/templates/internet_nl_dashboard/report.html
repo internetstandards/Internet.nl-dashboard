@@ -1,5 +1,10 @@
 {% extends 'internet_nl_dashboard/templates/internet_nl_dashboard/_base.html' %}{% load humanize %}{% load i18n %}
 {% block content %}
     <div id="report"></div>
+
     {% include "internet_nl_dashboard/templates/internet_nl_dashboard/report.vue" %}
+
+    <script>
+        new Vue({ el: '#report', template: `<report></report>`, i18n})
+    </script>
 {% endblock %}

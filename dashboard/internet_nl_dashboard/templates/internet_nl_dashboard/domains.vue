@@ -188,34 +188,34 @@ Vue.component('list-manager', {
 
             },
             nl: {
-                list_manager: {
-                    title: "Domeinen",
-                    intro: "Beheer lijsten met domeinen",
-                    bulk_upload_link: "Een groot aantal domeinen kan worden geüpload met de Bulk Addressen Uploader, hier.",
-                    warning_found_in_list: "Eén of meerdere lijsten bevatten waarschuwingen. Deze lijsten worden niet gescand.",
 
-                    icon_legend: {
-                        title: "Legenda van gebruikte pictogrammen",
-                        intro: "De domeinen in de lijsten hieronder worden gebruikt bij iedere scan. Voordat een scan is uitgevoerd " +
-                            "wordt per domein gekeken of het domein aan de voorwaarden voldoet om gescand te worden. In de lijst " +
-                            "hieronder wordt daarvan een beeld gegeven, echter kan dat beeld verouderd zijn: dit wordt ververst " +
-                            "voor iedere scan.",
-                        can_connect: "Deze dienst is bereikbaar en wordt (waarschijnlijk) gescanned.",
-                        unknown_connectivity: "Niet bekend of deze dienst beschikbaar is, dit wordt later gecontroleerd.",
-                        cannot_connect: "Deze dienst is niet beschikbaar, en wordt (waarschijnlijk) niet gescand."
-                    },
+                title: "Domeinen",
+                intro: "Beheer lijsten met domeinen",
+                bulk_upload_link: "Een groot aantal domeinen kan worden geüpload met de Bulk Addressen Uploader, hier.",
+                warning_found_in_list: "Eén of meerdere lijsten bevatten waarschuwingen. Deze lijsten worden niet gescand.",
 
-                    inital_list: {
-                        start: 'Maak een nieuwe lijst, voeg aan die lijst je domeinen toe...',
-                        alternative_start: 'of <a href="/upload/">upload hier een spreadsheet met domeinen</a>...',
-                    },
-
-                    new_list: {
-                        add_new_list: 'Lijst toevoegen',
-                        button_close_label: 'Sluiten',
-                        button_create_list_label: 'Maak deze lijst',
-                    },
+                icon_legend: {
+                    title: "Legenda van gebruikte pictogrammen",
+                    intro: "De domeinen in de lijsten hieronder worden gebruikt bij iedere scan. Voordat een scan is uitgevoerd " +
+                        "wordt per domein gekeken of het domein aan de voorwaarden voldoet om gescand te worden. In de lijst " +
+                        "hieronder wordt daarvan een beeld gegeven, echter kan dat beeld verouderd zijn: dit wordt ververst " +
+                        "voor iedere scan.",
+                    can_connect: "Deze dienst is bereikbaar en wordt (waarschijnlijk) gescanned.",
+                    unknown_connectivity: "Niet bekend of deze dienst beschikbaar is, dit wordt later gecontroleerd.",
+                    cannot_connect: "Deze dienst is niet beschikbaar, en wordt (waarschijnlijk) niet gescand."
                 },
+
+                inital_list: {
+                    start: 'Maak een nieuwe lijst, voeg aan die lijst je domeinen toe...',
+                    alternative_start: 'of <a href="/upload/">upload hier een spreadsheet met domeinen</a>...',
+                },
+
+                new_list: {
+                    add_new_list: 'Lijst toevoegen',
+                    button_close_label: 'Sluiten',
+                    button_create_list_label: 'Maak deze lijst',
+                },
+
             }
         }
     },
