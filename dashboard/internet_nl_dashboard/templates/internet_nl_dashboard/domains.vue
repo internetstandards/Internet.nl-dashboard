@@ -142,7 +142,7 @@ Fixed: when deleting a list, it is re-added to the list of lists when adding a n
 {% endverbatim %}
 
 <script>
-Vue.component('list-manager', {
+const DomainListManager = Vue.component('list-manager', {
     i18n: {
         messages: {
             en: {

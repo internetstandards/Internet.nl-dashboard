@@ -14,7 +14,8 @@ $('.panel-title').each(function (i) {
     $('.pre-icon', this).text(opentext);
 });
 var hash = window.location.hash;
-if (hash != '') {
+// quick fix to prevent messing up loading SPA pages.
+if (hash != '' && hash.startsWith("control-panel")) {
     $(hash).attr('aria-expanded', true).addClass('active').parent().next('.panel-content').slideDown(200).attr('aria-hidden', 'false');
     setPanelItemFoldText($('.pre-icon', hash), 'close');
     refreshPanelButtonText($(hash), 'open');
@@ -55,7 +56,8 @@ function accordinate(){
         $('.pre-icon', this).text(opentext);
     });
     var hash = window.location.hash;
-    if (hash != '') {
+    // quick fix to prevent messing up loading SPA pages.
+    if (hash != '' && hash.startsWith("control-panel")) {
         $(hash).attr('aria-expanded', true).addClass('active').parent().next('.panel-content').slideDown(200).attr('aria-hidden', 'false');
         setPanelItemFoldText($('.pre-icon', hash), 'close');
         refreshPanelButtonText($(hash), 'open');

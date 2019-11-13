@@ -49,6 +49,11 @@ def powertools(request) -> HttpResponse:
     return inject_default_language_cookie(request, response)
 
 
+def spa(request) -> HttpResponse:
+    response = render(request, 'internet_nl_dashboard/templates/internet_nl_dashboard/spa.html')
+    return inject_default_language_cookie(request, response)
+
+
 def default_form_logic(form, request) -> Tuple[str, forms.Form]:
 
     if not request.POST:

@@ -73,7 +73,7 @@
 
 
 <script>
-Vue.component('scan-monitor', {
+const ScanMonitor = Vue.component('ScanMonitor', {
     i18n: {
         messages: {
             en: {

@@ -1,14 +1,68 @@
 {% extends 'internet_nl_dashboard/templates/internet_nl_dashboard/_base.html' %}
 {% block content %}
+    {% include "internet_nl_dashboard/templates/internet_nl_dashboard/scan_monitor.vue" %}
+    {% include "internet_nl_dashboard/templates/internet_nl_dashboard/managed-url-list.vue" %}
+    {% include "internet_nl_dashboard/templates/internet_nl_dashboard/domains.vue" %}
+    {% include "internet_nl_dashboard/templates/internet_nl_dashboard/report.vue" %}
+
+    <script src="https://unpkg.com/vue/dist/vue.js"></script>
+    <script src="https://unpkg.com/vue-router/dist/vue-router.js"></script>
+
+
+
+    <div id="app" style="width: 100%;">
+        <div class="block fullwidth">
+            <div>
+                <h1>Attempt to create an SPA</h1>
+                <p>
+                    Benefits: faster page loads due to one time javascript parsing.
+                </p>
+
+                <h2>Todo's:</h2>
+                <ol>
+                    <li>Fix translations, they are missing</li>
+                    <li>Fix accordions (they also use the #... resulting in Syntax error, unrecognized expression: #/monitor).</li>
+                </ol>
+
+                <p>
+                <!-- use router-link component for navigation. -->
+                <!-- specify the link by passing the `to` prop. -->
+                <!-- `<router-link>` will be rendered as an `<a>` tag by default -->
+                <router-link to="/domains">Domains</router-link>
+                <router-link to="/monitor">Monitor</router-link>
+                <router-link to="/report">Report</router-link>
+                </p>
+
+            </div>
+        </div>
+        <!-- route outlet -->
+        <!-- component matched by the route will render here -->
+        <router-view></router-view>
+    </div>
+
     <script>
+
+    Vue.use(VueRouter);
+
     // vue router
+    const routes = [
+        { path: '/domains', component: DomainListManager, },
+        { path: '/monitor', component: ScanMonitor },
+        { path: '/report', component: Report },
+    ];
+
+    const router = new VueRouter({
+        routes // short for `routes: routes`
+    });
+
+    const app = new Vue({
+        router,
+        i18n
+    }).$mount('#app')
 
 
     // create app with router,
     // have a menu and load the components via the router. Then we have an SPA :)
 
     </script>
-
-
-
 {% endblock %}

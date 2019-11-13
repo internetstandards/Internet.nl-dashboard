@@ -793,7 +793,7 @@
 // Done: store filter options for reports (as generic or per report? or as a re-applicable set?) Per user account.
 // Done: how to add a item for legacy views?
 // Done: how to translate graphs?
-Vue.component('report', {
+const Report = Vue.component('report', {
     i18n: {
         messages: {
             en: {

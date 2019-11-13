@@ -21,6 +21,7 @@ register_converter(SpreadsheetFileTypeConverter, 'spreadsheet_filetype')
 
 urlpatterns = [
     path('', lambda request: redirect('/domains/')),
+    path('spa/', powertools.spa),
     path('powertools/', powertools.powertools),
     path('logout/', __init__.logout_view),
 
