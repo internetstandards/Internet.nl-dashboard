@@ -279,10 +279,7 @@
                                             <h4 style="font-size: 1.6em; margin-top: 20px; margin-bottom: 10px;">{{ category.label }}</h4>
                                             <p>
                                                 <template v-for="field in category.fields">
-                                                    <label :for="field.name + '_visible'">
-                                                        <input type="checkbox" v-model="issue_filters[field.name].visible" :id="field.name + '_visible'">
-                                                        {{ $t("settings.show_category") }}
-                                                    </label><br>
+
                                                     <label :for="field.name + '_show_dynamic_average'">
                                                         <input type="checkbox" v-model="issue_filters[field.name].show_dynamic_average" :id="field.name + '_show_dynamic_average'">
                                                         {{ $t("settings.show_dynamic_average") }}
@@ -312,11 +309,7 @@
                                     <section class="testresults">
                                         <br>
                                         <template v-for="category in category.categories">
-                                            <div class="test-subsection">{{ category.label }}<br>
-
-
-                                            </div>
-
+                                            <div class="test-subsection">{{ category.label }}<br></div>
                                             <div v-for="field in category.fields" class="testresult">
                                                 <label :for="field.name + '_visible'">
                                                     <input type="checkbox" v-model="issue_filters[field.name].visible" :id="field.name + '_visible'">
@@ -422,7 +415,7 @@
                 <template v-for="scan_form in scan_methods">
                     <template v-if="scan_form.name === selected_report[0].type">
 
-                        <div style="overflow: auto; width: 100%" v-if="fields_from_categories(scan_form).length">
+                        <div style="overflow: auto; width: 100%" v-if="visible_fields_from_scan_form(scan_form).length > 0">
                             <div class="chart-container" style="position: relative; height:500px; width:100%; min-width: 950px;">
                                 <percentage-bar-chart
                                         :title="graph_bar_chart_title"
@@ -433,15 +426,14 @@
                                         @bar_click="select_category"
                                         :show_dynamic_average="issue_filters[scan_form.name].show_dynamic_average"
                                         :only_show_dynamic_average="issue_filters[scan_form.name].only_show_dynamic_average"
-                                        :axis="fields_from_categories(scan_form)">
+                                        :axis="visible_fields_from_scan_form(scan_form)">
                                 </percentage-bar-chart>
                             </div>
                         </div>
 
-
                         <template v-for="category in scan_form.categories">
-                            <template v-if="is_visible(category.key)">
-                                <div class="testresult" v-if="fields_from_categories(category).length">
+                            <template v-if="category_is_visible(category.key)">
+                                <div class="testresult" v-if="fields_from_categories(category).length > 0">
                                     <h3 class="panel-title">
                                         <a href="" aria-expanded="false">
                                             <span class="visuallyhidden">-:</span>
@@ -471,7 +463,7 @@
 
                                 <template v-for="subcategory in category.categories">
                                     <!-- Visibility depends on parent category, the labels themselves cannot yet be filtered for visibility. -->
-                                    <div class="testresult" v-if="fields_from_self(subcategory)">
+                                    <div class="testresult" v-if="fields_from_self(subcategory).length > 0">
                                         <h4 class="panel-title">
                                             <a href="" aria-expanded="false">
                                                 <span class="visuallyhidden">-:</span>
@@ -532,8 +524,8 @@
                 <template v-for="scan_form in scan_methods">
                     <template v-if="scan_form.name === selected_report[0].type">
 
-                        <div style="overflow: auto; width: 100%" v-if="fields_from_categories(scan_form).length">
-                            <div class="chart-container" style="position: relative; height:500px; width:100%; min-width: 950px;">
+                        <div style="overflow: auto; width: 100%" v-if="fields_from_categories(scan_form).length > 0">
+                            <div class="chart-container" style="position: relative; height:500px; width:100%; min-width: 950px;" v-if="visible_fields_from_scan_form(scan_form).length > 0">
                                 <cumulative-percentage-bar-chart
                                         :title="$t('charts.cumulative_adoption_bar_chart.title', {
                                                         'number_of_reports': compare_charts.length})"
@@ -544,14 +536,14 @@
                                         @bar_click="select_category"
                                         :show_dynamic_average="issue_filters[scan_form.name].show_dynamic_average"
                                         :only_show_dynamic_average="issue_filters[scan_form.name].only_show_dynamic_average"
-                                        :axis="fields_from_categories(scan_form)">
+                                        :axis="visible_fields_from_scan_form(scan_form)">
                                 </cumulative-percentage-bar-chart>
                             </div>
                         </div>
 
                         <template v-for="category in scan_form.categories">
-                            <template v-if="is_visible(category.key)">
-                                <div class="testresult" v-if="fields_from_categories(category).length">
+                            <template v-if="category_is_visible(category.key)">
+                                <div class="testresult" v-if="fields_from_categories(category).length > 0">
                                     <h3 class="panel-title">
                                         <a href="" aria-expanded="false">
                                             <span class="visuallyhidden">-:</span>
@@ -582,7 +574,7 @@
 
                                 <template v-for="subcategory in category.categories">
                                     <!-- Visibility depends on parent category, the labels themselves cannot yet be filtered for visibility. -->
-                                    <div class="testresult" v-if="fields_from_self(subcategory).length">
+                                    <div class="testresult" v-if="fields_from_self(subcategory).length > 0">
                                         <h4 class="panel-title">
                                             <a href="" aria-expanded="false">
                                                 <span class="visuallyhidden">-:</span>
@@ -1662,6 +1654,26 @@ const Report = Vue.component('report', {
                         <span class="visuallyhidden">${i18n.t('report.link_to_report', {'url': url})}</span>
                     </a>`
         },
+        visible_fields_from_scan_form(scan_form){
+            // see if any of the underlaying categories is visible. If so, include the category.
+            let fields = [];
+
+            scan_form.categories.forEach((category) => {
+                console.log(category.key);
+                if (this.category_is_visible(category.key)){
+                        category.fields.forEach((field) => {
+                        fields.push(field.name);
+                    });
+                    category.additional_fields.forEach((field) => {
+                        fields.push(field.name);
+                    });
+                }
+            });
+
+            // console.log(`Visible from scan_form: ${fields}`);
+
+            return fields;
+        },
         fields_from_categories(categories){
             let fields = [];
 
@@ -1678,10 +1690,10 @@ const Report = Vue.component('report', {
 
             let returned_fields = [];
             for(let i = 0; i<fields.length; i++){
-
                 if(this.issue_filters[fields[i]].visible)
                     returned_fields.push(fields[i])
             }
+
             return returned_fields;
         },
         fields_from_self(category){
@@ -1713,13 +1725,28 @@ const Report = Vue.component('report', {
             });
             return fields;
         },
-        is_visible(field_name){
-            try {
-                return this.issue_filters[field_name].visible;
-            } catch(e) {
-                return false;
+        category_is_visible: function (category_key){
+
+            // See #6. If any of the subcategory fields
+            return this.fields_from_categories(this.get_category_by_name(category_key)).length > 0;
+        },
+        get_category_by_name: function(category_key){
+            let found = null;
+            this.scan_methods.forEach((scan_method) => {
+                scan_method.categories.forEach((category) => {
+                    if (category.key === category_key){
+                        found = category;
+                    }
+                });
+
+            });
+            if (!found) {
+                throw `Category ${category_key} does not exist.`;
+            } else {
+                return found;
             }
-        }
+        },
+
     },
     watch: {
         selected_report: function (new_value, old_value) {
@@ -2236,10 +2263,12 @@ const Report = Vue.component('report', {
         relevant_categories_based_on_settings: function(){
             let preferred_fields = [];  // this.categories[this.selected_category];
 
-            console.log(`Selected category: ${this.selected_category}`);
+            // console.log(`Selected category: ${this.selected_category}`);
 
             this.scan_methods.forEach((scan_method) => {
-                console.log("scan_method " + scan_method.name);
+                // console.log("scan_method " + scan_method.name);
+                // todo: also get relevant column for scan_methods, just like with graphs. But given large refactor,
+                // we'll do that later.
                 if (['web', 'mail'].includes(scan_method.name) && scan_method.name === this.selected_category){
 
                     scan_method.categories.forEach((category) => {
