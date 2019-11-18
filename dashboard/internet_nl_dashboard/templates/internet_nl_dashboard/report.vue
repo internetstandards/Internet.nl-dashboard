@@ -258,7 +258,7 @@
                                     <input type="checkbox"
                                            v-model="issue_filters[scan_form.name].only_show_dynamic_average"
                                            :id="scan_form.name + '_only_show_dynamic_average'"
-                                            >
+                                            :disabled="!issue_filters[scan_form.name].show_dynamic_average">
                                     {{ $t("settings.only_show_dynamic_average") }}
                                 </label>
 
@@ -288,7 +288,10 @@
                                                         {{ $t("settings.show_dynamic_average") }}
                                                     </label><br>
                                                     <label :for="field.name + '_only_show_dynamic_average'">
-                                                        <input type="checkbox" v-model="issue_filters[field.name].only_show_dynamic_average" :id="field.name + '_only_show_dynamic_average'">
+                                                        <input type="checkbox"
+                                                               v-model="issue_filters[field.name].only_show_dynamic_average"
+                                                               :id="field.name + '_only_show_dynamic_average'"
+                                                                :disabled="!issue_filters[field.name].show_dynamic_average">
                                                         {{ $t("settings.only_show_dynamic_average") }}
                                                     </label>
                                                 </template>
