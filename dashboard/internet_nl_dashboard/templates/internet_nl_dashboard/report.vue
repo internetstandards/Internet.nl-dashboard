@@ -255,7 +255,10 @@
                                     {{ $t("settings.show_dynamic_average") }}
                                 </label><br>
                                 <label :for="scan_form.name + '_only_show_dynamic_average'">
-                                    <input type="checkbox" v-model="issue_filters[scan_form.name].only_show_dynamic_average" :id="scan_form.name + '_only_show_dynamic_average'">
+                                    <input type="checkbox"
+                                           v-model="issue_filters[scan_form.name].only_show_dynamic_average"
+                                           :id="scan_form.name + '_only_show_dynamic_average'"
+                                            >
                                     {{ $t("settings.only_show_dynamic_average") }}
                                 </label>
 
@@ -308,14 +311,7 @@
                                         <template v-for="category in category.categories">
                                             <div class="test-subsection">{{ category.label }}<br>
 
-                                                <label :for="category.key + '_show_dynamic_average'">
-                                                    <input type="checkbox" v-model="issue_filters[category.key].show_dynamic_average" :id="category.key + '_show_dynamic_average'">
-                                                    {{ $t("settings.show_dynamic_average") }}
-                                                </label><br>
-                                                <label :for="category.key + '_only_show_dynamic_average'">
-                                                    <input type="checkbox" v-model="issue_filters[category.key].only_show_dynamic_average" :id="category.key + '_only_show_dynamic_average'">
-                                                    {{ $t("settings.only_show_dynamic_average") }}
-                                                </label>
+
                                             </div>
 
                                             <div v-for="field in category.fields" class="testresult">
@@ -490,8 +486,8 @@
                                                             :color_scheme="color_scheme"
                                                             :chart_data="compare_charts"
                                                             :accessibility_text="$t('charts.adoption_bar_chart.accessibility_text')"
-                                                            :show_dynamic_average="issue_filters[subcategory.key].show_dynamic_average"
-                                                            :only_show_dynamic_average="issue_filters[subcategory.key].only_show_dynamic_average"
+                                                            :show_dynamic_average="issue_filters[category.key].show_dynamic_average"
+                                                            :only_show_dynamic_average="issue_filters[category.key].only_show_dynamic_average"
                                                             :axis="fields_from_self(subcategory)">
                                                     </percentage-bar-chart>
                                                 </div>
