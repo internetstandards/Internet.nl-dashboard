@@ -346,6 +346,16 @@
                                 </template>
                             </template>
                         </template>
+                        <div>
+                            <button @click="reset_issue_filters()">{{ $t("settings.buttons.reset") }}<span class="visuallyhidden"></span></button>
+                            <button @click="save_issue_filters()">{{ $t("settings.buttons.save") }}<span class="visuallyhidden"></span></button>
+                            <br>
+                            <template v-if="issue_filters_response.success || issue_filters_response.error">
+                                <div :class="'server-response-' + issue_filters_response.state">
+                                    <span aria-live="assertive">{{ $t(issue_filters_response.message) }} on {{ humanize_date(issue_filters_response.timestamp) }}.</span>
+                                </div>
+                            </template>
+                        </div>
                     </div>
                 </div>
             </template>
