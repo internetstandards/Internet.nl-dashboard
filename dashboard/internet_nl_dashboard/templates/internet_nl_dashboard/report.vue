@@ -136,6 +136,15 @@
         border-top: 4px solid #00a0c6;
     }
 
+    .select-deselect-category {
+        font-size: 0.9em;
+        display: block;
+        width: 100%;
+        text-align: right;
+        padding-top: 5px;
+        padding-bottom: 10px;
+    }
+
 
         /*
 
@@ -307,7 +316,7 @@
                                         </div>
                                     </section>
                                     <section class="testresults">
-                                        <br>
+                                        <span class="select-deselect-category"><a @click="check_fields(all_fields_from_categories(category))">{{ $t("check") }}</a> / <a @click="uncheck_fields(all_fields_from_categories(category))">{{ $t("uncheck") }}</a></span>
                                         <template v-for="category in category.categories">
                                             <div class="test-subsection">{{ category.label }}<br></div>
                                             <div v-for="field in category.fields" class="testresult">
@@ -433,7 +442,7 @@
 
                         <template v-for="category in scan_form.categories">
                             <template v-if="category_is_visible(category.key)">
-                                <div class="testresult" v-if="fields_from_categories(category).length > 0">
+                                <div class="testresult" v-if="visible_fields_from_categories(category).length > 0">
                                     <h3 class="panel-title">
                                         <a href="" aria-expanded="false">
                                             <span class="visuallyhidden">-:</span>
@@ -454,7 +463,7 @@
                                                         @bar_click="select_category"
                                                         :show_dynamic_average="issue_filters[category.key].show_dynamic_average"
                                                         :only_show_dynamic_average="issue_filters[category.key].only_show_dynamic_average"
-                                                        :axis="fields_from_categories(category)">
+                                                        :axis="visible_fields_from_categories(category)">
                                                 </percentage-bar-chart>
                                             </div>
                                         </div>
@@ -524,7 +533,7 @@
                 <template v-for="scan_form in scan_methods">
                     <template v-if="scan_form.name === selected_report[0].type">
 
-                        <div style="overflow: auto; width: 100%" v-if="fields_from_categories(scan_form).length > 0">
+                        <div style="overflow: auto; width: 100%" v-if="visible_fields_from_categories(scan_form).length > 0">
                             <div class="chart-container" style="position: relative; height:500px; width:100%; min-width: 950px;" v-if="visible_fields_from_scan_form(scan_form).length > 0">
                                 <cumulative-percentage-bar-chart
                                         :title="$t('charts.cumulative_adoption_bar_chart.title', {
@@ -543,7 +552,7 @@
 
                         <template v-for="category in scan_form.categories">
                             <template v-if="category_is_visible(category.key)">
-                                <div class="testresult" v-if="fields_from_categories(category).length > 0">
+                                <div class="testresult" v-if="visible_fields_from_categories(category).length > 0">
                                     <h3 class="panel-title">
                                         <a href="" aria-expanded="false">
                                             <span class="visuallyhidden">-:</span>
@@ -565,7 +574,7 @@
                                                         @bar_click="select_category"
                                                         :show_dynamic_average="issue_filters[category.key].show_dynamic_average"
                                                         :only_show_dynamic_average="issue_filters[category.key].only_show_dynamic_average"
-                                                        :axis="fields_from_categories(category)">
+                                                        :axis="visible_fields_from_categories(category)">
                                                 </cumulative-percentage-bar-chart>
                                             </div>
                                         </div>
@@ -804,6 +813,9 @@ const Report = Vue.component('report', {
                 score: "Score",
                 domain: "Domain",
 
+                check: "Select all",
+                uncheck: "Deselect all",
+
                 icon_legend: {
                     title: "Legend of used icons",
 
@@ -955,6 +967,9 @@ const Report = Vue.component('report', {
 
                 score: "Score",
                 domain: "Domein",
+
+                check: "Selecteer alle",
+                uncheck: "Deselecteer alle",
 
                 chart_info: {
                     adoption_timeline: {
@@ -1674,7 +1689,24 @@ const Report = Vue.component('report', {
 
             return fields;
         },
-        fields_from_categories(categories){
+        all_fields_from_categories(categories){
+            let fields = [];
+
+            categories.categories.forEach((category) => {
+
+                category.fields.forEach((field) => {
+                    fields.push(field.name);
+                });
+                category.additional_fields.forEach((field) => {
+                    fields.push(field.name);
+                });
+
+            });
+
+            return fields;
+        },
+        // should be named: visible fields from categories
+        visible_fields_from_categories(categories){
             let fields = [];
 
             categories.categories.forEach((category) => {
@@ -1728,7 +1760,7 @@ const Report = Vue.component('report', {
         category_is_visible: function (category_key){
 
             // See #6. If any of the subcategory fields
-            return this.fields_from_categories(this.get_category_by_name(category_key)).length > 0;
+            return this.visible_fields_from_categories(this.get_category_by_name(category_key)).length > 0;
         },
         get_category_by_name: function(category_key){
             let found = null;
@@ -1746,6 +1778,18 @@ const Report = Vue.component('report', {
                 return found;
             }
         },
+
+        check_fields: function(list_of_fields){
+            list_of_fields.forEach((field) => {
+                this.issue_filters[field].visible = true;
+            })
+        },
+
+        uncheck_fields: function(list_of_fields){
+            list_of_fields.forEach((field) => {
+                this.issue_filters[field].visible = false;
+            })
+        }
 
     },
     watch: {
