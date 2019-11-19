@@ -154,7 +154,7 @@ def create_list(account: Account, user_input: Dict) -> Dict[str, Any]:
         'enable_scans': bool(user_input['enable_scans']),
         'scan_type': validate_list_scan_type(user_input['scan_type']),
         'automated_scan_frequency': frequency,
-        'scheduled_next_scan': UrlList.determine_next_scan_moment(frequency)
+        'scheduled_next_scan': UrlList.determine_next_scan_moment(frequency),
     }
 
     urllist = UrlList(**data)
@@ -165,6 +165,9 @@ def create_list(account: Account, user_input: Dict) -> Dict[str, Any]:
 
     # adding the ID makes it possible to add new urls to a new list.
     data['id'] = urllist.pk
+
+    # empty list, no warnings.
+    data['list_warnings'] = []
 
     # give a hint if it can be scanned:
     data['scan_now_available'] = urllist.is_scan_now_available()
@@ -189,6 +192,7 @@ def delete_list(account: Account, user_input: dict):
         return operation_response(error=True, message="List could not be deleted.")
 
     urllist.is_deleted = True
+    urllist.enable_scans = False
     urllist.deleted_on = timezone.now()
     urllist.save()
 
@@ -270,6 +274,12 @@ def update_list_settings(account: Account, user_input: Dict) -> Dict[str, Any]:
     data['last_report_date'] = None if not len(urllist.last_report) else urllist.last_report[0].at_when
 
     data['scan_now_available'] = updated_urllist.is_scan_now_available()
+
+    # list warnings (might do: make more generic, only if another list warning ever could occur.)
+    list_warnings = []
+    if urllist.num_urls > config.DASHBOARD_MAXIMUM_DOMAINS_PER_LIST:
+        list_warnings.append('WARNING_DOMAINS_IN_LIST_EXCEED_MAXIMUM_ALLOWED')
+    data['list_warnings'] = []
 
     log.debug(data)
 

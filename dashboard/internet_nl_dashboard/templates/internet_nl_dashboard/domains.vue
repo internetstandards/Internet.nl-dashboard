@@ -74,9 +74,6 @@ Fixed: when deleting a list, it is re-added to the list of lists when adding a n
                     <label for="name">{{ $t("urllist.field_label_name") }}:</label><br>
                     <input id="name" type="text" maxlength="120" v-model="add_new_new_list.name"><br><br>
 
-                    <label for="enable_scans">{{ $t("urllist.field_label_enable_scans") }}:</label><br>
-                    <input id="enable_scans" type="checkbox" v-model="add_new_new_list.enable_scans"><br><br>
-
                     <label for="scan_type">{{ $t("urllist.field_label_scan_type") }}:</label><br>
                     <select id="scan_type" v-model="add_new_new_list.scan_type">
                         <option value="web">{{ $t("urllist.scan_type_web") }}</option>
@@ -257,7 +254,8 @@ const DomainListManager = Vue.component('list-manager', {
             }).catch((fail) => {console.log('A loading error occurred: ' + fail);});
         },
         start_adding_new: function(){
-            this.add_new_new_list = {'id': -1, 'name': '', 'enable_scans': false, 'scan_type': 'web',
+            // Fixes #105: we don't need an explicit enable scans checkmark.
+            this.add_new_new_list = {'id': -1, 'name': '', 'enable_scans': true, 'scan_type': 'web',
                 'automated_scan_frequency': 'disabled', 'scheduled_next_scan': '1'};
             this.show_add_new = true;
             this.add_new_server_response = {};

@@ -195,12 +195,6 @@
                 <label for="name">{{ $t("urllist.field_label_name") }}:</label><br>
                 <input id="name" type="text" maxlength="120" v-model="list.name"><br><br>
 
-                <label for="enable_scans">{{ $t("urllist.field_label_enable_scans") }}:</label><br>
-                <input id="enable_scans" type="checkbox" v-model="list.enable_scans">
-                <span v-if="list.enable_scans">Enabled</span>
-                <span v-if="!list.enable_scans">Disabled</span>
-                <br><br>
-
                 <label for="scan_type">{{ $t("urllist.field_label_scan_type") }}:</label><br>
                 <select id="scan_type" v-model="list.scan_type">
                     <option value="web">{{ $t("urllist.scan_type_web") }}</option>
@@ -209,11 +203,11 @@
 
                 <label for="automated_scan_frequency">{{ $t("urllist.field_label_automated_scan_frequency") }}:</label><br>
                 <select id="automated_scan_frequency" v-model="list.automated_scan_frequency">
-                    <option value="disabled">{{ $t("urllist.automated_scan_frequency_disabled") }}</option>
-                    <option value="every half year">{{ $t("urllist.automated_scan_frequency_every_half_year") }}</option>
-                    <option value="at the start of every quarter">{{ $t("urllist.automated_scan_frequency_every_quarter") }}</option>
-                    <option value="every 1st day of the month">{{ $t("urllist.automated_scan_frequency_every_month") }}</option>
-                    <option value="twice per month">{{ $t("urllist.automated_scan_frequency_twice_per_month") }}</option>
+                    <option value="disabled">{{ $t("urllist.automated_scan_frequency.disabled") }}</option>
+                    <option value="every half year">{{ $t("urllist.automated_scan_frequency.every_half_year") }}</option>
+                    <option value="at the start of every quarter">{{ $t("urllist.automated_scan_frequency.every_quarter") }}</option>
+                    <option value="every 1st day of the month">{{ $t("urllist.automated_scan_frequency.every_month") }}</option>
+                    <option value="twice per month">{{ $t("urllist.automated_scan_frequency.twice_per_month") }}</option>
                 </select>
 
             </div>
