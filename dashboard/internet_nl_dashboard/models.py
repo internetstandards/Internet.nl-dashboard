@@ -327,11 +327,42 @@ class AccountInternetNLScan(models.Model):
     scan = models.ForeignKey(
         InternetNLScan,
         on_delete=models.CASCADE,
+
+        # When there is no scan registered at internet.nl, but the scan has to show up as requested
+        null=True
     )
 
     urllist = models.ForeignKey(
         UrlList,
         on_delete=models.CASCADE,
+    )
+
+    # The current state of the scan.
+    state = models.CharField(
+        max_length=255,
+        blank=True,
+        default="",
+        help_text="The current state"
+    )
+
+
+class AccountInternetNLScanLog(models.Model):
+
+    scan = models.ForeignKey(
+        AccountInternetNLScan,
+        on_delete=models.CASCADE,
+    )
+
+    state = models.CharField(
+        max_length=255,
+        blank=True,
+        default="",
+        help_text="The state that was registered at a certain moment in time."
+    )
+
+    at_when = models.DateTimeField(
+        blank=True,
+        null=True
     )
 
 

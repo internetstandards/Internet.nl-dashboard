@@ -1,18 +1,22 @@
 import logging
-from typing import List
+from typing import List, Tuple
 
+import requests
 from celery import Task, group
 from constance import config
-from django.db.models import Count
+from django.db import transaction
+from django.db.models import Count, Q
+from django.utils import timezone
+from requests.auth import HTTPBasicAuth
 from websecmap.organizations.models import Url
 from websecmap.scanners.models import InternetNLScan
-from websecmap.scanners.scanner import add_model_filter
+from websecmap.scanners.scanner import add_model_filter, dns_endpoints
 from websecmap.scanners.scanner.dns_endpoints import compose_discover_task
 from websecmap.scanners.scanner.internet_nl_mail import (get_scan_status,
                                                          handle_running_scan_reponse, register_scan)
 
 from dashboard.celery import app
-from dashboard.internet_nl_dashboard.models import Account, AccountInternetNLScan, UrlList
+from dashboard.internet_nl_dashboard.models import Account, AccountInternetNLScan, UrlList, AccountInternetNLScanLog
 
 # done: create more flexible filters
 # done: map mail scans to an endpoint (changed the scanner for it)
@@ -90,6 +94,275 @@ def create_dashboard_scan_tasks(urllist):
         tasks.append(create_dashboard_scan_task(urllist.account, urllist, 'mail_dashboard', 'dns_soa'))
 
     return group(tasks)
+
+
+@app.task(queue='storage')
+def initialize_scan(account: Account, urllist: UrlList, scan_type: str):
+    # todo: Also create the scan and scan name. Create the internet.nl scan and the accountinternetnlscan objects.
+
+    scan_name = "{'source': 'Internet.nl Dashboard', 'type': '%s', 'account': '%s', 'list': '%s'}" % (
+        scan_type, account.name, urllist.name)
+
+    internetnlscan = InternetNLScan()
+    internetnlscan.type = scan_type
+    internetnlscan.save()
+
+    # Should we already create an InternetNL scan? Yes, because the type is saved there.
+    accountinternetnlscan = AccountInternetNLScan()
+    accountinternetnlscan.account = account
+    accountinternetnlscan.urllist = urllist
+    accountinternetnlscan.scan = internetnlscan
+    accountinternetnlscan.state = "requested"
+    accountinternetnlscan.save()
+
+    return internetnlscan, accountinternetnlscan
+
+
+@app.task(queue='storage')
+def monitor_scans() -> Task:
+    """
+    Collects the next tasks from the mail and web scan monitors. This can be run every second and it will still be fine.
+
+    This is called from the
+    :return:
+    """
+
+    tasks = []
+    scans = AccountInternetNLScan.objects.all().exclude(Q(state="finished scan") | Q(state__startswith="error"))
+    for scan in scans:
+        if scan.scan.type == "web":
+            pass
+        if scan.scan.type == "mail":
+            tasks.append(monitor_mail_scan(scan))
+
+    return group(tasks)
+
+
+def monitor_mail_scan(scan: AccountInternetNLScan) -> Task:
+    """
+    This monitors the state of a mail scan. Depending on the state, it determines if an action is needed and
+    gathers them. This will not handle errors.
+
+    This is used in conjunction with Celery: all tasks are performed async, which scales better.
+
+    Steps are split into two: the active verb and the past tense verb. When something is happening, the active verb
+    is used, otherwise the past tense verb. Such as: "scanning endpoints" and "scanned endpoints".
+        An active verb means that something is currently being performed.
+        A completed / past tense verb means that the process is ready to move on.
+
+    All active verbs have a timeout. This timeout can be different for each verb. The timeout is set to a value that
+    takes into account the possibility of the system being very busy and all queues full. Therefore, something that
+    usually would last 10 seconds, will have a timeout of several hours. If this timeout triggers, there is something
+    very wrong: either an unexpected exception stopped the process or there are deadlocks in the queues.
+        These timeouts should never be triggered: if they do, it will mean manual intervention to fix a bug etc.
+
+    When a timeout is reached on an active verb, it will change the state to something that is not processed in this
+    monitor anymore. Manual action is required, after the manual action has been performed, the person handling it
+    can set the state of the failed scan to something this process understands, and we'll happily try again.
+        Note that celery can also perform several attempts on exceptions etc, this might or might not happen.
+        Timeouts are stored as the following: timeout on [active verb]: timeout on scanning endpoints.
+
+    To prevent duplicate tasks from spawning, this method will adjust the task before the actual content is called.
+
+    This does not use django fsm, as that ties everything to a model. It also overcomplicates the process with
+    branching and such. The on-error feature is nice though.
+
+    Mail scans are performed like this:
+    n  : requested -> discovering endpoints -> discovered endpoints
+                                          -> timeout on ~
+                                          -> error on ~: No endpoints found, will result in empty scan. Will retry N x.
+                                          -> error on ~: No DNS service available. Will retry N x. (can this be in task)
+
+    n+1: discovered endpoints -> retrieving scannable urls -> retrieved scannable urls
+
+    n+1: retrieved scannable urls -> registering scan at internet.nl -> registered scan at internet.nl
+                                                                   -> timeout on ~
+                                                                   -> todo: network errors, API errors, not reachable.
+
+    n+1: registered scan at internet.nl -> running scan -> ran scan
+
+    n+1: ran scan -> importing scan results -> imported scan results
+
+    n+1: imported scan results -> creating report -> created report
+
+    n+1: created report -> sending mail -> sent mail
+
+    n+1: sent mail -> finishing scan -> finished scan
+
+    :return:
+    """
+
+    """
+    It's not possible to safely create a scan automagically: this might be called a few times in a row, and then
+    you'll end up with several new scans. Therefore, to initiate a scan, you need to call another method. 
+    After the scan is initiated, this will pick it up and continue.
+    """
+    if not scan:
+        return group([])
+
+    # set up some variables:
+    relevant_scan_types = {"web": "dns_a_aaaa", "mail": "dns_soa"}
+
+    # always get the latest state, so we'll not have outdated information if we had to wait in a queue a long while.
+    # also run this in a transaction, so it's only possible to get a state and update it to an active state once.
+    with transaction.atomic():
+        scan = AccountInternetNLScan.objects.get(id=scan.id)
+
+        # todo: move state to the websecmap object, so that the new approach can also work in a next version of that sw.
+        #  Both the state and the state log ofc.
+        state = scan.state
+
+        if state == "requested":
+            # Always immediately update the current state, so the amount of double calls is minimal:
+            #  "discovered endpoints" to "discovering endpoints" and cause an infinte loop.
+            update_state("discovering endpoints", scan)
+            return (
+                    dns_endpoints.compose_discover_task(**{
+                        'urls_filter': {'urls_in_dashboard_list': scan.urllist, 'is_dead': False, 'not_resolvable': False}})
+                    | update_state.si("discovered endpoints", scan)
+            )
+
+        if state == "discovering endpoints":
+            """Check the timeout of this methods. If it takes too long, escalate."""
+            # and what if the timeout comes way later because this
+            pass
+
+        if state == "discovered endpoints":
+            # This step tries to prevent API calls with an empty list of urls.
+            update_state("retrieving scannable urls", scan)
+            return (
+                    get_relevant_urls.si(scan.urllist, relevant_scan_types[scan.scan.type])
+                    | check_retrieved_scannable_urls.s()
+                    | update_state.s(scan)
+            )
+
+        if state == "retrieving scannable urls":
+            """Todo: check for timeout."""
+            pass
+
+        if state == "retrieved scannable urls":
+            update_state("registering scan at internet.nl", scan)
+
+            # retrieving the API urls:
+            api_url = config.DASHBOARD_API_URL_WEB_SCANS if scan.scan.type == "web" \
+                else config.DASHBOARD_API_URL_MAIL_SCANS
+
+            # todo: register scan does too much, it should just register the scan, and not store things to the db there.
+            #  also add refactor that at websecmap.
+            return (
+                    new_register_scan.si(
+                        scan.account.internet_nl_api_username,
+                        scan.account.decrypt_password(),
+                        api_url)
+                    | check_registered_scan_at_internet_nl.s(scan)
+                    | update_state.s(scan)
+            )
+
+        if state == "registering scan at internet.nl":
+            # todo: check for timeout.
+            pass
+
+        if state == "registered scan at internet.nl":
+            update_state("running scan", scan)
+            # todo: implement,
+            """
+            todo: handle running scan does too much: it handles both if the scan is finished, and creates
+            a parallel task to import the results, which is the cause of the report dates being incorrect.
+            Split that up in separate steps in this routine.
+            get_scan_status.si(scan.status_url, account.internet_nl_api_username, account.decrypt_password())
+            | handle_running_scan_reponse.s(scan)
+            """
+
+
+
+
+@app.task(queue="storage", autoretry_for=(Exception,), retry_backoff=True, retry_kwargs={'max_retries': 10},
+          retry_jitter=False)
+def new_register_scan(urls: List[Url], username, password, api_url: str = "", scan_name: str = "") -> (str, str):
+    """
+    This registers a scan and results the URL where the scan results can be found later on.
+    :return: (message, tracking url)
+    """
+
+    """
+    POST /api/batch/v1.0/web/ HTTP/1.1
+    {
+        "name": "My web test",
+        "domains": ["dashboard.internet.nl", "websecmap.org"]
+    }
+    """
+
+    data = {"name": scan_name, "domains": urls}
+
+    # todo: handle all types of network errors. It should auto retry for those... replace exception above.
+    answer = requests.post(api_url, json=data, auth=HTTPBasicAuth(username, password), timeout=(300, 300))
+    log.debug("Received answer from internet.nl: %s" % answer.content)
+
+    """
+    Expected answer:
+    HTTP/1.1 200 OK
+    Content-Type: application/json
+    {
+        "success": true,
+        "message": "OK",
+        "data": {
+            "results": "https://batch.internet.nl/api/batch/v1.0/results/01c70c7972e143ffb0c5b45d5b8116cb/"
+        }
+    }
+    """
+    answer = answer.json()
+
+    # Makes no sense to retry on an incorrect user. Quit.
+    if answer.get("message", None) == "Unknown user":
+        return "error: Unknown Internet.nl User. Are the username and password configured for this account?", ""
+
+    # No status url, an unexpected error perhaps?
+    status_url = answer.get('data', {}).get('results', "")
+    if not status_url:
+        return f"error: could not get scanning status url. Response from server: {answer}", ""
+
+    return "Retrieved status successfully!", status_url
+
+
+@app.task(queue='storage')
+def check_registered_scan_at_internet_nl(value, scan):
+    # untangle the set
+    message, url = value
+
+    if message == "Retrieved status successfully!":
+        scan.scan.url = url
+        scan.scan.save()
+        return "registered scan at internet.nl"
+
+    # all error scenario's will result in an error, which is not a state we can handle, and the process will be stuck
+    # there...
+    return message
+
+
+@app.task(queue='storage')
+def check_retrieved_scannable_urls(urls: List):
+    """ Influences the process, see if we can continue. """
+    if not urls:
+        return "error retrieving scannable urls: " \
+               "no urls to scan found. Will not continue as the report will be empty."
+
+    return "retrieved scannable urls"
+
+
+@app.task(queue='storage')
+def update_state(state, scan):
+    """Update the current scan state. Also write it to the scan log. From this log we should also be able to see
+    retries... when celery retries on exceptions etc..."""
+
+    scan.state = state
+    scan.state_changed_on = timezone.now()
+    scan.save()
+
+    scanlog = AccountInternetNLScanLog()
+    scanlog.scan = scan
+    scanlog.at_when = timezone.now()
+    scanlog.state = state
+    scanlog.save()
 
 
 def create_dashboard_scan_task(account: Account, urllist: UrlList, save_as_scan_type: str, endpoint_type: str) -> Task:
