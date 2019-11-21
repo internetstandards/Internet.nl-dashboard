@@ -9,8 +9,7 @@ from dashboard.celery import app
 from dashboard.internet_nl_dashboard.logic.urllist_dashboard_report import rate_urllist_on_moment
 from dashboard.internet_nl_dashboard.models import AccountInternetNLScan, UrlList, UrlListReport
 from dashboard.internet_nl_dashboard.scanners import scan_internet_nl_per_account
-from dashboard.internet_nl_dashboard.scanners.scan_internet_nl_per_account import \
-    create_dashboard_scan_tasks
+from dashboard.internet_nl_dashboard.scanners.scan_internet_nl_per_account import initialize_scan
 
 log = logging.getLogger(__name__)
 
@@ -36,7 +35,7 @@ def start_scans_for_lists_who_are_up_for_scanning() -> Task:
             continue
 
         if urllist.is_due_for_scanning():
-            tasks.append(create_dashboard_scan_tasks(urllist))
+            tasks.append(initialize_scan.si(urllist))
 
         # placed here, as otherwise the list is never due for scanning as the date might be updated to something
         # new in the future.

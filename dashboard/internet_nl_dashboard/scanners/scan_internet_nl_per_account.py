@@ -1,22 +1,26 @@
+import json
 import logging
-from typing import List, Tuple
+from typing import List
 
 import requests
+from django.contrib.auth.models import User
 from celery import Task, group
 from constance import config
+from django.core.mail import send_mail
 from django.db import transaction
 from django.db.models import Count, Q
 from django.utils import timezone
 from requests.auth import HTTPBasicAuth
 from websecmap.organizations.models import Url
+from websecmap.reporting.report import recreate_url_reports
 from websecmap.scanners.models import InternetNLScan
 from websecmap.scanners.scanner import add_model_filter, dns_endpoints
-from websecmap.scanners.scanner.dns_endpoints import compose_discover_task
-from websecmap.scanners.scanner.internet_nl_mail import (get_scan_status,
-                                                         handle_running_scan_reponse, register_scan)
+from websecmap.scanners.scanner.internet_nl_mail import store
 
 from dashboard.celery import app
-from dashboard.internet_nl_dashboard.models import Account, AccountInternetNLScan, UrlList, AccountInternetNLScanLog
+from dashboard.internet_nl_dashboard.logic.urllist_dashboard_report import rate_urllist_on_moment
+from dashboard.internet_nl_dashboard.models import Account, AccountInternetNLScan, UrlList, AccountInternetNLScanLog, \
+    UrlListReport
 
 # done: create more flexible filters
 # done: map mail scans to an endpoint (changed the scanner for it)
@@ -70,77 +74,63 @@ def compose_task(
             if urllist.num_urls > max_urls:
                 continue
 
-            tasks.append(create_dashboard_scan_tasks(urllist))
+            tasks.append(initialize_scan.si(urllist))
 
     return group(tasks)
 
 
 @app.task(queue='storage')
-def create_dashboard_scan_tasks(urllist):
-    # No urls means that the scan will not be registered in the API. So that would be a useless call.
-    if urllist.urls.count() == 0:
-        return group([])
-
-    tasks = []
-    """
-    Lists are split between their respective capabilities. This means that some urls will be scanned for web,
-    some for mail and some both depending on the list content.
-    """
-
-    if urllist.scan_type == 'web':
-        tasks.append(create_dashboard_scan_task(urllist.account, urllist, 'web', 'dns_a_aaaa'))
-
-    if urllist.scan_type == 'mail':
-        tasks.append(create_dashboard_scan_task(urllist.account, urllist, 'mail_dashboard', 'dns_soa'))
-
-    return group(tasks)
-
-
-@app.task(queue='storage')
-def initialize_scan(account: Account, urllist: UrlList, scan_type: str):
-    # todo: Also create the scan and scan name. Create the internet.nl scan and the accountinternetnlscan objects.
-
-    scan_name = "{'source': 'Internet.nl Dashboard', 'type': '%s', 'account': '%s', 'list': '%s'}" % (
-        scan_type, account.name, urllist.name)
-
+def initialize_scan(urllist: UrlList):
     internetnlscan = InternetNLScan()
-    internetnlscan.type = scan_type
+    internetnlscan.type = urllist.scan_type
+    internetnlscan.started_on = timezone.now()
+    internetnlscan.last_check = timezone.now()  # more like: last update / pulse
+    internetnlscan.started = True  # This field is now useless :)
     internetnlscan.save()
 
     # Should we already create an InternetNL scan? Yes, because the type is saved there.
     accountinternetnlscan = AccountInternetNLScan()
-    accountinternetnlscan.account = account
+    accountinternetnlscan.account = urllist.account
     accountinternetnlscan.urllist = urllist
     accountinternetnlscan.scan = internetnlscan
-    accountinternetnlscan.state = "requested"
+    accountinternetnlscan.state = ""
     accountinternetnlscan.save()
+
+    # and start the process.
+    update_state("requested", accountinternetnlscan)
 
     return internetnlscan, accountinternetnlscan
 
 
 @app.task(queue='storage')
-def monitor_scans() -> Task:
+def check_running_dashboard_scans(**kwargs) -> Task:
     """
-    Collects the next tasks from the mail and web scan monitors. This can be run every second and it will still be fine.
+    Gets status on all running scans from internet, per account.
 
-    This is called from the
-    :return:
+    :return: None
     """
+    if kwargs:
+        scans = AccountInternetNLScan.objects.all()
+        scans = add_model_filter(scans, **kwargs)
+    else:
+        scans = AccountInternetNLScan.objects.all().exclude(Q(state="finished") | Q(state__startswith="error"))
 
     tasks = []
-    scans = AccountInternetNLScan.objects.all().exclude(Q(state="finished scan") | Q(state__startswith="error"))
     for scan in scans:
         if scan.scan.type == "web":
-            pass
-        if scan.scan.type == "mail":
-            tasks.append(monitor_mail_scan(scan))
+            tasks.append(progress_running_scan(scan))
+        if scan.scan.type == "mail_dashboard":  # todo: mail of mail_dashboard
+            tasks.append(progress_running_scan(scan))
 
     return group(tasks)
 
 
-def monitor_mail_scan(scan: AccountInternetNLScan) -> Task:
+# Todo: make a 'step back' method, that tries to set the state to the previous state. This can be used in the admin
+#  to quickly reverse the state to a previous one when a known error occurs.
+
+def progress_running_scan(scan: AccountInternetNLScan) -> Task:
     """
-    This monitors the state of a mail scan. Depending on the state, it determines if an action is needed and
+    This monitors the state of a dashboard scan. Depending on the state, it determines if an action is needed and
     gathers them. This will not handle errors.
 
     This is used in conjunction with Celery: all tasks are performed async, which scales better.
@@ -178,17 +168,6 @@ def monitor_mail_scan(scan: AccountInternetNLScan) -> Task:
     n+1: retrieved scannable urls -> registering scan at internet.nl -> registered scan at internet.nl
                                                                    -> timeout on ~
                                                                    -> todo: network errors, API errors, not reachable.
-
-    n+1: registered scan at internet.nl -> running scan -> ran scan
-
-    n+1: ran scan -> importing scan results -> imported scan results
-
-    n+1: imported scan results -> creating report -> created report
-
-    n+1: created report -> sending mail -> sent mail
-
-    n+1: sent mail -> finishing scan -> finished scan
-
     :return:
     """
 
@@ -200,83 +179,177 @@ def monitor_mail_scan(scan: AccountInternetNLScan) -> Task:
     if not scan:
         return group([])
 
-    # set up some variables:
-    relevant_scan_types = {"web": "dns_a_aaaa", "mail": "dns_soa"}
+    steps = {
+        # complete state progression, using active verbs to come to the next state:
+        "requested": discovering_endpoints,
+        "discovered endpoints": retrieving_scannable_urls,
+        "retrieved scannable urls": registering_scan_at_internet_nl,
+        "registered scan at internet.nl": running_scan,
+        "ran scan": importing_scan_results,
+        "imported scan results": creating_report,
+        "created report": sending_mail,
+        "sent mail": finishing_scan,
+        # "finished"
 
-    # always get the latest state, so we'll not have outdated information if we had to wait in a queue a long while.
-    # also run this in a transaction, so it's only possible to get a state and update it to an active state once.
+        # support some nested state from the internet.nl API
+        "running scan": running_scan,
+        "running scan: preparing scan": running_scan,
+        "running scan: gathering data": running_scan,
+        "running scan: preparing results": running_scan,
+
+        # monitors on active states:
+        "discovering endpoints": monitor_timeout,
+        "retrieving scannable urls": monitor_timeout,
+        "registering scan at internet.nl": monitor_timeout,
+        "importing scan results": monitor_timeout,
+        "creating report": monitor_timeout,
+        "sending mail": monitor_timeout,
+    }
+
     with transaction.atomic():
+        # always get the latest state, so we'll not have outdated information if we had to wait in a queue a long while.
+        # also run this in a transaction, so it's only possible to get a state and update it to an active state once.
         scan = AccountInternetNLScan.objects.get(id=scan.id)
 
-        # todo: move state to the websecmap object, so that the new approach can also work in a next version of that sw.
-        #  Both the state and the state log ofc.
-        state = scan.state
-
-        if state == "requested":
-            # Always immediately update the current state, so the amount of double calls is minimal:
-            #  "discovered endpoints" to "discovering endpoints" and cause an infinte loop.
-            update_state("discovering endpoints", scan)
-            return (
-                    dns_endpoints.compose_discover_task(**{
-                        'urls_filter': {'urls_in_dashboard_list': scan.urllist, 'is_dead': False, 'not_resolvable': False}})
-                    | update_state.si("discovered endpoints", scan)
-            )
-
-        if state == "discovering endpoints":
-            """Check the timeout of this methods. If it takes too long, escalate."""
-            # and what if the timeout comes way later because this
-            pass
-
-        if state == "discovered endpoints":
-            # This step tries to prevent API calls with an empty list of urls.
-            update_state("retrieving scannable urls", scan)
-            return (
-                    get_relevant_urls.si(scan.urllist, relevant_scan_types[scan.scan.type])
-                    | check_retrieved_scannable_urls.s()
-                    | update_state.s(scan)
-            )
-
-        if state == "retrieving scannable urls":
-            """Todo: check for timeout."""
-            pass
-
-        if state == "retrieved scannable urls":
-            update_state("registering scan at internet.nl", scan)
-
-            # retrieving the API urls:
-            api_url = config.DASHBOARD_API_URL_WEB_SCANS if scan.scan.type == "web" \
-                else config.DASHBOARD_API_URL_MAIL_SCANS
-
-            # todo: register scan does too much, it should just register the scan, and not store things to the db there.
-            #  also add refactor that at websecmap.
-            return (
-                    new_register_scan.si(
-                        scan.account.internet_nl_api_username,
-                        scan.account.decrypt_password(),
-                        api_url)
-                    | check_registered_scan_at_internet_nl.s(scan)
-                    | update_state.s(scan)
-            )
-
-        if state == "registering scan at internet.nl":
-            # todo: check for timeout.
-            pass
-
-        if state == "registered scan at internet.nl":
-            update_state("running scan", scan)
-            # todo: implement,
-            """
-            todo: handle running scan does too much: it handles both if the scan is finished, and creates
-            a parallel task to import the results, which is the cause of the report dates being incorrect.
-            Split that up in separate steps in this routine.
-            get_scan_status.si(scan.status_url, account.internet_nl_api_username, account.decrypt_password())
-            | handle_running_scan_reponse.s(scan)
-            """
+        # todo: move state and state log to the websecmap object.
+        next_step = steps.get(scan.state, handle_unknown_state)
+        return next_step(scan)
 
 
+def handle_unknown_state(scan):
+    # probably nothing to be done...
+    return group([])
+    pass
 
 
-@app.task(queue="storage", autoretry_for=(Exception,), retry_backoff=True, retry_kwargs={'max_retries': 10},
+def discovering_endpoints(scan):
+    # Always immediately update the current state, so the amount of double calls is minimal:
+    #  "discovered endpoints" to "discovering endpoints" and cause an infinte loop.
+    update_state("discovering endpoints", scan)
+    return (
+            dns_endpoints.compose_discover_task(**{
+                'urls_filter': {'urls_in_dashboard_list': scan.urllist, 'is_dead': False, 'not_resolvable': False}})
+            | update_state.si("discovered endpoints", scan)
+    )
+
+
+def retrieving_scannable_urls(scan):
+    # This step tries to prevent API calls with an empty list of urls.
+    update_state("retrieving scannable urls", scan)
+    relevant_scan_types = {"web": "dns_a_aaaa", "mail": "dns_soa"}
+
+    return (
+            get_relevant_urls.si(scan.urllist, relevant_scan_types[scan.scan.type])
+            | check_retrieved_scannable_urls.s()
+            | update_state.s(scan)
+    )
+
+
+def registering_scan_at_internet_nl(scan):
+    update_state("registering scan at internet.nl", scan)
+
+    # retrieving the API urls:
+    api_url = config.DASHBOARD_API_URL_WEB_SCANS if scan.scan.type == "web" \
+        else config.DASHBOARD_API_URL_MAIL_SCANS
+
+    # todo: Also create the scan and scan name, next to the API version in the websecmap object.
+    scan_name = {'source': 'Internet.nl Dashboard',
+                 'type': scan.scan.type,
+                 'account': scan.account.name,
+                 'list': scan.urllist.name}
+
+    relevant_scan_types = {"web": "dns_a_aaaa", "mail": "dns_soa"}
+
+    # todo: register scan does too much, it should just register the scan, and not store things to the db there.
+    #  also add refactor that at websecmap.
+    return (
+           get_relevant_urls.si(scan.urllist, relevant_scan_types[scan.scan.type])
+           | new_register_scan.s(
+                scan.account.internet_nl_api_username,
+                scan.account.decrypt_password(),
+                api_url,
+                json.dumps(scan_name))
+           | check_registered_scan_at_internet_nl.s(scan)
+           | update_state.s(scan)
+    )
+
+
+def running_scan(scan):
+    """
+    todo: handle running scan does too much: it handles both if the scan is finished, and creates
+    a parallel task to import the results, which is the cause of the report dates being incorrect.
+    Split that up in separate steps in this routine.
+    get_scan_status.si(scan.status_url, account.internet_nl_api_username, account.decrypt_password())
+    | handle_running_scan_reponse.s(scan)
+    """
+    update_state("running scan", scan)
+
+    # retrieving the API urls:
+    api_url = config.DASHBOARD_API_URL_WEB_SCANS if scan.scan.type == "web" \
+        else config.DASHBOARD_API_URL_MAIL_SCANS
+
+    return (get_scan_status_new.si(
+                scan.account.internet_nl_api_username,
+                scan.account.decrypt_password(),
+                scan.scan.status_url)
+            | update_state.s(scan))
+
+
+def importing_scan_results(scan):
+    update_state("importing scan results", scan)
+
+    return (retrieve_data
+            | store.s(scan.scan.type)
+            | update_state.si("imported scan results", scan))
+
+
+def creating_report(scan):
+    update_state("creating report", scan)
+
+    return (recreate_url_reports.si(list(scan.urllist.urls.all()))
+            | rate_urllist_on_moment.si(scan.urllist, timezone.now(), prevent_duplicates=False)
+            | update_state.si("created report", scan))
+
+
+def sending_mail(scan):
+    update_state("sending mail", scan)
+
+    return (send_after_scan_mail.si(scan)
+            | update_state.si("sent mail", scan))
+
+
+def finishing_scan(scan):
+    # No further actions, so not setting "finishing scan" as a state, but set it to "scan finished" directly.
+
+    scan.finished_on = timezone.now()
+    scan.finished = True
+
+    update_state("finished", scan)
+    return group([])
+
+
+def monitor_timeout(scan):
+    # todo: see if there is a timeout. If so, perform some actions. We can expect the queues to be completely full
+    # and blocked, so ignore all queues and perform the action directly.
+    # A sensible timeout is a dozen hours or so.
+    # Normal scanning performance of 10.000 urls (the maximum) takes how much time? A day?
+    # We perhaps should depend the timeout on the amount of urls in the scan. Can we see that as a property?
+    return group([])
+
+
+@app.task(queue="storage", autoretry_for=(requests.RequestException, ),
+          retry_backoff=True,
+          retry_kwargs={'max_retries': 10},
+          retry_jitter=False)
+def retrieve_data(username, password, api_url):
+    # 300 seconds, because the report could be HUGE and internet could be slow.
+    response = requests.get(api_url, auth=HTTPBasicAuth(username, password), timeout=(300, 300))
+    return response.json()
+
+
+@app.task(queue="storage", autoretry_for=(requests.RequestException, ),
+          retry_backoff=True,
+          retry_kwargs={'max_retries': 10},
           retry_jitter=False)
 def new_register_scan(urls: List[Url], username, password, api_url: str = "", scan_name: str = "") -> (str, str):
     """
@@ -293,8 +366,6 @@ def new_register_scan(urls: List[Url], username, password, api_url: str = "", sc
     """
 
     data = {"name": scan_name, "domains": urls}
-
-    # todo: handle all types of network errors. It should auto retry for those... replace exception above.
     answer = requests.post(api_url, json=data, auth=HTTPBasicAuth(username, password), timeout=(300, 300))
     log.debug("Received answer from internet.nl: %s" % answer.content)
 
@@ -324,13 +395,124 @@ def new_register_scan(urls: List[Url], username, password, api_url: str = "", sc
     return "Retrieved status successfully!", status_url
 
 
+@app.task(queue="storage", autoretry_for=(requests.RequestException, ),
+          retry_backoff=True,
+          retry_kwargs={'max_retries': 10},
+          retry_jitter=False)
+def get_scan_status_new(username, password, api_url):
+    # 300 seconds, because the report could be HUGE and internet could be slow.
+    response = requests.get(api_url, auth=HTTPBasicAuth(username, password), timeout=(300, 300))
+    #if response.status_code != 200:
+    #    return f"error: running scan: received a {response.status_code} status code instead of 200."
+
+    response = response.json()
+
+    """
+    From: https://github.com/NLnetLabs/Internet.nl/blob/4380e9d4fac3ee8e851abc6bc71a29b9c71d3006/checks/batch/views.py
+    
+    The normal process:                         State set to:
+                                                
+    - Batch request is registering domains      running scan: preparing scan
+    - Batch request is running                  running scan: gathering data
+    - Report is being generated                 running scan: preparing results
+    - OK                                        ran scan
+    
+    Errors:
+    All errors are returned verbatim with "error: running scan: " prepended.
+    
+    - Unknown batch request                     error: running scan: Unknown batch request
+    - Error while registering the domains       running scan: Error whihle registering
+    - Results could not be generated            ...
+    - Batch request was cancelled by user       ...
+    - Problem parsing domains                   ...
+    """
+
+    if "message" not in response:
+        return "error: running scan: no message found in response."
+
+    positive_responses = {
+        "Batch request is registering domains": "running scan: preparing scan",
+        "Batch request is running": "running scan: gathering data",
+        "Report is being generated": "running scan: preparing results",
+        "OK": "ran scan"
+    }
+
+    positive_response = positive_responses.get(response['message'], "")
+
+    if positive_response:
+
+        # Also validate the positive response, to at least contain a single domain.
+        # Negative responses don't contain domains.
+        domains = response.get('data', {}).get('domains', {})
+        if not domains:
+            return "error: running scan: scan completed without useful data. Did the scan start on an empty list?"
+
+        return positive_response
+
+    negative_responses = {
+        "Unknown batch request": "error: running scan: unknown batch request",
+        "Error while registering the domains": "error: running scan: error while registering the domains",
+        "Results could not be generated": "error: running scan: results could not be generated",
+        "Batch request was cancelled by user": "error: running scan: batch request was cancelled by user",
+        "Problem parsing domains": "error: running scan: problem parsing domains",
+    }
+
+    negative_response = negative_responses.get(response['message'], "")
+
+    if negative_response:
+        return negative_response
+
+    # These are really unexpected results.
+    return f"error: running scan: unexpected error with data: {response['message']}"
+
+
+@app.task(queue='storage')
+def send_after_scan_mail(scan):
+    scan_type = scan.scan.type
+    list_name = scan.urllist.name
+
+    subject = f'Your {scan_type} scan on {list_name} has finished!'
+    report = UrlListReport.objects.all().filter(urllist=scan.urllist).order_by("-id").first()
+
+    # Only send mail to users that are active and of course have a mail address...
+    users = User.objects.all().filter(dashboarduser__account=scan.account, email__isnull=False, is_active=True)
+    for user in users:
+
+        # figure out the best possible name:
+        if user.first_name:
+            addressing = user.first_name
+        elif user.last_name:
+            addressing = user.last_name
+        else:
+            addressing = user.username
+
+        content = f"""Hi {addressing},<br>
+        <br>
+        Good news! Your scan on {list_name} has finished.<br>
+        <br>
+        Open the report: <a href="https://dashboard.internet.nl/report/{report.id}/">here</a><br>
+        <br>
+        Regards,<br>
+        internet.nl
+        """
+        send_mail(
+            subject,
+            content,
+            'vraag@internet.nl',
+            [user.email],
+            fail_silently=False,
+            html_message=True
+        )
+    return
+
+
 @app.task(queue='storage')
 def check_registered_scan_at_internet_nl(value, scan):
     # untangle the set
     message, url = value
 
     if message == "Retrieved status successfully!":
-        scan.scan.url = url
+        scan.scan.status_url = url
         scan.scan.save()
         return "registered scan at internet.nl"
 
@@ -350,13 +532,29 @@ def check_retrieved_scannable_urls(urls: List):
 
 
 @app.task(queue='storage')
-def update_state(state, scan):
+def update_state(state: str, scan: AccountInternetNLScan) -> None:
     """Update the current scan state. Also write it to the scan log. From this log we should also be able to see
     retries... when celery retries on exceptions etc..."""
 
+    # if the state is still the same, just update the last_check, don't append the log.
+    # Don't get it from the scan object, that info might be obsolete.
+    last_state_for_scan = AccountInternetNLScanLog.objects.all().filter(scan=scan).order_by("-at_when").first()
+
+    if last_state_for_scan:
+        if last_state_for_scan.state == state:
+            scan.scan.last_check = timezone.now()
+            scan.scan.save()
+            return
+
+    # First state, or a new state.
+    # New log message:
     scan.state = state
-    scan.state_changed_on = timezone.now()
     scan.save()
+
+    # update the internet.nl scan, because something happened.
+    scan.scan.state_changed_on = timezone.now()
+    scan.scan.last_check = timezone.now()
+    scan.scan.save()
 
     scanlog = AccountInternetNLScanLog()
     scanlog.scan = scan
@@ -365,91 +563,8 @@ def update_state(state, scan):
     scanlog.save()
 
 
-def create_dashboard_scan_task(account: Account, urllist: UrlList, save_as_scan_type: str, endpoint_type: str) -> Task:
-    # This is done here, because it will be re-initialized every function call instead of every reboot of the dashboard
-    # (as with contants on top in the module). This might not be as efficient, but it saves a django reboot.
-    api_url_mail = config.DASHBOARD_API_URL_MAIL_SCANS
-    api_url_web = config.DASHBOARD_API_URL_WEB_SCANS
-
-    # The scan name is arbitrary. Add a lot of info to it so the scan can be tracked.
-    # A UUID will be added during registering
-    scan_name = "{'source': 'Internet.nl Dashboard', 'type': '%s', 'account': '%s', 'list': '%s'}" % (
-        save_as_scan_type, account.name, urllist.name)
-
-    api_url = api_url_web if save_as_scan_type == 'web' else api_url_mail
-
-    return (
-        # Should we only try to get the specifically needed dns_endpoint? At what volume we should / must?
-        # This discovers dns_endpoints. On the basis of this we know what urls we should scan an which
-        # ones we should not. We'll only scan if there are valid endpoint, just like at internet.nl
-        compose_discover_task(**{'urls_filter': {'urls_in_dashboard_list': urllist,
-                                                 'is_dead': False, 'not_resolvable': False}})
-
-        # Make sure that the discovery as listed above is actually used in the scan
-        | get_relevant_urls.si(urllist, endpoint_type)
-
-        # The urls are registered as part of the scan
-        | register_scan.s(
-            account.internet_nl_api_username,
-            account.decrypt_password(),
-            save_as_scan_type,
-            api_url,
-            scan_name)
-
-        # When the scan is created, the scan is connected to the account for tracking purposes.
-        # This is visualized in the scan monitor.
-        | connect_scan_to_account.s(account, urllist))
-
-
 @app.task(queue='storage')
-def get_relevant_urls(urllist: UrlList, protocol: str, **kwargs) -> List:
+def get_relevant_urls(urllist: UrlList, protocol: str) -> List:
     urls = Url.objects.all().filter(urls_in_dashboard_list=urllist, is_dead=False, not_resolvable=False,
-                                    endpoint__protocol__in=[protocol])
-    return list(set(add_model_filter(urls, **kwargs)))
-
-
-@app.task(queue='storage')
-def check_running_dashboard_scans(**kwargs) -> Task:
-    """
-    Gets status on all running scans from internet, per account.
-
-    :return: None
-    """
-    if kwargs:
-        account_scans = AccountInternetNLScan.objects.all()
-        account_scans = add_model_filter(account_scans, **kwargs)
-    else:
-        account_scans = AccountInternetNLScan.objects.all().filter(scan__finished=False)
-
-    tasks = []
-    for account_scan in account_scans:
-        scan = account_scan.scan
-        account = account_scan.account
-
-        tasks.append(
-            get_scan_status.si(scan.status_url, account.internet_nl_api_username, account.decrypt_password())
-            | handle_running_scan_reponse.s(scan)
-        )
-
-    return group(tasks)
-
-
-@app.task(queue='storage')
-def connect_scan_to_account(scan: InternetNLScan, account: Account, urllist: UrlList) -> AccountInternetNLScan:
-
-    if not scan:
-        raise ValueError('Scan is empty')
-
-    if not account:
-        raise ValueError('Account is empty')
-
-    if not urllist:
-        raise ValueError('Urllist is empty')
-
-    scan_relation = AccountInternetNLScan()
-    scan_relation.account = account
-    scan_relation.scan = scan
-    scan_relation.urllist = urllist
-    scan_relation.save()
-
-    return scan_relation
+                                    endpoint__protocol__in=[protocol]).values_list('url', flat=True)
+    return list(set(urls))

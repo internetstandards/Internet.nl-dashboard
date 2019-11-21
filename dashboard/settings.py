@@ -510,6 +510,7 @@ JET_SIDE_MENU_ITEMS = [
         {'name': 'internet_nl_dashboard.uploadlog'},
         {'name': 'internet_nl_dashboard.urllist'},
         {'name': 'internet_nl_dashboard.accountinternetnlscan'},
+        {'name': 'internet_nl_dashboard.accountinternetnlscanlog'},
         {'name': 'internet_nl_dashboard.urllistreport'}
     ]},
 
@@ -570,3 +571,7 @@ LANGUAGES = sorted([
     ('nl', 'Dutch'),
     ('en', 'English'),
 ], key=lambda x: x[0])
+
+
+# email settings...
+EMAIL_BACKEND = 'django.core.mail.backends.dummy.EmailBackend'

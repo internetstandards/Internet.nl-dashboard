@@ -12,8 +12,7 @@ from websecmap.scanners.scanner.dns_endpoints import compose_discover_task
 from dashboard.internet_nl_dashboard.logic import operation_response
 from dashboard.internet_nl_dashboard.models import (Account, AccountInternetNLScan, UrlList,
                                                     UrlListReport)
-from dashboard.internet_nl_dashboard.scanners.scan_internet_nl_per_account import \
-    create_dashboard_scan_tasks
+from dashboard.internet_nl_dashboard.scanners.scan_internet_nl_per_account import initialize_scan
 
 log = logging.getLogger(__package__)
 
@@ -98,13 +97,13 @@ def scan_now(account, user_input) -> Dict[str, Any]:
     if urllist.num_urls > max_urls:
         return operation_response(error=True, message=f"Cannot scan: Amount of urls exceeds the maximum of {max_urls}.")
 
+    if not account.connect_to_internet_nl_api(account.internet_nl_api_username, account.decrypt_password()):
+        return operation_response(error=True, message=f"Credentials for the internet.nl API are not valid.")
+
     # Make sure the fernet key is working fine, you are on the correct queue (-Q storage) and that the correct API
     # version is used.
     # Run this before updating the list, as this might go wrong for many reasons.
-    try:
-        create_dashboard_scan_tasks(urllist).apply_async()
-    except ValueError:
-        return operation_response(error=True, message="Password to the internet.nl API is not set or incorrect.")
+    initialize_scan(urllist)
 
     # done: have to update the list info. On the other hand: there is no guarantee that this task already has started
     # ...to fix this issue, we'll use a 'last_manual_scan' field.
@@ -120,10 +119,7 @@ def scan_urllist_now_ignoring_business_rules(urllist: UrlList):
     if not urllist:
         return operation_response(error=True, message="List could not be found.")
 
-    try:
-        create_dashboard_scan_tasks(urllist).apply_async()
-    except ValueError:
-        return operation_response(error=True, message="Password to the internet.nl API is not set or incorrect.")
+    initialize_scan(urllist)
 
     urllist.last_manual_scan = timezone.now()
     urllist.save()

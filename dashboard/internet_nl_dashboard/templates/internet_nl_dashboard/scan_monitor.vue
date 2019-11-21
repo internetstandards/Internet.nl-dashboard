@@ -31,27 +31,16 @@
                     📘 <a :href="'/domains/' + scan.list_id + '/#' + scan.list_id">{{ scan.list }}</a><br>
                     <br>
                     <template v-if="scan.finished">
-                        <template v-if="scan.finished_on">
-                            <b>{{ $t("finished_on") }}</b><br>
-                            <span :title="scan.finished_on">{{ humanize_date(scan.finished_on) }},<br>{{ humanize_relative_date(scan.finished_on) }}</span><br>
-                            <br>
-                        </template>
+                        <b>{{ $t("finished_on") }}</b><br>
+                        <span :title="scan.finished_on">{{ humanize_date(scan.finished_on) }},<br>{{ humanize_relative_date(scan.finished_on) }}</span><br>
+                        <br>
                     </template>
                     <b>{{ $t("runtime") }}</b><br>
                         {{ humanize_duration(scan.runtime) }}<br>
                         <br>
-                    <template v-if="scan.finished">
-                        <template v-if="!scan.finished_on">
-                            <b>{{ $t("message") }}</b>
-                            <p>{{ $t("processing_results") }}</p>
-                            <b>{{ $t("last_check") }}</b><br>
-                            <span :title="scan.last_check">{{ humanize_date(scan.last_check) }},<br>{{ humanize_relative_date(scan.last_check) }}</span><br>
-                            <br>
-                        </template>
-                    </template>
                     <template v-if="!scan.finished">
                         <b>{{ $t("message") }}</b>
-                        <p>{{ scan.message }}</p>
+                        <p>{{ scan.state }}</p>
                         <b>{{ $t("last_check") }}</b><br>
                         <span :title="scan.last_check">{{ humanize_date(scan.last_check) }},<br>{{ humanize_relative_date(scan.last_check) }}</span><br>
                         <br>
@@ -59,6 +48,13 @@
                     <b>{{ $t("started_on") }}</b><br>
                     <span :title="scan.started_on">{{ humanize_date(scan.started_on) }},<br>{{ humanize_relative_date(scan.started_on) }}</span><br>
                     <br>
+
+                    <b>{{ $t("scan history") }}</b><br>
+                    <ul style="font-size: 0.7em; ">
+                        <li v-for="log_item in scan.log">
+                            - {{ log_item.state }}, {{ humanize_relative_date(log_item.at_when) }}
+                        </li>
+                    </ul><br>
 
                     🔖 <a :href="scan.status_url" target="_blank">{{ $t("open_in_api") }}</a><br>
                 </div>
@@ -96,6 +92,7 @@ const ScanMonitor = Vue.component('ScanMonitor', {
                 last_check: 'Last status update',
                 report_is_being_generated: 'Report is being generated.',
                 processing_results: 'Processing results.',
+                "scan history": "Scan History",
             },
             nl: {
                 title: 'Scan monitor',
@@ -116,6 +113,7 @@ const ScanMonitor = Vue.component('ScanMonitor', {
                 last_check: 'Laatste status update',
                 report_is_being_generated: 'Report wordt gemaakt.',
                 processing_results: 'Resultaten worden verwerkt.',
+                "scan history": "Historie van deze scan",
             }
         }
     },

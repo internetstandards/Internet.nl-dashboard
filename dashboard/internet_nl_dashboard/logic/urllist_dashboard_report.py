@@ -181,6 +181,7 @@ def rate_urllists_historically(urllists: List[UrlList]):
             rate_urllist_on_moment(urllist, date)
 
 
+@app.task(queue='storage')
 def rate_urllist_on_moment(urllist: UrlList, when: datetime = None, prevent_duplicates: bool = True):
     # If there is no time slicing, then it's today.
     if not when:
