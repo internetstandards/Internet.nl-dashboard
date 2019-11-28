@@ -38,6 +38,7 @@ from dashboard.internet_nl_dashboard.models import Account, AccountInternetNLSca
 # done: create a function for this, as it is twice the same code.
 # todo: probably the urllist will contain information if a scan will be done for web or mail. This cannot be managed
 #       yet, so this is not implemented yet.
+# Todo: add the scan ID to the report, so it's easier to find which scan is what. Is that possible?
 
 log = logging.getLogger(__name__)
 
