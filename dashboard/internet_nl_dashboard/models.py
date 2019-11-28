@@ -345,6 +345,11 @@ class AccountInternetNLScan(models.Model):
         help_text="The current state"
     )
 
+    state_changed_on = models.DateTimeField(
+        blank=True,
+        null=True
+    )
+
 
 class AccountInternetNLScanLog(models.Model):
 

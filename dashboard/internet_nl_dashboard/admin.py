@@ -286,7 +286,7 @@ class AccountInternetNLScanAdmin(ImportExportModelAdmin, admin.ModelAdmin):
     list_display = ('account', 'account__name', 'state', 'internetnl_scan', 'scan__started_on', 'scan__last_check',
                     'scan__finished_on', 'scan__message', 'urllist')
 
-    fields = ('state', 'account', 'scan', 'urllist')
+    fields = ('state', 'state_changed_on', 'account', 'scan', 'urllist')
 
     @staticmethod
     def account__name(obj):
