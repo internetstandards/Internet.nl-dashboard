@@ -51,6 +51,7 @@ INSTALLED_APPS = [
     # Jet
     'jet.dashboard',
     'jet',
+    'nested_admin',
 
     # Import Export
     'import_export',
@@ -443,10 +444,47 @@ CONSTANCE_BACKEND = 'constance.backends.database.DatabaseBackend'
 CONSTANCE_CONFIG = {
     'SCAN_AT_ALL': (
         True,
-        'This quickly enables or disabled all scans. Note that scans in the scan queue will still be processed.', bool),
+        'This quickly enables or disabled all scans. Note that scans in the scan queue will still be processed.',
+        bool
+    ),
+    'DASHBOARD_MAXIMUM_DOMAINS_PER_SPREADSHEET': (
+        10000,
+        'The maximum amount of domains that can be imported via a spreadsheet at one time. '
+        'In normal use cases these limits will not be reached.',
+        int
+    ),
+    'DASHBOARD_MAXIMUM_LISTS_PER_SPREADSHEET': (
+        200,
+        'The maximum amount of lists that can be imported via a spreadsheet at one time. '
+        'In normal usec ases these limits will not be reached.',
+        int
+    ),
+    'DASHBOARD_MAXIMUM_DOMAINS_PER_LIST': (
+        # The average list is about 300. 90DEV is 600. One exception of 13.000.
+        10000,
+        'The maximum amount of domains that can be in a list. There will be no crash when somebody imports more '
+        'via a spreadsheet: it will be added but the list will refuse to scan and show a warning.'
+        'In normal use cases these limits will not be reached.',
+        int
+    ),
+    'DASHBOARD_API_URL_MAIL_SCANS': (
+        'https://batch.internet.nl/api/batch/v1.1/mail/',
+        'The API url for running internet.nl mail scans.',
+        str
+    ),
+    'DASHBOARD_API_URL_WEB_SCANS': (
+        'https://batch.internet.nl/api/batch/v1.1/web/',
+        'The API url for running internet.nl web scans.',
+        str
+    ),
 }
 
-CONSTANCE_CONFIG_FIELDSETS: Dict[str, Tuple[str]] = OrderedDict()
+CONSTANCE_CONFIG_FIELDSETS: Dict[str, Tuple[str, ...]] = OrderedDict(
+    {'DASHBOARD': ('DASHBOARD_API_URL_MAIL_SCANS', 'DASHBOARD_API_URL_WEB_SCANS',
+                   'DASHBOARD_MAXIMUM_DOMAINS_PER_LIST',
+                   'DASHBOARD_MAXIMUM_DOMAINS_PER_SPREADSHEET', 'DASHBOARD_MAXIMUM_LISTS_PER_SPREADSHEET')}
+)
+
 
 # the try-except makes sure autofix doesn't move the import to the top of the file.
 # Loaded here, otherwise: django.core.exceptions.AppRegistryNotReady: Apps aren't loaded yet.
@@ -467,10 +505,12 @@ JET_SIDE_MENU_ITEMS = [
 
     {'label': _('📊 Dashboard'), 'items': [
         {'name': 'auth.user'},
+        {'name': 'constance.config'},
         {'name': 'internet_nl_dashboard.account'},
         {'name': 'internet_nl_dashboard.uploadlog'},
         {'name': 'internet_nl_dashboard.urllist'},
         {'name': 'internet_nl_dashboard.accountinternetnlscan'},
+        {'name': 'internet_nl_dashboard.accountinternetnlscanlog'},
         {'name': 'internet_nl_dashboard.urllistreport'}
     ]},
 
@@ -531,3 +571,17 @@ LANGUAGES = sorted([
     ('nl', 'Dutch'),
     ('en', 'English'),
 ], key=lambda x: x[0])
+
+
+# email settings...
+if DEBUG:
+    EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+else:
+    EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+    # todo: get these settings from internet.nl
+    EMAIL_HOST = ''
+    EMAIL_PORT = ''
+    EMAIL_HOST_USER = ''
+    EMAIL_HOST_PASSWORD = ''
+    EMAIL_USE_TLS = False
+    EMAIL_USE_SSL = False

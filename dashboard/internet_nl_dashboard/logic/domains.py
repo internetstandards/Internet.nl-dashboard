@@ -1,10 +1,10 @@
 import logging
 from typing import Any, Dict, List, Tuple
 
-from django.db.models import Prefetch
+import tldextract
+from constance import config
+from django.db.models import Count, Prefetch
 from django.utils import timezone
-from tldextract import tldextract
-from validators import domain
 from websecmap.organizations.models import Url
 from websecmap.scanners.models import Endpoint
 from websecmap.scanners.scanner.dns_endpoints import compose_discover_task
@@ -12,8 +12,7 @@ from websecmap.scanners.scanner.dns_endpoints import compose_discover_task
 from dashboard.internet_nl_dashboard.logic import operation_response
 from dashboard.internet_nl_dashboard.models import (Account, AccountInternetNLScan, UrlList,
                                                     UrlListReport)
-from dashboard.internet_nl_dashboard.scanners.scan_internet_nl_per_account import \
-    create_dashboard_scan_tasks
+from dashboard.internet_nl_dashboard.scanners.scan_internet_nl_per_account import initialize_scan
 
 log = logging.getLogger(__package__)
 
@@ -41,7 +40,7 @@ def alter_url_in_urllist(account, data) -> Dict[str, Any]:
         return operation_response(error=True, message="List does not exist.")
 
     # is the url valid?
-    if not is_valid_url(data['new_url_string']):
+    if not Url.is_valid_url(data['new_url_string']):
         return operation_response(error=True, message="New url does not have the correct format.")
 
     # fetch the url, or create it if it doesn't exist.
@@ -68,18 +67,24 @@ def alter_url_in_urllist(account, data) -> Dict[str, Any]:
         new_url_has_mail_endpoint = 'unknown'
         new_url_has_web_endpoint = 'unknown'
 
+    new_fragments = tldextract.extract(new_url.url)
+    old_fragments = tldextract.extract(old_url.url)
+
     return operation_response(success=True, message="Saved.", data={
         'created': {'id': new_url.id, 'url': new_url.url, 'created_on': new_url.created_on,
                     'has_mail_endpoint': new_url_has_mail_endpoint,
-                    'has_web_endpoint': new_url_has_web_endpoint},
+                    'has_web_endpoint': new_url_has_web_endpoint, 'subdomain': new_fragments.subdomain,
+                    'domain': new_fragments.domain, 'suffix': new_fragments.suffix},
         'removed': {'id': old_url.id, 'url': old_url.url, 'created_on': old_url.created_on,
                     'has_mail_endpoint': old_url_has_mail_endpoint,
-                    'has_web_endpoint': old_url_has_web_endpoint},
+                    'has_web_endpoint': old_url_has_web_endpoint, 'subdomain': old_fragments.subdomain,
+                    'domain': old_fragments.domain, 'suffix': old_fragments.suffix},
     })
 
 
 def scan_now(account, user_input) -> Dict[str, Any]:
-    urllist = UrlList.objects.all().filter(account=account, id=user_input.get('id', -1), is_deleted=False).first()
+    urllist = UrlList.objects.all().filter(
+        account=account, id=user_input.get('id', -1), is_deleted=False).annotate(num_urls=Count('urls')).first()
 
     if not urllist:
         return operation_response(error=True, message="List could not be found.")
@@ -87,13 +92,18 @@ def scan_now(account, user_input) -> Dict[str, Any]:
     if not urllist.is_scan_now_available():
         return operation_response(error=True, message="Not all conditions for initiating a scan are met.")
 
+    # make sure there are no errors on this list:
+    max_urls = config.DASHBOARD_MAXIMUM_DOMAINS_PER_LIST
+    if urllist.num_urls > max_urls:
+        return operation_response(error=True, message=f"Cannot scan: Amount of urls exceeds the maximum of {max_urls}.")
+
+    if not account.connect_to_internet_nl_api(account.internet_nl_api_username, account.decrypt_password()):
+        return operation_response(error=True, message=f"Credentials for the internet.nl API are not valid.")
+
     # Make sure the fernet key is working fine, you are on the correct queue (-Q storage) and that the correct API
     # version is used.
     # Run this before updating the list, as this might go wrong for many reasons.
-    try:
-        create_dashboard_scan_tasks(urllist).apply_async()
-    except ValueError:
-        return operation_response(error=True, message="Password to the internet.nl API is not set or incorrect.")
+    initialize_scan(urllist)
 
     # done: have to update the list info. On the other hand: there is no guarantee that this task already has started
     # ...to fix this issue, we'll use a 'last_manual_scan' field.
@@ -109,34 +119,12 @@ def scan_urllist_now_ignoring_business_rules(urllist: UrlList):
     if not urllist:
         return operation_response(error=True, message="List could not be found.")
 
-    try:
-        create_dashboard_scan_tasks(urllist).apply_async()
-    except ValueError:
-        return operation_response(error=True, message="Password to the internet.nl API is not set or incorrect.")
+    initialize_scan(urllist)
 
     urllist.last_manual_scan = timezone.now()
     urllist.save()
 
     return operation_response(success=True, message="Scan started")
-
-
-def is_valid_url(url):
-    extract = tldextract.extract(url)
-    if not extract.suffix:
-        return False
-
-    # Validators catches 'most' invalid urls, but there are some issues and exceptions that are not really likely
-    # to cause any major issues in our software. The other alternative is another library with other quircks.
-    # see: https://github.com/kvesteri/validators/
-    # Note that this library does not account for 'idna' / punycode encoded domains, so you have to convert
-    # them yourself. luckily:
-    # 'аренда.орг' -> 'xn--80aald4bq.xn--c1avg'
-    # 'google.com' -> 'google.com'
-    valid_domain = domain(url.encode('idna').decode())
-    if valid_domain is not True:
-        return False
-
-    return True
 
 
 def get_url(new_url_string: str):
@@ -146,25 +134,8 @@ def get_url(new_url_string: str):
     if url:
         return url, False
 
-    # url does not exist, create it.
-    if not is_valid_url(new_url_string):
-        raise ValueError('Invalid Url')
-
-    new_url = add_url(new_url_string)
-    return new_url, True
-
-
-# todo: validation of url? Why is that missing here?
-def add_url(new_url_string: str):
-    new_url = Url()
-    new_url.url = new_url_string
-    new_url.created_on = timezone.now()
-    new_url.save()
-
-    # always try to find a few dns endpoints...
-    compose_discover_task(urls_filter={'pk': new_url.id}).apply_async()
-
-    return new_url
+    url = Url.add(new_url_string)
+    return url, True
 
 
 def create_list(account: Account, user_input: Dict) -> Dict[str, Any]:
@@ -179,7 +150,7 @@ def create_list(account: Account, user_input: Dict) -> Dict[str, Any]:
         'enable_scans': bool(user_input['enable_scans']),
         'scan_type': validate_list_scan_type(user_input['scan_type']),
         'automated_scan_frequency': frequency,
-        'scheduled_next_scan': UrlList.determine_next_scan_moment(frequency)
+        'scheduled_next_scan': UrlList.determine_next_scan_moment(frequency),
     }
 
     urllist = UrlList(**data)
@@ -190,6 +161,9 @@ def create_list(account: Account, user_input: Dict) -> Dict[str, Any]:
 
     # adding the ID makes it possible to add new urls to a new list.
     data['id'] = urllist.pk
+
+    # empty list, no warnings.
+    data['list_warnings'] = []
 
     # give a hint if it can be scanned:
     data['scan_now_available'] = urllist.is_scan_now_available()
@@ -214,6 +188,7 @@ def delete_list(account: Account, user_input: dict):
         return operation_response(error=True, message="List could not be deleted.")
 
     urllist.is_deleted = True
+    urllist.enable_scans = False
     urllist.deleted_on = timezone.now()
     urllist.save()
 
@@ -261,7 +236,7 @@ def update_list_settings(account: Account, user_input: Dict) -> Dict[str, Any]:
         account=account,
         id=user_input['id'],
         is_deleted=False
-    ).prefetch_related(prefetch_last_scan, last_report_prefetch).first()
+    ).annotate(num_urls=Count('urls')).prefetch_related(prefetch_last_scan, last_report_prefetch).first()
 
     if not urllist:
         return operation_response(error=True, message="No list of urls found.")
@@ -285,6 +260,7 @@ def update_list_settings(account: Account, user_input: Dict) -> Dict[str, Any]:
 
     # make sure the account is serializable.
     data['account'] = account.id
+    data['num_urls'] = urllist.num_urls
 
     # inject the last scan information.
     data['last_scan_id'] = None if not len(urllist.last_scan) else urllist.last_scan[0].scan.id
@@ -294,6 +270,12 @@ def update_list_settings(account: Account, user_input: Dict) -> Dict[str, Any]:
     data['last_report_date'] = None if not len(urllist.last_report) else urllist.last_report[0].at_when
 
     data['scan_now_available'] = updated_urllist.is_scan_now_available()
+
+    # list warnings (might do: make more generic, only if another list warning ever could occur.)
+    list_warnings = []
+    if urllist.num_urls > config.DASHBOARD_MAXIMUM_DOMAINS_PER_LIST:
+        list_warnings.append('WARNING_DOMAINS_IN_LIST_EXCEED_MAXIMUM_ALLOWED')
+    data['list_warnings'] = []
 
     log.debug(data)
 
@@ -340,9 +322,9 @@ def rename_list(account: Account, list_id: int, new_name: str) -> bool:
     return True
 
 
-def get_urllists_from_account(account: Account) -> List:
+def get_urllists_from_account(account: Account) -> Dict:
     """
-    These are lists with some metadata. The metadata is used to give an indication how many urls etc (todo) are
+    These are lists with some metadata. The metadata is used to give an indication how many urls etc (#52) are
     included. Note that this does not return the entire set of urls, given that URLS may be in the thousands.
     A few times a thousand urls will load slowly, which is detrimental to the user experience.
 
@@ -369,14 +351,24 @@ def get_urllists_from_account(account: Account) -> List:
     urllists = UrlList.objects.all().filter(
         account=account,
         is_deleted=False
-    ).order_by('name').prefetch_related(last_scan_prefetch, last_report_prefetch)
+    ).annotate(num_urls=Count('urls')).order_by('name').prefetch_related(last_scan_prefetch, last_report_prefetch)
 
-    response = []
+    # this will create a warning if the number of domains in the list > max_domains
+    # This is placed outside the loop to save a database query per time this is needed.
+    max_domains = config.DASHBOARD_MAXIMUM_DOMAINS_PER_LIST
+
+    url_lists = []
     # Not needed to check the contest of the list. If it's empty, then there is just an empty list returned.
     for urllist in urllists:
-        response.append({
+
+        list_warnings = []
+        if urllist.num_urls > max_domains:
+            list_warnings.append('WARNING_DOMAINS_IN_LIST_EXCEED_MAXIMUM_ALLOWED')
+
+        url_lists.append({
             'id': urllist.id,
             'name': urllist.name,
+            'num_urls': urllist.num_urls,
             'enable_scans': urllist.enable_scans,
             'scan_type': urllist.scan_type,
             'automated_scan_frequency': urllist.automated_scan_frequency,
@@ -387,9 +379,10 @@ def get_urllists_from_account(account: Account) -> List:
             'scan_now_available': urllist.is_scan_now_available(),
             'last_report_id': None if not len(urllist.last_report) else urllist.last_report[0].id,
             'last_report_date': None if not len(urllist.last_report) else urllist.last_report[0].at_when,
+            'list_warnings': list_warnings
         })
 
-    return response
+    return {'lists': url_lists, 'maximum_domains_per_list': max_domains}
 
 
 def get_urllist_content(account: Account, urllist_id: int) -> dict:
@@ -522,8 +515,11 @@ def _add_to_urls_to_urllist(account: Account, current_list: UrlList, urls: List[
             current_list.urls.add(existing_url)
             counters['added_to_list'] += 1
         else:
-            # todo: might be wise to use bulk_create to speed up insertion
-            new_url = add_url(url)
+            new_url = Url.add(url)
+
+            # always try to find a few dns endpoints...
+            compose_discover_task(urls_filter={'pk': new_url.id}).apply_async()
+
             current_list.urls.add(new_url)
             counters['added_to_list'] += 1
 
@@ -546,7 +542,7 @@ def clean_urls(urls: List[str]) -> Dict[str, List]:
         # all urls in the system must be lowercase (if applicable to used character)
         url = url.lower()
 
-        if not is_valid_url(url):
+        if not Url.is_valid_url(url):
             result['incorrect'].append(url)
         else:
             result['correct'].append(url)

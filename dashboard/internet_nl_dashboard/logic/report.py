@@ -83,6 +83,16 @@ def get_urllist_report_graph_data(account: Account, urllist_id: int):
         all = per_report_statistcs.ok + per_report_statistcs.high + per_report_statistcs.medium + \
             per_report_statistcs.low
 
+        # no urls in list, but still somehow managed to scan. This is usually a data bug during development.
+        # But it might happen due to weird fixes, odd behaviour, clearing lists and then calling scans or other glitches
+        if not all:
+            pct_ok = 0
+            pct_not_ok = 0
+        else:
+            pct_ok = round(
+                ((per_report_statistcs.ok + per_report_statistcs.medium + per_report_statistcs.low) / all) * 100, 2)
+            pct_not_ok = round((not_ok / all) * 100, 2)
+
         stats.append({
             'date': per_report_statistcs.at_when.date().isoformat(),
             'urls': per_report_statistcs.total_urls,
@@ -99,9 +109,8 @@ def get_urllist_report_graph_data(account: Account, urllist_id: int):
 
             # for internet.nl low and medium do not impact the score.
             # not_tested does (=high), not_testable and not_applicable don't.
-            'pct_ok': round(
-                ((per_report_statistcs.ok + per_report_statistcs.medium + per_report_statistcs.low) / all) * 100, 2),
-            'pct_not_ok': round((not_ok / all) * 100, 2)
+            'pct_ok': pct_ok,
+            'pct_not_ok': pct_not_ok
         })
 
     return stats

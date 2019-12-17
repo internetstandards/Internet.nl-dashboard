@@ -244,19 +244,6 @@ small {
     font-weight: bold;
 }
 
-.testresultcell span{
-    background-size: 1.125em 1.125em;
-    background-repeat: no-repeat;
-    /**
-    The reason we're not using padding-left 1.5em is that we want the results to be copy-pasteable.
-    So there is invisible text on the icon that can be copied.
-    */
-    width: 20px;
-    height: 20px;
-    display: block;
-    color: transparent;
-}
-
 /** Testresults in matrix style */
 .category_passed {
     background-image: url("/static/images/vendor/internet_nl/icon-circle-check.png");
@@ -393,55 +380,6 @@ small {
     background-image: url("/static/images/vendor/internet_nl/icon-menu.svg") !important;
 }
 
-
-.table-striped tbody tr:nth-of-type(2n+1) {
-    background-color: rgba(0,0,0,.05);
-}
-
-.table {
-    width: 100%;
-    max-width: 100%;
-    margin-bottom: 1rem;
-    background-color: transparent;
-}
-
-.table td, .table th {
-    padding: .75rem;
-    vertical-align: top;
-    border-top: 1px solid #dee2e6;
-}
-
-.table th {
-    min-height: 300px;
-}
-
-
-/* https://css-tricks.com/rotated-table-column-headers/*/
-/* It's not possible to dynamically resize the height of the TH or th container :( */
-th.rotate {
-    height: 250px;
-    white-space: nowrap;
-    vertical-align: bottom;
-}
-
-th.rotate > div {
-  transform:
-    rotate(315deg);
-  width: 30px;
-}
-th.rotate > div > span {
-    border-bottom: 0px solid #ccc;
-    padding: 5px 10px;
-}
-
-
-.direct_link_to_report{
-    font-size: 0.8em;
-}
-
-.table .summaryrow {
-    font-size: 0.8em;
-}
 
 /* https://stackoverflow.com/questions/10732690/offsetting-an-html-anchor-to-adjust-for-fixed-header */
 a.anchor {

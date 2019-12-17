@@ -3,17 +3,17 @@ from typing import List
 
 from django.utils import timezone
 
-from dashboard.internet_nl_dashboard.models import Account, AccountInternetNLScan, UrlListReport
+from dashboard.internet_nl_dashboard.models import (Account, AccountInternetNLScan,
+                                                    AccountInternetNLScanLog, UrlListReport)
 
 
-# todo: probably this is much easier with django rest framework? (perhaps not conceptually)
 def get_running_scans(account: Account) -> List:
 
     scans = AccountInternetNLScan.objects.all().filter(
         account=account,
         urllist__is_deleted=False
     ).order_by('-pk')[0:30].select_related(
-        'urllist', 'account', 'scan'
+        'urllist', 'account', 'scan',
     )
 
     response = []
@@ -22,15 +22,12 @@ def get_running_scans(account: Account) -> List:
         # it's probably fine but far from ideal.
 
         last_report_id = None
-        if scan.scan.finished_on:
+        # Finished means also report created, mail sent, etc.
+        if scan.state == "finished":
             # first report within the next day
 
             last_report = UrlListReport.objects.all().filter(
                 urllist=scan.urllist,
-                # We can expect a report to be ready 24 hours after the scan has finished (?)
-                # Otherwise maybe just get the latest scan for the urllist?
-                # reports are stored at the last possible moment of the day. So every day there is at max 1 report.
-                # If a scan if finished at exactly 00:00, the next report will be stored at 23:59:59 ...
                 at_when__lte=scan.scan.finished_on + timedelta(hours=24),
                 at_when__gte=scan.scan.finished_on
             ).order_by('-id').only('id').first()
@@ -38,10 +35,16 @@ def get_running_scans(account: Account) -> List:
             if last_report:
                 last_report_id = last_report.id
 
-        if scan.scan.finished_on:
+        if scan.state == "finished":
             runtime = scan.scan.finished_on - scan.scan.started_on
         else:
             runtime = timezone.now() - scan.scan.started_on
+
+        # get complete log from this scan.
+        logs = AccountInternetNLScanLog.objects.all().filter(scan=scan).order_by('-at_when')
+        log_messages = []
+        for log in logs:
+            log_messages.append({'at_when': log.at_when, 'state': log.state})
 
         runtime = runtime.total_seconds() * 1000
 
@@ -61,6 +64,8 @@ def get_running_scans(account: Account) -> List:
             'last_check': scan.scan.last_check,
             'runtime': runtime,
             'last_report_id': last_report_id,
+            'state': scan.state,
+            'log': log_messages
         })
 
     return response

@@ -26,6 +26,7 @@ from typing import Any, Dict, List
 import magic
 import pyexcel as p
 import pytz
+from constance import config
 from django.db import transaction
 from xlrd import XLRDError
 
@@ -56,11 +57,6 @@ SPREADSHEET_MIME_TYPES: List[str] = [
 ]
 
 ALLOWED_SPREADSHEET_EXTENSIONS: List[str] = ['xlsx', 'xls', 'ods', 'csv']
-
-# Anything more than this cannot be uploaded in a single spreadsheet. It can be in multiple.
-# In normal usecases these limits will not be reached.
-MAXIMUM_AMOUNT_OF_NEW_LISTS: int = 200
-MAXIMUM_AMOUNT_OF_NEW_URLS: int = 10000
 
 
 def is_file(file: str) -> bool:
@@ -265,7 +261,7 @@ def complete_import(user: DashboardUser, file: str):
     for urllist in data.keys():
         number_of_urls += len(data[urllist])
 
-    if number_of_lists > MAXIMUM_AMOUNT_OF_NEW_LISTS:
+    if number_of_lists > config.DASHBOARD_MAXIMUM_LISTS_PER_SPREADSHEET:
         response['error'] = True
         response['status'] = 'error'
         response['message'] = "The maximum number of new lists is %s. The uploaded spreadsheet contains more than " \
@@ -273,7 +269,7 @@ def complete_import(user: DashboardUser, file: str):
         log_spreadsheet_upload(user=user, file=file, status=response['status'], message=response['message'])
         return response
 
-    if number_of_lists > MAXIMUM_AMOUNT_OF_NEW_URLS:
+    if number_of_lists > config.DASHBOARD_MAXIMUM_DOMAINS_PER_SPREADSHEET:
         response['error'] = True
         response['status'] = 'error'
         response['message'] = "The maximum number of new urls is %s. The uploaded spreadsheet contains more than " \

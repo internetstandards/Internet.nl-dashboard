@@ -21,7 +21,8 @@ from websecmap.scanners.models import Endpoint
 from dashboard.internet_nl_dashboard import models
 from dashboard.internet_nl_dashboard.forms import CustomAccountModelForm
 from dashboard.internet_nl_dashboard.logic.domains import scan_urllist_now_ignoring_business_rules
-from dashboard.internet_nl_dashboard.models import (Account, AccountInternetNLScan, DashboardUser,
+from dashboard.internet_nl_dashboard.models import (Account, AccountInternetNLScan,
+                                                    AccountInternetNLScanLog, DashboardUser,
                                                     UploadLog, UrlList)
 
 log = logging.getLogger(__package__)
@@ -283,10 +284,10 @@ class UrlListAdmin(ImportExportModelAdmin, admin.ModelAdmin):
 @admin.register(AccountInternetNLScan)
 class AccountInternetNLScanAdmin(ImportExportModelAdmin, admin.ModelAdmin):
 
-    list_display = ('account', 'account__name', 'internetnl_scan', 'scan__started_on', 'scan__last_check',
+    list_display = ('account', 'account__name', 'state', 'internetnl_scan', 'scan__started_on', 'scan__last_check',
                     'scan__finished_on', 'scan__message', 'urllist')
 
-    fields = ('account', 'scan', 'urllist')
+    fields = ('state', 'state_changed_on', 'account', 'scan', 'urllist')
 
     @staticmethod
     def account__name(obj):
@@ -311,6 +312,15 @@ class AccountInternetNLScanAdmin(ImportExportModelAdmin, admin.ModelAdmin):
     @staticmethod
     def internetnl_scan(obj):
         return obj.scan.id
+
+
+@admin.register(AccountInternetNLScanLog)
+class AccountInternetNLScanLogAdmin(ImportExportModelAdmin, admin.ModelAdmin):
+
+    list_display = ('scan', 'state', 'at_when')
+    list_filter = ['scan', 'state', 'at_when'][::-1]
+    search_fields = ('scan__urllist__name', 'scan__account__name')
+    fields = list_display
 
 
 @admin.register(UploadLog)

@@ -24,33 +24,42 @@ Fixed: when deleting a list, it is re-added to the list of lists when adding a n
  (most of the above errors would be solved if we would only add things to the end of the list?).
 -->
 {% verbatim %}
-<template type="x-template" id="lists">
-    <div style="width: 100%">
+<style>
+    #lists_ {
+        width: 100%;
+    }
+    #lists_ .list_warning {
+        font-size: 1.2em;
+        font-weight: bold;
+    }
+</style>
+<template type="x-template" id="listss">
+    <div id="lists_">
         <div class="block fullwidth">
-            <h1>{{ $t("domain_management.title") }}</h1>
-            <p>{{ $t("domain_management.intro") }}</p>
-            <p><a href="/upload/">{{ $t("domain_management.bulk_upload_link") }}</a></p>
+            <h1>{{ $t("title") }}</h1>
+            <p>{{ $t("intro") }}</p>
+            <p><a href="/upload/">{{ $t("bulk_upload_link") }}</a></p>
 
             <div class="testresult">
                 <h3 class="panel-title" >
                     <a href="" aria-expanded="false">
                         <span class="visuallyhidden">-:</span>
-                        {{ $t("domain_management.icon_legend.title") }}
+                        {{ $t("icon_legend.title") }}
                         <span class="pre-icon visuallyhidden"></span>
                         <span class="icon"><img src="/static/images/vendor/internet_nl/push-open.png" alt=""></span>
                     </a>
                 </h3>
                 <div class="panel-content">
-                    <p>{{ $t("domain_management.icon_legend.intro") }}</p>
+                    <p>{{ $t("icon_legend.intro") }}</p>
                     <ul>
                         <li>
                             <span role="img" :aria-label="$t('icons.can_connect')">🌍️</span>
-                            {{ $t("domain_management.icon_legend.can_connect") }}</li>
+                            {{ $t("icon_legend.can_connect") }}</li>
                         <li>
                             <span role="img" :aria-label="$t('icons.unknown_connectivity')">❓</span>
-                            {{ $t("domain_management.icon_legend.unknown_connectivity") }}</li>
+                            {{ $t("icon_legend.unknown_connectivity") }}</li>
                         <li><span role="img" :aria-label="$t('icons.cannot_connect')">🚫</span>
-                            {{ $t("domain_management.icon_legend.cannot_connect") }}</li>
+                            {{ $t("icon_legend.cannot_connect") }}</li>
                     </ul>
                 </div>
             </div>
@@ -65,9 +74,6 @@ Fixed: when deleting a list, it is re-added to the list of lists when adding a n
                     <label for="name">{{ $t("urllist.field_label_name") }}:</label><br>
                     <input id="name" type="text" maxlength="120" v-model="add_new_new_list.name"><br><br>
 
-                    <label for="enable_scans">{{ $t("urllist.field_label_enable_scans") }}:</label><br>
-                    <input id="enable_scans" type="checkbox" v-model="add_new_new_list.enable_scans"><br><br>
-
                     <label for="scan_type">{{ $t("urllist.field_label_scan_type") }}:</label><br>
                     <select id="scan_type" v-model="add_new_new_list.scan_type">
                         <option value="web">{{ $t("urllist.scan_type_web") }}</option>
@@ -76,27 +82,33 @@ Fixed: when deleting a list, it is re-added to the list of lists when adding a n
 
                     <label for="automated_scan_frequency">{{ $t("urllist.field_label_automated_scan_frequency") }}:</label><br>
                     <select id="automated_scan_frequency" v-model="add_new_new_list.automated_scan_frequency">
-                        <option value="disabled">{{ $t("urllist.automated_scan_frequency_disabled") }}</option>
-                        <option value="every half year">{{ $t("urllist.automated_scan_frequency_every_half_year") }}</option>
-                        <option value="at the start of every quarter">{{ $t("urllist.automated_scan_frequency_every_quarter") }}</option>
-                        <option value="every 1st day of the month">{{ $t("urllist.automated_scan_frequency_every_month") }}</option>
-                        <option value="twice per month">{{ $t("urllist.automated_scan_frequency_twice_per_month") }}</option>
+                        <option value="disabled">{{ $t("urllist.automated_scan_frequency.disabled") }}</option>
+                        <option value="every half year">{{ $t("urllist.automated_scan_frequency.every_half_year") }}</option>
+                        <option value="at the start of every quarter">{{ $t("urllist.automated_scan_frequency.every_quarter") }}</option>
+                        <option value="every 1st day of the month">{{ $t("urllist.automated_scan_frequency.every_month") }}</option>
+                        <option value="twice per month">{{ $t("urllist.automated_scan_frequency.twice_per_month") }}</option>
                     </select>
 
                 </div>
                 <div slot="footer">
-                    <button @click="stop_adding_new()">{{ $t("domains.button_close_label") }}</button>
-                    <button class="modal-default-button" @click="create_list()">{{ $t("domains.button_create_list_label") }}</button>
+                    <button @click="stop_adding_new()">{{ $t("new_list.button_close_label") }}</button>
+                    <button class="modal-default-button" @click="create_list()">{{ $t("new_list.button_create_list_label") }}</button>
                 </div>
             </modal>
 
             <div>
-                <button @click="start_adding_new()" accesskey="n">{{ $t("domains.add_new_list") }}</button>
+                <button @click="start_adding_new()" accesskey="n">{{ $t("new_list.add_new_list") }}</button>
             </div>
 
         </div>
 
         <loading :loading="loading"></loading>
+
+        <div v-if="one_of_the_lists_contains_warnings" class="managed-url-list block fullwidth">
+            <span class="list_warning">
+                <span role="img" :aria-label="$t('icons.list_warning')">⚠️</span> {{ $t("warning_found_in_list") }}
+            </span>
+        </div>
 
         <!--
         The usage of v-bind:key="list.id" makes sure that data + props match. Would you not use a key, the
@@ -107,14 +119,19 @@ Fixed: when deleting a list, it is re-added to the list of lists when adding a n
         What we would like is that when rerendering, the state (data) would also transfer to the correct component
         https://michaelnthiessen.com/force-re-render/
         -->
-        <managed-url-list :initial_list="list" v-bind:key="list.id" v-on:removelist="removelist" v-for="list in lists"></managed-url-list>
+        <managed-url-list
+                :initial_list="list"
+                :maximum_domains="maximum_domains_per_list"
+                v-bind:key="list.id"
+                v-on:removelist="removelist"
+                v-for="list in lists"></managed-url-list>
 
         <div v-if="!lists.length" class="no-content block fullwidth">
-            Start creating a new list... <br>
-            <button @click="start_adding_new()">{{ $t("domains.add_new_list") }}</button>
+            {{ $t("inital_list.start") }} <br>
+            <button @click="start_adding_new()">{{ $t("new_list.add_new_list") }}</button>
             <br>
             <br>
-            or <a href="/upload/">upload a spreadsheet with domains here</a>...
+            {{ $t("inital_list.alternative_start") }}
         </div>
 
     </div>
@@ -122,20 +139,98 @@ Fixed: when deleting a list, it is re-added to the list of lists when adding a n
 {% endverbatim %}
 
 <script>
-vueListManager = new Vue({
-    i18n,
-    name: 'list_manager',
-    el: '#list_manager',
-    template: '#lists',
-    mixins: [http_mixin],
-    data: {
-        loading: false,
-        lists: [],
+const DomainListManager = Vue.component('list-manager', {
+    i18n: {
+        messages: {
+            en: {
+                title: "Domains",
+                intro: "Manage lists with domains",
+                bulk_upload_link: "Upload large amount of data by using the Bulk Address uploader, here.",
+                warning_found_in_list: "One or more lists contain issues, this will prevent scans from running.",
 
-        // everything that has something to do with adding a new list:
-        show_add_new: false,
-        add_new_server_response: {},
-        add_new_new_list: {}
+                icons: {
+                    list_closed: "List closed",
+                    list_opened: "List opened",
+
+                    settings: "settings",
+
+                    scan: "scan",
+                    can_connect: "Can connect icon",
+                    unknown_connectivity: "Unknown connectivity icon",
+                    cannot_connect: "Can not connect",
+                    list_warning: "Warning",
+                },
+
+                icon_legend: {
+                    title: "Legend of used icons",
+                    intro: "The domains in the lists below will be included in each scan. Before a scan is performed, the eligibility of the " +
+                        "service is checked. This check is always performed for the scan. To give an insight in how connected" +
+                        "these services are, the last known state is presented as the first icon.",
+                    can_connect: "Can connect to this service, will (probably) be scanned.",
+                    unknown_connectivity: "Unknown if this service is available, will be scanned if available.",
+                    cannot_connect: "Service not available, will (probably) not be scanned."
+                },
+
+                inital_list: {
+                    start: 'Start creating a new list...',
+                    alternative_start: 'or <a href="/upload/">upload a spreadsheet with domains here</a>...',
+                },
+
+                new_list: {
+                    add_new_list: 'Add new list',
+                    button_close_label: 'Close',
+                    button_create_list_label: 'Create List',
+                },
+
+
+            },
+            nl: {
+
+                title: "Domeinen",
+                intro: "Beheer lijsten met domeinen",
+                bulk_upload_link: "Een groot aantal domeinen kan worden geüpload met de Bulk Addressen Uploader, hier.",
+                warning_found_in_list: "Eén of meerdere lijsten bevatten waarschuwingen. Deze lijsten worden niet gescand.",
+
+                icon_legend: {
+                    title: "Legenda van gebruikte pictogrammen",
+                    intro: "De domeinen in de lijsten hieronder worden gebruikt bij iedere scan. Voordat een scan is uitgevoerd " +
+                        "wordt per domein gekeken of het domein aan de voorwaarden voldoet om gescand te worden. In de lijst " +
+                        "hieronder wordt daarvan een beeld gegeven, echter kan dat beeld verouderd zijn: dit wordt ververst " +
+                        "voor iedere scan.",
+                    can_connect: "Deze dienst is bereikbaar en wordt (waarschijnlijk) gescanned.",
+                    unknown_connectivity: "Niet bekend of deze dienst beschikbaar is, dit wordt later gecontroleerd.",
+                    cannot_connect: "Deze dienst is niet beschikbaar, en wordt (waarschijnlijk) niet gescand."
+                },
+
+                inital_list: {
+                    start: 'Maak een nieuwe lijst, voeg aan die lijst je domeinen toe...',
+                    alternative_start: 'of <a href="/upload/">upload hier een spreadsheet met domeinen</a>...',
+                },
+
+                new_list: {
+                    add_new_list: 'Lijst toevoegen',
+                    button_close_label: 'Sluiten',
+                    button_create_list_label: 'Maak deze lijst',
+                },
+
+            }
+        }
+    },
+    template: '#listss',
+    mixins: [http_mixin],
+    data: function() {
+        return {
+            loading: false,
+            lists: [],
+
+            // possible things that can go wrong in list validation.
+            maximum_domains_per_list: 10000,
+
+            // everything that has something to do with adding a new list:
+            show_add_new: false,
+            add_new_server_response: {},
+            add_new_new_list: {},
+        }
     },
     mounted: function () {
         this.get_lists();
@@ -152,12 +247,15 @@ vueListManager = new Vue({
         get_lists: function(){
             this.loading = true;
             fetch(`/data/urllists/get/`, {credentials: 'include'}).then(response => response.json()).then(data => {
-                this.lists = data;
+
+                this.lists = data['lists'];
+                this.maximum_domains_per_list = data['maximum_domains_per_list'];
                 this.loading = false;
             }).catch((fail) => {console.log('A loading error occurred: ' + fail);});
         },
         start_adding_new: function(){
-            this.add_new_new_list = {'id': -1, 'name': '', 'enable_scans': false, 'scan_type': 'web',
+            // Fixes #105: we don't need an explicit enable scans checkmark.
+            this.add_new_new_list = {'id': -1, 'name': '', 'enable_scans': true, 'scan_type': 'web',
                 'automated_scan_frequency': 'disabled', 'scheduled_next_scan': '1'};
             this.show_add_new = true;
             this.add_new_server_response = {};
@@ -185,6 +283,16 @@ vueListManager = new Vue({
                     }
                 });
         }
+    },
+    computed: {
+        one_of_the_lists_contains_warnings: function(){
+            let contains_warnings = false;
+            this.lists.forEach((list) => {
+                if (list.list_warnings.length)
+                    contains_warnings = true;
+            });
+            return contains_warnings;
+        },
     }
 });
 </script>
