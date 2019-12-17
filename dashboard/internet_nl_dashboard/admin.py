@@ -21,8 +21,9 @@ from websecmap.scanners.models import Endpoint
 from dashboard.internet_nl_dashboard import models
 from dashboard.internet_nl_dashboard.forms import CustomAccountModelForm
 from dashboard.internet_nl_dashboard.logic.domains import scan_urllist_now_ignoring_business_rules
-from dashboard.internet_nl_dashboard.models import (Account, AccountInternetNLScan, DashboardUser,
-                                                    UploadLog, UrlList, AccountInternetNLScanLog)
+from dashboard.internet_nl_dashboard.models import (Account, AccountInternetNLScan,
+                                                    AccountInternetNLScanLog, DashboardUser,
+                                                    UploadLog, UrlList)
 
 log = logging.getLogger(__package__)
 

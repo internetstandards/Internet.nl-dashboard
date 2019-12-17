@@ -3,7 +3,7 @@ import logging
 from django.conf import settings
 from django.core.management.base import BaseCommand
 
-from dashboard.internet_nl_dashboard.models import UrlList, AccountInternetNLScan
+from dashboard.internet_nl_dashboard.models import AccountInternetNLScan
 from dashboard.internet_nl_dashboard.scanners.scan_internet_nl_per_account import update_state
 
 log = logging.getLogger(__package__)
@@ -36,4 +36,3 @@ class Command(BaseCommand):
         scan.state = options['state']
         update_state(options['state'], scan)
         log.info(f"Scan {scan} is set to {options['state']}.")
-

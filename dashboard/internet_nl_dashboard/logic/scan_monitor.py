@@ -3,8 +3,8 @@ from typing import List
 
 from django.utils import timezone
 
-from dashboard.internet_nl_dashboard.models import Account, AccountInternetNLScan, UrlListReport, \
-    AccountInternetNLScanLog
+from dashboard.internet_nl_dashboard.models import (Account, AccountInternetNLScan,
+                                                    AccountInternetNLScanLog, UrlListReport)
 
 
 def get_running_scans(account: Account) -> List:

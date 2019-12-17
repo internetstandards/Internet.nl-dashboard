@@ -4,9 +4,9 @@ from datetime import timedelta
 from typing import List
 
 import requests
-from django.contrib.auth.models import User
 from celery import Task, group
 from constance import config
+from django.contrib.auth.models import User
 from django.core.mail import send_mail
 from django.db import transaction
 from django.db.models import Count, Q
@@ -20,8 +20,9 @@ from websecmap.scanners.scanner.internet_nl_mail import store
 
 from dashboard.celery import app
 from dashboard.internet_nl_dashboard.logic.urllist_dashboard_report import rate_urllists_now
-from dashboard.internet_nl_dashboard.models import Account, AccountInternetNLScan, UrlList, AccountInternetNLScanLog, \
-    UrlListReport
+from dashboard.internet_nl_dashboard.models import (Account, AccountInternetNLScan,
+                                                    AccountInternetNLScanLog, UrlList,
+                                                    UrlListReport)
 
 # done: create more flexible filters
 # done: map mail scans to an endpoint (changed the scanner for it)
@@ -157,7 +158,7 @@ def progress_running_scan(scan: AccountInternetNLScan) -> Task:
 
     """
     It's not possible to safely create a scan automagically: this might be called a few times in a row, and then
-    you'll end up with several new scans. Therefore, to initiate a scan, you need to call another method. 
+    you'll end up with several new scans. Therefore, to initiate a scan, you need to call another method.
     After the scan is initiated, this will pick it up and continue.
     """
     if not scan:
@@ -202,7 +203,6 @@ def progress_running_scan(scan: AccountInternetNLScan) -> Task:
 def handle_unknown_state(scan):
     # probably nothing to be done...
     return group([])
-    pass
 
 
 def discovering_endpoints(scan):
@@ -210,9 +210,9 @@ def discovering_endpoints(scan):
     #  "discovered endpoints" to "discovering endpoints" and cause an infinte loop.
     update_state("discovering endpoints", scan)
     return (
-            dns_endpoints.compose_discover_task(**{
-                'urls_filter': {'urls_in_dashboard_list': scan.urllist, 'is_dead': False, 'not_resolvable': False}})
-            | update_state.si("discovered endpoints", scan)
+        dns_endpoints.compose_discover_task(**{
+            'urls_filter': {'urls_in_dashboard_list': scan.urllist, 'is_dead': False, 'not_resolvable': False}})
+        | update_state.si("discovered endpoints", scan)
     )
 
 
@@ -222,9 +222,9 @@ def retrieving_scannable_urls(scan):
     relevant_scan_types = {"web": "dns_a_aaaa", "mail": "dns_soa"}
 
     return (
-            get_relevant_urls.si(scan.urllist, relevant_scan_types[scan.scan.type])
-            | check_retrieved_scannable_urls.s()
-            | update_state.s(scan)
+        get_relevant_urls.si(scan.urllist, relevant_scan_types[scan.scan.type])
+        | check_retrieved_scannable_urls.s()
+        | update_state.s(scan)
     )
 
 
@@ -244,29 +244,25 @@ def registering_scan_at_internet_nl(scan):
     relevant_scan_types = {"web": "dns_a_aaaa", "mail": "dns_soa"}
 
     return (
-           get_relevant_urls.si(scan.urllist, relevant_scan_types[scan.scan.type])
-           | new_register_scan.s(
-                scan.account.internet_nl_api_username,
-                scan.account.decrypt_password(),
-                api_url,
-                json.dumps(scan_name))
-           | check_registered_scan_at_internet_nl.s(scan)
-           | update_state.s(scan)
+        get_relevant_urls.si(scan.urllist, relevant_scan_types[scan.scan.type])
+        | new_register_scan.s(
+            scan.account.internet_nl_api_username,
+            scan.account.decrypt_password(),
+            api_url,
+            json.dumps(scan_name))
+        | check_registered_scan_at_internet_nl.s(scan)
+        | update_state.s(scan)
     )
 
 
 def running_scan(scan):
     update_state("running scan", scan)
 
-    # retrieving the API urls:
-    api_url = config.DASHBOARD_API_URL_WEB_SCANS if scan.scan.type == "web" \
-        else config.DASHBOARD_API_URL_MAIL_SCANS
-
     return (get_scan_status_new.si(
-                scan.account.internet_nl_api_username,
-                scan.account.decrypt_password(),
-                scan.scan.status_url)
-            | update_state.s(scan))
+        scan.account.internet_nl_api_username,
+        scan.account.decrypt_password(),
+        scan.scan.status_url)
+        | update_state.s(scan))
 
 
 def continue_running_scan(scan):
@@ -274,25 +270,22 @@ def continue_running_scan(scan):
     Same as running scan, but will not set the state to "running scan" to prevent log spamming.
     """
 
-    api_url = config.DASHBOARD_API_URL_WEB_SCANS if scan.scan.type == "web" \
-        else config.DASHBOARD_API_URL_MAIL_SCANS
-
     return (get_scan_status_new.si(
-                scan.account.internet_nl_api_username,
-                scan.account.decrypt_password(),
-                scan.scan.status_url)
-            | update_state.s(scan))
+        scan.account.internet_nl_api_username,
+        scan.account.decrypt_password(),
+        scan.scan.status_url)
+        | update_state.s(scan))
 
 
 def importing_scan_results(scan):
     update_state("importing scan results", scan)
 
     return (retrieve_data.s(
-                scan.account.internet_nl_api_username,
-                scan.account.decrypt_password(),
-                scan.scan.status_url)
-            | store.s(scan.scan.type)
-            | update_state.si("imported scan results", scan))
+        scan.account.internet_nl_api_username,
+        scan.account.decrypt_password(),
+        scan.scan.status_url)
+        | store.s(scan.scan.type)
+        | update_state.si("imported scan results", scan))
 
 
 def creating_report(scan):
@@ -442,17 +435,17 @@ def get_scan_status_new(username, password, api_url):
 
     """
     From: https://github.com/NLnetLabs/Internet.nl/blob/4380e9d4fac3ee8e851abc6bc71a29b9c71d3006/checks/batch/views.py
-    
+
     The normal process:                         State set to:
-                                                
+
     - Batch request is registering domains      running scan: preparing scan
     - Batch request is running                  running scan: gathering data
     - Report is being generated                 running scan: preparing results
     - OK                                        ran scan
-    
+
     Errors:
     All errors are returned verbatim with "error: running scan: " prepended.
-    
+
     - Unknown batch request                     error: running scan: Unknown batch request
     - Error while registering the domains       running scan: Error whihle registering
     - Results could not be generated            ...
@@ -538,7 +531,8 @@ def send_after_scan_mail(scan):
         <br>
         Good news! Your scan on {list_name} has finished.<br>
         <br>
-        Open the report: <a href="https://dashboard.internet.nl/report/{report.id}/">https://dashboard.internet.nl/report/{report.id}/</a><br>
+        Open the report: <a href="https://dashboard.internet.nl/report/{report.id}/">
+        https://dashboard.internet.nl/report/{report.id}/</a><br>
         <br>
         Regards,<br>
         internet.nl
