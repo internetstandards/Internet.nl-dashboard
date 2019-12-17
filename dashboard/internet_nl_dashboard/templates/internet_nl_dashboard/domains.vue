@@ -106,7 +106,7 @@ Fixed: when deleting a list, it is re-added to the list of lists when adding a n
 
         <div v-if="one_of_the_lists_contains_warnings" class="managed-url-list block fullwidth">
             <span class="list_warning">
-                <span role="img" :aria-label="$t('icons.list_warning')">⚠️</span>{{ $t("warning_found_in_list") }}
+                <span role="img" :aria-label="$t('icons.list_warning')">⚠️</span> {{ $t("warning_found_in_list") }}
             </span>
         </div>
 
