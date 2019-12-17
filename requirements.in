@@ -6,10 +6,12 @@
 # - no requirements that are already provided by websecmap itself
 # - no version pinning, unless it is required and explained
 
+# pytest docker was not released to pypi
+git+https://github.com/avast/pytest-docker@9ce726f4a045addc777fb1cea837a6309cbbeef6#egg=pytest-docker
+
 # to update websecmap run: make update_requirement_websecmap
 git+https://gitlab.com/internet-cleanup-foundation/web-security-map@acf1e12cc6d896b92fbf3b61d4e41be0a233fce5#egg=websecmap
 
-pytest-docker
 django-otp
 django-two-factor-auth
 django-picklefield
