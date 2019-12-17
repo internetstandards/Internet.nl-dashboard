@@ -117,19 +117,11 @@ def check_running_dashboard_scans(**kwargs) -> Task:
     else:
         scans = AccountInternetNLScan.objects.all().exclude(Q(state="finished") | Q(state__startswith="error"))
 
-    tasks = []
-    for scan in scans:
-        log.debug(f"Checking the state of scan {scan}.")
-        if scan.scan.type == "web":
-            tasks.append(progress_running_scan(scan))
-        if scan.scan.type == "mail_dashboard":  # todo: mail of mail_dashboard
-            tasks.append(progress_running_scan(scan))
+    log.debug(f"Checking the state of scan {scans}.")
+    tasks = [progress_running_scan(scan) for scan in scans]
 
     return group(tasks)
 
-
-# Todo: make a 'step back' method, that tries to set the state to the previous state. This can be used in the admin
-#  to quickly reverse the state to a previous one when a known error occurs.
 
 def progress_running_scan(scan: AccountInternetNLScan) -> Task:
     """
@@ -160,17 +152,6 @@ def progress_running_scan(scan: AccountInternetNLScan) -> Task:
     This does not use django fsm, as that ties everything to a model. It also overcomplicates the process with
     branching and such. The on-error feature is nice though.
 
-    Mail scans are performed like this:
-    n  : requested -> discovering endpoints -> discovered endpoints
-                                          -> timeout on ~
-                                          -> error on ~: No endpoints found, will result in empty scan. Will retry N x.
-                                          -> error on ~: No DNS service available. Will retry N x. (can this be in task)
-
-    n+1: discovered endpoints -> retrieving scannable urls -> retrieved scannable urls
-
-    n+1: retrieved scannable urls -> registering scan at internet.nl -> registered scan at internet.nl
-                                                                   -> timeout on ~
-                                                                   -> todo: network errors, API errors, not reachable.
     :return:
     """
 
@@ -214,8 +195,6 @@ def progress_running_scan(scan: AccountInternetNLScan) -> Task:
         # always get the latest state, so we'll not have outdated information if we had to wait in a queue a long while.
         # also run this in a transaction, so it's only possible to get a state and update it to an active state once.
         scan = AccountInternetNLScan.objects.get(id=scan.id)
-
-        # todo: move state and state log to the websecmap object. Nah, not really needed.
         next_step = steps.get(scan.state, handle_unknown_state)
         return next_step(scan)
 
@@ -264,8 +243,6 @@ def registering_scan_at_internet_nl(scan):
 
     relevant_scan_types = {"web": "dns_a_aaaa", "mail": "dns_soa"}
 
-    # todo: register scan does too much, it should just register the scan, and not store things to the db there.
-    #  also add refactor that at websecmap.
     return (
            get_relevant_urls.si(scan.urllist, relevant_scan_types[scan.scan.type])
            | new_register_scan.s(
@@ -357,21 +334,25 @@ def monitor_timeout(scan):
     :return:
     """
 
-    # todo: timeout on running scan... This can be three days.
-
     recovering_strategies = {
-        "discovering endpoints": {"timeout in minutes": 24 * 60, "state after timeout": "requested"},
-        "retrieving scannable urls": {"timeout in minutes": 24 * 60, "state after timeout": "discovered endpoints"},
-        "registering scan at internet.nl": {"timeout in minutes": 24 * 60,
-                                            "state after timeout": "retrieved scannable urls"},
-        "importing scan results": {"timeout in minutes": 24 * 60, "state after timeout": "ran scan"},
-        "creating report": {"timeout in minutes": 24 * 60, "state after timeout": "imported scan results"},
-        "sending mail": {"timeout in minutes": 24 * 60, "state after timeout": "created report"},
+        "discovering endpoints":
+            {"timeout in minutes": 24 * 60, "state after timeout": "requested"},
+        "retrieving scannable urls":
+            {"timeout in minutes": 24 * 60, "state after timeout": "discovered endpoints"},
+        "registering scan at internet.nl":
+            {"timeout in minutes": 24 * 60, "state after timeout": "retrieved scannable urls"},
+        "importing scan results":
+            {"timeout in minutes": 24 * 60, "state after timeout": "ran scan"},
+        "creating report":
+            {"timeout in minutes": 24 * 60, "state after timeout": "imported scan results"},
+        "sending mail":
+            {"timeout in minutes": 24 * 60, "state after timeout": "created report"},
     }
 
     strategy = recovering_strategies.get(scan.state, {})
     if not strategy:
-        update_state.si(f"timeout reached for: {scan.state}, but no recovery strategy was defined", scan)
+        # Trying to monitor something we don't know. Raise exception, we only want to handle known states.
+        raise ValueError(f"Scan is at {scan.state} for which no recovery is defined.")
 
     # determine if there is an actual timeout.
     scan_will_timeout_on = scan.state_changed_on + timedelta(minutes=strategy['timeout in minutes'])

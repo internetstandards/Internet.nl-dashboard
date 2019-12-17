@@ -49,12 +49,25 @@
                     <span :title="scan.started_on">{{ humanize_date(scan.started_on) }},<br>{{ humanize_relative_date(scan.started_on) }}</span><br>
                     <br>
 
-                    <b>{{ $t("scan history") }}</b><br>
-                    <ul style="font-size: 0.7em; ">
-                        <li v-for="log_item in scan.log">
-                            - {{ log_item.state }}, {{ humanize_relative_date(log_item.at_when) }}
-                        </li>
-                    </ul><br>
+
+                    <div class="testresult" style="padding-left: 0px !important;">
+                        <h3 class="panel-title" >
+                            <a href="" aria-expanded="false">
+                                <span class="visuallyhidden">-:</span>
+                                {{ $t("scan history") }}
+                                <span class="pre-icon visuallyhidden"></span>
+                                <span class="icon"><img src="/static/images/vendor/internet_nl/push-open.png" alt=""></span>
+                            </a>
+                        </h3>
+                        <div class="panel-content" style="font-size: 0.7em;">
+                            <ul>
+                                <li v-for="log_item in scan.log">
+                                    - {{ log_item.state }}, {{ humanize_relative_date(log_item.at_when) }}
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                    <br>
 
                     🔖 <a :href="scan.status_url" target="_blank">{{ $t("open_in_api") }}</a><br>
                 </div>
@@ -63,7 +76,7 @@
 
         <div class='block fullwidth' v-if="!scans.length">{{ $t("no_scans") }}</div>
 
-        <autorefresh :visible="true"  :callback="load"></autorefresh>
+        <autorefresh :visible="true" :callback="load"></autorefresh>
     </div>
 </template>
 
@@ -92,7 +105,7 @@ const ScanMonitor = Vue.component('ScanMonitor', {
                 last_check: 'Last status update',
                 report_is_being_generated: 'Report is being generated.',
                 processing_results: 'Processing results.',
-                "scan history": "Scan History",
+                "scan history": "Scan Progress",
             },
             nl: {
                 title: 'Scan monitor',
@@ -113,7 +126,7 @@ const ScanMonitor = Vue.component('ScanMonitor', {
                 last_check: 'Laatste status update',
                 report_is_being_generated: 'Report wordt gemaakt.',
                 processing_results: 'Resultaten worden verwerkt.',
-                "scan history": "Historie van deze scan",
+                "scan history": "Voortgang van deze scan",
             }
         }
     },
@@ -135,6 +148,7 @@ const ScanMonitor = Vue.component('ScanMonitor', {
         get_recent_uploads: function(){
             fetch(`/data/scan-monitor/`, {credentials: 'include'}).then(response => response.json()).then(data => {
                 this.scans = data;
+                this.$nextTick(() => {accordinate();});
             }).catch((fail) => {console.log('A loading error occurred: ' + fail);});
         },
     }
