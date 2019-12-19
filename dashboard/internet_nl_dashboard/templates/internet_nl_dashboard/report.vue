@@ -347,7 +347,7 @@
                                         </p>
                                     </tab>
 
-                                <tab v-for="category in scan_form.categories" :name="category.label">
+                                <tab v-for="category in scan_form.categories" :name="category.label" :key="category.label">
                                     <section class="test-header">
                                         <div class="test-title">
                                             <h3>{{category.label}}</h3>
@@ -1418,7 +1418,7 @@ const Report = Vue.component('report', {
         }
     },
     mounted: function(){
-        this.color_scheme.incremental = this.generate_color_increments(100);
+        this.color_scheme.incremental = this.generate_color_increments(10);
         this.load_issue_filters();
         this.get_recent_reports();
     },
@@ -1606,6 +1606,7 @@ const Report = Vue.component('report', {
 
         get_recent_reports: function(){
             fetch(`/data/report/recent/`, {credentials: 'include'}).then(response => response.json()).then(data => {
+                console.log("Get recent reports");
                 let options = [];
                 for(let i = 0; i < data.length; i++){
                     data[i].label = `#${data[i].id} - ${data[i].list_name} - type: ${data[i].type} - from: ${this.humanize_date(data[i].at_when)}`;
@@ -1616,8 +1617,10 @@ const Report = Vue.component('report', {
 
                 // if the page was requested with a page ID, start loading that report.
                 // this supports: http://localhost:8000/reports/83/
+                // todo: this can be replaced by $route.params.report, which is much more readable.
                 if (window.location.href.split('/').length > 3) {
-                    get_id = window.location.href.split('/')[4];
+                    let get_id = window.location.href.split('/')[6];
+                    console.log(get_id);
                     // can we change the select2 to a certain value?
 
                     this.filtered_recent_reports.forEach((option) => {
@@ -1859,6 +1862,9 @@ const Report = Vue.component('report', {
 
     },
     watch: {
+
+
+
         selected_report: function (new_value, old_value) {
             // console.log(`New value: ${new_value}`);
             // console.log(`Old value: ${old_value}`);

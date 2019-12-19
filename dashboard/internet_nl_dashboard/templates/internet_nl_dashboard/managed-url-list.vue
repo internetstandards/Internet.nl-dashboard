@@ -92,10 +92,11 @@
                     </div>
                 </template>
                 <span v-if="list.last_report_id">
-                    <a :href="'/reports/' + list.last_report_id" target="_blank">
+                    <router-link :to="{ name: 'numbered_report', params: { report: list.last_report_id }}">
                         <span role="img" :aria-label="$t('icons.report')">📊</span>
                         {{ $t("about_this_list.latest_report") }}: {{ humanize_date(list.last_report_date) }}
-                    </a><br>
+                    </router-link>
+                    <br>
                 </span>
             </p>
             <br>
@@ -545,8 +546,8 @@ Vue.component('managed-url-list', {
     },
     mounted: function(){
         if (window.location.href.split('/').length > 3) {
-            let get_id = window.location.href.split('/')[4];
-            console.log(get_id);
+            // todo: this can be replaced by $route.params.report, which is much more readable.
+            let get_id = window.location.href.split('/')[6];
             // can we change the select2 to a certain value?
 
             if (this.list.id === parseInt(get_id)){

@@ -38,7 +38,7 @@ Fixed: when deleting a list, it is re-added to the list of lists when adding a n
         <div class="block fullwidth">
             <h1>{{ $t("title") }}</h1>
             <p>{{ $t("intro") }}</p>
-            <p><a href="/upload/">{{ $t("bulk_upload_link") }}</a></p>
+            <p><router-link to="/upload">{{ $t("bulk_upload_link") }}</router-link></p>
 
             <div class="testresult">
                 <h3 class="panel-title" >
@@ -65,7 +65,7 @@ Fixed: when deleting a list, it is re-added to the list of lists when adding a n
             </div>
 
             <modal v-if="show_add_new" @close="stop_adding_new()">
-                <h3 slot="header">{{ $t("domains.add_new_list") }}</h3>
+                <h3 slot="header">{{ $t("new_list.add_new_list") }}</h3>
 
                 <div slot="body">
 
@@ -131,7 +131,7 @@ Fixed: when deleting a list, it is re-added to the list of lists when adding a n
             <button @click="start_adding_new()">{{ $t("new_list.add_new_list") }}</button>
             <br>
             <br>
-            {{ $t("inital_list.alternative_start") }}
+            <p v-html="$t('inital_list.alternative_start')"></p>
         </div>
 
     </div>
@@ -173,7 +173,7 @@ const DomainListManager = Vue.component('list-manager', {
 
                 inital_list: {
                     start: 'Start creating a new list...',
-                    alternative_start: 'or <a href="/upload/">upload a spreadsheet with domains here</a>...',
+                    alternative_start: 'or <router-link to="/domains/upload">upload a spreadsheet with domains here</router-link>...',
                 },
 
                 new_list: {
@@ -204,7 +204,7 @@ const DomainListManager = Vue.component('list-manager', {
 
                 inital_list: {
                     start: 'Maak een nieuwe lijst, voeg aan die lijst je domeinen toe...',
-                    alternative_start: 'of <a href="/upload/">upload hier een spreadsheet met domeinen</a>...',
+                    alternative_start: 'of <router-link to="/domains/upload">upload hier een spreadsheet met domeinen</router-link>...',
                 },
 
                 new_list: {
@@ -251,6 +251,9 @@ const DomainListManager = Vue.component('list-manager', {
                 this.lists = data['lists'];
                 this.maximum_domains_per_list = data['maximum_domains_per_list'];
                 this.loading = false;
+
+                // this makes sure accordeons work while vue routing is in place:
+                this.$nextTick(() => {accordinate();});
             }).catch((fail) => {console.log('A loading error occurred: ' + fail);});
         },
         start_adding_new: function(){

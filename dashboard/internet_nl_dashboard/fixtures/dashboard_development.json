@@ -4606,7 +4606,9 @@
     "fields": {
       "account": 1,
       "scan": 2,
-      "urllist": 1
+      "urllist": 1,
+      "state": "finished",
+      "state_changed_on": "2019-07-01T00:00:00Z"
     }
   },
   {

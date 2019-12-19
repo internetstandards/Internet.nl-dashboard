@@ -32,7 +32,7 @@
         <script type="text/javascript" src="{% static 'js/vendor/internet_nl/headroom-min.js' %}"></script>
         <script type="text/javascript" src="{% static 'js/vendor/internet_nl/functions-min.js' %}"></script>
         <script type="text/javascript" src="{% static 'js/vendor/internet_nl/internetnl.results-min.js' %}"></script>
-        <script type="text/javascript" src="{% static 'js/vendor/vuejs@2.6.8/vue.js' %}"></script>
+        <script type="text/javascript" src="{% static 'js/vendor/vuejs@2.6.11/vue.js' %}"></script>
         <script type="text/javascript" src="{% static 'js/vendor/vue-router@3.1.3/vue-router.js' %}"></script>
         <script type="text/javascript" src="{% static 'js/vendor/momentjs@2.24.0/moment-with-locales.js' %}" charset="UTF-8"></script>
         <script type="text/javascript" src="{% static 'js/vendor/vue-i18n@8.9.0/vue-i18n.js' %}"></script>
@@ -49,7 +49,7 @@
         <script type="text/javascript" src="{% static 'js/vendor/internet_nl/headroom-min.js' %}"></script>
         <script type="text/javascript" src="{% static 'js/vendor/internet_nl/functions-min.js' %}"></script>
         <script type="text/javascript" src="{% static 'js/vendor/internet_nl/internetnl.results-min.js' %}"></script>
-        <script type="text/javascript" src="{% static 'js/vendor/vuejs@2.6.8/vue.min.js' %}"></script>
+        <script type="text/javascript" src="{% static 'js/vendor/vuejs@2.6.11/vue.min.js' %}"></script>
         <script type="text/javascript" src="{% static 'js/vendor/vue-router@3.1.3/vue-router.min.js' %}"></script>
         <script type="text/javascript" src="{% static 'js/vendor/momentjs@2.24.0/moment-with-locales.js' %}" charset="UTF-8"></script>
         <script type="text/javascript" src="{% static 'js/vendor/vue-i18n@8.9.0/vue-i18n.js' %}"></script>
@@ -121,6 +121,10 @@
                 document.getElementsByClassName('modal-default-button')[0].focus();
             },
         });
+
+        // on embedded pages autodiscovery doesn't work, use a  manual call:
+        // https://stackoverflow.com/questions/22169595/dropzone-js-init-function-not-being-called
+        Dropzone.autoDiscover = false;
 
         Vue.component('select2-tags-widget', {
             // https://vuejs.org/v2/examples/select2.html
@@ -537,29 +541,29 @@
                     en: {
                         refresh_happening_in: 'Auto refresh in:',
                         units: 's',
-                        refresh_now: 'refresh now'
+                        refresh_now: 'refresh data'
                     },
                     nl: {
                         refresh_happening_in: 'Lijst wordt ververst over:',
                         units: 's',
-                        refresh_now: 'ververs nu'
+                        refresh_now: 'ververs gegevens'
                     }
                 }
             },
 
             template: `
 <div v-if='visible' class='auto_refresh block fullwidth'>
-    <p>
+    <p style='margin-bottom: 0 !important;'>
+        <button @click="reload_now()">{{ $t("refresh_now") }}</button>
         {{ $t("refresh_happening_in") }} <span v-html="this.current_step_inverted"></span>
         {{ $t("units") }}
-        <button @click="reload_now()">{{ $t("refresh_now") }}</button>
     </p>
 </div>`,
 
             data: function () {
                 return {
                     // 60 * 1000ms
-                    refresh_time: 30 * 60 * 1000,
+                    refresh_time: 60 * 1000,
 
                     // Counts down until the next refresh. Allows to add a visualisation on this timer.
                     countdown_percentage: 0,
@@ -669,22 +673,36 @@
             Vue.use(VueRouter);
 
             const routes = [
+                { path: '/', component: DomainListManager, },
+
+                { path: '/domains/:list', component: DomainListManager, name: 'numbered_lists'},
                 { path: '/domains', component: DomainListManager, },
-                { path: '/monitor', component: ScanMonitor },
+                { path: '/upload', component: SpreadsheetUpload,
+                props: {csrf_token: get_cookie('csrftoken'),
+                    max_lists: '{% endverbatim %}{{ config.DASHBOARD_MAXIMUM_LISTS_PER_SPREADSHEET }} {% verbatim %}',
+                    max_urls: '{% endverbatim %} {{ config.DASHBOARD_MAXIMUM_LISTS_PER_SPREADSHEET }} {% verbatim %}',
+                    }
+                },
+                { path: '/scans', component: ScanMonitor },
+                { path: '/report/:report', component: Report, name: 'numbered_report'},
                 { path: '/report', component: Report },
+                { path: '/switch-account', component: SwitchAccount },
+                { path: '/add-user', component: InstantAddAccount },
             ];
 
             const router = new VueRouter({
-                routes // short for `routes: routes`
+                routes, // short for `routes: routes`
+                props: true
             });
 
             const app = new Vue({
                 router,
                 i18n,
+                el: "#app",
                 mounted: function() {
                     console.log("App loaded");
                 }
-            }).$mount('#app')
+            })
         });
 
         {% endverbatim %}
@@ -696,147 +714,156 @@
         {% if user.is_authenticated %}
 
             {% if user.is_superuser %}
-                <li class="{{menu_item_powertools}}"><a href="/powertools/" accesskey="a">{% verbatim %}{{ $t("admin") }}{% endverbatim %}</a></li>
+                <li><router-link to="/add-user">👤</router-link></li>
+                <li><router-link to="/switch-account">🔀</router-link></li>
             {% endif %}
 
-            <router-link to="/domains">{% verbatim %}{{ $t("domains") }}{% endverbatim %}</router-link>
-            <router-link to="/monitor">{% verbatim %}{{ $t("scans") }}{% endverbatim %}</router-link>
-            <router-link to="/report">{% verbatim %}{{ $t("reports") }}{% endverbatim %}</router-link>
+            {% verbatim %}
+            <li><router-link to="/domains" accesskey="d">{{ $t("domains") }}</router-link></li>
+            <li><router-link to="/scans" accesskey="s">{{ $t("scans") }}</router-link></li>
+            <li><router-link to="/report" accesskey="r">{{ $t("reports") }}</router-link></li>
 
-            <li class="{{menu_item_addressmanager}}"><a href="/domains/" accesskey="d">{% verbatim %}{{ $t("domains") }}{% endverbatim %}</a></li>
-            <li class="{{menu_item_scan_monitor}}"><a href="/scans/" accesskey="s">{% verbatim %}{{ $t("scans") }}{% endverbatim %}</a></li>
-            <li class="{{menu_item_dashboard}}"><a href="/reports/" accesskey="r">{% verbatim %}{{ $t("reports") }}{% endverbatim %}</a></li>
-            <li class=""><a href="/account/two_factor/" accesskey="a">{% verbatim %}{{ $t("account") }}{% endverbatim %}</a></li>
-            <li class=""><a href="/logout/" accesskey="l">{% verbatim %}{{ $t("log_off") }}{% endverbatim %}</a></li>
+            <li class=""><a href="/account/two_factor/" accesskey="a">{{ $t("account") }}</a></li>
+            <li class=""><a href="/logout/" accesskey="l">{{ $t("log_off") }}</a></li>
+
+            {% endverbatim %}
         {% else %}
             <li class="current"><a href="/account/login/" accesskey="l">{% verbatim %}{{ $t("log_in") }}{% endverbatim %}</a></li>
         {% endif %}
     </ul>
 </template>
+    {% include "internet_nl_dashboard/templates/internet_nl_dashboard/domains.vue" %}
+    {% include "internet_nl_dashboard/templates/internet_nl_dashboard/managed-url-list.vue" %}
+    {% include "internet_nl_dashboard/templates/internet_nl_dashboard/report.vue" %}
+    {% include "internet_nl_dashboard/templates/internet_nl_dashboard/scan_monitor.vue" %}
+    {% include "internet_nl_dashboard/templates/internet_nl_dashboard/switch_account.vue" %}
+    {% include "internet_nl_dashboard/templates/internet_nl_dashboard/add_account.vue" %}
+    {% include "internet_nl_dashboard/templates/internet_nl_dashboard/upload.vue" %}
 
 
 </head>
 <body class="home body-with-semifixed-header" cz-shortcut-listen="true">
-{% include "internet_nl_dashboard/templates/internet_nl_dashboard/domains.vue" %}
-{% include "internet_nl_dashboard/templates/internet_nl_dashboard/managed-url-list.vue" %}
-{% include "internet_nl_dashboard/templates/internet_nl_dashboard/scan_monitor.vue" %}
-{% include "internet_nl_dashboard/templates/internet_nl_dashboard/report.vue" %}
 
-<div  id="app">
+    <!--
 
-    <div class="hidethis" aria-hidden="true">
-        <span id="matomo-url">//matomo.internet.nl/</span>
-        <span id="matomo-siteid">2</span>
-        <span id="matomo-subdomain-tracking">*.internet.nl</span>
-      </div>
-    <div class="skiplink"><a href="#content">
-        {% trans "page gotocontents" %}
-    </a></div>
-    <div class="skiplink"><a href="#sitenav">
-        {% trans "page gotomainmenu" %}
-    </a></div>
-    <div class="skiplink"><a href="#footer">
-        {% trans "page gotofooter" %}
-    </a></div>
+    Todo: boot code:, load config and apply to components.
 
-    <header>
-        <div class="wrap">
-            <div class="hidethis" aria-hidden="true">
-                <span id="panel-button-show">
-                    Show details
-                </span>
-                <span id="panel-button-hide">
-                    Hide details
-                </span>
-                <span id="panel-item-open">
-                    open
-                </span>
-                <span id="panel-item-close">
-                    close
-                </span>
+    -->
+
+    <div  id="app">
+
+        <div class="hidethis" aria-hidden="true">
+            <span id="matomo-url">//matomo.internet.nl/</span>
+            <span id="matomo-siteid">2</span>
+            <span id="matomo-subdomain-tracking">*.internet.nl</span>
+          </div>
+        <div class="skiplink"><a href="#content">
+            {% trans "page gotocontents" %}
+        </a></div>
+        <div class="skiplink"><a href="#sitenav">
+            {% trans "page gotomainmenu" %}
+        </a></div>
+        <div class="skiplink"><a href="#footer">
+            {% trans "page gotofooter" %}
+        </a></div>
+
+        <header>
+            <div class="wrap">
+                <div class="hidethis" aria-hidden="true">
+                    <span id="panel-button-show">
+                        Show details
+                    </span>
+                    <span id="panel-button-hide">
+                        Hide details
+                    </span>
+                    <span id="panel-item-open">
+                        open
+                    </span>
+                    <span id="panel-item-close">
+                        close
+                    </span>
+                </div>
+
+                <div id="masthead">
+                    <p id="site-title"><a href="/"><span class="hidden">{% trans "page sitetitle" %}</span></a></p>
+                    <p id="site-description"><span class="hidden">{% trans "page sitedescription" %}</span></p>
+                </div>
+
+                <div id="language-switch-header-container">
+                    <ul class="language-switch-list">
+                        {% with user_language=request.LANGUAGE_CODE %}
+                            {% get_language_info_list for LANGUAGES as languages %}
+
+                            {% for language in languages %}
+                                <li>
+                                {% if language.code == user_language %}
+                                    <button class="active-language" disabled>{{language.name_local}}</button>
+                                {% else %}
+                                    <a onclick="set_language('{{language.code}}')">{{language.name_local}}</a>
+                                {% endif %}
+                                </li>
+                            {% endfor %}
+                        {% endwith %}
+                    </ul>
+                </div>
+
+                <nav id="sitenav">
+                    <site-menu></site-menu>
+                </nav>
+            </div>
+        </header>
+
+        <main id="content" class="clearfix" tabindex="-1">
+            <div class="mainwrap">
+
+            </div>
+            <div class="wrap">
+
+            <div style="width: 100%;">
+                <router-view></router-view>
             </div>
 
-            <div id="masthead">
-                <p id="site-title"><a href="/"><span class="hidden">{% trans "page sitetitle" %}</span></a></p>
-                <p id="site-description"><span class="hidden">{% trans "page sitedescription" %}</span></p>
             </div>
 
-            <div id="language-switch-header-container">
-                <ul class="language-switch-list">
-                    {% with user_language=request.LANGUAGE_CODE %}
-                        {% get_language_info_list for LANGUAGES as languages %}
+            <div class="wrap">
+                <section class="block">
+                    <div class="wrapper">
+                        <p style="font-size: 0.9em; font-style: italic; margin-bottom: 0em;">
+                            Thank you for using the internet.nl dashboard. Please report issues on <a href="https://github.com/internetstandards/Internet.nl-dashboard/issues" target="_blank">this GitHub page</a>.
+                        </p>
+                    </div>
+                </section>
+            </div>
 
-                        {% for language in languages %}
-                            <li>
-                            {% if language.code == user_language %}
-                                <button class="active-language" disabled>{{language.name_local}}</button>
-                            {% else %}
-                                <a onclick="set_language('{{language.code}}')">{{language.name_local}}</a>
-                            {% endif %}
-                            </li>
-                        {% endfor %}
-                    {% endwith %}
+        </main>
+
+        <footer id="footer">
+            <img id="flag" src="{% static 'images/vendor/internet_nl/clear.gif' %}" alt="">
+            <div class="wrap">
+                {% trans "base info" %}
+                <hr>
+                <ul>
+                    <li><a class="footlink" href="https://www.internet.nl/disclosure/">
+                        {% trans "base disclosure" %}
+                    </a></li>
+                    <li><a class="footlink" href="https://www.internet.nl/privacy/">
+                        {% trans "base privacy" %}
+                    </a></li>
+                    <li><a class="footlink" href="https://www.internet.nl/copyright/">
+                        {% trans "base copyright" %}
+                    </a></li>
+                    <li class="follow-us"><a class="footlink twitterfollow" href="https://twitter.com/internet_nl">
+                        {% trans "base followtwitter" %}
+                    </a></li>
                 </ul>
             </div>
+        </footer>
 
-            <nav id="sitenav">
-                <site-menu></site-menu>
-            </nav>
-        </div>
-    </header>
+    </div>
 
-    <main id="content" class="clearfix" tabindex="-1">
-        <div class="mainwrap">
-
-        </div>
-        <div class="wrap">
-
-        <div style="width: 100%; height: 500px;">
-            <router-link to="/monitor">asasasdasd</router-link>
-            <router-view></router-view>
-        </div>
-
-        </div>
-
-        <div class="wrap">
-            <section class="block">
-                <div class="wrapper">
-                    <p style="font-size: 0.9em; font-style: italic; margin-bottom: 0em;">
-                        Thank you for using the internet.nl dashboard. Please report issues on <a href="https://github.com/internetstandards/Internet.nl-dashboard/issues" target="_blank">this GitHub page</a>.
-                    </p>
-                </div>
-            </section>
-        </div>
-
-    </main>
-
-    <footer id="footer">
-        <img id="flag" src="{% static 'images/vendor/internet_nl/clear.gif' %}" alt="">
-        <div class="wrap">
-            {% trans "base info" %}
-            <hr>
-            <ul>
-                <li><a class="footlink" href="https://www.internet.nl/disclosure/">
-                    {% trans "base disclosure" %}
-                </a></li>
-                <li><a class="footlink" href="https://www.internet.nl/privacy/">
-                    {% trans "base privacy" %}
-                </a></li>
-                <li><a class="footlink" href="https://www.internet.nl/copyright/">
-                    {% trans "base copyright" %}
-                </a></li>
-                <li class="follow-us"><a class="footlink twitterfollow" href="https://twitter.com/internet_nl">
-                    {% trans "base followtwitter" %}
-                </a></li>
-            </ul>
-        </div>
-    </footer>
-
-</div>
-
-<script type="text/javascript" src="/static/js/vendor/internet_nl/menu-min.js" defer></script>
-<script type="text/javascript" src="/static/js/vendor/internet_nl/accordion-min.js" defer></script>
-<script type="text/javascript" src="/static/js/vendor/internet_nl/matomo-min.js"></script>
+    <script type="text/javascript" src="/static/js/vendor/internet_nl/menu-min.js" defer></script>
+    <script type="text/javascript" src="/static/js/vendor/internet_nl/accordion-min.js" defer></script>
+    <script type="text/javascript" src="/static/js/vendor/internet_nl/matomo-min.js"></script>
 </body>
 </html>
 

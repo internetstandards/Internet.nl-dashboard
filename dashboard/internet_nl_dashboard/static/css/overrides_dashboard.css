@@ -415,3 +415,8 @@ a.anchor {
     background-size: 1.25em 1.25em  !important;
     padding-left: 2em  !important;
 }
+
+.router-link-active {
+    font-weight: bold;
+    border-bottom: 3px solid #ffab4c;
+}

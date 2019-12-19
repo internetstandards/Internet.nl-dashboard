@@ -1,68 +1,86 @@
-from typing import Tuple
-
-from django import forms
 from django.contrib.auth.decorators import login_required
-from django.http import HttpResponse
+from django.contrib.auth.models import User
+from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render
 
-from dashboard.internet_nl_dashboard.forms import InstantAccountAddForm
+from dashboard.internet_nl_dashboard.logic import operation_response
 from dashboard.internet_nl_dashboard.models import Account, DashboardUser
-from dashboard.internet_nl_dashboard.views import (LOGIN_URL, get_account,
-                                                   inject_default_language_cookie, report)
+from dashboard.internet_nl_dashboard.views import (inject_default_language_cookie, report, get_json_body)
+from dashboard.settings import LOGIN_URL
 
 
-# Create your views here.
 @login_required(login_url=LOGIN_URL)
-def powertools(request) -> HttpResponse:
+def set_account(request) -> HttpResponse:
 
-    # only for the true superusers :)
     if not request.user.is_staff and request.user.is_active and request.user.is_superuser:
         return report.dashboard(request)
 
-    # account switching.=
-    if request.POST.get('change_account', None):
+    request_data = get_json_body(request)
+    selected_account_id: int = request_data['id']
+
+    if selected_account_id:
+
         dashboard_user = DashboardUser.objects.all().filter(user=request.user).first()
+
         # very new users don't have the dashboarduser fields filled in, and are thus not connected to an account.
         if not dashboard_user:
             dashboard_user = DashboardUser(**{'account': Account.objects.all().first(), 'user': request.user})
 
-        dashboard_user.account = Account.objects.get(id=request.POST.get('change_account'))
+        dashboard_user.account = Account.objects.get(id=selected_account_id)
         dashboard_user.save()
 
-    selected_account_id: int = 0
-    account = get_account(request)
-    if account:
-        selected_account_id = account.pk
-    # end account switching
+        return JsonResponse(operation_response(success=True, message=f"Switched account."))
 
-    # Fast account creation. Of the most basic kind.
-    state, add_account_and_user_form = default_form_logic(InstantAccountAddForm, request)
 
-    response = render(request, 'internet_nl_dashboard/templates/internet_nl_dashboard/powertools.html', {
-        'add_account_and_user_form': add_account_and_user_form,
-        'add_account_and_user_form_state': state,
-        'menu_item_powertools': "current",
-        'selected_account': selected_account_id,
-        'accounts': list(Account.objects.all().values('id', 'name')),
+@login_required(login_url=LOGIN_URL)
+def get_accounts(request) -> HttpResponse:
+
+    if not request.user.is_staff and request.user.is_active and request.user.is_superuser:
+        return report.dashboard(request)
+
+    response = Account.objects.all().values_list('id', 'name')
+    return JsonResponse({'accounts': list(response)})
+
+
+@login_required(login_url=LOGIN_URL)
+def save_instant_account(request) -> HttpResponse:
+
+    request = get_json_body(request)
+    username = request['username']
+    password = request['password']
+
+    if User.objects.all().filter(username=username).exists():
+        return JsonResponse(operation_response(error=True, message=f"User with this username already exists."))
+
+    if Account.objects.all().filter(name=username).exists():
+        return JsonResponse(operation_response(error=True, message=f"Account with this username already exists."))
+
+    # Extremely arbitrary password requirements. Just to make sure a password has been filled in.
+    if len(password) < 5:
+        return JsonResponse(operation_response(error=True, message=f"Password not filled in or not long enough."))
+
+    # all seems fine, let's add the user
+    user = User(**{'username': username})
+    user.set_password(password)
+    user.is_active = True
+    user.save()
+
+    account = Account(**{
+        'name': username,
+        'internet_nl_api_username': username,
+        'internet_nl_api_password': Account.encrypt_password(password),
+        'can_connect_to_internet_nl_api': Account.connect_to_internet_nl_api(username, password)
     })
+    account.save()
 
-    return inject_default_language_cookie(request, response)
+    dashboarduser = DashboardUser(**{'user': user, 'account': account})
+    dashboarduser.save()
+
+    return JsonResponse(operation_response(success=True, message=f"Account created!"))
 
 
+@login_required(login_url=LOGIN_URL)
 def spa(request) -> HttpResponse:
     response = render(request, 'internet_nl_dashboard/templates/internet_nl_dashboard/spa.html')
     return inject_default_language_cookie(request, response)
 
-
-def default_form_logic(form, request) -> Tuple[str, forms.Form]:
-
-    if not request.POST:
-        return "initial", form()
-
-    form = form(request.POST)
-
-    if not form.is_valid():
-        return "invalid", form
-
-    form.save()
-    return "success", form
