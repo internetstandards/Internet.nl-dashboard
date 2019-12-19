@@ -7,7 +7,6 @@ from websecmap.scanners.models import Endpoint, EndpointGenericScan, InternetNLS
 
 from dashboard.internet_nl_dashboard.logic.urllist_dashboard_report import rate_urllists_now
 from dashboard.internet_nl_dashboard.models import Account, AccountInternetNLScan, UrlList
-from dashboard.internet_nl_dashboard.tasks import create_reports_on_finished_scans
 
 
 def make_url_with_endpoint_and_scan():
@@ -45,5 +44,4 @@ def create_scan_report(account: Account, urllist: UrlList):
     scan.finished_on = timezone.now()
     ainls.save()
 
-    # finished on is set, so we can make a report now...
-    create_reports_on_finished_scans(urllist)
+    rate_urllists_now.si(urllist, prevent_duplicates=False)
