@@ -16,14 +16,11 @@ Vue.component('autorefresh', {
         }
     },
 
-    template: `
-<div v-if='visible' class='auto_refresh block fullwidth'>
-    <p style='margin-bottom: 0 !important;'>
+    template: `<div v-if='visible' style='margin-bottom: 0 !important;'>
         <button @click="reload_now()">{{ $t("refresh_now") }}</button>
         {{ $t("refresh_happening_in") }} <span v-html="this.current_step_inverted"></span>
         {{ $t("units") }}
-    </p>
-</div>`,
+    </div>`,
 
     data: function () {
         return {

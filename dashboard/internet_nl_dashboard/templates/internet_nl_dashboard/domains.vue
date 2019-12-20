@@ -38,17 +38,19 @@ Fixed: when deleting a list, it is re-added to the list of lists when adding a n
         <div class="block fullwidth">
             <h1>{{ $t("title") }}</h1>
             <p>{{ $t("intro") }}</p>
-            <p><router-link to="/upload">{{ $t("bulk_upload_link") }}</router-link></p>
+            <p>
+                <button @click="start_adding_new()" accesskey="n">{{ $t("new_list.add_new_list") }}</button>
+            <router-link to="/upload">{{ $t("bulk_upload_link") }}</router-link></p>
 
             <div class="testresult">
-                <h3 class="panel-title" >
+                <h2 style="font-size: 1.0em;" class="panel-title" >
                     <a href="" aria-expanded="false">
                         <span class="visuallyhidden">-:</span>
                         {{ $t("icon_legend.title") }}
                         <span class="pre-icon visuallyhidden"></span>
                         <span class="icon"><img src="/static/images/vendor/internet_nl/push-open.png" alt=""></span>
                     </a>
-                </h3>
+                </h2>
                 <div class="panel-content">
                     <p>{{ $t("icon_legend.intro") }}</p>
                     <ul>
@@ -95,10 +97,6 @@ Fixed: when deleting a list, it is re-added to the list of lists when adding a n
                     <button class="modal-default-button" @click="create_list()">{{ $t("new_list.button_create_list_label") }}</button>
                 </div>
             </modal>
-
-            <div>
-                <button @click="start_adding_new()" accesskey="n">{{ $t("new_list.add_new_list") }}</button>
-            </div>
 
         </div>
 

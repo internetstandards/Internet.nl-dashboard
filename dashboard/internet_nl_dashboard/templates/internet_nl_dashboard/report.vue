@@ -253,6 +253,7 @@
                 <!-- limit not yet supported, nov 2019: https://github.com/sagalbot/vue-select/issues/60 -->
                 <v-select
                         v-model="selected_report"
+                        :placeholder="$t('header.select_report')"
                         :options="filtered_recent_reports"
                         label="label"
                         :multiple="true"
@@ -262,35 +263,35 @@
                 </v-select>
             </div>
 
-            <template v-if="reports.length && !is_loading">
-
-                <div class="testresult faq-report">
-                    <h2 style="font-size: 1.0em;"  class="panel-title" >
-                        <a href="" aria-expanded="false">
-                            <span class="visuallyhidden">-:</span>
-                            {{ $t("icon_legend.title") }}
-                            <span class="pre-icon visuallyhidden"></span>
-                            <span class="icon"><img src="/static/images/vendor/internet_nl/push-open.png" alt=""></span>
-                        </a>
-                    </h2>
-                    <div class="panel-content">
-                        <h3>{{ $t("icon_legend.test_title") }}</h3>
-                        <ul>
-                            <li><span class="faq-test category_passed"><span class="visuallyhidden">{{ $t("report.results.passed") }}</span>{{ $t("icon_legend.test_good") }}</span></li>
-                            <li><span class="faq-test category_failed"><span class="visuallyhidden">{{ $t("report.results.failed") }}</span>{{ $t("icon_legend.test_bad") }}</span></li>
-                            <li><span class="faq-test category_warning"><span class="visuallyhidden">{{ $t("report.results.warning") }}</span>{{ $t("icon_legend.test_warning") }}</span></li>
-                        </ul>
-                        <h3>{{ $t("icon_legend.subtest_title") }}</h3>
-                        <ul>
-                            <li><span class="faq-subtest passed"><span class="visuallyhidden">{{ $t("report.results.passed") }}</span>{{ $t("icon_legend.subtest_good") }}</span></li>
-                            <li><span class="faq-subtest failed"><span class="visuallyhidden">{{ $t("report.results.failed") }}</span>{{ $t("icon_legend.subtest_bad") }}</span></li>
-                            <li><span class="faq-subtest warning"><span class="visuallyhidden">{{ $t("report.results.warning") }}</span>{{ $t("icon_legend.subtest_warning") }}</span></li>
-                            <li><span class="faq-subtest info"><span class="visuallyhidden">{{ $t("report.results.info") }}</span>{{ $t("icon_legend.subtest_info") }}</span></li>
-                            <li><span class="faq-test not_applicable"><span class="visuallyhidden">{{ $t("report.results.not_applicable") }}</span>{{ $t("icon_legend.subtest_not_applicable") }}</span></li>
-                            <li><span class="faq-test not_testable"><span class="visuallyhidden">{{ $t("report.results.not_testable") }}</span>{{ $t("icon_legend.subtest_not_testable") }}</span></li>
-                        </ul>
-                    </div>
+            <div class="testresult faq-report">
+                <h2 style="font-size: 1.0em;"  class="panel-title" >
+                    <a href="" aria-expanded="false">
+                        <span class="visuallyhidden">-:</span>
+                        {{ $t("icon_legend.title") }}
+                        <span class="pre-icon visuallyhidden"></span>
+                        <span class="icon"><img src="/static/images/vendor/internet_nl/push-open.png" alt=""></span>
+                    </a>
+                </h2>
+                <div class="panel-content">
+                    <h3>{{ $t("icon_legend.test_title") }}</h3>
+                    <ul>
+                        <li><span class="faq-test category_passed"><span class="visuallyhidden">{{ $t("report.results.passed") }}</span>{{ $t("icon_legend.test_good") }}</span></li>
+                        <li><span class="faq-test category_failed"><span class="visuallyhidden">{{ $t("report.results.failed") }}</span>{{ $t("icon_legend.test_bad") }}</span></li>
+                        <li><span class="faq-test category_warning"><span class="visuallyhidden">{{ $t("report.results.warning") }}</span>{{ $t("icon_legend.test_warning") }}</span></li>
+                    </ul>
+                    <h3>{{ $t("icon_legend.subtest_title") }}</h3>
+                    <ul>
+                        <li><span class="faq-subtest passed"><span class="visuallyhidden">{{ $t("report.results.passed") }}</span>{{ $t("icon_legend.subtest_good") }}</span></li>
+                        <li><span class="faq-subtest failed"><span class="visuallyhidden">{{ $t("report.results.failed") }}</span>{{ $t("icon_legend.subtest_bad") }}</span></li>
+                        <li><span class="faq-subtest warning"><span class="visuallyhidden">{{ $t("report.results.warning") }}</span>{{ $t("icon_legend.subtest_warning") }}</span></li>
+                        <li><span class="faq-subtest info"><span class="visuallyhidden">{{ $t("report.results.info") }}</span>{{ $t("icon_legend.subtest_info") }}</span></li>
+                        <li><span class="faq-test not_applicable"><span class="visuallyhidden">{{ $t("report.results.not_applicable") }}</span>{{ $t("icon_legend.subtest_not_applicable") }}</span></li>
+                        <li><span class="faq-test not_testable"><span class="visuallyhidden">{{ $t("report.results.not_testable") }}</span>{{ $t("icon_legend.subtest_not_testable") }}</span></li>
+                    </ul>
                 </div>
+            </div>
+
+            <template v-if="reports.length && !is_loading">
 
                 <div class="testresult">
                     <h2 style="font-size: 1.0em;" class="panel-title" >
@@ -1447,7 +1448,7 @@ const Report = Vue.component('report', {
                 });
             }
         }, 1000)
-
+        this.$nextTick(() => {accordinate();});
     },
     // common issue that debounce does not work on a watch:
     // https://stackoverflow.com/questions/47172952/vuejs-2-debounce-not-working-on-a-watch-option
