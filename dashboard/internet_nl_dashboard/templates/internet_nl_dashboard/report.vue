@@ -345,6 +345,18 @@
                                                 </div>
                                             </template>
                                         </p>
+
+                                        <div>
+                                                <button @click="reset_issue_filters()">{{ $t("settings.buttons.reset") }}<span class="visuallyhidden"></span></button>
+                                                <button @click="save_issue_filters()">{{ $t("settings.buttons.save") }}<span class="visuallyhidden"></span></button>
+                                                <br>
+                                                <template v-if="issue_filters_response.success || issue_filters_response.error">
+                                                    <div :class="'server-response-' + issue_filters_response.state">
+                                                        <span>{{ $t(issue_filters_response.message) }} on {{ humanize_date(issue_filters_response.timestamp) }}.</span>
+                                                    </div>
+                                                </template>
+                                            </div>
+
                                     </tab>
 
                                 <tab v-for="category in scan_form.categories" :name="category.label" :key="category.label">
@@ -367,18 +379,8 @@
                                                         {{ $t("settings.only_show_dynamic_average") }}
                                                     </label>
                                                 </template>
-
-                                                <template v-if="category.additional_fields.length">
-                                                    <div class="test-subsection">{{ $t("fields.additional_fields.label") }}</div>
-                                                    <div v-for="field in category.additional_fields" class="testresult">
-                                                    <label :for="field.name + '_visible'">
-                                                        <input type="checkbox" v-model="issue_filters[field.name].visible" :id="field.name + '_visible'">
-                                                        {{ $t(field.name) }}
-                                                    </label>
-                                                    </div>
-                                                </template>
-
                                             </p>
+
                                         </div>
                                     </section>
                                     <section class="testresults">

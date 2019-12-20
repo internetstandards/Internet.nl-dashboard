@@ -473,6 +473,9 @@
             const routes = [
                 { path: '/', component: DomainListManager, },
 
+                // refreshing the app on a control panel will lead to nothing, make sure it leads to something.
+                { path: '/control-panel-:id', component: DomainListManager, },
+
                 { path: '/domains/:list', component: DomainListManager, name: 'numbered_lists'},
                 { path: '/domains/:list#:list', component: DomainListManager, name: 'numbered_lists'},
                 { path: '/domains', component: DomainListManager, },
