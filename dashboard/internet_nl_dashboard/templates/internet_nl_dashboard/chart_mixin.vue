@@ -26,6 +26,7 @@ const chart_mixin = {
                 // Using createElement features: https://vuejs.org/v2/guide/render-function.html#createElement-Arguments
                 attrs: {
                     role: "img",
+                    class: "graph-image",
                     "aria-label": this.title
                 },
             },

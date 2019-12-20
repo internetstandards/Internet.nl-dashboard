@@ -8,6 +8,13 @@
         min-height: 500px;
     }
 
+    /* Do print the whole table... */
+    @media print {
+        #report-template {
+            min-height: 100% !important;
+        }
+    }
+
     /* Use fixed headers, and search. If you scroll down the headers stay visible. Looks good, even better than aggrid.
     Note that chrome has issues making thead and tr sticky. Therefore it is applied to td and th (because...). */
     #report-template .sticky-table-container {
@@ -439,14 +446,14 @@
 
         <loading :loading="is_loading"></loading>
 
-        <div v-if="reports.length && !is_loading">
+        <div v-if="reports.length && !is_loading" style="page-break-before: always;">
 
             <div class="block fullwidth">
                 <h2>{{ $t("chart_info.adoption_timeline.annotation.title") }}</h2>
                 <a class="anchor" name="charts"></a>
                 <p>{{ $t("chart_info.adoption_timeline.annotation.intro") }}</p>
 
-                <div style="overflow: auto; width: 100%">
+                <div style="overflow: auto; width: 100%;">
                     <div class="chart-container" style="position: relative; height:300px; width:100%; min-width: 950px;">
                         <line-chart
                                 :color_scheme="color_scheme"
@@ -488,7 +495,7 @@
                 </div>
             </div>
 
-            <div class="block fullwidth" v-if='reports.length && "statistics_per_issue_type" in reports[0]'>
+            <div class="block fullwidth" style="page-break-before: always;" v-if='reports.length && "statistics_per_issue_type" in reports[0]'>
                 <!-- Accessible alternative for the data is available in the table below. -->
                 <h2>
                     {{ $t("chart_info.adoption_bar_chart.annotation.title") }}
@@ -516,7 +523,7 @@
 
                         <template v-for="category in scan_form.categories">
                             <template v-if="category_is_visible(category.key)">
-                                <div class="testresult" v-if="visible_fields_from_categories(category).length > 0">
+                                <div class="testresult" style="page-break-inside: avoid;" v-if="visible_fields_from_categories(category).length > 0">
                                     <h3 class="panel-title">
                                         <a href="" aria-expanded="false">
                                             <span class="visuallyhidden">-:</span>
@@ -546,7 +553,7 @@
 
                                 <template v-for="subcategory in category.categories">
                                     <!-- Visibility depends on parent category, the labels themselves cannot yet be filtered for visibility. -->
-                                    <div class="testresult" v-if="fields_from_self(subcategory).length > 0">
+                                    <div class="testresult" style="page-break-inside: avoid;" v-if="fields_from_self(subcategory).length > 0">
                                         <h4 class="panel-title">
                                             <a href="" aria-expanded="false">
                                                 <span class="visuallyhidden">-:</span>
@@ -597,7 +604,7 @@
                 </template>
             </div>
 
-            <div class="block fullwidth" aria-hidden="true" v-if='compare_charts.length > 1 && "statistics_per_issue_type" in reports[0]'>
+            <div class="block fullwidth" style="page-break-before: always;" aria-hidden="true" v-if='compare_charts.length > 1 && "statistics_per_issue_type" in reports[0]'>
                 <!-- Todo: there is no cumulative view in the table below, so cumulative data is not (yet) accessible :( -->
                 <h2>
                     {{ $t("chart_info.cumulative_adoption_bar_chart.annotation.title") }}
@@ -626,7 +633,7 @@
 
                         <template v-for="category in scan_form.categories">
                             <template v-if="category_is_visible(category.key)">
-                                <div class="testresult" v-if="visible_fields_from_categories(category).length > 0">
+                                <div class="testresult" style="page-break-inside: avoid;" v-if="visible_fields_from_categories(category).length > 0">
                                     <h3 class="panel-title">
                                         <a href="" aria-expanded="false">
                                             <span class="visuallyhidden">-:</span>
@@ -657,7 +664,7 @@
 
                                 <template v-for="subcategory in category.categories">
                                     <!-- Visibility depends on parent category, the labels themselves cannot yet be filtered for visibility. -->
-                                    <div class="testresult" v-if="fields_from_self(subcategory).length > 0">
+                                    <div class="testresult" style="page-break-inside: avoid;" v-if="fields_from_self(subcategory).length > 0">
                                         <h4 class="panel-title">
                                             <a href="" aria-expanded="false">
                                                 <span class="visuallyhidden">-:</span>
@@ -712,7 +719,7 @@
                 </template>
             </div>
 
-            <div v-if="filtered_urls !== undefined" class="block fullwidth">
+            <div v-if="filtered_urls !== undefined" class="block fullwidth" style="page-break-before: always;">
                 <h2>{{ $t("report.title") }}</h2>
                 <a class="anchor" name="report"></a>
                 <p>{{ $t("report.intro") }}</p>
