@@ -1,10 +1,8 @@
 import logging
 
 from django import forms
-from django.contrib.auth.models import User
-from django.forms import ValidationError
 
-from dashboard.internet_nl_dashboard.models import Account, DashboardUser
+from dashboard.internet_nl_dashboard.models import Account
 
 log = logging.getLogger(__package__)
 

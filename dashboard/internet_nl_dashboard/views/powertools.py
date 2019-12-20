@@ -83,4 +83,3 @@ def save_instant_account(request) -> HttpResponse:
 def spa(request) -> HttpResponse:
     response = render(request, 'internet_nl_dashboard/templates/internet_nl_dashboard/spa.html')
     return inject_default_language_cookie(request, response)
-
