@@ -474,6 +474,7 @@
                 { path: '/', component: DomainListManager, },
 
                 { path: '/domains/:list', component: DomainListManager, name: 'numbered_lists'},
+                { path: '/domains/:list#:list', component: DomainListManager, name: 'numbered_lists'},
                 { path: '/domains', component: DomainListManager, },
                 { path: '/upload', component: SpreadsheetUpload,
                 props: {csrf_token: get_cookie('csrftoken'),
@@ -490,7 +491,10 @@
 
             const router = new VueRouter({
                 routes, // short for `routes: routes`
-                props: true
+                props: true,
+                // https://reactgo.com/scroll-to-anchor-tags-vue-router/
+                // does not work, as nested anchors is not a thing (and not reliable). So do this in component.
+                scrollBehavior: function (to) {if (to.hash) {return {selector: to.hash}}},
             });
 
             const app = new Vue({

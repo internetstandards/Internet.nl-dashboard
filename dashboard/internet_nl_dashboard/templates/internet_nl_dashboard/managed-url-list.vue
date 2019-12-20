@@ -1,6 +1,6 @@
 {% verbatim %}
 <template type="x-template" id="managed-url-list">
-    <article class="managed-url-list block fullwidth">
+    <article class="managed-url-list block fullwidth" :id="list.id">
         <span>
             <a :name="list.id"></a>
             <h2>
@@ -551,6 +551,9 @@ Vue.component('managed-url-list', {
             // todo: how to anchor-navigate to the part of the page where this list is?
             if (this.list.id === to.params.list){
                 this.open_list();
+
+                // a little lesson in trickery
+                location.hash = "#" + this.list.id;
             }
         }
 
