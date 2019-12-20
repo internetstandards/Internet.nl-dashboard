@@ -1431,6 +1431,23 @@ const Report = Vue.component('report', {
         this.color_scheme.incremental = this.generate_color_increments(10);
         this.load_issue_filters();
         this.get_recent_reports();
+        // this supports: http://localhost:8000/reports/83/
+        // todo: this can be replaced by $route.params.report, which is much more readable.
+        setTimeout(() => {
+            if (window.location.href.split('/').length > 3) {
+                let get_id = window.location.href.split('/')[6];
+                // can we change the select2 to a certain value?
+
+                this.filtered_recent_reports.forEach((option) => {
+                   if (option.id + "" === get_id){
+                       // also re-create label
+                       option.label = `#${option.id} - ${option.list_name} - type: ${option.type} - from: ${this.humanize_date(option.at_when)}`;
+                       this.selected_report = [option];
+                   }
+                });
+            }
+        }, 1000)
+
     },
     // common issue that debounce does not work on a watch:
     // https://stackoverflow.com/questions/47172952/vuejs-2-debounce-not-working-on-a-watch-option
@@ -1624,26 +1641,6 @@ const Report = Vue.component('report', {
                 }
                 this.available_recent_reports = options;
                 this.filtered_recent_reports = options;
-
-                // if the page was requested with a page ID, start loading that report.
-                // this supports: http://localhost:8000/reports/83/
-                // todo: this can be replaced by $route.params.report, which is much more readable.
-                if (window.location.href.split('/').length > 3) {
-                    let get_id = window.location.href.split('/')[6];
-                    // can we change the select2 to a certain value?
-
-                    this.filtered_recent_reports.forEach((option) => {
-                       if (option.id + "" === get_id){
-                           // also re-create label
-                           option.label = `#${option.id} - ${option.list_name} - type: ${option.type} - from: ${this.humanize_date(option.at_when)}`;
-                           this.selected_report = [option];
-                       }
-                    });
-                } else {
-                    // focus on report selection
-                    // $('select_report').focus();
-                }
-
             }).catch((fail) => {console.log('A loading error occurred: ' + fail);});
         },
         select_category: function(category_name){
