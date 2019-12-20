@@ -864,7 +864,8 @@
             </div>
 
         </div>
-        <autorefresh :visible="false" :callback="get_recent_reports"></autorefresh>
+        <!-- This keeps the dropdown up to date? Does it really... it doesn't. -->
+        <!-- <autorefresh :visible="false" :callback="get_recent_reports"></autorefresh> -->
     </div>
 </template>
 {% endverbatim %}
@@ -1436,12 +1437,12 @@ const Report = Vue.component('report', {
         },
 
         sortBy: function (key) {
-            console.log(`Sorting by ${key}.`);
+            // console.log(`Sorting by ${key}.`);
             this.sortKey = key;
 
             // dynamically populate the orders
             if (!(key in this.sortOrders)){
-                console.log('autopopulating sortOrder');
+                // console.log('autopopulating sortOrder');
                 this.sortOrders[key] = 1;
             }
 
@@ -1471,7 +1472,7 @@ const Report = Vue.component('report', {
                 return this.issue_filters[key];
             } catch(err) {
                 this.issue_filters[key] = {'visible': true};
-                console.log(`Issue filter for ${key} does not exist. Created it.`)
+                // console.log(`Issue filter for ${key} does not exist. Created it.`)
             }
         },
 
@@ -1494,7 +1495,7 @@ const Report = Vue.component('report', {
                 // we already have the first report, so don't request it again.
                 // note that when setting the first chart, the subsequent updates do not "point ot a new object"
                 // so a state change doesn not happen automatically using a wathcer, you have to watch deep.
-                console.log(`First compare chart set...`);
+                // console.log(`First compare chart set...`);
                 this.$set(this.compare_charts, 0, this.reports[0]);
                 // this.compare_charts.$set(0, );
 
@@ -1593,7 +1594,7 @@ const Report = Vue.component('report', {
                     // https://vuejs.org/2016/02/06/common-gotchas/#Why-isn%E2%80%99t-the-DOM-updating
                     // note that the documentation is plain wrong, as arr.$set is NOT a method on the array,
                     // but on the vm. And thus the syntax for using it differs from the docs.
-                    console.log(`Compare chart ${compare_chart_id} set...`);
+                    // console.log(`Compare chart ${compare_chart_id} set...`);
                     this.$set(this.compare_charts, compare_chart_id, report[0]);
 
                     // given the charts are on a fixed number in the array, vue doesn't pick up changes.
@@ -1606,7 +1607,7 @@ const Report = Vue.component('report', {
 
         get_recent_reports: function(){
             fetch(`/data/report/recent/`, {credentials: 'include'}).then(response => response.json()).then(data => {
-                console.log("Get recent reports");
+                // console.log("Get recent reports");
                 let options = [];
                 for(let i = 0; i < data.length; i++){
                     data[i].label = `#${data[i].id} - ${data[i].list_name} - type: ${data[i].type} - from: ${this.humanize_date(data[i].at_when)}`;
@@ -1620,7 +1621,6 @@ const Report = Vue.component('report', {
                 // todo: this can be replaced by $route.params.report, which is much more readable.
                 if (window.location.href.split('/').length > 3) {
                     let get_id = window.location.href.split('/')[6];
-                    console.log(get_id);
                     // can we change the select2 to a certain value?
 
                     this.filtered_recent_reports.forEach((option) => {
@@ -1734,8 +1734,8 @@ const Report = Vue.component('report', {
             }
 
             return `<a class='direct_link_to_report' href='${sc[1]}' target="_blank">
-                        <img src="/static/images/vendor/internet_nl/favicon.png" style="height: 16px;" alt="${i18n.t('report.link_to_report', {'url': url})}"> ${sc[0]}%
-                        <span class="visuallyhidden">${i18n.t('report.link_to_report', {'url': url})}</span>
+                        <img src="/static/images/vendor/internet_nl/favicon.png" style="height: 16px;" alt="${this.$i18n.t('report.link_to_report', {'url': url})}"> ${sc[0]}%
+                        <span class="visuallyhidden">${this.$i18n.t('report.link_to_report', {'url': url})}</span>
                     </a>`
         },
         visible_fields_from_scan_form(scan_form){
@@ -1743,7 +1743,7 @@ const Report = Vue.component('report', {
             let fields = [];
 
             scan_form.categories.forEach((category) => {
-                console.log(category.key);
+                // console.log(category.key);
                 if (this.category_is_visible(category.key)){
                         category.fields.forEach((field) => {
                         fields.push(field.name);
@@ -2401,7 +2401,7 @@ const Report = Vue.component('report', {
                 } else {
                     // subcategories, dirty fix using the 'key' field to save a lot of iteration.
                     scan_method.categories.forEach((category) => {
-                        console.log("category " + category.name);
+                        // console.log("category " + category.name);
                         // Get the fields of the highest level
                         if (category.key === this.selected_category) {
                             category.categories.forEach((subcategory) => {
@@ -2417,7 +2417,7 @@ const Report = Vue.component('report', {
                 }
             });
 
-            console.log(`Preferred fields: ${preferred_fields}`);
+            // console.log(`Preferred fields: ${preferred_fields}`);
 
             // now determine for each field if they should be visible or not. Perhaps this should be in
             // the new_categories
@@ -2432,631 +2432,5 @@ const Report = Vue.component('report', {
 
     }
 
-});
-
-const chart_mixin = {
-
-    props: {
-        chart_data: {type: Array, required: true},
-        axis: {type: Array, required: false},
-        color_scheme: {type: Object, required: false},
-        title: {type: String, required: false},
-        translation_key: {type: String, required: false},
-        accessibility_text: {type: String, required: true},
-        show_dynamic_average: {type: Boolean, required: false},
-        only_show_dynamic_average: {type: Boolean, required: false},
-    },
-    data: function () {
-        return {
-            chart: {}
-        }
-    },
-    render: function(createElement) {
-        return createElement(
-            'canvas',
-            {
-                ref: 'canvas',
-
-                // Improve accessibility: https://www.chartjs.org/docs/latest/general/accessibility.html
-                // Using createElement features: https://vuejs.org/v2/guide/render-function.html#createElement-Arguments
-                attrs: {
-                    role: "img",
-                    "aria-label": this.title
-                },
-            },
-            [
-                // Limited to a paragraph only. So give a hint where you can find more data.
-                createElement('p', this.accessibility_text),
-            ]
-        )
-    },
-    mounted: function () {
-        this.buildChart();
-        this.renderData();
-    },
-    methods: {
-        arraysEqual: function (a, b) {
-            // One does not simply array1 === array2, which is a missed opportunity, as (some of the) the most optimized implementation should ship to anyone.
-            if (a === b) return true;
-            if (a == null || b == null) return false;
-
-            // intended type coercion
-            if (a.length != b.length) return false;
-
-            // If you don't care about the order of the elements inside
-            // the array, you should sort both arrays here.
-            // Please note that calling sort on an array will modify that array.
-            // you might want to clone your array first.
-
-            for (let i = 0; i < a.length; ++i) {
-                if (a[i] !== b[i]) return false;
-            }
-            return true;
-        }
-    },
-    created(){
-        // When the chart data is downloaded, it might be that a ton of stuff is processed. To prevent
-        // too many renders, we slow the chart building a bit by debouncing it.
-        // This also prevents some of the "me.getDatasetMeta(...).controller is null" errors in charts.js (nov 2019)
-        // You cannot add a debounce on a watch:
-        // https://stackoverflow.com/questions/47172952/vuejs-2-debounce-not-working-on-a-watch-option
-        this.unwatch = this.$watch('chart_data', _.debounce((newVal) => {
-            this.renderData();
-        }, 300), {
-            // Note that you don’t need to do so to listen for in-Array mutations as they won't happen and the
-            // arrays are too complex and big.
-            deep: false
-        })
-    },
-    watch: {
-
-        axis: function(new_value, old_value){
-            if (!this.arraysEqual(old_value, new_value)) {
-                this.renderData();
-            }
-        },
-        show_dynamic_average: function(){
-            this.renderData();
-        },
-        only_show_dynamic_average: function(){
-            this.renderData();
-        },
-        title: function(new_value, old_value){
-            if (!this.arraysEqual(old_value, new_value)) {
-                this.renderTitle();
-            }
-        },
-
-        // Supports changing the colors of this graph ad-hoc.
-        // charts.js is not reactive.
-        color_scheme: function(new_value, old_value){
-            if (!this.arraysEqual(old_value, new_value)) {
-                this.renderData();
-            }
-        },
-    }
-};
-
-
-// this prevents the legend being written over the 100% scores
-Chart.Legend.prototype.afterFit = function() {
-    this.height = this.height + 20;
-};
-
-Vue.component('percentage-bar-chart', {
-    i18n,
-    mixins: [chart_mixin, humanize_mixin],
-
-    methods: {
-
-        buildChart: function(){
-            let context = this.$refs.canvas.getContext('2d');
-            this.chart = new Chart(context, {
-                type: 'bar',
-                data: {},
-                options: {
-
-                    // can prevent data falling off the chart.
-                    layout: {
-                        padding: {
-                            left: 0,
-                            right: 0,
-                            top: 0,
-                            bottom: 0
-                        }
-                    },
-                    plugins:{
-                        datalabels: {
-                            color: '#262626',
-                            clamp: true, // always shows the number, also when the number 100%
-                            anchor: 'end', // show the number at the top of the bar.
-                            align: 'end', // shows the value outside of the bar,
-                            display: true,
-                            // format as a percentage
-                            formatter: function(value, context) {
-                                // The data labels should be rounded, while the rest of the data on hover etc is not.
-                                // https://github.com/internetstandards/Internet.nl-dashboard/issues/37
-                                return Math.round(value )+ '%';
-                            }
-                        }
-                    },
-                    legend: {
-                        display: true,
-                        position: 'top',
-                        labels: {
-                            padding: 15,
-                        }
-                    },
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    title: {
-                        position: 'top',
-                        display: true,
-                        text: this.title,
-                    },
-                    tooltips: {
-                        mode: 'index',
-                        intersect: false,
-                    },
-                    hover: {
-                        mode: 'nearest',
-                        intersect: true
-                    },
-                    // this is now a percentage graph.
-                    scales: {
-                        yAxes: [{
-                            ticks: {
-                                min: 0,
-                                max: 100,
-                                callback: function(label, index, labels) {
-                                    return label + '%';
-                                }
-                            },
-                            scaleLabel: {
-								display: true,
-								labelString: i18n.t(this.translation_key + '.yAxis_label')
-							},
-                        }]
-				    },
-                    onClick: (event, item) => {
-                        if (item[0] === undefined) {
-                            return;
-                        }
-
-                        if (item[0]._chart.tooltip._lastActive[0] === undefined){
-                            return;
-                        }
-
-                        // todo: handle zooming, this is optional / a nice to have.
-                        let localChart = item[0]._chart;
-                        let activeIndex = localChart.tooltip._lastActive[0]._index;
-                        let clickCoordinates = Chart.helpers.getRelativePosition(event, localChart.chart);
-                        if (clickCoordinates.y >= 0) { //custom value, depends on chart style,size, etc
-                            this.$emit('bar_click', localChart.data.axis_names[activeIndex]);
-                            // console.log("clicked on " + localChart.data.labels[activeIndex]);
-                        }
-                    }
-                }
-            });
-        },
-        renderData: function(){
-            console.log("Rendering bar chart.");
-
-            // prevent the grapsh from ever growing (it's called twice at first render)
-            this.chart.data.axis_names = [];
-            this.chart.data.labels = [];
-            this.chart.data.datasets = [];
-
-            for(let i=0; i < this.chart_data.length; i++){
-                console.log(`Rendering set ${i}`);
-
-                // it's possible the report data is not yet in, but the item in the array has been made.
-                // so well:
-                if (this.chart_data[i] === undefined)
-                    return;
-
-                let data = this.chart_data[i].statistics_per_issue_type;
-
-                if (data === undefined) {
-                    // nothing to show
-                    console.log('nothing to show, probably because not all reports in compare charts are in...');
-                    this.chart.data.axis_names = [];
-                    this.chart.data.labels = [];
-                    this.chart.data.datasets = [];
-                    this.chart.update();
-                    return;
-                }
-
-                let axis_names = [];
-                let labels = [];
-                let chartdata = [];
-                let average = 0;
-
-                this.axis.forEach((ax) => {
-                    if (ax in data) {
-                        if (!this.only_show_dynamic_average) {
-                            labels.push(i18n.t(ax));
-                            axis_names.push(ax);
-                            chartdata.push(data[ax].pct_ok);
-                        }
-                        average += parseFloat(data[ax].pct_ok);
-                    }
-                });
-
-                // add the average of all these to the report, not as a line, but as an additional bar
-                if ((labels.length > 1 && this.show_dynamic_average) || this.only_show_dynamic_average) {
-                    chartdata.push(Math.round((average / this.axis.length) * 100) / 100);
-                    labels.push(i18n.t(this.translation_key + '.average'));
-                    axis_names.push("Average");
-                }
-
-                this.chart.data.axis_names = axis_names;
-                this.chart.data.labels = labels;
-                this.chart.data.datasets.push({
-                    data: chartdata,
-                    backgroundColor: this.color_scheme.incremental[i].background,
-                    borderColor: this.color_scheme.incremental[i].border,
-                    borderWidth: 1,
-                    lineTension: 0,
-                    label: `${this.chart_data[i].calculation.name} ${moment(this.chart_data[i].at_when).format('LL')} n=${this.chart_data[i].total_urls}`,
-                });
-
-            }
-
-            this.chart.update();
-        },
-        renderTitle: function(){
-            this.chart.options.title.text = this.title;
-        },
-    }
-});
-
-
-Vue.component('cumulative-percentage-bar-chart', {
-    i18n,
-    mixins: [chart_mixin, humanize_mixin],
-
-    methods: {
-
-        buildChart: function(){
-            let context = this.$refs.canvas.getContext('2d');
-            this.chart = new Chart(context, {
-                type: 'bar',
-                data: {},
-                options: {
-
-                    // can prevent data falling off the chart.
-                    layout: {
-                        padding: {
-                            left: 0,
-                            right: 0,
-                            top: 0,
-                            bottom: 0
-                        }
-                    },
-                    plugins:{
-                        datalabels: {
-                            color: '#262626',
-                            display: true,  // auto hides overlapping labels, true always shows them.
-                            clamp: true, // always shows the number, also when the number 100%
-                            anchor: 'end', // show the number at the top of the bar.
-                            align: 'end', // shows the value outside of the bar,
-                            // format as a percentage
-                            formatter: function(value, context) {
-                                // https://github.com/internetstandards/Internet.nl-dashboard/issues/37
-                                return Math.round(value )+ '%';
-                            }
-                        }
-                    },
-                    legend: {
-                        display: false,
-                        position: 'top',
-                        labels: {
-                            padding: 15,
-                        }
-                    },
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    title: {
-                        position: 'top',
-                        display: true,
-                        text: this.title,
-                    },
-                    tooltips: {
-                        mode: 'index',
-                        intersect: false,
-                    },
-                    hover: {
-                        mode: 'nearest',
-                        intersect: true
-                    },
-                    // this is now a percentage graph.
-                    scales: {
-                        yAxes: [{
-                            ticks: {
-                                min: 0,
-                                max: 100,
-                                callback: function(label, index, labels) {
-                                    return label + '%';
-                                }
-                            },
-                            scaleLabel: {
-								display: true,
-								labelString: i18n.t(this.translation_key + '.yAxis_label')
-							},
-                        }]
-				    },
-                    onClick: (event, item) => {
-                        if (item[0] === undefined) {
-                            return;
-                        }
-
-                        if (item[0]._chart.tooltip._lastActive[0] === undefined){
-                            return;
-                        }
-
-                        // todo: handle zooming, this is optional / a nice to have.
-                        let localChart = item[0]._chart;
-                        let activeIndex = localChart.tooltip._lastActive[0]._index;
-                        let clickCoordinates = Chart.helpers.getRelativePosition(event, localChart.chart);
-                        if (clickCoordinates.y >= 0) { //custom value, depends on chart style,size, etc
-                            this.$emit('bar_click', localChart.data.axis_names[activeIndex]);
-                            // console.log("clicked on " + localChart.data.labels[activeIndex]);
-                        }
-                    }
-                }
-            });
-        },
-        renderData: function(){
-            // prevent the grapsh from ever growing (it's called twice at first render)
-            this.chart.data.axis_names = [];
-            this.chart.data.labels = [];
-            this.chart.data.datasets = [];
-
-            let cumulative_axis_data = {};
-
-            for(let i=0; i < this.chart_data.length; i++) {
-
-                // it's possible the report data is not yet in, but the item in the array has been made.
-                // so well:
-                if (this.chart_data[i] === undefined)
-                    return;
-
-                let data = this.chart_data[i].statistics_per_issue_type;
-
-                if (data === undefined) {
-                    // nothing to show
-                    this.chart.data.axis_names = [];
-                    this.chart.data.labels = [];
-                    this.chart.data.datasets = [];
-                    this.chart.update();
-                    return;
-                }
-
-                this.axis.forEach((ax) => {
-                    if (ax in data) {
-                        if (!Object.keys(cumulative_axis_data).includes(ax)) {
-                            cumulative_axis_data[ax] = 0
-                        }
-                        cumulative_axis_data[ax] += data[ax].pct_ok
-                    }
-                });
-
-            }
-
-            let data = this.chart_data[0].statistics_per_issue_type;
-            let axis_names = [];
-            let labels = [];
-            let chartdata = [];
-            let average = 0;
-
-            this.axis.forEach((ax) => {
-                if (ax in data) {
-                    if (!this.only_show_dynamic_average) {
-                        labels.push(i18n.t(ax));
-                        axis_names.push(ax);
-                        chartdata.push((Math.round(cumulative_axis_data[ax] / this.chart_data.length * 100)) / 100);
-                    }
-                    // toFixed delivers some 81.32429999999999 results, which is total nonsense.
-                    average += (Math.round(cumulative_axis_data[ax] / this.chart_data.length * 100)) / 100;
-                }
-            });
-
-            // add the average of all these to the report, not as a line, but as an additional bar
-            if ((labels.length > 1 && this.show_dynamic_average) || this.only_show_dynamic_average) {
-                chartdata.push(Math.round((average / this.axis.length) * 100) / 100);
-                labels.push(i18n.t(this.translation_key + '.average'));
-                axis_names.push("Average");
-            }
-
-            this.chart.data.axis_names = axis_names;
-            this.chart.data.labels = labels;
-            this.chart.data.datasets.push({
-                data: chartdata,
-                backgroundColor: this.color_scheme.incremental[0].background,
-                borderColor: this.color_scheme.incremental[0].border,
-                borderWidth: 1,
-                lineTension: 0,
-                label: `${this.chart_data[0].calculation.name} ${moment(this.chart_data[0].at_when).format('LL')}`,
-            });
-
-            this.chart.update();
-        },
-        renderTitle: function(){
-            this.chart.options.title.text = this.title;
-        },
-    }
-});
-
-
-// done: place different labels  (add info about date in image)
-Vue.component('line-chart', {
-    mixins: [chart_mixin],
-
-    methods: {
-        buildChart: function(){
-            let context = this.$refs.canvas.getContext('2d');
-            this.chart = new Chart(context, {
-                type: 'line',
-                data: {
-                    datasets: []
-                },
-                options: {
-                    plugins:{
-                        datalabels: {
-                            color: '#262626',
-                            display: true,
-                            clamp: true, // always shows the number, also when the number 100%
-                            anchor: 'end', // show the number at the top of the bar.
-                            align: 'end', // shows the value outside of the bar,
-                            // format as a percentage
-                            formatter: function(value, context) {
-                                // https://github.com/internetstandards/Internet.nl-dashboard/issues/37
-                                return Math.round(value )+ '%';
-                            }
-                        }
-                    },
-                    legend: {
-                        display: false
-                    },
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    title: {
-                        display: true,
-                        text: i18n.t(this.translation_key + '.title')
-                    },
-                    tooltips: {
-                        mode: 'index',
-                        intersect: false,
-                    },
-                    hover: {
-                        mode: 'nearest',
-                        intersect: true
-                    },
-                    layout: {
-                        padding: {
-                            left: 0,
-                            right: 20,
-                            top: 0,
-                            bottom: 0
-                        }
-                    },
-                    scales: {
-                        xAxes: [{
-                            barPercentage: 0.9,
-                            categoryPercentage: 0.55,
-
-                            display: true,
-                            type: 'time',
-                            distribution: 'linear',
-                            time: {
-                                unit: 'month'
-                            },
-                            scaleLabel: {
-                                display: true,
-                                labelString: 'Month'
-                            }
-                        }],
-                        yAxes: [{
-                            display: true,
-                            stacked: false,
-                            ticks: {
-                                padding: 20,
-                                min: 0,
-                                max: 100,
-                                callback: function(label, index, labels) {
-                                    return label + '%';
-                                }
-                            },
-                            scaleLabel: {
-								display: true,
-								labelString: i18n.t(this.translation_key + '.yAxis_label'),
-							},
-                        }]
-                    }
-                }
-            });
-        },
-
-        renderData: function(){
-            let data = this.chart_data;
-
-            let labels = Array();
-            let high = Array();
-            let medium = Array();
-            let low = Array();
-            let ok = Array();
-            let not_ok = Array();
-            let pct_ok = Array();
-            let pct_not_ok = Array();
-            let average_internet_nl_score = [];
-
-            for(let i=0; i<data.length; i++){
-                labels.push(data[i].date);
-                high.push(data[i].high);
-                medium.push(data[i].medium);
-                low.push(data[i].low);
-                ok.push(data[i].ok);
-                not_ok.push(data[i].not_ok);
-                pct_ok.push(data[i].pct_ok);
-                pct_not_ok.push(data[i].pct_not_ok);
-                average_internet_nl_score.push(data[i].average_internet_nl_score);
-            }
-
-            this.chart.data.labels = labels;
-            this.chart.data.datasets = [
-                {
-                    label: '# OK',
-                    data: ok,
-                    backgroundColor: this.color_scheme.ok_background,
-                    borderColor: this.color_scheme.ok_border,
-                    borderWidth: 1,
-                    lineTension: 0,
-                    hidden: !this.axis.includes('ok')
-                },
-                {
-                    label: '# Not OK',
-                    data: not_ok,
-                    backgroundColor: this.color_scheme.high_background,
-                    borderColor: this.color_scheme.high_border,
-                    borderWidth: 1,
-                    lineTension: 0,
-                    hidden: !this.axis.includes('not_ok')
-                },
-                {
-                    label: '% OK',
-                    data: pct_ok,
-                    backgroundColor: this.color_scheme.incremental[1].background,
-                    borderColor: this.color_scheme.incremental[1].border,
-                    borderWidth: 1,
-                    lineTension: 0,
-                    hidden: !this.axis.includes('pct_ok')
-                },
-                {
-                    label: i18n.t(this.translation_key + '.average_internet_nl_score'),
-                    data: average_internet_nl_score,
-                    backgroundColor: this.color_scheme.incremental[0].background,
-                    borderColor: this.color_scheme.incremental[0].border,
-                    borderWidth: 1,
-                    lineTension: 0,
-                    hidden: !this.axis.includes('average_internet_nl_score')
-                },
-                {
-                    label: '% NOT OK',
-                    data: pct_not_ok,
-                    backgroundColor: this.color_scheme.high_background,
-                    borderColor: this.color_scheme.high_border,
-                    borderWidth: 1,
-                    lineTension: 0,
-                    hidden: !this.axis.includes('pct_not_ok')
-                },
-            ];
-
-            this.chart.update();
-        },
-        renderTitle: function(){
-            this.chart.options.title.text = this.title;
-        },
-    }
 });
 </script>

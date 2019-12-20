@@ -22,7 +22,6 @@
         <link rel="stylesheet" type="text/css" href="{% static 'css/vendor/chartjs@2.8.0/Chart.css'%}">
         <link rel="stylesheet" type="text/css" media="print" href="{% static 'css/vendor/internet_nl/print-min.css' %}">
         <link rel="stylesheet" type="text/css" id="overrides" href="{% static 'css/overrides_dashboard.css' %}">
-
     {% endcompress %}
 
     <script type="text/javascript" src="{% static 'js/vendor/internet_nl/imagecheck-min.js' %}" defer="defer"></script>
@@ -69,58 +68,7 @@
     <script type="text/javascript" src="{% static 'js/translations/internet_nl.js' %}"></script>
     <script type="text/javascript" src="{% static 'js/translations/dashboard.js' %}"></script>
 
-    <script type="text/x-template" id="modal-template">
-      <transition name="modal">
-        <div class="modal-mask">
-          <div class="modal-wrapper">
-            <div class="modal-container">
-
-              <div class="modal-header">
-                <button style="float:right;" type="button" class="close" data-dismiss="modal" aria-label="Close" @click="$emit('close')">
-                    <span aria-hidden="true">&times;</span>
-                </button>
-                <slot name="header">
-                  default header
-                </slot>
-
-              </div>
-
-              <div class="modal-body">
-                <slot name="body">
-                  default body
-                </slot>
-              </div>
-
-              <div class="modal-footer">
-                <slot name="footer">
-                  default footer
-                  <button class="modal-default-button" @click="$emit('close')">
-                    OK
-                  </button>
-                </slot>
-              </div>
-            </div>
-          </div>
-        </div>
-      </transition>
-    </script>
-
     <script>
-        Vue.component('modal', {
-            template: '#modal-template',
-            mounted: function() {
-                // Emit a close when the escape key is hit.
-                document.addEventListener('keyup', (e) => {
-                    if (e.keyCode === 27) {
-                        this.$emit('close');
-                    }
-                });
-
-                // focus on the default button for keyboard users.
-                // todo: should it be the first input, and how do you do that easily / sanely
-                document.getElementsByClassName('modal-default-button')[0].focus();
-            },
-        });
 
         // on embedded pages autodiscovery doesn't work, use a  manual call:
         // https://stackoverflow.com/questions/22169595/dropzone-js-init-function-not-being-called
@@ -432,23 +380,6 @@
         Vue.component('tab', VueTabs.Tab);
 
 
-        {% verbatim %}
-        Vue.component('server-response', {
-            props: ['response'],
-            template: '' +
-                '<div>' +
-                '    <div v-if="response.error" class="server-response-error">\n' +
-                '        <h2>❌ An error occured</h2>\n' +
-                '        {{ response.message }}\n' +
-                '    </div>\n' +
-                '    <div v-if="response.success" class="server-response-success">\n' +
-                '        <h2>✅ Success!</h2>\n' +
-                '        {{ response.message }}\n' +
-                '    </div>' +
-                '</div>',
-        });
-        {% endverbatim %}
-
         function set_language(language_code){
             document.cookie = "dashboard_language=" + (language_code || "en") + "; path=/";
             location.reload();
@@ -535,139 +466,6 @@
         };
 
         {% verbatim %}
-        Vue.component('autorefresh', {
-            i18n: {
-                messages: {
-                    en: {
-                        refresh_happening_in: 'Auto refresh in:',
-                        units: 's',
-                        refresh_now: 'refresh data'
-                    },
-                    nl: {
-                        refresh_happening_in: 'Lijst wordt ververst over:',
-                        units: 's',
-                        refresh_now: 'ververs gegevens'
-                    }
-                }
-            },
-
-            template: `
-<div v-if='visible' class='auto_refresh block fullwidth'>
-    <p style='margin-bottom: 0 !important;'>
-        <button @click="reload_now()">{{ $t("refresh_now") }}</button>
-        {{ $t("refresh_happening_in") }} <span v-html="this.current_step_inverted"></span>
-        {{ $t("units") }}
-    </p>
-</div>`,
-
-            data: function () {
-                return {
-                    // 60 * 1000ms
-                    refresh_time: 60 * 1000,
-
-                    // Counts down until the next refresh. Allows to add a visualisation on this timer.
-                    countdown_percentage: 0,
-
-                    // countdown every ms (more means more UI changes, slower site)
-                    countdown_refresh_time: 1000,
-
-                    //
-                    countdown_steps: 0,
-
-                    //
-                    current_step: 1
-                }
-            },
-
-            props:{
-                callback: null,
-                visible: true,
-            },
-
-            methods: {
-                init_auto_refresh: function () {
-                    setInterval(this.lower_countdown, this.countdown_refresh_time);
-                    this.countdown_steps = this.refresh_time /  this.countdown_refresh_time;
-                },
-                lower_countdown: function(){
-                    if (100 / (this.countdown_steps / this.current_step) >= 100) {
-                        this.reload_now();
-                    } else {
-                        this.current_step += 1;
-                    }
-                },
-                reload_now: function(){
-                    this.current_step = 0;
-                    this.callback();
-                }
-            },
-            mounted: function(){
-                this.init_auto_refresh();
-            },
-            computed: {
-                current_step_inverted: function(){
-                    return this.countdown_steps - this.current_step;
-                }
-            }
-        });
-
-        Vue.component('loading', {
-            i18n: {
-                messages: {
-                    en: {
-                        loading: "Loading...",
-                    },
-                    nl: {
-                        loading: "Laden...",
-                    }
-                }
-            },
-
-            template: `
-            <div v-if="loading" class="block fullwidth loading">
-                <div class="loading">
-                     <div class="lds-dual-ring"><div></div><div></div></div> <span>{{ $t("loading") }}</span>
-                </div>
-            </div>`,
-
-            data: function () {
-                return {
-                    // loading: false,
-                }
-            },
-
-            props:{
-                loading: false,
-            },
-        });
-
-        Vue.component('site-menu', {
-            i18n: {
-                messages: {
-                    en: {
-                        admin: 'Admin',
-                        domains: "Domains",
-                        scans: "Scans",
-                        reports: "Reports",
-                        account: "Account",
-                        log_off: "Log off",
-                        log_in: "Log in",
-                    },
-                    nl: {
-                        admin: 'Beheer',
-                        domains: "Domeinen",
-                        scans: "Scans",
-                        reports: "Rapporten",
-                        account: "Account",
-                        log_off: "Uitloggen",
-                        log_in: "Inloggen",
-                    }
-                }
-            },
-            name: 'site-menu',
-            template: '#menu_template',
-        });
-
         $( document ).ready(function() {
             // new Vue({ el: '#menu', template: `<site-menu></site-menu>`, i18n});
             Vue.use(VueRouter);
@@ -705,33 +503,25 @@
             })
         });
 
+        // this prevents the legend being written over the 100% scores
+        Chart.Legend.prototype.afterFit = function() {
+            this.height = this.height + 20;
+        };
+
         {% endverbatim %}
     </script>
 
+    {% include "internet_nl_dashboard/templates/internet_nl_dashboard/chart_mixin.vue" %}
+    <!-- todo: are these bar charts not just a set of options for the same thing? -->
+    {% include "internet_nl_dashboard/templates/internet_nl_dashboard/percentage-bar-chart.vue" %}
+    {% include "internet_nl_dashboard/templates/internet_nl_dashboard/cumulative-percentage-bar-chart.vue" %}
+    {% include "internet_nl_dashboard/templates/internet_nl_dashboard/line-chart.vue" %}
 
-<template type="x-template" id="menu_template">
-    <ul>
-        {% if user.is_authenticated %}
-
-            {% if user.is_superuser %}
-                <li><router-link to="/add-user">👤</router-link></li>
-                <li><router-link to="/switch-account">🔀</router-link></li>
-            {% endif %}
-
-            {% verbatim %}
-            <li><router-link to="/domains" accesskey="d">{{ $t("domains") }}</router-link></li>
-            <li><router-link to="/scans" accesskey="s">{{ $t("scans") }}</router-link></li>
-            <li><router-link to="/report" accesskey="r">{{ $t("reports") }}</router-link></li>
-
-            <li class=""><a href="/account/two_factor/" accesskey="a">{{ $t("account") }}</a></li>
-            <li class=""><a href="/logout/" accesskey="l">{{ $t("log_off") }}</a></li>
-
-            {% endverbatim %}
-        {% else %}
-            <li class="current"><a href="/account/login/" accesskey="l">{% verbatim %}{{ $t("log_in") }}{% endverbatim %}</a></li>
-        {% endif %}
-    </ul>
-</template>
+    {% include "internet_nl_dashboard/templates/internet_nl_dashboard/modal.vue" %}
+    {% include "internet_nl_dashboard/templates/internet_nl_dashboard/site-menu.vue" %}
+    {% include "internet_nl_dashboard/templates/internet_nl_dashboard/loading.vue" %}
+    {% include "internet_nl_dashboard/templates/internet_nl_dashboard/autorefresh.vue" %}
+    {% include "internet_nl_dashboard/templates/internet_nl_dashboard/server-response.vue" %}
     {% include "internet_nl_dashboard/templates/internet_nl_dashboard/domains.vue" %}
     {% include "internet_nl_dashboard/templates/internet_nl_dashboard/managed-url-list.vue" %}
     {% include "internet_nl_dashboard/templates/internet_nl_dashboard/report.vue" %}
@@ -743,15 +533,7 @@
 
 </head>
 <body class="home body-with-semifixed-header" cz-shortcut-listen="true">
-
-    <!--
-
-    Todo: boot code:, load config and apply to components.
-
-    -->
-
     <div  id="app">
-
         <div class="hidethis" aria-hidden="true">
             <span id="matomo-url">//matomo.internet.nl/</span>
             <span id="matomo-siteid">2</span>
@@ -808,7 +590,8 @@
                 </div>
 
                 <nav id="sitenav">
-                    <site-menu></site-menu>
+                    <!-- Todo: move these types of variables to a general config, instead of sprinkling it around.-->
+                    <site-menu :is_authenticated="{{ user.is_authenticated | lower }}" :is_superuser="{{ user.is_superuser | lower }}"></site-menu>
                 </nav>
             </div>
         </header>
@@ -820,7 +603,11 @@
             <div class="wrap">
 
             <div style="width: 100%;">
-                <router-view></router-view>
+                <!-- to support keep alive, you also need to rewrite the links between components to be updated -->
+                <!-- to support keep alive, your autorefresh functions need to triggered more frequently / smarter -->
+                <!-- <keep-alive> -->
+                    <router-view></router-view>
+                <!-- </keep-alive> -->
             </div>
 
             </div>

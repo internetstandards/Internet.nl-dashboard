@@ -237,7 +237,7 @@ const DomainListManager = Vue.component('list-manager', {
     },
     methods: {
         removelist: function(list_id) {
-            console.log('removing');
+            // console.log('removing');
             this.lists.forEach(function (item, index, object) {
                 if (list_id === item.id) {
                     object.splice(index, 1);

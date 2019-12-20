@@ -11,7 +11,7 @@
             <p>{{ $t("intro") }}</p>
         </div>
 
-        <autorefresh :visible="true" :callback="load"></autorefresh>
+        <autorefresh :visible="true" :callback="load" :refresh_per_seconds="20"></autorefresh>
 
         <div class="wrap">
             <div class="block" v-if="scans" v-for="scan in scans">

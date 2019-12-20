@@ -762,7 +762,7 @@ Vue.component('managed-url-list', {
         },
         list_contains_warnings: function(){
             // As long as we don't have the urls loaded, the warnings as they are stand.
-            console.log("checking warnings");
+            // console.log("checking warnings");
             if (!this.urls.length){
                 return this.list.list_warnings.length > 0;
             }
@@ -770,16 +770,16 @@ Vue.component('managed-url-list', {
             //
             // The list warnings is not automatically updated. So we replicate the behavior here.
             if (this.urls.length > this.maximum_domains){
-                console.log("adding WARNING_DOMAINS_IN_LIST_EXCEED_MAXIMUM_ALLOWED");
+                // console.log("adding WARNING_DOMAINS_IN_LIST_EXCEED_MAXIMUM_ALLOWED");
                 if (this.list.list_warnings.indexOf("WARNING_DOMAINS_IN_LIST_EXCEED_MAXIMUM_ALLOWED") === -1) {
-                    console.log("adding WARNING_DOMAINS_IN_LIST_EXCEED_MAXIMUM_ALLOWED really");
+                    // console.log("adding WARNING_DOMAINS_IN_LIST_EXCEED_MAXIMUM_ALLOWED really");
                     this.list.list_warnings.push('WARNING_DOMAINS_IN_LIST_EXCEED_MAXIMUM_ALLOWED');
                 }
             } else {
-                console.log("Removing WARNING_DOMAINS_IN_LIST_EXCEED_MAXIMUM_ALLOWED");
+                // console.log("Removing WARNING_DOMAINS_IN_LIST_EXCEED_MAXIMUM_ALLOWED");
                 let index = this.list.list_warnings.indexOf("WARNING_DOMAINS_IN_LIST_EXCEED_MAXIMUM_ALLOWED");
                 if (index > -1) {
-                    console.log("Removing WARNING_DOMAINS_IN_LIST_EXCEED_MAXIMUM_ALLOWED really");
+                    // console.log("Removing WARNING_DOMAINS_IN_LIST_EXCEED_MAXIMUM_ALLOWED really");
                    this.list.list_warnings.splice("WARNING_DOMAINS_IN_LIST_EXCEED_MAXIMUM_ALLOWED", 1);
                 }
             }
