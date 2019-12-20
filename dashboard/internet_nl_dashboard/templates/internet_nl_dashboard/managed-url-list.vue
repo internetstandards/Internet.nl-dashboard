@@ -542,7 +542,18 @@ Vue.component('managed-url-list', {
     watch: {
         initial_list: function(new_value){
             this.list = new_value;
+        },
+
+        // support keep alive routing
+        $route: function(to, from){
+            // https://router.vuejs.org/guide/essentials/dynamic-matching.html
+            // If this param is set, and this list is the one requested, open this list.
+            // todo: how to anchor-navigate to the part of the page where this list is?
+            if (this.list.id === to.params.list){
+                this.open_list();
+            }
         }
+
     },
     mounted: function(){
         if (window.location.href.split('/').length > 3) {

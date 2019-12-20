@@ -864,8 +864,8 @@
             </div>
 
         </div>
-        <!-- This keeps the dropdown up to date? Does it really... it doesn't. -->
-        <!-- <autorefresh :visible="false" :callback="get_recent_reports"></autorefresh> -->
+        <!-- This keeps the dropdown up to date? Does it really... it doesn't. Or should we just refresh on open? -->
+        <autorefresh :visible="false" :callback="get_recent_reports" :refresh_per_seconds="60"></autorefresh>
     </div>
 </template>
 {% endverbatim %}
@@ -1863,6 +1863,18 @@ const Report = Vue.component('report', {
     },
     watch: {
 
+        // support keep alive routing
+        $route: function(to, from){
+            // https://router.vuejs.org/guide/essentials/dynamic-matching.html
+            if (undefined !== to.params.report){
+                // See if we can find a report to mach:
+                this.available_recent_reports.forEach((item) => {
+                    if (item.id === to.params.report){
+                        this.selected_report = [item];
+                    }
+                });
+            }
+        },
 
 
         selected_report: function (new_value, old_value) {
