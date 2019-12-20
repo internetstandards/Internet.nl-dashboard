@@ -8,6 +8,13 @@
         min-height: 500px;
     }
 
+    /* Do print the whole table... */
+    @media print {
+        #report-template {
+            min-height: 100% !important;
+        }
+    }
+
     /* Use fixed headers, and search. If you scroll down the headers stay visible. Looks good, even better than aggrid.
     Note that chrome has issues making thead and tr sticky. Therefore it is applied to td and th (because...). */
     #report-template .sticky-table-container {
@@ -246,6 +253,7 @@
                 <!-- limit not yet supported, nov 2019: https://github.com/sagalbot/vue-select/issues/60 -->
                 <v-select
                         v-model="selected_report"
+                        :placeholder="$t('header.select_report')"
                         :options="filtered_recent_reports"
                         label="label"
                         :multiple="true"
@@ -255,35 +263,35 @@
                 </v-select>
             </div>
 
-            <template v-if="reports.length && !is_loading">
-
-                <div class="testresult faq-report">
-                    <h2 style="font-size: 1.0em;"  class="panel-title" >
-                        <a href="" aria-expanded="false">
-                            <span class="visuallyhidden">-:</span>
-                            {{ $t("icon_legend.title") }}
-                            <span class="pre-icon visuallyhidden"></span>
-                            <span class="icon"><img src="/static/images/vendor/internet_nl/push-open.png" alt=""></span>
-                        </a>
-                    </h2>
-                    <div class="panel-content">
-                        <h3>{{ $t("icon_legend.test_title") }}</h3>
-                        <ul>
-                            <li><span class="faq-test category_passed"><span class="visuallyhidden">{{ $t("report.results.passed") }}</span>{{ $t("icon_legend.test_good") }}</span></li>
-                            <li><span class="faq-test category_failed"><span class="visuallyhidden">{{ $t("report.results.failed") }}</span>{{ $t("icon_legend.test_bad") }}</span></li>
-                            <li><span class="faq-test category_warning"><span class="visuallyhidden">{{ $t("report.results.warning") }}</span>{{ $t("icon_legend.test_warning") }}</span></li>
-                        </ul>
-                        <h3>{{ $t("icon_legend.subtest_title") }}</h3>
-                        <ul>
-                            <li><span class="faq-subtest passed"><span class="visuallyhidden">{{ $t("report.results.passed") }}</span>{{ $t("icon_legend.subtest_good") }}</span></li>
-                            <li><span class="faq-subtest failed"><span class="visuallyhidden">{{ $t("report.results.failed") }}</span>{{ $t("icon_legend.subtest_bad") }}</span></li>
-                            <li><span class="faq-subtest warning"><span class="visuallyhidden">{{ $t("report.results.warning") }}</span>{{ $t("icon_legend.subtest_warning") }}</span></li>
-                            <li><span class="faq-subtest info"><span class="visuallyhidden">{{ $t("report.results.info") }}</span>{{ $t("icon_legend.subtest_info") }}</span></li>
-                            <li><span class="faq-test not_applicable"><span class="visuallyhidden">{{ $t("report.results.not_applicable") }}</span>{{ $t("icon_legend.subtest_not_applicable") }}</span></li>
-                            <li><span class="faq-test not_testable"><span class="visuallyhidden">{{ $t("report.results.not_testable") }}</span>{{ $t("icon_legend.subtest_not_testable") }}</span></li>
-                        </ul>
-                    </div>
+            <div class="testresult faq-report">
+                <h2 style="font-size: 1.0em;"  class="panel-title" >
+                    <a href="" aria-expanded="false">
+                        <span class="visuallyhidden">-:</span>
+                        {{ $t("icon_legend.title") }}
+                        <span class="pre-icon visuallyhidden"></span>
+                        <span class="icon"><img src="/static/images/vendor/internet_nl/push-open.png" alt=""></span>
+                    </a>
+                </h2>
+                <div class="panel-content">
+                    <h3>{{ $t("icon_legend.test_title") }}</h3>
+                    <ul>
+                        <li><span class="faq-test category_passed"><span class="visuallyhidden">{{ $t("report.results.passed") }}</span>{{ $t("icon_legend.test_good") }}</span></li>
+                        <li><span class="faq-test category_failed"><span class="visuallyhidden">{{ $t("report.results.failed") }}</span>{{ $t("icon_legend.test_bad") }}</span></li>
+                        <li><span class="faq-test category_warning"><span class="visuallyhidden">{{ $t("report.results.warning") }}</span>{{ $t("icon_legend.test_warning") }}</span></li>
+                    </ul>
+                    <h3>{{ $t("icon_legend.subtest_title") }}</h3>
+                    <ul>
+                        <li><span class="faq-subtest passed"><span class="visuallyhidden">{{ $t("report.results.passed") }}</span>{{ $t("icon_legend.subtest_good") }}</span></li>
+                        <li><span class="faq-subtest failed"><span class="visuallyhidden">{{ $t("report.results.failed") }}</span>{{ $t("icon_legend.subtest_bad") }}</span></li>
+                        <li><span class="faq-subtest warning"><span class="visuallyhidden">{{ $t("report.results.warning") }}</span>{{ $t("icon_legend.subtest_warning") }}</span></li>
+                        <li><span class="faq-subtest info"><span class="visuallyhidden">{{ $t("report.results.info") }}</span>{{ $t("icon_legend.subtest_info") }}</span></li>
+                        <li><span class="faq-test not_applicable"><span class="visuallyhidden">{{ $t("report.results.not_applicable") }}</span>{{ $t("icon_legend.subtest_not_applicable") }}</span></li>
+                        <li><span class="faq-test not_testable"><span class="visuallyhidden">{{ $t("report.results.not_testable") }}</span>{{ $t("icon_legend.subtest_not_testable") }}</span></li>
+                    </ul>
                 </div>
+            </div>
+
+            <template v-if="reports.length && !is_loading">
 
                 <div class="testresult">
                     <h2 style="font-size: 1.0em;" class="panel-title" >
@@ -345,9 +353,21 @@
                                                 </div>
                                             </template>
                                         </p>
+
+                                        <div>
+                                                <button @click="reset_issue_filters()">{{ $t("settings.buttons.reset") }}<span class="visuallyhidden"></span></button>
+                                                <button @click="save_issue_filters()">{{ $t("settings.buttons.save") }}<span class="visuallyhidden"></span></button>
+                                                <br>
+                                                <template v-if="issue_filters_response.success || issue_filters_response.error">
+                                                    <div :class="'server-response-' + issue_filters_response.state">
+                                                        <span>{{ $t(issue_filters_response.message) }} on {{ humanize_date(issue_filters_response.timestamp) }}.</span>
+                                                    </div>
+                                                </template>
+                                            </div>
+
                                     </tab>
 
-                                <tab v-for="category in scan_form.categories" :name="category.label">
+                                <tab v-for="category in scan_form.categories" :name="category.label" :key="category.label">
                                     <section class="test-header">
                                         <div class="test-title">
                                             <h3>{{category.label}}</h3>
@@ -367,18 +387,8 @@
                                                         {{ $t("settings.only_show_dynamic_average") }}
                                                     </label>
                                                 </template>
-
-                                                <template v-if="category.additional_fields.length">
-                                                    <div class="test-subsection">{{ $t("fields.additional_fields.label") }}</div>
-                                                    <div v-for="field in category.additional_fields" class="testresult">
-                                                    <label :for="field.name + '_visible'">
-                                                        <input type="checkbox" v-model="issue_filters[field.name].visible" :id="field.name + '_visible'">
-                                                        {{ $t(field.name) }}
-                                                    </label>
-                                                    </div>
-                                                </template>
-
                                             </p>
+
                                         </div>
                                     </section>
                                     <section class="testresults">
@@ -437,14 +447,14 @@
 
         <loading :loading="is_loading"></loading>
 
-        <div v-if="reports.length && !is_loading">
+        <div v-if="reports.length && !is_loading" style="page-break-before: always;">
 
             <div class="block fullwidth">
                 <h2>{{ $t("chart_info.adoption_timeline.annotation.title") }}</h2>
                 <a class="anchor" name="charts"></a>
                 <p>{{ $t("chart_info.adoption_timeline.annotation.intro") }}</p>
 
-                <div style="overflow: auto; width: 100%">
+                <div style="overflow: auto; width: 100%;">
                     <div class="chart-container" style="position: relative; height:300px; width:100%; min-width: 950px;">
                         <line-chart
                                 :color_scheme="color_scheme"
@@ -486,7 +496,7 @@
                 </div>
             </div>
 
-            <div class="block fullwidth" v-if='reports.length && "statistics_per_issue_type" in reports[0]'>
+            <div class="block fullwidth" style="page-break-before: always;" v-if='reports.length && "statistics_per_issue_type" in reports[0]'>
                 <!-- Accessible alternative for the data is available in the table below. -->
                 <h2>
                     {{ $t("chart_info.adoption_bar_chart.annotation.title") }}
@@ -514,7 +524,7 @@
 
                         <template v-for="category in scan_form.categories">
                             <template v-if="category_is_visible(category.key)">
-                                <div class="testresult" v-if="visible_fields_from_categories(category).length > 0">
+                                <div class="testresult" style="page-break-inside: avoid;" v-if="visible_fields_from_categories(category).length > 0">
                                     <h3 class="panel-title">
                                         <a href="" aria-expanded="false">
                                             <span class="visuallyhidden">-:</span>
@@ -544,7 +554,7 @@
 
                                 <template v-for="subcategory in category.categories">
                                     <!-- Visibility depends on parent category, the labels themselves cannot yet be filtered for visibility. -->
-                                    <div class="testresult" v-if="fields_from_self(subcategory).length > 0">
+                                    <div class="testresult" style="page-break-inside: avoid;" v-if="fields_from_self(subcategory).length > 0">
                                         <h4 class="panel-title">
                                             <a href="" aria-expanded="false">
                                                 <span class="visuallyhidden">-:</span>
@@ -595,7 +605,7 @@
                 </template>
             </div>
 
-            <div class="block fullwidth" aria-hidden="true" v-if='compare_charts.length > 1 && "statistics_per_issue_type" in reports[0]'>
+            <div class="block fullwidth" style="page-break-before: always;" aria-hidden="true" v-if='compare_charts.length > 1 && "statistics_per_issue_type" in reports[0]'>
                 <!-- Todo: there is no cumulative view in the table below, so cumulative data is not (yet) accessible :( -->
                 <h2>
                     {{ $t("chart_info.cumulative_adoption_bar_chart.annotation.title") }}
@@ -624,7 +634,7 @@
 
                         <template v-for="category in scan_form.categories">
                             <template v-if="category_is_visible(category.key)">
-                                <div class="testresult" v-if="visible_fields_from_categories(category).length > 0">
+                                <div class="testresult" style="page-break-inside: avoid;" v-if="visible_fields_from_categories(category).length > 0">
                                     <h3 class="panel-title">
                                         <a href="" aria-expanded="false">
                                             <span class="visuallyhidden">-:</span>
@@ -655,7 +665,7 @@
 
                                 <template v-for="subcategory in category.categories">
                                     <!-- Visibility depends on parent category, the labels themselves cannot yet be filtered for visibility. -->
-                                    <div class="testresult" v-if="fields_from_self(subcategory).length > 0">
+                                    <div class="testresult" style="page-break-inside: avoid;" v-if="fields_from_self(subcategory).length > 0">
                                         <h4 class="panel-title">
                                             <a href="" aria-expanded="false">
                                                 <span class="visuallyhidden">-:</span>
@@ -710,7 +720,7 @@
                 </template>
             </div>
 
-            <div v-if="filtered_urls !== undefined" class="block fullwidth">
+            <div v-if="filtered_urls !== undefined" class="block fullwidth" style="page-break-before: always;">
                 <h2>{{ $t("report.title") }}</h2>
                 <a class="anchor" name="report"></a>
                 <p>{{ $t("report.intro") }}</p>
@@ -864,7 +874,8 @@
             </div>
 
         </div>
-        <autorefresh :visible="false" :callback="get_recent_reports"></autorefresh>
+        <!-- This keeps the dropdown up to date? Does it really... it doesn't. Or should we just refresh on open? -->
+        <autorefresh :visible="false" :callback="get_recent_reports" :refresh_per_seconds="60"></autorefresh>
     </div>
 </template>
 {% endverbatim %}
@@ -1418,9 +1429,26 @@ const Report = Vue.component('report', {
         }
     },
     mounted: function(){
-        this.color_scheme.incremental = this.generate_color_increments(100);
+        this.color_scheme.incremental = this.generate_color_increments(10);
         this.load_issue_filters();
         this.get_recent_reports();
+        // this supports: http://localhost:8000/reports/83/
+        // todo: this can be replaced by $route.params.report, which is much more readable.
+        setTimeout(() => {
+            if (window.location.href.split('/').length > 3) {
+                let get_id = window.location.href.split('/')[6];
+                // can we change the select2 to a certain value?
+
+                this.filtered_recent_reports.forEach((option) => {
+                   if (option.id + "" === get_id){
+                       // also re-create label
+                       option.label = `#${option.id} - ${option.list_name} - type: ${option.type} - from: ${this.humanize_date(option.at_when)}`;
+                       this.selected_report = [option];
+                   }
+                });
+            }
+        }, 1000)
+        this.$nextTick(() => {accordinate();});
     },
     // common issue that debounce does not work on a watch:
     // https://stackoverflow.com/questions/47172952/vuejs-2-debounce-not-working-on-a-watch-option
@@ -1436,12 +1464,12 @@ const Report = Vue.component('report', {
         },
 
         sortBy: function (key) {
-            console.log(`Sorting by ${key}.`);
+            // console.log(`Sorting by ${key}.`);
             this.sortKey = key;
 
             // dynamically populate the orders
             if (!(key in this.sortOrders)){
-                console.log('autopopulating sortOrder');
+                // console.log('autopopulating sortOrder');
                 this.sortOrders[key] = 1;
             }
 
@@ -1471,7 +1499,7 @@ const Report = Vue.component('report', {
                 return this.issue_filters[key];
             } catch(err) {
                 this.issue_filters[key] = {'visible': true};
-                console.log(`Issue filter for ${key} does not exist. Created it.`)
+                // console.log(`Issue filter for ${key} does not exist. Created it.`)
             }
         },
 
@@ -1494,7 +1522,7 @@ const Report = Vue.component('report', {
                 // we already have the first report, so don't request it again.
                 // note that when setting the first chart, the subsequent updates do not "point ot a new object"
                 // so a state change doesn not happen automatically using a wathcer, you have to watch deep.
-                console.log(`First compare chart set...`);
+                // console.log(`First compare chart set...`);
                 this.$set(this.compare_charts, 0, this.reports[0]);
                 // this.compare_charts.$set(0, );
 
@@ -1593,7 +1621,7 @@ const Report = Vue.component('report', {
                     // https://vuejs.org/2016/02/06/common-gotchas/#Why-isn%E2%80%99t-the-DOM-updating
                     // note that the documentation is plain wrong, as arr.$set is NOT a method on the array,
                     // but on the vm. And thus the syntax for using it differs from the docs.
-                    console.log(`Compare chart ${compare_chart_id} set...`);
+                    // console.log(`Compare chart ${compare_chart_id} set...`);
                     this.$set(this.compare_charts, compare_chart_id, report[0]);
 
                     // given the charts are on a fixed number in the array, vue doesn't pick up changes.
@@ -1606,6 +1634,7 @@ const Report = Vue.component('report', {
 
         get_recent_reports: function(){
             fetch(`/data/report/recent/`, {credentials: 'include'}).then(response => response.json()).then(data => {
+                // console.log("Get recent reports");
                 let options = [];
                 for(let i = 0; i < data.length; i++){
                     data[i].label = `#${data[i].id} - ${data[i].list_name} - type: ${data[i].type} - from: ${this.humanize_date(data[i].at_when)}`;
@@ -1613,25 +1642,6 @@ const Report = Vue.component('report', {
                 }
                 this.available_recent_reports = options;
                 this.filtered_recent_reports = options;
-
-                // if the page was requested with a page ID, start loading that report.
-                // this supports: http://localhost:8000/reports/83/
-                if (window.location.href.split('/').length > 3) {
-                    get_id = window.location.href.split('/')[4];
-                    // can we change the select2 to a certain value?
-
-                    this.filtered_recent_reports.forEach((option) => {
-                       if (option.id + "" === get_id){
-                           // also re-create label
-                           option.label = `#${option.id} - ${option.list_name} - type: ${option.type} - from: ${this.humanize_date(option.at_when)}`;
-                           this.selected_report = [option];
-                       }
-                    });
-                } else {
-                    // focus on report selection
-                    // $('select_report').focus();
-                }
-
             }).catch((fail) => {console.log('A loading error occurred: ' + fail);});
         },
         select_category: function(category_name){
@@ -1731,8 +1741,8 @@ const Report = Vue.component('report', {
             }
 
             return `<a class='direct_link_to_report' href='${sc[1]}' target="_blank">
-                        <img src="/static/images/vendor/internet_nl/favicon.png" style="height: 16px;" alt="${i18n.t('report.link_to_report', {'url': url})}"> ${sc[0]}%
-                        <span class="visuallyhidden">${i18n.t('report.link_to_report', {'url': url})}</span>
+                        <img src="/static/images/vendor/internet_nl/favicon.png" style="height: 16px;" alt="${this.$i18n.t('report.link_to_report', {'url': url})}"> ${sc[0]}%
+                        <span class="visuallyhidden">${this.$i18n.t('report.link_to_report', {'url': url})}</span>
                     </a>`
         },
         visible_fields_from_scan_form(scan_form){
@@ -1740,7 +1750,7 @@ const Report = Vue.component('report', {
             let fields = [];
 
             scan_form.categories.forEach((category) => {
-                console.log(category.key);
+                // console.log(category.key);
                 if (this.category_is_visible(category.key)){
                         category.fields.forEach((field) => {
                         fields.push(field.name);
@@ -1859,6 +1869,21 @@ const Report = Vue.component('report', {
 
     },
     watch: {
+
+        // support keep alive routing
+        $route: function(to, from){
+            // https://router.vuejs.org/guide/essentials/dynamic-matching.html
+            if (undefined !== to.params.report){
+                // See if we can find a report to mach:
+                this.available_recent_reports.forEach((item) => {
+                    if (item.id === to.params.report){
+                        this.selected_report = [item];
+                    }
+                });
+            }
+        },
+
+
         selected_report: function (new_value, old_value) {
             // console.log(`New value: ${new_value}`);
             // console.log(`Old value: ${old_value}`);
@@ -2395,7 +2420,7 @@ const Report = Vue.component('report', {
                 } else {
                     // subcategories, dirty fix using the 'key' field to save a lot of iteration.
                     scan_method.categories.forEach((category) => {
-                        console.log("category " + category.name);
+                        // console.log("category " + category.name);
                         // Get the fields of the highest level
                         if (category.key === this.selected_category) {
                             category.categories.forEach((subcategory) => {
@@ -2411,7 +2436,7 @@ const Report = Vue.component('report', {
                 }
             });
 
-            console.log(`Preferred fields: ${preferred_fields}`);
+            // console.log(`Preferred fields: ${preferred_fields}`);
 
             // now determine for each field if they should be visible or not. Perhaps this should be in
             // the new_categories
@@ -2426,631 +2451,5 @@ const Report = Vue.component('report', {
 
     }
 
-});
-
-const chart_mixin = {
-
-    props: {
-        chart_data: {type: Array, required: true},
-        axis: {type: Array, required: false},
-        color_scheme: {type: Object, required: false},
-        title: {type: String, required: false},
-        translation_key: {type: String, required: false},
-        accessibility_text: {type: String, required: true},
-        show_dynamic_average: {type: Boolean, required: false},
-        only_show_dynamic_average: {type: Boolean, required: false},
-    },
-    data: function () {
-        return {
-            chart: {}
-        }
-    },
-    render: function(createElement) {
-        return createElement(
-            'canvas',
-            {
-                ref: 'canvas',
-
-                // Improve accessibility: https://www.chartjs.org/docs/latest/general/accessibility.html
-                // Using createElement features: https://vuejs.org/v2/guide/render-function.html#createElement-Arguments
-                attrs: {
-                    role: "img",
-                    "aria-label": this.title
-                },
-            },
-            [
-                // Limited to a paragraph only. So give a hint where you can find more data.
-                createElement('p', this.accessibility_text),
-            ]
-        )
-    },
-    mounted: function () {
-        this.buildChart();
-        this.renderData();
-    },
-    methods: {
-        arraysEqual: function (a, b) {
-            // One does not simply array1 === array2, which is a missed opportunity, as (some of the) the most optimized implementation should ship to anyone.
-            if (a === b) return true;
-            if (a == null || b == null) return false;
-
-            // intended type coercion
-            if (a.length != b.length) return false;
-
-            // If you don't care about the order of the elements inside
-            // the array, you should sort both arrays here.
-            // Please note that calling sort on an array will modify that array.
-            // you might want to clone your array first.
-
-            for (let i = 0; i < a.length; ++i) {
-                if (a[i] !== b[i]) return false;
-            }
-            return true;
-        }
-    },
-    created(){
-        // When the chart data is downloaded, it might be that a ton of stuff is processed. To prevent
-        // too many renders, we slow the chart building a bit by debouncing it.
-        // This also prevents some of the "me.getDatasetMeta(...).controller is null" errors in charts.js (nov 2019)
-        // You cannot add a debounce on a watch:
-        // https://stackoverflow.com/questions/47172952/vuejs-2-debounce-not-working-on-a-watch-option
-        this.unwatch = this.$watch('chart_data', _.debounce((newVal) => {
-            this.renderData();
-        }, 300), {
-            // Note that you don’t need to do so to listen for in-Array mutations as they won't happen and the
-            // arrays are too complex and big.
-            deep: false
-        })
-    },
-    watch: {
-
-        axis: function(new_value, old_value){
-            if (!this.arraysEqual(old_value, new_value)) {
-                this.renderData();
-            }
-        },
-        show_dynamic_average: function(){
-            this.renderData();
-        },
-        only_show_dynamic_average: function(){
-            this.renderData();
-        },
-        title: function(new_value, old_value){
-            if (!this.arraysEqual(old_value, new_value)) {
-                this.renderTitle();
-            }
-        },
-
-        // Supports changing the colors of this graph ad-hoc.
-        // charts.js is not reactive.
-        color_scheme: function(new_value, old_value){
-            if (!this.arraysEqual(old_value, new_value)) {
-                this.renderData();
-            }
-        },
-    }
-};
-
-
-// this prevents the legend being written over the 100% scores
-Chart.Legend.prototype.afterFit = function() {
-    this.height = this.height + 20;
-};
-
-Vue.component('percentage-bar-chart', {
-    i18n,
-    mixins: [chart_mixin, humanize_mixin],
-
-    methods: {
-
-        buildChart: function(){
-            let context = this.$refs.canvas.getContext('2d');
-            this.chart = new Chart(context, {
-                type: 'bar',
-                data: {},
-                options: {
-
-                    // can prevent data falling off the chart.
-                    layout: {
-                        padding: {
-                            left: 0,
-                            right: 0,
-                            top: 0,
-                            bottom: 0
-                        }
-                    },
-                    plugins:{
-                        datalabels: {
-                            color: '#262626',
-                            clamp: true, // always shows the number, also when the number 100%
-                            anchor: 'end', // show the number at the top of the bar.
-                            align: 'end', // shows the value outside of the bar,
-                            display: true,
-                            // format as a percentage
-                            formatter: function(value, context) {
-                                // The data labels should be rounded, while the rest of the data on hover etc is not.
-                                // https://github.com/internetstandards/Internet.nl-dashboard/issues/37
-                                return Math.round(value )+ '%';
-                            }
-                        }
-                    },
-                    legend: {
-                        display: true,
-                        position: 'top',
-                        labels: {
-                            padding: 15,
-                        }
-                    },
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    title: {
-                        position: 'top',
-                        display: true,
-                        text: this.title,
-                    },
-                    tooltips: {
-                        mode: 'index',
-                        intersect: false,
-                    },
-                    hover: {
-                        mode: 'nearest',
-                        intersect: true
-                    },
-                    // this is now a percentage graph.
-                    scales: {
-                        yAxes: [{
-                            ticks: {
-                                min: 0,
-                                max: 100,
-                                callback: function(label, index, labels) {
-                                    return label + '%';
-                                }
-                            },
-                            scaleLabel: {
-								display: true,
-								labelString: i18n.t(this.translation_key + '.yAxis_label')
-							},
-                        }]
-				    },
-                    onClick: (event, item) => {
-                        if (item[0] === undefined) {
-                            return;
-                        }
-
-                        if (item[0]._chart.tooltip._lastActive[0] === undefined){
-                            return;
-                        }
-
-                        // todo: handle zooming, this is optional / a nice to have.
-                        let localChart = item[0]._chart;
-                        let activeIndex = localChart.tooltip._lastActive[0]._index;
-                        let clickCoordinates = Chart.helpers.getRelativePosition(event, localChart.chart);
-                        if (clickCoordinates.y >= 0) { //custom value, depends on chart style,size, etc
-                            this.$emit('bar_click', localChart.data.axis_names[activeIndex]);
-                            // console.log("clicked on " + localChart.data.labels[activeIndex]);
-                        }
-                    }
-                }
-            });
-        },
-        renderData: function(){
-            console.log("Rendering bar chart.");
-
-            // prevent the grapsh from ever growing (it's called twice at first render)
-            this.chart.data.axis_names = [];
-            this.chart.data.labels = [];
-            this.chart.data.datasets = [];
-
-            for(let i=0; i < this.chart_data.length; i++){
-                console.log(`Rendering set ${i}`);
-
-                // it's possible the report data is not yet in, but the item in the array has been made.
-                // so well:
-                if (this.chart_data[i] === undefined)
-                    return;
-
-                let data = this.chart_data[i].statistics_per_issue_type;
-
-                if (data === undefined) {
-                    // nothing to show
-                    console.log('nothing to show, probably because not all reports in compare charts are in...');
-                    this.chart.data.axis_names = [];
-                    this.chart.data.labels = [];
-                    this.chart.data.datasets = [];
-                    this.chart.update();
-                    return;
-                }
-
-                let axis_names = [];
-                let labels = [];
-                let chartdata = [];
-                let average = 0;
-
-                this.axis.forEach((ax) => {
-                    if (ax in data) {
-                        if (!this.only_show_dynamic_average) {
-                            labels.push(i18n.t(ax));
-                            axis_names.push(ax);
-                            chartdata.push(data[ax].pct_ok);
-                        }
-                        average += parseFloat(data[ax].pct_ok);
-                    }
-                });
-
-                // add the average of all these to the report, not as a line, but as an additional bar
-                if ((labels.length > 1 && this.show_dynamic_average) || this.only_show_dynamic_average) {
-                    chartdata.push(Math.round((average / this.axis.length) * 100) / 100);
-                    labels.push(i18n.t(this.translation_key + '.average'));
-                    axis_names.push("Average");
-                }
-
-                this.chart.data.axis_names = axis_names;
-                this.chart.data.labels = labels;
-                this.chart.data.datasets.push({
-                    data: chartdata,
-                    backgroundColor: this.color_scheme.incremental[i].background,
-                    borderColor: this.color_scheme.incremental[i].border,
-                    borderWidth: 1,
-                    lineTension: 0,
-                    label: `${this.chart_data[i].calculation.name} ${moment(this.chart_data[i].at_when).format('LL')} n=${this.chart_data[i].total_urls}`,
-                });
-
-            }
-
-            this.chart.update();
-        },
-        renderTitle: function(){
-            this.chart.options.title.text = this.title;
-        },
-    }
-});
-
-
-Vue.component('cumulative-percentage-bar-chart', {
-    i18n,
-    mixins: [chart_mixin, humanize_mixin],
-
-    methods: {
-
-        buildChart: function(){
-            let context = this.$refs.canvas.getContext('2d');
-            this.chart = new Chart(context, {
-                type: 'bar',
-                data: {},
-                options: {
-
-                    // can prevent data falling off the chart.
-                    layout: {
-                        padding: {
-                            left: 0,
-                            right: 0,
-                            top: 0,
-                            bottom: 0
-                        }
-                    },
-                    plugins:{
-                        datalabels: {
-                            color: '#262626',
-                            display: true,  // auto hides overlapping labels, true always shows them.
-                            clamp: true, // always shows the number, also when the number 100%
-                            anchor: 'end', // show the number at the top of the bar.
-                            align: 'end', // shows the value outside of the bar,
-                            // format as a percentage
-                            formatter: function(value, context) {
-                                // https://github.com/internetstandards/Internet.nl-dashboard/issues/37
-                                return Math.round(value )+ '%';
-                            }
-                        }
-                    },
-                    legend: {
-                        display: false,
-                        position: 'top',
-                        labels: {
-                            padding: 15,
-                        }
-                    },
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    title: {
-                        position: 'top',
-                        display: true,
-                        text: this.title,
-                    },
-                    tooltips: {
-                        mode: 'index',
-                        intersect: false,
-                    },
-                    hover: {
-                        mode: 'nearest',
-                        intersect: true
-                    },
-                    // this is now a percentage graph.
-                    scales: {
-                        yAxes: [{
-                            ticks: {
-                                min: 0,
-                                max: 100,
-                                callback: function(label, index, labels) {
-                                    return label + '%';
-                                }
-                            },
-                            scaleLabel: {
-								display: true,
-								labelString: i18n.t(this.translation_key + '.yAxis_label')
-							},
-                        }]
-				    },
-                    onClick: (event, item) => {
-                        if (item[0] === undefined) {
-                            return;
-                        }
-
-                        if (item[0]._chart.tooltip._lastActive[0] === undefined){
-                            return;
-                        }
-
-                        // todo: handle zooming, this is optional / a nice to have.
-                        let localChart = item[0]._chart;
-                        let activeIndex = localChart.tooltip._lastActive[0]._index;
-                        let clickCoordinates = Chart.helpers.getRelativePosition(event, localChart.chart);
-                        if (clickCoordinates.y >= 0) { //custom value, depends on chart style,size, etc
-                            this.$emit('bar_click', localChart.data.axis_names[activeIndex]);
-                            // console.log("clicked on " + localChart.data.labels[activeIndex]);
-                        }
-                    }
-                }
-            });
-        },
-        renderData: function(){
-            // prevent the grapsh from ever growing (it's called twice at first render)
-            this.chart.data.axis_names = [];
-            this.chart.data.labels = [];
-            this.chart.data.datasets = [];
-
-            let cumulative_axis_data = {};
-
-            for(let i=0; i < this.chart_data.length; i++) {
-
-                // it's possible the report data is not yet in, but the item in the array has been made.
-                // so well:
-                if (this.chart_data[i] === undefined)
-                    return;
-
-                let data = this.chart_data[i].statistics_per_issue_type;
-
-                if (data === undefined) {
-                    // nothing to show
-                    this.chart.data.axis_names = [];
-                    this.chart.data.labels = [];
-                    this.chart.data.datasets = [];
-                    this.chart.update();
-                    return;
-                }
-
-                this.axis.forEach((ax) => {
-                    if (ax in data) {
-                        if (!Object.keys(cumulative_axis_data).includes(ax)) {
-                            cumulative_axis_data[ax] = 0
-                        }
-                        cumulative_axis_data[ax] += data[ax].pct_ok
-                    }
-                });
-
-            }
-
-            let data = this.chart_data[0].statistics_per_issue_type;
-            let axis_names = [];
-            let labels = [];
-            let chartdata = [];
-            let average = 0;
-
-            this.axis.forEach((ax) => {
-                if (ax in data) {
-                    if (!this.only_show_dynamic_average) {
-                        labels.push(i18n.t(ax));
-                        axis_names.push(ax);
-                        chartdata.push((Math.round(cumulative_axis_data[ax] / this.chart_data.length * 100)) / 100);
-                    }
-                    // toFixed delivers some 81.32429999999999 results, which is total nonsense.
-                    average += (Math.round(cumulative_axis_data[ax] / this.chart_data.length * 100)) / 100;
-                }
-            });
-
-            // add the average of all these to the report, not as a line, but as an additional bar
-            if ((labels.length > 1 && this.show_dynamic_average) || this.only_show_dynamic_average) {
-                chartdata.push(Math.round((average / this.axis.length) * 100) / 100);
-                labels.push(i18n.t(this.translation_key + '.average'));
-                axis_names.push("Average");
-            }
-
-            this.chart.data.axis_names = axis_names;
-            this.chart.data.labels = labels;
-            this.chart.data.datasets.push({
-                data: chartdata,
-                backgroundColor: this.color_scheme.incremental[0].background,
-                borderColor: this.color_scheme.incremental[0].border,
-                borderWidth: 1,
-                lineTension: 0,
-                label: `${this.chart_data[0].calculation.name} ${moment(this.chart_data[0].at_when).format('LL')}`,
-            });
-
-            this.chart.update();
-        },
-        renderTitle: function(){
-            this.chart.options.title.text = this.title;
-        },
-    }
-});
-
-
-// done: place different labels  (add info about date in image)
-Vue.component('line-chart', {
-    mixins: [chart_mixin],
-
-    methods: {
-        buildChart: function(){
-            let context = this.$refs.canvas.getContext('2d');
-            this.chart = new Chart(context, {
-                type: 'line',
-                data: {
-                    datasets: []
-                },
-                options: {
-                    plugins:{
-                        datalabels: {
-                            color: '#262626',
-                            display: true,
-                            clamp: true, // always shows the number, also when the number 100%
-                            anchor: 'end', // show the number at the top of the bar.
-                            align: 'end', // shows the value outside of the bar,
-                            // format as a percentage
-                            formatter: function(value, context) {
-                                // https://github.com/internetstandards/Internet.nl-dashboard/issues/37
-                                return Math.round(value )+ '%';
-                            }
-                        }
-                    },
-                    legend: {
-                        display: false
-                    },
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    title: {
-                        display: true,
-                        text: i18n.t(this.translation_key + '.title')
-                    },
-                    tooltips: {
-                        mode: 'index',
-                        intersect: false,
-                    },
-                    hover: {
-                        mode: 'nearest',
-                        intersect: true
-                    },
-                    layout: {
-                        padding: {
-                            left: 0,
-                            right: 20,
-                            top: 0,
-                            bottom: 0
-                        }
-                    },
-                    scales: {
-                        xAxes: [{
-                            barPercentage: 0.9,
-                            categoryPercentage: 0.55,
-
-                            display: true,
-                            type: 'time',
-                            distribution: 'linear',
-                            time: {
-                                unit: 'month'
-                            },
-                            scaleLabel: {
-                                display: true,
-                                labelString: 'Month'
-                            }
-                        }],
-                        yAxes: [{
-                            display: true,
-                            stacked: false,
-                            ticks: {
-                                padding: 20,
-                                min: 0,
-                                max: 100,
-                                callback: function(label, index, labels) {
-                                    return label + '%';
-                                }
-                            },
-                            scaleLabel: {
-								display: true,
-								labelString: i18n.t(this.translation_key + '.yAxis_label'),
-							},
-                        }]
-                    }
-                }
-            });
-        },
-
-        renderData: function(){
-            let data = this.chart_data;
-
-            let labels = Array();
-            let high = Array();
-            let medium = Array();
-            let low = Array();
-            let ok = Array();
-            let not_ok = Array();
-            let pct_ok = Array();
-            let pct_not_ok = Array();
-            let average_internet_nl_score = [];
-
-            for(let i=0; i<data.length; i++){
-                labels.push(data[i].date);
-                high.push(data[i].high);
-                medium.push(data[i].medium);
-                low.push(data[i].low);
-                ok.push(data[i].ok);
-                not_ok.push(data[i].not_ok);
-                pct_ok.push(data[i].pct_ok);
-                pct_not_ok.push(data[i].pct_not_ok);
-                average_internet_nl_score.push(data[i].average_internet_nl_score);
-            }
-
-            this.chart.data.labels = labels;
-            this.chart.data.datasets = [
-                {
-                    label: '# OK',
-                    data: ok,
-                    backgroundColor: this.color_scheme.ok_background,
-                    borderColor: this.color_scheme.ok_border,
-                    borderWidth: 1,
-                    lineTension: 0,
-                    hidden: !this.axis.includes('ok')
-                },
-                {
-                    label: '# Not OK',
-                    data: not_ok,
-                    backgroundColor: this.color_scheme.high_background,
-                    borderColor: this.color_scheme.high_border,
-                    borderWidth: 1,
-                    lineTension: 0,
-                    hidden: !this.axis.includes('not_ok')
-                },
-                {
-                    label: '% OK',
-                    data: pct_ok,
-                    backgroundColor: this.color_scheme.incremental[1].background,
-                    borderColor: this.color_scheme.incremental[1].border,
-                    borderWidth: 1,
-                    lineTension: 0,
-                    hidden: !this.axis.includes('pct_ok')
-                },
-                {
-                    label: i18n.t(this.translation_key + '.average_internet_nl_score'),
-                    data: average_internet_nl_score,
-                    backgroundColor: this.color_scheme.incremental[0].background,
-                    borderColor: this.color_scheme.incremental[0].border,
-                    borderWidth: 1,
-                    lineTension: 0,
-                    hidden: !this.axis.includes('average_internet_nl_score')
-                },
-                {
-                    label: '% NOT OK',
-                    data: pct_not_ok,
-                    backgroundColor: this.color_scheme.high_background,
-                    borderColor: this.color_scheme.high_border,
-                    borderWidth: 1,
-                    lineTension: 0,
-                    hidden: !this.axis.includes('pct_not_ok')
-                },
-            ];
-
-            this.chart.update();
-        },
-        renderTitle: function(){
-            this.chart.options.title.text = this.title;
-        },
-    }
 });
 </script>

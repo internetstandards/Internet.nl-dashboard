@@ -102,7 +102,7 @@
 {% endverbatim %}
 
 <script>
-Vue.component('spreadsheet-upload', {
+const SpreadsheetUpload = Vue.component('spreadsheet-upload', {
     i18n: {
         messages: {
             en: {
@@ -213,7 +213,7 @@ Vue.component('spreadsheet-upload', {
         configure_upload_field: function(){
             let self = this;
 
-            Dropzone.options.myAwesomeDropzone = {
+            $("#my-awesome-dropzone").dropzone({
                 // The name that will be used to transfer the file
                 paramName: "file",
 
@@ -252,7 +252,8 @@ Vue.component('spreadsheet-upload', {
                         self.get_recent_uploads();
                     });
                 }
-            };
+            });
+
         },
         get_recent_uploads: function(){
             fetch(`/data/upload-history/`, {credentials: 'include'}).then(response => response.json()).then(data => {

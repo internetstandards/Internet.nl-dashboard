@@ -415,3 +415,30 @@ a.anchor {
     background-size: 1.25em 1.25em  !important;
     padding-left: 2em  !important;
 }
+
+.router-link-active {
+    font-weight: bold;
+    border-bottom: 3px solid #ffab4c;
+}
+
+/* Allow printing of background images: */
+/* https://stackoverflow.com/questions/6670151/how-can-i-force-browsers-to-print-background-images-in-css */
+* {
+    -webkit-print-color-adjust: exact !important;   /* Chrome, Safari */
+    color-adjust: exact !important;                 /*Firefox*/
+}
+
+/* Allow printing of graphs, make sure they don't go wider than the page width... */
+/* https://stackoverflow.com/questions/41674976/resize-chart-js-canvas-for-printing */
+/* We'll resize the image to fit plain a4 paper, otherwise the aspect ratios are distorted.*/
+@media print {
+    canvas.graph-image {
+        height: 60% !important;
+        width: 60% !important;
+    }
+
+    /* Also remove the superfluous container sizes during print, as the image is a bit smaller now: */
+    .chart-container {
+        height: 100% !important;
+    }
+}

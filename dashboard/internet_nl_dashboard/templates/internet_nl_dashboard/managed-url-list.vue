@@ -1,6 +1,6 @@
 {% verbatim %}
 <template type="x-template" id="managed-url-list">
-    <article class="managed-url-list block fullwidth">
+    <article class="managed-url-list block fullwidth" :id="list.id">
         <span>
             <a :name="list.id"></a>
             <h2>
@@ -92,10 +92,11 @@
                     </div>
                 </template>
                 <span v-if="list.last_report_id">
-                    <a :href="'/reports/' + list.last_report_id" target="_blank">
+                    <router-link :to="{ name: 'numbered_report', params: { report: list.last_report_id }}">
                         <span role="img" :aria-label="$t('icons.report')">📊</span>
                         {{ $t("about_this_list.latest_report") }}: {{ humanize_date(list.last_report_date) }}
-                    </a><br>
+                    </router-link>
+                    <br>
                 </span>
             </p>
             <br>
@@ -541,12 +542,26 @@ Vue.component('managed-url-list', {
     watch: {
         initial_list: function(new_value){
             this.list = new_value;
+        },
+
+        // support keep alive routing
+        $route: function(to, from){
+            // https://router.vuejs.org/guide/essentials/dynamic-matching.html
+            // If this param is set, and this list is the one requested, open this list.
+            // todo: how to anchor-navigate to the part of the page where this list is?
+            if (this.list.id === to.params.list){
+                this.open_list();
+
+                // a little lesson in trickery
+                location.hash = "#" + this.list.id;
+            }
         }
+
     },
     mounted: function(){
         if (window.location.href.split('/').length > 3) {
-            let get_id = window.location.href.split('/')[4];
-            console.log(get_id);
+            // todo: this can be replaced by $route.params.report, which is much more readable.
+            let get_id = window.location.href.split('/')[6];
             // can we change the select2 to a certain value?
 
             if (this.list.id === parseInt(get_id)){
@@ -761,7 +776,7 @@ Vue.component('managed-url-list', {
         },
         list_contains_warnings: function(){
             // As long as we don't have the urls loaded, the warnings as they are stand.
-            console.log("checking warnings");
+            // console.log("checking warnings");
             if (!this.urls.length){
                 return this.list.list_warnings.length > 0;
             }
@@ -769,16 +784,16 @@ Vue.component('managed-url-list', {
             //
             // The list warnings is not automatically updated. So we replicate the behavior here.
             if (this.urls.length > this.maximum_domains){
-                console.log("adding WARNING_DOMAINS_IN_LIST_EXCEED_MAXIMUM_ALLOWED");
+                // console.log("adding WARNING_DOMAINS_IN_LIST_EXCEED_MAXIMUM_ALLOWED");
                 if (this.list.list_warnings.indexOf("WARNING_DOMAINS_IN_LIST_EXCEED_MAXIMUM_ALLOWED") === -1) {
-                    console.log("adding WARNING_DOMAINS_IN_LIST_EXCEED_MAXIMUM_ALLOWED really");
+                    // console.log("adding WARNING_DOMAINS_IN_LIST_EXCEED_MAXIMUM_ALLOWED really");
                     this.list.list_warnings.push('WARNING_DOMAINS_IN_LIST_EXCEED_MAXIMUM_ALLOWED');
                 }
             } else {
-                console.log("Removing WARNING_DOMAINS_IN_LIST_EXCEED_MAXIMUM_ALLOWED");
+                // console.log("Removing WARNING_DOMAINS_IN_LIST_EXCEED_MAXIMUM_ALLOWED");
                 let index = this.list.list_warnings.indexOf("WARNING_DOMAINS_IN_LIST_EXCEED_MAXIMUM_ALLOWED");
                 if (index > -1) {
-                    console.log("Removing WARNING_DOMAINS_IN_LIST_EXCEED_MAXIMUM_ALLOWED really");
+                    // console.log("Removing WARNING_DOMAINS_IN_LIST_EXCEED_MAXIMUM_ALLOWED really");
                    this.list.list_warnings.splice("WARNING_DOMAINS_IN_LIST_EXCEED_MAXIMUM_ALLOWED", 1);
                 }
             }

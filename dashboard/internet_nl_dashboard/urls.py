@@ -20,9 +20,11 @@ register_converter(SpreadsheetFileTypeConverter, 'spreadsheet_filetype')
 
 
 urlpatterns = [
-    path('', lambda request: redirect('/domains/')),
+    path('', lambda request: redirect('/spa/#/domains')),
     path('spa/', powertools.spa),
-    path('powertools/', powertools.powertools),
+    path('data/powertools/get_accounts/', powertools.get_accounts),
+    path('data/powertools/set_account/', powertools.set_account),
+    path('data/powertools/save_instant_account/', powertools.save_instant_account),
     path('logout/', __init__.logout_view),
 
     # domain management

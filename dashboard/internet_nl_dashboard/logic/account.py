@@ -15,6 +15,6 @@ def save_report_settings(account, report_settings):
 def get_report_settings(account):
     return operation_response(
         success=True,
-        message="report.settings.restored_from_database",
+        message="settings.restored_from_database",
         data=account.report_settings if account.report_settings else {}
     )

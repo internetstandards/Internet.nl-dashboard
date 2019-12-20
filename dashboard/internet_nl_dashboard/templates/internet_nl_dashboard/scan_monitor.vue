@@ -9,7 +9,11 @@
         <div class="block fullwidth">
             <h1>{{ $t("title") }}</h1>
             <p>{{ $t("intro") }}</p>
+
+            <autorefresh :visible="true" :callback="load" :refresh_per_seconds="20"></autorefresh>
         </div>
+
+
 
         <div class="wrap">
             <div class="block" v-if="scans" v-for="scan in scans">
@@ -20,7 +24,7 @@
                     <br>
                     <template v-if="scan.finished">
                         <template v-if="scan.last_report_id">
-                            📊 <a :href="'/reports/' + scan.last_report_id">{{ $t("open_report") }}</a><br>
+                            📊 <router-link :to="{ name: 'numbered_report', params: { report: scan.last_report_id }}">{{ $t("open_report") }}</router-link><br>
                             <br>
                         </template>
                         <template v-if="!scan.last_report_id">
@@ -28,7 +32,7 @@
                             <br>
                         </template>
                     </template>
-                    📘 <a :href="'/domains/' + scan.list_id + '/#' + scan.list_id">{{ scan.list }}</a><br>
+                    📘 <router-link :to="{ name: 'numbered_lists', params: { list: scan.list_id }}">{{ scan.list }}</router-link><br>
                     <br>
                     <template v-if="scan.finished">
                         <b>{{ $t("finished_on") }}</b><br>
@@ -76,7 +80,6 @@
 
         <div class='block fullwidth' v-if="!scans.length">{{ $t("no_scans") }}</div>
 
-        <autorefresh :visible="true" :callback="load"></autorefresh>
     </div>
 </template>
 
