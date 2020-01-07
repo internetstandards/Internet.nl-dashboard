@@ -843,7 +843,8 @@
                                             <template v-if="!['web', 'mail'].includes(selected_category)">
 
                                                 <template v-if="category_name in url.endpoints[0].ratings_by_type">
-                                                    <span class="not_applicable" v-if="url.endpoints[0].ratings_by_type[category_name].not_applicable > 0">
+                                                    <div v-html="detail_value_with_comparison(category_name, url)"></div>
+                                                    <!-- <span class="not_applicable" v-if="url.endpoints[0].ratings_by_type[category_name].not_applicable > 0">
                                                         <span>{{ $t("report.results.not_applicable") }}</span>
                                                     </span>
                                                     <span class="not_testable" v-if="url.endpoints[0].ratings_by_type[category_name].not_testable > 0">
@@ -862,7 +863,7 @@
                                                     && !url.endpoints[0].ratings_by_type[category_name].not_applicable
                                                     && !url.endpoints[0].ratings_by_type[category_name].not_testable">
                                                         <span>{{ $t("report.results.passed") }} {{ $t('' + category_name + '_verdict_good') }}</span>
-                                                    </span>
+                                                    </span> -->
                                                 </template>
                                                 <span class="" v-if="url.endpoints[0].ratings_by_type[category_name] === undefined">
                                                     <span>{{ $t("report.results.unknown") }}</span>
@@ -1467,6 +1468,104 @@ const Report = Vue.component('report', {
             this.get_report_data(report_id);
         },
 
+        detail_value_with_comparison: function(category_name, url){
+            let verdicts = url.endpoints[0].ratings_by_type[category_name];
+
+            let simple_value = this.verdict_to_simple_value(verdicts);
+            let report_result_string = "";
+            let category_name_verdict = "";
+
+            if (simple_value === "not_applicable"){
+                report_result_string = this.$i18n.t("report.results.not_applicable");
+                category_name_verdict = ""
+            }
+
+            if (simple_value === "not_testable") {
+                report_result_string = this.$i18n.t("report.results.not_testable");
+                category_name_verdict = ""
+            }
+
+            if (simple_value === "failed") {
+                report_result_string = this.$i18n.t("report.results.failed");
+                category_name_verdict = this.$i18n.t('' + category_name + '_verdict_bad')
+            }
+
+            if (simple_value === "warning") {
+                report_result_string = this.$i18n.t("report.results.warning");
+                category_name_verdict = this.$i18n.t('' + category_name + '_verdict_bad')
+            }
+
+            if (simple_value === "info") {
+                report_result_string = this.$i18n.t("report.results.info");
+                category_name_verdict = this.$i18n.t('' + category_name + '_verdict_bad')
+            }
+
+            if (simple_value === "passed"){
+                report_result_string = this.$i18n.t("report.results.passed");
+                category_name_verdict = this.$i18n.t('' + category_name + '_verdict_good')
+            }
+
+            // todo: move this to data, make this a constant.
+            /*
+            * This compares if the new value is progressive, neutral or regressive.
+            * All to/from not_testable and not_applicable is neutral.
+            * From good to worst: passed, info, warning, failed.
+            *
+            * Possible values are: not_applicable, not_testable, failed, warning, info, passed
+            * */
+
+            let progression = {'passed': 4, 'info': 3, 'warning': 2, 'failed': 1};
+            let comparison_verdict = "";
+
+            // And now add a quick comparison to the 2nd report. If there is any of course.
+            if (this.compare_charts.length < 2 || this.compare_charts[1].calculation.urls_by_url[url.url] === undefined)
+                return `<span class="${simple_value} compared_with_next_report_${comparison_verdict}">${report_result_string} ${category_name_verdict}</span>`
+
+
+            // older, previous...
+            let other_verdicts = this.compare_charts[1].calculation.urls_by_url[url.url].endpoints[0].ratings_by_type[category_name];
+            let other_simple_value = this.verdict_to_simple_value(other_verdicts);
+
+            // all to and from not_tested or not_applicable is neutral, also going to the same state is neutral
+            if (simple_value === other_simple_value)
+                comparison_verdict = "neutral";
+
+            if (simple_value === "unknown" || simple_value === "not_applicable" || simple_value === "not_testable"
+                || other_simple_value === "not_applicable" || other_simple_value === "not_testable" || other_simple_value === "unknown")
+                comparison_verdict = "neutral";
+
+            if (comparison_verdict === "") {
+                if (progression[simple_value] > progression[other_simple_value])
+                    comparison_verdict = "improved";
+                else
+                    comparison_verdict = "regressed";
+            }
+
+
+
+            // Todo: add a list to the bottom of the table of urls that where not in the compared table.
+            // todo: the report reloads using autoreload, which is annoying.
+            // todo: Clean up this entangled code
+            // todo: add text message on comparison, such as: improved compared to previous report. Regressed compared to previous report.
+
+            return `<span class="${simple_value} compared_with_next_report_${comparison_verdict}">${report_result_string} ${category_name_verdict}</span>`
+        },
+
+        verdict_to_simple_value: function(verdicts){
+            if (verdicts === undefined)
+                return "unknown";
+
+            if (verdicts.not_applicable > 0){return "not_applicable";}
+            if (verdicts.not_testable > 0) {return "not_testable";}
+            if (verdicts.high > 0) {return "failed";}
+            if (verdicts.medium > 0) {return "warning";}
+            if (verdicts.low > 0) {return "info";}
+
+            if (verdicts.ok > 0 && !verdicts.not_applicable && !verdicts.not_testable){
+                return "passed";
+            }
+        },
+
         sortBy: function (key) {
             // console.log(`Sorting by ${key}.`);
             this.sortKey = key;
@@ -1617,6 +1716,13 @@ const Report = Vue.component('report', {
             fetch(`/data/report/get/${id}/`, {credentials: 'include'}).then(response => response.json()).then(report => {
 
                 if (!jQuery.isEmptyObject(report)) {
+                    // The comparison report require direct data access to urls to be able to compare
+                    // by simply reading data directly without scanning the table.
+                    report[0].calculation.urls_by_url = {};
+                    report[0].calculation.urls.forEach((url) => {
+                        report[0].calculation.urls_by_url[url.url] = url;
+                    });
+
                     // this will work fine, as all the prior id's will be filled with reports too...
                     // js behaves unacceptably, but in this case it's fine.
                     // example: i = [];
