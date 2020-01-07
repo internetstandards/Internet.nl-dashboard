@@ -6,12 +6,12 @@ from typing import List
 import requests
 from celery import Task, group
 from constance import config
+from django.conf import settings
 from django.contrib.auth.models import User
 from django.core.mail import send_mail
 from django.db import transaction
 from django.db.models import Count, Q
 from django.utils import timezone
-from django.conf import settings
 from requests.auth import HTTPBasicAuth
 from websecmap.organizations.models import Url
 from websecmap.reporting.report import recreate_url_reports
