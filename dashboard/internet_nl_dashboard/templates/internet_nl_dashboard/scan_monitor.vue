@@ -13,8 +13,6 @@
             <autorefresh :visible="true" :callback="load" :refresh_per_seconds="60"></autorefresh>
         </div>
 
-
-
         <div class="wrap">
             <div class="block" v-if="scans" v-for="scan in scans">
                 <div class="wrapper">

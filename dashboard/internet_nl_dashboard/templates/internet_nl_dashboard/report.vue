@@ -263,7 +263,7 @@
                 </v-select>
             </div>
 
-            <div class="testresult faq-report">
+            <div class="testresult_without_icon faq-report">
                 <h2 style="font-size: 1.0em;"  class="panel-title" >
                     <a href="" aria-expanded="false">
                         <span class="visuallyhidden">-:</span>
@@ -293,7 +293,7 @@
 
             <template v-if="reports.length && !is_loading">
 
-                <div class="testresult">
+                <div class="testresult_without_icon">
                     <h2 style="font-size: 1.0em;" class="panel-title" >
                         <a href="" aria-expanded="false">
                             <span class="visuallyhidden">-:</span>
@@ -304,7 +304,7 @@
                     </h2>
                     <div class="panel-content">
                         <p>{{ $t("download.intro") }}</p>
-                        <ul style="list-style: disc !important;">
+                        <ul style="list-style: disc !important; padding-left: 20px">
                             <li><a :href="'/data/download-spreadsheet/' + reports[0].id + '/xlsx/'">{{ $t("download.xlsx") }}</a></li>
                             <li><a :href="'/data/download-spreadsheet/' + reports[0].id + '/ods/'">{{ $t("download.ods") }}</a></li>
                             <li><a :href="'/data/download-spreadsheet/' + reports[0].id + '/csv/'">{{ $t("download.csv") }}</a></li>
@@ -312,7 +312,7 @@
                     </div>
                 </div>
 
-                <div class="testresult">
+                <div class="testresult_without_icon">
                     <h2 style="font-size: 1.0em;" class="panel-title" >
                         <a href="" aria-expanded="false">
                             <span class="visuallyhidden">-:</span>
@@ -347,7 +347,7 @@
 
                                             <template v-if="scan_form.additional_fields.length">
                                                 <div class="test-subsection">{{ $t("fields.additional_fields.label") }}</div>
-                                                <div v-for="field in scan_form.additional_fields" class="testresult">
+                                                <div v-for="field in scan_form.additional_fields" class="testresult_without_icon">
                                                 <label :for="field.name + '_visible'">
                                                     <input type="checkbox" v-model="issue_filters[field.name].visible" :id="field.name + '_visible'">
                                                     {{ $t(field.name) }}
@@ -400,7 +400,7 @@
 
                                         <template v-for="category in category.categories">
                                             <div class="test-subsection">{{ category.label }}<br></div>
-                                            <div v-for="field in category.fields" class="testresult">
+                                            <div v-for="field in category.fields" class="testresult_without_icon">
                                                 <label :for="field.name + '_visible'">
                                                     <input type="checkbox" v-model="issue_filters[field.name].visible" :id="field.name + '_visible'">
                                                     {{ $t(field.name) }}
@@ -412,7 +412,7 @@
 
                                             <template v-if="category.additional_fields.length">
                                                 <div class="test-subsection">{{ $t("fields.additional_fields.label") }}</div>
-                                                <div v-for="field in category.additional_fields" class="testresult">
+                                                <div v-for="field in category.additional_fields" class="testresult_without_icon">
                                                     <label :for="field.name + '_visible'">
                                                         <input type="checkbox" v-model="issue_filters[field.name].visible" :id="field.name + '_visible'">
                                                         {{ $t(field.name) }}
