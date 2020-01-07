@@ -1887,8 +1887,9 @@ const Report = Vue.component('report', {
             }
         },
 
-
         selected_report: function (new_value, old_value) {
+
+
             // console.log(`New value: ${new_value}`);
             // console.log(`Old value: ${old_value}`);
 
@@ -1903,6 +1904,13 @@ const Report = Vue.component('report', {
                 this.is_loading = false;
                 return;
             }
+
+            // Always update the URL to reflect the latest report, so it can be easily shared and the page reloaded
+            history.pushState(
+                {},
+                null,
+                '/spa/#/report/' + new_value[0].id
+              );
 
             // when deleting any report, we will need to rebuild the compare charts...
             this.compare_charts = [];
