@@ -7,7 +7,7 @@ from dashboard.internet_nl_dashboard.models import (Account, AccountInternetNLSc
                                                     AccountInternetNLScanLog, UrlListReport)
 
 
-def get_running_scans(account: Account) -> List:
+def get_scan_monitor_data(account: Account) -> List:
 
     scans = AccountInternetNLScan.objects.all().filter(
         account=account,
@@ -25,15 +25,20 @@ def get_running_scans(account: Account) -> List:
         # Finished means also report created, mail sent, etc.
         if scan.state == "finished":
             # first report within the next day
+            if scan.report:
+                last_report_id = scan.report.id
+            else:
+                # heuristic approach, this approach was used before the connection between report and scan
+                # was solidified (and became reliable). This code is here to be backwards compatible with
+                # existing reports.
+                last_report = UrlListReport.objects.all().filter(
+                    urllist=scan.urllist,
+                    at_when__lte=scan.scan.finished_on + timedelta(hours=24),
+                    at_when__gte=scan.scan.finished_on
+                ).order_by('-id').only('id').first()
 
-            last_report = UrlListReport.objects.all().filter(
-                urllist=scan.urllist,
-                at_when__lte=scan.scan.finished_on + timedelta(hours=24),
-                at_when__gte=scan.scan.finished_on
-            ).order_by('-id').only('id').first()
-
-            if last_report:
-                last_report_id = last_report.id
+                if last_report:
+                    last_report_id = last_report.id
 
         if scan.state == "finished":
             runtime = scan.scan.finished_on - scan.scan.started_on

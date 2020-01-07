@@ -313,64 +313,6 @@ class UrlList(models.Model):
         return False
 
 
-class AccountInternetNLScan(models.Model):
-    """
-    We've explicitly not declared the N-to-N on scan or account. This is the N to N between them. When a new scan is
-    created the UrlList serves as extra data.
-    """
-
-    account = models.ForeignKey(
-        Account,
-        on_delete=models.CASCADE,
-    )
-
-    scan = models.ForeignKey(
-        InternetNLScan,
-        on_delete=models.CASCADE,
-
-        # When there is no scan registered at internet.nl, but the scan has to show up as requested
-        null=True
-    )
-
-    urllist = models.ForeignKey(
-        UrlList,
-        on_delete=models.CASCADE,
-    )
-
-    # The current state of the scan.
-    state = models.CharField(
-        max_length=255,
-        blank=True,
-        default="",
-        help_text="The current state"
-    )
-
-    state_changed_on = models.DateTimeField(
-        blank=True,
-        null=True
-    )
-
-
-class AccountInternetNLScanLog(models.Model):
-
-    scan = models.ForeignKey(
-        AccountInternetNLScan,
-        on_delete=models.CASCADE,
-    )
-
-    state = models.CharField(
-        max_length=255,
-        blank=True,
-        default="",
-        help_text="The state that was registered at a certain moment in time."
-    )
-
-    at_when = models.DateTimeField(
-        blank=True,
-        null=True
-    )
-
-
 class UploadLog(models.Model):
     original_filename = models.CharField(
         max_length=255,
@@ -459,3 +401,69 @@ class UrlListReport(SeriesOfUrlsReportMixin):
         index_together = [
             ["at_when", "id"],
         ]
+
+
+class AccountInternetNLScan(models.Model):
+    """
+    We've explicitly not declared the N-to-N on scan or account. This is the N to N between them. When a new scan is
+    created the UrlList serves as extra data.
+    """
+
+    account = models.ForeignKey(
+        Account,
+        on_delete=models.CASCADE,
+    )
+
+    scan = models.ForeignKey(
+        InternetNLScan,
+        on_delete=models.CASCADE,
+
+        # When there is no scan registered at internet.nl, but the scan has to show up as requested
+        null=True
+    )
+
+    urllist = models.ForeignKey(
+        UrlList,
+        on_delete=models.CASCADE,
+    )
+
+    # The current state of the scan.
+    state = models.CharField(
+        max_length=255,
+        blank=True,
+        default="",
+        help_text="The current state"
+    )
+
+    state_changed_on = models.DateTimeField(
+        blank=True,
+        null=True
+    )
+
+    report = models.ForeignKey(
+        UrlListReport,
+        null=True,
+        blank=True,
+        on_delete=models.CASCADE,
+        help_text="After a scan has finished, a report is created. This points to that report so no guessing "
+                  "is needed to figure out what report belongs to what scan."
+    )
+
+
+class AccountInternetNLScanLog(models.Model):
+    scan = models.ForeignKey(
+        AccountInternetNLScan,
+        on_delete=models.CASCADE,
+    )
+
+    state = models.CharField(
+        max_length=255,
+        blank=True,
+        default="",
+        help_text="The state that was registered at a certain moment in time."
+    )
+
+    at_when = models.DateTimeField(
+        blank=True,
+        null=True
+    )

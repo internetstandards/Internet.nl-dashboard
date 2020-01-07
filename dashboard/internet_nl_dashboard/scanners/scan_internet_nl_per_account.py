@@ -20,7 +20,7 @@ from websecmap.scanners.scanner import add_model_filter, dns_endpoints
 from websecmap.scanners.scanner.internet_nl_mail import store
 
 from dashboard.celery import app
-from dashboard.internet_nl_dashboard.logic.urllist_dashboard_report import rate_urllists_now
+from dashboard.internet_nl_dashboard.logic.urllist_dashboard_report import create_dashboard_report
 from dashboard.internet_nl_dashboard.models import (Account, AccountInternetNLScan,
                                                     AccountInternetNLScanLog, UrlList,
                                                     UrlListReport)
@@ -210,7 +210,7 @@ def handle_unknown_state(scan):
     return group([])
 
 
-def discovering_endpoints(scan):
+def discovering_endpoints(scan: AccountInternetNLScan):
     # Always immediately update the current state, so the amount of double calls is minimal:
     #  "discovered endpoints" to "discovering endpoints" and cause an infinte loop.
     update_state("discovering endpoints", scan)
@@ -221,7 +221,7 @@ def discovering_endpoints(scan):
     )
 
 
-def retrieving_scannable_urls(scan):
+def retrieving_scannable_urls(scan: AccountInternetNLScan):
     # This step tries to prevent API calls with an empty list of urls.
     update_state("retrieving scannable urls", scan)
     relevant_scan_types = {"web": "dns_a_aaaa", "mail_dashboard": "dns_soa"}
@@ -233,7 +233,7 @@ def retrieving_scannable_urls(scan):
     )
 
 
-def registering_scan_at_internet_nl(scan):
+def registering_scan_at_internet_nl(scan: AccountInternetNLScan):
     update_state("registering scan at internet.nl", scan)
 
     # retrieving the API urls:
@@ -260,7 +260,7 @@ def registering_scan_at_internet_nl(scan):
     )
 
 
-def running_scan(scan):
+def running_scan(scan: AccountInternetNLScan):
     update_state("running scan", scan)
 
     return (get_scan_status_new.si(
@@ -270,7 +270,7 @@ def running_scan(scan):
         | update_state.s(scan))
 
 
-def continue_running_scan(scan):
+def continue_running_scan(scan: AccountInternetNLScan):
     """
     Same as running scan, but will not set the state to "running scan" to prevent log spamming.
     """
@@ -282,7 +282,7 @@ def continue_running_scan(scan):
         | update_state.s(scan))
 
 
-def importing_scan_results(scan):
+def importing_scan_results(scan: AccountInternetNLScan):
     update_state("importing scan results", scan)
 
     return (retrieve_data.s(
@@ -293,18 +293,19 @@ def importing_scan_results(scan):
         | update_state.si("imported scan results", scan))
 
 
-def creating_report(scan):
+def creating_report(scan: AccountInternetNLScan):
     update_state("creating report", scan)
 
     # Note that calling 'timezone.now()' at canvas creation time, means that you'll have a date in the past
     # at the moment the function is actually called. If you need accurate time in the function, make sure the
     # function calls 'timezone.now()' when the function is run.
     return (recreate_url_reports.si(list(scan.urllist.urls.all()))
-            | rate_urllists_now.si([scan.urllist], prevent_duplicates=False)
+            | create_dashboard_report.si(scan.urllist)
+            | connect_urllistreport_to_accountinternetnlscan.s(scan)
             | update_state.si("created report", scan))
 
 
-def sending_mail(scan):
+def sending_mail(scan: AccountInternetNLScan):
     update_state("sending mail", scan)
 
     return (send_after_scan_mail.si(scan)
@@ -506,6 +507,12 @@ def get_scan_status_new(username, password, api_url):
 
     # These are really unexpected results.
     return f"error: running scan: unexpected error with data: {response['message']}"
+
+
+@app.task(queue='storage')
+def connect_urllistreport_to_accountinternetnlscan(urllistreport: UrlListReport, scan: AccountInternetNLScan):
+    scan.report = urllistreport
+    scan.save()
 
 
 @app.task(queue='storage')

@@ -156,6 +156,19 @@ def compose_task(**kwargs) -> Task:
 
 
 @app.task(queue='storage')
+def create_dashboard_report(urllist):
+    """
+    Simplified (and perhaps straightforward) version of rate_urllists_now, which returns a report id.
+    Only call this after a scan is performed.
+
+    :param urllist:
+    :return:
+    """
+    now = datetime.now(pytz.utc)
+    return rate_urllist_on_moment(urllist, when=now, prevent_duplicates=False)
+
+
+@app.task(queue='storage')
 def rate_urllists_now(urllists: List[UrlList], prevent_duplicates: bool = True):
     for urllist in urllists:
         now = datetime.now(pytz.utc)
@@ -183,6 +196,13 @@ def rate_urllists_historically(urllists: List[UrlList]):
 
 @app.task(queue='storage')
 def rate_urllist_on_moment(urllist: UrlList, when: datetime = None, prevent_duplicates: bool = True):
+    """
+    :param urllist:
+    :param when: A moment in time of which data should be aggregated
+    :param prevent_duplicates: If the last report had the same data, don't save a new report but return the last report
+    instead.
+    :return: UrlListReport
+    """
     # If there is no time slicing, then it's today.
     if not when:
         when = datetime.now(pytz.utc)
@@ -191,7 +211,8 @@ def rate_urllist_on_moment(urllist: UrlList, when: datetime = None, prevent_dupl
 
     if UrlListReport.objects.all().filter(urllist=urllist, at_when=when).exists():
         log.debug("UrllistReport already exists for %s on %s. Not overwriting." % (urllist, when))
-        return
+        existing_report = UrlListReport.objects.all().filter(urllist=urllist, at_when=when).first()
+        return existing_report
 
     urls = relevant_urls_at_timepoint_urllist(urllist=urllist, when=when)
     all_url_ratings = get_latest_urlratings_fast(urls, when)
@@ -209,7 +230,7 @@ def rate_urllist_on_moment(urllist: UrlList, when: datetime = None, prevent_dupl
         if not DeepDiff(last.calculation, calculation, ignore_order=True, report_repetition=True):
             log.warning("The report for %s on %s is the same as the report from %s. Not saving." % (
                 urllist, when, last.at_when))
-            return
+            return last
 
     log.info("The calculation for %s on %s has changed, so we're saving this rating." % (urllist, when))
 
@@ -225,6 +246,7 @@ def rate_urllist_on_moment(urllist: UrlList, when: datetime = None, prevent_dupl
     report.average_internet_nl_score = sum_internet_nl_scores_over_rating(calculation)
     report.calculation = calculation
     report.save()
+    return report
 
 
 def relevant_urls_at_timepoint_urllist(urllist: UrlList, when: datetime):
