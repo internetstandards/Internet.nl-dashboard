@@ -335,6 +335,7 @@
                                                 <input type="checkbox" v-model="issue_filters[scan_form.name].show_dynamic_average" :id="scan_form.name + '_show_dynamic_average'">
                                                 {{ $t("settings.show_dynamic_average") }}
                                             </label><br>
+                                            <!-- disabled as per #107
                                             <label :for="scan_form.name + '_only_show_dynamic_average'">
                                                 <input type="checkbox"
                                                        v-model="issue_filters[scan_form.name].only_show_dynamic_average"
@@ -342,6 +343,7 @@
                                                         :disabled="!issue_filters[scan_form.name].show_dynamic_average">
                                                 {{ $t("settings.only_show_dynamic_average") }}
                                             </label>
+                                            -->
 
                                             <template v-if="scan_form.additional_fields.length">
                                                 <div class="test-subsection">{{ $t("fields.additional_fields.label") }}</div>
@@ -379,6 +381,7 @@
                                                         <input type="checkbox" v-model="issue_filters[field.name].show_dynamic_average" :id="field.name + '_show_dynamic_average'">
                                                         {{ $t("settings.show_dynamic_average") }}
                                                     </label><br>
+                                                    <!-- Disabled as per #107
                                                     <label :for="field.name + '_only_show_dynamic_average'">
                                                         <input type="checkbox"
                                                                v-model="issue_filters[field.name].only_show_dynamic_average"
@@ -386,6 +389,7 @@
                                                                 :disabled="!issue_filters[field.name].show_dynamic_average">
                                                         {{ $t("settings.only_show_dynamic_average") }}
                                                     </label>
+                                                    -->
                                                 </template>
                                             </p>
 
@@ -516,7 +520,7 @@
                                         :accessibility_text="$t('charts.adoption_bar_chart.accessibility_text')"
                                         @bar_click="select_category"
                                         :show_dynamic_average="issue_filters[scan_form.name].show_dynamic_average"
-                                        :only_show_dynamic_average="issue_filters[scan_form.name].only_show_dynamic_average"
+                                        :only_show_dynamic_average="false"
                                         :axis="visible_fields_from_scan_form(scan_form)">
                                 </percentage-bar-chart>
                             </div>
@@ -544,7 +548,7 @@
                                                         :accessibility_text="$t('charts.adoption_bar_chart.accessibility_text')"
                                                         @bar_click="select_category"
                                                         :show_dynamic_average="issue_filters[category.key].show_dynamic_average"
-                                                        :only_show_dynamic_average="issue_filters[category.key].only_show_dynamic_average"
+                                                        :only_show_dynamic_average="false"
                                                         :axis="visible_fields_from_categories(category)">
                                                 </percentage-bar-chart>
                                             </div>
@@ -573,7 +577,7 @@
                                                             :chart_data="compare_charts"
                                                             :accessibility_text="$t('charts.adoption_bar_chart.accessibility_text')"
                                                             :show_dynamic_average="issue_filters[category.key].show_dynamic_average"
-                                                            :only_show_dynamic_average="issue_filters[category.key].only_show_dynamic_average"
+                                                            :only_show_dynamic_average="false"
                                                             :axis="fields_from_self(subcategory)">
                                                     </percentage-bar-chart>
                                                 </div>
@@ -626,7 +630,7 @@
                                         :accessibility_text="$t('charts.cumulative_adoption_bar_chart.accessibility_text')"
                                         @bar_click="select_category"
                                         :show_dynamic_average="issue_filters[scan_form.name].show_dynamic_average"
-                                        :only_show_dynamic_average="issue_filters[scan_form.name].only_show_dynamic_average"
+                                        :only_show_dynamic_average="false"
                                         :axis="visible_fields_from_scan_form(scan_form)">
                                 </cumulative-percentage-bar-chart>
                             </div>
@@ -655,7 +659,7 @@
                                                         :accessibility_text="$t('charts.cumulative_adoption_bar_chart.accessibility_text')"
                                                         @bar_click="select_category"
                                                         :show_dynamic_average="issue_filters[category.key].show_dynamic_average"
-                                                        :only_show_dynamic_average="issue_filters[category.key].only_show_dynamic_average"
+                                                        :only_show_dynamic_average="false"
                                                         :axis="visible_fields_from_categories(category)">
                                                 </cumulative-percentage-bar-chart>
                                             </div>
@@ -685,7 +689,7 @@
                                                             :chart_data="compare_charts"
                                                             :accessibility_text="$t('charts.adoption_bar_chart.accessibility_text')"
                                                             :show_dynamic_average="issue_filters[subcategory.key].show_dynamic_average"
-                                                            :only_show_dynamic_average="issue_filters[subcategory.key].only_show_dynamic_average"
+                                                            :only_show_dynamic_average="false"
                                                             :axis="fields_from_self(subcategory)">
                                                     </cumulative-percentage-bar-chart>
                                                 </div>
@@ -1001,7 +1005,7 @@ const Report = Vue.component('report', {
                     updated: "Settings updated",
 
                     show_category: "Show this category",
-                    show_dynamic_average: "Show dynamic average",
+                    show_dynamic_average: "Show the average of selected fields",
                     only_show_dynamic_average: "Only show dynamic average",
                 },
 
@@ -1156,7 +1160,7 @@ const Report = Vue.component('report', {
                     updated: "Zichtbare meetwaarden opgeslagen",
 
                     show_category: "Toon deze categorie",
-                    show_dynamic_average: "Bereken dynamisch het gemiddelde van alle zichtbare velden",
+                    show_dynamic_average: "Toon het gemiddelde van de geselecteerde velden",
                     only_show_dynamic_average: "Toon alleen het dynamisch berekende gemiddelde",
                 },
 
