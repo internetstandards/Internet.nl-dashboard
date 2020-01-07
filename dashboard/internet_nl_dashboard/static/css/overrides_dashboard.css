@@ -290,6 +290,36 @@ small {
     background-image: url("/static/images/vendor/internet_nl/icon-not-tested.svg"), none;
 }
 
+.compared_with_next_report_neutral:before {
+    content: '';
+    /* No image is the cleanest background-image: url("/static/images/report_comparison_neutral.png"), none; */
+    width: 32px;
+    height: 100%;
+    background-repeat: no-repeat;
+    background-position: right top;
+    display: block;
+}
+
+.compared_with_next_report_improved:before {
+    content: '';
+    background-image: url("/static/images/report_comparison_improved.png"), none;
+    width: 32px;
+    height: 100%;
+    background-repeat: no-repeat;
+    background-position: right top;
+    display: block;
+}
+
+.compared_with_next_report_regressed:before {
+    content: '';
+    background-image: url("/static/images/report_comparison_regressed.png"), none;
+    width: 32px;
+    height: 100%;
+    background-repeat: no-repeat;
+    background-position: right top;
+    display: block;
+}
+
 .faq-subtest {
     padding-left: 1.5em;
     background: #fff url("/static/images/vendor/internet_nl/icon-testresult-default.png") no-repeat;
@@ -441,4 +471,12 @@ a.anchor {
     .chart-container {
         height: 100% !important;
     }
+}
+
+.testresult_without_icon {
+    padding-left: 1em;
+    margin-bottom: 1em;
+    border-top: 1px solid #b3b3b3;
+    border-bottom: 1px solid #b3b3b3;
+    background-color: #fff;
 }

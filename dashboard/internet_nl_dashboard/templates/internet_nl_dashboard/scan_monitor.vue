@@ -10,10 +10,8 @@
             <h1>{{ $t("title") }}</h1>
             <p>{{ $t("intro") }}</p>
 
-            <autorefresh :visible="true" :callback="load" :refresh_per_seconds="20"></autorefresh>
+            <autorefresh :visible="true" :callback="load" :refresh_per_seconds="60"></autorefresh>
         </div>
-
-
 
         <div class="wrap">
             <div class="block" v-if="scans" v-for="scan in scans">

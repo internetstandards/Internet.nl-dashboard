@@ -5,7 +5,7 @@ from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render
 from websecmap.app.common import JSEncoder
 
-from dashboard.internet_nl_dashboard.logic.scan_monitor import get_running_scans
+from dashboard.internet_nl_dashboard.logic.scan_monitor import get_scan_monitor_data
 from dashboard.internet_nl_dashboard.views import (LOGIN_URL, get_account,
                                                    inject_default_language_cookie)
 
@@ -27,4 +27,4 @@ def running_scans(request) -> JsonResponse:
     account = get_account(request)
 
     # list of dicts: In order to allow non-dict objects to be serialized set the safe parameter to False.
-    return JsonResponse(get_running_scans(account), encoder=JSEncoder, safe=False)
+    return JsonResponse(get_scan_monitor_data(account), encoder=JSEncoder, safe=False)

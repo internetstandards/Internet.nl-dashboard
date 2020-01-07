@@ -307,7 +307,7 @@ def translate_field(field_label):
         'internet_nl_web_legacy_https_enforced': 'HTTPS enforced',
         'internet_nl_web_legacy_hsts': 'HSTS',
         'internet_nl_web_legacy_ipv6_nameserver': 'IPv6 nameserver',
-        'internet_nl_web_legacy_ipv6_webserver': 'IPv6 websever',
+        'internet_nl_web_legacy_ipv6_webserver': 'IPv6 webserver',
         'internet_nl_web_legacy_dane': 'DANE',
 
         'legacy': 'nlgovernment_complyorexplain',
