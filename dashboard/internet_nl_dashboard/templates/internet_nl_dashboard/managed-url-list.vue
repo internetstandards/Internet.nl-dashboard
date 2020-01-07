@@ -31,17 +31,10 @@
                             <span role="img" :aria-label="$t('icons.scan')">🔬</span>
                             {{ $t("button_labels.scan_now") }}
                         </button>
-
-                        <button v-if="!list.scan_now_available && !list.last_scan_finished" disabled="disabled"
+                        <button v-if="!list.scan_now_available" disabled="disabled"
                         :title='$t("button_labels.scan_now_scanning")'>
                             <img width="15" style="border-radius: 50%" src="/static/images/vendor/internet_nl/probe-animation.gif">
                             {{ $t("button_labels.scan_now_scanning") }}
-                        </button>
-
-                        <button v-if="!list.scan_now_available && list.last_scan_finished" disabled="disabled"
-                        :title='$t("button_labels.timeout_for_24_hours")'>
-                            <img width="15" style="border-radius: 50%" src="/static/images/vendor/internet_nl/probe-animation.gif">
-                            {{ $t("button_labels.timeout_for_24_hours") }}
                         </button>
                     </template>
                     <button v-if="!list.enable_scans" disabled="disabled"
@@ -230,7 +223,7 @@
                 {{ list.name }}<br>
                 <br>
 
-                <label for="enable_scans">{{ $t("urllist.field_label_enable_scans") }}:</label><br>
+                <label>{{ $t("urllist.field_label_enable_scans") }}:</label><br>
                 {{ list.enable_scans }}<br>
                 <br>
 
@@ -305,6 +298,8 @@
             <div slot="footer">
             </div>
         </modal>
+        <!-- Websockets would make this even neater -->
+        <autorefresh :visible="false" :callback="get_scan_status_of_list" :refresh_per_seconds="60"></autorefresh>
     </article>
 </template>
 {% endverbatim %}
@@ -323,7 +318,6 @@ Vue.component('managed-url-list', {
                     scan_now_scanning_title: 'The scan now option is available only once a day, when no scan is running.',
                     delete: 'Delete',
                     view_csv: 'View .csv',
-                    timeout_for_24_hours: 'Max 1 scan/day',
                     scanning_disabled: 'Scanning disabled',
                 },
 
@@ -413,7 +407,6 @@ Vue.component('managed-url-list', {
                     scan_now_scanning_title: 'Nu scannen is alleen beschikbaar als er geen scan draait, en kan maximaal 1x per dag worden aangeroepen.',
                     delete: 'Verwijder',
                     view_csv: 'Bekijk.csv',
-                    timeout_for_24_hours: 'Max 1 scan/dag',
                     scanning_disabled: 'Scans uitgeschakeld',
                 },
 
@@ -601,6 +594,15 @@ Vue.component('managed-url-list', {
                         this.stop_editing_settings();
                     }
                 });
+        },
+        // update the list with the most recent data regarding reports and scanning, not intruding on the UI experience
+        // this can be autorefreshed to show the most current scanning and report information
+        get_scan_status_of_list: function() {
+            fetch(`/data/urllist/get_scan_status_of_list/${this.list.id}/`, {credentials: 'include'}).then(response => response.json()).then(data => {
+                this.list['last_report_id'] = data['last_report_id'];
+                this.list['scan_now_available'] = data['scan_now_available'];
+                this.list['last_report_date'] = data['last_report_date'];
+            }).catch((fail) => {console.log('A loading error occurred: ' + fail);});
         },
         start_editing_settings: function(){
             // keep an old value in memory. If the editing is canceled, the old value should be used.
@@ -817,7 +819,6 @@ Todo: use vue-i18n-loader to support editing text in babeledit.
                 "scan_now_scanning_title": "The scan now option is available only once a day, when no scan is running.",
                 "delete": "Delete",
                 "view_csv": "View .csv",
-                "timeout_for_24_hours": "Max 1 scan/day",
                 "scanning_disabled": "Scanning disabled"
             }
         }

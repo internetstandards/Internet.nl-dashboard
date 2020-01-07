@@ -273,12 +273,10 @@ class UrlList(models.Model):
     # @pysnooper.snoop()
     def is_scan_now_available(self) -> bool:
         """
-        # todo move this function to UrlList
-
         Requirements for availability:
 
         - The last scan for this list has to be finished.
-        - The scan was not run earlier in the past N days.
+        - Deprecated: when a scan is finished, you can scan again -> The scan was not run earlier in the past N hours.
         - Scanning for this list has been enabled.
 
         :param self:
@@ -289,13 +287,14 @@ class UrlList(models.Model):
             # log.debug("Scan now NOT available: List %s has disabled scans." % self)
             return False
 
-        yesterday = timezone.now() - timedelta(days=1)
-
+        # Deprecated: At least N hours should have passed since the last manual scan.
+        # yesterday = timezone.now() - timedelta(hours=1)
         # manual scans have their own 'is available flag', as the 'create_dashboard_scan_tasks()' does not guarantee
         # a new scan is created instantly. The flag needs to be set otherwise a user can initiate tons of scans.
-        if self.last_manual_scan and self.last_manual_scan > yesterday:
+        # if self.last_manual_scan and self.last_manual_scan > yesterday:
             # log.debug("Scan now NOT available: Last manual scan was in the last 24 hours for list %s" % self)
-            return False
+        #   return False
+        # End deprecation
 
         last_scan = AccountInternetNLScan.objects.all().filter(urllist=self, urllist__is_deleted=False).last()
 
@@ -303,9 +302,11 @@ class UrlList(models.Model):
             # log.debug("Scan now available: a previous scan was never performed on list %s" % self)
             return True
 
-        # no get method on scan object... 80 is an arbitrary number that is long enough to again allow scans.
-        finished_on = last_scan.scan.finished_on if last_scan.scan.finished_on else timezone.now() - timedelta(days=80)
-        if last_scan.scan.finished and finished_on < yesterday:
+        # no get method on scan object... 30 is an arbitrary number that is long enough to again allow scans.
+        # finished_on = last_scan.scan.finished_on \
+        #     if last_scan.scan.finished_on else timezone.now() - timedelta(days=30)
+        # and finished_on < yesterday
+        if last_scan.scan.finished:
             # log.debug("Scan now available: last scan finished over 24 hours ago on list %s" % self)
             return True
 

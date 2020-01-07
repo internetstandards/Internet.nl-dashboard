@@ -11,7 +11,7 @@ from dashboard.internet_nl_dashboard.logic.domains import (alter_url_in_urllist,
                                                            get_urllists_from_account,
                                                            save_urllist_content,
                                                            save_urllist_content_by_name, scan_now,
-                                                           update_list_settings)
+                                                           update_list_settings, get_scan_status_of_list)
 from dashboard.internet_nl_dashboard.views import (LOGIN_URL, get_account, get_json_body,
                                                    inject_default_language_cookie)
 
@@ -34,6 +34,11 @@ def get_lists(request) -> JsonResponse:
 @login_required(login_url=LOGIN_URL)
 def get_urllist_content_(request, urllist_id: int) -> JsonResponse:
     return JsonResponse(get_urllist_content(account=get_account(request), urllist_id=urllist_id), encoder=JSEncoder)
+
+
+@login_required(login_url=LOGIN_URL)
+def get_scan_status_of_list_(request, urllist_id: int) -> JsonResponse:
+    return JsonResponse(get_scan_status_of_list(account=get_account(request), list_id=urllist_id), encoder=JSEncoder)
 
 
 @login_required(login_url=LOGIN_URL)

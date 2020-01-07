@@ -195,6 +195,45 @@ def delete_list(account: Account, user_input: dict):
     return operation_response(success=True, message="List deleted.")
 
 
+def get_scan_status_of_list(account: Account, list_id: int) -> Dict[str, Any]:
+    """
+    Gets the latest report and the scanning status of a list, this is meant as a small status monitor per list.
+    This updates the "can scan" buttons and updates the link to the latest report. It does not propagate user changes.
+
+    :param account:
+    :param list_id:
+    :return:
+    """
+
+    prefetch_last_scan = Prefetch(
+        'accountinternetnlscan_set',
+        queryset=AccountInternetNLScan.objects.order_by('-id').select_related('scan'),
+        to_attr='last_scan'
+    )
+
+    last_report_prefetch = Prefetch(
+        'urllistreport_set',
+        # filter(pk=UrlListReport.objects.latest('id').pk).
+        queryset=UrlListReport.objects.order_by('-id').only('id', 'at_when'),
+        to_attr='last_report'
+    )
+
+    urllist = UrlList.objects.all().filter(
+        account=account,
+        id=list_id,
+        is_deleted=False
+    ).annotate(num_urls=Count('urls')).prefetch_related(prefetch_last_scan, last_report_prefetch).first()
+
+    data = {}
+    data['last_scan_id'] = None if not len(urllist.last_scan) else urllist.last_scan[0].scan.id
+    data['last_scan_finished'] = None if not len(urllist.last_scan) else urllist.last_scan[0].scan.finished
+    data['last_report_id'] = None if not len(urllist.last_report) else urllist.last_report[0].id
+    data['last_report_date'] = None if not len(urllist.last_report) else urllist.last_report[0].at_when
+    data['scan_now_available'] = urllist.is_scan_now_available()
+
+    return data
+
+
 # @pysnooper.snoop()
 def update_list_settings(account: Account, user_input: Dict) -> Dict[str, Any]:
     """
