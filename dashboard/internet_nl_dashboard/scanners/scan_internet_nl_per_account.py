@@ -85,7 +85,10 @@ def compose_task(
 @app.task(queue='storage')
 def initialize_scan(urllist: UrlList):
     internetnlscan = InternetNLScan()
-    internetnlscan.type = urllist.scan_type
+
+    # mail = websecmap, mail_dashboard = internet.nl dashboard, web is the same on both.
+    translated_scan_types = {'web': 'web', 'mail': 'mail_dashboard'}
+    internetnlscan.type = translated_scan_types[urllist.scan_type]
     internetnlscan.started_on = timezone.now()
     internetnlscan.last_check = timezone.now()  # more like: last update / pulse
     internetnlscan.started = True  # This field is now useless :)
@@ -219,7 +222,7 @@ def discovering_endpoints(scan):
 def retrieving_scannable_urls(scan):
     # This step tries to prevent API calls with an empty list of urls.
     update_state("retrieving scannable urls", scan)
-    relevant_scan_types = {"web": "dns_a_aaaa", "mail": "dns_soa"}
+    relevant_scan_types = {"web": "dns_a_aaaa", "mail_dashboard": "dns_soa"}
 
     return (
         get_relevant_urls.si(scan.urllist, relevant_scan_types[scan.scan.type])
@@ -241,7 +244,7 @@ def registering_scan_at_internet_nl(scan):
                  'account': scan.account.name,
                  'list': scan.urllist.name}
 
-    relevant_scan_types = {"web": "dns_a_aaaa", "mail": "dns_soa"}
+    relevant_scan_types = {"web": "dns_a_aaaa", "mail_dashboard": "dns_soa"}
 
     return (
         get_relevant_urls.si(scan.urllist, relevant_scan_types[scan.scan.type])
