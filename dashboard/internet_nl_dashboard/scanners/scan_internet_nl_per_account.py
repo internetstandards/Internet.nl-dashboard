@@ -11,6 +11,7 @@ from django.core.mail import send_mail
 from django.db import transaction
 from django.db.models import Count, Q
 from django.utils import timezone
+from django.conf import settings
 from requests.auth import HTTPBasicAuth
 from websecmap.organizations.models import Url
 from websecmap.reporting.report import recreate_url_reports
@@ -178,6 +179,7 @@ def progress_running_scan(scan: AccountInternetNLScan) -> Task:
         "created report": sending_mail,
         "sent mail": finishing_scan,
         "skipped sending mail: no e-mail addresses associated with account": finishing_scan,
+        "skipped sending mail: no mail server configured": finishing_scan,
         # "finished"
 
         # support some nested state from the internet.nl API
@@ -508,6 +510,11 @@ def get_scan_status_new(username, password, api_url):
 
 @app.task(queue='storage')
 def send_after_scan_mail(scan):
+
+    # Do not try to send mail if no mailserver is configured
+    if not all([settings.EMAIL_HOST, settings.EMAIL_PORT, settings.EMAIL_HOST_USER, settings.EMAIL_HOST_PASSWORD]):
+        return "skipped sending mail: no mail server configured"
+
     scan_type = scan.scan.type
     list_name = scan.urllist.name
 
