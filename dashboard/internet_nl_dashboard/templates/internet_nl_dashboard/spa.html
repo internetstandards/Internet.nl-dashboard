@@ -477,7 +477,6 @@
                 { path: '/control-panel-:id', component: DomainListManager, },
 
                 { path: '/domains/:list', component: DomainListManager, name: 'numbered_lists'},
-                { path: '/domains/:list#:list', component: DomainListManager, name: 'numbered_lists'},
                 { path: '/domains', component: DomainListManager, },
                 { path: '/upload', component: SpreadsheetUpload,
                 props: {csrf_token: get_cookie('csrftoken'),
