@@ -47,7 +47,30 @@
         overflow-y: scroll;
     }
 
+    /* Make the header stay up with a white background. */
+    #report-template thead {
+        position: sticky;
+        top: 0;
+        background-color: white;
+    }
+
+    #horrible-chrome-td-sticky-white-background-fix {
+        /* Chrome white sticky headers overlap, causing text to disappear, firefox does render it correctly.
+        This fix creates a white background behind the text labels. */
+        width: 98%;
+        height: 210px;
+        position: absolute;
+        top: 110px;
+        background: white;
+    }
+
     #report-template th {
+        /* Firefox does not need this set to white, chrome does, otherwise the background will bleed through... */
+        /* background-color: white; */
+    }
+
+    #report-template th:after {
+        /* Chrome uses translucent background, */
         background-color: white;
     }
 
@@ -94,7 +117,7 @@
         width: 100%;
         max-width: 100%;
         margin-bottom: 1rem;
-        background-color: transparent;
+        background-color: white;
     }
 
     .table-striped tbody tr:nth-of-type(2n+1) {
@@ -754,6 +777,7 @@
                 <p>{{ $t("report.intro") }}</p>
 
                 <div class="sticky-table-container">
+                    <div id="horrible-chrome-td-sticky-white-background-fix"></div>
                     <table class="table table-striped">
                         <thead class="sticky_labels">
 
