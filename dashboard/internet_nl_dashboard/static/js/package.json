@@ -1,0 +1,28 @@
+{
+  "name": "dashboardproj",
+  "version": "1.0.0",
+  "description": "Internet.nl dashboard",
+  "main": "index.js",
+  "directories": {
+    "test": "tests"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/internetstandards/Internet.nl-dashboard.git"
+  },
+  "keywords": [
+    "standards",
+    "security",
+    "internet",
+    "modern"
+  ],
+  "author": "ECP",
+  "license": "Apache-2.0",
+  "bugs": {
+    "url": "https://github.com/internetstandards/Internet.nl-dashboard/issues"
+  },
+  "homepage": "https://github.com/internetstandards/Internet.nl-dashboard#readme"
+}
