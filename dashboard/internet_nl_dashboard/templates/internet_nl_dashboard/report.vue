@@ -974,6 +974,7 @@ const Report = Vue.component('report', {
                         zoomed_in_on: 'Details from',
                         explanation: "Using the details buttons, it is possible to see the individual metrics for each category."
                     },
+
                     link_to_report: 'View score and report from %{url} on internet.nl.',
                     empty_report: 'It looks like this report is empty... did you filter too much?',
                     results: {
@@ -983,7 +984,12 @@ const Report = Vue.component('report', {
                         warning: "Warning",
                         info: "Info",
                         passed: "Passed",
-                        unknown: "Unknown"
+                        unknown: "Unknown",
+                        comparison: {
+                            neutral: "",
+                            improved: "Improved compared to the second report selected.",
+                            regressed: "Regressed compared to the second report selected.",
+                        }
                     }
                 },
                 download: {
@@ -1138,7 +1144,12 @@ const Report = Vue.component('report', {
                         warning: "Waarschuwing",
                         info: "Info",
                         passed: "Goed",
-                        unknown: "Unknown"
+                        unknown: "Onbekend",
+                        comparison: {
+                            neutral: "",
+                            improved: "Verbeterd vergeleken met het 2e geselecteerde rapport.",
+                            regressed: "Verslechterd vergeleken met het 2e geselecteerde rapport.",
+                        }
                     }
                 },
                 download: {
@@ -1541,14 +1552,14 @@ const Report = Vue.component('report', {
                     comparison_verdict = "regressed";
             }
 
+            let comparison_text = this.$i18n.t("report.results.comparison" + comparison_verdict);
 
 
             // Todo: add a list to the bottom of the table of urls that where not in the compared table.
             // todo: the report reloads using autoreload, which is annoying.
             // todo: Clean up this entangled code
-            // todo: add text message on comparison, such as: improved compared to previous report. Regressed compared to previous report.
-
-            return `<span class="${simple_value} compared_with_next_report_${comparison_verdict}">${report_result_string} ${category_name_verdict}</span>`
+            
+            return `<span class="${simple_value} compared_with_next_report_${comparison_verdict}">${comparison_text} ${report_result_string} ${category_name_verdict}</span>`
         },
 
         verdict_to_simple_value: function(verdicts){
