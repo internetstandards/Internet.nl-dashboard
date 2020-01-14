@@ -1858,6 +1858,19 @@ const Report = Vue.component('report', {
             if (sortKey === "score"){
                 // todo: determine web or mail, split the scores etc, not very fast.
                 data = data.slice().sort(function (a, b) {
+
+                    if (a.endpoints[0] === undefined
+                        || a.endpoints[0].ratings_by_type.internet_nl_mail_dashboard_overall_score === undefined
+                        || a.endpoints[0].ratings_by_type.internet_nl_web_overall_score === undefined){
+                        return 1 * order;
+                    }
+
+                    if (b.endpoints[0] === undefined
+                        || b.endpoints[0].ratings_by_type.internet_nl_mail_dashboard_overall_score === undefined
+                        || b.endpoints[0].ratings_by_type.internet_nl_web_overall_score === undefined){
+                        return -1 * order;
+                    }
+
                     // for everything that is not the url name itself, is neatly tucked away. Only filter on high? Or on what kind of structure?
                     if (this.selected_category === 'mail'){
                         a = parseInt(a.endpoints[0].ratings_by_type['internet_nl_mail_dashboard_overall_score'].explanation.split(" ")[0]);
@@ -1872,6 +1885,15 @@ const Report = Vue.component('report', {
             }
             data = data.slice().sort(function (a, b) {
                 // for everything that is not the url name itself, is neatly tucked away. Only filter on high? Or on what kind of structure?
+
+                if (a.endpoints[0] === undefined){
+                    return 1 * order;
+                }
+
+                if (b.endpoints[0] === undefined){
+                    return -1 * order;
+                }
+
                 let aref = a.endpoints[0].ratings_by_type[sortKey];
                 let bref = b.endpoints[0].ratings_by_type[sortKey];
                 a = `${aref.high} ${aref.medium} ${aref.low} ${aref.not_applicable}  ${aref.not_testable} ${aref.ok}`;
