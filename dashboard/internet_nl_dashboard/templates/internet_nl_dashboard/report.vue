@@ -297,13 +297,13 @@
             <p>{{ $t("header.intro") }}</p>
 
             <div aria-live="polite" style="margin-bottom: 30px;">
-                <!-- limit not yet supported, nov 2019: https://github.com/sagalbot/vue-select/issues/60 -->
                 <v-select
                         v-model="selected_report"
                         :placeholder="$t('header.select_report')"
                         :options="filtered_recent_reports"
                         label="label"
                         :multiple="true"
+                        :selectable="() => selected.length < 6"
                 >
                     <slot name="no-options">{{ $t('header.no_options') }}</slot>
 
