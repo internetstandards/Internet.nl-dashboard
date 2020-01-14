@@ -10,7 +10,31 @@
 
     /* Do print the whole table... */
     @media print {
+        body {
+            background-color: red;
+        }
         #report-template {
+            min-height: 100% !important;
+        }
+
+        /* When printing, the table should fill several pages */
+        #report-template .sticky-table-container {
+            max-height: none !important;
+            overflow-x: inherit;
+            overflow-y: inherit;
+        }
+
+        /* Allow printing of graphs, make sure they don't go wider than the page width... */
+        /* https://stackoverflow.com/questions/41674976/resize-chart-js-canvas-for-printing */
+        /* We'll resize the image to fit plain a4 paper, otherwise the aspect ratios are distorted.*/
+        canvas.graph-image {
+            height: 60% !important;
+            width: 60% !important;
+        }
+
+        /* Also remove the superfluous container sizes during print, as the image is a bit smaller now: */
+        .chart-container {
+            height: 100% !important;
             min-height: 100% !important;
         }
     }
@@ -293,7 +317,7 @@
 
             <template v-if="reports.length && !is_loading">
 
-                <div class="testresult_without_icon">
+                <div class="do-not-print testresult_without_icon">
                     <h2 style="font-size: 1.0em;" class="panel-title" >
                         <a href="" aria-expanded="false">
                             <span class="visuallyhidden">-:</span>
@@ -312,7 +336,7 @@
                     </div>
                 </div>
 
-                <div class="testresult_without_icon">
+                <div class="do-not-print testresult_without_icon">
                     <h2 style="font-size: 1.0em;" class="panel-title" >
                         <a href="" aria-expanded="false">
                             <span class="visuallyhidden">-:</span>
@@ -1558,7 +1582,8 @@ const Report = Vue.component('report', {
             // Todo: add a list to the bottom of the table of urls that where not in the compared table.
             // todo: the report reloads using autoreload, which is annoying.
             // todo: Clean up this entangled code
-            
+            // todo: also add comparison to categories
+
             return `<span class="${simple_value} compared_with_next_report_${comparison_verdict}">${comparison_text} ${report_result_string} ${category_name_verdict}</span>`
         },
 

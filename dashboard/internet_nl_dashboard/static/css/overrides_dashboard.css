@@ -458,18 +458,10 @@ a.anchor {
     color-adjust: exact !important;                 /*Firefox*/
 }
 
-/* Allow printing of graphs, make sure they don't go wider than the page width... */
-/* https://stackoverflow.com/questions/41674976/resize-chart-js-canvas-for-printing */
-/* We'll resize the image to fit plain a4 paper, otherwise the aspect ratios are distorted.*/
-@media print {
-    canvas.graph-image {
-        height: 60% !important;
-        width: 60% !important;
-    }
 
-    /* Also remove the superfluous container sizes during print, as the image is a bit smaller now: */
-    .chart-container {
-        height: 100% !important;
+@media print {
+    .do-not-print {
+        display: none !important;
     }
 }
 
