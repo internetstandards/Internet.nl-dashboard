@@ -303,7 +303,7 @@
                         :options="filtered_recent_reports"
                         label="label"
                         :multiple="true"
-                        :selectable="() => selected.length < 6"
+                        :selectable="() => selected_report.length < 6"
                 >
                     <slot name="no-options">{{ $t('header.no_options') }}</slot>
 
@@ -1455,7 +1455,7 @@ const Report = Vue.component('report', {
             filtered_recent_reports: [],
 
             // a list of reports...
-            selected_report: null,
+            selected_report: [],
 
             // graphs:
             issue_timeline_of_related_urllist: [],
