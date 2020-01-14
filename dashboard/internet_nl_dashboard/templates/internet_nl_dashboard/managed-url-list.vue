@@ -270,7 +270,8 @@
 
                 <p>{{ $t("bulk_add_form.message") }}</p>
 
-                <select2-tags-widget v-model="bulk_add_new_urls"></select2-tags-widget>
+                <label for="edited_domains">Domains:</label>
+                <textarea id="edited_domains" v-model="bulk_add_new_urls" style="width: 95%; height: 300px;"></textarea>
 
                 <div v-if="bulk_add_new_server_response">
                     <span v-if="bulk_add_new_server_response.success === true">
@@ -284,7 +285,9 @@
                         <span v-if="bulk_add_new_server_response.data.incorrect_urls.length">
                             <br><b>{{ $t("bulk_add_form.warning") }}</b><br>
                             <span v-html='$t("bulk_add_form.warning_message")'></span>
-                            {{ bulk_add_new_server_response.data.incorrect_urls.join(', ') }}<br>
+                            <textarea style="width: 95%; background-color: lightcoral; height: 60px;">
+                            {{ bulk_add_new_server_response.data.incorrect_urls.join(', ') }}
+                            </textarea>
                         </span>
                     </span>
                 </div>
@@ -292,7 +295,9 @@
                     <p>{{ $t("bulk_add_form.status") }}: {{ $t("bulk_add_form.nothing_added") }}.</p>
                 </div>
                 <br>
-                <button class="modal-default-button" @click="bulk_add_new()">{{ $t("bulk_add_form.ok") }}</button>
+
+                <button v-if="!bulk_add_new_loading" class="modal-default-button" @click="bulk_add_new()">{{ $t("bulk_add_form.ok") }}</button>
+                <button v-if="bulk_add_new_loading" disabled="disabled" class="modal-default-button"><img width="15" style="border-radius: 50%" src="/static/images/vendor/internet_nl/probe-animation.gif"> {{ $t("bulk_add_form.loading") }}</button>
 
             </div>
             <div slot="footer">
@@ -386,7 +391,7 @@ Vue.component('managed-url-list', {
 
                 bulk_add_form: {
                     title: 'Bulk add domains',
-                    message: 'You can add many domains in one go. To do this, seperate each domain with a comma.',
+                    message: 'You can add many domains in one go. To do this, seperate each domain with a comma, space, new line or mixed.',
                     ok: 'Add the above domains to the list',
                     status: 'Status',
                     nothing_added: 'nothing added yet.',
@@ -396,6 +401,7 @@ Vue.component('managed-url-list', {
                     warning: 'Warning!',
                     warning_message: 'Some domains where not added because they are in an incorrect format. <br>\n' +
                         '                            The following domains where not added',
+                    loading: "Domains are being processed",
                 }
             },
             nl: {
@@ -468,7 +474,7 @@ Vue.component('managed-url-list', {
 
                 bulk_add_form: {
                     title: 'Toevoegen van domeinen',
-                    message: 'Voeg hieronder een of meerdere domeinen toe, gescheiden door een komma.',
+                    message: 'Voeg hieronder een of meerdere domeinen toe, gescheiden door een komma, spatie, nieuwe regel of door elkaar.',
                     ok: 'Voeg bovenstaande domeinen toe aan de lijst',
                     status: 'Status',
                     nothing_added: 'nog niets toegevoegd.',
@@ -477,6 +483,7 @@ Vue.component('managed-url-list', {
                     warning: 'Waarschuwing!',
                     warning_message: 'Sommige domeinen zijn niet in een geldig formaat. Controleer de volgende domeinen en' +
                         'probeer het opnieuw:',
+                    loading: "Domeinen worden verwerkt",
                 }
             }
         }
@@ -511,8 +518,9 @@ Vue.component('managed-url-list', {
 
             // everything that has to do with adding urls:
             show_bulk_add_new: false,
-            bulk_add_new_urls: [],
+            bulk_add_new_urls: "",
             bulk_add_new_server_response: {},
+            bulk_add_new_loading: false,
 
             // everything to do with csv:
             view_csv: false,
@@ -721,11 +729,13 @@ Vue.component('managed-url-list', {
         },
         bulk_add_new: function(){
             data = {'urls': this.bulk_add_new_urls, 'list_id': this.list.id};
+            this.bulk_add_new_loading = true;
 
             this.asynchronous_json_post(
                 '/data/urllist/url/add/', data, (server_response) => {
                     // {'incorrect_urls': [], 'added_to_list': int, 'already_in_list': int}
                     this.bulk_add_new_server_response = server_response;
+                    this.bulk_add_new_loading = false;
 
                     // Update the list of urls accordingly.
                     if (server_response.success) {
