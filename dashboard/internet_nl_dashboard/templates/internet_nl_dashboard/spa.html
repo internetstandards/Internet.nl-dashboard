@@ -14,11 +14,12 @@
 
     {% compress css %}
         <link rel="stylesheet" type="text/css" href="{% static 'css/vendor/internet_nl/style-min.css' %}">
-        <link rel="stylesheet" type="text/css" href="{% static 'css/vendor/dropzone@5.5.0/basic.css' %}">
-        <link rel="stylesheet" type="text/css" href="{% static 'css/vendor/dropzone@5.5.0/dropzone.css' %}">
-        <link rel="stylesheet" type="text/css" href="{% static 'css/vendor/vue-multiselect@2.1.6/vue-multiselect.min.css'%}">
-        <link rel="stylesheet" type="text/css" href="{% static 'css/vendor/vue-select@3.1.0/vue-select.css'%}">
-        <link rel="stylesheet" type="text/css" href="{% static 'css/vendor/chartjs@2.8.0/Chart.css'%}">
+
+        <link rel="stylesheet" type="text/css" href="{% static 'js/node_modules/dropzone/dist/basic.css' %}">
+        <link rel="stylesheet" type="text/css" href="{% static 'js/node_modules/dropzone/dist/dropzone.css' %}">
+
+        <link rel="stylesheet" type="text/css" href="{% static 'js/node_modules/vue-select/dist/vue-select.css' %}">
+        <link rel="stylesheet" type="text/css" href="{% static 'js/node_modules/chart.js/dist/Chart.css' %}">
         <link rel="stylesheet" type="text/css" media="print" href="{% static 'css/vendor/internet_nl/print-min.css' %}">
         <link rel="stylesheet" type="text/css" id="overrides" href="{% static 'css/overrides_dashboard.css' %}">
     {% endcompress %}
@@ -28,52 +29,52 @@
     {% if debug %}
         <script type="text/javascript" src="{% static 'js/node_modules/jquery/dist/jquery.js' %}"></script>
 
+        <script type="text/javascript" src="{% static 'js/node_modules/vue/dist/vue.js' %}"></script>
+        <script type="text/javascript" src="{% static 'js/node_modules/vue-router/dist/vue-router.js' %}"></script>
+        <script type="text/javascript" src="{% static 'js/node_modules/moment/min/moment-with-locales.js' %}"></script>
+        <script type="text/javascript" src="{% static 'js/node_modules/vue-i18n/dist/vue-i18n.js' %}"></script>
+        <script type="text/javascript" src="{% static 'js/node_modules/vue-select/dist/vue-select.js' %}"></script>
+        <script type="text/javascript" src="{% static 'js/node_modules/vue-tabs-component/dist/index.js' %}"></script>
 
+        <script type="text/javascript" src="{% static 'js/node_modules/lodash/lodash.js' %}"></script>
 
-        <script type="text/javascript" src="{% static 'js/vendor/jquery@3.4.0/jquery-3.4.0.js' %}"></script>
+        <script type="text/javascript" src="{% static 'js/node_modules/chart.js/dist/Chart.js' %}"></script>
+        <script type="text/javascript" src="{% static 'js/node_modules/chartjs-plugin-datalabels/dist/chartjs-plugin-datalabels.js' %}"></script>
+        <script type="text/javascript" src="{% static 'js/node_modules/patternomaly/dist/patternomaly.js' %}"></script>
+
+        <script type="text/javascript" src="{% static 'js/node_modules/dropzone/dist/dropzone.js' %}"></script>
+
         <script type="text/javascript" src="{% static 'js/vendor/internet_nl/headroom-min.js' %}"></script>
         <script type="text/javascript" src="{% static 'js/vendor/internet_nl/functions-min.js' %}"></script>
         <script type="text/javascript" src="{% static 'js/vendor/internet_nl/internetnl.results-min.js' %}"></script>
-        <script type="text/javascript" src="{% static 'js/vendor/vuejs@2.6.11/vue.js' %}"></script>
-        <script type="text/javascript" src="{% static 'js/vendor/vue-router@3.1.3/vue-router.js' %}"></script>
-        <script type="text/javascript" src="{% static 'js/vendor/momentjs@2.24.0/moment-with-locales.js' %}" charset="UTF-8"></script>
-        <script type="text/javascript" src="{% static 'js/vendor/vue-i18n@8.9.0/vue-i18n.js' %}"></script>
-        <script type="text/javascript" src="{% static 'js/vendor/vue-multiselect@2.1.6/vue-multiselect.min.js' %}"></script>
-        <script type="text/javascript" src="{% static 'js/vendor/lodash@4.17.11/lodash.js' %}"></script>
-        <script type="text/javascript" src="{% static 'js/vendor/chartjs@2.8.0/Chart.js' %}"></script>
-        <script type="text/javascript" src="{% static 'js/vendor/vue-select@3.1.0/vue-select.js' %}"></script>
-        <script type="text/javascript" src="{% static 'js/vendor/chartjs-plugin-datalabels@v0.6.0/chartjs-plugin-datalabels.js' %}"></script>
-        <script type="text/javascript" src="{% static 'js/vendor/patternomaly@1.3.2/patternomaly.js' %}"></script>
-        <script type="text/javascript" src="{% static 'js/vendor/vue-tabs-component@abandoned/index.js' %}"></script>
     {% else %}{% compress js %}
         <script type="text/javascript" src="{% static 'js/node_modules/jquery/dist/jquery.min.js' %}"></script>
 
+        <script type="text/javascript" src="{% static 'js/node_modules/vue/dist/vue.min.js' %}"></script>
+        <script type="text/javascript" src="{% static 'js/node_modules/vue-router/dist/vue-router.min.js' %}"></script>
+        <script type="text/javascript" src="{% static 'js/node_modules/moment/min/moment-with-locales.min.js' %}"></script>
+        <script type="text/javascript" src="{% static 'js/node_modules/vue-i18n/dist/vue-i18n.min.js' %}"></script>
+        <script type="text/javascript" src="{% static 'js/node_modules/vue-select/dist/vue-select.js' %}"></script>
+        <script type="text/javascript" src="{% static 'js/node_modules/vue-tabs-component/dist/index.js' %}"></script>
 
-        <script type="text/javascript" src="{% static 'js/vendor/jquery@3.4.0/jquery-3.4.0.js' %}"></script>
+        <script type="text/javascript" src="{% static 'js/node_modules/lodash/lodash.js' %}"></script>
+
+        <script type="text/javascript" src="{% static 'js/node_modules/chart.js/dist/Chart.min.js' %}"></script>
+        <script type="text/javascript" src="{% static 'js/node_modules/chartjs-plugin-datalabels/dist/chartjs-plugin-datalabels.min.js' %}"></script>
+        <script type="text/javascript" src="{% static 'js/node_modules/patternomaly/dist/patternomaly.js' %}"></script>
+
+        <!-- Dropzone cannot be minified, results in errors. -->
+        <script type="text/javascript" src="{% static 'js/node_modules/dropzone/dist/dropzone.js' %}"></script>
+
         <script type="text/javascript" src="{% static 'js/vendor/internet_nl/headroom-min.js' %}"></script>
         <script type="text/javascript" src="{% static 'js/vendor/internet_nl/functions-min.js' %}"></script>
         <script type="text/javascript" src="{% static 'js/vendor/internet_nl/internetnl.results-min.js' %}"></script>
-        <script type="text/javascript" src="{% static 'js/vendor/vuejs@2.6.11/vue.min.js' %}"></script>
-        <script type="text/javascript" src="{% static 'js/vendor/vue-router@3.1.3/vue-router.min.js' %}"></script>
-        <script type="text/javascript" src="{% static 'js/vendor/momentjs@2.24.0/moment-with-locales.js' %}" charset="UTF-8"></script>
-        <script type="text/javascript" src="{% static 'js/vendor/vue-i18n@8.9.0/vue-i18n.js' %}"></script>
-        <script type="text/javascript" src="{% static 'js/vendor/vue-multiselect@2.1.6/vue-multiselect.min.js' %}"></script>
-        <script type="text/javascript" src="{% static 'js/vendor/lodash@4.17.11/lodash.js' %}"></script>
-        <script type="text/javascript" src="{% static 'js/vendor/vue-select@3.1.0/vue-select.js' %}"></script>
-        <script type="text/javascript" src="{% static 'js/vendor/chartjs@2.8.0/Chart.min.js' %}"></script>
-        <script type="text/javascript" src="{% static 'js/vendor/chartjs-plugin-datalabels@v0.6.0/chartjs-plugin-datalabels.min.js' %}"></script>
-        <script type="text/javascript" src="{% static 'js/vendor/patternomaly@1.3.2/patternomaly.js' %}"></script>
-        <script type="text/javascript" src="{% static 'js/vendor/vue-tabs-component@abandoned/index.js' %}"></script>
     {% endcompress %}{% endif %}
-
-    <!-- Dropzone cannot be minified, results in errors. -->
-    <script type="text/javascript" src="{% static 'js/vendor/dropzone@5.5.0/dropzone.js' %}"></script>
 
     <script type="text/javascript" src="{% static 'js/translations/internet_nl.js' %}"></script>
     <script type="text/javascript" src="{% static 'js/translations/dashboard.js' %}"></script>
 
     <script>
-
         // on embedded pages autodiscovery doesn't work, use a  manual call:
         // https://stackoverflow.com/questions/22169595/dropzone-js-init-function-not-being-called
         Dropzone.autoDiscover = false;
@@ -305,7 +306,6 @@
             messages: interpolate_translations()
         });
 
-        Vue.component('multiselect', window.VueMultiselect.default);
         Vue.component('v-select', VueSelect.VueSelect);
         Vue.component('tabs', VueTabs.Tabs);
         Vue.component('tab', VueTabs.Tab);
