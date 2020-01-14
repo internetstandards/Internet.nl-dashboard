@@ -789,7 +789,7 @@
                                     </td>
                                     <td v-for="category_name in relevant_categories_based_on_settings">
                                         <span v-if="category_name in reports[0].statistics_per_issue_type">
-                                            {{reports[0].statistics_per_issue_type[category_name].pct_ok}}%</span>
+                                            {{Math.round(reports[0].statistics_per_issue_type[category_name].pct_ok)}}%</span>
                                     </td>
                                 </tr>
 
