@@ -383,7 +383,6 @@ small {
     background-image: url("/static/images/vendor/internet_nl/icon-circle-check.svg"), none  !important
 }
 
-
 @media (max-width: 499px) {
     #site-title a {
         background-image: url("/static/images/vendor/internet_nl/logo_en.png") !important;
@@ -405,9 +404,18 @@ small {
     }
 }
 
+@media print {
+    #site-title a {
+        background-image: url("/static/images/vendor/internet_nl/logo_en.png") !important;
+        /* The SVG logo doesn't print correct
+        background-image: url("/static/images/vendor/internet_nl/logo_en.svg") !important; */
+    }
+}
+
+
 #menu-button i {
-    background-image: url("/static/images/vendor/internet_nl/icon-menu.png") !important;
     background-image: url("/static/images/vendor/internet_nl/icon-menu.svg") !important;
+    background-image: url("/static/images/vendor/internet_nl/icon-menu.png") !important;
 }
 
 
