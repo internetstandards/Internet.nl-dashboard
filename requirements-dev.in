@@ -32,3 +32,6 @@ pydotplus  # generating graphs with the docs command...
 
 django-cprofile-middleware
 moviepy
+
+# django phonenumber field (via otp) needs this, and cannot get it themselves:
+phonenumberslite>=7.0.2
