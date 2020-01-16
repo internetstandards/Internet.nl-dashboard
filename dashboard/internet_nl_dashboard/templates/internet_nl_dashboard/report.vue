@@ -1896,6 +1896,16 @@ const Report = Vue.component('report', {
 
                 let aref = a.endpoints[0].ratings_by_type[sortKey];
                 let bref = b.endpoints[0].ratings_by_type[sortKey];
+
+                // does have endpoint but no ratings by type?
+                if (aref === undefined){
+                    return 1 * order;
+                }
+
+                if (bref === undefined){
+                    return -1 * order;
+                }
+
                 a = `${aref.high} ${aref.medium} ${aref.low} ${aref.not_applicable}  ${aref.not_testable} ${aref.ok}`;
                 b = `${bref.high} ${bref.medium} ${bref.low} ${bref.not_applicable}  ${bref.not_testable} ${bref.ok}`;
                 return (a === b ? 0 : a > b ? 1 : -1) * order
