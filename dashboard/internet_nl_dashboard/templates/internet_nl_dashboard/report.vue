@@ -547,7 +547,7 @@
                 </div>
             </div>
 
-            <div class="block fullwidth" style="page-break-before: always;" v-if='reports.length && "statistics_per_issue_type" in reports[0]'>
+            <div class="block fullwidth" style="page-break-before: always;" v-if='reports.length && "statistics_per_issue_type" in reports[0]["calculation"]'>
                 <!-- Accessible alternative for the data is available in the table below. -->
                 <h2>
                     {{ $t("chart_info.adoption_bar_chart.annotation.title") }}
@@ -656,7 +656,7 @@
                 </template>
             </div>
 
-            <div class="block fullwidth" style="page-break-before: always;" aria-hidden="true" v-if='compare_charts.length > 1 && "statistics_per_issue_type" in reports[0]'>
+            <div class="block fullwidth" style="page-break-before: always;" aria-hidden="true" v-if='compare_charts.length > 1 && "statistics_per_issue_type" in reports[0]["calculation"]'>
                 <!-- Todo: there is no cumulative view in the table below, so cumulative data is not (yet) accessible :( -->
                 <h2>
                     {{ $t("chart_info.cumulative_adoption_bar_chart.annotation.title") }}
@@ -812,8 +812,8 @@
                                         &nbsp;
                                     </td>
                                     <td v-for="category_name in relevant_categories_based_on_settings">
-                                        <span v-if="category_name in reports[0].statistics_per_issue_type">
-                                            {{Math.round(reports[0].statistics_per_issue_type[category_name].pct_ok)}}%</span>
+                                        <span v-if="category_name in reports[0]['calculation'].statistics_per_issue_type">
+                                            {{Math.round(reports[0]["calculation"].statistics_per_issue_type[category_name].pct_ok)}}%</span>
                                     </td>
                                 </tr>
 

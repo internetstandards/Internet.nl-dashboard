@@ -9,8 +9,8 @@ from dashboard.internet_nl_dashboard.logic.domains import (delete_list, delete_u
                                                            get_or_create_list_by_name,
                                                            get_urllist_content,
                                                            get_urllists_from_account, rename_list,
-                                                           save_urllist_content_by_name,
-                                                           retrieve_urls_from_unfiltered_input)
+                                                           retrieve_urls_from_unfiltered_input,
+                                                           save_urllist_content_by_name)
 from dashboard.internet_nl_dashboard.models import Account
 
 

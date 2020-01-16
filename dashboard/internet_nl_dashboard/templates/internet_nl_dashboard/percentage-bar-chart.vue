@@ -111,7 +111,7 @@ Vue.component('percentage-bar-chart', {
                 if (this.chart_data[i] === undefined)
                     return;
 
-                let data = this.chart_data[i].statistics_per_issue_type;
+                let data = this.chart_data[i].calculation.statistics_per_issue_type;
 
                 if (data === undefined) {
                     // nothing to show
