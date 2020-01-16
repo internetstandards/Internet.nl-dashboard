@@ -22,20 +22,20 @@
     <script type="text/javascript" src="{% static 'js/vendor/internet_nl/imagecheck-min.js' %}" defer="defer"></script>
 
     {% if debug %}
-        <script type="text/javascript" src="{% static 'js/vendor/jquery@3.4.0/jquery-3.4.0.js' %}"></script>
+        <script type="text/javascript" src="{% static 'js/node_modules/jquery/dist/jquery.min.js' %}"></script>
         <script type="text/javascript" src="{% static 'js/vendor/internet_nl/headroom-min.js' %}"></script>
         <script type="text/javascript" src="{% static 'js/vendor/internet_nl/functions-min.js' %}"></script>
         <script type="text/javascript" src="{% static 'js/vendor/internet_nl/internetnl.results-min.js' %}"></script>
-        <script type="text/javascript" src="{% static 'js/vendor/vuejs@2.6.11/vue.js' %}"></script>
-        <script type="text/javascript" src="{% static 'js/vendor/vue-i18n@8.9.0/vue-i18n.js' %}"></script>
+        <script type="text/javascript" src="{% static 'js/node_modules/vue/dist/vue.js' %}"></script>
+        <script type="text/javascript" src="{% static 'js/node_modules/vue-i18n/dist/vue-i18n.js' %}"></script>
 
     {% else %}{% compress js %}
-        <script type="text/javascript" src="{% static 'js/vendor/jquery@3.4.0/jquery-3.4.0.js' %}"></script>
+        <script type="text/javascript" src="{% static 'js/node_modules/jquery/dist/jquery.js' %}"></script>
         <script type="text/javascript" src="{% static 'js/vendor/internet_nl/headroom-min.js' %}"></script>
         <script type="text/javascript" src="{% static 'js/vendor/internet_nl/functions-min.js' %}"></script>
         <script type="text/javascript" src="{% static 'js/vendor/internet_nl/internetnl.results-min.js' %}"></script>
-        <script type="text/javascript" src="{% static 'js/vendor/vuejs@2.6.11/vue.min.js' %}"></script>
-        <script type="text/javascript" src="{% static 'js/vendor/vue-i18n@8.9.0/vue-i18n.js' %}"></script>
+        <script type="text/javascript" src="{% static 'js/node_modules/vue/dist/vue.min.js' %}"></script>
+        <script type="text/javascript" src="{% static 'js/node_modules/vue-i18n/dist/vue-i18n.min.js' %}"></script>
     {% endcompress %}{% endif %}
 
     <script type="text/javascript" src="{% static 'js/translations/internet_nl.js' %}"></script>
