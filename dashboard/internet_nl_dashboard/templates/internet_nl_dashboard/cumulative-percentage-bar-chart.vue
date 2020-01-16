@@ -109,7 +109,7 @@ Vue.component('cumulative-percentage-bar-chart', {
                 if (this.chart_data[i] === undefined)
                     return;
 
-                let data = this.chart_data[i].statistics_per_issue_type;
+                let data = this.chart_data[i].calculation.statistics_per_issue_type;
 
                 if (data === undefined) {
                     // nothing to show
@@ -131,7 +131,7 @@ Vue.component('cumulative-percentage-bar-chart', {
 
             }
 
-            let data = this.chart_data[0].statistics_per_issue_type;
+            let data = this.chart_data[0].calculation.statistics_per_issue_type;
             let axis_names = [];
             let labels = [];
             let chartdata = [];

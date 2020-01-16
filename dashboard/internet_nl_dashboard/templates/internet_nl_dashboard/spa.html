@@ -14,12 +14,12 @@
 
     {% compress css %}
         <link rel="stylesheet" type="text/css" href="{% static 'css/vendor/internet_nl/style-min.css' %}">
-        <link rel="stylesheet" type="text/css" href="{% static 'css/vendor/dropzone@5.5.0/basic.css' %}">
-        <link rel="stylesheet" type="text/css" href="{% static 'css/vendor/dropzone@5.5.0/dropzone.css' %}">
-        <link rel="stylesheet" type="text/css" href="{% static 'css/vendor/select2@4.0.6-rc.0/select2.min.css'%}">
-        <link rel="stylesheet" type="text/css" href="{% static 'css/vendor/vue-multiselect@2.1.6/vue-multiselect.min.css'%}">
-        <link rel="stylesheet" type="text/css" href="{% static 'css/vendor/vue-select@3.1.0/vue-select.css'%}">
-        <link rel="stylesheet" type="text/css" href="{% static 'css/vendor/chartjs@2.8.0/Chart.css'%}">
+
+        <link rel="stylesheet" type="text/css" href="{% static 'js/node_modules/dropzone/dist/basic.css' %}">
+        <link rel="stylesheet" type="text/css" href="{% static 'js/node_modules/dropzone/dist/dropzone.css' %}">
+
+        <link rel="stylesheet" type="text/css" href="{% static 'js/node_modules/vue-select/dist/vue-select.css' %}">
+        <link rel="stylesheet" type="text/css" href="{% static 'js/node_modules/chart.js/dist/Chart.css' %}">
         <link rel="stylesheet" type="text/css" media="print" href="{% static 'css/vendor/internet_nl/print-min.css' %}">
         <link rel="stylesheet" type="text/css" id="overrides" href="{% static 'css/overrides_dashboard.css' %}">
     {% endcompress %}
@@ -27,125 +27,57 @@
     <script type="text/javascript" src="{% static 'js/vendor/internet_nl/imagecheck-min.js' %}" defer="defer"></script>
 
     {% if debug %}
-        <script type="text/javascript" src="{% static 'js/vendor/jquery@3.4.0/jquery-3.4.0.js' %}"></script>
-        <script type="text/javascript" src="{% static 'js/vendor/internet_nl/headroom-min.js' %}"></script>
-        <script type="text/javascript" src="{% static 'js/vendor/internet_nl/functions-min.js' %}"></script>
-        <script type="text/javascript" src="{% static 'js/vendor/internet_nl/internetnl.results-min.js' %}"></script>
-        <script type="text/javascript" src="{% static 'js/vendor/vuejs@2.6.11/vue.js' %}"></script>
-        <script type="text/javascript" src="{% static 'js/vendor/vue-router@3.1.3/vue-router.js' %}"></script>
-        <script type="text/javascript" src="{% static 'js/vendor/momentjs@2.24.0/moment-with-locales.js' %}" charset="UTF-8"></script>
-        <script type="text/javascript" src="{% static 'js/vendor/vue-i18n@8.9.0/vue-i18n.js' %}"></script>
-        <script type="text/javascript" src="{% static 'js/vendor/vue-multiselect@2.1.6/vue-multiselect.min.js' %}"></script>
-        <script type="text/javascript" src="{% static 'js/vendor/lodash@4.17.11/lodash.js' %}"></script>
-        <script type="text/javascript" src="{% static 'js/vendor/select2@4.0.6-rc.0/select2.min.js' %}"></script>
-        <script type="text/javascript" src="{% static 'js/vendor/chartjs@2.8.0/Chart.js' %}"></script>
-        <script type="text/javascript" src="{% static 'js/vendor/vue-select@3.1.0/vue-select.js' %}"></script>
-        <script type="text/javascript" src="{% static 'js/vendor/chartjs-plugin-datalabels@v0.6.0/chartjs-plugin-datalabels.js' %}"></script>
-        <script type="text/javascript" src="{% static 'js/vendor/patternomaly@1.3.2/patternomaly.js' %}"></script>
-        <script type="text/javascript" src="{% static 'js/vendor/vue-tabs-component@abandoned/index.js' %}"></script>
-    {% else %}{% compress js %}
-        <script type="text/javascript" src="{% static 'js/vendor/jquery@3.4.0/jquery-3.4.0.js' %}"></script>
-        <script type="text/javascript" src="{% static 'js/vendor/internet_nl/headroom-min.js' %}"></script>
-        <script type="text/javascript" src="{% static 'js/vendor/internet_nl/functions-min.js' %}"></script>
-        <script type="text/javascript" src="{% static 'js/vendor/internet_nl/internetnl.results-min.js' %}"></script>
-        <script type="text/javascript" src="{% static 'js/vendor/vuejs@2.6.11/vue.min.js' %}"></script>
-        <script type="text/javascript" src="{% static 'js/vendor/vue-router@3.1.3/vue-router.min.js' %}"></script>
-        <script type="text/javascript" src="{% static 'js/vendor/momentjs@2.24.0/moment-with-locales.js' %}" charset="UTF-8"></script>
-        <script type="text/javascript" src="{% static 'js/vendor/vue-i18n@8.9.0/vue-i18n.js' %}"></script>
-        <script type="text/javascript" src="{% static 'js/vendor/vue-multiselect@2.1.6/vue-multiselect.min.js' %}"></script>
-        <script type="text/javascript" src="{% static 'js/vendor/lodash@4.17.11/lodash.js' %}"></script>
-        <script type="text/javascript" src="{% static 'js/vendor/select2@4.0.6-rc.0/select2.min.js' %}"></script>
-        <script type="text/javascript" src="{% static 'js/vendor/vue-select@3.1.0/vue-select.js' %}"></script>
-        <script type="text/javascript" src="{% static 'js/vendor/chartjs@2.8.0/Chart.min.js' %}"></script>
-        <script type="text/javascript" src="{% static 'js/vendor/chartjs-plugin-datalabels@v0.6.0/chartjs-plugin-datalabels.min.js' %}"></script>
-        <script type="text/javascript" src="{% static 'js/vendor/patternomaly@1.3.2/patternomaly.js' %}"></script>
-        <script type="text/javascript" src="{% static 'js/vendor/vue-tabs-component@abandoned/index.js' %}"></script>
-    {% endcompress %}{% endif %}
+        <script type="text/javascript" src="{% static 'js/node_modules/jquery/dist/jquery.js' %}"></script>
 
-    <!-- Dropzone cannot be minified, results in errors. -->
-    <script type="text/javascript" src="{% static 'js/vendor/dropzone@5.5.0/dropzone.js' %}"></script>
+        <script type="text/javascript" src="{% static 'js/node_modules/vue/dist/vue.js' %}"></script>
+        <script type="text/javascript" src="{% static 'js/node_modules/vue-router/dist/vue-router.js' %}"></script>
+        <script type="text/javascript" src="{% static 'js/node_modules/moment/min/moment-with-locales.js' %}"></script>
+        <script type="text/javascript" src="{% static 'js/node_modules/vue-i18n/dist/vue-i18n.js' %}"></script>
+        <script type="text/javascript" src="{% static 'js/node_modules/vue-select/dist/vue-select.js' %}"></script>
+        <script type="text/javascript" src="{% static 'js/node_modules/vue-tabs-component/dist/index.js' %}"></script>
+
+        <script type="text/javascript" src="{% static 'js/node_modules/lodash/lodash.js' %}"></script>
+
+        <script type="text/javascript" src="{% static 'js/node_modules/chart.js/dist/Chart.js' %}"></script>
+        <script type="text/javascript" src="{% static 'js/node_modules/chartjs-plugin-datalabels/dist/chartjs-plugin-datalabels.js' %}"></script>
+        <script type="text/javascript" src="{% static 'js/node_modules/patternomaly/dist/patternomaly.js' %}"></script>
+
+        <script type="text/javascript" src="{% static 'js/node_modules/dropzone/dist/dropzone.js' %}"></script>
+
+        <script type="text/javascript" src="{% static 'js/vendor/internet_nl/headroom-min.js' %}"></script>
+        <script type="text/javascript" src="{% static 'js/vendor/internet_nl/functions-min.js' %}"></script>
+        <script type="text/javascript" src="{% static 'js/vendor/internet_nl/internetnl.results-min.js' %}"></script>
+    {% else %}{% compress js %}
+        <script type="text/javascript" src="{% static 'js/node_modules/jquery/dist/jquery.min.js' %}"></script>
+
+        <script type="text/javascript" src="{% static 'js/node_modules/vue/dist/vue.min.js' %}"></script>
+        <script type="text/javascript" src="{% static 'js/node_modules/vue-router/dist/vue-router.min.js' %}"></script>
+        <script type="text/javascript" src="{% static 'js/node_modules/moment/min/moment-with-locales.min.js' %}"></script>
+        <script type="text/javascript" src="{% static 'js/node_modules/vue-i18n/dist/vue-i18n.min.js' %}"></script>
+        <script type="text/javascript" src="{% static 'js/node_modules/vue-select/dist/vue-select.js' %}"></script>
+        <script type="text/javascript" src="{% static 'js/node_modules/vue-tabs-component/dist/index.js' %}"></script>
+
+        <script type="text/javascript" src="{% static 'js/node_modules/lodash/lodash.js' %}"></script>
+
+        <script type="text/javascript" src="{% static 'js/node_modules/chart.js/dist/Chart.min.js' %}"></script>
+        <script type="text/javascript" src="{% static 'js/node_modules/chartjs-plugin-datalabels/dist/chartjs-plugin-datalabels.min.js' %}"></script>
+        <script type="text/javascript" src="{% static 'js/node_modules/patternomaly/dist/patternomaly.js' %}"></script>
+
+        <!-- Dropzone cannot be minified, results in errors. -->
+        <script type="text/javascript" src="{% static 'js/node_modules/dropzone/dist/dropzone.js' %}"></script>
+
+        <script type="text/javascript" src="{% static 'js/vendor/internet_nl/headroom-min.js' %}"></script>
+        <script type="text/javascript" src="{% static 'js/vendor/internet_nl/functions-min.js' %}"></script>
+        <script type="text/javascript" src="{% static 'js/vendor/internet_nl/internetnl.results-min.js' %}"></script>
+    {% endcompress %}{% endif %}
 
     <script type="text/javascript" src="{% static 'js/translations/internet_nl.js' %}"></script>
     <script type="text/javascript" src="{% static 'js/translations/dashboard.js' %}"></script>
 
     <script>
-
         // on embedded pages autodiscovery doesn't work, use a  manual call:
         // https://stackoverflow.com/questions/22169595/dropzone-js-init-function-not-being-called
         Dropzone.autoDiscover = false;
-
-        Vue.component('select2-tags-widget', {
-            // https://vuejs.org/v2/examples/select2.html
-          props: ['options', 'value'],
-          template: '<select style="width: 95%" multiple="multiple">\n' +
-              '    <slot></slot>\n' +
-              '  </select>',
-          mounted: function () {
-            var vm = this;
-            $(this.$el)
-              // init select2
-              .select2({
-                placeholder: 'example.com, www.example.com, www.internet.nl, ...',
-                tags: true,
-                tokenSeparators: [',', ' '],
-                // hides the no results box, as this is pure tagbox only
-                // @see: https://stackoverflow.com/questions/18470917/disable-no-matches-found-text-and-autocomplete-on-select2
-                "language":{
-                    "noResults" : function () { return ''; }
-                },
-                  multiple: true,
-
-                createTag: function (params) {
-                    // This is an extremely naive implementation of domain validation. On the server tldextract is
-                    // used which is much more complete as it uses the public suffixes list.
-                    // This is just a convenience check that something with a dot is entered.
-                    let term = $.trim(params.term);
-
-                    // use the most naive (fast) 'url' validator. All validation is done server side anyway, and
-                    // verifying that something is an url with unicode characters and such is not really a thing.
-                    var pattern = new RegExp('^.*\\..{2,}$'); // domain name
-                    if (!pattern.test(term)) {
-                        return null;
-                    }
-
-                    if (term === '') {
-                        return null;
-                    }
-
-                    return {
-                        id: term,
-                        text: term,
-                    }
-                }
-            }).val(
-                this.value
-              ).trigger('change')
-              // emit event on change.
-              .on('change', function () {
-                  console.log('change');
-                  // Ok, this was not easy to figure out. This is the most old school approach of getting all option values.
-                  // I would expect to run .val() or someething, but that didn't update etc..
-                  // this approach is not reactive, but it doesn't need to be.
-                  let my_data = [];
-                    for (let i = 0; i < this.options.length; i++) {
-                        my_data.push(this.options[i].text);
-                    }
-
-                  console.log(my_data);
-                  vm.$emit('input', my_data)  // can't get all...
-              })
-          },
-            /* this does not update:
-            computed: {
-              // at least this works...
-                all_options: function(){
-                    return $(this.$el).val();
-                }
-            },*/
-          destroyed: function () {
-            $(this.$el).off().select2('destroy')
-          }
-        });
 
         function import_field_translations(language){
             return {
@@ -374,7 +306,6 @@
             messages: interpolate_translations()
         });
 
-        Vue.component('multiselect', window.VueMultiselect.default);
         Vue.component('v-select', VueSelect.VueSelect);
         Vue.component('tabs', VueTabs.Tabs);
         Vue.component('tab', VueTabs.Tab);
@@ -619,7 +550,7 @@
             </div>
 
             <div class="wrap">
-                <section class="block">
+                <section class="block do-not-print">
                     <div class="wrapper">
                         <p style="font-size: 0.9em; font-style: italic; margin-bottom: 0em;">
                             Thank you for using the internet.nl dashboard. Please report issues on <a href="https://github.com/internetstandards/Internet.nl-dashboard/issues" target="_blank">this GitHub page</a>.

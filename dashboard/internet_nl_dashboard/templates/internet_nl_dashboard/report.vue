@@ -10,7 +10,31 @@
 
     /* Do print the whole table... */
     @media print {
+        body {
+            background-color: red;
+        }
         #report-template {
+            min-height: 100% !important;
+        }
+
+        /* When printing, the table should fill several pages */
+        #report-template .sticky-table-container {
+            max-height: none !important;
+            overflow-x: inherit;
+            overflow-y: inherit;
+        }
+
+        /* Allow printing of graphs, make sure they don't go wider than the page width... */
+        /* https://stackoverflow.com/questions/41674976/resize-chart-js-canvas-for-printing */
+        /* We'll resize the image to fit plain a4 paper, otherwise the aspect ratios are distorted.*/
+        canvas.graph-image {
+            height: 60% !important;
+            width: 60% !important;
+        }
+
+        /* Also remove the superfluous container sizes during print, as the image is a bit smaller now: */
+        .chart-container {
+            height: 100% !important;
             min-height: 100% !important;
         }
     }
@@ -23,7 +47,30 @@
         overflow-y: scroll;
     }
 
+    /* Make the header stay up with a white background. */
+    #report-template thead {
+        position: sticky;
+        top: 0;
+        background-color: white;
+    }
+
+    #horrible-chrome-td-sticky-white-background-fix {
+        /* Chrome white sticky headers overlap, causing text to disappear, firefox does render it correctly.
+        This fix creates a white background behind the text labels. */
+        width: 98%;
+        height: 210px;
+        position: absolute;
+        top: 110px;
+        background: white;
+    }
+
     #report-template th {
+        /* Firefox does not need this set to white, chrome does, otherwise the background will bleed through... */
+        /* background-color: white; */
+    }
+
+    #report-template th:after {
+        /* Chrome uses translucent background, */
         background-color: white;
     }
 
@@ -70,7 +117,7 @@
         width: 100%;
         max-width: 100%;
         margin-bottom: 1rem;
-        background-color: transparent;
+        background-color: white;
     }
 
     .table-striped tbody tr:nth-of-type(2n+1) {
@@ -250,13 +297,13 @@
             <p>{{ $t("header.intro") }}</p>
 
             <div aria-live="polite" style="margin-bottom: 30px;">
-                <!-- limit not yet supported, nov 2019: https://github.com/sagalbot/vue-select/issues/60 -->
                 <v-select
                         v-model="selected_report"
                         :placeholder="$t('header.select_report')"
                         :options="filtered_recent_reports"
                         label="label"
                         :multiple="true"
+                        :selectable="() => selected_report.length < 6"
                 >
                     <slot name="no-options">{{ $t('header.no_options') }}</slot>
 
@@ -293,7 +340,7 @@
 
             <template v-if="reports.length && !is_loading">
 
-                <div class="testresult_without_icon">
+                <div class="do-not-print testresult_without_icon">
                     <h2 style="font-size: 1.0em;" class="panel-title" >
                         <a href="" aria-expanded="false">
                             <span class="visuallyhidden">-:</span>
@@ -312,7 +359,7 @@
                     </div>
                 </div>
 
-                <div class="testresult_without_icon">
+                <div class="do-not-print testresult_without_icon">
                     <h2 style="font-size: 1.0em;" class="panel-title" >
                         <a href="" aria-expanded="false">
                             <span class="visuallyhidden">-:</span>
@@ -463,36 +510,38 @@
                         <line-chart
                                 :color_scheme="color_scheme"
                                 :translation_key="'charts.adoption_timeline'"
-                                :chart_data="issue_timeline_of_related_urllist"
+                                :chart_data="issue_timeline_of_related_urllists"
                                 :accessibility_text="$t('charts.adoption_timeline.accessibility_text')"
                                 :axis="['average_internet_nl_score']">
                         </line-chart>
 
                         <div style="overflow-x: scroll; overflow-y: hidden;">
-                            <table class="table table-striped">
-                                <caption>{{ $t("charts.adoption_timeline.title") }}</caption>
-                                <thead>
-                                    <tr>
-                                        <th style="width: 200px;">
-                                            &nbsp;{{ $t("charts.adoption_timeline.xAxis_label") }}
-                                        </th>
-                                        <th>
-                                             {{ $t("charts.adoption_timeline.yAxis_label") }}
-                                        </th>
-                                    </tr>
-                                </thead>
+                            <template  v-for="timeline in issue_timeline_of_related_urllists">
+                                <table class="table table-striped">
+                                    <caption>{{timeline.name}}: {{ $t("charts.adoption_timeline.title") }}</caption>
+                                    <thead>
+                                        <tr>
+                                            <th style="width: 200px;">
+                                                &nbsp;{{ $t("charts.adoption_timeline.xAxis_label") }}
+                                            </th>
+                                            <th>
+                                                 {{ $t("charts.adoption_timeline.yAxis_label") }}
+                                            </th>
+                                        </tr>
+                                    </thead>
 
-                                <tbody class="gridtable">
-                                    <tr v-for="stat in issue_timeline_of_related_urllist">
-                                        <td>
-                                            {{ humanize_date_date_only(stat.date) }}
-                                        </td>
-                                        <td>
-                                            {{ stat.average_internet_nl_score }}%
-                                        </td>
-                                    </tr>
-                                </tbody>
-                            </table>
+                                    <tbody class="gridtable">
+                                        <tr v-for="stat in timeline.data">
+                                            <td>
+                                                {{ humanize_date_date_only(stat.date) }}
+                                            </td>
+                                            <td>
+                                                {{ stat.average_internet_nl_score }}%
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </template>
                         </div>
 
 
@@ -500,7 +549,7 @@
                 </div>
             </div>
 
-            <div class="block fullwidth" style="page-break-before: always;" v-if='reports.length && "statistics_per_issue_type" in reports[0]'>
+            <div class="block fullwidth" style="page-break-before: always;" v-if='reports.length && "statistics_per_issue_type" in reports[0]["calculation"]'>
                 <!-- Accessible alternative for the data is available in the table below. -->
                 <h2>
                     {{ $t("chart_info.adoption_bar_chart.annotation.title") }}
@@ -609,7 +658,7 @@
                 </template>
             </div>
 
-            <div class="block fullwidth" style="page-break-before: always;" aria-hidden="true" v-if='compare_charts.length > 1 && "statistics_per_issue_type" in reports[0]'>
+            <div class="block fullwidth" style="page-break-before: always;" aria-hidden="true" v-if='compare_charts.length > 1 && "statistics_per_issue_type" in reports[0]["calculation"]'>
                 <!-- Todo: there is no cumulative view in the table below, so cumulative data is not (yet) accessible :( -->
                 <h2>
                     {{ $t("chart_info.cumulative_adoption_bar_chart.annotation.title") }}
@@ -730,6 +779,7 @@
                 <p>{{ $t("report.intro") }}</p>
 
                 <div class="sticky-table-container">
+                    <div id="horrible-chrome-td-sticky-white-background-fix"></div>
                     <table class="table table-striped">
                         <thead class="sticky_labels">
 
@@ -764,8 +814,8 @@
                                         &nbsp;
                                     </td>
                                     <td v-for="category_name in relevant_categories_based_on_settings">
-                                        <span v-if="category_name in reports[0].statistics_per_issue_type">
-                                            {{reports[0].statistics_per_issue_type[category_name].pct_ok}}%</span>
+                                        <span v-if="category_name in reports[0]['calculation'].statistics_per_issue_type">
+                                            {{Math.round(reports[0]["calculation"].statistics_per_issue_type[category_name].pct_ok)}}%</span>
                                     </td>
                                 </tr>
 
@@ -974,6 +1024,7 @@ const Report = Vue.component('report', {
                         zoomed_in_on: 'Details from',
                         explanation: "Using the details buttons, it is possible to see the individual metrics for each category."
                     },
+
                     link_to_report: 'View score and report from %{url} on internet.nl.',
                     empty_report: 'It looks like this report is empty... did you filter too much?',
                     results: {
@@ -983,7 +1034,12 @@ const Report = Vue.component('report', {
                         warning: "Warning",
                         info: "Info",
                         passed: "Passed",
-                        unknown: "Unknown"
+                        unknown: "Unknown",
+                        comparison: {
+                            neutral: "",
+                            improved: "Improved compared to the second report selected.",
+                            regressed: "Regressed compared to the second report selected.",
+                        }
                     }
                 },
                 download: {
@@ -1138,7 +1194,12 @@ const Report = Vue.component('report', {
                         warning: "Waarschuwing",
                         info: "Info",
                         passed: "Goed",
-                        unknown: "Unknown"
+                        unknown: "Onbekend",
+                        comparison: {
+                            neutral: "",
+                            improved: "Verbeterd vergeleken met het 2e geselecteerde rapport.",
+                            regressed: "Verslechterd vergeleken met het 2e geselecteerde rapport.",
+                        }
                     }
                 },
                 download: {
@@ -1396,10 +1457,10 @@ const Report = Vue.component('report', {
             filtered_recent_reports: [],
 
             // a list of reports...
-            selected_report: null,
+            selected_report: [],
 
             // graphs:
-            issue_timeline_of_related_urllist: [],
+            issue_timeline_of_related_urllists: [],
 
             // https://github.com/ashiguruma/patternomaly/blob/master/assets/pattern-list.png
             possible_chart_patterns: ['weave', 'dot', 'ring', 'dash', 'plus', 'zigzag', 'square', 'diagonal', 'disc', 'zigzag-vertical', 'triangle', 'line', 'cross-dash', 'diamond'],
@@ -1541,14 +1602,15 @@ const Report = Vue.component('report', {
                     comparison_verdict = "regressed";
             }
 
+            let comparison_text = this.$i18n.t("report.results.comparison" + comparison_verdict);
 
 
             // Todo: add a list to the bottom of the table of urls that where not in the compared table.
             // todo: the report reloads using autoreload, which is annoying.
             // todo: Clean up this entangled code
-            // todo: add text message on comparison, such as: improved compared to previous report. Regressed compared to previous report.
+            // todo: also add comparison to categories
 
-            return `<span class="${simple_value} compared_with_next_report_${comparison_verdict}">${report_result_string} ${category_name_verdict}</span>`
+            return `<span class="${simple_value} compared_with_next_report_${comparison_verdict}">${comparison_text} ${report_result_string} ${category_name_verdict}</span>`
         },
 
         verdict_to_simple_value: function(verdicts){
@@ -1798,6 +1860,19 @@ const Report = Vue.component('report', {
             if (sortKey === "score"){
                 // todo: determine web or mail, split the scores etc, not very fast.
                 data = data.slice().sort(function (a, b) {
+
+                    if (a.endpoints[0] === undefined
+                        || a.endpoints[0].ratings_by_type.internet_nl_mail_dashboard_overall_score === undefined
+                        || a.endpoints[0].ratings_by_type.internet_nl_web_overall_score === undefined){
+                        return 1 * order;
+                    }
+
+                    if (b.endpoints[0] === undefined
+                        || b.endpoints[0].ratings_by_type.internet_nl_mail_dashboard_overall_score === undefined
+                        || b.endpoints[0].ratings_by_type.internet_nl_web_overall_score === undefined){
+                        return -1 * order;
+                    }
+
                     // for everything that is not the url name itself, is neatly tucked away. Only filter on high? Or on what kind of structure?
                     if (this.selected_category === 'mail'){
                         a = parseInt(a.endpoints[0].ratings_by_type['internet_nl_mail_dashboard_overall_score'].explanation.split(" ")[0]);
@@ -1812,8 +1887,27 @@ const Report = Vue.component('report', {
             }
             data = data.slice().sort(function (a, b) {
                 // for everything that is not the url name itself, is neatly tucked away. Only filter on high? Or on what kind of structure?
+
+                if (a.endpoints[0] === undefined){
+                    return 1 * order;
+                }
+
+                if (b.endpoints[0] === undefined){
+                    return -1 * order;
+                }
+
                 let aref = a.endpoints[0].ratings_by_type[sortKey];
                 let bref = b.endpoints[0].ratings_by_type[sortKey];
+
+                // does have endpoint but no ratings by type?
+                if (aref === undefined){
+                    return 1 * order;
+                }
+
+                if (bref === undefined){
+                    return -1 * order;
+                }
+
                 a = `${aref.high} ${aref.medium} ${aref.low} ${aref.not_applicable}  ${aref.not_testable} ${aref.ok}`;
                 b = `${bref.high} ${bref.medium} ${bref.low} ${bref.not_applicable}  ${bref.not_testable} ${bref.ok}`;
                 return (a === b ? 0 : a > b ? 1 : -1) * order
@@ -1829,8 +1923,14 @@ const Report = Vue.component('report', {
                 return;
             }
 
-            fetch(`/data/report/urllist_report_graph_data/${this.selected_report[0].urllist_id}/`, {credentials: 'include'}).then(response => response.json()).then(data => {
-                this.issue_timeline_of_related_urllist = data;
+            // report_id's:
+            let report_ids = [];
+            this.selected_report.forEach((item) => {
+                report_ids.push(item.urllist_id)
+            });
+
+            fetch(`/data/report/urllist_timeline_graph/${report_ids.join(",")}/`, {credentials: 'include'}).then(response => response.json()).then(data => {
+                this.issue_timeline_of_related_urllists = data;
             }).catch((fail) => {console.log('A loading error occurred: ' + fail);});
 
         },

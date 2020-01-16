@@ -1,5 +1,7 @@
 # Dependencies for this project are manager using pip-tools (https://github.com/jazzband/pip-tools).
 # This is a simple management tool to manage version pinnin build on top of Pip and requirements.txt.
+# See upgrade commands here: https://github.com/jazzband/pip-tools/
+# eg: pip-compile --upgrade-package django
 
 # In this file only
 # - specify requirements that are needed for Dashboard runtime (no development requirements).
@@ -10,7 +12,7 @@
 git+https://github.com/avast/pytest-docker@9ce726f4a045addc777fb1cea837a6309cbbeef6#egg=pytest-docker
 
 # to update websecmap run: make update_requirement_websecmap
-git+https://gitlab.com/internet-cleanup-foundation/web-security-map@acf1e12cc6d896b92fbf3b61d4e41be0a233fce5#egg=websecmap
+git+https://gitlab.com/internet-cleanup-foundation/web-security-map@d21833bd989debed56cc63f3d8c78384979c97e1#egg=websecmap
 
 django-otp
 django-two-factor-auth

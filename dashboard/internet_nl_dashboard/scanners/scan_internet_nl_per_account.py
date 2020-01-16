@@ -20,6 +20,10 @@ from websecmap.scanners.scanner import add_model_filter, dns_endpoints
 from websecmap.scanners.scanner.internet_nl_mail import store
 
 from dashboard.celery import app
+from dashboard.internet_nl_dashboard.logic.report import (add_keyed_ratings,
+                                                          add_percentages_to_statistics,
+                                                          add_statistics_over_ratings,
+                                                          remove_comply_or_explain)
 from dashboard.internet_nl_dashboard.logic.urllist_dashboard_report import create_dashboard_report
 from dashboard.internet_nl_dashboard.models import (Account, AccountInternetNLScan,
                                                     AccountInternetNLScanLog, UrlList,
@@ -302,6 +306,8 @@ def creating_report(scan: AccountInternetNLScan):
     return (recreate_url_reports.si(list(scan.urllist.urls.all()))
             | create_dashboard_report.si(scan.urllist)
             | connect_urllistreport_to_accountinternetnlscan.s(scan)
+            | upgrade_report_with_statistics.s()
+            | upgrade_report_with_unscannable_urls.s(scan)
             | update_state.si("created report", scan))
 
 
@@ -514,9 +520,98 @@ def connect_urllistreport_to_accountinternetnlscan(urllistreport: UrlListReport,
     scan.report = urllistreport
     scan.save()
 
+    return urllistreport
+
 
 @app.task(queue='storage')
-def send_after_scan_mail(scan):
+def upgrade_report_with_statistics(urllistreport: UrlListReport):
+    # todo: also upgrade existing reports and store them, this also speeds up report retrieval
+
+    remove_comply_or_explain(urllistreport)
+    add_keyed_ratings(urllistreport)
+    add_statistics_over_ratings(urllistreport)
+    add_percentages_to_statistics(urllistreport)
+
+    return UrlListReport.objects.all().get(pk=urllistreport.pk)
+
+
+@app.task(queue='storage')
+def upgrade_report_with_unscannable_urls(urllistreport: UrlListReport, scan: AccountInternetNLScan):
+    """
+    Urls that cannot be scanned using the internet.nl website are not allowed to be scanned. This is where endpoint
+    detection comes into view. Only domains with valid endpoints are (should) be scanned. Other domains have to
+    be ignored.
+
+    Yet, when we publish a list of "top 500" domains, only 499 show up in the report. This is due to a number of
+    complications.
+
+    1: some domains show up where it is stated that the requirements for scanning where not met. Yet, somehow,
+    this domain is in the report while it shouldn't be. This seems to be a bug in the reporting engine (todo) that
+    tries to retrieve all results, and if the domain has another endpoint, it is added to the report (alas empty).
+    These empty domains are accounted for, and are displayed correctly in the report as being ignored.
+
+    2: some domains do not have any endpoints, such as megaupload.com. Also these should not be scanned.
+    These domains however short be reflected in the report, the same as the domains that have a single endpoint.
+
+    To account for these issues, after report generation an extra step is needed that upgrades the report. (There
+    already is report upgrading code.) The upgrade will check if all domains are in the report, and if not, add
+    the url as being empty. This way all urls that are requested are in the report, and if they are empty, they
+    are ignored in all statistics.
+
+    :param urllist:
+    :param protocol:
+    :return:
+    """
+
+    # See if all urls in the list are also mentioned in the report, if not, add them and also make sure the stats
+    # for the report are correct(!). This means all unscannable domains _will_ be in the report, as that matches
+    # the list of domains to scan. (todo: also add an "unreachable" stat to the report / stats to the report).
+
+    urls_in_report: List[str] = [url['url'] for url in urllistreport.calculation['urls']]
+    urls_in_list: List[Url] = list(scan.urllist.urls.all())
+    urls_not_in_report = [url.url for url in urls_in_list if url.url not in urls_in_report]
+
+    # An empty url looks like this:
+    empty_url_template = {
+        "url": "",
+        "ratings": [],
+        "endpoints": [],
+        "total_issues": 0,
+        "high": 0,
+        "medium": 0,
+        "low": 0,
+        "ok": 0,
+        "total_endpoints": 0,
+        "high_endpoints": 0,
+        "medium_endpoints": 0,
+        "low_endpoints": 0,
+        "ok_endpoints": 0,
+        "total_url_issues": 0,
+        "url_issues_high": 0,
+        "url_issues_medium": 0,
+        "url_issues_low": 0,
+        "url_ok": 0,
+        "total_endpoint_issues": 0,
+        "endpoint_issues_high": 0,
+        "endpoint_issues_medium": 0,
+        "endpoint_issues_low": 0,
+    }
+
+    for url_not_in_report in urls_not_in_report:
+        # log.debug(f"{url_not_in_report} not present")
+        empty_url_template['url'] = url_not_in_report
+        urllistreport.calculation['urls'].append(empty_url_template)
+
+    # also update the total urls, as that can be influenced:
+    urllistreport.calculation['total_urls'] = len(urllistreport.calculation['urls'])
+    urllistreport.total_urls = len(urllistreport.calculation['urls'])
+    urllistreport.save()
+
+    return urllistreport
+
+
+@app.task(queue='storage')
+def send_after_scan_mail(scan: AccountInternetNLScan):
 
     # Do not try to send mail if no mailserver is configured
     if not all([settings.EMAIL_HOST, settings.EMAIL_PORT, settings.EMAIL_HOST_USER, settings.EMAIL_HOST_PASSWORD]):
@@ -567,7 +662,7 @@ def send_after_scan_mail(scan):
 
 
 @app.task(queue='storage')
-def check_registered_scan_at_internet_nl(value, scan):
+def check_registered_scan_at_internet_nl(value, scan: AccountInternetNLScan):
     # untangle the set
     message, url = value
 

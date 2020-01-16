@@ -1,4 +1,5 @@
 import logging
+import re
 from typing import Any, Dict, List, Tuple
 
 import tldextract
@@ -468,6 +469,36 @@ def get_urllist_content(account: Account, urllist_id: int) -> dict:
     return response
 
 
+def retrieve_urls_from_unfiltered_input(garbage: str) -> List[str]:
+    # Protocols are irrelevant:
+    garbage = garbage.replace("http://", "")
+    garbage = garbage.replace("https://", "")
+
+    # Allow CSV, newlines, tabs and space-split input
+    garbage = garbage.replace(",", " ")
+    garbage = garbage.replace("\n", " ")
+    garbage = garbage.replace("\t", " ")
+
+    # Split also removes double spaces etc
+    garbage = garbage.split(" ")
+
+    # remove port numbers and paths
+    garbage = [re.sub(r":[^\s]*", "", u) for u in garbage]
+
+    # remove paths, directories etc
+    garbage = [re.sub(r"/[^\s]*", "", u) for u in garbage]
+
+    # make list unique
+    garbage = list(set(garbage))
+
+    # Remove empty values
+    while "" in garbage:
+        garbage.remove("")
+
+    # make sure the list is in alphabetical order, which is nice for testability.
+    return sorted(garbage)
+
+
 def save_urllist_content(account: Account, user_input: Dict[str, Any]) -> Dict:
     """
     This is the 'id' version of save_urllist. It is a bit stricter as in that it requires the list to exist.
@@ -491,7 +522,7 @@ def save_urllist_content(account: Account, user_input: Dict[str, Any]) -> Dict:
     if not urllist:
         return operation_response(error=True, message="List does not exist")
 
-    # todo: how to work with data types in dicts like this?
+    urls = retrieve_urls_from_unfiltered_input(urls)
     cleaned_urls = clean_urls(urls)  # type: ignore
 
     if cleaned_urls['correct']:
