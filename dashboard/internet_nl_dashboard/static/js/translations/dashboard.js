@@ -75,8 +75,8 @@ const messages = {
 
         charts: {
             adoption_timeline: {
-                title: 'Average adoption of standards. Overall.',
-                yAxis_label: 'Adoption',
+                title: 'Adoption of modern standards over time.',
+                yAxis_label: 'Average internet.nl score',
                 xAxis_label: 'Date',
                 average_internet_nl_score: "Average internet.nl score",
                 accessibility_text: "A table with the content of this graph is shown below.",
@@ -132,8 +132,8 @@ const messages = {
 
         charts: {
             adoption_timeline: {
-                title: 'Gemiddelde adoptie van standaarden over tijd.',
-                yAxis_label: 'Adoptiegraad',
+                title: 'Adoptie van standaarden over tijd.',
+                yAxis_label: 'Gemiddelde internet.nl score',
                 xAxis_label: 'Datum',
                 average_internet_nl_score: "Gemiddelde internet.nl score",
                 accessibility_text: "Een tabel met de inhoud van deze grafiek wordt hieronder getoond.",

@@ -1,11 +1,13 @@
-from datetime import timedelta
+import logging
+import re
 from typing import List
 
 import simplejson as json
 from django.db.models import Prefetch
-from django.utils import timezone
 
 from dashboard.internet_nl_dashboard.models import Account, UrlList, UrlListReport
+
+log = logging.getLogger(__name__)
 
 
 def get_recent_reports(account: Account) -> List:
@@ -37,10 +39,10 @@ def create_report_response(reports):
     return response
 
 
-def get_urllist_report_graph_data(account: Account, urllist_id: int):
+def get_urllist_timeline_graph(account: Account, urllist_ids: str):
     """
-    This is the data for a line / bar chart that shows information on _all_ findings in a report. The reports selected
-    are all from the past 366 days. The more the reports there are, the more fine grained the statistics will be.
+    This is the data for a line / bar chart that shows information on the average internet.nl score.
+    There can be multiple reports selected,
 
     Given there are over 50 findings, the chance that someone does everything right is very low. Probably
     the data needs some interpretation. This will be done at a later time.
@@ -52,68 +54,59 @@ def get_urllist_report_graph_data(account: Account, urllist_id: int):
     API and is under constant change and re-interpretation. Which means is has to be separated somewhere.
     For now, we'll just present the data as it is.
 
-    Todo: There is probably a wish to have the statistics per 'category' and per 'issue'. These have to be created.
-    Todo: is the scan frequency the same as the report frequency?
-
     :param account:
     :param urllist_id:
     :return:
     """
-    one_year_ago = timezone.now() - timedelta(days=366)
+
+    csv = re.sub(r"[^,0-9]*", "", urllist_ids)
+    list_split = csv.split(",")
+    log.debug(list_split)
+
+    while "" in list_split:
+        list_split.remove("")
+
+    # aside from cassting, remove double lists.
+    list_split = list(set([int(id) for id in list_split]))
+
     statistics_over_last_years_reports = Prefetch(
         'urllistreport_set',
-        queryset=UrlListReport.objects.filter(at_when__gte=one_year_ago).order_by('at_when').only(
-            'at_when', 'total_endpoints', 'total_urls', 'high', 'medium', 'low', 'ok'),
+        queryset=UrlListReport.objects.filter().order_by('at_when').only(
+            'at_when', 'average_internet_nl_score', 'total_urls'),
         to_attr='reports_from_the_last_year')
 
-    # The actual query.
-    urllist = UrlList.objects.all().filter(
+    # The actual query, note that the ordering is asc on ID, whatever order you specify...
+    urllists = UrlList.objects.all().filter(
         account=account,
-        pk=urllist_id,
+        pk__in=list_split,
         is_deleted=False
-    ).order_by('name').prefetch_related(statistics_over_last_years_reports).first()
+    ).only('id', 'name').prefetch_related(statistics_over_last_years_reports)
 
-    if not urllist:
+    if not urllists:
         return []
 
     # add statistics:
-    stats = []
-    for per_report_statistcs in urllist.reports_from_the_last_year:
-        not_ok = per_report_statistcs.high
-        all = per_report_statistcs.ok + per_report_statistcs.high + per_report_statistcs.medium + \
-            per_report_statistcs.low
+    stats = {}
 
-        # no urls in list, but still somehow managed to scan. This is usually a data bug during development.
-        # But it might happen due to weird fixes, odd behaviour, clearing lists and then calling scans or other glitches
-        if not all:
-            pct_ok = 0
-            pct_not_ok = 0
-        else:
-            pct_ok = round(
-                ((per_report_statistcs.ok + per_report_statistcs.medium + per_report_statistcs.low) / all) * 100, 2)
-            pct_not_ok = round((not_ok / all) * 100, 2)
+    for urllist in urllists:
 
-        stats.append({
-            'date': per_report_statistcs.at_when.date().isoformat(),
-            'urls': per_report_statistcs.total_urls,
-            'endpoints': per_report_statistcs.total_endpoints,
-            'high': per_report_statistcs.high,
-            'medium': per_report_statistcs.medium,
-            'low': per_report_statistcs.low,
-            'ok': per_report_statistcs.ok,
-            'average_internet_nl_score': per_report_statistcs.average_internet_nl_score,
+        stats[urllist.id] = {
+            "id": urllist.id,
+            "name": urllist.name,
+            "data": []
+        }
 
-            # todo: these numbers might be added to the statics calculation?
-            'not_ok': not_ok,
-            'total_findings': all,
+        for per_report_statistics in urllist.reports_from_the_last_year:
+            stats[urllist.id]['data'].append({
+                'date': per_report_statistics.at_when.date().isoformat(),
+                'urls': per_report_statistics.total_urls,
+                'average_internet_nl_score': per_report_statistics.average_internet_nl_score,
+            })
 
-            # for internet.nl low and medium do not impact the score.
-            # not_tested does (=high), not_testable and not_applicable don't.
-            'pct_ok': pct_ok,
-            'pct_not_ok': pct_not_ok
-        })
+    # echo the results in the order you got them:
+    ordered_lists = [stats[list_id] for list_id in list_split if list_id in stats]
 
-    return stats
+    return ordered_lists
 
 
 def get_report(account: Account, report_id: int):

@@ -22,12 +22,12 @@ Vue.component('line-chart', {
                             // format as a percentage
                             formatter: function(value, context) {
                                 // https://github.com/internetstandards/Internet.nl-dashboard/issues/37
-                                return Math.round(value )+ '%';
+                                return Math.round(value.y)+ '%';
                             }
                         }
                     },
                     legend: {
-                        display: false
+                        display: true
                     },
                     responsive: true,
                     maintainAspectRatio: false,
@@ -38,6 +38,8 @@ Vue.component('line-chart', {
                     tooltips: {
                         mode: 'index',
                         intersect: false,
+
+                        // add the Z axis to the data, is harder, so (n) is unclear...
                     },
                     hover: {
                         mode: 'nearest',
@@ -88,79 +90,75 @@ Vue.component('line-chart', {
             });
         },
 
+        /*
+        * [
+              {
+                "id": 3,
+                "name": "testsites",
+                "data": [
+                  {
+                    "date": "2020-01-07",
+                    "urls": 3,
+                    "average_internet_nl_score": 87.33
+                  },
+                  {
+                    "date": "2020-01-07",
+                    "urls": 3,
+                    "average_internet_nl_score": 87.33
+                  },
+                  {
+                    "date": "2020-01-07",
+                    "urls": 3,
+                    "average_internet_nl_score": 87.33
+                  }
+                ]
+              },
+        * */
         renderData: function(){
             let data = this.chart_data;
 
             let labels = Array();
-            let high = Array();
-            let medium = Array();
-            let low = Array();
-            let ok = Array();
-            let not_ok = Array();
-            let pct_ok = Array();
-            let pct_not_ok = Array();
             let average_internet_nl_score = [];
 
-            for(let i=0; i<data.length; i++){
-                labels.push(data[i].date);
-                high.push(data[i].high);
-                medium.push(data[i].medium);
-                low.push(data[i].low);
-                ok.push(data[i].ok);
-                not_ok.push(data[i].not_ok);
-                pct_ok.push(data[i].pct_ok);
-                pct_not_ok.push(data[i].pct_not_ok);
-                average_internet_nl_score.push(data[i].average_internet_nl_score);
-            }
+            // There will be a large assortment of moment in time. These are added in random order, charts.js fixes it
+            data.forEach((item) => {
+                for(let i=0; i<item.data.length; i++){
+                    labels.push(item.data[i].date);
+                }
+            });
 
+            // the trick to time series is that you can add data with both an x and y.
+            // see: view-source:https://www.chartjs.org/samples/latest/scales/time/line.html
             this.chart.data.labels = labels;
-            this.chart.data.datasets = [
-                {
-                    label: '# OK',
-                    data: ok,
-                    backgroundColor: this.color_scheme.ok_background,
-                    borderColor: this.color_scheme.ok_border,
-                    borderWidth: 1,
-                    lineTension: 0,
-                    hidden: !this.axis.includes('ok')
-                },
-                {
-                    label: '# Not OK',
-                    data: not_ok,
-                    backgroundColor: this.color_scheme.high_background,
-                    borderColor: this.color_scheme.high_border,
-                    borderWidth: 1,
-                    lineTension: 0,
-                    hidden: !this.axis.includes('not_ok')
-                },
-                {
-                    label: '% OK',
-                    data: pct_ok,
-                    backgroundColor: this.color_scheme.incremental[1].background,
-                    borderColor: this.color_scheme.incremental[1].border,
-                    borderWidth: 1,
-                    lineTension: 0,
-                    hidden: !this.axis.includes('pct_ok')
-                },
-                {
-                    label: i18n.t(this.translation_key + '.average_internet_nl_score'),
-                    data: average_internet_nl_score,
-                    backgroundColor: this.color_scheme.incremental[0].background,
-                    borderColor: this.color_scheme.incremental[0].border,
-                    borderWidth: 1,
-                    lineTension: 0,
-                    hidden: !this.axis.includes('average_internet_nl_score')
-                },
-                {
-                    label: '% NOT OK',
-                    data: pct_not_ok,
-                    backgroundColor: this.color_scheme.high_background,
-                    borderColor: this.color_scheme.high_border,
-                    borderWidth: 1,
-                    lineTension: 0,
-                    hidden: !this.axis.includes('pct_not_ok')
-                },
-            ];
+
+            let datasets = [];
+            let colorset = 0;
+            data.forEach((item) => {
+
+                 let line_data = [];
+                 item.data.forEach((item_data) => {
+                    line_data.push({x: item_data.date, y: item_data.average_internet_nl_score, z: item_data.urls})
+                 });
+
+                 let line_dataset =
+                    {
+                        // Each report has their own set of dates and such, there will be many gaps.
+                        spanGaps: true,
+                        label: item.name,
+                        data: line_data,
+                        // backgrounds do not work with multiple sets, only lines.
+                        fill: false,
+                        backgroundColor: this.color_scheme.incremental[colorset].background,
+                        borderColor: this.color_scheme.incremental[colorset].border,
+                        borderWidth: 3,
+                        lineTension: 0,
+                    };
+
+                 colorset += 1;
+                 datasets.push(line_dataset);
+            });
+
+            this.chart.data.datasets = datasets;
 
             this.chart.update();
         },

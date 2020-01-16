@@ -5,7 +5,7 @@ from django.shortcuts import render
 from websecmap.app.common import JSEncoder
 
 from dashboard.internet_nl_dashboard.logic.report import (get_previous_report, get_recent_reports,
-                                                          get_report, get_urllist_report_graph_data)
+                                                          get_report, get_urllist_timeline_graph)
 from dashboard.internet_nl_dashboard.views import (LOGIN_URL, get_account,
                                                    inject_default_language_cookie)
 
@@ -36,5 +36,5 @@ def get_recent_reports_(request) -> JsonResponse:
 
 
 @login_required(login_url=LOGIN_URL)
-def get_urllist_report_graph_data_(request, urllist_id) -> JsonResponse:
-    return JsonResponse(get_urllist_report_graph_data(get_account(request), urllist_id), encoder=JSEncoder, safe=False)
+def get_urllist_report_graph_data_(request, urllist_ids) -> JsonResponse:
+    return JsonResponse(get_urllist_timeline_graph(get_account(request), urllist_ids), encoder=JSEncoder, safe=False)

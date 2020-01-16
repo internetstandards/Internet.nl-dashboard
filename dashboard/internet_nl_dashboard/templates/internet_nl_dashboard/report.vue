@@ -510,36 +510,38 @@
                         <line-chart
                                 :color_scheme="color_scheme"
                                 :translation_key="'charts.adoption_timeline'"
-                                :chart_data="issue_timeline_of_related_urllist"
+                                :chart_data="issue_timeline_of_related_urllists"
                                 :accessibility_text="$t('charts.adoption_timeline.accessibility_text')"
                                 :axis="['average_internet_nl_score']">
                         </line-chart>
 
                         <div style="overflow-x: scroll; overflow-y: hidden;">
-                            <table class="table table-striped">
-                                <caption>{{ $t("charts.adoption_timeline.title") }}</caption>
-                                <thead>
-                                    <tr>
-                                        <th style="width: 200px;">
-                                            &nbsp;{{ $t("charts.adoption_timeline.xAxis_label") }}
-                                        </th>
-                                        <th>
-                                             {{ $t("charts.adoption_timeline.yAxis_label") }}
-                                        </th>
-                                    </tr>
-                                </thead>
+                            <template  v-for="timeline in issue_timeline_of_related_urllists">
+                                <table class="table table-striped">
+                                    <caption>{{timeline.name}}: {{ $t("charts.adoption_timeline.title") }}</caption>
+                                    <thead>
+                                        <tr>
+                                            <th style="width: 200px;">
+                                                &nbsp;{{ $t("charts.adoption_timeline.xAxis_label") }}
+                                            </th>
+                                            <th>
+                                                 {{ $t("charts.adoption_timeline.yAxis_label") }}
+                                            </th>
+                                        </tr>
+                                    </thead>
 
-                                <tbody class="gridtable">
-                                    <tr v-for="stat in issue_timeline_of_related_urllist">
-                                        <td>
-                                            {{ humanize_date_date_only(stat.date) }}
-                                        </td>
-                                        <td>
-                                            {{ stat.average_internet_nl_score }}%
-                                        </td>
-                                    </tr>
-                                </tbody>
-                            </table>
+                                    <tbody class="gridtable">
+                                        <tr v-for="stat in timeline.data">
+                                            <td>
+                                                {{ humanize_date_date_only(stat.date) }}
+                                            </td>
+                                            <td>
+                                                {{ stat.average_internet_nl_score }}%
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </template>
                         </div>
 
 
@@ -1458,7 +1460,7 @@ const Report = Vue.component('report', {
             selected_report: [],
 
             // graphs:
-            issue_timeline_of_related_urllist: [],
+            issue_timeline_of_related_urllists: [],
 
             // https://github.com/ashiguruma/patternomaly/blob/master/assets/pattern-list.png
             possible_chart_patterns: ['weave', 'dot', 'ring', 'dash', 'plus', 'zigzag', 'square', 'diagonal', 'disc', 'zigzag-vertical', 'triangle', 'line', 'cross-dash', 'diamond'],
@@ -1921,8 +1923,14 @@ const Report = Vue.component('report', {
                 return;
             }
 
-            fetch(`/data/report/urllist_report_graph_data/${this.selected_report[0].urllist_id}/`, {credentials: 'include'}).then(response => response.json()).then(data => {
-                this.issue_timeline_of_related_urllist = data;
+            // report_id's:
+            let report_ids = [];
+            this.selected_report.forEach((item) => {
+                report_ids.push(item.urllist_id)
+            });
+
+            fetch(`/data/report/urllist_timeline_graph/${report_ids.join(",")}/`, {credentials: 'include'}).then(response => response.json()).then(data => {
+                this.issue_timeline_of_related_urllists = data;
             }).catch((fail) => {console.log('A loading error occurred: ' + fail);});
 
         },
