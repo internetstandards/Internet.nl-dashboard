@@ -7,9 +7,10 @@
         <server-response :response="server_response"></server-response>
 
         <label for="account_selection">{{ $t("select") }}:</label>
-        <select id="account_selection" v-model="selected_account" @change="set_account">
+        <select id="account_selection" v-model="selected_account" @change="set_account" :size="accounts.length">
             <option v-for="account in accounts"
-                    :value="account[0]" :selected="account[0] === current_account">{{ account[1] }}</option>
+                    :value="account['id']" :selected="account['id'] === current_account">
+                {{ account['id'] }}: {{ account['name'] }} (lists: {{ account['lists'] }}, scans: {{ account['scans'] }}, users: {{ account['users'].length }})</option>
         </select>
 
     </div>
@@ -23,7 +24,8 @@
             messages: {
                 en: {
                     title: "Switch Account",
-                    intro: "This feature allows you to switch to another account, and use this site as them.",
+                    intro: "This feature allows you to switch to another account, and use this site as them." +
+                        "Important: refresh the page after choosing an account!",
                     select: "Select account to use"
                 }
             }
@@ -34,7 +36,7 @@
         data: function() {
             return {
                 accounts: [],
-                current_account: 0,  // todo: figure out...
+                current_account: 0, // still doesn't work...
                 selected_account: 0,
                 server_response: "",
             }
@@ -46,6 +48,7 @@
             get_accounts: function(){
                 fetch(`/data/powertools/get_accounts/`, {credentials: 'include'}).then(response => response.json()).then(data => {
                     this.accounts = data['accounts'];
+                    this.current_account = data['current_account'][0];
                 }).catch((fail) => {console.log('A loading error occurred: ' + fail);});
             },
 
@@ -54,8 +57,11 @@
 
                 this.asynchronous_json_post(
                     '/data/powertools/set_account/', data, (server_response) => {
-                        if (server_response)
+                        if (server_response) {
                             this.server_response = server_response;
+                            this.get_accounts();
+                            // destroy all components, as the other user is now active (or should be)
+                        }
                     }
                 );
 

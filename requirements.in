@@ -12,7 +12,7 @@
 git+https://github.com/avast/pytest-docker@9ce726f4a045addc777fb1cea837a6309cbbeef6#egg=pytest-docker
 
 # to update websecmap run: make update_requirement_websecmap
-git+https://gitlab.com/internet-cleanup-foundation/web-security-map@d21833bd989debed56cc63f3d8c78384979c97e1#egg=websecmap
+git+https://gitlab.com/internet-cleanup-foundation/web-security-map@758fe8fd8ea92c77682c0786b61a409c4d9b49be#egg=websecmap
 
 django-otp
 django-two-factor-auth

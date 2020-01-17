@@ -4,9 +4,10 @@ from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render
 
 from dashboard.internet_nl_dashboard.logic import operation_response
-from dashboard.internet_nl_dashboard.models import Account, DashboardUser
-from dashboard.internet_nl_dashboard.views import (get_json_body, inject_default_language_cookie,
-                                                   report)
+from dashboard.internet_nl_dashboard.models import (Account, AccountInternetNLScan, DashboardUser,
+                                                    UrlList)
+from dashboard.internet_nl_dashboard.views import (get_account, get_json_body,
+                                                   inject_default_language_cookie, report)
 from dashboard.settings import LOGIN_URL
 
 
@@ -35,12 +36,27 @@ def set_account(request) -> HttpResponse:
 
 @login_required(login_url=LOGIN_URL)
 def get_accounts(request) -> HttpResponse:
+    account = get_account(request)
 
     if not request.user.is_staff and request.user.is_active and request.user.is_superuser:
         return report.dashboard(request)
 
-    response = Account.objects.all().values_list('id', 'name')
-    return JsonResponse({'accounts': list(response)})
+    accounts = Account.objects.all().values_list('id', 'name')
+
+    account_data = []
+    # add some metadata to the accounts, so it's more clear where you are switching to:
+    for account in accounts:
+        account_information = {}
+        account_information['id'], account_information['name'] = account
+        account_information['scans'] = AccountInternetNLScan.objects.all().filter(
+            account=account_information['id']).count()
+        account_information['lists'] = UrlList.objects.all().filter(account=account_information['id']).count()
+        account_information['users'] = list(User.objects.all().filter(
+            dashboarduser__account=account_information['id']).values_list('username', flat=True))
+
+        account_data.append(account_information)
+
+    return JsonResponse({'current_account': account, 'accounts': account_data})
 
 
 @login_required(login_url=LOGIN_URL)
