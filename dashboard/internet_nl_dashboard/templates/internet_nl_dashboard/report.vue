@@ -150,6 +150,9 @@
         height: 20px;
         display: block;
         color: transparent;
+
+        /** While hidden, can a screen reader still find it? */
+        overflow: hidden;
     }
 
     #report-template .testresultcell span span {
@@ -1602,7 +1605,7 @@ const Report = Vue.component('report', {
                     comparison_verdict = "regressed";
             }
 
-            let comparison_text = this.$i18n.t("report.results.comparison" + comparison_verdict);
+            let comparison_text = this.$i18n.t("report.results.comparison." + comparison_verdict);
 
 
             // Todo: add a list to the bottom of the table of urls that where not in the compared table.
