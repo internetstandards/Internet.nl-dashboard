@@ -643,8 +643,10 @@ def send_after_scan_mail(scan: AccountInternetNLScan):
         <br>
         Good news! Your scan on {list_name} has finished.<br>
         <br>
-        Open the report: <a href="https://dashboard.internet.nl/report/{report.id}/">
-        https://dashboard.internet.nl/report/{report.id}/</a><br>
+        View the report here: <a href="https://dashboard.internet.nl/spa/#/report/{report.id}">
+        https://dashboard.internet.nl/spa/#/report/{report.id}</a><br>
+        <br>
+        If you have any questions, please contact us via vraag@internet.nl<br>
         <br>
         Regards,<br>
         internet.nl
