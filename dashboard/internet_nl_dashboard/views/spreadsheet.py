@@ -12,6 +12,7 @@ from dashboard.internet_nl_dashboard.logic.spreadsheet import complete_import, g
 from dashboard.internet_nl_dashboard.views.__init__ import (LOGIN_URL, get_account,
                                                             get_dashboarduser,
                                                             inject_default_language_cookie)
+from django.shortcuts import redirect
 
 log = logging.getLogger(__package__)
 
@@ -33,6 +34,8 @@ def upload_spreadsheet(request) -> HttpResponse:
     # Instead of some json message, give a full page, so the classic uploader also functions pretty well.
     # todo: Or should this be a redirect, so the 'reload' page does not try to resend the form...
     response = upload(request)
+
+    # The status code is needed for dropzone. So a redirect status code will not work properly.
     response.status_code = 400
 
     # happens when no file is sent
