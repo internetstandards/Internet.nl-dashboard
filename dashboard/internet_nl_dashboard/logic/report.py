@@ -1,5 +1,6 @@
 import logging
 import re
+from copy import copy
 from typing import List
 
 import simplejson as json
@@ -61,12 +62,13 @@ def get_urllist_timeline_graph(account: Account, urllist_ids: str):
 
     csv = re.sub(r"[^,0-9]*", "", urllist_ids)
     list_split = csv.split(",")
-    log.debug(list_split)
 
     while "" in list_split:
         list_split.remove("")
 
-    # aside from cassting, remove double lists.
+    original_order = copy(list_split)
+
+    # aside from casting, remove double lists. this orders the list.
     list_split = list(set([int(id) for id in list_split]))
 
     statistics_over_last_years_reports = Prefetch(
@@ -104,7 +106,13 @@ def get_urllist_timeline_graph(account: Account, urllist_ids: str):
             })
 
     # echo the results in the order you got them:
-    ordered_lists = [stats[list_id] for list_id in list_split if list_id in stats]
+    handled = []
+    ordered_lists = []
+    for original_order_list_id in original_order:
+        if original_order_list_id not in handled and int(original_order_list_id) in stats:
+            ordered_lists.append(stats[int(original_order_list_id)])
+
+        handled.append(int(original_order_list_id))
 
     return ordered_lists
 
