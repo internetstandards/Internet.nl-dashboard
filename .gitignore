@@ -8,7 +8,6 @@
 .coverage
 htmlcov
 error.log
-dist/
 build/
 code.json
 codeclimate.json
