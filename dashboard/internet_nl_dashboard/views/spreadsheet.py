@@ -12,7 +12,6 @@ from dashboard.internet_nl_dashboard.logic.spreadsheet import complete_import, g
 from dashboard.internet_nl_dashboard.views.__init__ import (LOGIN_URL, get_account,
                                                             get_dashboarduser,
                                                             inject_default_language_cookie)
-from django.shortcuts import redirect
 
 log = logging.getLogger(__package__)
 
