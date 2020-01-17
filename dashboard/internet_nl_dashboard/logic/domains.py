@@ -225,6 +225,9 @@ def get_scan_status_of_list(account: Account, list_id: int) -> Dict[str, Any]:
         is_deleted=False
     ).annotate(num_urls=Count('urls')).prefetch_related(prefetch_last_scan, last_report_prefetch).first()
 
+    if not urllist:
+        return {}
+
     data = {}
     data['last_scan_id'] = None if not len(urllist.last_scan) else urllist.last_scan[0].scan.id
     data['last_scan_finished'] = None if not len(urllist.last_scan) else urllist.last_scan[0].scan.finished
