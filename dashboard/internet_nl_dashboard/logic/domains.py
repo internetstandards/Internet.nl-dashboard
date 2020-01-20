@@ -208,7 +208,7 @@ def get_scan_status_of_list(account: Account, list_id: int) -> Dict[str, Any]:
 
     prefetch_last_scan = Prefetch(
         'accountinternetnlscan_set',
-        queryset=AccountInternetNLScan.objects.order_by('-id').select_related('scan'),
+        queryset=AccountInternetNLScan.objects.order_by('-id').select_related('scan').only('scan_id', 'scan__finished'),
         to_attr='last_scan'
     )
 
@@ -223,7 +223,7 @@ def get_scan_status_of_list(account: Account, list_id: int) -> Dict[str, Any]:
         account=account,
         id=list_id,
         is_deleted=False
-    ).annotate(num_urls=Count('urls')).prefetch_related(prefetch_last_scan, last_report_prefetch).first()
+    ).prefetch_related(prefetch_last_scan, last_report_prefetch).first()
 
     if not urllist:
         return {}
