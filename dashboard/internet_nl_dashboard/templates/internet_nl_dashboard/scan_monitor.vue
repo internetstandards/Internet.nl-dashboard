@@ -16,11 +16,14 @@
         <div class="wrap">
             <div class="block" v-if="scans" v-for="scan in scans">
                 <div class="wrapper">
-                    <span v-if="scan.finished">✅</span>
+                    <span v-if="scan.finished">
+                        <template v-if="scan.state !== 'cancelled'">✅</template>
+                        <template v-if="scan.state === 'cancelled'">⭕</template>
+                    </span>
                     <span v-if="!scan.finished"><img width="15" style="border-radius: 50%" src="/static/images/vendor/internet_nl/probe-animation.gif"></span>
                     <b>{{ scan.type }} {{ $t("id") }}{{ scan.id }}</b><br>
                     <br>
-                    <template v-if="scan.finished">
+                    <template v-if="scan.finished && (scan.state !== 'cancelled')">
                         <template v-if="scan.last_report_id">
                             📊 <router-link :to="{ name: 'numbered_report', params: { report: scan.last_report_id }}">{{ $t("open_report") }}</router-link><br>
                             <br>
@@ -33,7 +36,8 @@
                     📘 <router-link :to="{ name: 'numbered_lists', params: { list: scan.list_id }}">{{ scan.list }}</router-link><br>
                     <br>
                     <template v-if="scan.finished">
-                        <b>{{ $t("finished_on") }}</b><br>
+                        <b v-if="scan.state === 'cancelled'">{{ $t("cancelled_on") }}</b>
+                        <b v-if="scan.state !== 'cancelled'">{{ $t("finished_on") }}</b><br>
                         <span :title="scan.finished_on">{{ humanize_date(scan.finished_on) }},<br>{{ humanize_relative_date(scan.finished_on) }}</span><br>
                         <br>
                     </template>
@@ -67,6 +71,9 @@
                                     - {{ log_item.state }}, {{ humanize_relative_date(log_item.at_when) }}
                                 </li>
                             </ul>
+                            <template v-if="!scan.finished">
+                                <button @click="start_stop_scan(scan)">{{ $t("stop_scan") }}</button>
+                            </template>
                         </div>
                     </div>
                     <br>
@@ -77,6 +84,38 @@
         </div>
 
         <div class='block fullwidth' v-if="!scans.length">{{ $t("no_scans") }}</div>
+
+        <modal v-if="show_stop_scan" @close="stop_stop_scan()">
+            <h1 slot="header">{{ $t("cancel.are_you_sure") }}</h1>
+            <div slot="body">
+
+                <server-response :response="stop_scan_server_response"></server-response>
+                <div class="block" style="width: 100%">
+                    <div class="wrapper">
+                        <span><img width="15" style="border-radius: 50%" src="/static/images/vendor/internet_nl/probe-animation.gif"></span>
+                        <b>{{ stop_scan.type }} {{ $t("id") }}{{ stop_scan.id }}</b><br>
+                        <br>
+                        📘  {{ stop_scan.list }}<br>
+                        <br>
+                        <b>{{ $t("runtime") }}</b><br>
+                        {{ humanize_duration(stop_scan.runtime) }}<br>
+                        <br>
+                        <b>{{ $t("message") }}</b>
+                        <p>{{ stop_scan.state }}</p>
+                        <b>{{ $t("last_check") }}</b><br>
+                        <span :title="stop_scan.last_check">{{ humanize_date(stop_scan.last_check) }},<br>{{ humanize_relative_date(stop_scan.last_check) }}</span><br>
+                        <br>
+                        <b>{{ $t("started_on") }}</b><br>
+                        <span :title="stop_scan.started_on">{{ humanize_date(stop_scan.started_on) }},<br>{{ humanize_relative_date(stop_scan.started_on) }}</span><br>
+                    </div>
+                </div>
+
+            </div>
+            <div slot="footer">
+                <button class="altbutton" @click="stop_stop_scan()">{{ $t("cancel.cancel") }}</button>
+                <button class="modal-default-button defaultbutton" @click="confirm_stop_scan()">{{ $t("cancel.ok") }}</button>
+            </div>
+        </modal>
 
     </div>
 </template>
@@ -96,6 +135,7 @@ const ScanMonitor = Vue.component('ScanMonitor', {
                 list: 'List',
                 started_on: 'Started',
                 finished_on: 'Finished',
+                cancelled_on: 'Cancelled',
                 message: 'Status',
                 live: 'API',
                 no_scans: 'No scans have been performed yet.',
@@ -107,6 +147,15 @@ const ScanMonitor = Vue.component('ScanMonitor', {
                 report_is_being_generated: 'Report is being generated.',
                 processing_results: 'Processing results.',
                 "scan history": "Scan Progress",
+                stop_scan: 'Stop scan',
+
+                cancel: {
+                    are_you_sure: "Do you want to cancel this scan?",
+                    scan_id: "scan",
+                    list: "list",
+                    ok: 'Stop scan',
+                    cancel: 'Continue scanning',
+                }
             },
             nl: {
                 title: 'Scan monitor',
@@ -117,6 +166,7 @@ const ScanMonitor = Vue.component('ScanMonitor', {
                 list: 'Lijst',
                 started_on: 'Gestart',
                 finished_on: 'Klaar',
+                cancelled_on: 'Gestopt',
                 message: 'Status',
                 live: 'API',
                 no_scans: 'Nog geen scans uitgevoerd.',
@@ -128,15 +178,28 @@ const ScanMonitor = Vue.component('ScanMonitor', {
                 report_is_being_generated: 'Report wordt gemaakt.',
                 processing_results: 'Resultaten worden verwerkt.',
                 "scan history": "Voortgang van deze scan",
+                stop_scan: 'Stop scan',
+                cancel: {
+                    are_you_sure: "Deze scan stoppen?",
+                    scan_id: "scan",
+                    list: "lijst",
+                    ok: 'Stop scan',
+                    cancel: 'Blijf scannen',
+                }
             }
         }
     },
     name: 'scan_monitor',
     template: '#scan_monitor_template',
-    mixins: [humanize_mixin],
+    mixins: [humanize_mixin, http_mixin],
     data: function() {
         return {
             scans: [],
+
+            // cancellations:
+            show_stop_scan: false,
+            stop_scan: null, // the scan that will be cancelled when you hit OK
+            stop_scan_server_response: "",
         }
     },
     mounted: function () {
@@ -144,14 +207,32 @@ const ScanMonitor = Vue.component('ScanMonitor', {
     },
     methods: {
         load: function() {
-            this.get_recent_uploads();
+            this.update_scan_data();
         },
-        get_recent_uploads: function(){
+        update_scan_data: function(){
             fetch(`/data/scan-monitor/`, {credentials: 'include'}).then(response => response.json()).then(data => {
                 this.scans = data;
                 this.$nextTick(() => {accordinate();});
             }).catch((fail) => {console.log('A loading error occurred: ' + fail);});
         },
+
+        start_stop_scan: function(scan) {
+            this.stop_scan = scan;
+            this.show_stop_scan = true;
+        },
+        stop_stop_scan: function(scan){
+            this.stop_scan = null;
+            this.show_stop_scan = false;
+        },
+        confirm_stop_scan: function() {
+            this.asynchronous_json_post(
+                '/data/scan/cancel/', {'id': this.stop_scan.id}, (server_response) => {
+                    this.update_scan_data();
+                    // if already cancelled...
+                    this.stop_stop_scan();
+                }
+            );
+        }
     }
 });
 </script>

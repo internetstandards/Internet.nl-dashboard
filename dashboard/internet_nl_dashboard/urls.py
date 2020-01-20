@@ -54,6 +54,7 @@ urlpatterns = [
     # scans / scan monitor
     path('scans/', scan_monitor.scan_monitor),
     path('data/scan-monitor/', scan_monitor.running_scans),
+    path('data/scan/cancel/', domains.cancel_scan_),
 
     # reporting
     path('reports/', report.dashboard),

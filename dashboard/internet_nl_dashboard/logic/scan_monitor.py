@@ -9,12 +9,21 @@ from dashboard.internet_nl_dashboard.models import (Account, AccountInternetNLSc
 
 def get_scan_monitor_data(account: Account) -> List:
 
+    # at least .defer('report__calculation'), as that takes a lot of time to load in(!)
     scans = AccountInternetNLScan.objects.all().filter(
         account=account,
         urllist__is_deleted=False
     ).order_by('-pk')[0:30].select_related(
-        'urllist', 'account', 'scan',
-    )
+        'urllist', 'scan', 'report'
+    ).defer('report__calculation')
+
+    """
+    using defer is about as fast, and better to program with
+    
+    .only('state', 'id', 'report__id', 'scan__finished_on', 'scan__started_on', 'scan__type', 'scan__finished',
+       'scan__status_url', 'scan__friendly_message', 'scan__success', 'urllist__name', 'urllist_id',
+       'scan__last_check', )
+    """
 
     response = []
     for scan in scans:

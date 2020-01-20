@@ -12,7 +12,7 @@ from dashboard.internet_nl_dashboard.logic.domains import (alter_url_in_urllist,
                                                            get_urllists_from_account,
                                                            save_urllist_content,
                                                            save_urllist_content_by_name, scan_now,
-                                                           update_list_settings)
+                                                           update_list_settings, cancel_scan)
 from dashboard.internet_nl_dashboard.views import (LOGIN_URL, get_account, get_json_body,
                                                    inject_default_language_cookie)
 
@@ -83,3 +83,11 @@ def delete_url_from_urllist_(request):
 @login_required(login_url=LOGIN_URL)
 def scan_now_(request):
     return JsonResponse(scan_now(get_account(request), get_json_body(request)))
+
+
+@login_required(login_url=LOGIN_URL)
+def cancel_scan_(request):
+    account = get_account(request)
+    request = get_json_body(request)
+    response = cancel_scan(account, request.get('id'))
+    return JsonResponse(response)

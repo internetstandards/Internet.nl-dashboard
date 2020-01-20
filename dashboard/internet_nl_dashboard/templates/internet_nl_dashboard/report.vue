@@ -1862,18 +1862,27 @@ const Report = Vue.component('report', {
             }
             if (sortKey === "score"){
                 // todo: determine web or mail, split the scores etc, not very fast.
+                // todo: score should be much easier as a single value, instead of this convoluted approach, which i also slow.
                 data = data.slice().sort(function (a, b) {
 
-                    if (a.endpoints[0] === undefined
-                        || a.endpoints[0].ratings_by_type.internet_nl_mail_dashboard_overall_score === undefined
-                        || a.endpoints[0].ratings_by_type.internet_nl_web_overall_score === undefined){
+                    if (a.endpoints[0] === undefined){
+                        return -1 * order;
+                    }
+
+                    if (b.endpoints[0] === undefined){
                         return 1 * order;
                     }
 
-                    if (b.endpoints[0] === undefined
-                        || b.endpoints[0].ratings_by_type.internet_nl_mail_dashboard_overall_score === undefined
-                        || b.endpoints[0].ratings_by_type.internet_nl_web_overall_score === undefined){
-                        return -1 * order;
+                    if (this.selected_category === 'mail') {
+                        if (a.endpoints[0].ratings_by_type.internet_nl_mail_dashboard_overall_score === undefined)
+                            return -1 * order;
+                        if (b.endpoints[0].ratings_by_type.internet_nl_mail_dashboard_overall_score === undefined)
+                            return 1 * order;
+                    } else {
+                        if (a.endpoints[0].ratings_by_type.internet_nl_web_overall_score === undefined)
+                            return -1 * order;
+                        if (b.endpoints[0].ratings_by_type.internet_nl_web_overall_score === undefined)
+                            return 1 * order;
                     }
 
                     // for everything that is not the url name itself, is neatly tucked away. Only filter on high? Or on what kind of structure?

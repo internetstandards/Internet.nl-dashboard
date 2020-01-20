@@ -13,7 +13,7 @@ from websecmap.scanners.scanner.dns_endpoints import compose_discover_task
 from dashboard.internet_nl_dashboard.logic import operation_response
 from dashboard.internet_nl_dashboard.models import (Account, AccountInternetNLScan, UrlList,
                                                     UrlListReport)
-from dashboard.internet_nl_dashboard.scanners.scan_internet_nl_per_account import initialize_scan
+from dashboard.internet_nl_dashboard.scanners.scan_internet_nl_per_account import initialize_scan, update_state
 
 log = logging.getLogger(__package__)
 
@@ -236,6 +236,34 @@ def get_scan_status_of_list(account: Account, list_id: int) -> Dict[str, Any]:
     data['scan_now_available'] = urllist.is_scan_now_available()
 
     return data
+
+
+def cancel_scan(account, scan_id: int):
+    """
+    :param account: Account
+    :param scan_id: AccountInternetNLScan ID
+    :return:
+    """
+
+    scan = AccountInternetNLScan.objects.all().filter(account=account, pk=scan_id).first()
+
+    if not scan:
+        return operation_response(error=True, message="scan not found")
+
+    if scan.state == 'finished':
+        return operation_response(success=True, message="scan already finished")
+
+    if scan.state == 'cancelled':
+        return operation_response(success=True, message="scan already cancelled")
+
+    scan.scan.finished_on = timezone.now()
+    scan.scan.finished = True
+    scan.scan.success = False  # This is not used anymore.
+    scan.scan.save()
+
+    update_state("cancelled", scan)
+
+    return operation_response(success=True, message="scan cancelled")
 
 
 # @pysnooper.snoop()

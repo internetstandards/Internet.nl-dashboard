@@ -124,7 +124,10 @@ def check_running_dashboard_scans(**kwargs) -> Task:
         scans = AccountInternetNLScan.objects.all()
         scans = add_model_filter(scans, **kwargs)
     else:
-        scans = AccountInternetNLScan.objects.all().exclude(Q(state="finished") | Q(state__startswith="error"))
+        scans = AccountInternetNLScan.objects.all().exclude(
+            Q(state="finished")
+            | Q(state__startswith="error")
+            | Q(state__startswith="cancelled"))
 
     log.debug(f"Checking the state of scan {scans}.")
     tasks = [progress_running_scan(scan) for scan in scans]

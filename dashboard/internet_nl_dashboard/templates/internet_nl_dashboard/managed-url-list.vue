@@ -206,8 +206,8 @@
 
             </div>
             <div slot="footer">
-                <button @click="cancel_editing_settings()">{{ $t("edit_form.cancel") }}</button>
-                <button class="modal-default-button" @click="update_list_settings()">{{ $t("edit_form.ok") }}</button>
+                <button class='altbutton' @click="cancel_editing_settings()">{{ $t("edit_form.cancel") }}</button>
+                <button class="modal-default-button defaultbutton" @click="update_list_settings()">{{ $t("edit_form.ok") }}</button>
             </div>
         </modal>
 
@@ -237,8 +237,8 @@
 
             </div>
             <div slot="footer">
-                <button @click="stop_deleting()">{{ $t("delete_form.cancel") }}</button>
-                <button class="modal-default-button" @click="confirm_deletion()">{{ $t("delete_form.ok") }}</button>
+                <button class="altbutton" @click="stop_deleting()">{{ $t("delete_form.cancel") }}</button>
+                <button class="defaultbutton modal-default-button" @click="confirm_deletion()">{{ $t("delete_form.ok") }}</button>
             </div>
         </modal>
 
@@ -252,8 +252,8 @@
 
             </div>
             <div slot="footer">
-                <button @click="stop_scan_now()">{{ $t("scan_now_form.cancel") }}</button>
-                <button class="modal-default-button"
+                <button class="altbutton" @click="stop_scan_now()">{{ $t("scan_now_form.cancel") }}</button>
+                <button class="defaultbutton modal-default-button"
                         :disabled="scan_now_confirmed"
                         @click="confirm_scan_now()">
                     <template v-if="!scan_now_confirmed">{{ $t("scan_now_form.ok") }}</template>
@@ -295,9 +295,10 @@
                     <p>{{ $t("bulk_add_form.status") }}: {{ $t("bulk_add_form.nothing_added") }}.</p>
                 </div>
                 <br>
+                <button class="altbutton" @click="stop_bulk_add_new()">{{ $t("bulk_add_form.cancel") }}</button>
 
-                <button v-if="!bulk_add_new_loading" class="modal-default-button" @click="bulk_add_new()">{{ $t("bulk_add_form.ok") }}</button>
-                <button v-if="bulk_add_new_loading" disabled="disabled" class="modal-default-button"><img width="15" style="border-radius: 50%" src="/static/images/vendor/internet_nl/probe-animation.gif"> {{ $t("bulk_add_form.loading") }}</button>
+                <button v-if="!bulk_add_new_loading" class="defaultbutton modal-default-button" @click="bulk_add_new()">{{ $t("bulk_add_form.ok") }}</button>
+                <button v-if="bulk_add_new_loading" disabled="disabled" class="defaultbutton modal-default-button"><img width="15" style="border-radius: 50%" src="/static/images/vendor/internet_nl/probe-animation.gif"> {{ $t("bulk_add_form.loading") }}</button>
 
             </div>
             <div slot="footer">
@@ -393,6 +394,7 @@ Vue.component('managed-url-list', {
                     title: 'Bulk add domains',
                     message: 'You can add many domains in one go. To do this, seperate each domain with a comma, space, new line or mixed.',
                     ok: 'Add the above domains to the list',
+                    cancel: 'Cancel',
                     status: 'Status',
                     nothing_added: 'nothing added yet.',
                     added_n_to_list: 'Added {0} domains to this list.',
@@ -477,6 +479,7 @@ Vue.component('managed-url-list', {
                     message: 'Voeg hieronder een of meerdere domeinen toe, gescheiden door een komma, spatie, nieuwe regel of door elkaar.',
                     ok: 'Voeg bovenstaande domeinen toe aan de lijst',
                     status: 'Status',
+                    cancel: 'Annuleer',
                     nothing_added: 'nog niets toegevoegd.',
                     added_n_to_list: 'Er zijn {0} domeinen aan de lijst toegevoegd.',
                     ignored_n: 'Verder zijn er {0} domeinen genegeerd omdat ze al in de lijst zaten.',
