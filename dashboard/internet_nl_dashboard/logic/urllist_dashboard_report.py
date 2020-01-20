@@ -225,7 +225,8 @@ def rate_urllist_on_moment(urllist: UrlList, when: datetime = None, prevent_dupl
 
         # Some endpoint types use the same ratings, such as dns_soa and dns_mx... This means that not
         # all endpoints will be removed for internet.nl. We need the following endpoints per scan:
-        endpoint_types_per_scan = {"web": "dns_a_aaaa", "mail_dashboard": "dns_soa"}
+        # -> note: urllist stores web/mail, they mean: web and mail_dashboard.
+        endpoint_types_per_scan = {"web": "dns_a_aaaa", "mail": "dns_soa"}
         calculation = only_include_endpoint_protocols(calculation, [endpoint_types_per_scan[urllist.scan_type]])
 
         # This already overrides endpoint statistics, use the calculation you get from this.

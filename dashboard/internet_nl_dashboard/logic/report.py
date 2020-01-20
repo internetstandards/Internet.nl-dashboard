@@ -263,7 +263,17 @@ def add_percentages_to_statistics(report: UrlListReport):
 
     for key, value in report.calculation['statistics_per_issue_type'].items():
         issue = report.calculation['statistics_per_issue_type'][key]
+
         all = issue['ok'] + issue['not_ok']
+        if all == 0:
+            # This happens when everything tested is not applicable or not testable: thus no stats:
+            report.calculation['statistics_per_issue_type'][key]['pct_high'] = 0
+            report.calculation['statistics_per_issue_type'][key]['pct_medium'] = 0
+            report.calculation['statistics_per_issue_type'][key]['pct_low'] = 0
+            report.calculation['statistics_per_issue_type'][key]['pct_ok'] = 0
+            report.calculation['statistics_per_issue_type'][key]['pct_not_ok'] = 0
+            report.save()
+            return
 
         report.calculation['statistics_per_issue_type'][key]['pct_high'] = round((issue['high'] / all) * 100, 2)
         report.calculation['statistics_per_issue_type'][key]['pct_medium'] = round((issue['medium'] / all) * 100, 2)
