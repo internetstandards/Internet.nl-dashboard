@@ -21,8 +21,10 @@ def dashboard(request, report_id=0) -> HttpResponse:
 
 
 @login_required(login_url=LOGIN_URL)
-def get_report_(request, report_id) -> JsonResponse:
-    return JsonResponse(get_report(get_account(request), report_id), encoder=JSEncoder, safe=False)
+def get_report_(request, report_id) -> HttpResponse:
+    return HttpResponse(get_report(get_account(request), report_id), content_type="text/json")
+
+    # return JsonResponse(get_report(get_account(request), report_id), encoder=JSEncoder, safe=False)
 
 
 @login_required(login_url=LOGIN_URL)

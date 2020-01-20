@@ -2,6 +2,8 @@ import logging
 import re
 from copy import copy
 from typing import List
+from django.db import connection
+import re
 
 import simplejson as json
 from django.db.models import Prefetch
@@ -119,18 +121,21 @@ def get_urllist_timeline_graph(account: Account, urllist_ids: str):
 
 def get_report(account: Account, report_id: int):
 
-    reports = list(UrlListReport.objects.all().filter(
+    report = UrlListReport.objects.all().filter(
         urllist__account=account,
         urllist__is_deleted=False,
         pk=report_id
-    ).values())
+    ).values('id', 'urllist_id', 'calculation', 'average_internet_nl_score').first()
 
-    if not reports:
+    if not report:
         return []
 
-    reports[0]['calculation'] = json.loads(reports[0]['calculation'])
-
-    return reports
+    # do NOT create a python object, because that's incredibly slow. Instead rely on the capabilities of
+    # jsonfield to store json correctly and discard everything else.
+    return f'[{{"id": {report["id"]}, ' \
+           f'"urllist_id": {report["urllist_id"]}, ' \
+           f'"average_internet_nl_score": {report["average_internet_nl_score"]}, ' \
+           f'"calculation": {report["calculation"]}}}]'
 
 
 def get_previous_report(account: Account, urllist_id, at_when):
