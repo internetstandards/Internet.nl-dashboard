@@ -8,9 +8,10 @@ from celery import group
 from deepdiff import DeepDiff
 from websecmap.celery import Task, app
 from websecmap.organizations.models import Url
-from websecmap.reporting.report import (aggegrate_url_rating_scores, get_latest_urlratings_fast,
-                                        relevant_urls_at_timepoint, remove_issues_from_calculation,
-                                        statistics_over_url_calculation, add_statistics_to_calculation)
+from websecmap.reporting.report import (add_statistics_to_calculation, aggegrate_url_rating_scores,
+                                        get_latest_urlratings_fast, relevant_urls_at_timepoint,
+                                        remove_issues_from_calculation,
+                                        statistics_over_url_calculation)
 
 from dashboard.internet_nl_dashboard.models import UrlList, UrlListReport
 

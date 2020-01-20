@@ -2,10 +2,7 @@ import logging
 import re
 from copy import copy
 from typing import List
-from django.db import connection
-import re
 
-import simplejson as json
 from django.db.models import Prefetch
 
 from dashboard.internet_nl_dashboard.models import Account, UrlList, UrlListReport

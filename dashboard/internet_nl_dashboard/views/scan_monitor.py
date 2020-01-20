@@ -1,13 +1,11 @@
 import logging
 
 from django.contrib.auth.decorators import login_required
-from django.http import HttpResponse, JsonResponse
-from django.shortcuts import render
+from django.http import JsonResponse
 from websecmap.app.common import JSEncoder
 
 from dashboard.internet_nl_dashboard.logic.scan_monitor import get_scan_monitor_data
-from dashboard.internet_nl_dashboard.views import (LOGIN_URL, get_account,
-                                                   inject_default_language_cookie)
+from dashboard.internet_nl_dashboard.views import LOGIN_URL, get_account
 
 log = logging.getLogger(__package__)
 

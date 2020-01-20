@@ -1,13 +1,11 @@
 
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse, JsonResponse
-from django.shortcuts import render
 from websecmap.app.common import JSEncoder
 
 from dashboard.internet_nl_dashboard.logic.report import (get_previous_report, get_recent_reports,
                                                           get_report, get_urllist_timeline_graph)
-from dashboard.internet_nl_dashboard.views import (LOGIN_URL, get_account,
-                                                   inject_default_language_cookie)
+from dashboard.internet_nl_dashboard.views import LOGIN_URL, get_account
 
 
 @login_required(login_url=LOGIN_URL)

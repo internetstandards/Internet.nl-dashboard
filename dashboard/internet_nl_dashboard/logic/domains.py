@@ -13,7 +13,8 @@ from websecmap.scanners.scanner.dns_endpoints import compose_discover_task
 from dashboard.internet_nl_dashboard.logic import operation_response
 from dashboard.internet_nl_dashboard.models import (Account, AccountInternetNLScan, UrlList,
                                                     UrlListReport)
-from dashboard.internet_nl_dashboard.scanners.scan_internet_nl_per_account import initialize_scan, update_state
+from dashboard.internet_nl_dashboard.scanners.scan_internet_nl_per_account import (initialize_scan,
+                                                                                   update_state)
 
 log = logging.getLogger(__package__)
 
