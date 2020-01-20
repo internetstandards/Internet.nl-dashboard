@@ -18,16 +18,6 @@ from dashboard.internet_nl_dashboard.views import (LOGIN_URL, get_account, get_j
 
 
 @login_required(login_url=LOGIN_URL)
-def index(request, list_id=0) -> HttpResponse:
-
-    response = render(request, 'internet_nl_dashboard/templates/internet_nl_dashboard/domains.html', {
-        'menu_item_addressmanager': "current",
-    })
-
-    return inject_default_language_cookie(request, response)
-
-
-@login_required(login_url=LOGIN_URL)
 def get_lists(request) -> JsonResponse:
     return JsonResponse(get_urllists_from_account(account=get_account(request)), encoder=JSEncoder, safe=False)
 

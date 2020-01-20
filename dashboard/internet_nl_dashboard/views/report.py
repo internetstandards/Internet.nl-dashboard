@@ -11,16 +11,6 @@ from dashboard.internet_nl_dashboard.views import (LOGIN_URL, get_account,
 
 
 @login_required(login_url=LOGIN_URL)
-def dashboard(request, report_id=0) -> HttpResponse:
-
-    response = render(request, 'internet_nl_dashboard/templates/internet_nl_dashboard/report.html', {
-        'menu_item_dashboard': "current",
-    })
-
-    return inject_default_language_cookie(request, response)
-
-
-@login_required(login_url=LOGIN_URL)
 def get_report_(request, report_id) -> HttpResponse:
     return HttpResponse(get_report(get_account(request), report_id), content_type="application/json")
 

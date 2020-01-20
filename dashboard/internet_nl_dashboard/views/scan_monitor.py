@@ -13,16 +13,6 @@ log = logging.getLogger(__package__)
 
 
 @login_required(login_url=LOGIN_URL)
-def scan_monitor(request) -> HttpResponse:
-
-    response = render(request, 'internet_nl_dashboard/templates/internet_nl_dashboard/scan_monitor.html', {
-        'menu_item_scan_monitor': "current",
-    })
-
-    return inject_default_language_cookie(request, response)
-
-
-@login_required(login_url=LOGIN_URL)
 def running_scans(request) -> JsonResponse:
     account = get_account(request)
 
