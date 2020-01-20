@@ -111,7 +111,7 @@ def get_urllist_timeline_graph(account: Account, urllist_ids: str):
     handled = []
     ordered_lists = []
     for original_order_list_id in original_order:
-        if original_order_list_id not in handled and int(original_order_list_id) in stats:
+        if int(original_order_list_id) not in handled and int(original_order_list_id) in stats:
             ordered_lists.append(stats[int(original_order_list_id)])
 
         handled.append(int(original_order_list_id))
@@ -125,7 +125,7 @@ def get_report(account: Account, report_id: int):
         urllist__account=account,
         urllist__is_deleted=False,
         pk=report_id
-    ).values('id', 'urllist_id', 'calculation', 'average_internet_nl_score').first()
+    ).values('id', 'urllist_id', 'calculation', 'average_internet_nl_score', 'total_urls').first()
 
     if not report:
         return []
@@ -135,6 +135,7 @@ def get_report(account: Account, report_id: int):
     return f'[{{"id": {report["id"]}, ' \
            f'"urllist_id": {report["urllist_id"]}, ' \
            f'"average_internet_nl_score": {report["average_internet_nl_score"]}, ' \
+           f'"total_urls": {report["total_urls"]}, ' \
            f'"calculation": {report["calculation"]}}}]'
 
 

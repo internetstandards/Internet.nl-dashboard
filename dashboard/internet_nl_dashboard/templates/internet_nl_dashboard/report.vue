@@ -877,17 +877,7 @@
                                                     <!-- Currently the API just says True or False, we might be able to deduce the right label for a category, but that will take a day or two.
                                                     At the next field update, we'll also make the categories follow the new format of requirement level and testresult so HTTP Security Headers
                                                      here is shown as optional, or info if failed. We can also add a field for baseline NL government then. -->
-                                                    <template v-if="url.endpoints[0].ratings_by_type[category_name].ok < 1">
-                                                        <span v-if="category_name !== 'internet_nl_web_appsecpriv'" class="category_failed">
-                                                            <span>{{ $t('' + category_name + '_verdict_bad') }}</span>
-                                                        </span>
-                                                        <span v-if="category_name === 'internet_nl_web_appsecpriv'" class="category_warning">
-                                                            <span>{{ $t('' + category_name + '_verdict_bad') }}</span>
-                                                        </span>
-                                                    </template>
-                                                    <span class="category_passed" v-if="url.endpoints[0].ratings_by_type[category_name].ok > 0">
-                                                        <span>{{ $t('' + category_name + '_verdict_good') }}</span>
-                                                    </span>
+                                                    <div v-html="category_value_with_comparison(category_name, url)"></div>
                                                 </template>
                                                 <span class="" v-if="url.endpoints[0].ratings_by_type[category_name] === undefined">
                                                     {{ $t("report.results.unknown") }}
@@ -1532,9 +1522,52 @@ const Report = Vue.component('report', {
             this.get_report_data(report_id);
         },
 
+        category_value_with_comparison: function(category_name, url){
+            let verdicts = url.endpoints[0].ratings_by_type[category_name];
+            let simple_value = this.category_verdict_to_simple_value(verdicts, category_name);
+
+            if (this.compare_charts.length < 2 || this.compare_charts[1].calculation.urls_by_url[url.url] === undefined)
+                return `<span class="category_${simple_value}">
+                            <span>${simple_value}</span>
+                        </span>`;
+
+            let other_verdicts = this.compare_charts[1].calculation.urls_by_url[url.url].endpoints[0].ratings_by_type[category_name];
+            let other_simple_value = this.category_verdict_to_simple_value(other_verdicts, category_name);
+
+            let progression = {'passed': 4, 'warning': 3, 'failed': 2};
+            let comparison_verdict = "";
+
+            if (simple_value === other_simple_value)
+                comparison_verdict = "neutral";
+
+            if (progression[simple_value] > progression[other_simple_value]){
+                comparison_verdict = "improved";
+            } else {
+                comparison_verdict = "regressed";
+            }
+
+            let comparison_text = this.$i18n.t("report.results.comparison." + comparison_verdict);
+
+            return `<span class="category_${simple_value} compared_with_next_report_${comparison_verdict}">${comparison_text} ${simple_value}</span>`
+        },
+
+        category_verdict_to_simple_value: function(verdict, category_name) {
+            if (verdict === undefined)
+                return "unknown";
+
+            if (verdict.ok > 0) {return 'passed'}
+            if (verdict.ok < 1) {
+                if (category_name === 'internet_nl_web_appsecpriv'){
+                    return "warning";
+                }
+                return "failed"
+            }
+        },
+
         detail_value_with_comparison: function(category_name, url){
             let verdicts = url.endpoints[0].ratings_by_type[category_name];
 
+            // Adding the verdict to the report would speed things up...
             let simple_value = this.verdict_to_simple_value(verdicts);
             let report_result_string = "";
             let category_name_verdict = "";
