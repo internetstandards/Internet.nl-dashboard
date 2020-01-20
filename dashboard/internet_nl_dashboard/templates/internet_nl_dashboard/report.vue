@@ -980,8 +980,7 @@ const Report = Vue.component('report', {
                             title: 'Adoption of standards over time',
                             intro: 'This graph compares various measurements of the same list over time. ' +
                                 'This provides a visual indication of the progress of standards adoption. A table with the ' +
-                                'same values is avaiable below. This graph shows the average score of internet.nl. Note that ' +
-                                'only the values of the first selected report are shown.'
+                                'same values is avaiable below. This graph shows the average score of internet.nl.'
                         },
                     },
                     magazine: {
@@ -1029,7 +1028,7 @@ const Report = Vue.component('report', {
                         passed: "Passed",
                         unknown: "Unknown",
                         comparison: {
-                            neutral: "",
+                            neutral: "-",
                             improved: "Improved compared to the second report selected.",
                             regressed: "Regressed compared to the second report selected.",
                         }
@@ -1113,8 +1112,7 @@ const Report = Vue.component('report', {
                         annotation: {
                             title: 'Adoptie van standaarden over tijd.',
                             intro: 'Deze grafiek toont verschillende metingen van dezelfde lijst over tijd. ' +
-                                'Dit geeft zicht over de voortgang van de adoptie van standaarden. Het toont de gemiddelde score van internet.nl. ' +
-                                'Deze grafiek toont alleen de gemiddelden van het eerst geselecteerde rapport.'
+                                'Dit geeft zicht over de voortgang van de adoptie van standaarden. Het toont de gemiddelde score van internet.nl. '
                         },
                     },
                     magazine: {
@@ -1189,7 +1187,7 @@ const Report = Vue.component('report', {
                         passed: "Goed",
                         unknown: "Onbekend",
                         comparison: {
-                            neutral: "",
+                            neutral: "-",
                             improved: "Verbeterd vergeleken met het 2e geselecteerde rapport.",
                             regressed: "Verslechterd vergeleken met het 2e geselecteerde rapport.",
                         }
@@ -2141,10 +2139,13 @@ const Report = Vue.component('report', {
         },
 
         selected_report: function (new_value, old_value) {
+            // when multiple items are selected, the old value is always 1 item, the new one is always 2 items.
+            // as such it is not possible to determine reload without trickery safely...
 
-
-            // console.log(`New value: ${new_value}`);
-            // console.log(`Old value: ${old_value}`);
+            /* console.log(`New value: ${new_value}`);
+            console.log(new_value);
+            console.log(`Old value: ${old_value}`);
+            console.log(old_value);*/
 
             // totally empty list, list was emptied by clicking the crosshair everywhere.
             if (new_value[0] === undefined){

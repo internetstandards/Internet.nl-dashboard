@@ -274,7 +274,7 @@ def add_percentages_to_statistics(report: UrlListReport):
             report.calculation['statistics_per_issue_type'][key]['pct_ok'] = 0
             report.calculation['statistics_per_issue_type'][key]['pct_not_ok'] = 0
             continue
-            
+
         report.calculation['statistics_per_issue_type'][key]['pct_high'] = round((issue['high'] / all) * 100, 2)
         report.calculation['statistics_per_issue_type'][key]['pct_medium'] = round((issue['medium'] / all) * 100, 2)
         report.calculation['statistics_per_issue_type'][key]['pct_low'] = round((issue['low'] / all) * 100, 2)
