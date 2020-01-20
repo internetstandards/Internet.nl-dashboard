@@ -1855,6 +1855,7 @@ const Report = Vue.component('report', {
                     // for everything that is not the url name itself, is neatly tucked away.
                     a = a[sortKey];
                     b = b[sortKey];
+
                     return (a === b ? 0 : a > b ? 1 : -1) * order
                 });
 
@@ -1863,49 +1864,51 @@ const Report = Vue.component('report', {
             if (sortKey === "score"){
                 // todo: determine web or mail, split the scores etc, not very fast.
                 // todo: score should be much easier as a single value, instead of this convoluted approach, which i also slow.
-                data = data.slice().sort(function (a, b) {
+                if (this.selected_category === 'mail') {
+                    data = data.slice().sort(function (a, b) {
 
-                    if (a.endpoints[0] === undefined){
-                        return -1 * order;
-                    }
-
-                    if (b.endpoints[0] === undefined){
-                        return 1 * order;
-                    }
-
-                    if (this.selected_category === 'mail') {
-                        if (a.endpoints[0].ratings_by_type.internet_nl_mail_dashboard_overall_score === undefined)
+                        // deal with urls without endpoints:
+                        if (a.endpoints.length === 0){
                             return -1 * order;
-                        if (b.endpoints[0].ratings_by_type.internet_nl_mail_dashboard_overall_score === undefined)
-                            return 1 * order;
-                    } else {
-                        if (a.endpoints[0].ratings_by_type.internet_nl_web_overall_score === undefined)
-                            return -1 * order;
-                        if (b.endpoints[0].ratings_by_type.internet_nl_web_overall_score === undefined)
-                            return 1 * order;
-                    }
+                        }
 
-                    // for everything that is not the url name itself, is neatly tucked away. Only filter on high? Or on what kind of structure?
-                    if (this.selected_category === 'mail'){
+                        if (b.endpoints.length === 0){
+                            return 1 * order;
+                        }
+
                         a = parseInt(a.endpoints[0].ratings_by_type['internet_nl_mail_dashboard_overall_score'].explanation.split(" ")[0]);
                         b = parseInt(b.endpoints[0].ratings_by_type['internet_nl_mail_dashboard_overall_score'].explanation.split(" ")[0]);
-                    } else {
+                        return (a === b ? 0 : a > b ? 1 : -1) * order
+                    });
+                }
+                if (this.selected_category === 'web') {
+                    data = data.slice().sort(function (a, b) {
+
+                        if (a.endpoints.length === 0){
+                            return -1 * order;
+                        }
+
+                        if (b.endpoints.length === 0){
+                            return 1 * order;
+                        }
+
                         a = parseInt(a.endpoints[0].ratings_by_type['internet_nl_web_overall_score'].explanation.split(" ")[0]);
                         b = parseInt(b.endpoints[0].ratings_by_type['internet_nl_web_overall_score'].explanation.split(" ")[0]);
-                    }
-                    return (a === b ? 0 : a > b ? 1 : -1) * order
-                });
+                        return (a === b ? 0 : a > b ? 1 : -1) * order
+                    });
+                }
                 return data;
             }
             data = data.slice().sort(function (a, b) {
                 // for everything that is not the url name itself, is neatly tucked away. Only filter on high? Or on what kind of structure?
 
-                if (a.endpoints[0] === undefined){
-                    return 1 * order;
+                // deal with urls without endpoints:
+                if (a.endpoints.length === 0){
+                    return -1 * order;
                 }
 
-                if (b.endpoints[0] === undefined){
-                    return -1 * order;
+                if (b.endpoints.length === 0){
+                    return 1 * order;
                 }
 
                 let aref = a.endpoints[0].ratings_by_type[sortKey];
