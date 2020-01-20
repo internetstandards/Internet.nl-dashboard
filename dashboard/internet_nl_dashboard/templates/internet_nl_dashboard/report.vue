@@ -146,7 +146,7 @@
         The reason we're not using padding-left 1.5em is that we want the results to be copy-pasteable.
         So there is invisible text on the icon that can be copied.
         */
-        width: 20px;
+        width: 32px; /* Needs to be 32 px for comparison to be visible.*/
         height: 20px;
         display: block;
         color: transparent;
@@ -1537,13 +1537,14 @@ const Report = Vue.component('report', {
             let progression = {'passed': 4, 'warning': 3, 'failed': 2};
             let comparison_verdict = "";
 
-            if (simple_value === other_simple_value)
+            if (simple_value === other_simple_value || simple_value === "unknown" || other_simple_value === "unknown")
                 comparison_verdict = "neutral";
-
-            if (progression[simple_value] > progression[other_simple_value]){
-                comparison_verdict = "improved";
-            } else {
-                comparison_verdict = "regressed";
+            else {
+                if (progression[simple_value] > progression[other_simple_value]){
+                    comparison_verdict = "improved";
+                } else {
+                    comparison_verdict = "regressed";
+                }
             }
 
             let comparison_text = this.$i18n.t("report.results.comparison." + comparison_verdict);
@@ -1641,10 +1642,8 @@ const Report = Vue.component('report', {
             let comparison_text = this.$i18n.t("report.results.comparison." + comparison_verdict);
 
 
-            // Todo: add a list to the bottom of the table of urls that where not in the compared table.
             // todo: the report reloads using autoreload, which is annoying.
             // todo: Clean up this entangled code
-            // todo: also add comparison to categories
 
             return `<span class="${simple_value} compared_with_next_report_${comparison_verdict}">${comparison_text} ${report_result_string} ${category_name_verdict}</span>`
         },
