@@ -330,4 +330,10 @@ def add_percentages_to_statistics(report: UrlListReport):
 
         report.calculation['statistics_per_issue_type'][key]['pct_not_ok'] = round((issue['not_ok'] / all) * 100, 2)
 
+        # internet_nl_web_appsecpriv category is labelled as high, probably for some reason (could not find it quickly)
+        # but the category is a medium category, which means the score should _always_ be 100.
+        # So in this special case we will overwrite the pct_ok with 100%, even though it's lower:
+        if key == "internet_nl_web_appsecpriv":
+            report.calculation['statistics_per_issue_type'][key]['pct_ok'] = 100
+
     report.save()

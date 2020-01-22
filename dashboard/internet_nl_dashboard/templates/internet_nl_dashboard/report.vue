@@ -1947,7 +1947,7 @@ const Report = Vue.component('report', {
                 let score_key = "internet_nl_web_overall_score";
 
                 // all mail categories contain the word mail
-                if (this.selected_category.indexOf("mail") !== false){
+                if (this.selected_category.indexOf("mail") > -1){
                     score_key = "internet_nl_mail_dashboard_overall_score";
                 }
 
