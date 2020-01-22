@@ -57,10 +57,10 @@
     #horrible-chrome-td-sticky-white-background-fix {
         /* Chrome white sticky headers overlap, causing text to disappear, firefox does render it correctly.
         This fix creates a white background behind the text labels. */
-        width: 98%;
+        width: 100%;
         height: 210px;
         position: absolute;
-        top: 110px;
+        top: 0px;
         background: white;
     }
 
@@ -311,34 +311,6 @@
                     <slot name="no-options">{{ $t('header.no_options') }}</slot>
 
                 </v-select>
-            </div>
-
-            <div class="testresult_without_icon faq-report">
-                <h2 style="font-size: 1.0em;"  class="panel-title" >
-                    <a href="" aria-expanded="false">
-                        <span class="visuallyhidden">-:</span>
-                        {{ $t("icon_legend.title") }}
-                        <span class="pre-icon visuallyhidden"></span>
-                        <span class="icon"><img src="/static/images/vendor/internet_nl/push-open.png" alt=""></span>
-                    </a>
-                </h2>
-                <div class="panel-content">
-                    <h3>{{ $t("icon_legend.test_title") }}</h3>
-                    <ul>
-                        <li><span class="faq-test category_passed"><span class="visuallyhidden">{{ $t("report.results.passed") }}</span>{{ $t("icon_legend.test_good") }}</span></li>
-                        <li><span class="faq-test category_failed"><span class="visuallyhidden">{{ $t("report.results.failed") }}</span>{{ $t("icon_legend.test_bad") }}</span></li>
-                        <li><span class="faq-test category_warning"><span class="visuallyhidden">{{ $t("report.results.warning") }}</span>{{ $t("icon_legend.test_warning") }}</span></li>
-                    </ul>
-                    <h3>{{ $t("icon_legend.subtest_title") }}</h3>
-                    <ul>
-                        <li><span class="faq-subtest passed"><span class="visuallyhidden">{{ $t("report.results.passed") }}</span>{{ $t("icon_legend.subtest_good") }}</span></li>
-                        <li><span class="faq-subtest failed"><span class="visuallyhidden">{{ $t("report.results.failed") }}</span>{{ $t("icon_legend.subtest_bad") }}</span></li>
-                        <li><span class="faq-subtest warning"><span class="visuallyhidden">{{ $t("report.results.warning") }}</span>{{ $t("icon_legend.subtest_warning") }}</span></li>
-                        <li><span class="faq-subtest info"><span class="visuallyhidden">{{ $t("report.results.info") }}</span>{{ $t("icon_legend.subtest_info") }}</span></li>
-                        <li><span class="faq-test not_applicable"><span class="visuallyhidden">{{ $t("report.results.not_applicable") }}</span>{{ $t("icon_legend.subtest_not_applicable") }}</span></li>
-                        <li><span class="faq-test not_testable"><span class="visuallyhidden">{{ $t("report.results.not_testable") }}</span>{{ $t("icon_legend.subtest_not_testable") }}</span></li>
-                    </ul>
-                </div>
             </div>
 
             <template v-if="reports.length && !is_loading">
@@ -776,12 +748,63 @@
                 </template>
             </div>
 
-            <div v-if="filtered_urls !== undefined" class="block fullwidth" style="page-break-before: always;">
+            <!-- The table is only displayed with up to two reports (the first as the source of the table, the second as a comparison). -->
+            <div v-if="filtered_urls !== undefined && selected_report.length < 3" class="block fullwidth" style="page-break-before: always;">
                 <h2>{{ $t("report.title") }}</h2>
                 <a class="anchor" name="report"></a>
                 <p>{{ $t("report.intro") }}</p>
 
-                <div class="sticky-table-container">
+                <p v-if="differences_compared_to_current_list">
+                    <template v-if="differences_compared_to_current_list.both_are_equal">
+                        {{ $t("differences_compared_to_current_list.equal") }}
+                        {{ $t("differences_compared_to_current_list.both_list_contain_n_urls", [differences_compared_to_current_list.number_of_urls_in_urllist]) }}
+                    </template>
+                    <template v-if="!differences_compared_to_current_list.both_are_equal">
+                        ⚠️ {{ $t("differences_compared_to_current_list.not_equal") }}
+                        <template v-if="differences_compared_to_current_list.number_of_urls_in_urllist === differences_compared_to_current_list.number_of_urls_in_report">
+                            {{ $t("differences_compared_to_current_list.both_list_contain_n_urls", [differences_compared_to_current_list.number_of_urls_in_urllist]) }}
+                        </template>
+                        <template v-if="differences_compared_to_current_list.number_of_urls_in_urllist !== differences_compared_to_current_list.number_of_urls_in_report">
+                            {{ $t("differences_compared_to_current_list.report_contains_n_urllist_contains_n", [differences_compared_to_current_list.number_of_urls_in_report, differences_compared_to_current_list.number_of_urls_in_urllist]) }}
+                        </template>
+                        <template v-if="differences_compared_to_current_list.in_report_but_not_in_urllist !== ''">
+                            {{ $t("differences_compared_to_current_list.in_report_but_not_in_urllist") }}: {{ differences_compared_to_current_list.in_report_but_not_in_urllist }}.
+                        </template>
+                        <template v-if="differences_compared_to_current_list.in_urllist_but_not_in_report !== ''">
+                            {{ $t("differences_compared_to_current_list.in_urllist_but_not_in_report") }}: {{ differences_compared_to_current_list.in_urllist_but_not_in_report }}.
+                        </template>
+                    </template>
+                </p>
+
+                <div class="testresult_without_icon faq-report">
+                    <h2 style="font-size: 1.0em;"  class="panel-title" >
+                        <a href="" aria-expanded="false">
+                            <span class="visuallyhidden">-:</span>
+                            {{ $t("icon_legend.title") }}
+                            <span class="pre-icon visuallyhidden"></span>
+                            <span class="icon"><img src="/static/images/vendor/internet_nl/push-open.png" alt=""></span>
+                        </a>
+                    </h2>
+                    <div class="panel-content">
+                        <h3>{{ $t("icon_legend.test_title") }}</h3>
+                        <ul>
+                            <li><span class="faq-test category_passed"><span class="visuallyhidden">{{ $t("report.results.passed") }}</span>{{ $t("icon_legend.test_good") }}</span></li>
+                            <li><span class="faq-test category_failed"><span class="visuallyhidden">{{ $t("report.results.failed") }}</span>{{ $t("icon_legend.test_bad") }}</span></li>
+                            <li><span class="faq-test category_warning"><span class="visuallyhidden">{{ $t("report.results.warning") }}</span>{{ $t("icon_legend.test_warning") }}</span></li>
+                        </ul>
+                        <h3>{{ $t("icon_legend.subtest_title") }}</h3>
+                        <ul>
+                            <li><span class="faq-subtest passed"><span class="visuallyhidden">{{ $t("report.results.passed") }}</span>{{ $t("icon_legend.subtest_good") }}</span></li>
+                            <li><span class="faq-subtest failed"><span class="visuallyhidden">{{ $t("report.results.failed") }}</span>{{ $t("icon_legend.subtest_bad") }}</span></li>
+                            <li><span class="faq-subtest warning"><span class="visuallyhidden">{{ $t("report.results.warning") }}</span>{{ $t("icon_legend.subtest_warning") }}</span></li>
+                            <li><span class="faq-subtest info"><span class="visuallyhidden">{{ $t("report.results.info") }}</span>{{ $t("icon_legend.subtest_info") }}</span></li>
+                            <li><span class="faq-test not_applicable"><span class="visuallyhidden">{{ $t("report.results.not_applicable") }}</span>{{ $t("icon_legend.subtest_not_applicable") }}</span></li>
+                            <li><span class="faq-test not_testable"><span class="visuallyhidden">{{ $t("report.results.not_testable") }}</span>{{ $t("icon_legend.subtest_not_testable") }}</span></li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="sticky-table-container" style="position: relative;">
                     <div id="horrible-chrome-td-sticky-white-background-fix"></div>
                     <table class="table table-striped">
                         <thead class="sticky_labels">
@@ -1002,7 +1025,8 @@ const Report = Vue.component('report', {
                 },
                 report: {
                     title: 'Report',
-                    intro: 'This shows the results of the first selected report only.',
+                    intro: 'This table shows detailed results per category. It is possible to compare this report to a second report. In that case, progress incidators are ' +
+                        'added to the first report where applicable. The domains of the second report are only compared, not displayed.',
                     url_filter: 'Filter on domain...',
                     not_eligeble_for_scanning: 'Domain did not match scanning criteria at the time the scan was initiated. The scanning criteria are an SOA DNS record (not NXERROR) for mail and an A or AAAA DNS record for web.\n' +
                         '                                                This domain is ignored in all statistics.',
@@ -1096,6 +1120,15 @@ const Report = Vue.component('report', {
                 // legacy values
                 mail_legacy: 'Mail Baseline NL Government',
                 web_legacy: 'Web Baseline NL Government',
+
+                differences_compared_to_current_list: {
+                    equal: "The domains in this report are equal to the domains in the associated list of domains.",
+                    not_equal: "The domains in this report differ from the domains in the associated list of domains.",
+                    both_list_contain_n_urls: "Both the report and the associated list of domains contain {0} domains.",
+                    report_contains_n_urllist_contains_n: "This report contains {0} domains, while the associated list contains {1}.",
+                    in_report_but_not_in_urllist: "Domains in this report, but not in the list",
+                    in_urllist_but_not_in_report: "Domains not in this report"
+                }
             },
             nl: {
                 mail: 'E-Mail',
@@ -1162,7 +1195,8 @@ const Report = Vue.component('report', {
 
                 report: {
                     title: 'Rapport',
-                    intro: 'Dit overzicht laat alleen de resultaten van het het eerst geselecteerde rapport zien.',
+                    intro: 'Deze tabel toont de details van het rapport. Het is mogelijk dit rapport te vergelijken met een vorig of ander rapport. Wanneer deze vergelijking' +
+                        ' wordt gemaakt, wordt bij de gegevens van het eerste rapport voortgangsindicatoren geplaats waar relevant. De domeinen van het tweede rapport worden alleen vergeleken, niet getoond.',
                     not_eligeble_for_scanning: 'Dit domein voldeed niet aan de scan-criteria op het moment van scannen. Deze criteria zijn een SOA DNS record (geen NXERROR) voor mail en een A of AAAA DNS record voor web.\n' +
                         ' Dit domein komt niet terug in de statistieken.',
                     url_filter: 'Filter op domein...',
@@ -1233,6 +1267,11 @@ const Report = Vue.component('report', {
             // Supporting multiple reports at the same time is hard to understand. Don't know how / if we can do
             // comparisons.
             reports: [],
+
+            // The first report is displayed in the table, it is desired to see if there are different with the
+            // current list.
+            // todo: perhaps just hide the table when more than two reports are selected, as to have less confusion
+            differences_compared_to_current_list: {},
 
             // instead we support one report with one set of urls. This is the source set of urls that can be copied at will
             original_urls: [],
@@ -1726,6 +1765,10 @@ const Report = Vue.component('report', {
 
                 // new accordions are created, reduce their size.
                 this.$nextTick(() => {accordinate(); this.$forceUpdate()});
+            }).catch((fail) => {console.log('A loading error occurred: ' + fail);});
+
+            fetch(`/data/report/differences_compared_to_current_list/${report_id}/`, {credentials: 'include'}).then(response => response.json()).then(data => {
+                this.differences_compared_to_current_list = data;
             }).catch((fail) => {console.log('A loading error occurred: ' + fail);});
         },
         save_issue_filters: function(){

@@ -1,3 +1,4 @@
+import json
 import logging
 import re
 from copy import copy
@@ -134,6 +135,51 @@ def get_report(account: Account, report_id: int):
            f'"average_internet_nl_score": {report["average_internet_nl_score"]}, ' \
            f'"total_urls": {report["total_urls"]}, ' \
            f'"calculation": {report["calculation"]}}}]'
+
+
+def get_report_differences_compared_to_current_list(account: Account, report_id: int):
+    """
+    This method gives insight into the report, compared to the list the report originates from.
+
+    It will give the differences compared to the list:
+    - what domains are in the report, but are not in the list
+    - what domains are in the list, but not in the report
+
+    :param account:
+    :param report_id:
+    :return:
+    """
+    report = UrlListReport.objects.all().filter(
+        urllist__account=account,
+        urllist__is_deleted=False,
+        pk=report_id
+    ).values('urllist_id', 'calculation').first()
+
+    if not report:
+        return {}
+
+    calculation = json.loads(report["calculation"])
+
+    urls_in_report: List[str] = [url['url'] for url in calculation['urls']]
+
+    urllist = UrlList.objects.all().filter(id=report['urllist_id']).first()
+    urls_in_list_queryset = urllist.urls.all()
+    urls_in_urllist = [url.url for url in urls_in_list_queryset]
+
+    urls_in_urllist_but_not_in_report = list(set(urls_in_urllist) - set(urls_in_report))
+    urls_in_report_but_not_in_urllist = list(set(urls_in_report) - set(urls_in_urllist))
+
+    both_are_equal = False if urls_in_urllist_but_not_in_report or urls_in_report_but_not_in_urllist else True
+
+    content_comparison = {
+        "number_of_urls_in_urllist": len(urls_in_urllist),
+        "number_of_urls_in_report": len(urls_in_report),
+        "in_urllist_but_not_in_report": ", ".join(urls_in_urllist_but_not_in_report),
+        "in_report_but_not_in_urllist": ", ".join(urls_in_report_but_not_in_urllist),
+        "both_are_equal": both_are_equal,
+    }
+
+    return content_comparison
 
 
 def get_previous_report(account: Account, urllist_id, at_when):
