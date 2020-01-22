@@ -123,7 +123,7 @@ def get_report(account: Account, report_id: int):
         urllist__account=account,
         urllist__is_deleted=False,
         pk=report_id
-    ).values('id', 'urllist_id', 'calculation', 'average_internet_nl_score', 'total_urls').first()
+    ).values('id', 'urllist_id', 'calculation', 'average_internet_nl_score', 'total_urls', 'at_when').first()
 
     if not report:
         return []
@@ -134,6 +134,7 @@ def get_report(account: Account, report_id: int):
            f'"urllist_id": {report["urllist_id"]}, ' \
            f'"average_internet_nl_score": {report["average_internet_nl_score"]}, ' \
            f'"total_urls": {report["total_urls"]}, ' \
+           f'"at_when": "{report["at_when"]}", ' \
            f'"calculation": {report["calculation"]}}}]'
 
 
