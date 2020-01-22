@@ -146,10 +146,13 @@
         The reason we're not using padding-left 1.5em is that we want the results to be copy-pasteable.
         So there is invisible text on the icon that can be copied.
         */
-        width: 20px;
+        width: 32px; /* Needs to be 32 px for comparison to be visible.*/
         height: 20px;
         display: block;
         color: transparent;
+
+        /** While hidden, can a screen reader still find it? */
+        overflow: hidden;
     }
 
     #report-template .testresultcell span span {
@@ -874,17 +877,7 @@
                                                     <!-- Currently the API just says True or False, we might be able to deduce the right label for a category, but that will take a day or two.
                                                     At the next field update, we'll also make the categories follow the new format of requirement level and testresult so HTTP Security Headers
                                                      here is shown as optional, or info if failed. We can also add a field for baseline NL government then. -->
-                                                    <template v-if="url.endpoints[0].ratings_by_type[category_name].ok < 1">
-                                                        <span v-if="category_name !== 'internet_nl_web_appsecpriv'" class="category_failed">
-                                                            <span>{{ $t('' + category_name + '_verdict_bad') }}</span>
-                                                        </span>
-                                                        <span v-if="category_name === 'internet_nl_web_appsecpriv'" class="category_warning">
-                                                            <span>{{ $t('' + category_name + '_verdict_bad') }}</span>
-                                                        </span>
-                                                    </template>
-                                                    <span class="category_passed" v-if="url.endpoints[0].ratings_by_type[category_name].ok > 0">
-                                                        <span>{{ $t('' + category_name + '_verdict_good') }}</span>
-                                                    </span>
+                                                    <div v-html="category_value_with_comparison(category_name, url)"></div>
                                                 </template>
                                                 <span class="" v-if="url.endpoints[0].ratings_by_type[category_name] === undefined">
                                                     {{ $t("report.results.unknown") }}
@@ -987,8 +980,7 @@ const Report = Vue.component('report', {
                             title: 'Adoption of standards over time',
                             intro: 'This graph compares various measurements of the same list over time. ' +
                                 'This provides a visual indication of the progress of standards adoption. A table with the ' +
-                                'same values is avaiable below. This graph shows the average score of internet.nl. Note that ' +
-                                'only the values of the first selected report are shown.'
+                                'same values is avaiable below. This graph shows the average score of internet.nl.'
                         },
                     },
                     magazine: {
@@ -1036,7 +1028,7 @@ const Report = Vue.component('report', {
                         passed: "Passed",
                         unknown: "Unknown",
                         comparison: {
-                            neutral: "",
+                            neutral: "-",
                             improved: "Improved compared to the second report selected.",
                             regressed: "Regressed compared to the second report selected.",
                         }
@@ -1120,8 +1112,7 @@ const Report = Vue.component('report', {
                         annotation: {
                             title: 'Adoptie van standaarden over tijd.',
                             intro: 'Deze grafiek toont verschillende metingen van dezelfde lijst over tijd. ' +
-                                'Dit geeft zicht over de voortgang van de adoptie van standaarden. Het toont de gemiddelde score van internet.nl. ' +
-                                'Deze grafiek toont alleen de gemiddelden van het eerst geselecteerde rapport.'
+                                'Dit geeft zicht over de voortgang van de adoptie van standaarden. Het toont de gemiddelde score van internet.nl. '
                         },
                     },
                     magazine: {
@@ -1196,7 +1187,7 @@ const Report = Vue.component('report', {
                         passed: "Goed",
                         unknown: "Onbekend",
                         comparison: {
-                            neutral: "",
+                            neutral: "-",
                             improved: "Verbeterd vergeleken met het 2e geselecteerde rapport.",
                             regressed: "Verslechterd vergeleken met het 2e geselecteerde rapport.",
                         }
@@ -1529,9 +1520,53 @@ const Report = Vue.component('report', {
             this.get_report_data(report_id);
         },
 
+        category_value_with_comparison: function(category_name, url){
+            let verdicts = url.endpoints[0].ratings_by_type[category_name];
+            let simple_value = this.category_verdict_to_simple_value(verdicts, category_name);
+
+            if (this.compare_charts.length < 2 || this.compare_charts[1].calculation.urls_by_url[url.url] === undefined)
+                return `<span class="category_${simple_value}">
+                            <span>${simple_value}</span>
+                        </span>`;
+
+            let other_verdicts = this.compare_charts[1].calculation.urls_by_url[url.url].endpoints[0].ratings_by_type[category_name];
+            let other_simple_value = this.category_verdict_to_simple_value(other_verdicts, category_name);
+
+            let progression = {'passed': 4, 'warning': 3, 'failed': 2};
+            let comparison_verdict = "";
+
+            if (simple_value === other_simple_value || simple_value === "unknown" || other_simple_value === "unknown")
+                comparison_verdict = "neutral";
+            else {
+                if (progression[simple_value] > progression[other_simple_value]){
+                    comparison_verdict = "improved";
+                } else {
+                    comparison_verdict = "regressed";
+                }
+            }
+
+            let comparison_text = this.$i18n.t("report.results.comparison." + comparison_verdict);
+
+            return `<span class="category_${simple_value} compared_with_next_report_${comparison_verdict}">${comparison_text} ${simple_value}</span>`
+        },
+
+        category_verdict_to_simple_value: function(verdict, category_name) {
+            if (verdict === undefined)
+                return "unknown";
+
+            if (verdict.ok > 0) {return 'passed'}
+            if (verdict.ok < 1) {
+                if (category_name === 'internet_nl_web_appsecpriv'){
+                    return "warning";
+                }
+                return "failed"
+            }
+        },
+
         detail_value_with_comparison: function(category_name, url){
             let verdicts = url.endpoints[0].ratings_by_type[category_name];
 
+            // Adding the verdict to the report would speed things up...
             let simple_value = this.verdict_to_simple_value(verdicts);
             let report_result_string = "";
             let category_name_verdict = "";
@@ -1602,13 +1637,11 @@ const Report = Vue.component('report', {
                     comparison_verdict = "regressed";
             }
 
-            let comparison_text = this.$i18n.t("report.results.comparison" + comparison_verdict);
+            let comparison_text = this.$i18n.t("report.results.comparison." + comparison_verdict);
 
 
-            // Todo: add a list to the bottom of the table of urls that where not in the compared table.
             // todo: the report reloads using autoreload, which is annoying.
             // todo: Clean up this entangled code
-            // todo: also add comparison to categories
 
             return `<span class="${simple_value} compared_with_next_report_${comparison_verdict}">${comparison_text} ${report_result_string} ${category_name_verdict}</span>`
         },
@@ -1852,6 +1885,7 @@ const Report = Vue.component('report', {
                     // for everything that is not the url name itself, is neatly tucked away.
                     a = a[sortKey];
                     b = b[sortKey];
+
                     return (a === b ? 0 : a > b ? 1 : -1) * order
                 });
 
@@ -1859,41 +1893,52 @@ const Report = Vue.component('report', {
             }
             if (sortKey === "score"){
                 // todo: determine web or mail, split the scores etc, not very fast.
-                data = data.slice().sort(function (a, b) {
+                // todo: score should be much easier as a single value, instead of this convoluted approach, which i also slow.
+                if (this.selected_category === 'mail') {
+                    data = data.slice().sort(function (a, b) {
 
-                    if (a.endpoints[0] === undefined
-                        || a.endpoints[0].ratings_by_type.internet_nl_mail_dashboard_overall_score === undefined
-                        || a.endpoints[0].ratings_by_type.internet_nl_web_overall_score === undefined){
-                        return 1 * order;
-                    }
+                        // deal with urls without endpoints:
+                        if (a.endpoints.length === 0){
+                            return -1 * order;
+                        }
 
-                    if (b.endpoints[0] === undefined
-                        || b.endpoints[0].ratings_by_type.internet_nl_mail_dashboard_overall_score === undefined
-                        || b.endpoints[0].ratings_by_type.internet_nl_web_overall_score === undefined){
-                        return -1 * order;
-                    }
+                        if (b.endpoints.length === 0){
+                            return 1 * order;
+                        }
 
-                    // for everything that is not the url name itself, is neatly tucked away. Only filter on high? Or on what kind of structure?
-                    if (this.selected_category === 'mail'){
                         a = parseInt(a.endpoints[0].ratings_by_type['internet_nl_mail_dashboard_overall_score'].explanation.split(" ")[0]);
                         b = parseInt(b.endpoints[0].ratings_by_type['internet_nl_mail_dashboard_overall_score'].explanation.split(" ")[0]);
-                    } else {
+                        return (a === b ? 0 : a > b ? 1 : -1) * order
+                    });
+                }
+                if (this.selected_category === 'web') {
+                    data = data.slice().sort(function (a, b) {
+
+                        if (a.endpoints.length === 0){
+                            return -1 * order;
+                        }
+
+                        if (b.endpoints.length === 0){
+                            return 1 * order;
+                        }
+
                         a = parseInt(a.endpoints[0].ratings_by_type['internet_nl_web_overall_score'].explanation.split(" ")[0]);
                         b = parseInt(b.endpoints[0].ratings_by_type['internet_nl_web_overall_score'].explanation.split(" ")[0]);
-                    }
-                    return (a === b ? 0 : a > b ? 1 : -1) * order
-                });
+                        return (a === b ? 0 : a > b ? 1 : -1) * order
+                    });
+                }
                 return data;
             }
             data = data.slice().sort(function (a, b) {
                 // for everything that is not the url name itself, is neatly tucked away. Only filter on high? Or on what kind of structure?
 
-                if (a.endpoints[0] === undefined){
-                    return 1 * order;
+                // deal with urls without endpoints:
+                if (a.endpoints.length === 0){
+                    return -1 * order;
                 }
 
-                if (b.endpoints[0] === undefined){
-                    return -1 * order;
+                if (b.endpoints.length === 0){
+                    return 1 * order;
                 }
 
                 let aref = a.endpoints[0].ratings_by_type[sortKey];
@@ -2094,10 +2139,13 @@ const Report = Vue.component('report', {
         },
 
         selected_report: function (new_value, old_value) {
+            // when multiple items are selected, the old value is always 1 item, the new one is always 2 items.
+            // as such it is not possible to determine reload without trickery safely...
 
-
-            // console.log(`New value: ${new_value}`);
-            // console.log(`Old value: ${old_value}`);
+            /* console.log(`New value: ${new_value}`);
+            console.log(new_value);
+            console.log(`Old value: ${old_value}`);
+            console.log(old_value);*/
 
             // totally empty list, list was emptied by clicking the crosshair everywhere.
             if (new_value[0] === undefined){

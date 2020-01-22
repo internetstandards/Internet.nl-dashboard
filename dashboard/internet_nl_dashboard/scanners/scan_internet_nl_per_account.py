@@ -124,7 +124,10 @@ def check_running_dashboard_scans(**kwargs) -> Task:
         scans = AccountInternetNLScan.objects.all()
         scans = add_model_filter(scans, **kwargs)
     else:
-        scans = AccountInternetNLScan.objects.all().exclude(Q(state="finished") | Q(state__startswith="error"))
+        scans = AccountInternetNLScan.objects.all().exclude(
+            Q(state="finished")
+            | Q(state__startswith="error")
+            | Q(state__startswith="cancelled"))
 
     log.debug(f"Checking the state of scan {scans}.")
     tasks = [progress_running_scan(scan) for scan in scans]
@@ -643,8 +646,10 @@ def send_after_scan_mail(scan: AccountInternetNLScan):
         <br>
         Good news! Your scan on {list_name} has finished.<br>
         <br>
-        Open the report: <a href="https://dashboard.internet.nl/report/{report.id}/">
-        https://dashboard.internet.nl/report/{report.id}/</a><br>
+        View the report here: <a href="https://dashboard.internet.nl/spa/#/report/{report.id}">
+        https://dashboard.internet.nl/spa/#/report/{report.id}</a><br>
+        <br>
+        If you have any questions, please contact us via vraag@internet.nl<br>
         <br>
         Regards,<br>
         internet.nl

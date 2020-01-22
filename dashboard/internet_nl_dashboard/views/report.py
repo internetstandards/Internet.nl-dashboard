@@ -1,28 +1,18 @@
 
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse, JsonResponse
-from django.shortcuts import render
 from websecmap.app.common import JSEncoder
 
 from dashboard.internet_nl_dashboard.logic.report import (get_previous_report, get_recent_reports,
                                                           get_report, get_urllist_timeline_graph)
-from dashboard.internet_nl_dashboard.views import (LOGIN_URL, get_account,
-                                                   inject_default_language_cookie)
+from dashboard.internet_nl_dashboard.views import LOGIN_URL, get_account
 
 
 @login_required(login_url=LOGIN_URL)
-def dashboard(request, report_id=0) -> HttpResponse:
+def get_report_(request, report_id) -> HttpResponse:
+    return HttpResponse(get_report(get_account(request), report_id), content_type="application/json")
 
-    response = render(request, 'internet_nl_dashboard/templates/internet_nl_dashboard/report.html', {
-        'menu_item_dashboard': "current",
-    })
-
-    return inject_default_language_cookie(request, response)
-
-
-@login_required(login_url=LOGIN_URL)
-def get_report_(request, report_id) -> JsonResponse:
-    return JsonResponse(get_report(get_account(request), report_id), encoder=JSEncoder, safe=False)
+    # return JsonResponse(get_report(get_account(request), report_id), encoder=JSEncoder, safe=False)
 
 
 @login_required(login_url=LOGIN_URL)

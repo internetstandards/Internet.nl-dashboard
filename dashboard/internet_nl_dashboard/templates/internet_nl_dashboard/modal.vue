@@ -6,7 +6,7 @@
         <div class="modal-container">
 
           <div class="modal-header">
-            <button style="float:right;" type="button" class="close" data-dismiss="modal" aria-label="Close" @click="$emit('close')">
+            <button style="float:right;" type="button" class="close altbutton" data-dismiss="modal" aria-label="Close" @click="$emit('close')">
                 <span aria-hidden="true">&times;</span>
             </button>
             <slot name="header">
