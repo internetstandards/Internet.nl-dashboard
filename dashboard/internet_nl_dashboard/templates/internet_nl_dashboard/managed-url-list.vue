@@ -268,10 +268,19 @@
 
                 <server-response :response="bulk_add_new_server_response"></server-response>
 
+                <template v-if="bulk_add_new_server_response.data">
+                    <span v-if="bulk_add_new_server_response.data.incorrect_urls.length">
+                        ⚠️ <b>{{ $t("bulk_add_form.warning") }}</b><br>
+                        <span v-html='$t("bulk_add_form.warning_message")'></span>:
+                        <textarea style="width: 100%; background-color: #ffd9d9; height: 60px;">{{ bulk_add_new_server_response.data.incorrect_urls.join(', ') }}</textarea>
+                    </span>
+                    <br><br>
+                </template>
+
                 <p>{{ $t("bulk_add_form.message") }}</p>
 
                 <label for="edited_domains">Domains:</label>
-                <textarea id="edited_domains" v-model="bulk_add_new_urls" style="width: 95%; height: 300px;"></textarea>
+                <textarea id="edited_domains" v-model="bulk_add_new_urls" style="width: 100%; height: 300px;"></textarea>
 
                 <div v-if="bulk_add_new_server_response">
                     <span v-if="bulk_add_new_server_response.success === true">
@@ -280,14 +289,6 @@
 
                         <span v-if="bulk_add_new_server_response.data.already_in_list">
                             {{ $t("bulk_add_form.ignored_n", [bulk_add_new_server_response.data.already_in_list]) }}<br>
-                        </span>
-                        <br>
-                        <span v-if="bulk_add_new_server_response.data.incorrect_urls.length">
-                            <br><b>{{ $t("bulk_add_form.warning") }}</b><br>
-                            <span v-html='$t("bulk_add_form.warning_message")'></span>
-                            <textarea style="width: 95%; background-color: lightcoral; height: 60px;">
-                            {{ bulk_add_new_server_response.data.incorrect_urls.join(', ') }}
-                            </textarea>
                         </span>
                     </span>
                 </div>
@@ -725,6 +726,8 @@ Vue.component('managed-url-list', {
         },
         stop_bulk_add_new: function(){
             this.show_bulk_add_new = false;
+            this.bulk_add_new_urls = "";
+
             this.bulk_add_new_server_response = {};
 
             // re-load the url list, as perhaps more information about endpoints is discovered.

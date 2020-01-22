@@ -83,6 +83,9 @@ Vue Modal
 }
 
 .modal-container {
+    max-height: 90vh;
+    overflow: scroll;
+
   width: 600px;
   margin: 0px auto;
   padding: 20px 30px;
@@ -148,7 +151,7 @@ small {
     border-radius: 5px;
     padding: 10px;
     margin-bottom: 10px;
-    background-color: lightgreen;
+    background-color: #daffda;
     color: #004f00;
 }
 
