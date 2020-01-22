@@ -54,6 +54,8 @@ urlpatterns = [
     path('data/scan/cancel/', domains.cancel_scan_),
 
     path('data/report/get/<int:report_id>/', report.get_report_),
+    path('data/report/differences_compared_to_current_list/<int:report_id>/',
+         report.get_report_differences_compared_to_current_list_),
     path('data/report/get_previous/<int:urllist_id>/<str:at_when>/', report.get_previous_report_),
 
     path('data/report/recent/', report.get_recent_reports_),

@@ -78,7 +78,9 @@
                     </div>
                     <br>
 
+                    <template v-if="scan.status_url">
                     🔖 <a :href="scan.status_url" target="_blank">{{ $t("open_in_api") }}</a><br>
+                    </template>
                 </div>
             </div>
         </div>

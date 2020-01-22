@@ -3,8 +3,9 @@ from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse, JsonResponse
 from websecmap.app.common import JSEncoder
 
-from dashboard.internet_nl_dashboard.logic.report import (get_previous_report, get_recent_reports,
-                                                          get_report, get_urllist_timeline_graph)
+from dashboard.internet_nl_dashboard.logic.report import (
+    get_previous_report, get_recent_reports, get_report,
+    get_report_differences_compared_to_current_list, get_urllist_timeline_graph)
 from dashboard.internet_nl_dashboard.views import LOGIN_URL, get_account
 
 
@@ -13,6 +14,12 @@ def get_report_(request, report_id) -> HttpResponse:
     return HttpResponse(get_report(get_account(request), report_id), content_type="application/json")
 
     # return JsonResponse(get_report(get_account(request), report_id), encoder=JSEncoder, safe=False)
+
+
+@login_required(login_url=LOGIN_URL)
+def get_report_differences_compared_to_current_list_(request, report_id):
+    return JsonResponse(get_report_differences_compared_to_current_list(get_account(request), report_id),
+                        encoder=JSEncoder, safe=True)
 
 
 @login_required(login_url=LOGIN_URL)

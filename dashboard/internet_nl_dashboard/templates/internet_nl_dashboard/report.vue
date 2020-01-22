@@ -57,10 +57,10 @@
     #horrible-chrome-td-sticky-white-background-fix {
         /* Chrome white sticky headers overlap, causing text to disappear, firefox does render it correctly.
         This fix creates a white background behind the text labels. */
-        width: 98%;
+        width: 100%;
         height: 210px;
         position: absolute;
-        top: 110px;
+        top: 0px;
         background: white;
     }
 
@@ -313,34 +313,6 @@
                 </v-select>
             </div>
 
-            <div class="testresult_without_icon faq-report">
-                <h2 style="font-size: 1.0em;"  class="panel-title" >
-                    <a href="" aria-expanded="false">
-                        <span class="visuallyhidden">-:</span>
-                        {{ $t("icon_legend.title") }}
-                        <span class="pre-icon visuallyhidden"></span>
-                        <span class="icon"><img src="/static/images/vendor/internet_nl/push-open.png" alt=""></span>
-                    </a>
-                </h2>
-                <div class="panel-content">
-                    <h3>{{ $t("icon_legend.test_title") }}</h3>
-                    <ul>
-                        <li><span class="faq-test category_passed"><span class="visuallyhidden">{{ $t("report.results.passed") }}</span>{{ $t("icon_legend.test_good") }}</span></li>
-                        <li><span class="faq-test category_failed"><span class="visuallyhidden">{{ $t("report.results.failed") }}</span>{{ $t("icon_legend.test_bad") }}</span></li>
-                        <li><span class="faq-test category_warning"><span class="visuallyhidden">{{ $t("report.results.warning") }}</span>{{ $t("icon_legend.test_warning") }}</span></li>
-                    </ul>
-                    <h3>{{ $t("icon_legend.subtest_title") }}</h3>
-                    <ul>
-                        <li><span class="faq-subtest passed"><span class="visuallyhidden">{{ $t("report.results.passed") }}</span>{{ $t("icon_legend.subtest_good") }}</span></li>
-                        <li><span class="faq-subtest failed"><span class="visuallyhidden">{{ $t("report.results.failed") }}</span>{{ $t("icon_legend.subtest_bad") }}</span></li>
-                        <li><span class="faq-subtest warning"><span class="visuallyhidden">{{ $t("report.results.warning") }}</span>{{ $t("icon_legend.subtest_warning") }}</span></li>
-                        <li><span class="faq-subtest info"><span class="visuallyhidden">{{ $t("report.results.info") }}</span>{{ $t("icon_legend.subtest_info") }}</span></li>
-                        <li><span class="faq-test not_applicable"><span class="visuallyhidden">{{ $t("report.results.not_applicable") }}</span>{{ $t("icon_legend.subtest_not_applicable") }}</span></li>
-                        <li><span class="faq-test not_testable"><span class="visuallyhidden">{{ $t("report.results.not_testable") }}</span>{{ $t("icon_legend.subtest_not_testable") }}</span></li>
-                    </ul>
-                </div>
-            </div>
-
             <template v-if="reports.length && !is_loading">
 
                 <div class="do-not-print testresult_without_icon">
@@ -428,7 +400,7 @@
                                                 <template v-for="field in category.fields">
 
                                                     <label :for="field.name + '_show_dynamic_average'">
-                                                        <input type="checkbox" v-model="issue_filters[field.name].show_dynamic_average" :id="field.name + '_show_dynamic_average'">
+                                                        <input type="checkbox" v-model="issue_filters[field.name].show_dynamic_average" :onchange="visible_metrics_see_if_category_is_relevant(category)" :id="field.name + '_show_dynamic_average'">
                                                         {{ $t("settings.show_dynamic_average") }}
                                                     </label><br>
                                                     <!-- Disabled as per #107
@@ -446,7 +418,7 @@
                                         </div>
                                     </section>
                                     <section class="testresults">
-                                        <span class="select-deselect-category"><a @click="check_fields(all_fields_from_categories(category))">{{ $t("check") }}</a> / <a @click="uncheck_fields(all_fields_from_categories(category))">{{ $t("uncheck") }}</a></span>
+                                        <span class="select-deselect-category"><a @click="check_fields(all_field_names_from_categories(category))">{{ $t("check") }}</a> / <a @click="uncheck_fields(all_field_names_from_categories(category))">{{ $t("uncheck") }}</a></span>
 
                                         <template v-for="category in category.categories">
                                             <div class="test-subsection">{{ category.label }}<br></div>
@@ -776,12 +748,63 @@
                 </template>
             </div>
 
-            <div v-if="filtered_urls !== undefined" class="block fullwidth" style="page-break-before: always;">
+            <!-- The table is only displayed with up to two reports (the first as the source of the table, the second as a comparison). -->
+            <div v-if="filtered_urls !== undefined && selected_report.length < 3" class="block fullwidth" style="page-break-before: always;">
                 <h2>{{ $t("report.title") }}</h2>
                 <a class="anchor" name="report"></a>
                 <p>{{ $t("report.intro") }}</p>
 
-                <div class="sticky-table-container">
+                <p v-if="differences_compared_to_current_list">
+                    <template v-if="differences_compared_to_current_list.both_are_equal">
+                        {{ $t("differences_compared_to_current_list.equal") }}
+                        {{ $t("differences_compared_to_current_list.both_list_contain_n_urls", [differences_compared_to_current_list.number_of_urls_in_urllist]) }}
+                    </template>
+                    <template v-if="!differences_compared_to_current_list.both_are_equal">
+                        ⚠️ {{ $t("differences_compared_to_current_list.not_equal") }}
+                        <template v-if="differences_compared_to_current_list.number_of_urls_in_urllist === differences_compared_to_current_list.number_of_urls_in_report">
+                            {{ $t("differences_compared_to_current_list.both_list_contain_n_urls", [differences_compared_to_current_list.number_of_urls_in_urllist]) }}
+                        </template>
+                        <template v-if="differences_compared_to_current_list.number_of_urls_in_urllist !== differences_compared_to_current_list.number_of_urls_in_report">
+                            {{ $t("differences_compared_to_current_list.report_contains_n_urllist_contains_n", [differences_compared_to_current_list.number_of_urls_in_report, differences_compared_to_current_list.number_of_urls_in_urllist]) }}
+                        </template>
+                        <template v-if="differences_compared_to_current_list.in_report_but_not_in_urllist !== ''">
+                            {{ $t("differences_compared_to_current_list.in_report_but_not_in_urllist") }}: {{ differences_compared_to_current_list.in_report_but_not_in_urllist }}.
+                        </template>
+                        <template v-if="differences_compared_to_current_list.in_urllist_but_not_in_report !== ''">
+                            {{ $t("differences_compared_to_current_list.in_urllist_but_not_in_report") }}: {{ differences_compared_to_current_list.in_urllist_but_not_in_report }}.
+                        </template>
+                    </template>
+                </p>
+
+                <div class="testresult_without_icon faq-report">
+                    <h2 style="font-size: 1.0em;"  class="panel-title" >
+                        <a href="" aria-expanded="false">
+                            <span class="visuallyhidden">-:</span>
+                            {{ $t("icon_legend.title") }}
+                            <span class="pre-icon visuallyhidden"></span>
+                            <span class="icon"><img src="/static/images/vendor/internet_nl/push-open.png" alt=""></span>
+                        </a>
+                    </h2>
+                    <div class="panel-content">
+                        <h3>{{ $t("icon_legend.test_title") }}</h3>
+                        <ul>
+                            <li><span class="faq-test category_passed"><span class="visuallyhidden">{{ $t("report.results.passed") }}</span>{{ $t("icon_legend.test_good") }}</span></li>
+                            <li><span class="faq-test category_failed"><span class="visuallyhidden">{{ $t("report.results.failed") }}</span>{{ $t("icon_legend.test_bad") }}</span></li>
+                            <li><span class="faq-test category_warning"><span class="visuallyhidden">{{ $t("report.results.warning") }}</span>{{ $t("icon_legend.test_warning") }}</span></li>
+                        </ul>
+                        <h3>{{ $t("icon_legend.subtest_title") }}</h3>
+                        <ul>
+                            <li><span class="faq-subtest passed"><span class="visuallyhidden">{{ $t("report.results.passed") }}</span>{{ $t("icon_legend.subtest_good") }}</span></li>
+                            <li><span class="faq-subtest failed"><span class="visuallyhidden">{{ $t("report.results.failed") }}</span>{{ $t("icon_legend.subtest_bad") }}</span></li>
+                            <li><span class="faq-subtest warning"><span class="visuallyhidden">{{ $t("report.results.warning") }}</span>{{ $t("icon_legend.subtest_warning") }}</span></li>
+                            <li><span class="faq-subtest info"><span class="visuallyhidden">{{ $t("report.results.info") }}</span>{{ $t("icon_legend.subtest_info") }}</span></li>
+                            <li><span class="faq-test not_applicable"><span class="visuallyhidden">{{ $t("report.results.not_applicable") }}</span>{{ $t("icon_legend.subtest_not_applicable") }}</span></li>
+                            <li><span class="faq-test not_testable"><span class="visuallyhidden">{{ $t("report.results.not_testable") }}</span>{{ $t("icon_legend.subtest_not_testable") }}</span></li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="sticky-table-container" style="position: relative;">
                     <div id="horrible-chrome-td-sticky-white-background-fix"></div>
                     <table class="table table-striped">
                         <thead class="sticky_labels">
@@ -1002,7 +1025,8 @@ const Report = Vue.component('report', {
                 },
                 report: {
                     title: 'Report',
-                    intro: 'This shows the results of the first selected report only.',
+                    intro: 'This table shows detailed results per category. It is possible to compare this report to a second report. In that case, progress incidators are ' +
+                        'added to the first report where applicable. The domains of the second report are only compared, not displayed.',
                     url_filter: 'Filter on domain...',
                     not_eligeble_for_scanning: 'Domain did not match scanning criteria at the time the scan was initiated. The scanning criteria are an SOA DNS record (not NXERROR) for mail and an A or AAAA DNS record for web.\n' +
                         '                                                This domain is ignored in all statistics.',
@@ -1096,6 +1120,15 @@ const Report = Vue.component('report', {
                 // legacy values
                 mail_legacy: 'Mail Baseline NL Government',
                 web_legacy: 'Web Baseline NL Government',
+
+                differences_compared_to_current_list: {
+                    equal: "The domains in this report are equal to the domains in the associated list of domains.",
+                    not_equal: "The domains in this report differ from the domains in the associated list of domains.",
+                    both_list_contain_n_urls: "Both the report and the associated list of domains contain {0} domains.",
+                    report_contains_n_urllist_contains_n: "This report contains {0} domains, while the associated list contains {1}.",
+                    in_report_but_not_in_urllist: "Domains in this report, but not in the list",
+                    in_urllist_but_not_in_report: "Domains not in this report"
+                }
             },
             nl: {
                 mail: 'E-Mail',
@@ -1162,7 +1195,8 @@ const Report = Vue.component('report', {
 
                 report: {
                     title: 'Rapport',
-                    intro: 'Dit overzicht laat alleen de resultaten van het het eerst geselecteerde rapport zien.',
+                    intro: 'Deze tabel toont de details van het rapport. Het is mogelijk dit rapport te vergelijken met een vorig of ander rapport. Wanneer deze vergelijking' +
+                        ' wordt gemaakt, wordt bij de gegevens van het eerste rapport voortgangsindicatoren geplaats waar relevant. De domeinen van het tweede rapport worden alleen vergeleken, niet getoond.',
                     not_eligeble_for_scanning: 'Dit domein voldeed niet aan de scan-criteria op het moment van scannen. Deze criteria zijn een SOA DNS record (geen NXERROR) voor mail en een A of AAAA DNS record voor web.\n' +
                         ' Dit domein komt niet terug in de statistieken.',
                     url_filter: 'Filter op domein...',
@@ -1233,6 +1267,11 @@ const Report = Vue.component('report', {
             // Supporting multiple reports at the same time is hard to understand. Don't know how / if we can do
             // comparisons.
             reports: [],
+
+            // The first report is displayed in the table, it is desired to see if there are different with the
+            // current list.
+            // todo: perhaps just hide the table when more than two reports are selected, as to have less confusion
+            differences_compared_to_current_list: {},
 
             // instead we support one report with one set of urls. This is the source set of urls that can be copied at will
             original_urls: [],
@@ -1727,6 +1766,10 @@ const Report = Vue.component('report', {
                 // new accordions are created, reduce their size.
                 this.$nextTick(() => {accordinate(); this.$forceUpdate()});
             }).catch((fail) => {console.log('A loading error occurred: ' + fail);});
+
+            fetch(`/data/report/differences_compared_to_current_list/${report_id}/`, {credentials: 'include'}).then(response => response.json()).then(data => {
+                this.differences_compared_to_current_list = data;
+            }).catch((fail) => {console.log('A loading error occurred: ' + fail);});
         },
         save_issue_filters: function(){
             /*
@@ -1892,41 +1935,32 @@ const Report = Vue.component('report', {
                 return data;
             }
             if (sortKey === "score"){
+                console.log("sorting on score");
                 // todo: determine web or mail, split the scores etc, not very fast.
                 // todo: score should be much easier as a single value, instead of this convoluted approach, which i also slow.
-                if (this.selected_category === 'mail') {
-                    data = data.slice().sort(function (a, b) {
+                let score_key = "internet_nl_web_overall_score";
 
-                        // deal with urls without endpoints:
-                        if (a.endpoints.length === 0){
-                            return -1 * order;
-                        }
-
-                        if (b.endpoints.length === 0){
-                            return 1 * order;
-                        }
-
-                        a = parseInt(a.endpoints[0].ratings_by_type['internet_nl_mail_dashboard_overall_score'].explanation.split(" ")[0]);
-                        b = parseInt(b.endpoints[0].ratings_by_type['internet_nl_mail_dashboard_overall_score'].explanation.split(" ")[0]);
-                        return (a === b ? 0 : a > b ? 1 : -1) * order
-                    });
+                // all mail categories contain the word mail
+                if (this.selected_category.indexOf("mail") !== false){
+                    score_key = "internet_nl_mail_dashboard_overall_score";
                 }
-                if (this.selected_category === 'web') {
-                    data = data.slice().sort(function (a, b) {
 
-                        if (a.endpoints.length === 0){
-                            return -1 * order;
-                        }
+                data = data.slice().sort(function (a, b) {
 
-                        if (b.endpoints.length === 0){
-                            return 1 * order;
-                        }
+                    // deal with urls without endpoints:
+                    if (a.endpoints.length === 0){
+                        return -1 * order;
+                    }
 
-                        a = parseInt(a.endpoints[0].ratings_by_type['internet_nl_web_overall_score'].explanation.split(" ")[0]);
-                        b = parseInt(b.endpoints[0].ratings_by_type['internet_nl_web_overall_score'].explanation.split(" ")[0]);
-                        return (a === b ? 0 : a > b ? 1 : -1) * order
-                    });
-                }
+                    if (b.endpoints.length === 0){
+                        return 1 * order;
+                    }
+
+                    a = parseInt(a.endpoints[0].ratings_by_type[score_key].explanation.split(" ")[0]);
+                    b = parseInt(b.endpoints[0].ratings_by_type[score_key].explanation.split(" ")[0]);
+                    return (a === b ? 0 : a > b ? 1 : -1) * order
+                });
+
                 return data;
             }
             data = data.slice().sort(function (a, b) {
@@ -2020,7 +2054,7 @@ const Report = Vue.component('report', {
 
             return fields;
         },
-        all_fields_from_categories(categories){
+        all_field_names_from_categories(categories){
             let fields = [];
 
             categories.categories.forEach((category) => {
@@ -2030,6 +2064,34 @@ const Report = Vue.component('report', {
                 });
                 category.additional_fields.forEach((field) => {
                     fields.push(field.name);
+                });
+
+            });
+
+            return fields;
+        },
+        all_subcategory_fields_from_category(category_name){
+            let fields = [];
+
+            let i = 0;
+            // hack to get the right stuff from the scan methods. Should be done differently.
+            if (this.selected_category === 'mail')
+                i = 1;
+
+
+            this.scan_methods[i].categories.forEach((category) => {
+
+                if (category.key !== category_name.key){
+                    return
+                }
+
+                category.categories.forEach((subcategory) => {
+                    subcategory.fields.forEach((field) => {
+                        fields.push(field.name);
+                    });
+                    subcategory.additional_fields.forEach((field) => {
+                        fields.push(field.name);
+                    });
                 });
 
             });
@@ -2120,6 +2182,22 @@ const Report = Vue.component('report', {
             list_of_fields.forEach((field) => {
                 this.issue_filters[field].visible = false;
             })
+        },
+
+        visible_metrics_see_if_category_is_relevant: function(category_name) {
+            // if all fields in the category are deselected, deselect the category, otherwise, select it.
+
+            let fields = this.all_subcategory_fields_from_category(category_name);
+
+            let should_be_visible = false;
+            for (let i=0; i< fields.length; i++){
+                if (this.issue_filters[fields[i]].visible){
+                    should_be_visible = true;
+                    break;
+                }
+            }
+
+            this.issue_filters[category_name.key].visible = should_be_visible;
         }
 
     },
