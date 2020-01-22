@@ -1935,41 +1935,32 @@ const Report = Vue.component('report', {
                 return data;
             }
             if (sortKey === "score"){
+                console.log("sorting on score");
                 // todo: determine web or mail, split the scores etc, not very fast.
                 // todo: score should be much easier as a single value, instead of this convoluted approach, which i also slow.
-                if (this.selected_category === 'mail') {
-                    data = data.slice().sort(function (a, b) {
+                let score_key = "internet_nl_web_overall_score";
 
-                        // deal with urls without endpoints:
-                        if (a.endpoints.length === 0){
-                            return -1 * order;
-                        }
-
-                        if (b.endpoints.length === 0){
-                            return 1 * order;
-                        }
-
-                        a = parseInt(a.endpoints[0].ratings_by_type['internet_nl_mail_dashboard_overall_score'].explanation.split(" ")[0]);
-                        b = parseInt(b.endpoints[0].ratings_by_type['internet_nl_mail_dashboard_overall_score'].explanation.split(" ")[0]);
-                        return (a === b ? 0 : a > b ? 1 : -1) * order
-                    });
+                // all mail categories contain the word mail
+                if (this.selected_category.indexOf("mail") !== false){
+                    score_key = "internet_nl_mail_dashboard_overall_score";
                 }
-                if (this.selected_category === 'web') {
-                    data = data.slice().sort(function (a, b) {
 
-                        if (a.endpoints.length === 0){
-                            return -1 * order;
-                        }
+                data = data.slice().sort(function (a, b) {
 
-                        if (b.endpoints.length === 0){
-                            return 1 * order;
-                        }
+                    // deal with urls without endpoints:
+                    if (a.endpoints.length === 0){
+                        return -1 * order;
+                    }
 
-                        a = parseInt(a.endpoints[0].ratings_by_type['internet_nl_web_overall_score'].explanation.split(" ")[0]);
-                        b = parseInt(b.endpoints[0].ratings_by_type['internet_nl_web_overall_score'].explanation.split(" ")[0]);
-                        return (a === b ? 0 : a > b ? 1 : -1) * order
-                    });
-                }
+                    if (b.endpoints.length === 0){
+                        return 1 * order;
+                    }
+
+                    a = parseInt(a.endpoints[0].ratings_by_type[score_key].explanation.split(" ")[0]);
+                    b = parseInt(b.endpoints[0].ratings_by_type[score_key].explanation.split(" ")[0]);
+                    return (a === b ? 0 : a > b ? 1 : -1) * order
+                });
+
                 return data;
             }
             data = data.slice().sort(function (a, b) {
