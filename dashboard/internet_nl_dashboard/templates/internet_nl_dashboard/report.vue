@@ -400,7 +400,7 @@
                                                 <template v-for="field in category.fields">
 
                                                     <label :for="field.name + '_show_dynamic_average'">
-                                                        <input type="checkbox" v-model="issue_filters[field.name].show_dynamic_average" :id="field.name + '_show_dynamic_average'">
+                                                        <input type="checkbox" v-model="issue_filters[field.name].show_dynamic_average" :onchange="visible_metrics_see_if_category_is_relevant(category)" :id="field.name + '_show_dynamic_average'">
                                                         {{ $t("settings.show_dynamic_average") }}
                                                     </label><br>
                                                     <!-- Disabled as per #107
@@ -418,7 +418,7 @@
                                         </div>
                                     </section>
                                     <section class="testresults">
-                                        <span class="select-deselect-category"><a @click="check_fields(all_fields_from_categories(category))">{{ $t("check") }}</a> / <a @click="uncheck_fields(all_fields_from_categories(category))">{{ $t("uncheck") }}</a></span>
+                                        <span class="select-deselect-category"><a @click="check_fields(all_field_names_from_categories(category))">{{ $t("check") }}</a> / <a @click="uncheck_fields(all_field_names_from_categories(category))">{{ $t("uncheck") }}</a></span>
 
                                         <template v-for="category in category.categories">
                                             <div class="test-subsection">{{ category.label }}<br></div>
@@ -2054,7 +2054,7 @@ const Report = Vue.component('report', {
 
             return fields;
         },
-        all_fields_from_categories(categories){
+        all_field_names_from_categories(categories){
             let fields = [];
 
             categories.categories.forEach((category) => {
@@ -2064,6 +2064,34 @@ const Report = Vue.component('report', {
                 });
                 category.additional_fields.forEach((field) => {
                     fields.push(field.name);
+                });
+
+            });
+
+            return fields;
+        },
+        all_subcategory_fields_from_category(category_name){
+            let fields = [];
+
+            let i = 0;
+            // hack to get the right stuff from the scan methods. Should be done differently.
+            if (this.selected_category === 'mail')
+                i = 1;
+
+
+            this.scan_methods[i].categories.forEach((category) => {
+
+                if (category.key !== category_name.key){
+                    return
+                }
+
+                category.categories.forEach((subcategory) => {
+                    subcategory.fields.forEach((field) => {
+                        fields.push(field.name);
+                    });
+                    subcategory.additional_fields.forEach((field) => {
+                        fields.push(field.name);
+                    });
                 });
 
             });
@@ -2154,6 +2182,22 @@ const Report = Vue.component('report', {
             list_of_fields.forEach((field) => {
                 this.issue_filters[field].visible = false;
             })
+        },
+
+        visible_metrics_see_if_category_is_relevant: function(category_name) {
+            // if all fields in the category are deselected, deselect the category, otherwise, select it.
+
+            let fields = this.all_subcategory_fields_from_category(category_name);
+
+            let should_be_visible = false;
+            for (let i=0; i< fields.length; i++){
+                if (this.issue_filters[fields[i]].visible){
+                    should_be_visible = true;
+                    break;
+                }
+            }
+
+            this.issue_filters[category_name.key].visible = should_be_visible;
         }
 
     },
