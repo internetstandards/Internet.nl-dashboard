@@ -1,8 +1,5 @@
 {% verbatim %}
 <style>
-    /*
-    Todo: sticky columns. (and perhaps fewer data in https? or wider columns?)
-    */
     #report-template {
         width: 100%;
         min-height: 500px;
@@ -315,7 +312,7 @@
 
             <template v-if="reports.length && !is_loading">
 
-                <div class="do-not-print testresult_without_icon">
+                <div class="do-not-print testresult_without_icon" v-if="selected_report.length < 2">
                     <h2 style="font-size: 1.0em;" class="panel-title" >
                         <a href="" aria-expanded="false">
                             <span class="visuallyhidden">-:</span>
@@ -991,7 +988,9 @@ const Report = Vue.component('report', {
 
                 header: {
                     title: 'Reports',
-                    intro: 'Select one or multiple reports, these will be displayed below.',
+                    intro: 'It is possible to select one or multiple reports. Selecting a single report shows all data of that report, ' +
+                        'including graphs and a table with detailed results. Selecting two reports, a comparison is made between these reports in the graphs and detailed result. ' +
+                        'Selecting more than two reports, only graphs are shown.',
                     select_report: 'Select report...',
                     max_elements: 'Maximum number of reports selected.',
                     no_options: 'No reports available.',
@@ -1059,7 +1058,7 @@ const Report = Vue.component('report', {
                     }
                 },
                 download: {
-                    title: 'Download all metrics in a spreadsheet',
+                    title: 'Download metrics as a spreadsheet',
                     intro: 'Report data is available in the following formats:',
                     xlsx: 'Excel Spreadsheet (Microsoft Office), .xlsx',
                     ods: 'Open Document Spreadsheet (Libre Office), .ods',
@@ -1186,7 +1185,9 @@ const Report = Vue.component('report', {
 
                 header: {
                     title: 'Rapporten',
-                    intro: 'Rapporten gemaakt op basis van scans van lijsten.',
+                    intro: 'Het is mogelijk om meerdere rapporten te selecteren. Bij het selecteren van een enkel rapport wordt alle relevante informatie hierover getoond. ' +
+                        'Bij het selecteren van twee rapporten wordt een vergelijking gemaakt: zowel in de grafieken als in de detail tabel. Bij het selecteren van ' +
+                        'meer dan twee rapporten zijn alleen de grafieken zichtbaar.',
                     select_report: 'Selecteer rapport...',
                     max_elements: 'Maximum aantal rapporten geselecteerd.',
                     no_options: 'Geen rapporten beschikbaar.',
@@ -1254,6 +1255,15 @@ const Report = Vue.component('report', {
                 // legacy values
                 mail_legacy: 'Measurements on agreed security standards + IPv6 Monitor',
                 web_legacy: 'Measurements on agreed security standards + IPv6 Monitor',
+
+                differences_compared_to_current_list: {
+                    equal: "Domeinen in dit rapport zijn gelijk aan de domeinen in de bijbehorende lijst.",
+                    not_equal: "Domeinen in dit rapport wijken af van de domeinen in de bijbehorende lijst.",
+                    both_list_contain_n_urls: "Zowel de rapportage als de bijbehorende lijst bevatten {0} domeinen.",
+                    report_contains_n_urllist_contains_n: "Deze rapportage bevat {0} domeinen terwijl de bijbehorende lijst {1} domeinen bevat.",
+                    in_report_but_not_in_urllist: "Domeinen in het rapport, maar niet in de bijbehorende lijst",
+                    in_urllist_but_not_in_report: "Domeinen niet in het rapport"
+                }
             }
         }
     },
@@ -1270,7 +1280,6 @@ const Report = Vue.component('report', {
 
             // The first report is displayed in the table, it is desired to see if there are different with the
             // current list.
-            // todo: perhaps just hide the table when more than two reports are selected, as to have less confusion
             differences_compared_to_current_list: {},
 
             // instead we support one report with one set of urls. This is the source set of urls that can be copied at will
@@ -1678,8 +1687,6 @@ const Report = Vue.component('report', {
 
             let comparison_text = this.$i18n.t("report.results.comparison." + comparison_verdict);
 
-
-            // todo: the report reloads using autoreload, which is annoying.
             // todo: Clean up this entangled code
 
             return `<span class="${simple_value} compared_with_next_report_${comparison_verdict}">${comparison_text} ${report_result_string} ${category_name_verdict}</span>`
@@ -1935,7 +1942,6 @@ const Report = Vue.component('report', {
                 return data;
             }
             if (sortKey === "score"){
-                console.log("sorting on score");
                 // todo: determine web or mail, split the scores etc, not very fast.
                 // todo: score should be much easier as a single value, instead of this convoluted approach, which i also slow.
                 let score_key = "internet_nl_web_overall_score";
