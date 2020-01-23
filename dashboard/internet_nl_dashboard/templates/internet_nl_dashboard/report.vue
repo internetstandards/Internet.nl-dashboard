@@ -292,7 +292,7 @@
 
 <template type="x-template" id="report_template">
     <div id="report-template">
-        <div class="block fullwidth">
+        <div class="block fullwidth do-not-print">
             <h1>{{ $t("header.title") }}</h1>
             <p>{{ $t("header.intro") }}</p>
 
@@ -470,7 +470,29 @@
 
         <loading :loading="is_loading"></loading>
 
-        <div v-if="reports.length && !is_loading" style="page-break-before: always;">
+        <div v-if="reports.length && !is_loading">
+
+            <div class="block fullwidth">
+                <h2>
+                    📊 #{{selected_report[0].id}} - {{ selected_report[0].list_name }}</h2>
+                <span>{{ $t("report_header.type_of_scan_performed") }}:
+                    <img src="/static/images/vendor/internet_nl/icon-website-test.svg" style="height: 1em;" v-if="selected_report[0].type === 'web'">
+                    <img src="/static/images/vendor/internet_nl/icon-emailtest.svg" style="height: 1em;" v-if="selected_report[0].type === 'mail'"> {{ selected_report[0].type }}<br>
+                    {{ $t("report_header.number_of_domains") }}: {{ selected_report[0].number_of_urls }}<br> {{ $t("report_header.data_from") }} {{ humanize_date(selected_report[0].at_when) }}</span><br>
+
+                <div v-for="report in selected_report" v-if="selected_report.length > 1" style="padding-left: 10px">
+                    <!-- Skip the first report -->
+                    <template v-if="report.id !== selected_report[0].id">
+                        <h3>{{ $t("report_header.compared_to") }}: #{{report.id}} - {{ report.list_name }}</h3>
+                        <span>{{ $t("report_header.number_of_domains") }}: {{ report.number_of_urls }}<br> {{ $t("report_header.data_from") }} {{ humanize_date(report.at_when) }}<br></span>
+                    </template>
+                </div>
+
+                <template v-if="selected_report.length > 2">
+                    <p style="padding-top: 1em;">⚠️ {{ $t("report_header.only_graphs") }}</p>
+                </template>
+
+            </div>
 
             <div class="block fullwidth">
                 <h2>{{ $t("chart_info.adoption_timeline.annotation.title") }}</h2>
@@ -489,7 +511,7 @@
 
                         <div style="overflow-x: scroll; overflow-y: hidden;">
                             <template  v-for="timeline in issue_timeline_of_related_urllists">
-                                <table class="table table-striped">
+                                <table class="table table-striped" style="font-size: 0.8em;">
                                     <caption>{{timeline.name}}: {{ $t("charts.adoption_timeline.title") }}</caption>
                                     <thead>
                                         <tr>
@@ -801,7 +823,7 @@
                     </div>
                 </div>
 
-                <div class="sticky-table-container" style="position: relative;">
+                <div class="sticky-table-container" style="position: relative; page-break-before: always;">
                     <div id="horrible-chrome-td-sticky-white-background-fix"></div>
                     <table class="table table-striped">
                         <thead class="sticky_labels">
@@ -999,10 +1021,8 @@ const Report = Vue.component('report', {
                 chart_info: {
                     adoption_timeline: {
                         annotation: {
-                            title: 'Adoption of standards over time',
-                            intro: 'This graph compares various measurements of the same list over time. ' +
-                                'This provides a visual indication of the progress of standards adoption. A table with the ' +
-                                'same values is avaiable below. This graph shows the average score of internet.nl.'
+                            title: 'Internet.nl score over time',
+                            intro: 'This graph compares the average internet.nl score over time.'
                         },
                     },
                     magazine: {
@@ -1127,6 +1147,13 @@ const Report = Vue.component('report', {
                     report_contains_n_urllist_contains_n: "This report contains {0} domains, while the associated list contains {1}.",
                     in_report_but_not_in_urllist: "Domains in this report, but not in the list",
                     in_urllist_but_not_in_report: "Domains not in this report"
+                },
+                report_header: {
+                    type_of_scan_performed: "Type of scan performed",
+                    compared_to: "Compared to",
+                    number_of_domains: "Number of domains",
+                    data_from: "Data from",
+                    only_graphs: "Only showing the timeline and graphs because there are more than two reports selected.",
                 }
             },
             nl: {
@@ -1142,9 +1169,8 @@ const Report = Vue.component('report', {
                 chart_info: {
                     adoption_timeline: {
                         annotation: {
-                            title: 'Adoptie van standaarden over tijd.',
-                            intro: 'Deze grafiek toont verschillende metingen van dezelfde lijst over tijd. ' +
-                                'Dit geeft zicht over de voortgang van de adoptie van standaarden. Het toont de gemiddelde score van internet.nl. '
+                            title: 'Gemiddelde internet.nl score over tijd.',
+                            intro: 'Deze grafiek toont de gemiddelde internet.nl score over tijd.'
                         },
                     },
                     magazine: {
@@ -1263,6 +1289,13 @@ const Report = Vue.component('report', {
                     report_contains_n_urllist_contains_n: "Deze rapportage bevat {0} domeinen terwijl de bijbehorende lijst {1} domeinen bevat.",
                     in_report_but_not_in_urllist: "Domeinen in het rapport, maar niet in de bijbehorende lijst",
                     in_urllist_but_not_in_report: "Domeinen niet in het rapport"
+                },
+                report_header: {
+                    type_of_scan_performed: "Uitgevoerde scan",
+                    compared_to: "Vergeleken met",
+                    number_of_domains: "Aantal domeinen",
+                    data_from: "Rapportage van",
+                    only_graphs: "Enkel de tijdlijn en grafieken worden getoond omdat er meer dan twee rapporten zijn geselecteerd.",
                 }
             }
         }
