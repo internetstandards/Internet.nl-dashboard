@@ -199,6 +199,11 @@ def remove_comply_or_explain(report: UrlListReport):
     # Also remove all comply or explain information as it costs a lot of data/memory on the client
 
     for url in report.calculation['urls']:
+
+        if "explained_total_issues" not in url:
+            # explanations have already been removed.
+            continue
+
         del url["explained_total_issues"]
         del url["explained_high"]
         del url["explained_medium"]
@@ -221,6 +226,10 @@ def remove_comply_or_explain(report: UrlListReport):
                 del rating['comply_or_explain_explained_on']
                 del rating['comply_or_explain_explanation_valid_until']
                 del rating['comply_or_explain_valid_at_time_of_report']
+
+    if "explained_high" not in report.calculation:
+        report.save()
+        return
 
     del report.calculation["explained_high"]
     del report.calculation["explained_medium"]
@@ -258,6 +267,104 @@ def add_keyed_ratings(report: UrlListReport):
             endpoint['ratings_by_type'] = {}
             for rating in endpoint['ratings']:
                 endpoint['ratings_by_type'][rating['type']] = rating
+
+    report.save()
+
+
+def add_simple_verdicts(report: UrlListReport):
+    """
+    Reduces the rating fields to a single string value, so the correct rating can be retrieved instantly.
+
+    // these are in ranges of 10's so at later moments some values can be added in between.
+    // these are used to compare these ratings without having to convert them in javascript dynamically
+    Simple values match the current possible {'passed': 400, 'info': 300, 'warning': 200, 'failed': 100};
+
+    :param report:
+    :return:
+    """
+
+    for url in report.calculation['urls']:
+        for endpoint in url['endpoints']:
+            for rating in endpoint['ratings']:
+                if rating['high']:
+                    rating['simple_verdict'] = "failed"
+                    rating['simple_progression'] = 100
+                    continue
+                if rating['medium']:
+                    rating['simple_verdict'] = "warning"
+                    rating['simple_progression'] = 200
+                    continue
+                if rating['low']:
+                    rating['simple_verdict'] = "info"
+                    rating['simple_progression'] = 300
+                    continue
+                if rating['ok'] and (not rating['not_applicable'] and not rating['not_testable']):
+                    rating['simple_verdict'] = "passed"
+                    rating['simple_progression'] = 400
+                    continue
+                if rating['not_applicable']:
+                    rating['simple_verdict'] = "not_applicable"
+                    rating['simple_progression'] = 0
+                    continue
+                if rating['not_testable']:
+                    rating['simple_verdict'] = "not_testable"
+                    rating['simple_progression'] = 0
+                    continue
+
+                # no verdicts === undefined / unknown. We should always have a rating in an endpoint,
+                #  otherwise something terrible has happened. Note that split_score_and_url will add some
+                # things that do not fit this.
+                raise ArithmeticError(f"Missing any sort of verdict for this rating on this endpoint {endpoint['id']}.")
+
+    report.save()
+
+
+def split_score_and_url(report: UrlListReport):
+    """
+    Split the internet.nl score and the url to be instantly accessible.
+
+    :param report:
+    :return:
+    """
+    for url in report.calculation['urls']:
+        for endpoint in url['endpoints']:
+            score = 0
+            url = ""
+            scan = 0
+            since = ""
+            last_scan = ""
+            for rating in endpoint['ratings']:
+                if rating['type'] in ["internet_nl_web_overall_score", "internet_nl_mail_dashboard_overall_score"]:
+                    # explanation	"78 https://batch.interne…zuiderzeeland.nl/886818/"
+                    explanation = rating['explanation'].split(" ")
+                    rating['internet_nl_score'] = score = int(explanation[0])
+                    rating['internet_nl_url'] = url = explanation[1]
+                    scan = rating['scan']
+                    since = rating['since']
+                    last_scan = rating['last_scan']
+
+            # Now that we had all ratings, add a single value for the score, so we don't have to switch between
+            # web or mail, which is severely annoying.
+            # there is only one rating per set endpoint. So this is safe
+            endpoint['ratings'].append(
+                {
+                    "type": "internet_nl_score",
+                    "scan_type": "internet_nl_score",
+                    "internet_nl_score": score,
+                    "internet_nl_url": url,
+
+                    # to comply with the rating structure
+                    "high": 0,
+                    "medium": 1,  # make sure to match simple verdicts as defined above.
+                    "low": 0,
+                    "ok": 0,
+                    "not_testable": False,
+                    "not_applicable": False,
+                    "scan": scan,
+                    "since": since,
+                    "last_scan": last_scan,
+                }
+            )
 
     report.save()
 

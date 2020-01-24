@@ -171,6 +171,18 @@ def create_dashboard_report(urllist):
 
 
 @app.task(queue='storage')
+def create_dashboard_report_at(urllist, at_when):
+    """
+    Simplified (and perhaps straightforward) version of rate_urllists_now, which returns a report id.
+    Only call this after a scan is performed.
+
+    :param urllist:
+    :return:
+    """
+    return rate_urllist_on_moment(urllist, when=at_when, prevent_duplicates=False)
+
+
+@app.task(queue='storage')
 def rate_urllists_now(urllists: List[UrlList], prevent_duplicates: bool = True):
     for urllist in urllists:
         now = datetime.now(pytz.utc)
