@@ -268,6 +268,10 @@ def add_keyed_ratings(report: UrlListReport):
             for rating in endpoint['ratings']:
                 endpoint['ratings_by_type'][rating['type']] = rating
 
+            # remove the original rating, as that slows parsing on the client down significantly.
+            # with significantly == Vue will parse it, and for a 500 url list this will take 5 seconds.
+            endpoint['ratings'] = []
+
     report.save()
 
 

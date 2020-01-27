@@ -23,9 +23,10 @@ from websecmap.scanners.scanner.internet_nl_mail import store
 from dashboard.celery import app
 from dashboard.internet_nl_dashboard.logic.report import (add_keyed_ratings,
                                                           add_percentages_to_statistics,
+                                                          add_simple_verdicts,
                                                           add_statistics_over_ratings,
-                                                          remove_comply_or_explain, split_score_and_url,
-                                                          add_simple_verdicts)
+                                                          remove_comply_or_explain,
+                                                          split_score_and_url)
 from dashboard.internet_nl_dashboard.logic.urllist_dashboard_report import create_dashboard_report
 from dashboard.internet_nl_dashboard.models import (Account, AccountInternetNLScan,
                                                     AccountInternetNLScanLog, UrlList,
@@ -540,6 +541,7 @@ def upgrade_report_with_statistics(urllistreport: UrlListReport):
     split_score_and_url(urllistreport)
 
     # this makes all scores directly accessible, for easy display
+    # It will also remove the ratings as a list, as that contains a lot of data too (which takes costly parse time)
     add_keyed_ratings(urllistreport)
 
     # This adds some calculations over ratings

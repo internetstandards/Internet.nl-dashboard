@@ -346,8 +346,8 @@
                             <template v-if="scan_form.name === selected_report[0].type">
 
                                 <tabs :options="{ useUrlFragment: false }">
-                                    <tab :name="$t('chart_info.adoption_bar_chart.annotation.title')">
-                                        <h3>{{ $t("chart_info.adoption_bar_chart.annotation.title") }}</h3>
+                                    <tab :name="$t('settings.main_category')">
+                                        <h3>{{ $t("settings.main_category") }}</h3>
                                         <br>
                                         <p>
                                             <label :for="scan_form.name + '_show_dynamic_average'">
@@ -612,12 +612,12 @@
                                             </button>
                                         </td>
                                     </template>
-                                    <template v-if="!['web', 'mail'].includes(selected_category)">
+                                    <template v-else>
                                         <td :colspan="relevant_categories_based_on_settings.length" style="text-align: center" class="sticky_search">
-                                        {{ $t("report.zoom.zoomed_in_on") }} {{ $t("" + selected_category) }}.
-                                            <button @click="select_category(selected_report.urllist_scan_type)">
+                                            <button style='width: 100%' @click="select_category(selected_report.urllist_scan_type)">
                                                 <span role="img" :aria-label="$t('icons.remove_filter')">❌</span> {{ $t("report.zoom.buttons.remove_zoom") }}
-                                            </button>
+                                            </button><br>
+                                            {{ $t("report.zoom.zoomed_in_on") }} {{ $t("" + selected_category) }}.
                                         </td>
                                     </template>
                                 </tr>
@@ -628,8 +628,7 @@
                                     <td :colspan="relevant_categories_based_on_settings.length + 2" style="text-align: center;">😱 {{ $t("report.empty_report") }}</td>
                                 </tr>
                             </template>
-
-                            <template v-if="filtered_urls.length">
+                            <template v-else>
 
                                 <tr v-for="url in filtered_urls" class="result_row">
                                     <template v-if="!url.endpoints.length">
@@ -641,7 +640,7 @@
                                             <small>{{ $t('report.not_eligeble_for_scanning') }}</small>
                                         </td>
                                     </template>
-                                    <template v-if="url.endpoints.length">
+                                    <template v-else>
                                         <td>
                                             <a class='direct_link_to_report' :href='url.endpoints[0].ratings_by_type.internet_nl_score.internet_nl_url' target="_blank">
                                                 <img src="/static/images/vendor/internet_nl/favicon.png" style="height: 16px;"> {{url.endpoints[0].ratings_by_type.internet_nl_score.internet_nl_score}}%
@@ -649,28 +648,16 @@
                                             </a>
                                         </td>
                                         <td>{{url.url}}</td>
-                                        <td class="testresultcell" v-for="category_name in relevant_categories_based_on_settings">
-                                            <template v-if="['web', 'mail'].includes(selected_category)">
-                                                <template v-if="category_name in url.endpoints[0].ratings_by_type">
-                                                    <!-- Currently the API just says True or False, we might be able to deduce the right label for a category, but that will take a day or two.
-                                                    At the next field update, we'll also make the categories follow the new format of requirement level and testresult so HTTP Security Headers
-                                                     here is shown as optional, or info if failed. We can also add a field for baseline NL government then. -->
-                                                    <div v-html="category_value_with_comparison(category_name, url)"></div>
-                                                </template>
-                                                <span class="" v-if="url.endpoints[0].ratings_by_type[category_name] === undefined">
-                                                    {{ $t("report.results.unknown") }}
-                                                </span>
-                                            </template>
-                                            <template v-if="!['web', 'mail'].includes(selected_category)">
-
-                                                <template v-if="category_name in url.endpoints[0].ratings_by_type">
-                                                    <div v-html="detail_value_with_comparison(category_name, url)"></div>
-                                                </template>
-                                                <span class="" v-if="url.endpoints[0].ratings_by_type[category_name] === undefined">
-                                                    <span>{{ $t("report.results.unknown") }}</span>
-                                                </span>
-                                            </template>
-                                        </td>
+                                        <template v-if="['web', 'mail'].includes(selected_category)">
+                                            <td class="testresultcell" v-for="category_name in relevant_categories_based_on_settings">
+                                                <div v-html="category_value_with_comparison(category_name, url)"></div>
+                                            </td>
+                                        </template>
+                                        <template v-else>
+                                            <td class="testresultcell" v-for="category_name in relevant_categories_based_on_settings">
+                                                <div v-html="detail_value_with_comparison(category_name, url)"></div>
+                                            </td>
+                                        </template>
                                     </template>
                                 </tr>
                             </template>
@@ -777,6 +764,7 @@ const Report = Vue.component('report', {
                 },
                 settings: {
                     title: 'Select visible metrics',
+                    main_category: "Average adoption of standards",
                     intro: 'To retain focus, select the fields that are relevant to your organization.',
                     buttons: {
                         reset: 'Reset',
@@ -930,6 +918,7 @@ const Report = Vue.component('report', {
                 },
                 settings: {
                     title: 'Selecteer zichtbare meetwaarden',
+                    main_category: "Adoptie van standaarden",
                     intro: 'Selecteer de velden die relevant zijn voor uw organisatie.',
                     buttons: {
                         reset: 'Reset',
@@ -1250,9 +1239,7 @@ const Report = Vue.component('report', {
             let simple_value = this.category_verdict_to_simple_value(verdicts, category_name);
 
             if (this.compare_charts.length < 2 || this.compare_charts[1].calculation.urls_by_url[url.url] === undefined)
-                return `<span class="category_${simple_value}">
-                            <span>${simple_value}</span>
-                        </span>`;
+                return `<span class="category_${simple_value}">${simple_value}</span>`;
 
             let other_verdicts = this.compare_charts[1].calculation.urls_by_url[url.url].endpoints[0].ratings_by_type[category_name];
             let other_simple_value = this.category_verdict_to_simple_value(other_verdicts, category_name);
@@ -1289,15 +1276,19 @@ const Report = Vue.component('report', {
         },
 
         detail_value_with_comparison: function(category_name, url){
+            /**
+             * This function is called numerous times. It has been optimzed in the following ways:
+             * - Translations have been removed, saving 1 second for (500 * 16) = 8000 metrics.
+             * - values are precalculated: simple_value, simple_progression, score etc...
+             * */
+
             let verdicts = url.endpoints[0].ratings_by_type[category_name];
 
             // Adding the verdict to the report would speed things up...
             let simple_value = verdicts.simple_verdict;  // not_applicable, not_testable, failed, warning, info, passed
             let simple_progression = verdicts.simple_progression;
 
-            let report_result_string = "";
-            let category_name_verdict = "";
-
+            /* disabling translations saves a second on 500 urls and the TLS page.
             report_result_string = this.$i18n.t("report.results." + simple_value);
 
             if (["failed", "warning", "info"].includes(simple_value)) {
@@ -1307,10 +1298,18 @@ const Report = Vue.component('report', {
             if (simple_value === "passed"){
                 category_name_verdict = this.$i18n.t('' + category_name + '_verdict_good')
             }
+            */
 
-            // And now add a quick comparison to the 2nd report. If there is any of course.
-            if (this.compare_charts.length < 2 || this.compare_charts[1].calculation.urls_by_url[url.url] === undefined)
-                return `<span class="${simple_value}">${report_result_string} ${category_name_verdict}</span>`;
+            // If we're not in comparison mode, just return the value.
+            // a template string litteral is slower than just an ordinary string that will be parsen by the browser...
+            // https://jsperf.com/es6-string-literals-vs-string-concatenation
+            if (this.compare_charts.length < 2)
+                return "<span class='" + simple_value + "'>" + simple_value + "</span>";
+
+            // if we _are_ comparing, but the comparison is empty because there is nothing to compare to:
+            // This is done separately to prevent another call to something undefined
+            if (this.compare_charts[1].calculation.urls_by_url[url.url] === undefined)
+                return `<span class="${simple_value}">${simple_value}</span>`;
 
             /*
             * This compares if the new value is progressive, neutral or regressive.
@@ -1342,7 +1341,7 @@ const Report = Vue.component('report', {
             }
 
             let comparison_text = this.$i18n.t("report.results.comparison." + comparison_verdict);
-            return `<span class="${simple_value} compared_with_next_report_${comparison_verdict}">${comparison_text} ${report_result_string} ${category_name_verdict}</span>`
+            return `<span class="${simple_value} compared_with_next_report_${comparison_verdict}">${comparison_text} ${simple_value}</span>`
         },
 
 
@@ -1371,11 +1370,15 @@ const Report = Vue.component('report', {
 
         get_report_data: function(report_id){
             this.is_loading = true;
+            console.log("Loading: retreiving data.");
             fetch(`/data/report/get/${report_id}/`, {credentials: 'include'}).then(response => response.json()).then(data => {
+                console.log("Loading: data retrieved.");
                 this.reports = data;
 
+                console.log("Loading: setting selected category.");
                 this.selected_category = this.selected_report[0].urllist_scan_type;
 
+                console.log("Loading: apply sorting.");
                 this.original_urls = data[0].calculation.urls.sort(this.alphabet_sorting);
                 this.older_data_available = true;
 
@@ -1383,16 +1386,19 @@ const Report = Vue.component('report', {
                 // we'll probably just need a table control that does sorting, filtering and such instead of coding it ourselves.
                 this.filtered_urls = this.order_urls(data[0].calculation.urls);
                 // this.get_timeline();
-                this.is_loading = false;
 
                 // we already have the first report, so don't request it again.
                 // note that when setting the first chart, the subsequent updates do not "point ot a new object"
                 // so a state change doesn not happen automatically using a wathcer, you have to watch deep.
                 // console.log(`First compare chart set...`);
-                this.$set(this.compare_charts, 0, this.reports[0]);
+                this.$set(this.compare_charts, 0, data[0]);
                 // this.compare_charts.$set(0, );
 
+                console.log("Loading: near complete.");
+                this.is_loading = false;
+
                 // new accordions are created, reduce their size.
+                console.log("Loading: creating accordeons for graphs, and updating the view.");
                 this.$nextTick(() => {accordinate(); this.$forceUpdate()});
             }).catch((fail) => {console.log('A loading error occurred: ' + fail);});
 
