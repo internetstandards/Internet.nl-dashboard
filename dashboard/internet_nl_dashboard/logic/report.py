@@ -221,7 +221,12 @@ def remove_comply_or_explain(report: UrlListReport):
         del url["explained_endpoint_issues_low"]
 
         for endpoint in url['endpoints']:
+            del endpoint['explained_high']
+            del endpoint['explained_medium']
+            del endpoint['explained_low']
+
             for rating in endpoint['ratings']:
+                del rating['is_explained']
                 del rating['comply_or_explain_explanation']
                 del rating['comply_or_explain_explained_on']
                 del rating['comply_or_explain_explanation_valid_until']
@@ -267,6 +272,39 @@ def add_keyed_ratings(report: UrlListReport):
             endpoint['ratings_by_type'] = {}
             for rating in endpoint['ratings']:
                 endpoint['ratings_by_type'][rating['type']] = rating
+
+    report.save()
+
+
+def clean_up_not_required_data_to_speed_up_report_on_client(report: UrlListReport):
+    """
+    Loading in JSON objects in the client takes (a lot of) time. The larger the object, the more time.
+    Especially with 500+ urls, shaving off data increases parse speed with over 50%. So this is a must
+
+    :param report:
+    :return:
+    """
+
+    for url in report.calculation['urls']:
+        for endpoint in url['endpoints']:
+            for rating_key in endpoint['ratings_by_type']:
+                # clean up fields we don't need, to make the report show even quicker
+                # a lot of stuff from web sec map is nice, but not really useful for us at this moment.
+                # perhaps later
+
+                # These values are used in add_statistics_over_ratings and. Only OK is used in the spreadsheet
+                # export (which could also be pre-generated).
+                del endpoint['ratings_by_type'][rating_key]['high']  # high is used in add_statistics_over_ratings
+                del endpoint['ratings_by_type'][rating_key]['medium']  # only 'ok' is used in spreadsheet export.
+                del endpoint['ratings_by_type'][rating_key]['low']  # only 'ok' is used in spreadsheet export.
+                del endpoint['ratings_by_type'][rating_key]['not_testable']  # only 'ok' is used in spreadsheet export.
+                del endpoint['ratings_by_type'][rating_key]['not_applicable']  # only 'ok' is used in spreadsheet export
+                del endpoint['ratings_by_type'][rating_key]['since']
+                del endpoint['ratings_by_type'][rating_key]['last_scan']
+                del endpoint['ratings_by_type'][rating_key]['explanation']
+
+                del endpoint['ratings_by_type'][rating_key]['type']  # is already in the key
+                del endpoint['ratings_by_type'][rating_key]['scan_type']  # is already in the key
 
             # remove the original rating, as that slows parsing on the client down significantly.
             # with significantly == Vue will parse it, and for a 500 url list this will take 5 seconds.
@@ -367,6 +405,7 @@ def split_score_and_url(report: UrlListReport):
                     "scan": scan,
                     "since": since,
                     "last_scan": last_scan,
+                    "explanation": "",
                 }
             )
 

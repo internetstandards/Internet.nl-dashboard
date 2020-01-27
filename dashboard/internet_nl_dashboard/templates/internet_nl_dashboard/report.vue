@@ -1370,15 +1370,11 @@ const Report = Vue.component('report', {
 
         get_report_data: function(report_id){
             this.is_loading = true;
-            console.log("Loading: retreiving data.");
+            // You'll notice a load time at a random point in this function, this means Vue is processing the response.
             fetch(`/data/report/get/${report_id}/`, {credentials: 'include'}).then(response => response.json()).then(data => {
-                console.log("Loading: data retrieved.");
                 this.reports = data;
-
-                console.log("Loading: setting selected category.");
                 this.selected_category = this.selected_report[0].urllist_scan_type;
 
-                console.log("Loading: apply sorting.");
                 this.original_urls = data[0].calculation.urls.sort(this.alphabet_sorting);
                 this.older_data_available = true;
 
@@ -1394,11 +1390,9 @@ const Report = Vue.component('report', {
                 this.$set(this.compare_charts, 0, data[0]);
                 // this.compare_charts.$set(0, );
 
-                console.log("Loading: near complete.");
                 this.is_loading = false;
 
                 // new accordions are created, reduce their size.
-                console.log("Loading: creating accordeons for graphs, and updating the view.");
                 this.$nextTick(() => {accordinate(); this.$forceUpdate()});
             }).catch((fail) => {console.log('A loading error occurred: ' + fail);});
 

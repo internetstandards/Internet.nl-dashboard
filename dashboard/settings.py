@@ -592,3 +592,8 @@ else:
     EMAIL_HOST_PASSWORD = ''
     EMAIL_USE_TLS = False
     EMAIL_USE_SSL = False
+
+
+if DEBUG:
+    # 25 megs for importing reports from live situations
+    DATA_UPLOAD_MAX_MEMORY_SIZE = 26214400

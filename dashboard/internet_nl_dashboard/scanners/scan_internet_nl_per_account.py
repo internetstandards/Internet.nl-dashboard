@@ -21,12 +21,10 @@ from websecmap.scanners.scanner import add_model_filter, dns_endpoints
 from websecmap.scanners.scanner.internet_nl_mail import store
 
 from dashboard.celery import app
-from dashboard.internet_nl_dashboard.logic.report import (add_keyed_ratings,
-                                                          add_percentages_to_statistics,
-                                                          add_simple_verdicts,
-                                                          add_statistics_over_ratings,
-                                                          remove_comply_or_explain,
-                                                          split_score_and_url)
+from dashboard.internet_nl_dashboard.logic.report import (
+    add_keyed_ratings, add_percentages_to_statistics, add_simple_verdicts,
+    add_statistics_over_ratings, clean_up_not_required_data_to_speed_up_report_on_client,
+    remove_comply_or_explain, split_score_and_url)
 from dashboard.internet_nl_dashboard.logic.urllist_dashboard_report import create_dashboard_report
 from dashboard.internet_nl_dashboard.models import (Account, AccountInternetNLScan,
                                                     AccountInternetNLScanLog, UrlList,
@@ -547,6 +545,8 @@ def upgrade_report_with_statistics(urllistreport: UrlListReport):
     # This adds some calculations over ratings
     add_statistics_over_ratings(urllistreport)
     add_percentages_to_statistics(urllistreport)
+
+    clean_up_not_required_data_to_speed_up_report_on_client(urllistreport)
 
     return UrlListReport.objects.all().get(pk=urllistreport.pk)
 

@@ -43,7 +43,7 @@ SANE_COLUMN_ORDER = {
     # scanner
     'dns_a_aaaa': {
         'overall': [
-            'internet_nl_web_overall_score',
+            'internet_nl_score',
         ],
 
         'ipv6': [
@@ -121,7 +121,7 @@ SANE_COLUMN_ORDER = {
     'dns_soa': {
         # any grouping, every group has a empty column between them. The label is not used.
         'overall': [
-            'internet_nl_mail_dashboard_overall_score'
+            'internet_nl_score'
         ],
         'ipv6': [
             # Category
@@ -555,20 +555,19 @@ def keyed_values_as_boolean(keyed_ratings: Dict[str, Any], protocol: str = 'dns_
 
         for issue_name in SANE_COLUMN_ORDER[protocol][group]:
 
-            if issue_name in ['internet_nl_mail_dashboard_overall_score', 'internet_nl_web_overall_score']:
+            if issue_name == 'internet_nl_score':
                 # Handle the special case of the score column.
                 # explanation":"75 https://batch.internet.nl/mail/portaal.digimelding.nl/289480/",
-                value = keyed_ratings[issue_name]['explanation'].split(" ")
                 # Not steadily convertable to a percentage, so printing it as an integer instead.
-                values.append(int(value[0]))
-                values.append(value[1])
+                values.append(int(keyed_ratings[issue_name]['internet_nl_score']))
+                values.append(keyed_ratings[issue_name]['internet_nl_url'])
             else:
                 # the issue name might not exist, the 'ok' value might not exist. In those cases replace it with a ?
                 value = keyed_ratings.get(issue_name, {'ok': '?', 'not_testable': False, 'not_applicable': False})
 
-                if value['not_testable']:
+                if value['simple_verdict'] == "not_testable":
                     values.append('not_testable')
-                elif value['not_applicable']:
+                elif value['simple_verdict'] == "not_applicable":
                     values.append('not_applicable')
                 else:
                     # When the value doesn't exist at all, we'll get a questionmark.
