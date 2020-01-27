@@ -1,5 +1,6 @@
 import json
 import logging
+from copy import copy
 from datetime import timedelta
 from typing import List
 
@@ -571,14 +572,14 @@ def upgrade_report_with_unscannable_urls(urllistreport: UrlListReport, scan: Acc
     the url as being empty. This way all urls that are requested are in the report, and if they are empty, they
     are ignored in all statistics.
 
-    :param urllist:
-    :param protocol:
+    :param urllistreport:
+    :param scan:
     :return:
     """
 
     # See if all urls in the list are also mentioned in the report, if not, add them and also make sure the stats
     # for the report are correct(!). This means all unscannable domains _will_ be in the report, as that matches
-    # the list of domains to scan. (todo: also add an "unreachable" stat to the report / stats to the report).
+    # the list of domains to scan.
 
     urls_in_report: List[str] = [url['url'] for url in urllistreport.calculation['urls']]
     urls_in_list: List[Url] = list(scan.urllist.urls.all())
@@ -611,9 +612,11 @@ def upgrade_report_with_unscannable_urls(urllistreport: UrlListReport, scan: Acc
     }
 
     for url_not_in_report in urls_not_in_report:
-        # log.debug(f"{url_not_in_report} not present")
-        empty_url_template['url'] = url_not_in_report
-        urllistreport.calculation['urls'].append(empty_url_template)
+        # Copy the template, otherwise all instances will point to the same text (the last domain in the list of
+        # missing domains).
+        tmp_empty_url_template = copy(empty_url_template)
+        tmp_empty_url_template['url'] = url_not_in_report
+        urllistreport.calculation['urls'].append(tmp_empty_url_template)
 
     # also update the total urls, as that can be influenced:
     urllistreport.calculation['total_urls'] = len(urllistreport.calculation['urls'])
