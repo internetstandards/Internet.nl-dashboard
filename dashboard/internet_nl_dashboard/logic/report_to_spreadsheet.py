@@ -503,7 +503,7 @@ def urllistreport_to_spreadsheet_data(category_name: str, urls: List[Any], proto
             for endpoint in url['endpoints']:
                 if endpoint['protocol'] != protocol:
                     continue
-                keyed_ratings = keyed_list(endpoint['ratings'], key_column='type')
+                keyed_ratings = endpoint['ratings_by_type']
                 data.append([category_name, url['url'], endpoint['port'], endpoint['ip_version'], ''] +
                             keyed_values_as_boolean(keyed_ratings, protocol))
 
@@ -513,7 +513,7 @@ def urllistreport_to_spreadsheet_data(category_name: str, urls: List[Any], proto
             for endpoint in url['endpoints']:
                 if endpoint['protocol'] != protocol:
                     continue
-                keyed_ratings = keyed_list(endpoint['ratings'], key_column='type')
+                keyed_ratings = endpoint['ratings_by_type']
                 data.append(['', '', endpoint['port'], endpoint['ip_version'], ''] +
                             keyed_values_as_boolean(keyed_ratings, protocol))
 
@@ -580,21 +580,3 @@ def keyed_values_as_boolean(keyed_ratings: Dict[str, Any], protocol: str = 'dns_
             values += ['']
 
     return values
-
-
-def keyed_list(any_list_with_dicts: List[Dict[Any, Any]], key_column='type'):
-    """
-    Ratings are a list, which can be in any order. To prevent tons of looping over this list for the correct element,
-    just make a dict where the keys are the keys we need.
-
-    :param any_list_with_dicts: as it says
-    :param key_column: the column you wish to use as key for quick access.
-    :return:
-    """
-
-    result: Dict[str, Dict[str, Any]] = {}
-
-    for item in any_list_with_dicts:
-        result[item[key_column]] = item
-
-    return result
