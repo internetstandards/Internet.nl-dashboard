@@ -292,7 +292,7 @@
 
 <template type="x-template" id="report_template">
     <div id="report-template">
-        <div class="block fullwidth">
+        <div class="block fullwidth do-not-print">
             <h1>{{ $t("header.title") }}</h1>
             <p>{{ $t("header.intro") }}</p>
 
@@ -346,8 +346,8 @@
                             <template v-if="scan_form.name === selected_report[0].type">
 
                                 <tabs :options="{ useUrlFragment: false }">
-                                    <tab :name="$t('chart_info.adoption_bar_chart.annotation.title')">
-                                        <h3>{{ $t("chart_info.adoption_bar_chart.annotation.title") }}</h3>
+                                    <tab :name="$t('settings.main_category')">
+                                        <h3>{{ $t("settings.main_category") }}</h3>
                                         <br>
                                         <p>
                                             <label :for="scan_form.name + '_show_dynamic_average'">
@@ -470,280 +470,36 @@
 
         <loading :loading="is_loading"></loading>
 
-        <div v-if="reports.length && !is_loading" style="page-break-before: always;">
+        <div v-if="reports.length && !is_loading">
 
             <div class="block fullwidth">
-                <h2>{{ $t("chart_info.adoption_timeline.annotation.title") }}</h2>
-                <a class="anchor" name="charts"></a>
-                <p>{{ $t("chart_info.adoption_timeline.annotation.intro") }}</p>
+                <h2>
+                    📊 #{{selected_report[0].id}} - {{ selected_report[0].list_name }}</h2>
+                <span>{{ $t("report_header.type_of_scan_performed") }}:
+                    <img src="/static/images/vendor/internet_nl/icon-website-test.svg" style="height: 1em;" v-if="selected_report[0].type === 'web'">
+                    <img src="/static/images/vendor/internet_nl/icon-emailtest.svg" style="height: 1em;" v-if="selected_report[0].type === 'mail'"> {{ selected_report[0].type }}<br>
+                    {{ $t("report_header.number_of_domains") }}: {{ selected_report[0].number_of_urls }}<br> {{ $t("report_header.data_from") }} {{ humanize_date(selected_report[0].at_when) }}</span><br>
 
-                <div style="overflow: auto; width: 100%;">
-                    <div class="chart-container" style="position: relative; height:300px; width:100%; min-width: 950px;">
-                        <line-chart
-                                :color_scheme="color_scheme"
-                                :translation_key="'charts.adoption_timeline'"
-                                :chart_data="issue_timeline_of_related_urllists"
-                                :accessibility_text="$t('charts.adoption_timeline.accessibility_text')"
-                                :axis="['average_internet_nl_score']">
-                        </line-chart>
-
-                        <div style="overflow-x: scroll; overflow-y: hidden;">
-                            <template  v-for="timeline in issue_timeline_of_related_urllists">
-                                <table class="table table-striped">
-                                    <caption>{{timeline.name}}: {{ $t("charts.adoption_timeline.title") }}</caption>
-                                    <thead>
-                                        <tr>
-                                            <th style="width: 200px;">
-                                                &nbsp;{{ $t("charts.adoption_timeline.xAxis_label") }}
-                                            </th>
-                                            <th>
-                                                 {{ $t("charts.adoption_timeline.yAxis_label") }}
-                                            </th>
-                                        </tr>
-                                    </thead>
-
-                                    <tbody class="gridtable">
-                                        <tr v-for="stat in timeline.data">
-                                            <td>
-                                                {{ humanize_date_date_only(stat.date) }}
-                                            </td>
-                                            <td>
-                                                {{ stat.average_internet_nl_score }}%
-                                            </td>
-                                        </tr>
-                                    </tbody>
-                                </table>
-                            </template>
-                        </div>
-
-
-                    </div>
+                <div v-for="report in selected_report" v-if="selected_report.length > 1" style="padding-left: 10px">
+                    <!-- Skip the first report -->
+                    <template v-if="report.id !== selected_report[0].id">
+                        <h3>{{ $t("report_header.compared_to") }}: #{{report.id}} - {{ report.list_name }}</h3>
+                        <span>{{ $t("report_header.number_of_domains") }}: {{ report.number_of_urls }}<br> {{ $t("report_header.data_from") }} {{ humanize_date(report.at_when) }}<br></span>
+                    </template>
                 </div>
-            </div>
 
-            <div class="block fullwidth" style="page-break-before: always;" v-if='reports.length && "statistics_per_issue_type" in reports[0]["calculation"]'>
-                <!-- Accessible alternative for the data is available in the table below. -->
-                <h2>
-                    {{ $t("chart_info.adoption_bar_chart.annotation.title") }}
-                </h2>
-                <p>{{ $t("chart_info.adoption_bar_chart.annotation.intro") }}</p>
-
-                <template v-for="scan_form in scan_methods">
-                    <template v-if="scan_form.name === selected_report[0].type">
-
-                        <div style="overflow: auto; width: 100%" v-if="visible_fields_from_scan_form(scan_form).length > 0">
-                            <div class="chart-container" style="position: relative; height:500px; width:100%; min-width: 950px;">
-                                <percentage-bar-chart
-                                        :title="graph_bar_chart_title"
-                                        :translation_key="'charts.adoption_bar_chart'"
-                                        :color_scheme="color_scheme"
-                                        :chart_data="compare_charts"
-                                        :accessibility_text="$t('charts.adoption_bar_chart.accessibility_text')"
-                                        @bar_click="select_category"
-                                        :show_dynamic_average="issue_filters[scan_form.name].show_dynamic_average"
-                                        :only_show_dynamic_average="false"
-                                        :axis="visible_fields_from_scan_form(scan_form)">
-                                </percentage-bar-chart>
-                            </div>
-                        </div>
-
-                        <template v-for="category in scan_form.categories">
-                            <template v-if="category_is_visible(category.key)">
-                                <div class="testresult" style="page-break-inside: avoid;" v-if="visible_fields_from_categories(category).length > 0">
-                                    <h3 class="panel-title">
-                                        <a href="" aria-expanded="false">
-                                            <span class="visuallyhidden">-:</span>
-                                            {{ category.label }}
-                                            <span class="pre-icon visuallyhidden"></span>
-                                            <span class="icon"><img src="/static/images/vendor/internet_nl/push-open.png" alt=""></span>
-                                        </a>
-                                    </h3>
-                                    <div class="panel-content">
-                                        <div style="overflow: auto; width: 100%">
-                                            <div class="chart-container" style="position: relative; height:500px; width:100%; min-width: 950px;">
-                                                <percentage-bar-chart
-                                                        :title="graph_bar_chart_title"
-                                                        :translation_key="'charts.adoption_bar_chart'"
-                                                        :color_scheme="color_scheme"
-                                                        :chart_data="compare_charts"
-                                                        :accessibility_text="$t('charts.adoption_bar_chart.accessibility_text')"
-                                                        @bar_click="select_category"
-                                                        :show_dynamic_average="issue_filters[category.key].show_dynamic_average"
-                                                        :only_show_dynamic_average="false"
-                                                        :axis="visible_fields_from_categories(category)">
-                                                </percentage-bar-chart>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <template v-for="subcategory in category.categories">
-                                    <!-- Visibility depends on parent category, the labels themselves cannot yet be filtered for visibility. -->
-                                    <div class="testresult" style="page-break-inside: avoid;" v-if="fields_from_self(subcategory).length > 0">
-                                        <h4 class="panel-title">
-                                            <a href="" aria-expanded="false">
-                                                <span class="visuallyhidden">-:</span>
-                                                {{ subcategory.label }}
-                                                <span class="pre-icon visuallyhidden"></span>
-                                                <span class="icon"><img src="/static/images/vendor/internet_nl/push-open.png" alt=""></span>
-                                            </a>
-                                        </h4>
-                                        <div class="panel-content">
-                                            <div style="overflow: auto; width: 100%">
-                                                <div class="chart-container" style="position: relative; height:500px; width:100%; min-width: 950px;">
-                                                    <percentage-bar-chart
-                                                            :title="graph_bar_chart_title"
-                                                            :translation_key="'charts.adoption_bar_chart'"
-                                                            :color_scheme="color_scheme"
-                                                            :chart_data="compare_charts"
-                                                            :accessibility_text="$t('charts.adoption_bar_chart.accessibility_text')"
-                                                            :show_dynamic_average="issue_filters[category.key].show_dynamic_average"
-                                                            :only_show_dynamic_average="false"
-                                                            :axis="fields_from_self(subcategory)">
-                                                    </percentage-bar-chart>
-                                                </div>
-                                            </div>
-                                            <!-- Special graph for Forum standardisation, that cannot have the items disabled -->
-                                            <div style="overflow: auto; width: 100%" v-if="['category_mail_forum_standardisation_magazine', 'category_web_forum_standardisation_magazine'].includes(subcategory.key)">
-                                                <p>{{ $t("chart_info.magazine.intro") }}</p>
-                                                <div class="chart-container" style="position: relative; height:500px; width:100%; min-width: 950px;">
-                                                    <percentage-bar-chart
-                                                            :title="graph_bar_chart_title"
-                                                            :translation_key="'charts.adoption_bar_chart'"
-                                                            :color_scheme="color_scheme"
-                                                            :chart_data="compare_charts"
-                                                            :accessibility_text="$t('charts.adoption_bar_chart.accessibility_text')"
-                                                            :show_dynamic_average="true"
-                                                            :only_show_dynamic_average="true"
-                                                            :axis="fields_from_self_and_do_not_filter(subcategory)">
-                                                    </percentage-bar-chart>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </template>
-
-                            </template>
-                        </template>
-
-                    </template>
+                <template v-if="selected_report.length > 2">
+                    <p style="padding-top: 1em;">⚠️ {{ $t("report_header.only_graphs") }}</p>
                 </template>
+
             </div>
 
-            <div class="block fullwidth" style="page-break-before: always;" aria-hidden="true" v-if='compare_charts.length > 1 && "statistics_per_issue_type" in reports[0]["calculation"]'>
-                <!-- Todo: there is no cumulative view in the table below, so cumulative data is not (yet) accessible :( -->
-                <h2>
-                    {{ $t("chart_info.cumulative_adoption_bar_chart.annotation.title") }}
-                </h2>
-                <p>{{ $t("chart_info.cumulative_adoption_bar_chart.annotation.intro") }}</p>
-
-                <template v-for="scan_form in scan_methods">
-                    <template v-if="scan_form.name === selected_report[0].type">
-
-                        <div style="overflow: auto; width: 100%" v-if="visible_fields_from_categories(scan_form).length > 0">
-                            <div class="chart-container" style="position: relative; height:500px; width:100%; min-width: 950px;" v-if="visible_fields_from_scan_form(scan_form).length > 0">
-                                <cumulative-percentage-bar-chart
-                                        :title="$t('charts.cumulative_adoption_bar_chart.title', {
-                                                        'number_of_reports': compare_charts.length})"
-                                        :translation_key="'charts.adoption_bar_chart'"
-                                        :color_scheme="color_scheme"
-                                        :chart_data="compare_charts"
-                                        :accessibility_text="$t('charts.cumulative_adoption_bar_chart.accessibility_text')"
-                                        @bar_click="select_category"
-                                        :show_dynamic_average="issue_filters[scan_form.name].show_dynamic_average"
-                                        :only_show_dynamic_average="false"
-                                        :axis="visible_fields_from_scan_form(scan_form)">
-                                </cumulative-percentage-bar-chart>
-                            </div>
-                        </div>
-
-                        <template v-for="category in scan_form.categories">
-                            <template v-if="category_is_visible(category.key)">
-                                <div class="testresult" style="page-break-inside: avoid;" v-if="visible_fields_from_categories(category).length > 0">
-                                    <h3 class="panel-title">
-                                        <a href="" aria-expanded="false">
-                                            <span class="visuallyhidden">-:</span>
-                                            {{ category.label }}
-                                            <span class="pre-icon visuallyhidden"></span>
-                                            <span class="icon"><img src="/static/images/vendor/internet_nl/push-open.png" alt=""></span>
-                                        </a>
-                                    </h3>
-                                    <div class="panel-content">
-                                        <div style="overflow: auto; width: 100%">
-                                            <div class="chart-container" style="position: relative; height:500px; width:100%; min-width: 950px;">
-                                                <cumulative-percentage-bar-chart
-                                                        :title="$t('charts.cumulative_adoption_bar_chart.title', {
-                                                            'number_of_reports': compare_charts.length})"
-                                                        :translation_key="'charts.adoption_bar_chart'"
-                                                        :color_scheme="color_scheme"
-                                                        :chart_data="compare_charts"
-                                                        :accessibility_text="$t('charts.cumulative_adoption_bar_chart.accessibility_text')"
-                                                        @bar_click="select_category"
-                                                        :show_dynamic_average="issue_filters[category.key].show_dynamic_average"
-                                                        :only_show_dynamic_average="false"
-                                                        :axis="visible_fields_from_categories(category)">
-                                                </cumulative-percentage-bar-chart>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <template v-for="subcategory in category.categories">
-                                    <!-- Visibility depends on parent category, the labels themselves cannot yet be filtered for visibility. -->
-                                    <div class="testresult" style="page-break-inside: avoid;" v-if="fields_from_self(subcategory).length > 0">
-                                        <h4 class="panel-title">
-                                            <a href="" aria-expanded="false">
-                                                <span class="visuallyhidden">-:</span>
-                                                {{ subcategory.label }}
-                                                <span class="pre-icon visuallyhidden"></span>
-                                                <span class="icon"><img src="/static/images/vendor/internet_nl/push-open.png" alt=""></span>
-                                            </a>
-                                        </h4>
-                                        <div class="panel-content">
-                                            <div style="overflow: auto; width: 100%">
-                                                <div class="chart-container" style="position: relative; height:500px; width:100%; min-width: 950px;">
-                                                    <cumulative-percentage-bar-chart
-                                                            :title="$t('charts.cumulative_adoption_bar_chart.title', {
-                                                            'number_of_reports': compare_charts.length})"
-                                                            :translation_key="'charts.adoption_bar_chart'"
-                                                            :color_scheme="color_scheme"
-                                                            :chart_data="compare_charts"
-                                                            :accessibility_text="$t('charts.adoption_bar_chart.accessibility_text')"
-                                                            :show_dynamic_average="issue_filters[subcategory.key].show_dynamic_average"
-                                                            :only_show_dynamic_average="false"
-                                                            :axis="fields_from_self(subcategory)">
-                                                    </cumulative-percentage-bar-chart>
-                                                </div>
-                                            </div>
-                                            <!-- Special graph for Forum standardisation, that cannot have the items disabled -->
-                                            <div style="overflow: auto; width: 100%" v-if="['category_mail_forum_standardisation_magazine', 'category_web_forum_standardisation_magazine'].includes(subcategory.key)">
-                                                <p>This shows the average for Forum Standardisation, it is not possible to
-                                                show the average or to select what fields should be visible.</p>
-                                                <div class="chart-container" style="position: relative; height:500px; width:100%; min-width: 950px;">
-                                                    <cumulative-percentage-bar-chart
-                                                            :title="$t('charts.cumulative_adoption_bar_chart.title', {
-                                                            'number_of_reports': compare_charts.length})"
-                                                            :translation_key="'charts.adoption_bar_chart'"
-                                                            :color_scheme="color_scheme"
-                                                            :chart_data="compare_charts"
-                                                            :accessibility_text="$t('charts.adoption_bar_chart.accessibility_text')"
-                                                            :show_dynamic_average="true"
-                                                            :only_show_dynamic_average="true"
-                                                            :axis="fields_from_self_and_do_not_filter(subcategory)">
-                                                    </cumulative-percentage-bar-chart>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </template>
-
-
-                            </template>
-                        </template>
-
-                    </template>
-                </template>
-            </div>
+            <internet-nl-charts
+                    :selected_report="selected_report"
+                    :scan_methods="scan_methods"
+                    :compare_charts="compare_charts"
+                    :issue_filters="issue_filters">
+            </internet-nl-charts>
 
             <!-- The table is only displayed with up to two reports (the first as the source of the table, the second as a comparison). -->
             <div v-if="filtered_urls !== undefined && selected_report.length < 3" class="block fullwidth" style="page-break-before: always;">
@@ -801,7 +557,7 @@
                     </div>
                 </div>
 
-                <div class="sticky-table-container" style="position: relative;">
+                <div class="sticky-table-container" style="position: relative; page-break-before: always;">
                     <div id="horrible-chrome-td-sticky-white-background-fix"></div>
                     <table class="table table-striped">
                         <thead class="sticky_labels">
@@ -856,12 +612,12 @@
                                             </button>
                                         </td>
                                     </template>
-                                    <template v-if="!['web', 'mail'].includes(selected_category)">
+                                    <template v-else>
                                         <td :colspan="relevant_categories_based_on_settings.length" style="text-align: center" class="sticky_search">
-                                        {{ $t("report.zoom.zoomed_in_on") }} {{ $t("" + selected_category) }}.
-                                            <button @click="select_category(selected_report.urllist_scan_type)">
+                                            <button style='width: 100%' @click="select_category(selected_report.urllist_scan_type)">
                                                 <span role="img" :aria-label="$t('icons.remove_filter')">❌</span> {{ $t("report.zoom.buttons.remove_zoom") }}
-                                            </button>
+                                            </button><br>
+                                            {{ $t("report.zoom.zoomed_in_on") }} {{ $t("" + selected_category) }}.
                                         </td>
                                     </template>
                                 </tr>
@@ -872,8 +628,7 @@
                                     <td :colspan="relevant_categories_based_on_settings.length + 2" style="text-align: center;">😱 {{ $t("report.empty_report") }}</td>
                                 </tr>
                             </template>
-
-                            <template v-if="filtered_urls.length">
+                            <template v-else>
 
                                 <tr v-for="url in filtered_urls" class="result_row">
                                     <template v-if="!url.endpoints.length">
@@ -885,54 +640,24 @@
                                             <small>{{ $t('report.not_eligeble_for_scanning') }}</small>
                                         </td>
                                     </template>
-                                    <template v-if="url.endpoints.length">
+                                    <template v-else>
                                         <td>
-                                            <span v-if="selected_report[0].type === 'web'" v-html="original_report_link_from_score(url.endpoints[0].ratings_by_type['internet_nl_web_overall_score'].explanation, url.url)"></span>
-                                            <span v-if="selected_report[0].type === 'mail'" v-html="original_report_link_from_score(url.endpoints[0].ratings_by_type['internet_nl_mail_dashboard_overall_score'].explanation, url.url)"></span>
+                                            <a class='direct_link_to_report' :href='url.endpoints[0].ratings_by_type.internet_nl_score.internet_nl_url' target="_blank">
+                                                <img src="/static/images/vendor/internet_nl/favicon.png" style="height: 16px;"> {{url.endpoints[0].ratings_by_type.internet_nl_score.internet_nl_score}}%
+                                                <span class="visuallyhidden">${this.$i18n.t('report.link_to_report', {'url': url})}</span>
+                                            </a>
                                         </td>
                                         <td>{{url.url}}</td>
-                                        <td class="testresultcell" v-for="category_name in relevant_categories_based_on_settings">
-                                            <template v-if="['web', 'mail'].includes(selected_category)">
-                                                <template v-if="category_name in url.endpoints[0].ratings_by_type">
-                                                    <!-- Currently the API just says True or False, we might be able to deduce the right label for a category, but that will take a day or two.
-                                                    At the next field update, we'll also make the categories follow the new format of requirement level and testresult so HTTP Security Headers
-                                                     here is shown as optional, or info if failed. We can also add a field for baseline NL government then. -->
-                                                    <div v-html="category_value_with_comparison(category_name, url)"></div>
-                                                </template>
-                                                <span class="" v-if="url.endpoints[0].ratings_by_type[category_name] === undefined">
-                                                    {{ $t("report.results.unknown") }}
-                                                </span>
-                                            </template>
-                                            <template v-if="!['web', 'mail'].includes(selected_category)">
-
-                                                <template v-if="category_name in url.endpoints[0].ratings_by_type">
-                                                    <div v-html="detail_value_with_comparison(category_name, url)"></div>
-                                                    <!-- <span class="not_applicable" v-if="url.endpoints[0].ratings_by_type[category_name].not_applicable > 0">
-                                                        <span>{{ $t("report.results.not_applicable") }}</span>
-                                                    </span>
-                                                    <span class="not_testable" v-if="url.endpoints[0].ratings_by_type[category_name].not_testable > 0">
-                                                        <span>{{ $t("report.results.not_testable") }}</span>
-                                                    </span>
-                                                    <span class="failed" v-if="url.endpoints[0].ratings_by_type[category_name].high > 0">
-                                                        <span>{{ $t("report.results.failed") }} {{ $t('' + category_name + '_verdict_bad') }}</span>
-                                                    </span>
-                                                    <span class="warning" v-if="url.endpoints[0].ratings_by_type[category_name].medium > 0">
-                                                        <span>{{ $t("report.results.warning") }} {{ $t('' + category_name + '_verdict_bad') }}</span>
-                                                    </span>
-                                                    <span class="info" v-if="url.endpoints[0].ratings_by_type[category_name].low > 0">
-                                                        <span>{{ $t("report.results.info") }} {{ $t('' + category_name + '_verdict_bad') }}</span>
-                                                    </span>
-                                                    <span class="passed" v-if="url.endpoints[0].ratings_by_type[category_name].ok > 0
-                                                    && !url.endpoints[0].ratings_by_type[category_name].not_applicable
-                                                    && !url.endpoints[0].ratings_by_type[category_name].not_testable">
-                                                        <span>{{ $t("report.results.passed") }} {{ $t('' + category_name + '_verdict_good') }}</span>
-                                                    </span> -->
-                                                </template>
-                                                <span class="" v-if="url.endpoints[0].ratings_by_type[category_name] === undefined">
-                                                    <span>{{ $t("report.results.unknown") }}</span>
-                                                </span>
-                                            </template>
-                                        </td>
+                                        <template v-if="['web', 'mail'].includes(selected_category)">
+                                            <td class="testresultcell" v-for="category_name in relevant_categories_based_on_settings">
+                                                <div v-html="category_value_with_comparison(category_name, url)"></div>
+                                            </td>
+                                        </template>
+                                        <template v-else>
+                                            <td class="testresultcell" v-for="category_name in relevant_categories_based_on_settings">
+                                                <div v-html="detail_value_with_comparison(category_name, url)"></div>
+                                            </td>
+                                        </template>
                                     </template>
                                 </tr>
                             </template>
@@ -995,33 +720,6 @@ const Report = Vue.component('report', {
                     max_elements: 'Maximum number of reports selected.',
                     no_options: 'No reports available.',
                 },
-
-                chart_info: {
-                    adoption_timeline: {
-                        annotation: {
-                            title: 'Adoption of standards over time',
-                            intro: 'This graph compares various measurements of the same list over time. ' +
-                                'This provides a visual indication of the progress of standards adoption. A table with the ' +
-                                'same values is avaiable below. This graph shows the average score of internet.nl.'
-                        },
-                    },
-                    magazine: {
-                        intro: "Below graph only shows the average of all magazine fields. Other fields cannot be enabled/disabled and changing their visibility does " +
-                            "not influence this average.",
-                    },
-                    adoption_bar_chart: {
-                        annotation: {
-                            title: 'Average adoption of standards ',
-                            intro: 'This graph shows the average adoption per standard per report.',
-                        },
-                    },
-                    cumulative_adoption_bar_chart: {
-                        annotation: {
-                            title: 'Average adoption of standards over multiple reports',
-                            intro: 'This graph shows the average adoption per standard averaged over multiple reports.',
-                        },
-                    }
-                },
                 report: {
                     title: 'Report',
                     intro: 'This table shows detailed results per category. It is possible to compare this report to a second report. In that case, progress incidators are ' +
@@ -1066,6 +764,7 @@ const Report = Vue.component('report', {
                 },
                 settings: {
                     title: 'Select visible metrics',
+                    main_category: "Average adoption of standards",
                     intro: 'To retain focus, select the fields that are relevant to your organization.',
                     buttons: {
                         reset: 'Reset',
@@ -1127,6 +826,13 @@ const Report = Vue.component('report', {
                     report_contains_n_urllist_contains_n: "This report contains {0} domains, while the associated list contains {1}.",
                     in_report_but_not_in_urllist: "Domains in this report, but not in the list",
                     in_urllist_but_not_in_report: "Domains not in this report"
+                },
+                report_header: {
+                    type_of_scan_performed: "Type of scan performed",
+                    compared_to: "Compared to",
+                    number_of_domains: "Number of domains",
+                    data_from: "Data from",
+                    only_graphs: "Only showing the timeline and graphs because there are more than two reports selected.",
                 }
             },
             nl: {
@@ -1138,31 +844,6 @@ const Report = Vue.component('report', {
 
                 check: "Selecteer alle",
                 uncheck: "Deselecteer alle",
-
-                chart_info: {
-                    adoption_timeline: {
-                        annotation: {
-                            title: 'Adoptie van standaarden over tijd.',
-                            intro: 'Deze grafiek toont verschillende metingen van dezelfde lijst over tijd. ' +
-                                'Dit geeft zicht over de voortgang van de adoptie van standaarden. Het toont de gemiddelde score van internet.nl. '
-                        },
-                    },
-                    magazine: {
-                        intro: "Onderstaande grafiek toont het gemiddelde van alle magazine velden. Deze grafiek kan niet worden aangepast, ook niet door de zichtbaarheid van velden aan te passen.",
-                    },
-                    adoption_bar_chart: {
-                        annotation: {
-                            title: 'Adoptie van standaarden',
-                            intro: 'Deze grafiek toont het percentage adoptie per categorie en onderliggende metingen.',
-                        },
-                    },
-                    cumulative_adoption_bar_chart: {
-                        annotation: {
-                            title: 'Gemiddelde adoptie, waarbij rapporten bij elkaar worden opgeteld',
-                            intro: 'In deze grafiek worden de geselecteerde rapporten bij elkaar opgeteld, en daar het gemiddelde van getoond.',
-                        },
-                    }
-                },
 
                 icon_legend: {
                     title: "Legenda van gebruikte pictogrammen",
@@ -1237,6 +918,7 @@ const Report = Vue.component('report', {
                 },
                 settings: {
                     title: 'Selecteer zichtbare meetwaarden',
+                    main_category: "Adoptie van standaarden",
                     intro: 'Selecteer de velden die relevant zijn voor uw organisatie.',
                     buttons: {
                         reset: 'Reset',
@@ -1263,6 +945,13 @@ const Report = Vue.component('report', {
                     report_contains_n_urllist_contains_n: "Deze rapportage bevat {0} domeinen terwijl de bijbehorende lijst {1} domeinen bevat.",
                     in_report_but_not_in_urllist: "Domeinen in het rapport, maar niet in de bijbehorende lijst",
                     in_urllist_but_not_in_report: "Domeinen niet in het rapport"
+                },
+                report_header: {
+                    type_of_scan_performed: "Uitgevoerde scan",
+                    compared_to: "Vergeleken met",
+                    number_of_domains: "Aantal domeinen",
+                    data_from: "Rapportage van",
+                    only_graphs: "Enkel de tijdlijn en grafieken worden getoond omdat er meer dan twee rapporten zijn geselecteerd.",
                 }
             }
         }
@@ -1498,32 +1187,9 @@ const Report = Vue.component('report', {
             // a list of reports...
             selected_report: [],
 
-            // graphs:
-            issue_timeline_of_related_urllists: [],
 
-            // https://github.com/ashiguruma/patternomaly/blob/master/assets/pattern-list.png
-            possible_chart_patterns: ['weave', 'dot', 'ring', 'dash', 'plus', 'zigzag', 'square', 'diagonal', 'disc', 'zigzag-vertical', 'triangle', 'line', 'cross-dash', 'diamond'],
-            // See #18 for the primary sources of these colors.
-            // this can help to explain the colors: https://www.canva.com/colors/color-wheel/
-            // blue #154273, orange #E17000, green #39870C, red #731542, gray #7e7d82
-            possible_chart_colors: ['rgba(225, 112, 0, 1)', 'rgba(57, 135, 12, 1)', 'rgba(115, 21, 66, 1)', 'rgb(89, 88, 92)', 'rgba(21, 66, 115, 1)',],
-            color_scheme: {
-                'high_background': 'rgba(255, 99, 132, 0.2)',
-                'high_border': 'rgba(255, 99, 132, 0.2)',
-                'medium_background': 'rgba(255, 102, 0, 0.2)',
-                'medium_border': 'rgba(255,102,0,1)',
-                'low_background': 'rgba(255, 255, 0, 0.2)',
-                'low_border': 'rgba(255,255,0,1)',
-                'ok_background': 'rgba(50, 255, 50, 0.2)',
-                'ok_border': 'rgba(209, 63, 0, 1)',
-                'addresses_background': 'rgba(0, 0, 0, 0.2)',
-                'addresses_border': 'rgba(0,0,0,1)',
-                'services_background': 'rgba(0, 40, 255, 0.2)',
-                'services_border': 'rgba(0,40,255,1)',
 
-                // a long list of possible colors and patterns, this is autogenerated on load
-                incremental: [],
-            },
+
             compare_charts: [],
             compare_oldest_data: "",
             older_data_available: true,
@@ -1534,7 +1200,7 @@ const Report = Vue.component('report', {
         }
     },
     mounted: function(){
-        this.color_scheme.incremental = this.generate_color_increments(10);
+
         this.load_issue_filters();
         this.get_recent_reports();
         // this supports: http://localhost:8000/reports/83/
@@ -1573,9 +1239,7 @@ const Report = Vue.component('report', {
             let simple_value = this.category_verdict_to_simple_value(verdicts, category_name);
 
             if (this.compare_charts.length < 2 || this.compare_charts[1].calculation.urls_by_url[url.url] === undefined)
-                return `<span class="category_${simple_value}">
-                            <span>${simple_value}</span>
-                        </span>`;
+                return `<span class="category_${simple_value}">${simple_value}</span>`;
 
             let other_verdicts = this.compare_charts[1].calculation.urls_by_url[url.url].endpoints[0].ratings_by_type[category_name];
             let other_simple_value = this.category_verdict_to_simple_value(other_verdicts, category_name);
@@ -1612,44 +1276,41 @@ const Report = Vue.component('report', {
         },
 
         detail_value_with_comparison: function(category_name, url){
+            /**
+             * This function is called numerous times. It has been optimzed in the following ways:
+             * - Translations have been removed, saving 1 second for (500 * 16) = 8000 metrics.
+             * - values are precalculated: simple_value, simple_progression, score etc...
+             * */
+
             let verdicts = url.endpoints[0].ratings_by_type[category_name];
 
             // Adding the verdict to the report would speed things up...
-            let simple_value = this.verdict_to_simple_value(verdicts);
-            let report_result_string = "";
-            let category_name_verdict = "";
+            let simple_value = verdicts.simple_verdict;  // not_applicable, not_testable, failed, warning, info, passed
+            let simple_progression = verdicts.simple_progression;
 
-            if (simple_value === "not_applicable"){
-                report_result_string = this.$i18n.t("report.results.not_applicable");
-                category_name_verdict = ""
-            }
+            /* disabling translations saves a second on 500 urls and the TLS page.
+            report_result_string = this.$i18n.t("report.results." + simple_value);
 
-            if (simple_value === "not_testable") {
-                report_result_string = this.$i18n.t("report.results.not_testable");
-                category_name_verdict = ""
-            }
-
-            if (simple_value === "failed") {
-                report_result_string = this.$i18n.t("report.results.failed");
-                category_name_verdict = this.$i18n.t('' + category_name + '_verdict_bad')
-            }
-
-            if (simple_value === "warning") {
-                report_result_string = this.$i18n.t("report.results.warning");
-                category_name_verdict = this.$i18n.t('' + category_name + '_verdict_bad')
-            }
-
-            if (simple_value === "info") {
-                report_result_string = this.$i18n.t("report.results.info");
+            if (["failed", "warning", "info"].includes(simple_value)) {
                 category_name_verdict = this.$i18n.t('' + category_name + '_verdict_bad')
             }
 
             if (simple_value === "passed"){
-                report_result_string = this.$i18n.t("report.results.passed");
                 category_name_verdict = this.$i18n.t('' + category_name + '_verdict_good')
             }
+            */
 
-            // todo: move this to data, make this a constant.
+            // If we're not in comparison mode, just return the value.
+            // a template string litteral is slower than just an ordinary string that will be parsen by the browser...
+            // https://jsperf.com/es6-string-literals-vs-string-concatenation
+            if (this.compare_charts.length < 2)
+                return "<span class='" + simple_value + "'>" + simple_value + "</span>";
+
+            // if we _are_ comparing, but the comparison is empty because there is nothing to compare to:
+            // This is done separately to prevent another call to something undefined
+            if (this.compare_charts[1].calculation.urls_by_url[url.url] === undefined)
+                return `<span class="${simple_value}">${simple_value}</span>`;
+
             /*
             * This compares if the new value is progressive, neutral or regressive.
             * All to/from not_testable and not_applicable is neutral.
@@ -1658,54 +1319,31 @@ const Report = Vue.component('report', {
             * Possible values are: not_applicable, not_testable, failed, warning, info, passed
             * */
 
-            let progression = {'passed': 4, 'info': 3, 'warning': 2, 'failed': 1};
-            let comparison_verdict = "";
-
-            // And now add a quick comparison to the 2nd report. If there is any of course.
-            if (this.compare_charts.length < 2 || this.compare_charts[1].calculation.urls_by_url[url.url] === undefined)
-                return `<span class="${simple_value} compared_with_next_report_${comparison_verdict}">${report_result_string} ${category_name_verdict}</span>`
-
-
             // older, previous...
             let other_verdicts = this.compare_charts[1].calculation.urls_by_url[url.url].endpoints[0].ratings_by_type[category_name];
-            let other_simple_value = this.verdict_to_simple_value(other_verdicts);
+            let other_simple_value = other_verdicts.simple_verdict;
+            let other_simple_progression = other_verdicts.simple_progression;
+            let comparison_verdict = "";
 
             // all to and from not_tested or not_applicable is neutral, also going to the same state is neutral
             if (simple_value === other_simple_value)
                 comparison_verdict = "neutral";
 
-            if (simple_value === "unknown" || simple_value === "not_applicable" || simple_value === "not_testable"
-                || other_simple_value === "not_applicable" || other_simple_value === "not_testable" || other_simple_value === "unknown")
+            if (["unknown", "not_applicable", "not_testable"].includes(simple_value) ||
+                ["unknown", "not_applicable", "not_testable"].includes(other_simple_value))
                 comparison_verdict = "neutral";
 
             if (comparison_verdict === "") {
-                if (progression[simple_value] > progression[other_simple_value])
+                if (simple_progression > other_simple_progression)
                     comparison_verdict = "improved";
                 else
                     comparison_verdict = "regressed";
             }
 
             let comparison_text = this.$i18n.t("report.results.comparison." + comparison_verdict);
-
-            // todo: Clean up this entangled code
-
-            return `<span class="${simple_value} compared_with_next_report_${comparison_verdict}">${comparison_text} ${report_result_string} ${category_name_verdict}</span>`
+            return `<span class="${simple_value} compared_with_next_report_${comparison_verdict}">${comparison_text} ${simple_value}</span>`
         },
 
-        verdict_to_simple_value: function(verdicts){
-            if (verdicts === undefined)
-                return "unknown";
-
-            if (verdicts.not_applicable > 0){return "not_applicable";}
-            if (verdicts.not_testable > 0) {return "not_testable";}
-            if (verdicts.high > 0) {return "failed";}
-            if (verdicts.medium > 0) {return "warning";}
-            if (verdicts.low > 0) {return "info";}
-
-            if (verdicts.ok > 0 && !verdicts.not_applicable && !verdicts.not_testable){
-                return "passed";
-            }
-        },
 
         sortBy: function (key) {
             // console.log(`Sorting by ${key}.`);
@@ -1721,23 +1359,6 @@ const Report = Vue.component('report', {
             this.filtered_urls = this.order_urls(this.filtered_urls);
         },
 
-        generate_color_increments: function(number){
-            // Generate n colors for charts, rotating over the available options. Returns a list with css properties.
-            // The first item is always the same in a single color to give a consistent look/feel to all first graphs
-            let colors = [{background: 'rgba(21, 66, 115, 1)', border: 'rgba(21, 66, 115, 1)'},];
-            for(let i=0; i<number; i++){
-                // make sure we never run out of options.
-                let my_pattern = this.possible_chart_patterns.shift();
-                this.possible_chart_patterns.push(my_pattern);
-                let my_color = this.possible_chart_colors.shift();
-                this.possible_chart_colors.push(my_color);
-
-                colors.push({background: pattern.draw(my_pattern, my_color), border: my_color})
-            }
-
-            return colors;
-        },
-
         get_issue_filter_data(key){
             try {
                 return this.issue_filters[key];
@@ -1749,9 +1370,9 @@ const Report = Vue.component('report', {
 
         get_report_data: function(report_id){
             this.is_loading = true;
+            // You'll notice a load time at a random point in this function, this means Vue is processing the response.
             fetch(`/data/report/get/${report_id}/`, {credentials: 'include'}).then(response => response.json()).then(data => {
                 this.reports = data;
-
                 this.selected_category = this.selected_report[0].urllist_scan_type;
 
                 this.original_urls = data[0].calculation.urls.sort(this.alphabet_sorting);
@@ -1760,15 +1381,16 @@ const Report = Vue.component('report', {
                 // sort urls alphabetically
                 // we'll probably just need a table control that does sorting, filtering and such instead of coding it ourselves.
                 this.filtered_urls = this.order_urls(data[0].calculation.urls);
-                this.get_timeline();
-                this.is_loading = false;
+                // this.get_timeline();
 
                 // we already have the first report, so don't request it again.
                 // note that when setting the first chart, the subsequent updates do not "point ot a new object"
                 // so a state change doesn not happen automatically using a wathcer, you have to watch deep.
                 // console.log(`First compare chart set...`);
-                this.$set(this.compare_charts, 0, this.reports[0]);
+                this.$set(this.compare_charts, 0, data[0]);
                 // this.compare_charts.$set(0, );
+
+                this.is_loading = false;
 
                 // new accordions are created, reduce their size.
                 this.$nextTick(() => {accordinate(); this.$forceUpdate()});
@@ -1942,15 +1564,6 @@ const Report = Vue.component('report', {
                 return data;
             }
             if (sortKey === "score"){
-                // todo: determine web or mail, split the scores etc, not very fast.
-                // todo: score should be much easier as a single value, instead of this convoluted approach, which i also slow.
-                let score_key = "internet_nl_web_overall_score";
-
-                // all mail categories contain the word mail
-                if (this.selected_category.indexOf("mail") > -1){
-                    score_key = "internet_nl_mail_dashboard_overall_score";
-                }
-
                 data = data.slice().sort(function (a, b) {
 
                     // deal with urls without endpoints:
@@ -1962,9 +1575,9 @@ const Report = Vue.component('report', {
                         return 1 * order;
                     }
 
-                    a = parseInt(a.endpoints[0].ratings_by_type[score_key].explanation.split(" ")[0]);
-                    b = parseInt(b.endpoints[0].ratings_by_type[score_key].explanation.split(" ")[0]);
-                    return (a === b ? 0 : a > b ? 1 : -1) * order
+                    a = a.endpoints[0].ratings_by_type["internet_nl_score"].internet_nl_score;
+                    b = b.endpoints[0].ratings_by_type["internet_nl_score"].internet_nl_score;
+                    return (a === b ? 0 : a > b ? 1 : -1) * order;
                 });
 
                 return data;
@@ -1984,81 +1597,12 @@ const Report = Vue.component('report', {
                 let aref = a.endpoints[0].ratings_by_type[sortKey];
                 let bref = b.endpoints[0].ratings_by_type[sortKey];
 
-                // does have endpoint but no ratings by type?
-                if (aref === undefined){
-                    return 1 * order;
-                }
-
-                if (bref === undefined){
-                    return -1 * order;
-                }
-
-                a = `${aref.high} ${aref.medium} ${aref.low} ${aref.not_applicable}  ${aref.not_testable} ${aref.ok}`;
-                b = `${bref.high} ${bref.medium} ${bref.low} ${bref.not_applicable}  ${bref.not_testable} ${bref.ok}`;
+                a = aref.simple_progression;
+                b = bref.simple_progression;
                 return (a === b ? 0 : a > b ? 1 : -1) * order
             });
 
             return data;
-        },
-        get_timeline(){
-            // selected_report.urllist_id contains the key to the timeline.
-            // data/report/urllist_report_graph_data/10/
-
-            if (this.selected_report[0].urllist_id === 0) {
-                return;
-            }
-
-            // report_id's:
-            let report_ids = [];
-            this.selected_report.forEach((item) => {
-                report_ids.push(item.urllist_id)
-            });
-
-            fetch(`/data/report/urllist_timeline_graph/${report_ids.join(",")}/`, {credentials: 'include'}).then(response => response.json()).then(data => {
-                this.issue_timeline_of_related_urllists = data;
-            }).catch((fail) => {console.log('A loading error occurred: ' + fail);});
-
-        },
-        original_report_link_from_score: function(score, url){
-            if (!score){
-                return ""
-            }
-
-            // score = 66 https://batch.internet.nl/site/dev2.internet.nl/664025/
-            let sc = score.split(" ");
-
-            if (sc.length < 1){
-                return ""
-            }
-
-            if (!sc[1].startsWith('http')){
-                return ""
-            }
-
-            return `<a class='direct_link_to_report' href='${sc[1]}' target="_blank">
-                        <img src="/static/images/vendor/internet_nl/favicon.png" style="height: 16px;" alt="${this.$i18n.t('report.link_to_report', {'url': url})}"> ${sc[0]}%
-                        <span class="visuallyhidden">${this.$i18n.t('report.link_to_report', {'url': url})}</span>
-                    </a>`
-        },
-        visible_fields_from_scan_form(scan_form){
-            // see if any of the underlaying categories is visible. If so, include the category.
-            let fields = [];
-
-            scan_form.categories.forEach((category) => {
-                // console.log(category.key);
-                if (this.category_is_visible(category.key)){
-                        category.fields.forEach((field) => {
-                        fields.push(field.name);
-                    });
-                    category.additional_fields.forEach((field) => {
-                        fields.push(field.name);
-                    });
-                }
-            });
-
-            // console.log(`Visible from scan_form: ${fields}`);
-
-            return fields;
         },
         all_field_names_from_categories(categories){
             let fields = [];
@@ -2103,79 +1647,6 @@ const Report = Vue.component('report', {
             });
 
             return fields;
-        },
-        // should be named: visible fields from categories
-        visible_fields_from_categories(categories){
-            let fields = [];
-
-            categories.categories.forEach((category) => {
-
-                category.fields.forEach((field) => {
-                    fields.push(field.name);
-                });
-                category.additional_fields.forEach((field) => {
-                    fields.push(field.name);
-                });
-
-            });
-
-            let returned_fields = [];
-            for(let i = 0; i<fields.length; i++){
-                if(this.issue_filters[fields[i]].visible)
-                    returned_fields.push(fields[i])
-            }
-
-            return returned_fields;
-        },
-        fields_from_self(category){
-            let fields = [];
-
-            category.fields.forEach((field) => {
-                fields.push(field.name);
-            });
-            category.additional_fields.forEach((field) => {
-                fields.push(field.name);
-            });
-
-            let returned_fields = [];
-            for(let i = 0; i<fields.length; i++){
-
-                if(this.issue_filters[fields[i]].visible)
-                    returned_fields.push(fields[i])
-            }
-            return returned_fields;
-        },
-        fields_from_self_and_do_not_filter(category){
-            let fields = [];
-
-            category.fields.forEach((field) => {
-                fields.push(field.name);
-            });
-            category.additional_fields.forEach((field) => {
-                fields.push(field.name);
-            });
-            return fields;
-        },
-        category_is_visible: function (category_key){
-
-            // See #6. If any of the subcategory fields
-            return this.visible_fields_from_categories(this.get_category_by_name(category_key)).length > 0;
-        },
-        get_category_by_name: function(category_key){
-            let found = null;
-            this.scan_methods.forEach((scan_method) => {
-                scan_method.categories.forEach((category) => {
-                    if (category.key === category_key){
-                        found = category;
-                    }
-                });
-
-            });
-            if (!found) {
-                throw `Category ${category_key} does not exist.`;
-            } else {
-                return found;
-            }
         },
 
         check_fields: function(list_of_fields){
@@ -2292,21 +1763,6 @@ const Report = Vue.component('report', {
                 'list_information': this.selected_report[0].list_name,
                 'number_of_domains': this.original_urls.length
             });
-        },
-
-        graph_bar_chart_title: function(){
-            // fixing https://github.com/internetstandards/Internet.nl-dashboard/issues/65
-            // 1 report:
-            if (this.selected_report.length === 1) {
-                return i18n.t('charts.adoption_bar_chart.title_single', {
-                    'list_information': this.selected_report[0].list_name,
-                    'number_of_domains': this.original_urls.length
-                });
-            } else {
-                return i18n.t('charts.adoption_bar_chart.title_multiple', {
-                    'number_of_reports': this.selected_report.length,
-                });
-            }
         },
 
         scan_methods: function() {

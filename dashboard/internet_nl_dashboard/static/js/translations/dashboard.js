@@ -75,7 +75,7 @@ const messages = {
 
         charts: {
             adoption_timeline: {
-                title: 'Adoption of modern standards over time.',
+                title: 'Average internet.nl score over time.',
                 yAxis_label: 'Average internet.nl score',
                 xAxis_label: 'Date',
                 average_internet_nl_score: "Average internet.nl score",

@@ -1,5 +1,6 @@
 import json
 import logging
+from copy import copy
 from datetime import timedelta
 from typing import List
 
@@ -20,10 +21,10 @@ from websecmap.scanners.scanner import add_model_filter, dns_endpoints
 from websecmap.scanners.scanner.internet_nl_mail import store
 
 from dashboard.celery import app
-from dashboard.internet_nl_dashboard.logic.report import (add_keyed_ratings,
-                                                          add_percentages_to_statistics,
-                                                          add_statistics_over_ratings,
-                                                          remove_comply_or_explain)
+from dashboard.internet_nl_dashboard.logic.report import (
+    add_keyed_ratings, add_percentages_to_statistics, add_simple_verdicts,
+    add_statistics_over_ratings, clean_up_not_required_data_to_speed_up_report_on_client,
+    remove_comply_or_explain, split_score_and_url)
 from dashboard.internet_nl_dashboard.logic.urllist_dashboard_report import create_dashboard_report
 from dashboard.internet_nl_dashboard.models import (Account, AccountInternetNLScan,
                                                     AccountInternetNLScanLog, UrlList,
@@ -528,12 +529,24 @@ def connect_urllistreport_to_accountinternetnlscan(urllistreport: UrlListReport,
 
 @app.task(queue='storage')
 def upgrade_report_with_statistics(urllistreport: UrlListReport):
-    # todo: also upgrade existing reports and store them, this also speeds up report retrieval
-
+    # This saves a lot of data / weight.
     remove_comply_or_explain(urllistreport)
+
+    # This makes comparisons easy and fast in table layouts
+    add_simple_verdicts(urllistreport)
+
+    # This makes sorting on score easy.
+    split_score_and_url(urllistreport)
+
+    # this makes all scores directly accessible, for easy display
+    # It will also remove the ratings as a list, as that contains a lot of data too (which takes costly parse time)
     add_keyed_ratings(urllistreport)
+
+    # This adds some calculations over ratings
     add_statistics_over_ratings(urllistreport)
     add_percentages_to_statistics(urllistreport)
+
+    clean_up_not_required_data_to_speed_up_report_on_client(urllistreport)
 
     return UrlListReport.objects.all().get(pk=urllistreport.pk)
 
@@ -561,14 +574,14 @@ def upgrade_report_with_unscannable_urls(urllistreport: UrlListReport, scan: Acc
     the url as being empty. This way all urls that are requested are in the report, and if they are empty, they
     are ignored in all statistics.
 
-    :param urllist:
-    :param protocol:
+    :param urllistreport:
+    :param scan:
     :return:
     """
 
     # See if all urls in the list are also mentioned in the report, if not, add them and also make sure the stats
     # for the report are correct(!). This means all unscannable domains _will_ be in the report, as that matches
-    # the list of domains to scan. (todo: also add an "unreachable" stat to the report / stats to the report).
+    # the list of domains to scan.
 
     urls_in_report: List[str] = [url['url'] for url in urllistreport.calculation['urls']]
     urls_in_list: List[Url] = list(scan.urllist.urls.all())
@@ -601,9 +614,11 @@ def upgrade_report_with_unscannable_urls(urllistreport: UrlListReport, scan: Acc
     }
 
     for url_not_in_report in urls_not_in_report:
-        # log.debug(f"{url_not_in_report} not present")
-        empty_url_template['url'] = url_not_in_report
-        urllistreport.calculation['urls'].append(empty_url_template)
+        # Copy the template, otherwise all instances will point to the same text (the last domain in the list of
+        # missing domains).
+        tmp_empty_url_template = copy(empty_url_template)
+        tmp_empty_url_template['url'] = url_not_in_report
+        urllistreport.calculation['urls'].append(tmp_empty_url_template)
 
     # also update the total urls, as that can be influenced:
     urllistreport.calculation['total_urls'] = len(urllistreport.calculation['urls'])
