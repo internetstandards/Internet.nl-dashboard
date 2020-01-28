@@ -383,9 +383,8 @@ Vue.component('managed-url-list', {
                 },
 
                 scan_now_form: {
-                    title: 'Confirm to scan now',
-                    message: 'To start a scan now, please take the following in consideration: <br>' +
-                        'A scan can only be started once a day, and only when no scan is already running. Note that a scan cannot be cancelled.',
+                    title: 'Confirm to scan',
+                    message: 'Your scan will start in a moment. You can cancel a running scan at any time in the scan monitor.',
                     cancel: 'Cancel',
                     ok: 'Scan now',
                     starting: 'Starting...',
@@ -467,9 +466,9 @@ Vue.component('managed-url-list', {
                 },
 
                 scan_now_form: {
-                    title: 'Bevestig om opnieuw te scannen',
-                    message: 'Een scan die nu wordt gestart heeft de volgende eigenschappen: <br>' +
-                        'Een handmatige scan kan eens per dag worden gestart, mits er nog geen scan wordt uitgevoerd op deze lijst.',
+                    title: 'Nu scannen?',
+                    message: 'De scan start binnen enkele ogenblikken en is te volgen op de scan monitor. ' +
+                        'In de scan monitor kan de scan alsnog worden gestopt.',
                     cancel: 'Annuleer',
                     ok: 'Nu scannen',
                     starting: 'Opstarten...',
