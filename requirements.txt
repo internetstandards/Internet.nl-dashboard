@@ -20,6 +20,7 @@ decorator==4.4.1          # via networkx, retry, validators
 deepdiff==4.0.8
 defusedxml==0.6.0         # via odfpy
 diff-match-patch==20181111  # via django-import-export
+django-activity-stream==0.8.0
 django-admin-sortable2==0.7.3
 django-appconf==1.0.3     # via django-compressor, django-select2
 django-autocomplete-light==3.4.1

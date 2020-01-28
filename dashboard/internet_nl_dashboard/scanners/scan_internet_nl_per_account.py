@@ -5,6 +5,7 @@ from datetime import timedelta
 from typing import List
 
 import requests
+from actstream import action
 from celery import Task, group
 from constance import config
 from django.conf import settings
@@ -89,7 +90,7 @@ def compose_task(
 
 
 @app.task(queue='storage')
-def initialize_scan(urllist: UrlList):
+def initialize_scan(urllist: UrlList, manual_or_scheduled: str = "scheduled"):
     internetnlscan = InternetNLScan()
 
     # mail = websecmap, mail_dashboard = internet.nl dashboard, web is the same on both.
@@ -110,6 +111,9 @@ def initialize_scan(urllist: UrlList):
 
     # and start the process.
     update_state("requested", accountinternetnlscan)
+
+    # Sprinkling an activity stream action.
+    action.send(urllist.account, verb=f'started {manual_or_scheduled} scan', target=accountinternetnlscan, public=False)
 
     return internetnlscan, accountinternetnlscan
 

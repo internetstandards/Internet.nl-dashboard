@@ -246,6 +246,7 @@ const SpreadsheetUpload = Vue.component('spreadsheet-upload', {
                 // Some events reload the recent uploaded file list.
                 init: function() {
                     this.on("success", function(file, server_response) {
+                        // todo: update the domain lists...
                         self.get_recent_uploads();
                     });
                     this.on("error", function(file, server_response) {

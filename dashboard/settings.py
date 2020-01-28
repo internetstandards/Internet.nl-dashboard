@@ -90,7 +90,16 @@ INSTALLED_APPS = [
 
     # Javascript and CSS compression:
     'compressor',
+
+    # Django activity stream
+    # https://django-activity-stream.readthedocs.io/en/latest/installation.html
+    'django.contrib.sites',
+    'actstream',
 ]
+
+# django activity stream wants a site-id:
+SITE_ID = 1
+
 
 try:
     # hack to disable django_uwsgi app as it currently conflicts with compressor
@@ -503,16 +512,28 @@ JET_SIDE_MENU_ITEMS = [
     #    {'name': 'constance.config', 'label': _('Configuration')},
     # ]},
 
-    {'label': _('📊 Dashboard'), 'items': [
+    {'label': _('📘 Dashboard'), 'items': [
         {'name': 'auth.user'},
         {'name': 'constance.config'},
         {'name': 'internet_nl_dashboard.account'},
-        {'name': 'internet_nl_dashboard.uploadlog'},
         {'name': 'internet_nl_dashboard.urllist'},
+        {'name': 'internet_nl_dashboard.uploadlog'},
+    ]},
+
+    {'label': _('🔬 Scanning'), 'items': [
         {'name': 'internet_nl_dashboard.accountinternetnlscan'},
         {'name': 'internet_nl_dashboard.accountinternetnlscanlog'},
+        {'name': 'scanners.internetnlscan', 'label': 'Internet.nl Scans Tasks'},
+        {'name': 'organizations.url', 'label': 'Urls'},
+        {'name': 'scanners.endpoint', 'label': 'Endpoints'},
+        {'name': 'scanners.endpointgenericscan', 'label': 'Endpoint Scans'},
+    ]},
+
+    {'label': _('📊 Reporting'), 'items': [
+        {'name': 'reporting.urlreport', 'label': 'Url Reports'},
         {'name': 'internet_nl_dashboard.urllistreport'}
     ]},
+
 
     {'label': _('🕒 Periodic Tasks'), 'items': [
         {'name': 'app.job'},
@@ -520,12 +541,8 @@ JET_SIDE_MENU_ITEMS = [
         {'name': 'django_celery_beat.crontabschedule'},
     ]},
 
-    {'label': _('🔬 Scanning (generated)'), 'items': [
-        {'name': 'organizations.url', 'label': 'Urls'},
-        {'name': 'scanners.endpoint', 'label': 'Endpoints'},
-        {'name': 'scanners.endpointgenericscan', 'label': 'Endpoint Scans'},
-        {'name': 'scanners.internetnlscan', 'label': 'Internet.nl Scans Tasks'},
-        {'name': 'reporting.urlreport', 'label': 'Url Reports'},
+    {'label': _('✨ Activity'), 'items': [
+        {'name': 'actstream.action'},
     ]},
 ]
 

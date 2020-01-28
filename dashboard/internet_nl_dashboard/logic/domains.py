@@ -3,6 +3,7 @@ import re
 from typing import Any, Dict, List, Tuple
 
 import tldextract
+from actstream import action
 from constance import config
 from django.db.models import Count, Prefetch
 from django.utils import timezone
@@ -105,7 +106,7 @@ def scan_now(account, user_input) -> Dict[str, Any]:
     # Make sure the fernet key is working fine, you are on the correct queue (-Q storage) and that the correct API
     # version is used.
     # Run this before updating the list, as this might go wrong for many reasons.
-    initialize_scan(urllist)
+    initialize_scan(urllist, manual_or_scheduled="manual")
 
     # done: have to update the list info. On the other hand: there is no guarantee that this task already has started
     # ...to fix this issue, we'll use a 'last_manual_scan' field.
@@ -170,6 +171,9 @@ def create_list(account: Account, user_input: Dict) -> Dict[str, Any]:
     # give a hint if it can be scanned:
     data['scan_now_available'] = urllist.is_scan_now_available()
 
+    # Sprinkling an activity stream action.
+    action.send(account, verb='created list', target=urllist, public=False)
+
     return operation_response(success=True, message="List created.", data=data)
 
 
@@ -193,6 +197,9 @@ def delete_list(account: Account, user_input: dict):
     urllist.enable_scans = False
     urllist.deleted_on = timezone.now()
     urllist.save()
+
+    # Sprinkling an activity stream action.
+    action.send(account, verb='deleted list', target=urllist, public=False)
 
     return operation_response(success=True, message="List deleted.")
 
@@ -263,6 +270,9 @@ def cancel_scan(account, scan_id: int):
     scan.scan.save()
 
     update_state("cancelled", scan)
+
+    # Sprinkling an activity stream action.
+    action.send(account, verb='cancelled scan', target=scan, public=False)
 
     return operation_response(success=True, message="scan cancelled")
 
@@ -350,6 +360,9 @@ def update_list_settings(account: Account, user_input: Dict) -> Dict[str, Any]:
     data['list_warnings'] = []
 
     log.debug(data)
+
+    # Sprinkling an activity stream action.
+    action.send(account, verb='updated list', target=updated_urllist, public=False)
 
     return operation_response(success=True, message="Updated list settings", data=data)
 
@@ -453,6 +466,9 @@ def get_urllists_from_account(account: Account) -> Dict:
             'last_report_date': None if not len(urllist.last_report) else urllist.last_report[0].at_when,
             'list_warnings': list_warnings
         })
+
+    # Sprinkling an activity stream action.
+    action.send(account, verb='retrieved domain lists', public=False)
 
     return {'lists': url_lists, 'maximum_domains_per_list': max_domains}
 

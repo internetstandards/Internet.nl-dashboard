@@ -1,6 +1,8 @@
 from django.shortcuts import redirect
 from django.urls import path, register_converter
 
+# We have to import the signals somewhere..?!
+import dashboard.internet_nl_dashboard.signals  # noqa
 from dashboard.internet_nl_dashboard.views import (__init__, account, domains, download_spreadsheet,
                                                    powertools, report, scan_monitor, spreadsheet)
 
