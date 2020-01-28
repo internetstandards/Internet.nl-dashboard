@@ -12,3 +12,4 @@ class DashboardConfig(AppConfig):
         registry.register(self.get_model('UrlListReport'))
         registry.register(self.get_model('Account'))
         registry.register(self.get_model('DashboardUser'))
+        registry.register(self.get_model('UploadLog'))

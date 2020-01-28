@@ -26,6 +26,7 @@ from typing import Any, Dict, List
 import magic
 import pyexcel as p
 import pytz
+from actstream import action
 from constance import config
 from django.db import transaction
 from xlrd import XLRDError
@@ -200,6 +201,9 @@ def log_spreadsheet_upload(user: DashboardUser, file: str, status: str = "", mes
 
     uploadlog = UploadLog(**upload)
     uploadlog.save()
+
+    # Sprinkling an activity stream action.
+    action.send(user, verb=f'uploaded spreadsheet', target=uploadlog, public=False)
 
     return upload
 
