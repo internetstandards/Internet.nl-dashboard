@@ -667,8 +667,9 @@
             </div>
 
         </div>
-        <!-- This keeps the dropdown up to date? Does it really... it doesn't. Or should we just refresh on open? -->
-        <autorefresh :visible="false" :callback="get_recent_reports" :refresh_per_seconds="60"></autorefresh>
+        <!-- The dropdown with recent reports is updated automatically when scans finish. But if that page
+         had never loaded, this is a fallback that still tries to get the recent report every ten minutes. -->
+        <autorefresh :visible="false" :callback="get_recent_reports" :refresh_per_seconds="600"></autorefresh>
     </div>
 </template>
 {% endverbatim %}
@@ -1749,6 +1750,13 @@ const Report = Vue.component('report', {
                 this.compare_with(new_value[i].id, i);
             }
         },
+        amount_of_finished_scans: function(new_value, old_value) {
+            // If there are more scans finished, this list is updated.
+            if (new_value === old_value)
+                return;
+
+            this.get_recent_reports();
+        },
         url_filter: function(newValue, oldValue){
             this.filter_urls(newValue);
             // aside from debouncing not working, as it doesn't understand the vue context, it is not needed
@@ -2254,6 +2262,24 @@ const Report = Vue.component('report', {
             }
             return returned_fields;
         },
+
+        amount_of_finished_scans: function() {
+            // this helps auto-reloading the list of available reports
+
+            // In the case no scans
+            if (store.state.scan_monitor_data.length === 0)
+                return 0;
+
+            let finished = 0;
+            // the first scan-monitor record where list_id is the same, is the one with the most recent state
+            for(let i = 0; i < store.state.scan_monitor_data.length; i++) {
+                if (store.state.scan_monitor_data[i].state === "finished") {
+                    finished++;
+                }
+            }
+
+            return finished;
+        }
 
     }
 
