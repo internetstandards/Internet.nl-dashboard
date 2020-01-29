@@ -305,14 +305,17 @@
             <div slot="footer">
             </div>
         </modal>
-        <!-- Websockets would make this even neater -->
-        <autorefresh :visible="false" :callback="get_scan_status_of_list" :refresh_per_seconds="60"></autorefresh>
+        <!-- This is already auto-refreshed by a watch, but we keep this as a backup solution for edge cases like
+         the monitor page not loading or the used did not open the monitor page. -->
+        <autorefresh :visible="false" :callback="get_scan_status_of_list" :refresh_per_seconds="600"></autorefresh>
     </article>
 </template>
 {% endverbatim %}
 
 <script>
 Vue.component('managed-url-list', {
+    store,
+
     i18n: { // `i18n` option, setup locale info for component
         messages: {
             en: {
@@ -383,9 +386,8 @@ Vue.component('managed-url-list', {
                 },
 
                 scan_now_form: {
-                    title: 'Confirm to scan now',
-                    message: 'To start a scan now, please take the following in consideration: <br>' +
-                        'A scan can only be started once a day, and only when no scan is already running. Note that a scan cannot be cancelled.',
+                    title: 'Confirm to scan',
+                    message: 'Your scan will start in a moment. You can cancel a running scan at any time in the scan monitor.',
                     cancel: 'Cancel',
                     ok: 'Scan now',
                     starting: 'Starting...',
@@ -467,9 +469,9 @@ Vue.component('managed-url-list', {
                 },
 
                 scan_now_form: {
-                    title: 'Bevestig om opnieuw te scannen',
-                    message: 'Een scan die nu wordt gestart heeft de volgende eigenschappen: <br>' +
-                        'Een handmatige scan kan eens per dag worden gestart, mits er nog geen scan wordt uitgevoerd op deze lijst.',
+                    title: 'Nu scannen?',
+                    message: 'De scan start binnen enkele ogenblikken en is te volgen op de scan monitor. ' +
+                        'In de scan monitor kan de scan alsnog worden gestopt.',
                     cancel: 'Annuleer',
                     ok: 'Nu scannen',
                     starting: 'Opstarten...',
@@ -560,8 +562,23 @@ Vue.component('managed-url-list', {
                 // a little lesson in trickery
                 location.hash = "#" + this.list.id;
             }
-        }
+        },
 
+        current_scan_status_from_scan_monitor: function(new_value, old_value){
+            // When the scan is cancelled via the UI, or another status update happens from the scan monitor
+            // the scan state is updated automatically.
+
+            // Do nothing when the state remains the same.
+            if (new_value === old_value){
+                return
+            }
+
+            // various statusses that require a list update
+            if (["finished", "cancelled", "requested"].includes(new_value)){
+                this.get_scan_status_of_list()
+            }
+
+        }
     },
     mounted: function(){
         if (window.location.href.split('/').length > 3) {
@@ -817,6 +834,21 @@ Vue.component('managed-url-list', {
             }
 
             return this.list.list_warnings.length > 0;
+        },
+        // can't seem to find the mapstate method the old school way:
+        current_scan_status_from_scan_monitor: function() {
+            if (store.state.scan_monitor_data.length === 0)
+                return "";
+
+            // the first scan-monitor record where list_id is the same, is the one with the most recent state
+            for(let i = 0; i < store.state.scan_monitor_data.length; i++){
+                if (store.state.scan_monitor_data[i].list_id === this.list.id){
+                    return store.state.scan_monitor_data[i].state;
+                }
+            }
+
+            // console.log("Probably no scan for this list...");
+            return "";
         }
     },
 });

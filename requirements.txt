@@ -20,6 +20,7 @@ decorator==4.4.1          # via networkx, retry, validators
 deepdiff==4.0.8
 defusedxml==0.6.0         # via odfpy
 diff-match-patch==20181111  # via django-import-export
+django-activity-stream==0.8.0
 django-admin-sortable2==0.7.3
 django-appconf==1.0.3     # via django-compressor, django-select2
 django-autocomplete-light==3.4.1
@@ -117,7 +118,7 @@ urllib3==1.25.6           # via requests
 uwsgi==2.0.18
 validators==0.14.0
 vine==1.3.0               # via amqp, celery
-git+https://gitlab.com/internet-cleanup-foundation/web-security-map@758fe8fd8ea92c77682c0786b61a409c4d9b49be#egg=websecmap
+git+https://gitlab.com/internet-cleanup-foundation/web-security-map@bf1cf1b026f5297d0ffe3008944c13435a883b41#egg=websecmap
 wikidata==0.6.1
 xlrd==1.2.0               # via pyexcel-xls, tablib
 xlwt==1.3.0               # via pyexcel-xls, tablib
