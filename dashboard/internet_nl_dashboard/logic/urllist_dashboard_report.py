@@ -176,21 +176,9 @@ def create_dashboard_report_at(urllist, at_when):
     Simplified (and perhaps straightforward) version of rate_urllists_now, which returns a report id.
     Only call this after a scan is performed and a report was already created.
 
-    Warning: at the moment url reports are stored PER DAY only, at 23:59:59.999999. This is to reduce data that has
-    to be stored(?). If the report is from the past, you'll need to act like the report will be created at the end
-    of the day.
-
-    This will create problems with recreating reports. We're only doing that in rare cases, and as such this
-    does not have the highest priority yet. Perhaps in a later iteration the window of reducing data can be
-    moved from a day to the nearest hour or so (this might spike the number of url reports).
-
     :param urllist:
     :return:
     """
-
-    if at_when.date() != datetime.now().date():
-        at_when = datetime(year=at_when.year, month=at_when.month, day=at_when.day,
-                           hour=23, minute=59, second=59, microsecond=999999, tzinfo=pytz.utc)
 
     return rate_urllist_on_moment(urllist, when=at_when, prevent_duplicates=False)
 
