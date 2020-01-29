@@ -103,6 +103,8 @@
 
 <script>
 const SpreadsheetUpload = Vue.component('spreadsheet-upload', {
+    store,
+
     i18n: {
         messages: {
             en: {
@@ -259,6 +261,7 @@ const SpreadsheetUpload = Vue.component('spreadsheet-upload', {
         get_recent_uploads: function(){
             fetch(`/data/upload-history/`, {credentials: 'include'}).then(response => response.json()).then(data => {
                 this.upload_history = data;
+                store.commit("set_uploads_performed", data.length);
             }).catch((fail) => {console.log('A loading error occurred: ' + fail);});
         },
     }

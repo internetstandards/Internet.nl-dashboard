@@ -157,7 +157,7 @@ def get_data(file: str) -> dict:
 
 def get_upload_history(account: Account) -> List:
 
-    uploads = UploadLog.objects.all().filter(user__account=account).order_by('-pk')[0:3]
+    uploads = UploadLog.objects.all().filter(user__account=account).order_by('-pk')
     data = []
 
     for upload in uploads:

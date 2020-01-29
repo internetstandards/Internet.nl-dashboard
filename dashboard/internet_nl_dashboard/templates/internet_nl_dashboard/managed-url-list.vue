@@ -313,6 +313,8 @@
 
 <script>
 Vue.component('managed-url-list', {
+    store,
+
     i18n: { // `i18n` option, setup locale info for component
         messages: {
             en: {

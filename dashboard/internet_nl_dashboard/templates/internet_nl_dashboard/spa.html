@@ -30,6 +30,7 @@
         <script type="text/javascript" src="{% static 'js/node_modules/jquery/dist/jquery.js' %}"></script>
 
         <script type="text/javascript" src="{% static 'js/node_modules/vue/dist/vue.js' %}"></script>
+        <script type="text/javascript" src="{% static 'js/node_modules/vuex/dist/vuex.js' %}"></script>
         <script type="text/javascript" src="{% static 'js/node_modules/vue-router/dist/vue-router.js' %}"></script>
         <script type="text/javascript" src="{% static 'js/node_modules/moment/min/moment-with-locales.js' %}"></script>
         <script type="text/javascript" src="{% static 'js/node_modules/vue-i18n/dist/vue-i18n.js' %}"></script>
@@ -51,6 +52,7 @@
         <script type="text/javascript" src="{% static 'js/node_modules/jquery/dist/jquery.min.js' %}"></script>
 
         <script type="text/javascript" src="{% static 'js/node_modules/vue/dist/vue.min.js' %}"></script>
+        <script type="text/javascript" src="{% static 'js/node_modules/vuex/dist/vuex.min.js' %}"></script>
         <script type="text/javascript" src="{% static 'js/node_modules/vue-router/dist/vue-router.min.js' %}"></script>
         <script type="text/javascript" src="{% static 'js/node_modules/moment/min/moment-with-locales.min.js' %}"></script>
         <script type="text/javascript" src="{% static 'js/node_modules/vue-i18n/dist/vue-i18n.min.js' %}"></script>
@@ -397,6 +399,26 @@
         };
 
         {% verbatim %}
+
+        Vue.use(Vuex);
+        const store = new Vuex.Store({
+            state: {
+                uploads_performed: -2,
+                scan_monitor_data: [],
+            },
+
+            mutations: {
+                // this.$store.commit('set_uploads_performed', 0)
+                set_uploads_performed(state, value){
+                    state.uploads_performed = value;
+                },
+                update_scan_monitor_data(state, value){
+                    state.scan_monitor_data = value;
+                }
+            },
+        });
+
+
         $( document ).ready(function() {
             // new Vue({ el: '#menu', template: `<site-menu></site-menu>`, i18n});
             Vue.use(VueRouter);

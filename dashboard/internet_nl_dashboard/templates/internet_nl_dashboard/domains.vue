@@ -138,6 +138,8 @@ Fixed: when deleting a list, it is re-added to the list of lists when adding a n
 
 <script>
 const DomainListManager = Vue.component('list-manager', {
+    store,
+
     i18n: {
         messages: {
             en: {
@@ -285,6 +287,15 @@ const DomainListManager = Vue.component('list-manager', {
                 });
         }
     },
+    watch: {
+        uploads_performed: function(new_value, old_value) {
+            // only if the amount increases with 1, refresh the uploads. Otherwise existing uploads are loaded.
+            // Uploads go one by one.
+            if (old_value + 1 === new_value){
+                this.get_lists()
+            }
+        }
+    },
     computed: {
         one_of_the_lists_contains_warnings: function(){
             let contains_warnings = false;
@@ -294,6 +305,10 @@ const DomainListManager = Vue.component('list-manager', {
             });
             return contains_warnings;
         },
+        // can't seem to find the mapstate method the old school way:
+        uploads_performed: function() {
+            return store.state.uploads_performed
+        }
     }
 });
 </script>
