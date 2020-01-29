@@ -214,6 +214,7 @@ const ScanMonitor = Vue.component('ScanMonitor', {
         update_scan_data: function(){
             fetch(`/data/scan-monitor/`, {credentials: 'include'}).then(response => response.json()).then(data => {
                 this.scans = data;
+                store.commit("update_scan_monitor_data", data);
                 this.$nextTick(() => {accordinate();});
             }).catch((fail) => {console.log('A loading error occurred: ' + fail);});
         },

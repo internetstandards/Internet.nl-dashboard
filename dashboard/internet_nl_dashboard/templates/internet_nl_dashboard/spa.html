@@ -403,7 +403,11 @@
         Vue.use(Vuex);
         const store = new Vuex.Store({
             state: {
+                // -2 is used, to be able to distinct for the first upload and zero uploads.
                 uploads_performed: -2,
+
+                // the scan monitor is used to determine if lists of domains or the reports dropdowns need to be
+                // updated. If the scan monitor is not loaded, a standard autorefresh strategy is used.
                 scan_monitor_data: [],
             },
 
