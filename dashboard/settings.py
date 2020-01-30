@@ -525,7 +525,7 @@ JET_SIDE_MENU_ITEMS = [
         {'name': 'scanners.internetnlscan', 'label': 'Internet.nl Scans Tasks'},
     ]},
 
-    {'label': _('🔬 Data'), 'items': [
+    {'label': _('💽 Data'), 'items': [
         {'name': 'organizations.url', 'label': 'Urls'},
         {'name': 'scanners.endpoint', 'label': 'Endpoints'},
         {'name': 'scanners.endpointgenericscan', 'label': 'Endpoint Scans'},
