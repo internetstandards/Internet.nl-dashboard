@@ -507,44 +507,48 @@ except ImportError:
 
 JET_SIDE_MENU_ITEMS = [
 
-    # {'label': _('🎛️ Configuration'), 'items': [
-    #    # {'name': 'auth.group'},
-    #    {'name': 'constance.config', 'label': _('Configuration')},
-    # ]},
-
-    {'label': _('📘 Dashboard'), 'items': [
+    {'label': _('👤 User'), 'items': [
         {'name': 'auth.user'},
-        {'name': 'constance.config'},
         {'name': 'internet_nl_dashboard.account'},
-        {'name': 'internet_nl_dashboard.urllist'},
-        {'name': 'internet_nl_dashboard.uploadlog'},
+        {'name': 'otp_totp.totpdevice'},
     ]},
 
-    {'label': _('🔬 Scanning'), 'items': [
+    {'label': _('📘 Dashboard'), 'items': [
+        {'name': 'constance.config', 'label': '🎛️ Config'},
+        {'name': 'internet_nl_dashboard.urllist', 'label': "Domain lists"},
+        {'name': 'internet_nl_dashboard.uploadlog', 'label': 'Uploads'},
+    ]},
+
+    {'label': _('🔬 Scan'), 'items': [
         {'name': 'internet_nl_dashboard.accountinternetnlscan'},
         {'name': 'internet_nl_dashboard.accountinternetnlscanlog'},
         {'name': 'scanners.internetnlscan', 'label': 'Internet.nl Scans Tasks'},
+    ]},
+
+    {'label': _('🔬 Data'), 'items': [
         {'name': 'organizations.url', 'label': 'Urls'},
         {'name': 'scanners.endpoint', 'label': 'Endpoints'},
         {'name': 'scanners.endpointgenericscan', 'label': 'Endpoint Scans'},
     ]},
 
-    {'label': _('📊 Reporting'), 'items': [
+    {'label': _('📊 Report'), 'items': [
         {'name': 'reporting.urlreport', 'label': 'Url Reports'},
-        {'name': 'internet_nl_dashboard.urllistreport'}
+        {'name': 'internet_nl_dashboard.urllistreport', 'label': 'Full Reports'}
     ]},
 
-
     {'label': _('🕒 Periodic Tasks'), 'items': [
-        {'name': 'app.job'},
+
         {'name': 'django_celery_beat.periodictask'},
         {'name': 'django_celery_beat.crontabschedule'},
+        {'name': 'app.job'},
     ]},
 
     {'label': _('✨ Activity'), 'items': [
         {'name': 'actstream.action'},
     ]},
 ]
+
+JET_SIDE_MENU_COMPACT = True
 
 # Allows to see all details of websecmap.
 # Loaded here, otherwise: django.core.exceptions.AppRegistryNotReady: Apps aren't loaded yet.
