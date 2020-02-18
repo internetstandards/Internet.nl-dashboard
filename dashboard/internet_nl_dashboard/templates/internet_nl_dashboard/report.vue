@@ -1242,6 +1242,10 @@ const Report = Vue.component('report', {
             if (this.compare_charts.length < 2 || this.compare_charts[1].calculation.urls_by_url[url.url] === undefined)
                 return `<span class="category_${simple_value}">${simple_value}</span>`;
 
+            // in case there is no endpoint (exceptional case)
+            if (this.compare_charts[1].calculation.urls_by_url[url.url].endpoints[0] === undefined)
+                return `<span class="category_${simple_value}">${simple_value}</span>`;
+
             let other_verdicts = this.compare_charts[1].calculation.urls_by_url[url.url].endpoints[0].ratings_by_type[category_name];
             let other_simple_value = this.category_verdict_to_simple_value(other_verdicts, category_name);
 
@@ -1310,6 +1314,10 @@ const Report = Vue.component('report', {
             // if we _are_ comparing, but the comparison is empty because there is nothing to compare to:
             // This is done separately to prevent another call to something undefined
             if (this.compare_charts[1].calculation.urls_by_url[url.url] === undefined)
+                return `<span class="${simple_value}">${simple_value}</span>`;
+
+            // in case there is no endpoint (exceptional case)
+            if (this.compare_charts[1].calculation.urls_by_url[url.url].endpoints[0] === undefined)
                 return `<span class="${simple_value}">${simple_value}</span>`;
 
             /*
