@@ -73,8 +73,7 @@
 
     #report-template th.sticky-header {
         position: sticky;
-        top: 0px;
-
+        top: -1px;
     }
 
     #report-template td.sticky_search {
@@ -154,6 +153,10 @@
 
     #report-template .testresultcell span span {
         font-size: 1px;
+    }
+
+    .testresultcell {
+        border-left: 1px solid #dee2e6;
     }
 
     /**
@@ -563,24 +566,42 @@
                         <thead class="sticky_labels">
 
                             <tr class="sticky_labels">
-                                <th style="width: 75px; min-width: 75px; border: 0" class="sticky-header">
+                                <th style="width: 75px; min-width: 75px; border: 0; background-color: white;" class="sticky-header">
                                     <div class="rotate">
                                         <span class="arrow" :class="sortOrders['score'] === -1 ? 'dsc' : (sortOrders['score'] === 1 ? 'asc' : 'unknown')"></span>
                                         <span @click="sortBy('score')">{{ $t("score") }}</span>
                                     </div>
                                 </th>
-                                <th style="width: 225px; min-width: 225px; border: 0" class="sticky-header">
+                                <th style="width: 225px; min-width: 225px; border: 0; background-color: white;" class="sticky-header">
                                     <div class="rotate">
                                         <span class="arrow" :class="sortOrders['url'] === -1 ? 'dsc' : (sortOrders['url'] === 1 ? 'asc' : 'unknown')"></span>
                                         <span @click="sortBy('url')">{{ $t("domain") }}</span>
                                     </div>
                                 </th>
-                                <th style="border: 0" class="sticky-header" v-for="category in relevant_categories_based_on_settings">
-                                    <div class="rotate">
-                                        <span class="arrow" :class="sortOrders[category] === -1 ? 'dsc' : (sortOrders[category] === 1 ? 'asc' : 'unknown')"></span>
-                                        <span @click="sortBy(category)">{{ $t("" + category) }}</span>
-                                    </div>
+
+                                <th colspan="200" class="sticky-header" style="background-color: white;">
+                                    <template v-if="['web', 'mail'].includes(selected_category)">
+
+                                        <div style="border: 0; float: left; width: 100px" v-for="category in relevant_categories_based_on_settings">
+                                            <div class="rotate">
+                                                <span class="arrow" :class="sortOrders[category] === -1 ? 'dsc' : (sortOrders[category] === 1 ? 'asc' : 'unknown')"></span>
+                                                <span @click="sortBy(category)">{{ $t("" + category) }}</span>
+                                            </div>
+                                        </div>
+
+                                    </template><template v-else>
+
+                                         <div style="border: 0; float: left; width: 56px" v-for="category in relevant_categories_based_on_settings">
+                                            <div class="rotate">
+                                                <span class="arrow" :class="sortOrders[category] === -1 ? 'dsc' : (sortOrders[category] === 1 ? 'asc' : 'unknown')"></span>
+                                                <span @click="sortBy(category)">{{ $t("" + category) }}</span>
+                                            </div>
+                                        </div>
+
+                                    </template>
+
                                 </th>
+
                             </tr>
 
                         </thead>
@@ -596,6 +617,9 @@
                                         <span v-if="category_name in reports[0]['calculation'].statistics_per_issue_type">
                                             {{Math.round(reports[0]["calculation"].statistics_per_issue_type[category_name].pct_ok)}}%</span>
                                     </td>
+
+                                    <td style="width: 100%"></td>
+
                                 </tr>
 
                                 <!-- Zoom buttons for accessibility -->
@@ -606,20 +630,22 @@
                                         <p class="visuallyhidden">{{ $t('report.zoom.explanation') }}</p>
                                     </td>
                                     <template v-if="['web', 'mail'].includes(selected_category)">
-                                        <td v-for="category_name in relevant_categories_based_on_settings" class="sticky_search">
+                                        <td style="width: 100px; min-width: 100px;" v-for="category_name in relevant_categories_based_on_settings" class="sticky_search">
                                             <button @click="select_category(category_name)">{{ $t("report.zoom.buttons.zoom") }}
                                             <span class="visuallyhidden">{{ $t("report.zoom.buttons.zoom_in_on", [$t("" + category_name)]) }}</span>
                                             </button>
                                         </td>
+                                        <td class="sticky_search" style="width: 100%"></td>
                                     </template>
                                     <template v-else>
-                                        <td :colspan="relevant_categories_based_on_settings.length" style="text-align: center" class="sticky_search">
+                                        <td :colspan="relevant_categories_based_on_settings.length + 1" style="text-align: center" class="sticky_search">
                                             <button style='width: 100%' @click="select_category(selected_report.urllist_scan_type)">
                                                 <span role="img" :aria-label="$t('icons.remove_filter')">❌</span> {{ $t("report.zoom.buttons.remove_zoom") }}
                                             </button><br>
                                             {{ $t("report.zoom.zoomed_in_on") }} {{ $t("" + selected_category) }}.
                                         </td>
                                     </template>
+
                                 </tr>
                             </template>
 
@@ -641,23 +667,26 @@
                                         </td>
                                     </template>
                                     <template v-else>
-                                        <td>
+                                        <td style="width: 75px; min-width: 75px;">
                                             <a class='direct_link_to_report' :href='url.endpoints[0].ratings_by_type.internet_nl_score.internet_nl_url' target="_blank">
                                                 <img src="/static/images/vendor/internet_nl/favicon.png" style="height: 16px;"> {{url.endpoints[0].ratings_by_type.internet_nl_score.internet_nl_score}}%
                                                 <span class="visuallyhidden">${this.$i18n.t('report.link_to_report', {'url': url})}</span>
                                             </a>
                                         </td>
-                                        <td>{{url.url}}</td>
+                                        <td style="width: 225px; min-width: 225px;">{{url.url}}</td>
                                         <template v-if="['web', 'mail'].includes(selected_category)">
-                                            <td class="testresultcell" v-for="category_name in relevant_categories_based_on_settings">
+                                            <td class="testresultcell" style="width: 100px" v-for="category_name in relevant_categories_based_on_settings">
                                                 <div v-html="category_value_with_comparison(category_name, url)"></div>
                                             </td>
                                         </template>
                                         <template v-else>
-                                            <td class="testresultcell" v-for="category_name in relevant_categories_based_on_settings">
+                                            <td class="testresultcell" style="width: 56px" v-for="category_name in relevant_categories_based_on_settings">
                                                 <div v-html="detail_value_with_comparison(category_name, url)"></div>
                                             </td>
                                         </template>
+                                        <td>
+
+                                        </td>
                                     </template>
                                 </tr>
                             </template>
