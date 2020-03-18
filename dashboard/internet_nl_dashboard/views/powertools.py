@@ -1,4 +1,4 @@
-from django.contrib.auth.decorators import login_required
+from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib.auth.models import User
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render
@@ -11,7 +11,36 @@ from dashboard.internet_nl_dashboard.views import (get_account, get_json_body,
 from dashboard.settings import LOGIN_URL
 
 
-@login_required(login_url=LOGIN_URL)
+def is_powertool_user(user):
+    """
+    A user_passes_test method that requires a login, active and either admin or staff permissions.
+
+    :param user:
+    :return:
+    """
+
+    if not user:
+        return False
+
+    if not isinstance(user, User):
+        return False
+
+    if not user.is_authenticated:
+        return False
+
+    if not user.is_active:
+        return False
+
+    if user.is_superuser:
+        return True
+
+    if user.is_staff:
+        return True
+
+    return False
+
+
+@user_passes_test(is_powertool_user, login_url=LOGIN_URL)
 def set_account(request) -> HttpResponse:
 
     if not request.user.is_staff and request.user.is_active and request.user.is_superuser:
@@ -34,7 +63,7 @@ def set_account(request) -> HttpResponse:
         return JsonResponse(operation_response(success=True, message=f"Switched account."))
 
 
-@login_required(login_url=LOGIN_URL)
+@user_passes_test(is_powertool_user, login_url=LOGIN_URL)
 def get_accounts(request) -> HttpResponse:
     account = get_account(request)
 
@@ -59,7 +88,7 @@ def get_accounts(request) -> HttpResponse:
     return JsonResponse({'current_account': account, 'accounts': account_data})
 
 
-@login_required(login_url=LOGIN_URL)
+@user_passes_test(is_powertool_user, login_url=LOGIN_URL)
 def save_instant_account(request) -> HttpResponse:
 
     request = get_json_body(request)
@@ -67,10 +96,11 @@ def save_instant_account(request) -> HttpResponse:
     password = request['password']
 
     if User.objects.all().filter(username=username).exists():
-        return JsonResponse(operation_response(error=True, message=f"User with this username already exists."))
+        return JsonResponse(operation_response(error=True, message=f"User with username '{username}' already exists."))
 
     if Account.objects.all().filter(name=username).exists():
-        return JsonResponse(operation_response(error=True, message=f"Account with this username already exists."))
+        return JsonResponse(operation_response(error=True,
+                                               message=f"Account with username {username}' already exists."))
 
     # Extremely arbitrary password requirements. Just to make sure a password has been filled in.
     if len(password) < 5:
@@ -93,7 +123,7 @@ def save_instant_account(request) -> HttpResponse:
     dashboarduser = DashboardUser(**{'user': user, 'account': account})
     dashboarduser.save()
 
-    return JsonResponse(operation_response(success=True, message=f"Account created!"))
+    return JsonResponse(operation_response(success=True, message=f"Account and user with name '{username}' created!"))
 
 
 @login_required(login_url=LOGIN_URL)
