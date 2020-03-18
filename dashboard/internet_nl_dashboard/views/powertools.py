@@ -6,8 +6,7 @@ from django.shortcuts import render
 from dashboard.internet_nl_dashboard.logic import operation_response
 from dashboard.internet_nl_dashboard.models import (Account, AccountInternetNLScan, DashboardUser,
                                                     UrlList)
-from dashboard.internet_nl_dashboard.views import (get_account, get_json_body,
-                                                   inject_default_language_cookie, report)
+from dashboard.internet_nl_dashboard.views import (get_account, get_json_body, inject_default_language_cookie)
 from dashboard.settings import LOGIN_URL
 
 
@@ -42,41 +41,34 @@ def is_powertool_user(user):
 
 @user_passes_test(is_powertool_user, login_url=LOGIN_URL)
 def set_account(request) -> HttpResponse:
-
-    if not request.user.is_staff and request.user.is_active and request.user.is_superuser:
-        return report.dashboard(request)
-
     request_data = get_json_body(request)
     selected_account_id: int = request_data['id']
 
-    if selected_account_id:
+    if not selected_account_id:
+        return JsonResponse(operation_response(error=True, message=f"No account supplied."))
 
-        dashboard_user = DashboardUser.objects.all().filter(user=request.user).first()
+    dashboard_user = DashboardUser.objects.all().filter(user=request.user).first()
 
-        # very new users don't have the dashboarduser fields filled in, and are thus not connected to an account.
-        if not dashboard_user:
-            dashboard_user = DashboardUser(**{'account': Account.objects.all().first(), 'user': request.user})
+    # very new users don't have the dashboarduser fields filled in, and are thus not connected to an account.
+    if not dashboard_user:
+        dashboard_user = DashboardUser(**{'account': Account.objects.all().first(), 'user': request.user})
 
-        dashboard_user.account = Account.objects.get(id=selected_account_id)
-        dashboard_user.save()
+    dashboard_user.account = Account.objects.get(id=selected_account_id)
+    dashboard_user.save()
 
-        return JsonResponse(operation_response(success=True, message=f"Switched account."))
+    return JsonResponse(operation_response(success=True, message=f"Switched account."))
 
 
 @user_passes_test(is_powertool_user, login_url=LOGIN_URL)
 def get_accounts(request) -> HttpResponse:
     account = get_account(request)
 
-    if not request.user.is_staff and request.user.is_active and request.user.is_superuser:
-        return report.dashboard(request)
-
     accounts = Account.objects.all().values_list('id', 'name')
 
     account_data = []
     # add some metadata to the accounts, so it's more clear where you are switching to:
     for account in accounts:
-        account_information = {}
-        account_information['id'], account_information['name'] = account
+        account_information = {'id': account[0], 'name': account[1]}
         account_information['scans'] = AccountInternetNLScan.objects.all().filter(
             account=account_information['id']).count()
         account_information['lists'] = UrlList.objects.all().filter(account=account_information['id']).count()
