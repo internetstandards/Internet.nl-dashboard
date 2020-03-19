@@ -1,0 +1,165 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Internet.nl Batch Scan API",
+    "description": "Batch scan multiple addresses for compliance with modern internet standards.",
+    "termsOfService": "[TODO] http://api.internet.nl/v2/terms.html",
+    "contact": {
+      "name": "Internet.nl Helpdesk",
+      "email": "vraag@internet.nl"
+    },
+    "license": {
+      "name": "Apache 2.0",
+      "url": "https://www.apache.org/licenses/LICENSE-2.0.html"
+    },
+    "version": "2.0"
+  },
+  "servers": [
+    {
+      "url": "https://api.internet.nl/v2",
+      "description": "Production server"
+    },
+    {
+      "url": "https://test.api.internet.nl/v2",
+      "description": "Development server"
+    }
+  ],
+  "components": {
+    "schemas": {
+      "Scan": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "",
+          },
+          "message": {
+            "type": "string",
+            "enum": ""
+          },
+          "id": {
+            "type": "string [TODO: define scan id 32 char 0-f 16 bytes hex.]"
+          },
+          "metadata": {
+            // todo: make metadata object a component and refer to it.
+            "type": "object",
+            "properties": {
+              "api-version": {
+                "type": "string"
+              },
+              "submission-date": {
+                "type": "datetime",
+              },
+              "finished-date": {
+                "type": "datetime",
+              },
+              "name": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "paths": {
+    "/scans": {
+      "post": {
+        "description": "Creates a new scan. [DESIGN DECISION]: base url used as suggested in API Designrules.",
+        "operationId": "createScan",
+        "parameters": [
+          {
+            "name": "name",
+            "in": "query",
+            "description": "Serves as a reference for the requester. Does not need to be unique.",
+            "required": true,
+            "allowEmptyValue": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "domains",
+            "in": "query",
+            "description": "List of domains to scan. For example: ['internet.nl', 'api.internet.nl']",
+            "required": true,
+            "allowEmptyValue": false,
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string [TOOD: define second level url format]"
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "A created scan",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "dict",
+                  "items": {
+                    "$ref": "#/components/schemas/Scan"
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Creation error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "dict",
+                  "items": {
+                    "$ref": "#/components/schemas/ScanError"
+                  }
+                }
+              }
+            }
+          }
+        },
+      }
+    },
+    "/scans/status/{scanId}": {
+      "get": {
+        "description": "Retrieve information about the progress of the scan. [DESIGN DECISION]: the status and result are separated.",
+        "responses": {
+          "200": {
+            "description": "Scan progress or result.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "dict",
+                  "items": {
+                    "$ref": "#/components/schemas/ScanStatus"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/scans/result/{scanId}": {
+      "get": {
+        "description": "Retrieve scan result information.",
+        "responses": {
+          "200": {
+            "description": "A scan result",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "dict",
+                  "items": {
+                    "$ref": "#/components/schemas/ScanResult"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
