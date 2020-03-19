@@ -30,29 +30,140 @@
         "type": "object",
         "properties": {
           "success": {
-            "type": "",
+            "type": "string",
+            "default": "scan created"
           },
           "message": {
             "type": "string",
-            "enum": ""
+            "enum": [
+              ""
+            ]
           },
           "id": {
-            "type": "string [TODO: define scan id 32 char 0-f 16 bytes hex.]"
+            "type": "string",
+            "format": "^[0-9abcdef]{16}$"
           },
           "metadata": {
-            // todo: make metadata object a component and refer to it.
+            "$ref": "#/components/schemas/ScanMetadata"
+          }
+        }
+      },
+      "ScanMetadata": {
+        "type": "object",
+        "properties": {
+          "identified_as": {
+            "type": "string"
+          },
+          "scan_type": {
+            "type": "enum",
+            "enum": [
+              "web",
+              "mail"
+            ]
+          },
+          "api_version": {
+            "type": "string"
+          },
+          "submission_date": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "finished_date": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "ScanStatus": {},
+      "ScanResult": {
+        "type": "object",
+        "properties": {
+          "scan": {
+            "type": "string",
+            "format": "^[0-9abcdef]{16}$"
+          },
+          "metadata": {
+            "$ref": "#/components/schemas/ScanMetadata"
+          },
+          "result_metadata": {
+            "$ref": "#/components/schemas/ResultMetaData"
+          },
+          "domains": {
             "type": "object",
             "properties": {
-              "api-version": {
+              "domain": {
                 "type": "string"
               },
-              "submission-date": {
-                "type": "datetime",
+              "status":{
+                "type": "enum",
+                "enum": ["success", "could_not_be_scanned"]
               },
-              "finished-date": {
-                "type": "datetime",
+              "score": {
+                "type": "object",
+                "properties": {
+                  "percentage": {
+                    "type": "integer"
+                  },
+                  "icon": {
+                    "type": "string"
+                  }
+                }
               },
-              "name": {
+              "report": {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "integer"
+                  },
+                  "address": {
+                    "type": "string",
+                    "format": "url"
+                  }
+                }
+              },
+              "derived_results": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/Result"
+                }
+              },
+              "results": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/Result"
+                }
+              }
+            }
+          }
+        }
+      },
+      "ResultMetaData": {},
+      "ScanError": {},
+      "Result": {
+        "type": "object",
+        "properties": {
+          "test": {
+            "type": "string",
+            "format": "^[a-z_]*$"
+          },
+          "verdict": {
+            "type": "enum",
+            "enum": [
+              "passed",
+              "warning",
+              "info",
+              "failed",
+              "not_tested",
+              "not_applicable"
+            ]
+          },
+          "icon": {
+            "type": "string"
+          },
+          "translation": {
+            "type": "object",
+            "properties": {
+              "verdict": {
                 "type": "string"
               }
             }
@@ -89,6 +200,20 @@
                 "type": "string [TOOD: define second level url format]"
               }
             }
+          },
+          {
+            "name": "scan_type",
+            "in": "query",
+            "description": "Either a mail or web scan.",
+            "required": true,
+            "allowEmptyValue": false,
+            "schema": {
+              "type": "enum",
+              "enum": [
+                "web",
+                "mail"
+              ]
+            }
           }
         ],
         "responses": {
@@ -97,10 +222,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "dict",
-                  "items": {
-                    "$ref": "#/components/schemas/Scan"
-                  }
+                  "$ref": "#/components/schemas/Scan"
                 }
               }
             }
@@ -118,12 +240,18 @@
               }
             }
           }
-        },
+        }
       }
     },
     "/scans/status/{scanId}": {
       "get": {
         "description": "Retrieve information about the progress of the scan. [DESIGN DECISION]: the status and result are separated.",
+        "parameters": [
+          {
+            "name": "scanId",
+            "in": "path"
+          }
+        ],
         "responses": {
           "200": {
             "description": "Scan progress or result.",
@@ -144,16 +272,19 @@
     "/scans/result/{scanId}": {
       "get": {
         "description": "Retrieve scan result information.",
+        "parameters": [
+          {
+            "name": "scanId",
+            "in": "path"
+          }
+        ],
         "responses": {
           "200": {
-            "description": "A scan result",
+            "description": "Scan result",
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "dict",
-                  "items": {
-                    "$ref": "#/components/schemas/ScanResult"
-                  }
+                  "$ref": "#/components/schemas/ScanResult"
                 }
               }
             }

@@ -1,0 +1,138 @@
+// all names have underscores instead of hyphens, so it can be accessed in javascript with much more ease.
+// design decision: all test metadata and results are in a list. This is due to the better orderability.
+// Direct access can easily be created by looping over the list once. The "test" field is always unique.
+// and can be used to directly access the information like this:
+// scan.domains["nu.nl"].results.web_ipv_ns_address.icon
+{
+  "scan": "54651321654132154513213541531",
+  "metadata": {
+    "identified_as": "My web test",
+    "scan_type": "web/mail",
+    "api_version": "2",
+    "submission_date": "2017-10-05T10:16:19.316626+00:00",
+    "finished_date": "2017-10-05T10:26:19.316626+00:00",
+    // optional
+    "duration": {
+      "preparing": 1231,
+      "scanning": 231,
+      "reporting": 2134
+    }
+  },
+
+  // this is stuff that stays the same per test. This should not be repeated to reduce data.
+  // Should this be defined elsewhere, things won't really change here. It CAN however influence the display in
+  // clients.
+  "result_metadata": [
+    {
+      "test": "web_ipv6_ns_address",
+      // fields like title, subtitle, explanation, etc are implicit. They are available for all calculated
+      // results and results in the translations.
+      "translation": {
+        // Where to find the correct translation of this result.
+        "key": "web-mail_ipv6_ns-AAAA",
+
+        // these are the fields that are available to explain a test.
+        "fields": ["title", "explanation"]
+      },
+
+      // The hierarchy represents a way how internet.nl renders the test in a specific order.
+      // There are two hierarchies, one with
+      // The goal is to extract the hierarchy from the data, so the data can be parsed simply.
+      // Perhaps the hierarchy needs to be completely separated in a separate structure (just in documentation)
+      // The hieriarchy over different test is the same every time. This means it should not be added here.
+      // A hierarchy is always stored separate from the test result. Hierarchies are hard to code and an easy
+      // scope creep.
+      "hierarchy": {
+        "human": "/web/ipv6/nameserver/address",
+        "system": [1,1,1,1]
+      }
+    },
+    {
+      "test": "web_ipv6_ns_reach",
+      "translation_key": "web-mail_ipv6_ns-reach",
+      "hierarchy": {
+        // The human hierarchy is an english directory structure that somewhat helps to place this item
+        "human": "/web/ipv6/nameserver/reachability",
+        // a system can simply order the items based on string comparison. this allows UI to be built correctly
+        // with new test in the right place (if desired by somebody that implements the API).
+        // you can just do a a>b to order the fields. And then you want to have easy access to the name.
+        // so to have no list of this makes it hard to sort things...
+        "system": [1,1,1,2]
+      }
+    },
+    {
+      "test": "ipv6",
+      "translation": {
+        "key": "web_cat_ipv6"
+      },
+      "hierarchy": {
+        "human": "/web/ipv6/",
+        "system": [1,1]
+      }
+    }
+  ],
+  "domains": [
+    // Any printable character can be a key. this works.
+    // Should the order be relevant? If not, this approach makes parsing / retrieving a specific value as simple
+    // as:  Which prevents iterating through the array.
+    // names are unique anyway, so they can be the key. A domain is never scanned twice.
+    {
+      // We keep the domain field here, so it's easy to do object.keys, and not work with the key but treat it
+      // as a list (which is randomly ordered then...)
+      "domain": "nu.nl",
+      "status": "failed, success",
+
+      // Isn't this just a derived result, but with different data? At least now it's extendable with
+      // differen options to wqualifiers. Also supports deprecation and such.
+      "score": {
+        "percentage": 80,
+        "icon": ""
+      },
+      "report": {
+        "id": 814640,
+        "address": "https://..."
+      },
+      // categories are now derived results. These can be derived from the result set and are added to
+      // make it easier to represent certain overall categories or difficult to calculate values.
+      "derived_results": [
+        {
+          "test": "ipv6",
+          "verdict": "passed",
+          "icon": "category_passed",
+          "translation": {
+            "verdict": "not_signed"
+          }
+        }
+      ],
+      "results": [
+        // resulting this as a list by default makes it easier to determine that all the items in the list
+        // have the same format. The results can be ordered for example by the above hierarcy.
+        {
+          "test": "web_ipv6_ns_address",
+          "verdict": "passed",
+          "icon": "passed",
+          "translation": {
+            "verdict": "good"
+          },
+          "technical_details": {}
+        },
+        {
+          "test": "web_ipv6_ns_reach",
+          "verdict": "passed",
+          "icon": "passed",
+          "translation": {
+            "verdict": "good"
+          },
+          // This is to illustrate a complex technical data section can be added, while we're not doing this now.
+          "technical_details": {
+            "type": "ip_table, registar_table, security_table, ",
+            "translation_key": "security_table",
+            "data_matrix": [
+              // todo: ... How to translate these fields then? secuire, insecrue, pahse, out, insufficient, etc
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}
