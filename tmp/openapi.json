@@ -2,7 +2,7 @@
   "openapi": "3.0.3",
   "info": {
     "title": "Internet.nl Batch Scan API",
-    "description": "Batch scan multiple addresses for compliance with modern internet standards.",
+    "description": "Batch scan multiple domains for compliance with modern internet standards.",
     "termsOfService": "[TODO] http://api.internet.nl/v2/terms.html",
     "contact": {
       "name": "Internet.nl Helpdesk",
@@ -41,7 +41,7 @@
           },
           "id": {
             "type": "string",
-            "format": "^[0-9abcdef]{16}$"
+            "format": "^[0-9abcdef]{32}$"
           },
           "metadata": {
             "$ref": "#/components/schemas/ScanMetadata"
@@ -70,7 +70,8 @@
           },
           "finished_date": {
             "type": "string",
-            "format": "date-time"
+            "format": "date-time",
+            "description": "Only set when the scan is finished."
           }
         }
       },
@@ -80,7 +81,7 @@
         "properties": {
           "scan": {
             "type": "string",
-            "format": "^[0-9abcdef]{16}$"
+            "format": "^[0-9abcdef]{32}$"
           },
           "metadata": {
             "$ref": "#/components/schemas/ScanMetadata"
@@ -138,7 +139,15 @@
         }
       },
       "ResultMetaData": {},
-      "ScanError": {},
+      "ScanError": {
+        "type": "object",
+        "properties": {
+          "message": {
+            "type": "string",
+            "default": "Error: "
+          }
+        }
+      },
       "Result": {
         "type": "object",
         "properties": {
@@ -177,48 +186,37 @@
       "post": {
         "description": "Creates a new scan. [DESIGN DECISION]: base url used as suggested in API Designrules.",
         "operationId": "createScan",
-        "parameters": [
-          {
-            "name": "name",
-            "in": "query",
-            "description": "Serves as a reference for the requester. Does not need to be unique.",
-            "required": true,
-            "allowEmptyValue": true,
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "domains",
-            "in": "query",
-            "description": "List of domains to scan. For example: ['internet.nl', 'api.internet.nl']",
-            "required": true,
-            "allowEmptyValue": false,
-            "schema": {
-              "type": "array",
-              "items": {
-                "type": "string [TOOD: define second level url format]"
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "type": {
+                    "description": "Type of scan to be performed.",
+                    "type": "enum",
+                    "enum": ["web", "mail"]
+                  },
+                  "tracking_information": {
+                    "description": "Serves as a reference for the requester. Does not need to be unique.",
+                    "type": "string"
+                  },
+                  "domains": {
+                    "description": "List of domains to scan. For example: ['internet.nl', 'api.internet.nl']",
+                    "type": "array",
+                    "items": {
+                      "type": "String [TODO: define domain format]"
+                    }
+                  }
+                },
+                "required": ["domains"]
               }
             }
-          },
-          {
-            "name": "scan_type",
-            "in": "query",
-            "description": "Either a mail or web scan.",
-            "required": true,
-            "allowEmptyValue": false,
-            "schema": {
-              "type": "enum",
-              "enum": [
-                "web",
-                "mail"
-              ]
-            }
           }
-        ],
+        },
         "responses": {
           "200": {
-            "description": "A created scan",
+            "description": "Scan created successfully",
             "content": {
               "application/json": {
                 "schema": {
@@ -228,14 +226,11 @@
             }
           },
           "500": {
-            "description": "Creation error",
+            "description": "Scan creation error",
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "dict",
-                  "items": {
-                    "$ref": "#/components/schemas/ScanError"
-                  }
+                  "$ref": "#/components/schemas/ScanError"
                 }
               }
             }
@@ -245,6 +240,7 @@
     },
     "/scans/status/{scanId}": {
       "get": {
+        "operationId": "getScanStatus",
         "description": "Retrieve information about the progress of the scan. [DESIGN DECISION]: the status and result are separated.",
         "parameters": [
           {
@@ -271,6 +267,7 @@
     },
     "/scans/result/{scanId}": {
       "get": {
+        "operationId": "getScanResult",
         "description": "Retrieve scan result information.",
         "parameters": [
           {

@@ -7,6 +7,7 @@
   "scan": "54651321654132154513213541531",
   "metadata": {
     "identified_as": "My web test",
+    // web, mail and any other scan on a single endpoint.
     "scan_type": "web/mail",
     "api_version": "2",
     "submission_date": "2017-10-05T10:16:19.316626+00:00",
@@ -99,6 +100,7 @@
           "test": "ipv6",
           "verdict": "passed",
           "icon": "category_passed",
+          // should we translations between verdict and translations?
           "translation": {
             "verdict": "not_signed"
           }
