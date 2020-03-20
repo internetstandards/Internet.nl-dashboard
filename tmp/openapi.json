@@ -48,7 +48,7 @@
       "ScanMetadata": {
         "type": "object",
         "properties": {
-          "identified_as": {
+          "tracking_information": {
             "type": "string"
           },
           "scan_type": {

@@ -1,40 +1,51 @@
+// error: problem parsings... at least one has an error. Can you give more feedback on what domain would be error.
+//  -> is there anything from the parsing error that we could give to the client. -> We can return some string.
+//  Different errors as separate error messages.
+//
+// in answer: never removes domains.
+// what additional errors you would like to have
+// todo: look into general API errors.
+
+
 // all names have underscores instead of hyphens, so it can be accessed in javascript with much more ease.
 // design decision: all test metadata and results are in a list. This is due to the better orderability.
 // Direct access can easily be created by looping over the list once. The "test" field is always unique.
 // and can be used to directly access the information like this:
 // scan.domains["nu.nl"].results.web_ipv_ns_address.icon
 {
-  "scan": "54651321654132154513213541531",
+  "scan": "f284049256dd4ca793edbcd4ae41759a",
   "metadata": {
-    "identified_as": "My web test",
+    "tracking_information": "My web test",
     // web, mail and any other scan on a single endpoint.
     "scan_type": "web/mail",
     "api_version": "2",
     "submission_date": "2017-10-05T10:16:19.316626+00:00",
-    "finished_date": "2017-10-05T10:26:19.316626+00:00",
-    // optional
-    "duration": {
-      "preparing": 1231,
-      "scanning": 231,
-      "reporting": 2134
-    }
+    "finished_date": "2017-10-05T10:26:19.316626+00:00"
   },
 
+  // Todo: make this a separate request, as that cleans up a little.
   // this is stuff that stays the same per test. This should not be repeated to reduce data.
   // Should this be defined elsewhere, things won't really change here. It CAN however influence the display in
   // clients.
-  "result_metadata": [
-    {
-      "test": "web_ipv6_ns_address",
-      // fields like title, subtitle, explanation, etc are implicit. They are available for all calculated
-      // results and results in the translations.
-      "translation": {
-        // Where to find the correct translation of this result.
-        "key": "web-mail_ipv6_ns-AAAA",
 
-        // these are the fields that are available to explain a test.
-        "fields": ["title", "explanation"]
-      },
+  "result_metadata": {
+      // Todo: will not be duplicated as key and value.
+      // Perhaps i have to specify the keynames for the test.
+      // Todo: document how the keys are constructed: web/mail - category - subtest -
+      // Todo: also document that they stay the same, so you cannot depend on this hierarcy.
+      // Goal: see where the test should be.
+      // Todo: use keys instad of a list of things.
+      "web_ipv6_ns_address":  {
+        // fields like title, subtitle, explanation, etc are implicit. They are available for all calculated
+        // results and results in the translations.
+        "translation": {
+          // Where to find the correct translation of this result.
+          "key": "web-mail_ipv6_ns-AAAA"
+
+          // removed: this is obvious from the translation files.
+          // these are the fields that are available to explain a test.
+          // "fields": ["title", "explanation"]
+        },
 
       // The hierarchy represents a way how internet.nl renders the test in a specific order.
       // There are two hierarchies, one with
@@ -45,24 +56,26 @@
       // scope creep.
       "hierarchy": {
         "human": "/web/ipv6/nameserver/address",
+        // create a report in the same order as on internet.nl
         "system": [1,1,1,1]
       }
     },
-    {
-      "test": "web_ipv6_ns_reach",
+    "web_ipv6_ns_reach": {
       "translation_key": "web-mail_ipv6_ns-reach",
       "hierarchy": {
         // The human hierarchy is an english directory structure that somewhat helps to place this item
+        // This is purely documentation to help document the system hierarchy.
+        // This hierarchy is seperate from the test key names.
         "human": "/web/ipv6/nameserver/reachability",
         // a system can simply order the items based on string comparison. this allows UI to be built correctly
         // with new test in the right place (if desired by somebody that implements the API).
         // you can just do a a>b to order the fields. And then you want to have easy access to the name.
         // so to have no list of this makes it hard to sort things...
+        // documents to prevent "where should something be"
         "system": [1,1,1,2]
       }
     },
-    {
-      "test": "ipv6",
+    "ipv6": {
       "translation": {
         "key": "web_cat_ipv6"
       },
@@ -70,8 +83,17 @@
         "human": "/web/ipv6/",
         "system": [1,1]
       }
+    },
+    "web": {
+      "translation": {
+        "key": "web"
+      },
+      "hierarchy": {
+        "human": "/web/",
+        "system": [1]
+      }
     }
-  ],
+  },
   "domains": [
     // Any printable character can be a key. this works.
     // Should the order be relevant? If not, this approach makes parsing / retrieving a specific value as simple
@@ -80,17 +102,21 @@
     {
       // We keep the domain field here, so it's easy to do object.keys, and not work with the key but treat it
       // as a list (which is randomly ordered then...)
+      // todo: also by key
       "domain": "nu.nl",
-      "status": "failed, success",
+
+      // todo: add documentation
+      "status": ["failed, success"],
 
       // Isn't this just a derived result, but with different data? At least now it's extendable with
       // differen options to wqualifiers. Also supports deprecation and such.
       "score": {
         "percentage": 80,
-        "icon": ""
+        // not be used, but example that it can be extenable: "icon": ""
       },
       "report": {
         "id": 814640,
+        // Easier to directly access
         "address": "https://..."
       },
       // categories are now derived results. These can be derived from the result set and are added to
@@ -109,10 +135,18 @@
       "results": [
         // resulting this as a list by default makes it easier to determine that all the items in the list
         // have the same format. The results can be ordered for example by the above hierarcy.
+
+        // todo: perhaps i have to specify all keys you'll get back. Which is more explicit.
+        // todo: define all, and put a documentaiton link to all of these values in the results.
+        // Could i link to the verdicts? Or should i look to the example results page.
+        // George will set up a documentation page.
         {
           "test": "web_ipv6_ns_address",
+          // are verdict and icon always the same? George will check.
           "verdict": "passed",
           "icon": "passed",
+          // Can't have a generic table for the translation. This is different per test and can be
+          // very specific, while the test is warning.
           "translation": {
             "verdict": "good"
           },
@@ -127,8 +161,10 @@
           },
           // This is to illustrate a complex technical data section can be added, while we're not doing this now.
           "technical_details": {
-            "type": "ip_table, registar_table, security_table, ",
-            "translation_key": "security_table",
+            // result metadata + get headers. Hedaer is a string in translation file with pipes for each header.
+            // To get the translation, use the result metadata translation key, and then concatenate that with
+            // "tech table".
+            // a list of lists with undefined length. We should also document the headers and such.
             "data_matrix": [
               // todo: ... How to translate these fields then? secuire, insecrue, pahse, out, insufficient, etc
             ]
