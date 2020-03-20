@@ -29,19 +29,16 @@
       "Scan": {
         "type": "object",
         "properties": {
-          "success": {
-            "type": "string",
-            "default": "scan created"
-          },
           "message": {
             "type": "string",
             "enum": [
-              ""
+              "scan created"
             ]
           },
           "id": {
             "type": "string",
-            "format": "^[0-9abcdef]{32}$"
+            "format": "^[0-9abcdef]{32}$",
+            "example": "f284049256dd4ca793edbcd4ae41759a"
           },
           "metadata": {
             "$ref": "#/components/schemas/ScanMetadata"
@@ -62,7 +59,8 @@
             ]
           },
           "api_version": {
-            "type": "string"
+            "type": "string",
+            "example": "2"
           },
           "submission_date": {
             "type": "string",
@@ -81,7 +79,8 @@
         "properties": {
           "scan": {
             "type": "string",
-            "format": "^[0-9abcdef]{32}$"
+            "format": "^[0-9abcdef]{32}$",
+            "example": "f284049256dd4ca793edbcd4ae41759a"
           },
           "metadata": {
             "$ref": "#/components/schemas/ScanMetadata"
@@ -203,9 +202,10 @@
                   },
                   "domains": {
                     "description": "List of domains to scan. For example: ['internet.nl', 'api.internet.nl']",
+                    "example": ["internet.nl", "api.internet.nl"],
                     "type": "array",
                     "items": {
-                      "type": "String [TODO: define domain format]"
+                      "type": "string"
                     }
                   }
                 },
