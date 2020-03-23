@@ -18,9 +18,8 @@ info:
   Several fields in this API can be used as JavaScript or Python symbols. As such they are easy to parse and use.
   If you want direct access to the test results, parse the results from a list to a dict, where the key is the test name.
 
-  For example
-  ```python
-
+  For example:
+  ```
     from collections import defaultdict
 
     accessible_results = defaultdict(dict)
@@ -30,9 +29,10 @@ info:
     print(accessible_results['web_ipv6_ns_address']['verdict'])
   ```
 
+  todo:
 
   "
-  termsOfService: "[TODO] http://api.internet.nl/v2/terms.html"
+  termsOfService: "http://api.internet.nl/v2/terms.html"
   contact:
     name: Internet.nl Helpdesk
     email: vraag@internet.nl
@@ -74,8 +74,7 @@ components:
       format: ^.?*\..*?$
       example: api.internet.nl
     list_of_domains:
-      description: 'List of domains to scan. For example: [''internet.nl'',
-                          ''api.internet.nl'']'
+      description: 'List of domains to scan.'
       example:
         - internet.nl
         - api.internet.nl
@@ -104,27 +103,35 @@ components:
     Scan:
       type: object
       properties:
+        id:
+          $ref: '#/components/schemas/scan_id'
         message:
           type: string
           enum:
-          - scan created
-        id:
-          $ref: '#/components/schemas/scan_id'
+            - scan created
         metadata:
           "$ref": "#/components/schemas/ScanMetadata"
     ScanStatus:
-      type: object,
+      type: object
       properties:
         id:
           $ref: '#/components/schemas/scan_id'
-        status:
-          type: "string",
+        message:
+          type: "string"
           enum:
+            # This is the normal scan progression, without errors
             - Batch request is registering domains
             - Batch request is running
             - Report is being generated
             # This used to be "OK", but that's not verbose enough.
             - Batch request finished
+
+            # Error situations return a message:
+            - Unknown batch request
+            - Error while registering the domains
+            - Results could not be generated
+            - Batch request was cancelled by user
+            - Problem parsing domains
         metadata:
           $ref: '#/components/schemas/ScanMetadata'
     ScanResult:
@@ -136,6 +143,7 @@ components:
           "$ref": "#/components/schemas/ScanMetadata"
         domains:
           type: object
+          description: "Domains are only scanned once, which make them usable as a key for accessing information."
           properties:
             domain:
               $ref: '#/components/schemas/domain'
@@ -167,18 +175,19 @@ components:
                   type: string
                   format: url
                   example: "https://api.internet.nl/web/api.internet.nl/4423123/"
-            derived_results:
-              type: array
-              description: A derived result is a result created based on a number of calculations of other results.
-              A derived result shares the same result format. Its uses are for example to derive a conclusion about
-              a group of results into a single result (such as a category like "IPv6").
-              items:
-                "$ref": "#/components/schemas/Result"
             results:
               description: ""
               type: array
               items:
                 "$ref": "#/components/schemas/Result"
+            derived_results:
+              type: array
+              description: "A derived result is a result created based on a number of calculations of other results.
+              A derived result shares the same result format. Its uses are for example to derive a conclusion about
+              a group of results into a single result (such as a category like 'IPv6')."
+              items:
+                "$ref": "#/components/schemas/Result"
+
     ResultMetaData:
       description: Contains extensive information on how scan results can be represented
         in reports. Describes scan results.
@@ -189,48 +198,86 @@ components:
         externalDocs:
           url: https://api.internet.nl/v2.0/documentation/results
         properties:
-          test:
+          sub_test:
             $ref: '#/components/schemas/test_id'
+          description:
+            type: string
+            description: "Free formatted text to briefly describe the test. Refer to documentation for verbose information."
+            example: "IPv6 addresses for name servers"
           documentation:
             type: string
             description: Resource location of the documentation of the field. Shows
               what all possible values can be.
+            example: "https://api.internet.nl/v2/documentation/results#mail_ipv6_ns_address"
             format: uri
-          hierarchy:
-            type: object
-            description: The hierarchy contains the order of tests on internet.nl.
-              The hierarchy is stored separately from the data, to make parsing of
-              data easier. The hierarchy might change over versions, while tests names
-              stay the same.
-            properties:
-              human:
-                description: A loosely describing and structured format that explains
-                  the system hierarchy to humans. This helps understanding the place
-                  of a test.
-                example: "/web/ipv6/nameserver/reachability"
-                type: string
-              system:
-                description: The system hierarchy is a comparable list of integers.
-                  When ordered from small to large, the same order is created as used
-                  on internet.nl and the internet.nl dashboard.
-                type: array
-                example:
+          verdict_result_mapping:
+            description: "-> Make it clear that these map directly."
+            type: array
+            items:
+              type: array
+              properties:
+                verdict:
+                  type: string
+                  example: good
+                test_result:
+                  type: string
+                  example: pass
+
+          possible_verdicts:
+            type: array
+            description: "All possible verdicts this test can have. The order is relevant and matches with test results."
+            example: ["good", "bad", "other"]
+            items:
+              type: string
+              format: "^[a-z_]$"
+          possible_test_results:
+            type: array
+            description: "All possible test results this test can have. The order is relevant and matches with possible verdicts."
+            example: ["pass", "fail", "fail"]
+            items:
+              type: string
+              format: "^[a-z_]$"
+        allOf:
+          - $ref: '#/components/schemas/verbose_properties'
+
+    verbose_properties:
+      properties:
+        hierarchy:
+          type: object
+          description: The hierarchy contains the order of tests on internet.nl.
+            The hierarchy is stored separately from the data, to make parsing of
+            data easier. The hierarchy might change over versions, while tests names
+            stay the same.
+          properties:
+            human:
+              description: A loosely describing and structured format that explains
+                the system hierarchy to humans. This helps understanding the place
+                of a test.
+              example: "/web/ipv6/nameserver/address"
+              type: string
+            system:
+              description: The system hierarchy is a comparable list of integers.
+                When ordered from small to large, the same order is created as used
+                on internet.nl and the internet.nl dashboard. If something is four levels deep, there are four levels where the correct order is being maintained.
+              type: array
+              example:
                 - 1
                 - 1
                 - 1
                 - 1
-                items:
-                  type: integer
-          translation:
-            type: object
-            description: Information to retrieve the correct translation from the
-              internet.nl sources. This can be used to translate the scan (title,
-              description, technical_details), as well as the result when used in
-              conjunction with the verdict key.
-            properties:
-              key:
-                type: string
-                example: web-mail_ipv6_ns-AAAA
+              items:
+                type: integer
+        translation:
+          type: object
+          description: "Information to retrieve the correct translation from the
+            internet.nl sources. This can be used to translate the scan (title,
+            description, technical_details), as well as the result when used in
+            conjunction with the verdict key. Todo: where can implementations find the translations?"
+          properties:
+            key:
+              type: string
+              example: web-mail_ipv6_ns-AAAA
+
     ScanError:
       type: object
       properties:
@@ -240,9 +287,9 @@ components:
     Result:
       type: object
       properties:
-        test:
+        sub_test:
           $ref: '#/components/schemas/test_id'
-        result:
+        verdict:
           description: "The plain result of a test. This result can also be used for translation."
           type: string
           enum:
@@ -258,8 +305,8 @@ components:
           - seclevel_bad
           - servfail
           - warning
-        verdict:
-          description: "Classifies the result to how it should be represented. For example: pass, fail, warning, info, not_tested, not_applicable."
+        test_result:
+          description: "Classifies the result to how a result should be represented. For example: pass, fail, warning, info, not_tested, not_applicable."
           type: string
           enum:
             - pass
@@ -268,24 +315,32 @@ components:
             - warning
             - not_applicable
             - not_tested
+        icon: 
+          type: string
+          description: "Allows tests and derived tests to specify an icon to match the test. This is usally something that matches the test result, but can deviate in edge cases."
+          example: "category_passed"
         translation:
+          description: "Key to translate the verdict, used together with the translation key."
           type: object
           properties:
-            verdict:
+            result:
               type: string
         technical_details:
-          description: "A table with data. Translation "
-          type: array
-          items:
-            type: array
-            items:
-              description: ""
-              type: string
+          type: object
+          properties:
+            data_matrix:
+              description: "A table with data. Use the translation key + tech_table to retrieve the column names of the data. The data can have a several columns and rows."
+              type: array
+              items:
+                type: array
+                items:
+                  description: "Actual values are represented as strings."
+                  type: string
 paths:
   "/scans":
     post:
       description: 'Creates a new scan.'
-      operationId: create_scan
+      operationId: create
       requestBody:
         content:
           multipart/form-data:
@@ -300,6 +355,7 @@ paths:
                   $ref: '#/components/schemas/list_of_domains'
               required:
               - domains
+              - type
       responses:
         '200':
           description: Scan created successfully
@@ -315,7 +371,7 @@ paths:
                 "$ref": "#/components/schemas/ScanError"
   "/scans/metadata/":
     get:
-      operationId: scan_metadata
+      operationId: metadata
       description: 'Get''s machine readable metadata on: documentation, translation,
         display etc. This can be used to create reports equivalent to internet.nl.'
       responses:
@@ -327,7 +383,7 @@ paths:
                 "$ref": "#/components/schemas/ResultMetaData"
   "/scans/status/{scanId}":
     get:
-      operationId: scan_status
+      operationId: status
       description: 'Retrieve information about the progress of the scan.'
       parameters:
       - name: scanId
@@ -336,14 +392,14 @@ paths:
         in: path
       responses:
         '200':
-          description: Scan progress or result.
+          description: Track progress of a scan.
           content:
             application/json:
               schema:
                 "$ref": "#/components/schemas/ScanStatus"
   "/scans/result/{scanId}":
     get:
-      operationId: scan_result
+      operationId: result
       description: Retrieve scan result information.
       parameters:
       - name: scanId
