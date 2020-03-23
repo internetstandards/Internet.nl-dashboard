@@ -1,11 +1,12 @@
-// error: problem parsings... at least one has an error. Can you give more feedback on what domain would be error.
-//  -> is there anything from the parsing error that we could give to the client. -> We can return some string.
-//  Different errors as separate error messages.
+// Todo: different type of error messages will be investigated and added to the API.
+// This helps/guides clients to create the correct request.
 //
 // in answer: never removes domains.
 // what additional errors you would like to have
 // todo: look into general API errors.
 
+// todo: special fields in de email test. -> bijvoorbeeld -> dmarc reject + spf-all -> parked domain.
+// zie spreadsheet van mail.
 
 // all names have underscores instead of hyphens, so it can be accessed in javascript with much more ease.
 // design decision: all test metadata and results are in a list. This is due to the better orderability.
@@ -46,6 +47,17 @@
           // these are the fields that are available to explain a test.
           // "fields": ["title", "explanation"]
         },
+
+
+
+        // displayed on internet.nl, some special fields are not shown on internet.nl but are returned
+        // are they still needed, will they be released in the future?
+        // should we add a field "when" a field has been added? At what API version.
+        // and we should also note that since when it is displayed. So we can specify fields without
+        // releasing them? At least the API should reflect the documentation / design and should NOT be different.
+
+        // the tradeoff: should it be documented in the API or should fields be documented in the documentation?
+
 
       // The hierarchy represents a way how internet.nl renders the test in a specific order.
       // There are two hierarchies, one with

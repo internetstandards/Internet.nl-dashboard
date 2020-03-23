@@ -1,0 +1,359 @@
+openapi: 3.0.3
+info:
+  title: Internet.nl Batch Scan API
+  description: "
+  Batch scan multiple domains for compliance with modern internet standards.
+
+  ## How to get access
+
+  The API can be accessed by sending a request for access to our contact information.
+
+  ## Alternatives
+
+  The internet.nl dashboard implements this API. This is developed by internet.nl and comes with all kinds of features
+  such as recurring scans, reports, comparisons and more. See our contact information to request access.
+
+  ## Implementation guide
+
+  Several fields in this API can be used as JavaScript or Python symbols. As such they are easy to parse and use.
+  If you want direct access to the test results, parse the results from a list to a dict, where the key is the test name.
+
+  For example
+  ```python
+
+    from collections import defaultdict
+
+    accessible_results = defaultdict(dict)
+    for result in retrieved_results:
+     accessible_results[result['test']] = result
+
+    print(accessible_results['web_ipv6_ns_address']['verdict'])
+  ```
+
+
+  "
+  termsOfService: "[TODO] http://api.internet.nl/v2/terms.html"
+  contact:
+    name: Internet.nl Helpdesk
+    email: vraag@internet.nl
+  license:
+    name: Apache 2.0
+    url: https://www.apache.org/licenses/LICENSE-2.0.html
+  version: '2.0'
+servers:
+- url: https://api.internet.nl/v2
+  description: Production server
+- url: https://test.api.internet.nl/v2
+  description: Development server
+components:
+  schemas:
+    scan_id:
+      type: string
+      format: "^[0-9abcdef]{32}$"
+      example: f284049256dd4ca793edbcd4ae41759a
+    tracking_information:
+      description: Serves as a reference for the requester. Does not need
+        to be unique. Can be any string value except JSON identifiers.
+      example: "{'name': 'My scan 1337', 'id': '42'}"
+      type: string
+    test_id:
+      description: 'There can be more metadata than only the results and derived
+                    results. For example: each level of the test hierarchy can be defined
+                    in this metadata.'
+      type: string
+      format: "^[a-z_]*$"
+      example: web_ipv6_ns_address
+    scan_type:
+      type: enum
+      enum:
+        - web
+        - mail
+    domain:
+      description: A single domain, which can include several levels of subdomains.
+      type: string
+      format: ^.?*\..*?$
+      example: api.internet.nl
+    list_of_domains:
+      description: 'List of domains to scan. For example: [''internet.nl'',
+                          ''api.internet.nl'']'
+      example:
+        - internet.nl
+        - api.internet.nl
+        - dashboard.internet.nl
+        - nic.商标
+      type: array
+      items:
+        type: string
+    ScanMetadata:
+      type: object
+      properties:
+        tracking_information:
+          $ref: '#/components/schemas/tracking_information'
+        scan_type:
+          $ref: '#/components/schemas/scan_type'
+        api_version:
+          type: string
+          example: '2'
+        submission_date:
+          type: string
+          format: date-time
+        finished_date:
+          type: string
+          format: date-time
+          description: Only set when the scan is finished.
+    Scan:
+      type: object
+      properties:
+        message:
+          type: string
+          enum:
+          - scan created
+        id:
+          $ref: '#/components/schemas/scan_id'
+        metadata:
+          "$ref": "#/components/schemas/ScanMetadata"
+    ScanStatus:
+      type: object,
+      properties:
+        id:
+          $ref: '#/components/schemas/scan_id'
+        status:
+          type: "string",
+          enum:
+            - Batch request is registering domains
+            - Batch request is running
+            - Report is being generated
+            # This used to be "OK", but that's not verbose enough.
+            - Batch request finished
+        metadata:
+          $ref: '#/components/schemas/ScanMetadata'
+    ScanResult:
+      type: object
+      properties:
+        id:
+          "$ref": "#/components/schemas/scan_id"
+        metadata:
+          "$ref": "#/components/schemas/ScanMetadata"
+        domains:
+          type: object
+          properties:
+            domain:
+              $ref: '#/components/schemas/domain'
+            status:
+              description: "A domain could not be scanned for various reasons. If the domain is not scanned, it will be
+              noted here. In that case all other properties will not be present."
+              type: enum
+              enum:
+              - success
+              # This used to be fail, but that does not make clear what has happened.
+              - could_not_be_scanned
+            score:
+              type: object
+              properties:
+                percentage:
+                  description: "The score of a domain. The score runs from 0 to 100, where 0 is bad and 100 is perfect.
+                  The score is a complex calculation based on all test results included. This calculation can change
+                  over time, depending on changing or new tests."
+                  type: integer
+                  example: 80
+            report:
+              type: object
+              properties:
+                id:
+                  description: "The ID of the test at internet.nl. This can be used to view a report for your scan at internet.nl"
+                  type: integer
+                address:
+                  description: "Direct url to the report on internet.nl."
+                  type: string
+                  format: url
+                  example: "https://api.internet.nl/web/api.internet.nl/4423123/"
+            derived_results:
+              type: array
+              description: A derived result is a result created based on a number of calculations of other results.
+              A derived result shares the same result format. Its uses are for example to derive a conclusion about
+              a group of results into a single result (such as a category like "IPv6").
+              items:
+                "$ref": "#/components/schemas/Result"
+            results:
+              description: ""
+              type: array
+              items:
+                "$ref": "#/components/schemas/Result"
+    ResultMetaData:
+      description: Contains extensive information on how scan results can be represented
+        in reports. Describes scan results.
+      type: array
+      items:
+        type: object
+        description: Description of the test, with documentation and such.
+        externalDocs:
+          url: https://api.internet.nl/v2.0/documentation/results
+        properties:
+          test:
+            $ref: '#/components/schemas/test_id'
+          documentation:
+            type: string
+            description: Resource location of the documentation of the field. Shows
+              what all possible values can be.
+            format: uri
+          hierarchy:
+            type: object
+            description: The hierarchy contains the order of tests on internet.nl.
+              The hierarchy is stored separately from the data, to make parsing of
+              data easier. The hierarchy might change over versions, while tests names
+              stay the same.
+            properties:
+              human:
+                description: A loosely describing and structured format that explains
+                  the system hierarchy to humans. This helps understanding the place
+                  of a test.
+                example: "/web/ipv6/nameserver/reachability"
+                type: string
+              system:
+                description: The system hierarchy is a comparable list of integers.
+                  When ordered from small to large, the same order is created as used
+                  on internet.nl and the internet.nl dashboard.
+                type: array
+                example:
+                - 1
+                - 1
+                - 1
+                - 1
+                items:
+                  type: integer
+          translation:
+            type: object
+            description: Information to retrieve the correct translation from the
+              internet.nl sources. This can be used to translate the scan (title,
+              description, technical_details), as well as the result when used in
+              conjunction with the verdict key.
+            properties:
+              key:
+                type: string
+                example: web-mail_ipv6_ns-AAAA
+    ScanError:
+      type: object
+      properties:
+        message:
+          type: string
+          default: 'Error: '
+    Result:
+      type: object
+      properties:
+        test:
+          $ref: '#/components/schemas/test_id'
+        result:
+          description: "The plain result of a test. This result can also be used for translation."
+          type: string
+          enum:
+          - bad_unsupported_ds_algo
+          - bogus
+          - good
+          - na
+          - not_tested
+          - ok
+          - other
+          - phase_out
+          - resolver_error
+          - seclevel_bad
+          - servfail
+          - warning
+        verdict:
+          description: "Classifies the result to how it should be represented. For example: pass, fail, warning, info, not_tested, not_applicable."
+          type: string
+          enum:
+            - pass
+            - fail
+            - info
+            - warning
+            - not_applicable
+            - not_tested
+        translation:
+          type: object
+          properties:
+            verdict:
+              type: string
+        technical_details:
+          description: "A table with data. Translation "
+          type: array
+          items:
+            type: array
+            items:
+              description: ""
+              type: string
+paths:
+  "/scans":
+    post:
+      description: 'Creates a new scan.'
+      operationId: create_scan
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                type:
+                  $ref: '#/components/schemas/scan_type'
+                tracking_information:
+                  $ref: '#/components/schemas/tracking_information'
+                domains:
+                  $ref: '#/components/schemas/list_of_domains'
+              required:
+              - domains
+      responses:
+        '200':
+          description: Scan created successfully
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/Scan"
+        '500':
+          description: Scan creation error
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ScanError"
+  "/scans/metadata/":
+    get:
+      operationId: scan_metadata
+      description: 'Get''s machine readable metadata on: documentation, translation,
+        display etc. This can be used to create reports equivalent to internet.nl.'
+      responses:
+        '200':
+          description: Metadata information of a scan. This applies to all fields.
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ResultMetaData"
+  "/scans/status/{scanId}":
+    get:
+      operationId: scan_status
+      description: 'Retrieve information about the progress of the scan.'
+      parameters:
+      - name: scanId
+        schema:
+          $ref: '#/components/schemas/scan_id'
+        in: path
+      responses:
+        '200':
+          description: Scan progress or result.
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ScanStatus"
+  "/scans/result/{scanId}":
+    get:
+      operationId: scan_result
+      description: Retrieve scan result information.
+      parameters:
+      - name: scanId
+        schema:
+          $ref: '#/components/schemas/scan_id'
+        in: path
+      responses:
+        '200':
+          description: Scan result
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ScanResult"
