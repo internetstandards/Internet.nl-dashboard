@@ -52,7 +52,9 @@ info:
 
   ## Todo
 
-  Will pass + phase out have a different icon or translation?
+  * Will pass + phase out have a different icon or translation?
+
+  * Where can new implementations find translations, how can they adopt it quickly? This should be added somewhere.
 
   "
   termsOfService: "http://api.internet.nl/v2/terms.html"
@@ -304,11 +306,9 @@ components:
                       example: passed
             required: verdict, test_result
             example:
-              # todo: these are not yet real examples.
-              good: {test_result: pass, translation: {key: pass_a}}
-              bad: {test_result: fail, translation: {key: failure_a}}
-              other: {test_result: fail, translation: {key: failure_b}}
-              bad_unsupported_ds_algo: {test_result: fail, translation: {key: bad-unsupported_ds-algo}}
+              good: {test_result: pass, translation: {key: good}}
+              bad: {test_result: fail, translation: {key: bad}}
+              other: {test_result: fail, translation: {key: other}}
         allOf:
           - $ref: '#/components/schemas/verbose_properties'
 
@@ -344,7 +344,7 @@ components:
           description: "Information to retrieve the correct translation from the
             internet.nl sources. This can be used to translate the scan (title,
             description, technical_details), as well as the result when used in
-            conjunction with the verdict key. Todo: where can implementations find the translations?"
+            conjunction with the verdict key."
           properties:
             key:
               type: string
