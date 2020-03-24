@@ -32,21 +32,10 @@ info:
 
   Requesting access to the dashboard can be done by contacting the help desk.
 
-  ## Implementation guide
+  ## Implementation tips
 
-  Several fields in this API can be used as JavaScript or Python symbols. As such they are easy to parse and use.
-  If you want direct access to the test results, parse the results from a list to a dict, where the key is the test name.
-
-  For example:
-
-  ```
-    from collections import defaultdict
-    accessible_results = defaultdict(dict)
-    for result in retrieved_results:
-     accessible_results[result['test']] = result
-    print(accessible_results['web_ipv6_ns_address']['verdict'])
-  ```
-
+  Tests and test_results can be used as javascript or python symbols. Domains returned are unique. These objects
+  can be converted from lists to dictionaries for faster access.
   "
   termsOfService: "http://api.internet.nl/v2/terms.html"
   contact:
@@ -74,6 +63,7 @@ components:
     scan_id:
       type: string
       format: "^[0-9abcdef]{32}$"
+      description: "Randomly generated id, use this to request the state and result of your scan."
       example: f284049256dd4ca793edbcd4ae41759a
     tracking_information:
       description: Serves as a reference for the requester. Does not need
@@ -110,7 +100,7 @@ components:
       type: array
       items:
         type: string
-    ScanMetadata:
+    scan_metadata:
       type: object
       properties:
         tracking_information:
@@ -135,14 +125,18 @@ components:
         message:
           type: string
           enum:
-            - scan created
+            - scan requested
         metadata:
-          "$ref": "#/components/schemas/ScanMetadata"
-    ScanStatus:
+          "$ref": "#/components/schemas/scan_metadata"
+    scan_status:
       type: object
+      description: "Successful scan progress is indicated with the status running and finished."
       properties:
         id:
           $ref: '#/components/schemas/scan_id'
+        status:
+          type: enum
+          enum: ["finished", "running"]
         message:
           type: "string"
           enum:
@@ -152,22 +146,34 @@ components:
             - Report is being generated
             # This used to be "OK", but that's not verbose enough.
             - Batch request finished
-
-            # Error situations return a message:
+        metadata:
+          $ref: '#/components/schemas/scan_metadata'
+    scan_error_status:
+      type: object
+      description: "In case an error occurs, the state is set to error and different messages may occur."
+      properties:
+        id:
+          $ref: '#/components/schemas/scan_id'
+        status:
+          type: enum
+          enum: ["error"]
+        message:
+          type: "string"
+          enum:
             - Unknown batch request
             - Error while registering the domains
             - Results could not be generated
             - Batch request was cancelled by user
             - Problem parsing domains
         metadata:
-          $ref: '#/components/schemas/ScanMetadata'
-    ScanResult:
+          $ref: '#/components/schemas/scan_metadata'
+    scan_result:
       type: object
       properties:
         id:
           "$ref": "#/components/schemas/scan_id"
         metadata:
-          "$ref": "#/components/schemas/ScanMetadata"
+          "$ref": "#/components/schemas/scan_metadata"
         domains:
           type: object
           description: "Domains are only scanned once, which make them usable as a key for accessing information."
@@ -217,7 +223,7 @@ components:
               items:
                 "$ref": "#/components/schemas/Result"
 
-    ResultMetaData:
+    scan_result_metadata:
       description: Contains extensive information on how scan results can be represented
         in reports. Describes scan results.
       type: array
@@ -379,8 +385,28 @@ paths:
     post:
       security:
         - basic: []
-      description: 'Creates a new scan.'
-      operationId: create
+      description: 'Register a new scan. Registration means that the scan has not been checked or validated. Use the returned id in a status request to track progress.'
+      operationId: register
+      x-code-samples:
+        - lang: Python
+          source: "import requests
+
+      from requests.auth import HTTPBasicAuth
+
+      # set: api_url, username, password
+
+      data = {'type': 'web', 'tracking_information': 'My first test.', 'domains': ['internet.nl', 'api.internet.nl', 'dashboard.internet.nl']}
+
+      response = requests.post(f'{api_url}/scans/', data=data, auth=HTTPBasicAuth(username, password))
+
+      response.raise_for_status()
+
+      answer = response.json()
+
+      scan_id = answer['id']
+
+      print(scan_id))
+      "
       requestBody:
         content:
           multipart/form-data:
@@ -398,7 +424,7 @@ paths:
               - type
       responses:
         '200':
-          description: Scan created successfully
+          description: Scan registered successfully
           content:
             application/json:
               schema:
@@ -410,11 +436,7 @@ paths:
                 scan_id: '$response.body#/id'
               description: The scan_id retrieved from creating a scan can be used to retrieve the status and scan result.
         '500':
-          description: Scan creation error
-          content:
-            application/json:
-              schema:
-                "$ref": "#/components/schemas/ScanError"
+          description: "Scan registration error: the server could not handle your request at this time."
         '401':
           $ref: '#/components/responses/UnauthorizedError'
   "/scans/metadata/":
@@ -424,13 +446,23 @@ paths:
       operationId: metadata
       description: 'Get''s machine readable metadata on: documentation, translation,
         display etc. This can be used to create reports equivalent to internet.nl.'
+      x-code-samples:
+        - lang: Python
+          source: "response = requests.get(f'{api_url}/scans/metadata', auth=HTTPBasicAuth(username, password))
+
+            response.raise_for_status()
+
+            answer = response.json()
+
+            print(answer[0]['test']))
+            "
       responses:
         '200':
           description: Metadata information of a scan. This applies to all fields.
           content:
             application/json:
               schema:
-                "$ref": "#/components/schemas/ResultMetaData"
+                "$ref": "#/components/schemas/scan_result_metadata"
         '401':
           $ref: '#/components/responses/UnauthorizedError'
   "/scans/status/{scan_id}":
@@ -439,6 +471,24 @@ paths:
         - basic: []
       operationId: status
       description: 'Retrieve information about the progress of the scan.'
+      x-code-samples:
+        - lang: Python
+          source: "from time import sleep
+
+          response = requests.get(f'{api_url}/scans/status/{scan_id}', auth=HTTPBasicAuth(username, password))
+
+          response.raise_for_status()
+
+          while (response['status'] not in ['error', 'finished'])
+
+              response = requests.get(f'{api_url}/scans/status/{scan_id}', auth=HTTPBasicAuth(username, password))
+
+              response.raise_for_status()
+
+              sleep(30)
+
+          print 'Scan finished successfully.'
+          "
       parameters:
       - name: scan_id
         schema:
@@ -450,7 +500,13 @@ paths:
           content:
             application/json:
               schema:
-                "$ref": "#/components/schemas/ScanStatus"
+                "$ref": "#/components/schemas/scan_status"
+        '512':
+          description: Track the status of a scan.
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/scan_error_status"
         '401':
           $ref: '#/components/responses/UnauthorizedError'
   "/scans/result/{scan_id}":
@@ -461,13 +517,7 @@ paths:
       description: Retrieve scan result information.
       x-code-samples:
         - lang: Python
-          source: "import requests
-
-from requests.auth import HTTPBasicAuth
-
-# set: api_url, scan_id, username, password
-
-response = requests.get(f'{api_url}/scans/result/{scan_id}', auth=HTTPBasicAuth(username, password))
+          source: "response = requests.get(f'{api_url}/scans/result/{scan_id}', auth=HTTPBasicAuth(username, password))
 
 response.raise_for_status()
 
@@ -486,6 +536,6 @@ print(answer['id']))
           content:
             application/json:
               schema:
-                "$ref": "#/components/schemas/ScanResult"
+                "$ref": "#/components/schemas/scan_result"
         '401':
           $ref: '#/components/responses/UnauthorizedError'
