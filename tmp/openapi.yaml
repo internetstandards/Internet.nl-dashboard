@@ -4,14 +4,33 @@ info:
   description: "
   Batch scan multiple domains for compliance with modern internet standards.
 
-  ## How to get access
+  ## Requesting access
 
-  The API can be accessed by sending a request for access to the help desk. Policies may apply for being granted access.
+  Send a request for access to the help desk.
 
-  ## Alternatives
+  ## Dashboard or API?
 
-  The internet.nl dashboard implements this API. This is developed by internet.nl and comes with all kinds of features
-  such as recurring scans, reports, comparisons and more. See our contact information to request access.
+  Internet.nl provides a dashboard. If you don't want to implement this API, but do want batch scanning, this is the
+  option for you. The dashboard comes with a series of features that you might convenient. Such as:
+
+  * periodical batch scans
+
+  * domain and list management
+
+  * scan tracking
+
+  * extensive reporting, including:
+
+  ** comparisons to other reports
+
+  ** graphs
+
+  ** metrics in tables
+
+  * export options (excel, ods, csv)
+
+
+  Requesting access to the dashboard can be done by contacting the help desk.
 
   ## Implementation guide
 
@@ -19,22 +38,19 @@ info:
   If you want direct access to the test results, parse the results from a list to a dict, where the key is the test name.
 
   For example:
+
   ```
     from collections import defaultdict
-
     accessible_results = defaultdict(dict)
     for result in retrieved_results:
      accessible_results[result['test']] = result
-
     print(accessible_results['web_ipv6_ns_address']['verdict'])
   ```
-
-  todo:
 
   "
   termsOfService: "http://api.internet.nl/v2/terms.html"
   contact:
-    name: Internet.nl Helpdesk
+    name: Internet.nl Help desk
     email: vraag@internet.nl
   license:
     name: Apache 2.0
@@ -65,12 +81,15 @@ components:
       example: "{'name': 'My scan 1337', 'id': '42'}"
       type: string
     test_id:
+      allOf:
+        - $ref: '#/components/schemas/identifier'
       description: 'There can be more metadata than only the results and derived
                     results. For example: each level of the test hierarchy can be defined
                     in this metadata.'
+      example: web_ipv6_ns_address
+    identifier:
       type: string
       format: "^[a-z_]*$"
-      example: web_ipv6_ns_address
     scan_type:
       type: enum
       enum:
@@ -230,11 +249,9 @@ components:
               type: object
               properties:
                 verdict:
-                  type: string
-                  format: "^[a-z_]$"
+                  $ref: '#/components/schemas/identifier'
                 test_result:
-                  type: string
-                  format: "^[a-z_]$"
+                  $ref: '#/components/schemas/identifier'
             required: verdict, test_result
             example:
               good: pass
@@ -242,7 +259,7 @@ components:
               other: fail
               bad_unsupported_ds_algo: fail
               not_tested: not_tested
-              # todo: pass_with_phase_out?
+              # todo: pass_with_phase_out to show a different icon?
               phase_out: pass
         allOf:
           - $ref: '#/components/schemas/verbose_properties'
@@ -298,8 +315,8 @@ components:
           $ref: '#/components/schemas/test_id'
         verdict:
           description: "The plain result of a test. This result can also be used for translation."
-          type: string
-          format: "^[a-z_]$"
+          allOf:
+            - $ref: '#/components/schemas/identifier'
           enum:
           - bad_unsupported_ds_algo
           - bogus
@@ -316,7 +333,8 @@ components:
         test_result:
           description: "Classifies the result to how a result should be represented. Is provided for convenience, as the test_result can also be derived from the mapping in the metadata."
           type: string
-          format: "^[a-z_]$"
+          allOf:
+            - $ref: '#/components/schemas/identifier'
           enum:
             - pass
             - fail
@@ -324,10 +342,13 @@ components:
             - warning
             - not_applicable
             - not_tested
-        icon: 
-          type: string
-          description: "Allows tests and derived tests to specify an icon to match the test. This is usually something that matches the test result, but can deviate in edge cases."
-          example: "category_passed"
+        # todo: how do we know that something should use the _category_ tag? How and where are these documented? Should we just use type? or tag?
+        tags:
+          type: array
+          description: "Allows tests and derived tests to specify if they are of a certain type. For example to use a different representation."
+          items:
+            type: string
+          example: ["category", ""]
         translation:
           description: "Key to translate the verdict, used together with the translation key."
           type: object
@@ -439,8 +460,21 @@ paths:
       operationId: result
       description: Retrieve scan result information.
       x-code-samples:
-        lang: Python
-        source: console.log('Hello World');
+        - lang: Python
+          source: "import requests
+
+from requests.auth import HTTPBasicAuth
+
+# set: api_url, scan_id, username, password
+
+response = requests.get(f'{api_url}/scans/result/{scan_id}', auth=HTTPBasicAuth(username, password))
+
+response.raise_for_status()
+
+answer = response.json()
+
+print(answer['id']))
+"
       parameters:
       - name: scan_id
         schema:
