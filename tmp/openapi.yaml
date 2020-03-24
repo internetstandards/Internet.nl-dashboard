@@ -34,8 +34,27 @@ info:
 
   ## Implementation tips
 
-  Tests and test_results can be used as javascript or python symbols. Domains returned are unique. These objects
-  can be converted from lists to dictionaries for faster access.
+  Domains and tests are used as keys. This helps with quickly parsing fields, as the right data can quickly be found.
+
+  For example:
+
+  To get the test result for a certain domain (python):
+
+
+  `results['domains']['internet.nl']['results']['web_ipv6_ns_address']['test_result']`
+
+
+  To get all domains in a test (javascript):
+
+
+  `Object.keys(results['domains'])`
+
+
+  ## Todo:
+
+  * Use keys instead of a list for each test. So it's clear what keys will be returned and that these all have direct access when parsing (which is faster). Do this with additionalProperties.
+
+
   "
   termsOfService: "http://api.internet.nl/v2/terms.html"
   contact:
@@ -174,60 +193,63 @@ components:
           "$ref": "#/components/schemas/scan_metadata"
         domains:
           type: object
-          description: "Domains are only scanned once, which make them usable as a key for accessing information."
-          properties:
-            domain:
-              $ref: '#/components/schemas/domain'
-            status:
-              description: "A domain could not be scanned for various reasons. If the domain is not scanned, it will be
-              noted here. In that case all other properties will not be present."
-              type: enum
-              enum:
-              - success
-              # This used to be fail, but that does not make clear what has happened.
-              - could_not_be_scanned
-            score:
-              description: "The score of a domain"
-              type: object
-              properties:
-                percentage:
-                  description: "The score of a domain. The score runs from 0 to 100, where 0 is bad and 100 is perfect.
-                  The score is a complex calculation based on all test results included. This calculation can change
-                  over time, depending on changing or new tests."
-                  type: integer
-                  example: 80
-            report:
-              description: "Information to help retrieve report information of this test at internet.nl"
-              type: object
-              properties:
-                id:
-                  description: "The ID of the test at internet.nl. This can be used to view a report for your scan at internet.nl"
-                  type: integer
-                address:
-                  description: "Direct url to the report on internet.nl."
-                  type: string
-                  format: url
-                  example: "https://api.internet.nl/web/api.internet.nl/4423123/"
-            results:
-              description: ""
-              type: array
-              items:
-                "$ref": "#/components/schemas/Result"
-            derived_results:
-              type: array
-              description: "A derived result is a result created based on a number of calculations of other results.
-              A derived result shares the same result format. Its uses are for example to derive a conclusion about
-              a group of results into a single result (such as a category like 'IPv6')."
-              items:
-                "$ref": "#/components/schemas/Result"
+          additionalProperties:
+            description: "Domains names are unique, and are used as the key to accessing information. Retrieve all returned domains by getting the keys from the domains object."
+            properties:
+              domain:
+                $ref: '#/components/schemas/domain'
+              status:
+                description: "A domain could not be scanned for various reasons. If the domain is not scanned, it will be
+                noted here. In that case all other properties will not be present."
+                type: enum
+                enum:
+                - success
+                # This used to be fail, but that does not make clear what has happened.
+                - could_not_be_scanned
+              score:
+                description: "The score of a domain"
+                type: object
+                properties:
+                  percentage:
+                    description: "The score of a domain. The score runs from 0 to 100, where 0 is bad and 100 is perfect.
+                    The score is a complex calculation based on all test results included. This calculation can change
+                    over time, depending on changing or new tests."
+                    type: integer
+                    example: 80
+              report:
+                description: "Information to help retrieve report information of this test at internet.nl"
+                type: object
+                properties:
+                  id:
+                    description: "The ID of the test at internet.nl. This can be used to view a report for your scan at internet.nl"
+                    type: integer
+                  address:
+                    description: "Direct url to the report on internet.nl."
+                    type: string
+                    format: url
+                    example: "https://api.internet.nl/web/api.internet.nl/4423123/"
+              results:
+                description: ""
+                type: object
+                additionalProperties:
+                  "$ref": "#/components/schemas/Result"
+              derived_results:
+                type: object
+                description: "A derived result is a result created based on a number of calculations of other results.
+                A derived result shares the same result format. Its uses are for example to derive a conclusion about
+                a group of results into a single result (such as a category like 'IPv6')."
+                additionalProperties:
+                  "$ref": "#/components/schemas/Result"
 
     scan_result_metadata:
       description: Contains extensive information on how scan results can be represented
         in reports. Describes scan results.
-      type: array
-      items:
+
+      type: object
+      additionalProperties:
+        x-additionalPropertiesName: test
         type: object
-        description: Description of the test, with documentation and such.
+        description: "Metadata associated with a test. The property name is an identifier, formatted with <^[a-z_]*$>. These mostly match the results and derived results."
         externalDocs:
           url: https://api.internet.nl/v2.0/documentation/results
         properties:
@@ -263,17 +285,26 @@ components:
             description: "All possible verdicts a test can have. The verdicts map to translations which contain an extended explanation of the result. The test_result is a classification of the verdict."
             type: object
             additionalProperties:
+              # todo: correct mapping...
               type: object
               properties:
                 verdict:
-                  $ref: '#/components/schemas/identifier'
-                test_result:
-                  $ref: '#/components/schemas/identifier'
-                translation:
+                  example: "bad"
+                  allOf:
+                  - $ref: '#/components/schemas/identifier'
+                mapping:
                   type: object
                   properties:
-                    "key":
-                      type: "string"
+                    test_result:
+                      example: "fail"
+                      allOf:
+                      - $ref: '#/components/schemas/identifier'
+                    translation:
+                      type: object
+                      properties:
+                        "key":
+                          type: "string"
+                          example: "bad"
             required: verdict, test_result
             example:
               good: pass
@@ -329,6 +360,8 @@ components:
         test:
           $ref: '#/components/schemas/test_id'
         verdict:
+          type: string
+          example: good
           description: "The plain result of a test. This result can also be used for translation."
           allOf:
             - $ref: '#/components/schemas/identifier'
@@ -348,6 +381,7 @@ components:
         test_result:
           description: "Classifies the result to how a result should be represented. Is provided for convenience, as the test_result can also be derived from the mapping in the metadata."
           type: string
+          example: pass
           allOf:
             - $ref: '#/components/schemas/identifier'
           enum:
