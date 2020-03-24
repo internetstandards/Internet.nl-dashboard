@@ -66,14 +66,14 @@ info:
     url: https://www.apache.org/licenses/LICENSE-2.0.html
   version: '2.0'
   x-logo:
-    url: "https://www.internet.nl/static/logo_en.svg"
+    url: https://www.internet.nl/static/logo_en.svg
     backgroundColor: "#FAFAFA"
-    altText: "Internet.nl logo"
+    altText: Internet.nl logo
 servers:
-- url: https://api.internet.nl/v2
-  description: Production server
-- url: https://test.api.internet.nl/v2
-  description: Development server
+  - url: https://api.internet.nl/v2
+    description: Production server
+  - url: https://test.api.internet.nl/v2
+    description: Development server
 components:
   securitySchemes:
     basic:
@@ -83,17 +83,17 @@ components:
     scan_id:
       type: string
       format: "^[0-9abcdef]{32}$"
-      description: "Randomly generated id, use this to request the state and result of your scan."
+      description: Randomly generated id, use this to request the state and result of your scan.
       example: f284049256dd4ca793edbcd4ae41759a
     tracking_information:
       description: Serves as a reference for the requester. Does not need
         to be unique. Can be any string value except JSON identifiers.
-      example: "{'name': 'My scan 1337', 'id': '42'}"
+      example: {'name': 'My scan 1337', 'id': '42'}
       type: string
     test_id:
       allOf:
         - $ref: '#/components/schemas/identifier'
-      description: 'Identifier for a specific test.'
+      description: Identifier for a specific test.
       example: web_ipv6_ns_address
     identifier:
       type: string
@@ -109,7 +109,7 @@ components:
       format: ^.?*\..*?$
       example: api.internet.nl
     list_of_domains:
-      description: 'List of domains to scan.'
+      description: List of domains to scan.
       example:
         - internet.nl
         - api.internet.nl
@@ -148,7 +148,7 @@ components:
           "$ref": "#/components/schemas/scan_metadata"
     scan_status:
       type: object
-      description: "Successful scan progress is indicated with the status running and finished."
+      description: Successful scan progress is indicated with the status running and finished.
       properties:
         id:
           $ref: '#/components/schemas/scan_id'
@@ -162,13 +162,14 @@ components:
             - Batch request is registering domains
             - Batch request is running
             - Report is being generated
+            # Design decision:
             # This used to be "OK", but that's not verbose enough.
-            - Batch request finished
+            - Batch request finished, report available
         metadata:
           $ref: '#/components/schemas/scan_metadata'
     scan_error_status:
       type: object
-      description: "In case an error occurs, the state is set to error and different messages may occur."
+      description: In case an error occurs, the state is set to error and different messages may occur.
       properties:
         id:
           $ref: '#/components/schemas/scan_id'
@@ -195,20 +196,19 @@ components:
         domains:
           type: object
           additionalProperties:
-            description: "Domains names are unique, and are used as the key to accessing information. Retrieve all returned domains by getting the keys from the domains object."
+            description: Domains names are unique, and are used as the key to accessing information. Retrieve all returned domains by getting the keys from the domains object.
             properties:
               domain:
                 $ref: '#/components/schemas/domain'
               status:
-                description: "A domain could not be scanned for various reasons. If the domain is not scanned, it will be
-                noted here. In that case all other properties will not be present."
+                description: A domain could not be scanned for various reasons. If the domain is not scanned, it will be noted here. In that case all other properties will not be present.
                 type: enum
                 enum:
-                - success
-                # This used to be fail, but that does not make clear what has happened.
-                - could_not_be_scanned
+                  - success
+                  # This used to be fail, but that does not make clear what has happened.
+                  - could_not_be_scanned
               score:
-                description: "The score of a domain"
+                description: The score of a domain
                 type: object
                 properties:
                   percentage:
@@ -218,14 +218,14 @@ components:
                     type: integer
                     example: 80
               report:
-                description: "Information to help retrieve report information of this test at internet.nl"
+                description: Information to help retrieve report information of this test at internet.nl
                 type: object
                 properties:
                   id:
-                    description: "The ID of the test at internet.nl. This can be used to view a report for your scan at internet.nl"
+                    description: The ID of the test at internet.nl. This can be used to view a report for your scan at internet.nl
                     type: integer
                   address:
-                    description: "Direct url to the report on internet.nl."
+                    description: Direct url to the report on internet.nl.
                     type: string
                     format: url
                     example: "https://api.internet.nl/web/api.internet.nl/4423123/"
@@ -250,10 +250,11 @@ components:
       additionalProperties:
         x-additionalPropertiesName: test
         type: object
-        description: "Metadata associated with a test. The property name is an identifier, formatted with <^[a-z_]*$>. These mostly match the results and derived results."
+        description: Metadata associated with a test. The property name is an identifier, formatted with <^[a-z_]*$>. These mostly match the results and derived results.
         externalDocs:
           url: https://api.internet.nl/v2.0/documentation/results
         properties:
+          # Design decision:
           # This was suggested to be called "sub_test". This has been removed due to the hierarchy not being relevant.
           # In common conversations these things are also called tests. And the road to sub_sub_sub test is not one
           # that we want to go to.
@@ -261,8 +262,8 @@ components:
             $ref: '#/components/schemas/test_id'
           description:
             type: string
-            description: "Free formatted text to briefly describe the test. Only used for easier memorization. Refer to documentation for exact test implementation and considerations."
-            example: "IPv6 addresses for name servers"
+            description: Free formatted text to briefly describe the test. Only used for easier memorization. Refer to documentation for exact test implementation and considerations.
+            example: IPv6 addresses for name servers
           type:
             description: "Determines how this field should be implemented. There are currently three types:
 
@@ -273,14 +274,14 @@ components:
             * informational: An item in the hierarchy that does not have a (derived) test result attached to it. These are headers and intros to categories.
 
             "
-            type: "string"
-            enum: ['test', 'category', 'informational']
-            example: "test"
+            type: string
+            enum: [test, category, informational]
+            example: test
           documentation:
             type: string
             description: Resource location of the documentation of the field. Shows
               what all possible values can be.
-            example: "https://api.internet.nl/v2/documentation/results#mail_ipv6_ns_address"
+            example: https://api.internet.nl/v2/documentation/results#mail_ipv6_ns_address
             format: uri
           verdict_test_result_mapping:
             description: "All possible verdicts a test can have. The verdicts map to translations which contain an extended explanation of the result. The test_result is a classification of the verdict. The verdict is the key, which is formatted as an identifier."
@@ -289,6 +290,7 @@ components:
               x-additionalPropertiesName: verdict
               type: object
               properties:
+                # Design compromise:
                 # This is the key. OAS does not have options to specify a format for this key. Therefore it's documented.
                 # verdict:
                 #   example: "bad"
@@ -297,7 +299,7 @@ components:
                 test_result:
                   example: "fail"
                   allOf:
-                  - $ref: '#/components/schemas/identifier'
+                    - $ref: '#/components/schemas/identifier'
                 translation:
                   type: "object"
                   properties:
@@ -330,7 +332,8 @@ components:
             system:
               description: The system hierarchy is a comparable list of integers.
                 When ordered from small to large, the same order is created as used
-                on internet.nl and the internet.nl dashboard. If something is four levels deep, there are four levels where the correct order is being maintained.
+                on internet.nl and the internet.nl dashboard. If something is four levels deep,
+                there are four levels where the correct order is being maintained.
               type: array
               example:
                 - 1
@@ -341,10 +344,10 @@ components:
                 type: integer
         translation:
           type: object
-          description: "Information to retrieve the correct translation from the
+          description: Information to retrieve the correct translation from the
             internet.nl sources. This can be used to translate the scan (title,
             description, technical_details), as well as the result when used in
-            conjunction with the verdict key."
+            conjunction with the verdict key.
           properties:
             key:
               type: string
@@ -357,24 +360,24 @@ components:
         verdict:
           type: string
           example: good
-          description: "The plain result of a test. This result can also be used for translation."
+          description: The plain result of a test. This result can also be used for translation.
           allOf:
             - $ref: '#/components/schemas/identifier'
           enum:
-          - bad_unsupported_ds_algo
-          - bogus
-          - good
-          - na
-          - not_tested
-          - ok
-          - other
-          - phase_out
-          - resolver_error
-          - seclevel_bad
-          - servfail
-          - warning
+            - bad_unsupported_ds_algo
+            - bogus
+            - good
+            - na
+            - not_tested
+            - ok
+            - other
+            - phase_out
+            - resolver_error
+            - seclevel_bad
+            - servfail
+            - warning
         test_result:
-          description: "Classifies the result to how a result should be represented. Is provided for convenience, as the test_result can also be derived from the mapping in the metadata."
+          description: Classifies the result to how a result should be represented. Is provided for convenience, as the test_result can also be derived from the mapping in the metadata.
           type: string
           example: pass
           allOf:
@@ -396,12 +399,12 @@ components:
           type: object
           properties:
             data_matrix:
-              description: "A table with data. Use the translation key + tech_table to retrieve the column names of the data. The data can have a several columns and rows."
+              description: A table with data. Use the translation key + tech_table to retrieve the column names of the data. The data can have a several columns and rows.
               type: array
               items:
                 type: array
                 items:
-                  description: "Actual values are represented as strings."
+                  description: Actual values are represented as strings.
                   type: string
   responses:
     UnauthorizedError:
@@ -411,12 +414,13 @@ components:
           schema:
             type: string
 paths:
+  # Design Decision:
   # Dutch API spec requires the plural form to be used.
   "/scans":
     post:
       security:
         - basic: []
-      description: 'Register a new scan. Registration means that the scan has not been checked or validated. Use the returned id in a status request to track progress.'
+      description: Register a new scan. Registration means that the scan has not been checked or validated. Use the returned id in a status request to track progress.
       operationId: register
       x-code-samples:
         - lang: Python
@@ -451,8 +455,8 @@ paths:
                 domains:
                   $ref: '#/components/schemas/list_of_domains'
               required:
-              - domains
-              - type
+                - domains
+                - type
       responses:
         '200':
           description: Scan registered successfully
@@ -467,16 +471,17 @@ paths:
                 scan_id: '$response.body#/id'
               description: The scan_id retrieved from creating a scan can be used to retrieve the status and scan result.
         '500':
-          description: "Scan registration error: the server could not handle your request at this time."
+          description: The server could not handle your request at this time. Try again later.
         '401':
           $ref: '#/components/responses/UnauthorizedError'
+  # Design decision
+  # Metadata tries to make implicit decisions explicit.
   "/scans/metadata/":
     get:
       security:
         - basic: []
       operationId: metadata
-      description: 'Get''s machine readable metadata on: documentation, translation,
-        display etc. This can be used to create reports equivalent to internet.nl.'
+      description: Machine readable metadata on documentation, translation, display etc. This can be used to create reports equivalent to internet.nl.
       x-code-samples:
         - lang: Python
           source: "response = requests.get(f'{api_url}/scans/metadata', auth=HTTPBasicAuth(username, password))
@@ -496,12 +501,15 @@ paths:
                 "$ref": "#/components/schemas/scan_result_metadata"
         '401':
           $ref: '#/components/responses/UnauthorizedError'
+  # Design decision
+  # The dutch api spec state that the client can track the state.
+  # By separating state from the request, it's possible to more clearly show the scanning flow and define a more clear API.
   "/scans/status/{scan_id}":
     get:
       security:
         - basic: []
       operationId: status
-      description: 'Retrieve information about the progress of the scan.'
+      description: Retrieve information about the progress of the scan.
       x-code-samples:
         - lang: Python
           source: "from time import sleep
@@ -521,10 +529,10 @@ paths:
           print('Scan finished.')
           "
       parameters:
-      - name: scan_id
-        schema:
-          $ref: '#/components/schemas/scan_id'
-        in: path
+        - name: scan_id
+          schema:
+            $ref: '#/components/schemas/scan_id'
+          in: path
       responses:
         '200':
           description: Track the status of a scan.
@@ -557,10 +565,10 @@ answer = response.json()
 print(answer['id'])
 "
       parameters:
-      - name: scan_id
-        schema:
-          $ref: '#/components/schemas/scan_id'
-        in: path
+        - name: scan_id
+          schema:
+            $ref: '#/components/schemas/scan_id'
+          in: path
       responses:
         '200':
           description: Scan result
