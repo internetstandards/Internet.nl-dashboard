@@ -6,7 +6,7 @@ info:
 
   ## How to get access
 
-  The API can be accessed by sending a request for access to our contact information.
+  The API can be accessed by sending a request for access to the help desk. Policies may apply for being granted access.
 
   ## Alternatives
 
@@ -40,12 +40,20 @@ info:
     name: Apache 2.0
     url: https://www.apache.org/licenses/LICENSE-2.0.html
   version: '2.0'
+  x-logo:
+    url: "https://www.internet.nl/static/logo_en.svg"
+    backgroundColor: "#FAFAFA"
+    altText: "Internet.nl logo"
 servers:
 - url: https://api.internet.nl/v2
   description: Production server
 - url: https://test.api.internet.nl/v2
   description: Development server
 components:
+  securitySchemes:
+    basic:
+      type: http
+      scheme: basic
   schemas:
     scan_id:
       type: string
@@ -156,6 +164,7 @@ components:
               # This used to be fail, but that does not make clear what has happened.
               - could_not_be_scanned
             score:
+              description: "The score of a domain"
               type: object
               properties:
                 percentage:
@@ -165,6 +174,7 @@ components:
                   type: integer
                   example: 80
             report:
+              description: "Information to help retrieve report information of this test at internet.nl"
               type: object
               properties:
                 id:
@@ -198,7 +208,10 @@ components:
         externalDocs:
           url: https://api.internet.nl/v2.0/documentation/results
         properties:
-          sub_test:
+          # This was suggested to be called "sub_test". This has been removed due to the hierarchy not being relevant.
+          # In common conversations these things are also called tests. And the road to sub_sub_sub test is not one
+          # that we want to go to.
+          test:
             $ref: '#/components/schemas/test_id'
           description:
             type: string
@@ -210,33 +223,27 @@ components:
               what all possible values can be.
             example: "https://api.internet.nl/v2/documentation/results#mail_ipv6_ns_address"
             format: uri
-          verdict_result_mapping:
-            description: "-> Make it clear that these map directly."
-            type: array
-            items:
-              type: array
+          verdict_test_result_mapping:
+            description: "All possible verdicts a test can have. The verdicts map to translations which contain an extended explanation of the result. The test_result is a classification of the verdict."
+            type: object
+            additionalProperties:
+              type: object
               properties:
                 verdict:
                   type: string
-                  example: good
+                  format: "^[a-z_]$"
                 test_result:
                   type: string
-                  example: pass
-
-          possible_verdicts:
-            type: array
-            description: "All possible verdicts this test can have. The order is relevant and matches with test results."
-            example: ["good", "bad", "other"]
-            items:
-              type: string
-              format: "^[a-z_]$"
-          possible_test_results:
-            type: array
-            description: "All possible test results this test can have. The order is relevant and matches with possible verdicts."
-            example: ["pass", "fail", "fail"]
-            items:
-              type: string
-              format: "^[a-z_]$"
+                  format: "^[a-z_]$"
+            required: verdict, test_result
+            example:
+              good: pass
+              bad: fail
+              other: fail
+              bad_unsupported_ds_algo: fail
+              not_tested: not_tested
+              # todo: pass_with_phase_out?
+              phase_out: pass
         allOf:
           - $ref: '#/components/schemas/verbose_properties'
 
@@ -287,11 +294,12 @@ components:
     Result:
       type: object
       properties:
-        sub_test:
+        test:
           $ref: '#/components/schemas/test_id'
         verdict:
           description: "The plain result of a test. This result can also be used for translation."
           type: string
+          format: "^[a-z_]$"
           enum:
           - bad_unsupported_ds_algo
           - bogus
@@ -306,8 +314,9 @@ components:
           - servfail
           - warning
         test_result:
-          description: "Classifies the result to how a result should be represented. For example: pass, fail, warning, info, not_tested, not_applicable."
+          description: "Classifies the result to how a result should be represented. Is provided for convenience, as the test_result can also be derived from the mapping in the metadata."
           type: string
+          format: "^[a-z_]$"
           enum:
             - pass
             - fail
@@ -317,7 +326,7 @@ components:
             - not_tested
         icon: 
           type: string
-          description: "Allows tests and derived tests to specify an icon to match the test. This is usally something that matches the test result, but can deviate in edge cases."
+          description: "Allows tests and derived tests to specify an icon to match the test. This is usually something that matches the test result, but can deviate in edge cases."
           example: "category_passed"
         translation:
           description: "Key to translate the verdict, used together with the translation key."
@@ -336,9 +345,19 @@ components:
                 items:
                   description: "Actual values are represented as strings."
                   type: string
+  responses:
+    UnauthorizedError:
+      description: Authentication information is missing or invalid
+      headers:
+        WWW_Authenticate:
+          schema:
+            type: string
 paths:
+  # Dutch API spec requires the plural form to be used.
   "/scans":
     post:
+      security:
+        - basic: []
       description: 'Creates a new scan.'
       operationId: create
       requestBody:
@@ -363,14 +382,24 @@ paths:
             application/json:
               schema:
                 "$ref": "#/components/schemas/Scan"
+          links:
+            status:
+              operationId: status
+              parameters:
+                scan_id: '$response.body#/id'
+              description: The scan_id retrieved from creating a scan can be used to retrieve the status and scan result.
         '500':
           description: Scan creation error
           content:
             application/json:
               schema:
                 "$ref": "#/components/schemas/ScanError"
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
   "/scans/metadata/":
     get:
+      security:
+        - basic: []
       operationId: metadata
       description: 'Get''s machine readable metadata on: documentation, translation,
         display etc. This can be used to create reports equivalent to internet.nl.'
@@ -381,28 +410,39 @@ paths:
             application/json:
               schema:
                 "$ref": "#/components/schemas/ResultMetaData"
-  "/scans/status/{scanId}":
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+  "/scans/status/{scan_id}":
     get:
+      security:
+        - basic: []
       operationId: status
       description: 'Retrieve information about the progress of the scan.'
       parameters:
-      - name: scanId
+      - name: scan_id
         schema:
           $ref: '#/components/schemas/scan_id'
         in: path
       responses:
         '200':
-          description: Track progress of a scan.
+          description: Track the status of a scan.
           content:
             application/json:
               schema:
                 "$ref": "#/components/schemas/ScanStatus"
-  "/scans/result/{scanId}":
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+  "/scans/result/{scan_id}":
     get:
+      security:
+        - basic: []
       operationId: result
       description: Retrieve scan result information.
+      x-code-samples:
+        lang: Python
+        source: console.log('Hello World');
       parameters:
-      - name: scanId
+      - name: scan_id
         schema:
           $ref: '#/components/schemas/scan_id'
         in: path
@@ -413,3 +453,5 @@ paths:
             application/json:
               schema:
                 "$ref": "#/components/schemas/ScanResult"
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'

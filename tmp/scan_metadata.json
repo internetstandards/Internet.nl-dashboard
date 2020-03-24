@@ -1,5 +1,5 @@
 [
-  {
+  {verdict_result_mapping
     "subtest": "web_ipv6_ns_address",
     "description": "IPv6 addresses for name servers",
     "documentation": "https://api.internet.nl/v2/documentation/results#mail_ipv6_ns_address",
