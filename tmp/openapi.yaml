@@ -73,9 +73,7 @@ components:
     test_id:
       allOf:
         - $ref: '#/components/schemas/identifier'
-      description: 'There can be more metadata than only the results and derived
-                    results. For example: each level of the test hierarchy can be defined
-                    in this metadata.'
+      description: 'Identifier for a specific test.'
       example: web_ipv6_ns_address
     identifier:
       type: string
@@ -240,8 +238,21 @@ components:
             $ref: '#/components/schemas/test_id'
           description:
             type: string
-            description: "Free formatted text to briefly describe the test. Refer to documentation for verbose information."
+            description: "Free formatted text to briefly describe the test. Only used for easier memorization. Refer to documentation for exact test implementation and considerations."
             example: "IPv6 addresses for name servers"
+          type:
+            description: "Determines how this field should be implemented. There are currently three types:
+
+            * test: A test that has been performed, which has a verdict and such.
+
+            * category: A derived result from tests, which also has a verdict and such. This summarizes a series of tests.
+
+            * informational: An item in the hierarchy that does not have a (derived) test result attached to it. These are headers and intros to categories.
+
+            "
+            type: "string"
+            enum: ['test', 'category', 'informational']
+            example: "test"
           documentation:
             type: string
             description: Resource location of the documentation of the field. Shows
@@ -258,6 +269,11 @@ components:
                   $ref: '#/components/schemas/identifier'
                 test_result:
                   $ref: '#/components/schemas/identifier'
+                translation:
+                  type: object
+                  properties:
+                    "key":
+                      type: "string"
             required: verdict, test_result
             example:
               good: pass
@@ -307,13 +323,6 @@ components:
             key:
               type: string
               example: web-mail_ipv6_ns-AAAA
-
-    ScanError:
-      type: object
-      properties:
-        message:
-          type: string
-          default: 'Error: '
     Result:
       type: object
       properties:
@@ -348,18 +357,11 @@ components:
             - warning
             - not_applicable
             - not_tested
-        # todo: how do we know that something should use the _category_ tag? How and where are these documented? Should we just use type? or tag?
-        tags:
-          type: array
-          description: "Allows tests and derived tests to specify if they are of a certain type. For example to use a different representation."
-          items:
-            type: string
-          example: ["category", ""]
         translation:
-          description: "Key to translate the verdict, used together with the translation key."
+          description: "Key to translate the verdict, used together with the translation key. The format is: f'{test_translation_key}_verdict_{verdict_translation_key}' This can also be retrieved from the verdict mapping."
           type: object
           properties:
-            result:
+            key:
               type: string
         technical_details:
           type: object
