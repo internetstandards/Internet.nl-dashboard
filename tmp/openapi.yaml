@@ -56,6 +56,20 @@ info:
 
   * Where can new implementations find translations, how can they adopt it quickly? This should be added somewhere.
 
+  * [NL] domein weg uit domein resultaat want dat is de sleutel
+
+  * [NL] versie informatie toevoegen? waar?
+
+  * [NL] zijn er meerdere statussen als een domein niet gescan kon wordne?
+
+  * [NL] kloppen de API links / documentatie links en subdomeinen?
+
+  * [NL] renderen van de yaml en resultaat toevoegen aan de repository
+
+  * [NL] nalopen of de design decisions er allemaal in zitten van de json voorbeeld en van het tekst stuk.
+
+  * [NL] dedupe the test name in the results.
+
   "
   termsOfService: "http://api.internet.nl/v2/terms.html"
   contact:
