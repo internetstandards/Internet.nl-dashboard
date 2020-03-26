@@ -140,10 +140,8 @@ components:
       properties:
         id:
           $ref: '#/components/schemas/scan_id'
-        message:
-          type: string
-          enum:
-            - scan requested
+        # Design decision:
+        # a message is not needed. The ID itself is the status code says a scan has been registered.
         metadata:
           "$ref": "#/components/schemas/scan_metadata"
     scan_status:
