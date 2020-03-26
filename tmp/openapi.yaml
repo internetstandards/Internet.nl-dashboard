@@ -88,7 +88,7 @@ components:
     tracking_information:
       description: Serves as a reference for the requester. Does not need
         to be unique. Can be any string value except JSON identifiers.
-      example: {'name': 'My scan 1337', 'id': '42'}
+      example: "{'name': 'My scan 1337', 'id': '42'}"
       type: string
     test_id:
       allOf:
