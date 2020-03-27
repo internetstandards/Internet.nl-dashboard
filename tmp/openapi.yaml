@@ -79,6 +79,10 @@ info:
 
   * Construct metadata
 
+  * Make sure that not_applicable is also used in mail tests, as there is a difference between not_applicable and not_tested.
+
+  * Figure out: what is 'na' in a test result. Does that mean not_applicable?
+
 
   ## Changelog
 
