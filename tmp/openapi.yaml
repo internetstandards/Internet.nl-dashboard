@@ -32,6 +32,7 @@ info:
 
   Requesting access to the dashboard can be done by contacting the help desk.
 
+
   ## Implementation tips
 
   Domains and tests are used as keys. This helps with quickly parsing fields, as the right data can quickly be found.
@@ -50,25 +51,42 @@ info:
   `Object.keys(results['domains'])`
 
 
-  ## Todo
+  ### OpenAPI
 
-  * Will pass + phase out have a different icon or translation?
+  * http://spec.openapis.org/oas/v3.0.3
+
+  * https://geonovum.github.io/API-Designrules/  (Werkversie 17 januari 2020)
+
+
+  Rendering this file to html:
+
+  ```npx redoc-cli bundle openapi.yaml```
+
+
+  ## Todo
 
   * Where can new implementations find translations, how can they adopt it quickly? This should be added somewhere.
 
-  * [NL] domein weg uit domein resultaat want dat is de sleutel
+  * Verify: are there more reasons why a domain could not be scanned? (the status field of a domain is somewhat empty)
 
-  * [NL] versie informatie toevoegen? waar?
+  * Are the API endpoint links correct? They are now: api.internet.nl/v2
 
-  * [NL] zijn er meerdere statussen als een domein niet gescan kon wordne?
+  * Design decision: Will pass + phase out have a different icon or translation?
 
-  * [NL] kloppen de API links / documentatie links en subdomeinen?
+  * Add new mail tests to changelog when available.
 
-  * [NL] renderen van de yaml en resultaat toevoegen aan de repository
+  * Where will the docs per field be? With all possible results and explanations?
 
-  * [NL] nalopen of de design decisions er allemaal in zitten van de json voorbeeld en van het tekst stuk.
 
-  * [NL] dedupe the test name in the results.
+  ## Changelog
+
+  ### V2
+
+  * New API with focus on extensibility and easier consuming. With extra metadata
+
+  * Added new web tests: web_https_tls_cipher_order, web_https_tls_keyexchange_hash_function, web_https_tls_zero_rtt, web_https_tls_ocsp_stapling
+
+  * Added new mail tests: [TODO]
 
   "
   termsOfService: "http://api.internet.nl/v2/terms.html"
@@ -208,10 +226,14 @@ components:
         domains:
           type: object
           additionalProperties:
+            x-additionalPropertiesName: domain
             description: Domains names are unique, and are used as the key to accessing information. Retrieve all returned domains by getting the keys from the domains object.
             properties:
-              domain:
-                $ref: '#/components/schemas/domain'
+              # Design decision:
+              # This is now a key. Open API specification does not allow to name or specify keys.
+              # Therefore the domain is not in the results. This also forces a domain to be unique when returned, which was also part of the 1.0 design.
+              # domain:
+              #   $ref: '#/components/schemas/domain'
               status:
                 description: A domain could not be scanned for various reasons. If the domain is not scanned, it will be noted here. In that case all other properties will not be present.
                 type: enum
@@ -240,9 +262,10 @@ components:
                     description: Direct url to the report on internet.nl.
                     type: string
                     format: url
+                    # todo: is this example url correct?
                     example: "https://api.internet.nl/web/api.internet.nl/4423123/"
               results:
-                description: ""
+                description: "Results are keyed by test_id, for example web_ipv6_ns_address. The ID is formatted as <^[a-z_]*$>."
                 type: object
                 additionalProperties:
                   "$ref": "#/components/schemas/Result"
@@ -264,14 +287,17 @@ components:
         type: object
         description: Metadata associated with a test. The property name is an identifier, formatted with <^[a-z_]*$>. These mostly match the results and derived results.
         externalDocs:
+          # todo: will the docs be here?
           url: https://api.internet.nl/v2.0/documentation/results
         properties:
           # Design decision:
           # This was suggested to be called "sub_test". This has been removed due to the hierarchy not being relevant.
           # In common conversations these things are also called tests. And the road to sub_sub_sub test is not one
           # that we want to go to.
-          test:
-            $ref: '#/components/schemas/test_id'
+          # Design decision:
+          # They key itself is the test_id.
+          # test:
+          #  $ref: '#/components/schemas/test_id'
           description:
             type: string
             description: Free formatted text to briefly describe the test. Only used for easier memorization. Refer to documentation for exact test implementation and considerations.
@@ -293,10 +319,11 @@ components:
             type: string
             description: Resource location of the documentation of the field. Shows
               what all possible values can be.
+            # todo: will the docs be here?
             example: https://api.internet.nl/v2/documentation/results#mail_ipv6_ns_address
             format: uri
           verdict_test_result_mapping:
-            description: "All possible verdicts a test can have. The verdicts map to translations which contain an extended explanation of the result. The test_result is a classification of the verdict. The verdict is the key, which is formatted as an identifier."
+            description: "All possible verdicts a test can have. The verdicts map to translations which contain an extended explanation of the result. The test_result is a classification of the verdict. The verdict is the key, which is formatted as an identifier: <^[a-z_]*$>"
             type: object
             additionalProperties:
               x-additionalPropertiesName: verdict
@@ -365,10 +392,13 @@ components:
               type: string
               example: web-mail_ipv6_ns-AAAA
     Result:
+      x-additionalPropertiesName: test_id
       type: object
       properties:
-        test:
-          $ref: '#/components/schemas/test_id'
+        # Design decision:
+        # As with domains and tests in metadata, the redundant test name is removed.
+        # test:
+        #   $ref: '#/components/schemas/test_id'
         verdict:
           type: string
           example: good
