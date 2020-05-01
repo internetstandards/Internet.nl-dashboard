@@ -70,6 +70,7 @@ update_requirements: _mark_outdated requirements.txt requirements-dev.txt _commi
 
 _mark_outdated:
 	touch requirements*.in
+	touch requirements*.in
 
 # get latest sha for gitlab.com:icf/websecmap@master and update requirements
 update_requirement_websecmap: _update_websecmap_sha requirements.txt _commit_update
@@ -77,7 +78,7 @@ update_requirement_websecmap: _update_websecmap_sha requirements.txt _commit_upd
 _update_websecmap_sha:
 	sha=$(shell git ls-remote -q git@gitlab.com:internet-cleanup-foundation/web-security-map.git master|cut -f1); \
 	if grep $$sha requirements.in >/dev/null; then echo -e "\nNo update for you, current sha for websecmap in requirements.in is the same as master on Gitlab.\n"; exit 1;fi; \
-	sed -E -i '' "s/websecmap@[a-zA-Z0-9]{40}/$$sha/" requirements.in
+	sed -E -i '' "s/web-security-map@[a-zA-Z0-9]{40}/web-security-map@$$sha/" requirements.in
 
 _commit_update: requirements.txt
 	git add requirements*.txt requirements*.in

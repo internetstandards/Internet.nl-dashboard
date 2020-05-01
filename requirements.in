@@ -11,8 +11,12 @@
 # pytest docker was not released to pypi
 git+https://github.com/avast/pytest-docker@9ce726f4a045addc777fb1cea837a6309cbbeef6#egg=pytest-docker
 
+# somehow proxybroker is not taken from the correct source when importing websecmap (which is a nuisance), therefore
+# it is hardlinked here, with a repository that has better requirements:
+git+https://github.com/stitch/ProxyBroker#egg=proxybroker
+
 # to update websecmap, update the SHA hash and run: make update_requirement_websecmap
-git+https://gitlab.com/internet-cleanup-foundation/web-security-map@bf1cf1b026f5297d0ffe3008944c13435a883b41#egg=websecmap
+git+https://gitlab.com/internet-cleanup-foundation/web-security-map@1839f0baa1d6c0e6018b48f931669a14ffd1762a#egg=websecmap
 
 django-otp
 django-two-factor-auth
