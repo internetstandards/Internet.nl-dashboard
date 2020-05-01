@@ -9,28 +9,39 @@ log = logging.getLogger(__package__)
 
 API_URL = "https://batch.internet.nl/api/batch/v1.1/mail/"
 
-# set INTERNET_NL_API_USERNAME username
-USERNAME = os.environ.get('INTERNET_NL_API_USERNAME', '')
-# set INTERNET_NL_API_PASSWORD password
-PASSWORD = os.environ.get('INTERNET_NL_API_PASSWORD', '')
-
 
 # Docs: github.com/NLnetLabs/Internet.nl/blob/new_forumstandaardisatie_custom_view/documentation/batch_http_api.md
 class Command(BaseCommand):
     help = 'Very simple test to see if the internet.nl API is behaving correctly.'
 
     def handle(self, *args, **options):
-        """
-        POST /api/batch/v1.0/web/ HTTP/1.1
-        {
-            "name": "My web test",
-            "domains": ["nlnetlabs.nl", "www.nlnetlabs.nl", "opennetlabs.nl", "www.opennetlabs.nl"]
-        }
-        """
-        data = {"name": "test scan", "domains": ["nlnetlabs.nl", "www.nlnetlabs.nl", "opennetlabs.nl"]}
-        answer = requests.post(API_URL, json=data,
-                               auth=HTTPBasicAuth(USERNAME, PASSWORD), timeout=(300, 300))
-        log.debug("Received answer from internet.nl: %s" % answer.content)
+        submit_scan(API_URL)
 
-        answer = answer.json()
-        repr(answer)
+
+def submit_scan(api_url):
+
+    # set -x INTERNET_NL_API_USERNAME username
+    username = os.environ.get('INTERNET_NL_API_USERNAME', '')
+    # set -x INTERNET_NL_API_PASSWORD password
+    password = os.environ.get('INTERNET_NL_API_PASSWORD', '')
+
+    if not username or not password:
+        log.error(f"No username or password set in environment. Set them using "
+                  f"'set -x INTERNET_NL_API_USERNAME username' and  'set -x INTERNET_NL_API_PASSWORD password'.")
+
+    """
+    POST /api/batch/v1.0/web/ HTTP/1.1
+    {
+        "name": "My web test",
+        "domains": ["nlnetlabs.nl", "www.nlnetlabs.nl", "opennetlabs.nl", "www.opennetlabs.nl"]
+    }
+    """
+    data = {"name": "test scan", "domains": ["nlnetlabs.nl", "www.nlnetlabs.nl", "opennetlabs.nl", "ford.nl", "nu.nl"]}
+
+    answer = requests.post(api_url, json=data,
+                           auth=HTTPBasicAuth(username, password), timeout=(300, 300))
+    log.debug(f"Received answer from internet.nl: {answer.content}")
+    log.debug("Request the above url in your browser.")
+
+    answer = answer.json()
+    repr(answer)

@@ -1,4 +1,4 @@
-from django.contrib.auth.decorators import login_required
+from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib.auth.models import User
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render
@@ -6,48 +6,69 @@ from django.shortcuts import render
 from dashboard.internet_nl_dashboard.logic import operation_response
 from dashboard.internet_nl_dashboard.models import (Account, AccountInternetNLScan, DashboardUser,
                                                     UrlList)
-from dashboard.internet_nl_dashboard.views import (get_account, get_json_body,
-                                                   inject_default_language_cookie, report)
+from dashboard.internet_nl_dashboard.views import (get_account, get_json_body, inject_default_language_cookie)
 from dashboard.settings import LOGIN_URL
 
 
-@login_required(login_url=LOGIN_URL)
+def is_powertool_user(user):
+    """
+    A user_passes_test method that requires a login, active and either admin or staff permissions.
+
+    :param user:
+    :return:
+    """
+
+    if not user:
+        return False
+
+    if not isinstance(user, User):
+        return False
+
+    if not user.is_authenticated:
+        return False
+
+    if not user.is_active:
+        return False
+
+    if user.is_superuser:
+        return True
+
+    if user.is_staff:
+        return True
+
+    return False
+
+
+@user_passes_test(is_powertool_user, login_url=LOGIN_URL)
 def set_account(request) -> HttpResponse:
-
-    if not request.user.is_staff and request.user.is_active and request.user.is_superuser:
-        return report.dashboard(request)
-
     request_data = get_json_body(request)
     selected_account_id: int = request_data['id']
 
-    if selected_account_id:
+    if not selected_account_id:
+        return JsonResponse(operation_response(error=True, message=f"No account supplied."))
 
-        dashboard_user = DashboardUser.objects.all().filter(user=request.user).first()
+    dashboard_user = DashboardUser.objects.all().filter(user=request.user).first()
 
-        # very new users don't have the dashboarduser fields filled in, and are thus not connected to an account.
-        if not dashboard_user:
-            dashboard_user = DashboardUser(**{'account': Account.objects.all().first(), 'user': request.user})
+    # very new users don't have the dashboarduser fields filled in, and are thus not connected to an account.
+    if not dashboard_user:
+        dashboard_user = DashboardUser(**{'account': Account.objects.all().first(), 'user': request.user})
 
-        dashboard_user.account = Account.objects.get(id=selected_account_id)
-        dashboard_user.save()
+    dashboard_user.account = Account.objects.get(id=selected_account_id)
+    dashboard_user.save()
 
-        return JsonResponse(operation_response(success=True, message=f"Switched account."))
+    return JsonResponse(operation_response(success=True, message=f"Switched account."))
 
 
-@login_required(login_url=LOGIN_URL)
+@user_passes_test(is_powertool_user, login_url=LOGIN_URL)
 def get_accounts(request) -> HttpResponse:
     account = get_account(request)
-
-    if not request.user.is_staff and request.user.is_active and request.user.is_superuser:
-        return report.dashboard(request)
 
     accounts = Account.objects.all().values_list('id', 'name')
 
     account_data = []
     # add some metadata to the accounts, so it's more clear where you are switching to:
     for account in accounts:
-        account_information = {}
-        account_information['id'], account_information['name'] = account
+        account_information = {'id': account[0], 'name': account[1]}
         account_information['scans'] = AccountInternetNLScan.objects.all().filter(
             account=account_information['id']).count()
         account_information['lists'] = UrlList.objects.all().filter(account=account_information['id']).count()
@@ -59,7 +80,7 @@ def get_accounts(request) -> HttpResponse:
     return JsonResponse({'current_account': account, 'accounts': account_data})
 
 
-@login_required(login_url=LOGIN_URL)
+@user_passes_test(is_powertool_user, login_url=LOGIN_URL)
 def save_instant_account(request) -> HttpResponse:
 
     request = get_json_body(request)
@@ -67,10 +88,11 @@ def save_instant_account(request) -> HttpResponse:
     password = request['password']
 
     if User.objects.all().filter(username=username).exists():
-        return JsonResponse(operation_response(error=True, message=f"User with this username already exists."))
+        return JsonResponse(operation_response(error=True, message=f"User with username '{username}' already exists."))
 
     if Account.objects.all().filter(name=username).exists():
-        return JsonResponse(operation_response(error=True, message=f"Account with this username already exists."))
+        return JsonResponse(operation_response(error=True,
+                                               message=f"Account with username {username}' already exists."))
 
     # Extremely arbitrary password requirements. Just to make sure a password has been filled in.
     if len(password) < 5:
@@ -93,7 +115,7 @@ def save_instant_account(request) -> HttpResponse:
     dashboarduser = DashboardUser(**{'user': user, 'account': account})
     dashboarduser.save()
 
-    return JsonResponse(operation_response(success=True, message=f"Account created!"))
+    return JsonResponse(operation_response(success=True, message=f"Account and user with name '{username}' created!"))
 
 
 @login_required(login_url=LOGIN_URL)
