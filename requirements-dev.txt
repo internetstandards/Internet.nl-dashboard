@@ -7,82 +7,82 @@
 alabaster==0.7.12         # via sphinx
 argh==0.26.2              # via sphinx-autobuild, watchdog
 atomicwrites==1.3.0       # via pytest
-attrs==19.3.0             # via pytest
-autoflake==1.3.1
-autopep8==1.4.4
-babel==2.7.0              # via sphinx
-certifi==2019.9.11        # via requests
-chardet==3.0.4            # via requests
-colorama==0.4.1
+attrs==19.3.0             # via -c requirements.txt, pytest
+autoflake==1.3.1          # via -r requirements-dev.in
+autopep8==1.4.4           # via -r requirements-dev.in
+babel==2.8.0              # via -c requirements.txt, sphinx
+certifi==2019.11.28       # via -c requirements.txt, requests
+chardet==3.0.4            # via -c requirements.txt, requests
+colorama==0.4.1           # via -r requirements-dev.in
 commonmark==0.9.1         # via recommonmark
-coverage==4.5.4
-decorator==4.4.1          # via moviepy
-django-coverage==1.2.4
-django-cprofile-middleware==1.0.4
-django-debug-toolbar-request-history==0.1.0
-django-debug-toolbar==2.0
-django-extensions==2.2.5
-django==2.2.9             # via django-debug-toolbar
+coverage==4.5.4           # via -r requirements-dev.in, pytest-cov
+decorator==4.4.1          # via -c requirements.txt, moviepy
+django-coverage==1.2.4    # via -r requirements-dev.in
+django-cprofile-middleware==1.0.4  # via -r requirements-dev.in
+django-debug-toolbar-request-history==0.1.0  # via -r requirements-dev.in
+django-debug-toolbar==2.0  # via -r requirements-dev.in, django-debug-toolbar-request-history
+django-extensions==2.2.5  # via -r requirements-dev.in
+django==2.2.10            # via -c requirements.txt, django-debug-toolbar
 docutils==0.15.2          # via recommonmark, sphinx
-freezegun==0.3.12
-httmock==1.3.0
-idna==2.8                 # via requests
+freezegun==0.3.12         # via -r requirements-dev.in
+httmock==1.3.0            # via -r requirements-dev.in
+idna==2.9                 # via -c requirements.txt, requests
 imageio-ffmpeg==0.3.0     # via moviepy
 imageio==2.6.1            # via moviepy
 imagesize==1.1.0          # via sphinx
-importlib-metadata==0.23  # via pluggy, pytest
-isort==4.3.21
+importlib-metadata==1.5.0  # via -c requirements.txt, pluggy, pytest
+isort==4.3.21             # via -r requirements-dev.in
 jinja2==2.10.3            # via sphinx
 livereload==2.6.1         # via sphinx-autobuild
 markupsafe==1.1.1         # via jinja2
 mccabe==0.6.1             # via pylama
-more-itertools==7.2.0     # via pytest, zipp
-moviepy==1.0.1
-numpy==1.17.3             # via imageio, moviepy
+more-itertools==7.2.0     # via pytest
+moviepy==1.0.1            # via -r requirements-dev.in
+numpy==1.18.1             # via -c requirements.txt, imageio, moviepy
 packaging==19.2           # via pytest, sphinx
 pathtools==0.1.2          # via sphinx-autobuild, watchdog
-phonenumberslite==8.11.1
-pillow==6.2.1             # via imageio
+phonenumberslite==8.12.2  # via -c requirements.txt, -r requirements-dev.in
+pillow==7.1.2             # via -c requirements.txt, imageio
 pluggy==0.13.0            # via pytest
 port_for==0.3.1           # via sphinx-autobuild
 proglog==0.1.9            # via moviepy
-py==1.8.0                 # via pytest
+py==1.8.1                 # via -c requirements.txt, pytest
 pycodestyle==2.5.0        # via autopep8, pylama
 pydocstyle==4.0.1         # via pylama
-pydotplus==2.0.2
+pydotplus==2.0.2          # via -r requirements-dev.in
 pyflakes==2.1.1           # via autoflake, pylama
 pygments==2.4.2           # via sphinx
-pylama==7.7.1
+pylama==7.7.1             # via -r requirements-dev.in
 pyparsing==2.4.4          # via packaging, pydotplus
-pytest-cov==2.8.1
-pytest-django==3.6.0
-pytest-logging==2015.11.4
-pytest-mock==1.11.2
-pytest-responses==0.4.0
-pytest==5.2.2
-python-dateutil==2.8.1    # via freezegun
-pytz==2019.3              # via babel, django
-pyyaml==5.1.2             # via sphinx-autobuild, watchdog
-recommonmark==0.6.0
-requests==2.22.0          # via httmock, moviepy, responses, sphinx
+pytest-cov==2.8.1         # via -r requirements-dev.in
+pytest-django==3.6.0      # via -r requirements-dev.in
+pytest-logging==2015.11.4  # via -r requirements-dev.in
+pytest-mock==1.11.2       # via -r requirements-dev.in
+pytest-responses==0.4.0   # via -r requirements-dev.in
+pytest==5.2.2             # via -r requirements-dev.in, pytest-cov, pytest-django, pytest-logging, pytest-mock, pytest-responses
+python-dateutil==2.8.1    # via -c requirements.txt, freezegun
+pytz==2019.3              # via -c requirements.txt, babel, django
+pyyaml==5.3               # via -c requirements.txt, sphinx-autobuild, watchdog
+recommonmark==0.6.0       # via -r requirements-dev.in
+requests==2.23.0          # via -c requirements.txt, httmock, moviepy, responses, sphinx
 responses==0.10.6         # via pytest-responses
-six==1.13.0               # via django-extensions, freezegun, livereload, packaging, python-dateutil, responses
+six==1.14.0               # via -c requirements.txt, django-extensions, freezegun, livereload, packaging, python-dateutil, responses
 snowballstemmer==2.0.0    # via pydocstyle, sphinx
-sphinx-autobuild==0.7.1
-sphinx==2.2.1
+sphinx-autobuild==0.7.1   # via -r requirements-dev.in
+sphinx==2.2.1             # via -r requirements-dev.in, recommonmark
 sphinxcontrib-applehelp==1.0.1  # via sphinx
 sphinxcontrib-devhelp==1.0.1  # via sphinx
 sphinxcontrib-htmlhelp==1.0.2  # via sphinx
 sphinxcontrib-jsmath==1.0.1  # via sphinx
 sphinxcontrib-qthelp==1.0.2  # via sphinx
 sphinxcontrib-serializinghtml==1.1.3  # via sphinx
-sqlparse==0.3.0           # via django, django-debug-toolbar
-tornado==5.1.1            # via livereload, sphinx-autobuild
+sqlparse==0.3.0           # via -c requirements.txt, django, django-debug-toolbar
+tornado==5.1.1            # via -c requirements.txt, livereload, sphinx-autobuild
 tqdm==4.37.0              # via moviepy, proglog
-urllib3==1.25.6           # via requests
+urllib3==1.25.8           # via -c requirements.txt, requests
 watchdog==0.9.0           # via sphinx-autobuild
 wcwidth==0.1.7            # via pytest
-zipp==0.6.0               # via importlib-metadata
+zipp==3.0.0               # via -c requirements.txt, importlib-metadata
 
 # The following packages are considered to be unsafe in a requirements file:
 # setuptools
