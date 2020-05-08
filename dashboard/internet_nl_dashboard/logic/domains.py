@@ -264,11 +264,8 @@ def cancel_scan(account, scan_id: int):
     if scan.state == 'cancelled':
         return operation_response(success=True, message="scan already cancelled")
 
-    scan.scan.finished_on = timezone.now()
-    scan.scan.finished = True
-    scan.scan.success = False  # This is not used anymore.
-    scan.scan.save()
-
+    scan.finished_on = timezone.now()
+    scan.save()
     update_state("cancelled", scan)
 
     # Sprinkling an activity stream action.
@@ -459,8 +456,8 @@ def get_urllists_from_account(account: Account) -> Dict:
             'automated_scan_frequency': urllist.automated_scan_frequency,
             'scheduled_next_scan': urllist.scheduled_next_scan,
             'last_scan_id': None if not len(urllist.last_scan) else urllist.last_scan[0].scan.id,
-            'last_scan': None if not len(urllist.last_scan) else urllist.last_scan[0].scan.started_on.isoformat(),
-            'last_scan_finished': None if not len(urllist.last_scan) else urllist.last_scan[0].scan.finished,
+            'last_scan': None if not len(urllist.last_scan) else urllist.last_scan[0].started_on.isoformat(),
+            'last_scan_finished': None if not len(urllist.last_scan) else urllist.last_scan[0].finished,
             'scan_now_available': urllist.is_scan_now_available(),
             'last_report_id': None if not len(urllist.last_report) else urllist.last_report[0].id,
             'last_report_date': None if not len(urllist.last_report) else urllist.last_report[0].at_when,

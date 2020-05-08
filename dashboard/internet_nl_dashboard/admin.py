@@ -284,30 +284,14 @@ class UrlListAdmin(ImportExportModelAdmin, admin.ModelAdmin):
 @admin.register(AccountInternetNLScan)
 class AccountInternetNLScanAdmin(ImportExportModelAdmin, admin.ModelAdmin):
 
-    list_display = ('account', 'account__name', 'state', 'internetnl_scan', 'scan__started_on', 'scan__last_check',
-                    'scan__finished_on', 'scan__message', 'urllist')
+    list_display = ('account', 'account__name', 'state', 'internetnl_scan',
+                    'urllist', 'started_on', 'finished_on')
 
-    fields = ('state', 'state_changed_on', 'account', 'scan', 'urllist')
+    fields = ('state', 'state_changed_on', 'account', 'scan', 'urllist', 'started_on', 'finished_on')
 
     @staticmethod
     def account__name(obj):
         return obj.account.internet_nl_api_username
-
-    @staticmethod
-    def scan__finished_on(obj):
-        return obj.scan.finished_on
-
-    @staticmethod
-    def scan__started_on(obj):
-        return obj.scan.started_on
-
-    @staticmethod
-    def scan__message(obj):
-        return obj.scan.message
-
-    @staticmethod
-    def scan__last_check(obj):
-        return obj.scan.last_check
 
     @staticmethod
     def internetnl_scan(obj):
