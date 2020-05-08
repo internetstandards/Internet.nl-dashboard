@@ -66,24 +66,46 @@ def get_scan_monitor_data(account: Account) -> List:
 
         runtime = runtime.total_seconds() * 1000
 
-        response.append({
-            'id': scan.id,
-            # mask that there is a mail_dashboard variant.
-            'type': "web" if scan.scan.type == "web" else "mail",
-            'started': True,
-            'started_on': scan.started_on,
-            'finished': scan.finished,
-            'finished_on': scan.finished_on,
-            'status_url': f"{internet_nl_api_url}/requests/{scan.scan.scan_id}",
-            'message': scan.state,
-            'success': scan.finished,
-            'list': scan.urllist.name,
-            'list_id': scan.urllist.id,
-            'last_check': scan.scan.last_state_check,
-            'runtime': runtime,
-            'last_report_id': last_report_id,
-            'state': scan.state,
-            'log': log_messages
-        })
+        if not scan.scan:
+            response.append({
+                'id': scan.id,
+                # mask that there is a mail_dashboard variant.
+                'type': "web" if scan.urllist.scan_type == "web" else "mail",
+                'started': True,
+                'started_on': scan.started_on,
+                'finished': scan.finished,
+                'finished_on': scan.finished_on,
+                'status_url': f"{internet_nl_api_url}/requests/{scan.scan.scan_id}",
+                'message': scan.state,
+                'success': scan.finished,
+                'list': scan.urllist.name,
+                'list_id': scan.urllist.id,
+                'last_check': scan.scan.last_state_check,
+                'runtime': runtime,
+                'last_report_id': last_report_id,
+                'state': scan.state,
+                'log': log_messages
+            })
+
+        else:
+            response.append({
+                'id': scan.id,
+                # mask that there is a mail_dashboard variant.
+                'type': "web" if scan.scan.type == "web" else "mail",
+                'started': True,
+                'started_on': scan.started_on,
+                'finished': scan.finished,
+                'finished_on': scan.finished_on,
+                'status_url': f"{internet_nl_api_url}/requests/{scan.scan.scan_id}",
+                'message': scan.state,
+                'success': scan.finished,
+                'list': scan.urllist.name,
+                'list_id': scan.urllist.id,
+                'last_check': scan.scan.last_state_check,
+                'runtime': runtime,
+                'last_report_id': last_report_id,
+                'state': scan.state,
+                'log': log_messages
+            })
 
     return response

@@ -5,7 +5,7 @@ from typing import List
 
 import pytz
 from actstream import action
-from celery import Task, group
+from celery import Task, group, chain
 from constance import config
 from django.conf import settings
 from django.contrib.auth.models import User
@@ -55,10 +55,10 @@ def create_api_settings(scan: InternetNLV2Scan):
     account_scan = AccountInternetNLScan.objects.all().filter(scan=scan).first()
 
     s = InternetNLApiSettings()
-    s.username = account_scan.account.internet_nl_api_username,
-    s.password = account_scan.account.decrypt_password(),
 
-    # todo: clean up the dashboard settings, now that these settings are incorporated in websecmap.
+    s.username = account_scan.account.internet_nl_api_username
+    s.password = account_scan.account.decrypt_password()
+
     s.url = config.INTERNET_NL_API_URL
     # for convenience, remove trailing slashes from the url, this will be entered incorrectly.
     s.url = s.url.rstrip("/")
@@ -113,12 +113,19 @@ def compose_task(
 
 @app.task(queue='storage')
 def initialize_scan(urllist: UrlList, manual_or_scheduled: str = "scheduled"):
-    # Should we already create an InternetNL scan? Yes, because the type is saved there.
+    # We need to store the scan type in the InternetNLV2Scan at creation, because the type in the list might change:
+    translated_scan_types = {'web': 'web', 'mail': 'mail_dashboard'}
+    new_scan = InternetNLV2Scan()
+    new_scan.type = translated_scan_types[urllist.scan_type]
+    new_scan.save()
+    internet_nl_v2_websecmap.update_state(new_scan, "requested and empty",
+                                          "requested a scan to be performed on internet.nl api")
+
     accountinternetnlscan = AccountInternetNLScan()
     accountinternetnlscan.account = urllist.account
     accountinternetnlscan.urllist = urllist
     accountinternetnlscan.started_on = datetime.now(pytz.utc)
-    accountinternetnlscan.scan = None
+    accountinternetnlscan.scan = new_scan
     accountinternetnlscan.state = ""
     accountinternetnlscan.save()
 
@@ -199,6 +206,8 @@ def progress_running_scan(scan: AccountInternetNLScan) -> Task:
         "discovered endpoints": retrieving_scannable_urls,
         "retrieved scannable urls": registering_scan_at_internet_nl,
         "registered scan at internet.nl": running_scan,
+        # registered is a old state that somehow, due to unknown factors ends up in the state
+        "registered": running_scan,
         "running scan": running_scan,
         "scan results ready": storing_scan_results,
         "scan results stored": processing_scan_results,
@@ -264,47 +273,50 @@ def registering_scan_at_internet_nl(scan: AccountInternetNLScan):
     update_state("registering scan at internet.nl", scan)
 
     # mail = websecmap, mail_dashboard = internet.nl dashboard, web is the same on both.
-    translated_scan_types = {'web': 'web', 'mail': 'mail_dashboard'}
     relevant_endpoint_types = {"web": "dns_a_aaaa", "mail_dashboard": "dns_soa"}
-    internetnlscan = internet_nl_v2_websecmap.initialize_scan(
-        translated_scan_types[scan.urllist.scan_type],
-        get_relevant_urls(scan.urllist, relevant_endpoint_types[scan.scan.type])
-    )
 
-    scan.scan = internetnlscan
-    scan.save()
+    # auto saved.
+    scan.scan.subject_urls.set(get_relevant_urls(scan.urllist, relevant_endpoint_types[scan.scan.type]))
 
-    # todo: how to overwrite the create_api_settings method, so the scan process of websecmap stays the same?
+    internet_nl_v2_websecmap.update_state(
+        scan.scan, "requested", "requested a scan to be performed on internet.nl api")
 
-    return internet_nl_v2_websecmap.progress_running_scan(scan.scan) | copy_state_from_websecmap_scan.si()
+    return chain(internet_nl_v2_websecmap.progress_running_scan(scan.scan) | copy_state_from_websecmap_scan.si(scan))
 
 
 def running_scan(scan: AccountInternetNLScan):
     update_state("running scan", scan)
-    return internet_nl_v2_websecmap.progress_running_scan(scan.scan) | copy_state_from_websecmap_scan.si(scan.scan)
+    return chain(internet_nl_v2_websecmap.progress_running_scan(scan.scan) | copy_state_from_websecmap_scan.si(scan))
 
 
 def continue_running_scan(scan: AccountInternetNLScan):
     # Used to progress in error situations.
-    return internet_nl_v2_websecmap.progress_running_scan(scan.scan) | copy_state_from_websecmap_scan.si(scan.scan)
+    return chain(internet_nl_v2_websecmap.progress_running_scan(scan.scan) | copy_state_from_websecmap_scan.si(scan))
 
 
 def storing_scan_results(scan: AccountInternetNLScan):
     update_state("storing scan results", scan)
-    return internet_nl_v2_websecmap.progress_running_scan(scan.scan) | copy_state_from_websecmap_scan.si(scan.scan)
+    return chain(internet_nl_v2_websecmap.progress_running_scan(scan.scan) | copy_state_from_websecmap_scan.si(scan))
 
 
 def processing_scan_results(scan: AccountInternetNLScan):
     update_state("processing scan results", scan)
-    return internet_nl_v2_websecmap.progress_running_scan(scan.scan) | copy_state_from_websecmap_scan.si(scan.scan)
+    return chain(internet_nl_v2_websecmap.progress_running_scan(scan.scan) | copy_state_from_websecmap_scan.si(scan))
 
 
 @app.task(queue="storage")
 def copy_state_from_websecmap_scan(scan: AccountInternetNLScan):
-    current_state = scan.scan.state
+
+    up_to_date_scan_information = InternetNLV2Scan.objects.all().get(id=scan.scan.pk)
+    current_state = up_to_date_scan_information.state
+
+    # conflicting state, make sure it's ignored
+    if current_state == "requested":
+        new_state = scan.state
 
     # the websecmap scan progress is not as chatty, make it nicer to better understand scan progress
-    if current_state == "registered":
+    # the websecmap scan progress is not as chatty, make it nicer to better understand scan progress
+    elif current_state == "registered":
         new_state = "registered scan at internet.nl"
 
     # there is more to do than finishing the scan
@@ -357,6 +369,7 @@ def monitor_timeout(scan):
     :return:
     """
 
+    # todo: recover from websecmap errors, by trying to recover there and writing the status to the dashboard.
     recovering_strategies = {
         "discovering endpoints":
             {"timeout in minutes": 24 * 60, "state after timeout": "requested"},
@@ -589,5 +602,5 @@ def update_state(state: object, scan: object) -> object:
 @app.task(queue='storage')
 def get_relevant_urls(urllist: UrlList, protocol: str) -> List:
     urls = Url.objects.all().filter(urls_in_dashboard_list=urllist, is_dead=False, not_resolvable=False,
-                                    endpoint__protocol__in=[protocol]).values_list('url', flat=True)
+                                    endpoint__protocol__in=[protocol])
     return list(set(urls))
