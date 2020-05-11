@@ -5,7 +5,7 @@ from typing import List
 
 import pytz
 from actstream import action
-from celery import Task, group, chain
+from celery import Task, chain, group
 from constance import config
 from django.conf import settings
 from django.contrib.auth.models import User
@@ -239,6 +239,39 @@ def progress_running_scan(scan: AccountInternetNLScan) -> Task:
         scan = AccountInternetNLScan.objects.get(id=scan.id)
         next_step = steps.get(scan.state, handle_unknown_state)
         return next_step(scan)
+
+
+@app.task(queue="storage")
+def recover_and_retry(scan: AccountInternetNLScan):
+    # check the latest valid state from progress running scan, set the state to that state.
+
+    valid_states = ['requested', 'discovered endpoints', 'retrieved scannable urls', 'registered scan at internet.nl',
+                    'registered', "running scan", "scan results ready", "scan results stored", "created report",
+                    "sent mail", "skipped sending mail: no e-mail addresses associated with account",
+                    "skipped sending mail: no mail server configured"]
+    error_states = ["network_error", "configuration_error", "timeout"]
+
+    if scan.state in valid_states:
+        # no recovery needed
+        return group([])
+
+    # get the latest valid state from the scan log:
+    latest_valid = AccountInternetNLScanLog.objects.all().filter(
+        scan=scan, state__in=valid_states).order_by('-id').first()
+
+    log.debug(f"AccountInternetNLScan scan #{scan.id} is rolled back to retry from "
+              f"'{scan.state}' to '{latest_valid.state}'.")
+
+    if scan.state in error_states:
+        update_state(latest_valid.state, scan)
+    else:
+        update_state(latest_valid.state, scan)
+
+    # Also have to rollback the underlying scan, if there already is one.
+    if scan.scan:
+        internet_nl_v2_websecmap.recover_and_retry(scan.scan)
+
+    return group([])
 
 
 def handle_unknown_state(scan):

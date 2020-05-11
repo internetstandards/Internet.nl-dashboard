@@ -324,6 +324,9 @@ def clean_up_not_required_data_to_speed_up_report_on_client(report: UrlListRepor
 
 def add_simple_verdicts(report: UrlListReport):
     """
+    # Todo: this value is already available, and more accurately, from the API. So use the value that got returned
+    # from the API instead.
+
     Reduces the rating fields to a single string value, so the correct rating can be retrieved instantly.
 
     // these are in ranges of 10's so at later moments some values can be added in between.
@@ -334,38 +337,24 @@ def add_simple_verdicts(report: UrlListReport):
     :return:
     """
 
+    # <50 will not be compared
+    progression_table = {
+        'not_applicable': 0,
+        'not_testable': 0,
+
+        'failed': 100,
+        'warning': 200,
+        'info': 300,
+
+        # todo: still not clear what good_not_tested means.
+        'good_not_tested': 380,
+        'passed': 400,
+    }
+
     for url in report.calculation['urls']:
         for endpoint in url['endpoints']:
             for rating in endpoint['ratings']:
-                if rating['high']:
-                    rating['simple_verdict'] = "failed"
-                    rating['simple_progression'] = 100
-                    continue
-                if rating['medium']:
-                    rating['simple_verdict'] = "warning"
-                    rating['simple_progression'] = 200
-                    continue
-                if rating['low']:
-                    rating['simple_verdict'] = "info"
-                    rating['simple_progression'] = 300
-                    continue
-                if rating['ok'] and (not rating['not_applicable'] and not rating['not_testable']):
-                    rating['simple_verdict'] = "passed"
-                    rating['simple_progression'] = 400
-                    continue
-                if rating['not_applicable']:
-                    rating['simple_verdict'] = "not_applicable"
-                    rating['simple_progression'] = 0
-                    continue
-                if rating['not_testable']:
-                    rating['simple_verdict'] = "not_testable"
-                    rating['simple_progression'] = 0
-                    continue
-
-                # no verdicts === undefined / unknown. We should always have a rating in an endpoint,
-                #  otherwise something terrible has happened. Note that split_score_and_url will add some
-                # things that do not fit this.
-                raise ArithmeticError(f"Missing any sort of verdict for this rating on this endpoint {endpoint['id']}.")
+                rating['simple_progression'] = progression_table.get(rating.get('test_result', ''), 0)
 
     report.save()
 
@@ -411,6 +400,7 @@ def split_score_and_url(report: UrlListReport):
                     "ok": 0,
                     "not_testable": False,
                     "not_applicable": False,
+                    'test_result': score,
                     "scan": scan,
                     "since": since,
                     "last_scan": last_scan,

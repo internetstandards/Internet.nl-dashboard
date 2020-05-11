@@ -24,6 +24,8 @@ from dashboard.internet_nl_dashboard.logic.domains import scan_urllist_now_ignor
 from dashboard.internet_nl_dashboard.models import (Account, AccountInternetNLScan,
                                                     AccountInternetNLScanLog, DashboardUser,
                                                     UploadLog, UrlList)
+from dashboard.internet_nl_dashboard.scanners.scan_internet_nl_per_account import (
+    progress_running_scan, recover_and_retry)
 
 log = logging.getLogger(__package__)
 
@@ -296,6 +298,23 @@ class AccountInternetNLScanAdmin(ImportExportModelAdmin, admin.ModelAdmin):
     @staticmethod
     def internetnl_scan(obj):
         return obj.scan.id
+
+    actions = []
+
+    def attempt_rollback(self, request, queryset):
+        for scan in queryset:
+            recover_and_retry.apply_async([scan])
+        self.message_user(request, "Rolling back asynchronously. May take a while.")
+    attempt_rollback.short_description = "Attempt rollback (async)"
+    actions.append('attempt_rollback')
+
+    def progress_scan(self, request, queryset):
+        for scan in queryset:
+            tasks = progress_running_scan(scan)
+            tasks.apply_async()
+        self.message_user(request, "Attempting to progress scans (async).")
+    progress_scan.short_description = "Progress scan (async)"
+    actions.append('progress_scan')
 
 
 @admin.register(AccountInternetNLScanLog)

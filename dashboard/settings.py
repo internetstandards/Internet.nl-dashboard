@@ -1,7 +1,6 @@
 import os
 from collections import OrderedDict
 from datetime import timedelta
-from typing import Dict, Tuple
 
 import raven
 import raven.contrib.celery
@@ -515,8 +514,6 @@ try:
     CONSTANCE_CONFIG_FIELDSETS = add_scanner_fieldsets(CONSTANCE_CONFIG_FIELDSETS)
 except ImportError:
     pass
-
-
 
 
 JET_SIDE_MENU_ITEMS = [
