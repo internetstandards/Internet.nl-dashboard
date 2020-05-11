@@ -283,12 +283,13 @@ small {
     background-image: url("/static/images/vendor/internet_nl/icon-info.svg"), none;
 }
 
-.not_testable {
+/* First name was old internet.nl v1 api, second is v2 api.*/
+.not_testable, .good_not_tested {
     background-image: url("/static/images/vendor/internet_nl/icon-not-tested-question-mark.png");
     background-image: url("/static/images/vendor/internet_nl/icon-not-tested-question-mark.svg"), none;
 }
 
-.not_applicable {
+.not_applicable, .not_tested {
     background-image: url("/static/images/vendor/internet_nl/icon-not-tested.png");
     background-image: url("/static/images/vendor/internet_nl/icon-not-tested.svg"), none;
 }

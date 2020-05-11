@@ -128,6 +128,12 @@ urllist_report_content = {
         'internet_nl_web_legacy_ipv6_nameserver',
         'internet_nl_web_legacy_ipv6_webserver',
         'internet_nl_web_legacy_dane',
+
+        # api 2.0 tls 1.3 fields, may 2020
+        'internet_nl_web_https_tls_cipherorder',
+        'internet_nl_web_https_tls_0rtt',
+        'internet_nl_web_https_tls_ocsp',
+        'internet_nl_web_https_tls_keyexchangehash',
     ]
 }
 

@@ -79,10 +79,14 @@ SANE_COLUMN_ORDER = {
             # TLS
             'internet_nl_web_https_tls_version',
             'internet_nl_web_https_tls_ciphers',
+            'internet_nl_web_https_tls_cipherorder',
             'internet_nl_web_https_tls_keyexchange',
+            'internet_nl_web_https_tls_keyexchangehash',
             'internet_nl_web_https_tls_compress',
             'internet_nl_web_https_tls_secreneg',
             'internet_nl_web_https_tls_clientreneg',
+            'internet_nl_web_https_tls_0rtt',
+            'internet_nl_web_https_tls_ocsp',
 
             # Certificate
             'internet_nl_web_https_cert_chain',
@@ -388,8 +392,8 @@ def upgrade_excel_spreadsheet(spreadsheet_data):
         ws.insert_rows(0, amount=6)
 
         ws[f'B1'] = "Total"
-        ws[f'B2'] = "Contains 1"
-        ws[f'B3'] = "Contains 0"
+        ws[f'B2'] = "Contains passed"
+        ws[f'B3'] = "Contains failed"
         ws[f'B4'] = "Contains not_applicable"
         ws[f'B5'] = "Contains not_testable"
         ws[f'B6'] = "Percentage 1 (reducing not_testable and not_applicable from total)"
@@ -402,8 +406,9 @@ def upgrade_excel_spreadsheet(spreadsheet_data):
             # if header, then aggregate
             if ws[f'{cell}9'].value:
                 ws[f'{cell}1'] = f'=COUNTA({cell}10:{cell}9999)'
-                ws[f'{cell}2'] = f'=COUNTIF({cell}10:{cell}9999, 1)'
-                ws[f'{cell}3'] = f'=COUNTIF({cell}10:{cell}9999, 0)'
+                # todo: also support other values
+                ws[f'{cell}2'] = f'=COUNTIF({cell}10:{cell}9999, "passed")'
+                ws[f'{cell}3'] = f'=COUNTIF({cell}10:{cell}9999, "failed")'
                 ws[f'{cell}4'] = f'=COUNTIF({cell}10:{cell}9999, "not_applicable")'
                 ws[f'{cell}5'] = f'=COUNTIF({cell}10:{cell}9999, "not_testable")'
                 # Not applicable and not testable are subtracted from the total.
@@ -565,13 +570,19 @@ def keyed_values_as_boolean(keyed_ratings: Dict[str, Any], protocol: str = 'dns_
                 # the issue name might not exist, the 'ok' value might not exist. In those cases replace it with a ?
                 value = keyed_ratings.get(issue_name, {'ok': '?', 'not_testable': False, 'not_applicable': False})
 
-                if value['simple_verdict'] == "not_testable":
-                    values.append('not_testable')
-                elif value['simple_verdict'] == "not_applicable":
-                    values.append('not_applicable')
+                # api v2, tls1.3 update
+                if value.get('test_result', False):
+                    values.append(value.get('test_result', '?'))
+
                 else:
-                    # When the value doesn't exist at all, we'll get a questionmark.
-                    values.append(value.get('ok', '?'))
+                    # backward compatible with api v1 reports
+                    if value['simple_verdict'] == "not_testable":
+                        values.append('not_testable')
+                    elif value['simple_verdict'] == "not_applicable":
+                        values.append('not_applicable')
+                    else:
+                        # When the value doesn't exist at all, we'll get a questionmark.
+                        values.append(value.get('ok', '?'))
 
         # add empty thing after each group to make distinction per group clearer
         # overall group already adds an extra value (url), so we don't need this.

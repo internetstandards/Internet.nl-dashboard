@@ -1123,6 +1123,10 @@ const Report = Vue.component('report', {
                 internet_nl_web_https_cert_sig: {visible: true},
                 internet_nl_web_https_tls_compress: {visible: true},
                 internet_nl_web_https_tls_keyexchange: {visible: true},
+                internet_nl_web_https_tls_keyexchangehash: {visible: true},
+                internet_nl_web_https_tls_ocsp: {visible: true},
+                internet_nl_web_https_tls_0rtt: {visible: true},
+                internet_nl_web_https_tls_cipherorder: {visible: true},
                 internet_nl_web_dnssec_valid: {visible: true},
                 internet_nl_web_dnssec_exist: {visible: true},
                 internet_nl_web_ipv6_ws_similar: {visible: true},
@@ -1300,13 +1304,7 @@ const Report = Vue.component('report', {
             if (verdict === undefined)
                 return "unknown";
 
-            if (verdict.ok > 0) {return 'passed'}
-            if (verdict.ok < 1) {
-                if (category_name === 'internet_nl_web_appsecpriv'){
-                    return "warning";
-                }
-                return "failed"
-            }
+            return verdict.test_result;
         },
 
         detail_value_with_comparison: function(category_name, url){
@@ -1318,10 +1316,16 @@ const Report = Vue.component('report', {
 
             let verdicts = url.endpoints[0].ratings_by_type[category_name];
 
+            let simple_value = "";
+            let simple_progression = "";
             // Adding the verdict to the report would speed things up...
-            let simple_value = verdicts.simple_verdict;  // not_applicable, not_testable, failed, warning, info, passed
-            let simple_progression = verdicts.simple_progression;
-
+            if (verdicts === undefined) {
+                simple_value = "unknown";
+                simple_progression = "unknown";
+            } else {
+                simple_value = verdicts.test_result;  // not_applicable, not_testable, failed, warning, info, passed
+                simple_progression = verdicts.simple_progression;
+            }
             /* disabling translations saves a second on 500 urls and the TLS page.
             report_result_string = this.$i18n.t("report.results." + simple_value);
 
@@ -1359,8 +1363,17 @@ const Report = Vue.component('report', {
 
             // older, previous...
             let other_verdicts = this.compare_charts[1].calculation.urls_by_url[url.url].endpoints[0].ratings_by_type[category_name];
-            let other_simple_value = other_verdicts.simple_verdict;
+            let other_simple_value = other_verdicts.test_result;
             let other_simple_progression = other_verdicts.simple_progression;
+
+            if (other_verdicts === undefined) {
+                other_simple_value = "unknown";
+                other_simple_progression = "unknown";
+            } else {
+                other_simple_value = other_verdicts.test_result;
+                other_simple_progression = other_verdicts.simple_progression;
+            }
+
             let comparison_verdict = "";
 
             // all to and from not_tested or not_applicable is neutral, also going to the same state is neutral
@@ -1496,6 +1509,12 @@ const Report = Vue.component('report', {
                     this.upgrade_issue_filter_with_new_field('category_mail_starttls_dane');
                     this.upgrade_issue_filter_with_new_field('category_mail_forum_standardisation_magazine');
                     this.upgrade_issue_filter_with_new_field('category_mail_forum_standardisation_ipv6_monitor');
+
+                    // new fields may 2020, api v2, tls 1.3:
+                    this.upgrade_issue_filter_with_new_field('internet_nl_web_https_tls_cipherorder');
+                    this.upgrade_issue_filter_with_new_field('internet_nl_web_https_tls_0rtt');
+                    this.upgrade_issue_filter_with_new_field('internet_nl_web_https_tls_ocsp');
+                    this.upgrade_issue_filter_with_new_field('internet_nl_web_https_tls_keyexchangehash');
                 }
             });
         },
@@ -1909,10 +1928,14 @@ const Report = Vue.component('report', {
                                     fields: [
                                         {name: 'internet_nl_web_https_tls_version'},
                                         {name: 'internet_nl_web_https_tls_ciphers'},
+                                        {name: 'internet_nl_web_https_tls_cipherorder'},
                                         {name: 'internet_nl_web_https_tls_keyexchange'},
+                                        {name: 'internet_nl_web_https_tls_keyexchangehash'},
                                         {name: 'internet_nl_web_https_tls_compress'},
                                         {name: 'internet_nl_web_https_tls_secreneg'},
                                         {name: 'internet_nl_web_https_tls_clientreneg'},
+                                        {name: 'internet_nl_web_https_tls_0rtt'},
+                                        {name: 'internet_nl_web_https_tls_ocsp'},
                                     ],
                                     additional_fields: [],
                                 },
