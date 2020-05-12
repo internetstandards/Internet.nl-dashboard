@@ -216,7 +216,8 @@ def get_scan_status_of_list(account: Account, list_id: int) -> Dict[str, Any]:
 
     prefetch_last_scan = Prefetch(
         'accountinternetnlscan_set',
-        queryset=AccountInternetNLScan.objects.order_by('-id').select_related('scan').only('scan_id', 'scan__finished'),
+        queryset=AccountInternetNLScan.objects.order_by('-id').select_related('scan').only('scan_id',
+                                                                                           'scan__finish_date'),
         to_attr='last_scan'
     )
 
@@ -238,7 +239,8 @@ def get_scan_status_of_list(account: Account, list_id: int) -> Dict[str, Any]:
 
     data = {}
     data['last_scan_id'] = None if not len(urllist.last_scan) else urllist.last_scan[0].scan.id
-    data['last_scan_finished'] = None if not len(urllist.last_scan) else urllist.last_scan[0].finished
+    data['last_scan_finished'] = None if not len(urllist.last_scan) else \
+        True if urllist.last_scan[0].finish_date else False
     data['last_report_id'] = None if not len(urllist.last_report) else urllist.last_report[0].id
     data['last_report_date'] = None if not len(urllist.last_report) else urllist.last_report[0].at_when
     data['scan_now_available'] = urllist.is_scan_now_available()

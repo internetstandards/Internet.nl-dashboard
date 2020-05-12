@@ -293,7 +293,9 @@ def discovering_endpoints(scan: AccountInternetNLScan):
 def retrieving_scannable_urls(scan: AccountInternetNLScan):
     # This step tries to prevent API calls with an empty list of urls.
     update_state("retrieving scannable urls", scan)
-    relevant_scan_types = {"web": "dns_a_aaaa", "mail_dashboard": "dns_soa"}
+
+    # mail was added here, due to a problem while registering scans. We always want dns_soa endpoints.
+    relevant_scan_types = {"web": "dns_a_aaaa", "mail_dashboard": "dns_soa", "mail": "dns_soa"}
 
     return (
         get_relevant_urls.si(scan.urllist, relevant_scan_types[scan.scan.type])
@@ -305,8 +307,9 @@ def retrieving_scannable_urls(scan: AccountInternetNLScan):
 def registering_scan_at_internet_nl(scan: AccountInternetNLScan):
     update_state("registering scan at internet.nl", scan)
 
-    # mail = websecmap, mail_dashboard = internet.nl dashboard, web is the same on both.
-    relevant_endpoint_types = {"web": "dns_a_aaaa", "mail_dashboard": "dns_soa"}
+    # mail = websecmap, mail_dashboard = internet.nl dashboard, web is the same on both. Mail here is a fallback
+    # because the dashboard only understands dns_soa endpoints.
+    relevant_endpoint_types = {"web": "dns_a_aaaa", "mail_dashboard": "dns_soa",  "mail": "dns_soa"}
 
     # auto saved.
     scan.scan.subject_urls.set(get_relevant_urls(scan.urllist, relevant_endpoint_types[scan.scan.type]))
@@ -342,6 +345,8 @@ def copy_state_from_websecmap_scan(scan: AccountInternetNLScan):
 
     up_to_date_scan_information = InternetNLV2Scan.objects.all().get(id=scan.scan.pk)
     current_state = up_to_date_scan_information.state
+
+    log.debug(f"Copying state from websecmap, current state: '{current_state}'. ")
 
     # conflicting state, make sure it's ignored
     if current_state == "requested":
