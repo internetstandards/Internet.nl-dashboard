@@ -282,6 +282,10 @@ def translate_field(field_label):
         'internet_nl_web_ipv6_ns_reach': 'detail_web_mail_ipv6_ns_reach_label',
         'internet_nl_web_ipv6_ws_reach': 'detail_web_ipv6_web_reach_label',
         'internet_nl_web_ipv6_ns_address': 'detail_web_mail_ipv6_ns_aaaa_label',
+        'internet_nl_web_https_tls_cipherorder': 'detail_web_tls_cipher_order_label',
+        'internet_nl_web_https_tls_0rtt': 'detail_web_tls_zero_rtt_label',
+        'internet_nl_web_https_tls_ocsp': 'detail_web_tls_ocsp_stapling_label',
+        'internet_nl_web_https_tls_keyexchangehash': 'detail_web_tls_kex_hash_func_label',
 
         'internet_nl_web_tls': 'test_sitetls_label',
         'internet_nl_web_dnssec': 'test_sitednssec_label',

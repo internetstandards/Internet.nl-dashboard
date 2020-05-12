@@ -81,214 +81,91 @@
         // https://stackoverflow.com/questions/22169595/dropzone-js-init-function-not-being-called
         Dropzone.autoDiscover = false;
 
-        function import_field_translations(language){
-            return {
-                internet_nl_web_tls: internet_nl_messages[language].internet_nl.test_sitetls_label,
-                internet_nl_web_dnssec: internet_nl_messages[language].internet_nl.test_sitednssec_label,
-                internet_nl_web_ipv6: internet_nl_messages[language].internet_nl.test_siteipv6_label,
+        const internet_nl_field_mapping = {
+            internet_nl_web_tls: 'test_sitetls',
+            internet_nl_web_dnssec: 'test_sitednssec',
+            internet_nl_web_ipv6: 'test_siteipv6',
 
-                internet_nl_mail_dashboard_tls: internet_nl_messages[language].internet_nl.test_mailtls_label,
-                internet_nl_mail_dashboard_auth: internet_nl_messages[language].internet_nl.test_mailauth_label,
-                internet_nl_mail_dashboard_dnssec: internet_nl_messages[language].internet_nl.test_maildnssec_label,
-                internet_nl_mail_dashboard_ipv6: internet_nl_messages[language].internet_nl.test_mailipv6_label,
+            internet_nl_mail_dashboard_tls: 'test_mailtls',
+            internet_nl_mail_dashboard_auth: 'test_mailauth',
+            internet_nl_mail_dashboard_dnssec: 'test_maildnssec',
+            internet_nl_mail_dashboard_ipv6: 'test_mailipv6',
 
-                // web category verdicts
-                internet_nl_web_ipv6_verdict_good: internet_nl_messages[language].internet_nl.test_siteipv6_passed_summary,
-                internet_nl_web_ipv6_verdict_bad: internet_nl_messages[language].internet_nl.test_siteipv6_failed_summary,
-                internet_nl_web_appsecpriv_verdict_good: internet_nl_messages[language].internet_nl.test_siteappsecpriv_passed_summary,
-                internet_nl_web_appsecpriv_verdict_bad: internet_nl_messages[language].internet_nl.test_siteappsecpriv_failed_summary,
-                internet_nl_web_tls_verdict_good: internet_nl_messages[language].internet_nl.test_sitetls_passed_summary,
-                internet_nl_web_tls_verdict_bad: internet_nl_messages[language].internet_nl.test_sitetls_failed_summary,
-                internet_nl_web_dnssec_verdict_good: internet_nl_messages[language].internet_nl.test_sitednssec_passed_summary,
-                internet_nl_web_dnssec_verdict_bad: internet_nl_messages[language].internet_nl.test_sitednssec_failed_summary,
+            internet_nl_web_appsecpriv: 'test_siteappsecpriv',
+            internet_nl_web_appsecpriv_csp: 'detail_web_appsecpriv_http_csp',
+            internet_nl_web_appsecpriv_referrer_policy: 'detail_web_appsecpriv_http_referrer_policy',
+            internet_nl_web_appsecpriv_x_content_type_options: 'detail_web_appsecpriv_http_x_content_type',
+            internet_nl_web_appsecpriv_x_frame_options: 'detail_web_appsecpriv_http_x_frame',
+            internet_nl_web_appsecpriv_x_xss_protection: 'detail_web_appsecpriv_http_x_xss',
+            internet_nl_web_https_cert_domain: 'detail_web_tls_cert_hostmatch',
+            internet_nl_web_https_http_redirect: 'detail_web_tls_https_forced',
+            internet_nl_web_https_cert_chain: 'detail_web_tls_cert_trust',
+            internet_nl_web_https_tls_version: 'detail_web_tls_version',
+            internet_nl_web_https_tls_clientreneg: 'detail_web_tls_renegotiation_client',
+            internet_nl_web_https_tls_ciphers: 'detail_web_tls_ciphers',
+            internet_nl_web_https_http_available: 'detail_web_tls_https_exists',
+            internet_nl_web_https_dane_exist: 'detail_web_tls_dane_exists',
+            internet_nl_web_https_http_compress: 'detail_web_tls_http_compression',
+            internet_nl_web_https_http_hsts: 'detail_web_tls_https_hsts',
+            internet_nl_web_https_tls_secreneg: 'detail_web_tls_renegotiation_secure',
+            internet_nl_web_https_dane_valid: 'detail_web_tls_dane_valid',
+            internet_nl_web_https_cert_pubkey: 'detail_web_tls_cert_pubkey',
+            internet_nl_web_https_cert_sig: 'detail_web_tls_cert_signature',
+            internet_nl_web_https_tls_compress: 'detail_web_tls_compression',
+            internet_nl_web_https_tls_keyexchange: 'detail_web_tls_fs_params',
+            internet_nl_web_dnssec_valid: 'detail_web_dnssec_valid',
+            internet_nl_web_dnssec_exist: 'detail_web_dnssec_exists',
+            internet_nl_web_ipv6_ws_similar: 'detail_web_ipv6_web_ipv46',
+            internet_nl_web_ipv6_ws_address: 'detail_web_ipv6_web_aaaa',
+            internet_nl_web_ipv6_ns_reach: 'detail_web_mail_ipv6_ns_reach',
+            internet_nl_web_ipv6_ws_reach: 'detail_web_ipv6_web_reach',
+            internet_nl_web_ipv6_ns_address: 'detail_web_mail_ipv6_ns_aaaa',
 
-                // mail category verdicts
-                internet_nl_mail_dashboard_tls_verdict_good: internet_nl_messages[language].internet_nl.test_mailtls_passed_summary,
-                internet_nl_mail_dashboard_tls_verdict_bad: internet_nl_messages[language].internet_nl.test_mailtls_failed_summary,
-                internet_nl_mail_dashboard_auth_verdict_good: internet_nl_messages[language].internet_nl.test_mailauth_passed_summary,
-                internet_nl_mail_dashboard_auth_verdict_bad: internet_nl_messages[language].internet_nl.test_mailauth_failed_summary,
-                internet_nl_mail_dashboard_dnssec_verdict_good: internet_nl_messages[language].internet_nl.test_maildnssec_passed_summary,
-                internet_nl_mail_dashboard_dnssec_verdict_bad: internet_nl_messages[language].internet_nl.test_maildnssec_failed_summary,
-                internet_nl_mail_dashboard_ipv6_verdict_good: internet_nl_messages[language].internet_nl.test_mailipv6_passed_summary,
-                internet_nl_mail_dashboard_ipv6_verdict_bad: internet_nl_messages[language].internet_nl.test_mailipv6_failed_summary,
+            // added with api 2.0.0
+            internet_nl_web_https_tls_cipherorder: 'detail_web_tls_cipher_order',
+            internet_nl_web_https_tls_0rtt: 'detail_web_tls_zero_rtt',
+            internet_nl_web_https_tls_ocsp: 'detail_web_tls_ocsp_stapling',
+            internet_nl_web_https_tls_keyexchangehash: 'detail_web_tls_kex_hash_func',
 
-                // https://github.com/NLnetLabs/Internet.nl/blob/cece8255ac7f39bded137f67c94a10748970c3c7/checks/templates/domain-results.html
-                internet_nl_web_appsecpriv: internet_nl_messages[language].internet_nl.test_siteappsecpriv_label,  // Added 24 May 2019
-                internet_nl_web_appsecpriv_csp: internet_nl_messages[language].internet_nl.detail_web_appsecpriv_http_csp_label,  // Added 24 May 2019
-                internet_nl_web_appsecpriv_referrer_policy: internet_nl_messages[language].internet_nl.detail_web_appsecpriv_http_referrer_policy_label,  // Added 24 May 2019
-                internet_nl_web_appsecpriv_x_content_type_options: internet_nl_messages[language].internet_nl.detail_web_appsecpriv_http_x_content_type_label,  // Added 24 May 2019
-                internet_nl_web_appsecpriv_x_frame_options: internet_nl_messages[language].internet_nl.detail_web_appsecpriv_http_x_frame_label,  // Added 24 May 2019
-                internet_nl_web_appsecpriv_x_xss_protection: internet_nl_messages[language].internet_nl.detail_web_appsecpriv_http_x_xss_label,  // Added 24 May 2019
-                internet_nl_web_https_cert_domain: internet_nl_messages[language].internet_nl.detail_web_tls_cert_hostmatch_label,
-                internet_nl_web_https_http_redirect: internet_nl_messages[language].internet_nl.detail_web_tls_https_forced_label,
-                internet_nl_web_https_cert_chain: internet_nl_messages[language].internet_nl.detail_web_tls_cert_trust_label,
-                internet_nl_web_https_tls_version: internet_nl_messages[language].internet_nl.detail_web_tls_version_label,
-                internet_nl_web_https_tls_clientreneg: internet_nl_messages[language].internet_nl.detail_web_tls_renegotiation_client_label,
-                internet_nl_web_https_tls_ciphers: internet_nl_messages[language].internet_nl.detail_web_tls_ciphers_label,
-                internet_nl_web_https_http_available: internet_nl_messages[language].internet_nl.detail_web_tls_https_exists_label,
-                internet_nl_web_https_dane_exist: internet_nl_messages[language].internet_nl.detail_web_tls_dane_exists_label,
-                internet_nl_web_https_http_compress: internet_nl_messages[language].internet_nl.detail_web_tls_http_compression_label,
-                internet_nl_web_https_http_hsts: internet_nl_messages[language].internet_nl.detail_web_tls_https_hsts_label,
-                internet_nl_web_https_tls_secreneg: internet_nl_messages[language].internet_nl.detail_web_tls_renegotiation_secure_label,
-                internet_nl_web_https_dane_valid: internet_nl_messages[language].internet_nl.detail_web_tls_dane_valid_label,
-                internet_nl_web_https_cert_pubkey: internet_nl_messages[language].internet_nl.detail_web_tls_cert_pubkey_label,
-                internet_nl_web_https_cert_sig: internet_nl_messages[language].internet_nl.detail_web_tls_cert_signature_label,
-                internet_nl_web_https_tls_compress: internet_nl_messages[language].internet_nl.detail_web_tls_compression_label,
-                internet_nl_web_https_tls_keyexchange: internet_nl_messages[language].internet_nl.detail_web_tls_fs_params_label,
-                internet_nl_web_dnssec_valid: internet_nl_messages[language].internet_nl.detail_web_dnssec_valid_label,
-                internet_nl_web_dnssec_exist: internet_nl_messages[language].internet_nl.detail_web_dnssec_exists_label,
-                internet_nl_web_ipv6_ws_similar: internet_nl_messages[language].internet_nl.detail_web_ipv6_web_ipv46_label,
-                internet_nl_web_ipv6_ws_address: internet_nl_messages[language].internet_nl.detail_web_ipv6_web_aaaa_label,
-                internet_nl_web_ipv6_ns_reach: internet_nl_messages[language].internet_nl.detail_web_mail_ipv6_ns_reach_label,
-                internet_nl_web_ipv6_ws_reach: internet_nl_messages[language].internet_nl.detail_web_ipv6_web_reach_label,
-                internet_nl_web_ipv6_ns_address: internet_nl_messages[language].internet_nl.detail_web_mail_ipv6_ns_aaaa_label,
-
-                // verdicts:
-                internet_nl_web_appsecpriv_csp_verdict_good: internet_nl_messages[language].internet_nl.detail_web_appsecpriv_http_csp_verdict_good,  // Added 24 May 2019
-                internet_nl_web_appsecpriv_referrer_policy_verdict_good: internet_nl_messages[language].internet_nl.detail_web_appsecpriv_http_referrer_policy_verdict_good,  // Added 24 May 2019
-                internet_nl_web_appsecpriv_x_content_type_options_verdict_good: internet_nl_messages[language].internet_nl.detail_web_appsecpriv_http_x_content_type_verdict_good,  // Added 24 May 2019
-                internet_nl_web_appsecpriv_x_frame_options_verdict_good: internet_nl_messages[language].internet_nl.detail_web_appsecpriv_http_x_frame_verdict_good,  // Added 24 May 2019
-                internet_nl_web_appsecpriv_x_xss_protection_verdict_good: internet_nl_messages[language].internet_nl.detail_web_appsecpriv_http_x_xss_verdict_good,  // Added 24 May 2019
-                internet_nl_web_https_cert_domain_verdict_good: internet_nl_messages[language].internet_nl.detail_web_tls_cert_hostmatch_verdict_good,
-                internet_nl_web_https_http_redirect_verdict_good: internet_nl_messages[language].internet_nl.detail_web_tls_https_forced_verdict_good,
-                internet_nl_web_https_cert_chain_verdict_good: internet_nl_messages[language].internet_nl.detail_web_tls_cert_trust_verdict_good,
-                internet_nl_web_https_tls_version_verdict_good: internet_nl_messages[language].internet_nl.detail_web_tls_version_verdict_good,
-                internet_nl_web_https_tls_clientreneg_verdict_good: internet_nl_messages[language].internet_nl.detail_web_tls_renegotiation_client_verdict_good,
-                internet_nl_web_https_tls_ciphers_verdict_good: internet_nl_messages[language].internet_nl.detail_web_tls_ciphers_verdict_good,
-                internet_nl_web_https_http_available_verdict_good: internet_nl_messages[language].internet_nl.detail_web_tls_https_exists_verdict_good,
-                internet_nl_web_https_dane_exist_verdict_good: internet_nl_messages[language].internet_nl.detail_web_tls_dane_exists_verdict_good,
-                internet_nl_web_https_http_compress_verdict_good: internet_nl_messages[language].internet_nl.detail_web_tls_http_compression_verdict_good,
-                internet_nl_web_https_http_hsts_verdict_good: internet_nl_messages[language].internet_nl.detail_web_tls_https_hsts_verdict_good,
-                internet_nl_web_https_tls_secreneg_verdict_good: internet_nl_messages[language].internet_nl.detail_web_tls_renegotiation_secure_verdict_good,
-                internet_nl_web_https_dane_valid_verdict_good: internet_nl_messages[language].internet_nl.detail_web_tls_dane_valid_verdict_good,
-                internet_nl_web_https_cert_pubkey_verdict_good: internet_nl_messages[language].internet_nl.detail_web_tls_cert_pubkey_verdict_good,
-                internet_nl_web_https_cert_sig_verdict_good: internet_nl_messages[language].internet_nl.detail_web_tls_cert_signature_verdict_good,
-                internet_nl_web_https_tls_compress_verdict_good: internet_nl_messages[language].internet_nl.detail_web_tls_compression_verdict_good,
-                internet_nl_web_https_tls_keyexchange_verdict_good: internet_nl_messages[language].internet_nl.detail_web_tls_fs_params_verdict_good,
-                internet_nl_web_dnssec_valid_verdict_good: internet_nl_messages[language].internet_nl.detail_web_dnssec_valid_verdict_good,
-                internet_nl_web_dnssec_exist_verdict_good: internet_nl_messages[language].internet_nl.detail_web_dnssec_exists_verdict_good,
-                internet_nl_web_ipv6_ws_similar_verdict_good: internet_nl_messages[language].internet_nl.detail_web_ipv6_web_ipv46_verdict_good,
-                internet_nl_web_ipv6_ws_address_verdict_good: internet_nl_messages[language].internet_nl.detail_web_ipv6_web_aaaa_verdict_good,
-                internet_nl_web_ipv6_ns_reach_verdict_good: internet_nl_messages[language].internet_nl.detail_web_mail_ipv6_ns_reach_verdict_good,
-                internet_nl_web_ipv6_ws_reach_verdict_good: internet_nl_messages[language].internet_nl.detail_web_ipv6_web_reach_verdict_good,
-                internet_nl_web_ipv6_ns_address_verdict_good: internet_nl_messages[language].internet_nl.detail_web_mail_ipv6_ns_aaaa_verdict_good,
-
-                internet_nl_web_appsecpriv_csp_verdict_bad: internet_nl_messages[language].internet_nl.detail_web_appsecpriv_http_csp_verdict_bad,  // Added 24 May 2019
-                internet_nl_web_appsecpriv_referrer_policy_verdict_bad: internet_nl_messages[language].internet_nl.detail_web_appsecpriv_http_referrer_policy_verdict_bad,  // Added 24 May 2019
-                internet_nl_web_appsecpriv_x_content_type_options_verdict_bad: internet_nl_messages[language].internet_nl.detail_web_appsecpriv_http_x_content_type_verdict_bad,  // Added 24 May 2019
-                internet_nl_web_appsecpriv_x_frame_options_verdict_bad: internet_nl_messages[language].internet_nl.detail_web_appsecpriv_http_x_frame_verdict_bad,  // Added 24 May 2019
-                internet_nl_web_appsecpriv_x_xss_protection_verdict_bad: internet_nl_messages[language].internet_nl.detail_web_appsecpriv_http_x_xss_verdict_bad,  // Added 24 May 2019
-                internet_nl_web_https_cert_domain_verdict_bad: internet_nl_messages[language].internet_nl.detail_web_tls_cert_hostmatch_verdict_bad,
-                internet_nl_web_https_http_redirect_verdict_bad: internet_nl_messages[language].internet_nl.detail_web_tls_https_forced_verdict_bad,
-                internet_nl_web_https_cert_chain_verdict_bad: internet_nl_messages[language].internet_nl.detail_web_tls_cert_trust_verdict_bad,
-                internet_nl_web_https_tls_version_verdict_bad: internet_nl_messages[language].internet_nl.detail_web_tls_version_verdict_bad,
-                internet_nl_web_https_tls_clientreneg_verdict_bad: internet_nl_messages[language].internet_nl.detail_web_tls_renegotiation_client_verdict_bad,
-                internet_nl_web_https_tls_ciphers_verdict_bad: internet_nl_messages[language].internet_nl.detail_web_tls_ciphers_verdict_bad,
-                internet_nl_web_https_http_available_verdict_bad: internet_nl_messages[language].internet_nl.detail_web_tls_https_exists_verdict_bad,
-                internet_nl_web_https_dane_exist_verdict_bad: internet_nl_messages[language].internet_nl.detail_web_tls_dane_exists_verdict_bad,
-                internet_nl_web_https_http_compress_verdict_bad: internet_nl_messages[language].internet_nl.detail_web_tls_http_compression_verdict_bad,
-                internet_nl_web_https_http_hsts_verdict_bad: internet_nl_messages[language].internet_nl.detail_web_tls_https_hsts_verdict_bad,
-                internet_nl_web_https_tls_secreneg_verdict_bad: internet_nl_messages[language].internet_nl.detail_web_tls_renegotiation_secure_verdict_bad,
-                internet_nl_web_https_dane_valid_verdict_bad: internet_nl_messages[language].internet_nl.detail_web_tls_dane_valid_verdict_bad,
-                internet_nl_web_https_cert_pubkey_verdict_bad: internet_nl_messages[language].internet_nl.detail_web_tls_cert_pubkey_verdict_bad,
-                internet_nl_web_https_cert_sig_verdict_bad: internet_nl_messages[language].internet_nl.detail_web_tls_cert_signature_verdict_bad,
-                internet_nl_web_https_tls_compress_verdict_bad: internet_nl_messages[language].internet_nl.detail_web_tls_compression_verdict_bad,
-                internet_nl_web_https_tls_keyexchange_verdict_bad: internet_nl_messages[language].internet_nl.detail_web_tls_fs_params_verdict_bad,
-                internet_nl_web_dnssec_valid_verdict_bad: internet_nl_messages[language].internet_nl.detail_web_dnssec_valid_verdict_bad,
-                internet_nl_web_dnssec_exist_verdict_bad: internet_nl_messages[language].internet_nl.detail_web_dnssec_exists_verdict_bad,
-                internet_nl_web_ipv6_ws_similar_verdict_bad: internet_nl_messages[language].internet_nl.detail_web_ipv6_web_ipv46_verdict_bad,
-                internet_nl_web_ipv6_ws_address_verdict_bad: internet_nl_messages[language].internet_nl.detail_web_ipv6_web_aaaa_verdict_bad,
-                internet_nl_web_ipv6_ns_reach_verdict_bad: internet_nl_messages[language].internet_nl.detail_web_mail_ipv6_ns_reach_verdict_bad,
-                internet_nl_web_ipv6_ws_reach_verdict_bad: internet_nl_messages[language].internet_nl.detail_web_ipv6_web_reach_verdict_bad,
-                internet_nl_web_ipv6_ns_address_verdict_bad: internet_nl_messages[language].internet_nl.detail_web_mail_ipv6_ns_aaaa_verdict_bad,
-
-                internet_nl_mail_starttls_cert_domain: internet_nl_messages[language].internet_nl.detail_mail_tls_cert_hostmatch_label,
-                internet_nl_mail_starttls_tls_version: internet_nl_messages[language].internet_nl.detail_mail_tls_version_label,
-                internet_nl_mail_starttls_cert_chain: internet_nl_messages[language].internet_nl.detail_mail_tls_cert_trust_label,
-                internet_nl_mail_starttls_tls_available: internet_nl_messages[language].internet_nl.detail_mail_tls_starttls_exists_label,
-                internet_nl_mail_starttls_tls_clientreneg: internet_nl_messages[language].internet_nl.detail_mail_tls_renegotiation_client_label,
-                internet_nl_mail_starttls_tls_ciphers: internet_nl_messages[language].internet_nl.detail_mail_tls_ciphers_label,
-                internet_nl_mail_starttls_dane_valid: internet_nl_messages[language].internet_nl.detail_mail_tls_dane_valid_label,
-                internet_nl_mail_starttls_dane_exist: internet_nl_messages[language].internet_nl.detail_mail_tls_dane_exists_label,
-                internet_nl_mail_starttls_tls_secreneg: internet_nl_messages[language].internet_nl.detail_mail_tls_renegotiation_secure_label,
-                internet_nl_mail_starttls_dane_rollover: internet_nl_messages[language].internet_nl.detail_mail_tls_dane_rollover_label,
-                internet_nl_mail_starttls_cert_pubkey: internet_nl_messages[language].internet_nl.detail_mail_tls_cert_pubkey_label,
-                internet_nl_mail_starttls_cert_sig: internet_nl_messages[language].internet_nl.detail_mail_tls_cert_signature_label,
-                internet_nl_mail_starttls_tls_compress: internet_nl_messages[language].internet_nl.detail_mail_tls_compression_label,
-                internet_nl_mail_starttls_tls_keyexchange: internet_nl_messages[language].internet_nl.detail_mail_tls_fs_params_label,
-                internet_nl_mail_auth_dmarc_policy: internet_nl_messages[language].internet_nl.detail_mail_auth_dmarc_policy_label,
-                internet_nl_mail_auth_dmarc_exist: internet_nl_messages[language].internet_nl.detail_mail_auth_dmarc_label,
-                internet_nl_mail_auth_spf_policy: internet_nl_messages[language].internet_nl.detail_mail_auth_spf_policy_label,
-                internet_nl_mail_auth_dkim_exist: internet_nl_messages[language].internet_nl.detail_mail_auth_dkim_label,
-                internet_nl_mail_auth_spf_exist: internet_nl_messages[language].internet_nl.detail_mail_auth_spf_label,
-                internet_nl_mail_dnssec_mailto_exist: internet_nl_messages[language].internet_nl.detail_mail_dnssec_exists_label,
-                internet_nl_mail_dnssec_mailto_valid: internet_nl_messages[language].internet_nl.detail_mail_dnssec_valid_label,
-                internet_nl_mail_dnssec_mx_valid: internet_nl_messages[language].internet_nl.detail_mail_dnssec_mx_valid_label,
-                internet_nl_mail_dnssec_mx_exist: internet_nl_messages[language].internet_nl.detail_mail_dnssec_mx_exists_label,
-                internet_nl_mail_ipv6_mx_address: internet_nl_messages[language].internet_nl.detail_mail_ipv6_mx_aaaa_label,
-                internet_nl_mail_ipv6_mx_reach: internet_nl_messages[language].internet_nl.detail_mail_ipv6_mx_reach_label,
-                internet_nl_mail_ipv6_ns_reach: internet_nl_messages[language].internet_nl.detail_web_mail_ipv6_ns_reach_label,
-                internet_nl_mail_ipv6_ns_address: internet_nl_messages[language].internet_nl.detail_web_mail_ipv6_ns_aaaa_label,
-
-                //
-                internet_nl_mail_starttls_cert_domain_verdict_good: internet_nl_messages[language].internet_nl.detail_mail_tls_cert_hostmatch_verdict_good,
-                internet_nl_mail_starttls_tls_version_verdict_good: internet_nl_messages[language].internet_nl.detail_mail_tls_version_verdict_good,
-                internet_nl_mail_starttls_cert_chain_verdict_good: internet_nl_messages[language].internet_nl.detail_mail_tls_cert_trust_verdict_good,
-                internet_nl_mail_starttls_tls_available_verdict_good: internet_nl_messages[language].internet_nl.detail_mail_tls_starttls_exists_verdict_good,
-                internet_nl_mail_starttls_tls_clientreneg_verdict_good: internet_nl_messages[language].internet_nl.detail_mail_tls_renegotiation_client_verdict_good,
-                internet_nl_mail_starttls_tls_ciphers_verdict_good: internet_nl_messages[language].internet_nl.detail_mail_tls_ciphers_verdict_good,
-                internet_nl_mail_starttls_dane_valid_verdict_good: internet_nl_messages[language].internet_nl.detail_mail_tls_dane_valid_verdict_good,
-                internet_nl_mail_starttls_dane_exist_verdict_good: internet_nl_messages[language].internet_nl.detail_mail_tls_dane_exists_verdict_good,
-                internet_nl_mail_starttls_tls_secreneg_verdict_good: internet_nl_messages[language].internet_nl.detail_mail_tls_renegotiation_secure_verdict_good,
-                internet_nl_mail_starttls_dane_rollover_verdict_good: internet_nl_messages[language].internet_nl.detail_mail_tls_dane_rollover_verdict_good,
-                internet_nl_mail_starttls_cert_pubkey_verdict_good: internet_nl_messages[language].internet_nl.detail_mail_tls_cert_pubkey_verdict_good,
-                internet_nl_mail_starttls_cert_sig_verdict_good: internet_nl_messages[language].internet_nl.detail_mail_tls_cert_signature_verdict_good,
-                internet_nl_mail_starttls_tls_compress_verdict_good: internet_nl_messages[language].internet_nl.detail_mail_tls_compression_verdict_good,
-                internet_nl_mail_starttls_tls_keyexchange_verdict_good: internet_nl_messages[language].internet_nl.detail_mail_tls_fs_params_verdict_good,
-                internet_nl_mail_auth_dmarc_policy_verdict_good: internet_nl_messages[language].internet_nl.detail_mail_auth_dmarc_policy_verdict_good,
-                internet_nl_mail_auth_dmarc_exist_verdict_good: internet_nl_messages[language].internet_nl.detail_mail_auth_dmarc_verdict_good,
-                internet_nl_mail_auth_spf_policy_verdict_good: internet_nl_messages[language].internet_nl.detail_mail_auth_spf_policy_verdict_good,
-                internet_nl_mail_auth_dkim_exist_verdict_good: internet_nl_messages[language].internet_nl.detail_mail_auth_dkim_verdict_good,
-                internet_nl_mail_auth_spf_exist_verdict_good: internet_nl_messages[language].internet_nl.detail_mail_auth_spf_verdict_good,
-                internet_nl_mail_dnssec_mailto_exist_verdict_good: internet_nl_messages[language].internet_nl.detail_mail_dnssec_exists_verdict_good,
-                internet_nl_mail_dnssec_mailto_valid_verdict_good: internet_nl_messages[language].internet_nl.detail_mail_dnssec_valid_verdict_good,
-                internet_nl_mail_dnssec_mx_valid_verdict_good: internet_nl_messages[language].internet_nl.detail_mail_dnssec_mx_valid_verdict_good,
-                internet_nl_mail_dnssec_mx_exist_verdict_good: internet_nl_messages[language].internet_nl.detail_mail_dnssec_mx_exists_verdict_good,
-                internet_nl_mail_ipv6_mx_address_verdict_good: internet_nl_messages[language].internet_nl.detail_mail_ipv6_mx_aaaa_verdict_good,
-                internet_nl_mail_ipv6_mx_reach_verdict_good: internet_nl_messages[language].internet_nl.detail_mail_ipv6_mx_reach_verdict_good,
-                internet_nl_mail_ipv6_ns_reach_verdict_good: internet_nl_messages[language].internet_nl.detail_web_mail_ipv6_ns_reach_verdict_good,
-                internet_nl_mail_ipv6_ns_address_verdict_good: internet_nl_messages[language].internet_nl.detail_web_mail_ipv6_ns_aaaa_verdict_good,
-
-                //
-                internet_nl_mail_starttls_cert_domain_verdict_bad: internet_nl_messages[language].internet_nl.detail_mail_tls_cert_hostmatch_verdict_bad,
-                internet_nl_mail_starttls_tls_version_verdict_bad: internet_nl_messages[language].internet_nl.detail_mail_tls_version_verdict_bad,
-                internet_nl_mail_starttls_cert_chain_verdict_bad: internet_nl_messages[language].internet_nl.detail_mail_tls_cert_trust_verdict_bad,
-                internet_nl_mail_starttls_tls_available_verdict_bad: internet_nl_messages[language].internet_nl.detail_mail_tls_starttls_exists_verdict_bad,
-                internet_nl_mail_starttls_tls_clientreneg_verdict_bad: internet_nl_messages[language].internet_nl.detail_mail_tls_renegotiation_client_verdict_bad,
-                internet_nl_mail_starttls_tls_ciphers_verdict_bad: internet_nl_messages[language].internet_nl.detail_mail_tls_ciphers_verdict_bad,
-                internet_nl_mail_starttls_dane_valid_verdict_bad: internet_nl_messages[language].internet_nl.detail_mail_tls_dane_valid_verdict_bad,
-                internet_nl_mail_starttls_dane_exist_verdict_bad: internet_nl_messages[language].internet_nl.detail_mail_tls_dane_exists_verdict_bad,
-                internet_nl_mail_starttls_tls_secreneg_verdict_bad: internet_nl_messages[language].internet_nl.detail_mail_tls_renegotiation_secure_verdict_bad,
-                internet_nl_mail_starttls_dane_rollover_verdict_bad: internet_nl_messages[language].internet_nl.detail_mail_tls_dane_rollover_verdict_bad,
-                internet_nl_mail_starttls_cert_pubkey_verdict_bad: internet_nl_messages[language].internet_nl.detail_mail_tls_cert_pubkey_verdict_bad,
-                internet_nl_mail_starttls_cert_sig_verdict_bad: internet_nl_messages[language].internet_nl.detail_mail_tls_cert_signature_verdict_bad,
-                internet_nl_mail_starttls_tls_compress_verdict_bad: internet_nl_messages[language].internet_nl.detail_mail_tls_compression_verdict_bad,
-                internet_nl_mail_starttls_tls_keyexchange_verdict_bad: internet_nl_messages[language].internet_nl.detail_mail_tls_fs_params_verdict_bad,
-                internet_nl_mail_auth_dmarc_policy_verdict_bad: internet_nl_messages[language].internet_nl.detail_mail_auth_dmarc_policy_verdict_bad,
-                internet_nl_mail_auth_dmarc_exist_verdict_bad: internet_nl_messages[language].internet_nl.detail_mail_auth_dmarc_verdict_bad,
-                internet_nl_mail_auth_spf_policy_verdict_bad: internet_nl_messages[language].internet_nl.detail_mail_auth_spf_policy_verdict_bad,
-                internet_nl_mail_auth_dkim_exist_verdict_bad: internet_nl_messages[language].internet_nl.detail_mail_auth_dkim_verdict_bad,
-                internet_nl_mail_auth_spf_exist_verdict_bad: internet_nl_messages[language].internet_nl.detail_mail_auth_spf_verdict_bad,
-                internet_nl_mail_dnssec_mailto_exist_verdict_bad: internet_nl_messages[language].internet_nl.detail_mail_dnssec_exists_verdict_bad,
-                internet_nl_mail_dnssec_mailto_valid_verdict_bad: internet_nl_messages[language].internet_nl.detail_mail_dnssec_valid_verdict_bad,
-                internet_nl_mail_dnssec_mx_valid_verdict_bad: internet_nl_messages[language].internet_nl.detail_mail_dnssec_mx_valid_verdict_bad,
-                internet_nl_mail_dnssec_mx_exist_verdict_bad: internet_nl_messages[language].internet_nl.detail_mail_dnssec_mx_exists_verdict_bad,
-                internet_nl_mail_ipv6_mx_address_verdict_bad: internet_nl_messages[language].internet_nl.detail_mail_ipv6_mx_aaaa_verdict_bad,
-                internet_nl_mail_ipv6_mx_reach_verdict_bad: internet_nl_messages[language].internet_nl.detail_mail_ipv6_mx_reach_verdict_bad,
-                internet_nl_mail_ipv6_ns_reach_verdict_bad: internet_nl_messages[language].internet_nl.detail_web_mail_ipv6_ns_reach_verdict_bad,
-                internet_nl_mail_ipv6_ns_address_verdict_bad: internet_nl_messages[language].internet_nl.detail_web_mail_ipv6_ns_aaaa_verdict_bad,
-            }
+            internet_nl_mail_starttls_cert_domain: 'detail_mail_tls_cert_hostmatch',
+            internet_nl_mail_starttls_tls_version: 'detail_mail_tls_version',
+            internet_nl_mail_starttls_cert_chain: 'detail_mail_tls_cert_trust',
+            internet_nl_mail_starttls_tls_available: 'detail_mail_tls_starttls_exists',
+            internet_nl_mail_starttls_tls_clientreneg: 'detail_mail_tls_renegotiation_client',
+            internet_nl_mail_starttls_tls_ciphers: 'detail_mail_tls_ciphers',
+            internet_nl_mail_starttls_dane_valid: 'detail_mail_tls_dane_valid',
+            internet_nl_mail_starttls_dane_exist: 'detail_mail_tls_dane_exists',
+            internet_nl_mail_starttls_tls_secreneg: 'detail_mail_tls_renegotiation_secure',
+            internet_nl_mail_starttls_dane_rollover: 'detail_mail_tls_dane_rollover',
+            internet_nl_mail_starttls_cert_pubkey: 'detail_mail_tls_cert_pubkey',
+            internet_nl_mail_starttls_cert_sig: 'detail_mail_tls_cert_signature',
+            internet_nl_mail_starttls_tls_compress: 'detail_mail_tls_compression',
+            internet_nl_mail_starttls_tls_keyexchange: 'detail_mail_tls_fs_params',
+            internet_nl_mail_auth_dmarc_policy: 'detail_mail_auth_dmarc_policy',
+            internet_nl_mail_auth_dmarc_exist: 'detail_mail_auth_dmarc',
+            internet_nl_mail_auth_spf_policy: 'detail_mail_auth_spf_policy',
+            internet_nl_mail_auth_dkim_exist: 'detail_mail_auth_dkim',
+            internet_nl_mail_auth_spf_exist: 'detail_mail_auth_spf',
+            internet_nl_mail_dnssec_mailto_exist: 'detail_mail_dnssec_exists',
+            internet_nl_mail_dnssec_mailto_valid: 'detail_mail_dnssec_valid',
+            internet_nl_mail_dnssec_mx_valid: 'detail_mail_dnssec_mx_valid',
+            internet_nl_mail_dnssec_mx_exist: 'detail_mail_dnssec_mx_exists',
+            internet_nl_mail_ipv6_mx_address: 'detail_mail_ipv6_mx_aaaa',
+            internet_nl_mail_ipv6_mx_reach: 'detail_mail_ipv6_mx_reach',
+            internet_nl_mail_ipv6_ns_reach: 'detail_web_mail_ipv6_ns_reach',
+            internet_nl_mail_ipv6_ns_address: 'detail_web_mail_ipv6_ns_aaaa',
         };
+
+        // categories are translated with _passed_summary or _failed_summary. The rest with their label. Should be in
+        // the retrieved translations anyway.
+        function import_field_translations(language){
+            let mapping = {};
+            for (let key of Object.keys(internet_nl_field_mapping)) {
+                mapping[key] = internet_nl_messages[language].internet_nl[internet_nl_field_mapping[key] + '_label']
+            }
+            console.log(mapping);
+            return mapping;
+        }
 
         function interpolate_translations(){
             let translation = messages;
@@ -297,7 +174,7 @@
             translation.en = Object.assign(translation.en, import_field_translations('en'));
 
             return translation;
-        };
+        }
 
         // used in various vue components to translate the GUI
         const i18n = new VueI18n({
