@@ -7,8 +7,8 @@ from typing import Any, Dict, List
 import pyexcel as p
 from django.utils.text import slugify
 from openpyxl import load_workbook
-from openpyxl.formatting.rule import ColorScaleRule
-from openpyxl.styles import Font
+from openpyxl.formatting.rule import ColorScaleRule, CellIsRule
+from openpyxl.styles import Font, Color, PatternFill
 
 from dashboard.internet_nl_dashboard.logic.internet_nl_translations import (DJANGO_I18N_OUTPUT_PATH,
                                                                             get_po_as_dictionary)
@@ -290,6 +290,7 @@ def translate_field(field_label):
         'internet_nl_mail_dashboard_auth': 'test_mailauth_label',
         'internet_nl_mail_dashboard_dnssec': 'test_maildnssec_label',
         'internet_nl_mail_dashboard_ipv6': 'test_mailipv6_label',
+        'internet_nl_score': '% Score',
 
         # directly translated fields.
         'internet_nl_mail_legacy_dmarc': 'DMARC',
@@ -389,55 +390,105 @@ def upgrade_excel_spreadsheet(spreadsheet_data):
         ws.column_dimensions["B"].width = "30"
 
         # Add statistic rows:
-        ws.insert_rows(0, amount=6)
+        ws.insert_rows(0, amount=8)
 
         ws[f'B1'] = "Total"
         ws[f'B2'] = "Contains passed"
-        ws[f'B3'] = "Contains failed"
-        ws[f'B4'] = "Contains not_applicable"
-        ws[f'B5'] = "Contains not_testable"
-        ws[f'B6'] = "Percentage 1 (reducing not_testable and not_applicable from total)"
+        ws[f'B3'] = "Contains info"
+        ws[f'B4'] = "Contains warning"
+        ws[f'B5'] = "Contains failed"
+        ws[f'B6'] = "Contains good_not_tested"
+        ws[f'B7'] = "Contains not_tested"
+        ws[f'B8'] = "Percentage passed (ignoring not_tested)"
 
-        for cell in ['H', 'I', 'J', 'K', 'L', "M", "N", 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z',
-                     'AA', 'AB', 'AC', 'AD', 'AE', 'AF', 'AG', 'AH', 'AI', 'AJ', 'AK', 'AL', 'AM', 'AN', 'AO',
-                     'AP', 'AQ', 'AR', 'AS', 'AT', 'AU', 'AV', 'AW', 'AX', 'AY', 'AZ', 'BA', 'BB', 'BC', 'BD',
-                     'BE', 'BF', 'BG', 'BH', 'BI', 'BJ', 'BK', 'BL', 'BM', 'BN', 'BO', 'BP', 'BQ', 'BR', 'BS',
-                     'BT', 'BU', 'BV', 'BW', 'BX', 'BY', 'BZ']:
+        # bold totals:
+        for i in range(1, 9):
+            ws[f'B{i}'].font = Font(bold=True)
+
+        data_columns = [
+            'H', 'I', 'J', 'K', 'L', "M", "N", 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z',
+            'AA', 'AB', 'AC', 'AD', 'AE', 'AF', 'AG', 'AH', 'AI', 'AJ', 'AK', 'AL', 'AM', 'AN', 'AO',
+            'AP', 'AQ', 'AR', 'AS', 'AT', 'AU', 'AV', 'AW', 'AX', 'AY', 'AZ', 'BA', 'BB', 'BC', 'BD',
+            'BE', 'BF', 'BG', 'BH', 'BI', 'BJ', 'BK', 'BL', 'BM', 'BN', 'BO', 'BP', 'BQ', 'BR', 'BS',
+            'BT', 'BU', 'BV', 'BW', 'BX', 'BY', 'BZ'
+        ]
+
+        for cell in data_columns:
             # if header, then aggregate
-            if ws[f'{cell}9'].value:
-                ws[f'{cell}1'] = f'=COUNTA({cell}10:{cell}9999)'
+            if ws[f'{cell}11'].value:
+                # There is a max of 5000 domains per scan. So we set this to something lower.
+                # There is no good support of headers versus data, which makes working with excel a drama
+                # If you ever read this code, and want a good spreadsheet editor: try Apple Numbers. It's fantastic.
+                ws[f'{cell}1'] = f'=COUNTA({cell}11:{cell}5050)'
                 # todo: also support other values
-                ws[f'{cell}2'] = f'=COUNTIF({cell}10:{cell}9999, "passed")'
-                ws[f'{cell}3'] = f'=COUNTIF({cell}10:{cell}9999, "failed")'
-                ws[f'{cell}4'] = f'=COUNTIF({cell}10:{cell}9999, "not_applicable")'
-                ws[f'{cell}5'] = f'=COUNTIF({cell}10:{cell}9999, "not_testable")'
+                ws[f'{cell}2'] = f'=COUNTIF({cell}11:{cell}5050, "passed")'
+                ws[f'{cell}3'] = f'=COUNTIF({cell}11:{cell}5050, "info")'
+                ws[f'{cell}4'] = f'=COUNTIF({cell}11:{cell}5050, "warning")'
+                ws[f'{cell}5'] = f'=COUNTIF({cell}11:{cell}5050, "failed")'
+                ws[f'{cell}6'] = f'=COUNTIF({cell}11:{cell}5050, "good_not_tested")'
+                ws[f'{cell}7'] = f'=COUNTIF({cell}11:{cell}5050, "not_tested")'
                 # Not applicable and not testable are subtracted from the total.
                 # See https://github.com/internetstandards/Internet.nl-dashboard/issues/68
                 # Rounding's num digits is NOT the number of digits behind the comma, but the total number of digits.
                 # todo: we should use the calculations in report.py. And there include the "missing" / empty stuff IF
                 # that is missing.
-                ws[f'{cell}6'] = f'=ROUND({cell}2/({cell}1 - ({cell}4 + {cell}5)), 4)'
-                ws[f'{cell}6'].number_format = '0.00%'
+                ws[f'{cell}8'] = f'=ROUND({cell}2/({cell}1 - ({cell}6 + {cell}7)), 4)'
+                ws[f'{cell}8'].number_format = '0.00%'
 
         # fold port and ip-version (and protocol?) from report as it's not useful in this case?
         ws.column_dimensions.group('C', 'E', hidden=True)
 
+        # line 9 is an empty line
+
         # make headers bold
-        for cell in ['H', 'I', 'J', 'K', 'L', "M", "N", 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z',
-                     'AA', 'AB', 'AC', 'AD', 'AE', 'AF', 'AG', 'AH', 'AI', 'AJ', 'AK', 'AL', 'AM', 'AN', 'AO',
-                     'AP', 'AQ', 'AR', 'AS', 'AT', 'AU', 'AV', 'AW', 'AX', 'AY', 'AZ', 'BA', 'BB', 'BC', 'BD',
-                     'BE', 'BF', 'BG', 'BH', 'BI', 'BJ', 'BK', 'BL', 'BM', 'BN', 'BO', 'BP', 'BQ', 'BR', 'BS',
-                     'BT', 'BU', 'BV', 'BW', 'BX', 'BY', 'BZ']:
-            ws[f'{cell}8'].font = Font(bold=True)
-            ws[f'{cell}9'].font = Font(bold=True)
+        ws[f'A11'].font = Font(bold=True)
+        ws[f'B11'].font = Font(bold=True)
+        ws[f'F10'].font = Font(bold=True)
+        ws[f'F11'].font = Font(bold=True)
+        for cell in data_columns:
+            ws[f'{cell}10'].font = Font(bold=True)
+            ws[f'{cell}11'].font = Font(bold=True)
 
         # Freeze pane to make navigation easier.
-        ws.freeze_panes = ws['H10']
+        ws.freeze_panes = ws['H11']
 
+        # there is probably a feature that puts this in a single conditional value.
+        greenFill = PatternFill(start_color='B7FFC8', end_color='B7FFC8', fill_type='solid')
+        redFill = PatternFill(start_color='FFB7B7', end_color='FFB7B7', fill_type='solid')
+        blueFill = PatternFill(start_color='B7E3FF', end_color='B7E3FF', fill_type='solid')
+        orangeFill = PatternFill(start_color='FFD9B7', end_color='FFD9B7', fill_type='solid')
+        grayFill = PatternFill(start_color='99FFFF', end_color='DBDBDB', fill_type='solid')
+        altgrayFill = PatternFill(start_color='99FFFF', end_color='C0C0C0', fill_type='solid')
         # Set the measurements to green/red depending on value using conditional formatting.
+        # There is no true/false, but we can color based on value.
         ws.conditional_formatting.add(
-            'H10:CD9999',
-            ColorScaleRule(start_type='min', start_color='FFDDDD', end_type='max', end_color='DDFFDD')
+            'H12:CD9999',
+            CellIsRule(operator='=', formula=['"passed"'], stopIfTrue=True, fill=greenFill)
+        )
+
+        ws.conditional_formatting.add(
+            'H12:CD9999',
+            CellIsRule(operator='=', formula=['"failed"'], stopIfTrue=True, fill=redFill)
+        )
+
+        ws.conditional_formatting.add(
+            'H12:CD9999',
+            CellIsRule(operator='=', formula=['"warning"'], stopIfTrue=True, fill=orangeFill)
+        )
+
+        ws.conditional_formatting.add(
+            'H12:CD9999',
+            CellIsRule(operator='=', formula=['"info"'], stopIfTrue=True, fill=blueFill)
+        )
+
+        ws.conditional_formatting.add(
+            'H12:CD9999',
+            CellIsRule(operator='=', formula=['"good_not_tested"'], stopIfTrue=True, fill=altgrayFill)
+        )
+
+        ws.conditional_formatting.add(
+            'H12:CD9999',
+            CellIsRule(operator='=', formula=['"not_tested"'], stopIfTrue=True, fill=grayFill)
         )
 
         log.debug(ws.title)
