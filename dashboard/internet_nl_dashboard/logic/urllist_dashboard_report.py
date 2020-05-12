@@ -75,6 +75,11 @@ urllist_report_content = {
         'internet_nl_mail_legacy_dane',
         'internet_nl_mail_legacy_ipv6_nameserver',
         'internet_nl_mail_legacy_ipv6_mailserver',
+
+        # api 2.0 tls 1.3 fields, may 2020
+        'internet_nl_mail_starttls_tls_cipherorder',
+        'internet_nl_mail_starttls_tls_keyexchangehash',
+        'internet_nl_mail_starttls_tls_0rtt',
     ],
 
     'web': [

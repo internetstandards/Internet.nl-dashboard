@@ -7,8 +7,8 @@ from typing import Any, Dict, List
 import pyexcel as p
 from django.utils.text import slugify
 from openpyxl import load_workbook
-from openpyxl.formatting.rule import ColorScaleRule, CellIsRule
-from openpyxl.styles import Font, Color, PatternFill
+from openpyxl.formatting.rule import CellIsRule
+from openpyxl.styles import Font, PatternFill
 
 from dashboard.internet_nl_dashboard.logic.internet_nl_translations import (DJANGO_I18N_OUTPUT_PATH,
                                                                             get_po_as_dictionary)
@@ -179,10 +179,13 @@ SANE_COLUMN_ORDER = {
             'internet_nl_mail_starttls_tls_available',
             'internet_nl_mail_starttls_tls_version',
             'internet_nl_mail_starttls_tls_ciphers',
+            'internet_nl_mail_starttls_tls_cipherorder',
             'internet_nl_mail_starttls_tls_keyexchange',
+            'internet_nl_mail_starttls_tls_keyexchangehash',
             'internet_nl_mail_starttls_tls_compress',
             'internet_nl_mail_starttls_tls_secreneg',
             'internet_nl_mail_starttls_tls_clientreneg',
+            'internet_nl_mail_starttls_tls_0rtt',
 
             # Certificate
             'internet_nl_mail_starttls_cert_chain',
@@ -250,6 +253,9 @@ def translate_field(field_label):
         'internet_nl_mail_ipv6_mx_reach': 'detail_mail_ipv6_mx_reach_label',
         'internet_nl_mail_ipv6_ns_reach': 'detail_web_mail_ipv6_ns_reach_label',
         'internet_nl_mail_ipv6_ns_address': 'detail_web_mail_ipv6_ns_aaaa_label',
+        'internet_nl_mail_starttls_tls_cipherorder': 'detail_mail_tls_cipher_order_label',
+        'internet_nl_mail_starttls_tls_keyexchangehash': 'detail_mail_tls_kex_hash_func_label',
+        'internet_nl_mail_starttls_tls_0rtt': 'detail_mail_tls_zero_rtt_label',
 
 
         # web fields, see dashboard.js

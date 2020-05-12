@@ -1515,6 +1515,9 @@ const Report = Vue.component('report', {
                     this.upgrade_issue_filter_with_new_field('internet_nl_web_https_tls_0rtt');
                     this.upgrade_issue_filter_with_new_field('internet_nl_web_https_tls_ocsp');
                     this.upgrade_issue_filter_with_new_field('internet_nl_web_https_tls_keyexchangehash');
+                    this.upgrade_issue_filter_with_new_field('internet_nl_mail_starttls_tls_cipherorder');
+                    this.upgrade_issue_filter_with_new_field('internet_nl_mail_starttls_tls_keyexchangehash');
+                    this.upgrade_issue_filter_with_new_field('internet_nl_mail_starttls_tls_0rtt');
                 }
             });
         },
@@ -2174,10 +2177,13 @@ const Report = Vue.component('report', {
                                         {name: 'internet_nl_mail_starttls_tls_available'},
                                         {name: 'internet_nl_mail_starttls_tls_version'},
                                         {name: 'internet_nl_mail_starttls_tls_ciphers'},
+                                        {name: 'internet_nl_mail_starttls_tls_cipherorder'},
                                         {name: 'internet_nl_mail_starttls_tls_keyexchange'},
+                                        {name: 'internet_nl_mail_starttls_tls_keyexchangehash'},
                                         {name: 'internet_nl_mail_starttls_tls_compress'},
                                         {name: 'internet_nl_mail_starttls_tls_secreneg'},
                                         {name: 'internet_nl_mail_starttls_tls_clientreneg'},
+                                        {name: 'internet_nl_mail_starttls_tls_0rtt'},
                                     ],
                                     additional_fields: [],
                                 },
