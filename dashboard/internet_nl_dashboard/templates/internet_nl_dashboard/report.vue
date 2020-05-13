@@ -1304,7 +1304,20 @@ const Report = Vue.component('report', {
             if (verdict === undefined)
                 return "unknown";
 
-            return verdict.test_result;
+            // Internet.nl API V2.0:
+            if (verdict.test_result !== undefined) {
+                return verdict.test_result;
+            }
+
+            // backwards compatible with API v1.0 reports:
+            if (verdict.ok > 0) {return 'passed'}
+            if (verdict.ok < 1) {
+                if (category_name === 'internet_nl_web_appsecpriv'){
+                    return "warning";
+                }
+                return "failed"
+            }
+
         },
 
         detail_value_with_comparison: function(category_name, url){
@@ -1315,15 +1328,20 @@ const Report = Vue.component('report', {
              * */
 
             let verdicts = url.endpoints[0].ratings_by_type[category_name];
-
             let simple_value = "";
             let simple_progression = "";
+
             // Adding the verdict to the report would speed things up...
             if (verdicts === undefined) {
                 simple_value = "unknown";
                 simple_progression = "unknown";
             } else {
-                simple_value = verdicts.test_result;  // not_applicable, not_testable, failed, warning, info, passed
+                if (verdicts.test_result !== undefined)
+                    // API V2.0:
+                    simple_value = verdicts.test_result;  // not_applicable, not_testable, failed, warning, info, passed
+                else
+                    // API V1.0
+                    simple_value = verdicts.simple_verdict;
                 simple_progression = verdicts.simple_progression;
             }
             /* disabling translations saves a second on 500 urls and the TLS page.
@@ -1363,14 +1381,19 @@ const Report = Vue.component('report', {
 
             // older, previous...
             let other_verdicts = this.compare_charts[1].calculation.urls_by_url[url.url].endpoints[0].ratings_by_type[category_name];
-            let other_simple_value = other_verdicts.test_result;
-            let other_simple_progression = other_verdicts.simple_progression;
+            let other_simple_value = "";
+            let other_simple_progression = "";
 
             if (other_verdicts === undefined) {
                 other_simple_value = "unknown";
                 other_simple_progression = "unknown";
             } else {
-                other_simple_value = other_verdicts.test_result;
+                if (other_verdicts.test_result !== undefined)
+                    // API V2.0:
+                    other_simple_value = other_verdicts.test_result;  // not_applicable, not_testable, failed, warning, info, passed
+                else
+                    // API V1.0
+                    other_simple_value = other_verdicts.simple_verdict;
                 other_simple_progression = other_verdicts.simple_progression;
             }
 
@@ -1380,8 +1403,8 @@ const Report = Vue.component('report', {
             if (simple_value === other_simple_value)
                 comparison_verdict = "neutral";
 
-            if (["unknown", "not_applicable", "not_testable"].includes(simple_value) ||
-                ["unknown", "not_applicable", "not_testable"].includes(other_simple_value))
+            if (["unknown", "not_applicable", "not_testable", "good_not_testable"].includes(simple_value) ||
+                ["unknown", "not_applicable", "not_testable", "good_not_testable"].includes(other_simple_value))
                 comparison_verdict = "neutral";
 
             if (comparison_verdict === "") {
