@@ -612,7 +612,7 @@ def check_retrieved_scannable_urls(urls: List):
 
 
 @app.task(queue='storage')
-def update_state(state: object, scan: object) -> object:
+def update_state(state: str, scan: AccountInternetNLScan) -> None:
     """Update the current scan state. Also write it to the scan log. From this log we should also be able to see
     retries... when celery retries on exceptions etc..."""
 
@@ -623,6 +623,11 @@ def update_state(state: object, scan: object) -> object:
     if last_state_for_scan:
         if last_state_for_scan.state == state:
             return
+
+    # do not update a cancelled scan (#159), even if a certain task has finished after a cancel was issued (letting the
+    # task overwriting the cancelled state, continuing the scan)
+    if last_state_for_scan == "cancelled":
+        return
 
     # First state, or a new state.
     # New log message:
