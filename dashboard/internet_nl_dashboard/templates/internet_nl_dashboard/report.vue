@@ -104,7 +104,7 @@
       width: 32px;  /*Fits the 100% value too.*/
     }
     div.rotate > span {
-        padding: 5px 10px;
+        padding: 5px 3px;
         z-index: 1000;
     }
 
@@ -176,20 +176,20 @@
     }
 
     .arrow.asc {
-        border-left: 4px solid transparent;
-        border-right: 4px solid transparent;
-        border-bottom: 4px solid #00a0c6;
+        border-left: 10px solid transparent;
+        border-right: 10px solid transparent;
+        border-bottom: 10px solid #00a0c6;
     }
 
     .arrow.dsc {
-        border-left: 4px solid transparent;
-        border-right: 4px solid transparent;
-        border-top: 4px solid #00a0c6;
+        border-left: 10px solid transparent;
+        border-right: 10px solid transparent;
+        border-top: 10px solid #00a0c6;
     }
 
     .arrow.unknown {
-        border-left: 4px solid #00a0c6;
-        border-right: 4px solid #00a0c6;
+        border-left: 10px solid #00a0c6;
+        border-right: 10px solid #00a0c6;
         border-top: 4px solid #00a0c6;
     }
 
@@ -568,13 +568,13 @@
                             <tr class="sticky_labels">
                                 <th style="width: 75px; min-width: 75px; border: 0; background-color: white;" class="sticky-header">
                                     <div class="rotate">
-                                        <span class="arrow" :class="sortOrders['score'] === -1 ? 'dsc' : (sortOrders['score'] === 1 ? 'asc' : 'unknown')"></span>
+                                        <span @click="sortBy('score')" class="arrow" :class="sortOrders['score'] === -1 ? 'dsc' : (sortOrders['score'] === 1 ? 'asc' : 'unknown')"></span>
                                         <span @click="sortBy('score')">{{ $t("score") }}</span>
                                     </div>
                                 </th>
                                 <th style="width: 225px; min-width: 225px; border: 0; background-color: white;" class="sticky-header">
                                     <div class="rotate">
-                                        <span class="arrow" :class="sortOrders['url'] === -1 ? 'dsc' : (sortOrders['url'] === 1 ? 'asc' : 'unknown')"></span>
+                                        <span @click="sortBy('url')" class="arrow" :class="sortOrders['url'] === -1 ? 'dsc' : (sortOrders['url'] === 1 ? 'asc' : 'unknown')"></span>
                                         <span @click="sortBy('url')">{{ $t("domain") }}</span>
                                     </div>
                                 </th>
@@ -584,7 +584,7 @@
 
                                         <div style="border: 0; float: left; width: 100px" v-for="category in relevant_categories_based_on_settings">
                                             <div class="rotate">
-                                                <span class="arrow" :class="sortOrders[category] === -1 ? 'dsc' : (sortOrders[category] === 1 ? 'asc' : 'unknown')"></span>
+                                                <span @click="sortBy(category)" class="arrow" :class="sortOrders[category] === -1 ? 'dsc' : (sortOrders[category] === 1 ? 'asc' : 'unknown')"></span>
                                                 <span @click="sortBy(category)">{{ $t("" + category) }}</span>
                                             </div>
                                         </div>
@@ -593,7 +593,7 @@
 
                                          <div style="border: 0; float: left; width: 56px" v-for="category in relevant_categories_based_on_settings">
                                             <div class="rotate">
-                                                <span class="arrow" :class="sortOrders[category] === -1 ? 'dsc' : (sortOrders[category] === 1 ? 'asc' : 'unknown')"></span>
+                                                <span @click="sortBy(category)" class="arrow" :class="sortOrders[category] === -1 ? 'dsc' : (sortOrders[category] === 1 ? 'asc' : 'unknown')"></span>
                                                 <span @click="sortBy(category)">{{ $t("" + category) }}</span>
                                             </div>
                                         </div>
