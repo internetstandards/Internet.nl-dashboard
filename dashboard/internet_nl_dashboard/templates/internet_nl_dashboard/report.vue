@@ -1680,6 +1680,11 @@ const Report = Vue.component('report', {
                 let aref = a.endpoints[0].ratings_by_type[sortKey];
                 let bref = b.endpoints[0].ratings_by_type[sortKey];
 
+                // When switching reports (mail, web) some sort keys might not exist. In that case return 0 to not
+                // influence sorting:
+                if (aref === undefined)
+                    return 0;
+
                 a = aref.simple_progression;
                 b = bref.simple_progression;
                 return (a === b ? 0 : a > b ? 1 : -1) * order
