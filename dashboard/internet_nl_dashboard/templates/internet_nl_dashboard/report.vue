@@ -481,13 +481,22 @@
                 <span>{{ $t("report_header.type_of_scan_performed") }}:
                     <img src="/static/images/vendor/internet_nl/icon-website-test.svg" style="height: 1em;" v-if="selected_report[0].type === 'web'">
                     <img src="/static/images/vendor/internet_nl/icon-emailtest.svg" style="height: 1em;" v-if="selected_report[0].type === 'mail'"> {{ selected_report[0].type }}<br>
-                    {{ $t("report_header.number_of_domains") }}: {{ selected_report[0].number_of_urls }}<br> {{ $t("report_header.data_from") }} {{ humanize_date(selected_report[0].at_when) }}</span><br>
+                    {{ $t("report_header.number_of_domains") }}: {{ selected_report[0].number_of_urls }}<br> {{ $t("report_header.data_from") }} {{ humanize_date(selected_report[0].at_when) }}<br>
+                    📘 <router-link :to="{ name: 'numbered_lists', params: { list: selected_report[0].urllist_id }}">{{ selected_report[0].list_name }}</router-link><br>
+                </span><br>
+
+
+
 
                 <div v-for="report in selected_report" v-if="selected_report.length > 1" style="padding-left: 10px">
                     <!-- Skip the first report -->
                     <template v-if="report.id !== selected_report[0].id">
                         <h3>{{ $t("report_header.compared_to") }}: #{{report.id}} - {{ report.list_name }}</h3>
-                        <span>{{ $t("report_header.number_of_domains") }}: {{ report.number_of_urls }}<br> {{ $t("report_header.data_from") }} {{ humanize_date(report.at_when) }}<br></span>
+                        <span>
+                            {{ $t("report_header.number_of_domains") }}: {{ report.number_of_urls }}<br>
+                            {{ $t("report_header.data_from") }} {{ humanize_date(report.at_when) }}<br>
+                            📘 <router-link :to="{ name: 'numbered_lists', params: { list: report.urllist_id }}">{{ report.list_name }}</router-link><br>
+                        </span>
                     </template>
                 </div>
 
