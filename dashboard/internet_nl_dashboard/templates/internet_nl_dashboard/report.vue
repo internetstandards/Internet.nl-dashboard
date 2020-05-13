@@ -601,9 +601,9 @@
                                     </template><template v-else>
 
                                          <div style="border: 0; float: left; width: 56px" v-for="category in relevant_categories_based_on_settings">
-                                            <div class="rotate">
-                                                <span @click="sortBy(category)" class="arrow" :class="sortOrders[category] === -1 ? 'dsc' : (sortOrders[category] === 1 ? 'asc' : 'unknown')"></span>
-                                                <span @click="sortBy(category)">{{ $t("" + category) }}</span>
+                                            <div class="rotate" style="white-space: nowrap;">
+                                                <div @click="sortBy(category)" class="arrow" :class="sortOrders[category] === -1 ? 'dsc' : (sortOrders[category] === 1 ? 'asc' : 'unknown')"></div>
+                                                <div @click="sortBy(category)" style="display: inline-block;">{{ $t("" + category) }}<div style="font-size: 0.7em; color: gray; margin-top: -3px; padding-left: 13px;" v-html="category_from_field_name(category)"></div></div>
                                             </div>
                                         </div>
 
@@ -1231,6 +1231,8 @@ const Report = Vue.component('report', {
             selected_report: [],
 
 
+            // show category headers in table only when there is a change of categeory:
+            previous_category: "",
 
 
             compare_charts: [],
@@ -1746,6 +1748,10 @@ const Report = Vue.component('report', {
             return fields;
         },
 
+        category_from_field_name: function(field_name){
+            return this.field_name_to_category_names[field_name];
+        },
+
         check_fields: function(list_of_fields){
             list_of_fields.forEach((field) => {
                 this.issue_filters[field].visible = true;
@@ -2128,7 +2134,7 @@ const Report = Vue.component('report', {
                             additional_fields: [],
                             categories: [
                                 {
-                                    name: 'email address domain',
+                                    name: 'Email address domain',
                                     key: 'category_mail_dnssec_email_address_domain',
                                     label: internet_nl_messages[language].internet_nl.results_mail_dnssec_domain_label,
                                     fields: [
@@ -2138,7 +2144,7 @@ const Report = Vue.component('report', {
                                     additional_fields: [],
                                 },
                                 {
-                                    name: 'mail server domain(s)',
+                                    name: 'Mail server domain(s)',
                                     key: 'category_mail_dnssec_mail_server_domain',
                                     label: internet_nl_messages[language].internet_nl.results_mail_dnssec_mail_servers_label,
                                     fields: [
@@ -2265,7 +2271,7 @@ const Report = Vue.component('report', {
 
                             categories: [
                                 {
-                                    name: 'magazine',
+                                    name: 'Magazine',
                                     label: 'Measurements on agreed security standards',
                                     key: 'category_mail_forum_standardisation_magazine',
                                     fields: [
@@ -2310,6 +2316,43 @@ const Report = Vue.component('report', {
                     ]
                 }
             ];
+        },
+
+        field_name_to_category_names: function(){
+            /** Based on the scan methods, the names of the categories is 1-1 associated with a category name.
+             * This can be used to generate "category" headers in the result table. This helps to distinguish
+             * several chapter headings for a set of scans. This is useful for mail dnssec scans, as the
+             * name of the dnssec tests is identical and very confusing to see what is what. */
+
+            let fields_mapping = {};
+
+            // 0 = web, 1 = mail, ugly.
+            this.scan_methods[0].categories.forEach((category) => {
+
+                category.categories.forEach((subcategory) => {
+                    subcategory.fields.forEach((field) => {
+                        fields_mapping[field.name] = subcategory.name;
+                    });
+                    subcategory.additional_fields.forEach((field) => {
+                        fields_mapping[field.name] = subcategory.name;
+                    });
+                });
+            });
+
+            this.scan_methods[1].categories.forEach((category) => {
+
+                category.categories.forEach((subcategory) => {
+                    subcategory.fields.forEach((field) => {
+                        fields_mapping[field.name] = subcategory.name;
+                    });
+                    subcategory.additional_fields.forEach((field) => {
+                        fields_mapping[field.name] = subcategory.name;
+                    });
+                });
+            });
+
+            console.log(fields_mapping);
+            return fields_mapping;
         },
 
         relevant_categories_based_on_settings: function(){
