@@ -239,8 +239,7 @@ def get_scan_status_of_list(account: Account, list_id: int) -> Dict[str, Any]:
 
     data = {}
     data['last_scan_id'] = None if not len(urllist.last_scan) else urllist.last_scan[0].scan.id
-    data['last_scan_finished'] = None if not len(urllist.last_scan) else \
-        True if urllist.last_scan[0].finished else False
+    data['last_scan_finished'] = None if not len(urllist.last_scan) else urllist.last_scan[0].finished
     data['last_report_id'] = None if not len(urllist.last_report) else urllist.last_report[0].id
     data['last_report_date'] = None if not len(urllist.last_report) else urllist.last_report[0].at_when
     data['scan_now_available'] = urllist.is_scan_now_available()
@@ -345,8 +344,9 @@ def update_list_settings(account: Account, user_input: Dict) -> Dict[str, Any]:
 
     # inject the last scan information.
     data['last_scan_id'] = None if not len(urllist.last_scan) else urllist.last_scan[0].scan.id
-    data['last_scan'] = None if not len(urllist.last_scan) else urllist.last_scan[0].scan.started_on.isoformat()
-    data['last_scan_finished'] = None if not len(urllist.last_scan) else urllist.last_scan[0].scan.finished
+
+    data['last_scan'] = None if not len(urllist.last_scan) else urllist.last_scan[0].started_on.isoformat()
+    data['last_scan_finished'] = None if not len(urllist.last_scan) else urllist.last_scan[0].finished
     data['last_report_id'] = None if not len(urllist.last_report) else urllist.last_report[0].id
     data['last_report_date'] = None if not len(urllist.last_report) else urllist.last_report[0].at_when
 

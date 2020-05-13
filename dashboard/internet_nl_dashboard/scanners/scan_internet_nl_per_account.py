@@ -201,7 +201,7 @@ def progress_running_scan(scan: AccountInternetNLScan) -> Task:
         return group([])
 
     steps = {
-        # complete state progression, using active verbs to come to the next state:
+        # complete state progression, using active verbs to come to the next state:cl
         "requested": discovering_endpoints,
         "discovered endpoints": retrieving_scannable_urls,
         "retrieved scannable urls": registering_scan_at_internet_nl,
