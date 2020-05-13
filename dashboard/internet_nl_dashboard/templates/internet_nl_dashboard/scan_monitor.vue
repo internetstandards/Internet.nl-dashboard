@@ -60,7 +60,7 @@
                         <h3 class="panel-title" >
                             <a href="" aria-expanded="false">
                                 <span class="visuallyhidden">-:</span>
-                                {{ $t("scan history") }}
+                                <span v-if="!scan.finished"><img width="15" style="border-radius: 50%" src="/static/images/vendor/internet_nl/probe-animation.gif"></span> {{ $t("scan history") }}
                                 <span class="pre-icon visuallyhidden"></span>
                                 <span class="icon"><img src="/static/images/vendor/internet_nl/push-open.png" alt=""></span>
                             </a>
