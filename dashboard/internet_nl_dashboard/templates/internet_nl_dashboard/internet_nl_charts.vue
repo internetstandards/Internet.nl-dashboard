@@ -165,8 +165,7 @@
             </template>
         </div>
 
-        <div class="block fullwidth" style="page-break-before: always;" aria-hidden="true"
-             v-if='compare_charts.length > 1 && "statistics_per_issue_type" in reports[0]["calculation"]'>
+        <div class="block fullwidth" style="page-break-before: always;" aria-hidden="true" v-if='compare_charts.length'>
 
             <h2>
                 {{ $t("chart_info.cumulative_adoption_bar_chart.annotation.title") }}
