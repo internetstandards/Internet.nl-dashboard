@@ -455,7 +455,7 @@ class AccountInternetNLScan(models.Model):
         UrlListReport,
         null=True,
         blank=True,
-        on_delete=models.CASCADE,
+        on_delete=models.SET_NULL,
         help_text="After a scan has finished, a report is created. This points to that report so no guessing "
                   "is needed to figure out what report belongs to what scan."
     )
