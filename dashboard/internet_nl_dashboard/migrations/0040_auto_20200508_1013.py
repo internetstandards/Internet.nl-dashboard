@@ -7,6 +7,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
+        ('scanners', '0072_auto_20200506_1313'),
         ('internet_nl_dashboard', '0039_accountinternetnlscan_report'),
     ]
 
