@@ -429,14 +429,14 @@ def upgrade_excel_spreadsheet(spreadsheet_data):
                 # There is a max of 5000 domains per scan. So we set this to something lower.
                 # There is no good support of headers versus data, which makes working with excel a drama
                 # If you ever read this code, and want a good spreadsheet editor: try Apple Numbers. It's fantastic.
-                ws[f'{cell}1'] = f'=COUNTA({cell}11:{cell}5050)'
+                ws[f'{cell}1'] = f'=COUNTA({cell}12:{cell}5050)'
                 # todo: also support other values
-                ws[f'{cell}2'] = f'=COUNTIF({cell}11:{cell}5050, "passed")'
-                ws[f'{cell}3'] = f'=COUNTIF({cell}11:{cell}5050, "info")'
-                ws[f'{cell}4'] = f'=COUNTIF({cell}11:{cell}5050, "warning")'
-                ws[f'{cell}5'] = f'=COUNTIF({cell}11:{cell}5050, "failed")'
-                ws[f'{cell}6'] = f'=COUNTIF({cell}11:{cell}5050, "good_not_tested")'
-                ws[f'{cell}7'] = f'=COUNTIF({cell}11:{cell}5050, "not_tested")'
+                ws[f'{cell}2'] = f'=COUNTIF({cell}12:{cell}5050, "passed")'
+                ws[f'{cell}3'] = f'=COUNTIF({cell}12:{cell}5050, "info")'
+                ws[f'{cell}4'] = f'=COUNTIF({cell}12:{cell}5050, "warning")'
+                ws[f'{cell}5'] = f'=COUNTIF({cell}12:{cell}5050, "failed")'
+                ws[f'{cell}6'] = f'=COUNTIF({cell}12:{cell}5050, "good_not_tested")'
+                ws[f'{cell}7'] = f'=COUNTIF({cell}12:{cell}5050, "not_tested")'
                 # Not applicable and not testable are subtracted from the total.
                 # See https://github.com/internetstandards/Internet.nl-dashboard/issues/68
                 # Rounding's num digits is NOT the number of digits behind the comma, but the total number of digits.

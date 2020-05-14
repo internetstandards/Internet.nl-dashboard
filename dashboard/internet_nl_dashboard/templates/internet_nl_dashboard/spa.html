@@ -328,6 +328,8 @@
                 { path: '/report', component: Report },
                 { path: '/switch-account', component: SwitchAccount },
                 { path: '/add-user', component: InstantAddAccount },
+                { path: '/tour', component: Demo },
+                { path: '/demo', component: Demo },
             ];
 
             const router = new VueRouter({
@@ -375,6 +377,7 @@
     {% include "internet_nl_dashboard/templates/internet_nl_dashboard/add_account.vue" %}
     {% include "internet_nl_dashboard/templates/internet_nl_dashboard/upload.vue" %}
     {% include "internet_nl_dashboard/templates/internet_nl_dashboard/internet_nl_charts.vue" %}
+    {% include "internet_nl_dashboard/templates/internet_nl_dashboard/demo.vue" %}
 
 
 </head>

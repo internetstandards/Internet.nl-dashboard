@@ -1901,7 +1901,7 @@ const Report = Vue.component('report', {
 
                             categories: [
                                 {
-                                    name: 'name_servers',
+                                    name: 'Name servers',
                                     key: 'category_web_ipv6_name_server',
                                     // there is NO translations for web, only for mail.
                                     label: internet_nl_messages[language].internet_nl.results_domain_mail_ipv6_name_servers_label,
@@ -1912,7 +1912,7 @@ const Report = Vue.component('report', {
                                     additional_fields: [],
                                 },
                                 {
-                                    name: 'web_server',
+                                    name: 'Web server',
                                     key: 'category_web_ipv6_web_server',
                                     label: internet_nl_messages[language].internet_nl.results_domain_ipv6_web_server_label,
                                     fields: [
@@ -1935,7 +1935,7 @@ const Report = Vue.component('report', {
                             categories: [
                                 {
                                     // the exception to the rule
-                                    name: '',
+                                    name: 'DNSSEC',
                                     key: 'category_web_dnssec_dnssec',
                                     label: internet_nl_messages[language].internet_nl.test_sitednssec_label,
                                     fields: [
@@ -1956,7 +1956,7 @@ const Report = Vue.component('report', {
                             additional_fields: [],
                             categories: [
                                 {
-                                    name: 'http',
+                                    name: 'HTTP',
                                     key: 'category_web_tls_http',
                                     label: internet_nl_messages[language].internet_nl.results_domain_tls_https_label,
                                     fields: [
@@ -1968,7 +1968,7 @@ const Report = Vue.component('report', {
                                     additional_fields: [],
                                 },
                                 {
-                                    name: 'tls',
+                                    name: 'TLS',
                                     key: 'category_web_tls_tls',
                                     label: internet_nl_messages[language].internet_nl.results_domain_tls_tls_label,
                                     fields: [
@@ -1986,7 +1986,7 @@ const Report = Vue.component('report', {
                                     additional_fields: [],
                                 },
                                 {
-                                    name: 'certificate',
+                                    name: 'Certificate',
                                     key: 'category_web_tls_certificate',
                                     // mail is being reused as there is no alternative translation (!)
                                     label: internet_nl_messages[language].internet_nl.results_domain_mail_tls_certificate_label,
@@ -1999,7 +1999,7 @@ const Report = Vue.component('report', {
                                     additional_fields: [],
                                 },
                                 {
-                                    name: 'dane',
+                                    name: 'DANE',
                                     key: 'category_web_tls_dane',
                                     label: internet_nl_messages[language].internet_nl.results_domain_mail_tls_dane_label,
                                     fields: [
