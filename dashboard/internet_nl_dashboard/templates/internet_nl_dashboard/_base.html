@@ -40,6 +40,8 @@
     <script type="text/javascript" src="{% static 'js/translations/internet_nl.js' %}"></script>
     <script type="text/javascript" src="{% static 'js/translations/dashboard.js' %}"></script>
 
+    {% include 'internet_nl_dashboard/demo.vue' %}
+
     <script>
         function interpolate_translations(){
             let translation = messages;
@@ -108,7 +110,8 @@
         });
 
         $( document ).ready(function() {
-            new Vue({ el: '#menu', template: `<site-menu></site-menu>`, i18n})
+            new Vue({ el: '#menu', template: `<site-menu></site-menu>`, i18n});
+            new Vue({ el: '#demo', template: `<demo></demo>`, i18n});
         });
     </script>
 
@@ -207,6 +210,10 @@
         {% block content %}
         {% endblock %}
         {% block logicontent_wrapper_hack_end %}{% endblock %}
+    </div>
+
+    <div class="wrap do-not-print">
+        <div id="demo"></div>
     </div>
 
     <div class="wrap">

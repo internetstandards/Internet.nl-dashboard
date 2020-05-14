@@ -50,7 +50,7 @@
             </div>
         </div>
 
-        <div class="block fullwidth" style="page-break-before: always;" v-if='compare_charts.length'>
+        <div class="block fullwidth" style="page-break-before: always;" v-if='compare_charts.length > 0'>
             <h2>
                 {{ $t("chart_info.adoption_bar_chart.annotation.title") }}
             </h2>
@@ -165,8 +165,7 @@
             </template>
         </div>
 
-        <div class="block fullwidth" style="page-break-before: always;" aria-hidden="true"
-             v-if='compare_charts.length > 1 && "statistics_per_issue_type" in reports[0]["calculation"]'>
+        <div class="block fullwidth" style="page-break-before: always;" aria-hidden="true" v-if='compare_charts.length > 1'>
 
             <h2>
                 {{ $t("chart_info.cumulative_adoption_bar_chart.annotation.title") }}
@@ -176,11 +175,9 @@
             <template v-for="scan_form in scan_methods">
                 <template v-if="scan_form.name === selected_report[0].type">
 
-                    <div style="overflow: auto; width: 100%"
-                         v-if="visible_fields_from_categories(scan_form).length > 0">
+                    <div style="overflow: auto; width: 100%" v-if="visible_fields_from_scan_form(scan_form).length > 0">
                         <div class="chart-container"
-                             style="position: relative; height:500px; width:100%; min-width: 950px;"
-                             v-if="visible_fields_from_scan_form(scan_form).length > 0">
+                             style="position: relative; height:500px; width:100%; min-width: 950px;">
                             <cumulative-percentage-bar-chart
                                     :title="$t('charts.cumulative_adoption_bar_chart.title', {
                                                 'number_of_reports': compare_charts.length})"

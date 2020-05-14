@@ -3,7 +3,7 @@ from datetime import datetime
 import pytz
 from django.utils import timezone
 from websecmap.organizations.models import Url
-from websecmap.scanners.models import Endpoint, EndpointGenericScan, InternetNLScan
+from websecmap.scanners.models import Endpoint, EndpointGenericScan, InternetNLV2Scan
 
 from dashboard.internet_nl_dashboard.logic.urllist_dashboard_report import rate_urllists_now
 from dashboard.internet_nl_dashboard.models import Account, AccountInternetNLScan, UrlList
@@ -33,8 +33,8 @@ def create_scan_report(account: Account, urllist: UrlList):
     rate_urllists_now([urllist])
 
     # create a scan for this list,
-    scan, created = InternetNLScan.objects.all().get_or_create(
-        pk=1, type='web', success=False, started=False, finished=False)
+    scan, created = InternetNLV2Scan.objects.all().get_or_create(
+        pk=1, type='web', state="finished")
 
     ainls = AccountInternetNLScan()
     ainls.account = account

@@ -6,7 +6,8 @@ from django.shortcuts import render
 from dashboard.internet_nl_dashboard.logic import operation_response
 from dashboard.internet_nl_dashboard.models import (Account, AccountInternetNLScan, DashboardUser,
                                                     UrlList)
-from dashboard.internet_nl_dashboard.views import (get_account, get_json_body, inject_default_language_cookie)
+from dashboard.internet_nl_dashboard.views import (get_account, get_json_body,
+                                                   inject_default_language_cookie)
 from dashboard.settings import LOGIN_URL
 
 

@@ -24,6 +24,8 @@ from dashboard.internet_nl_dashboard.logic.domains import scan_urllist_now_ignor
 from dashboard.internet_nl_dashboard.models import (Account, AccountInternetNLScan,
                                                     AccountInternetNLScanLog, DashboardUser,
                                                     UploadLog, UrlList)
+from dashboard.internet_nl_dashboard.scanners.scan_internet_nl_per_account import (
+    progress_running_scan, recover_and_retry)
 
 log = logging.getLogger(__package__)
 
@@ -284,34 +286,35 @@ class UrlListAdmin(ImportExportModelAdmin, admin.ModelAdmin):
 @admin.register(AccountInternetNLScan)
 class AccountInternetNLScanAdmin(ImportExportModelAdmin, admin.ModelAdmin):
 
-    list_display = ('account', 'account__name', 'state', 'internetnl_scan', 'scan__started_on', 'scan__last_check',
-                    'scan__finished_on', 'scan__message', 'urllist')
+    list_display = ('account', 'account__name', 'state', 'internetnl_scan',
+                    'urllist', 'started_on', 'finished_on')
 
-    fields = ('state', 'state_changed_on', 'account', 'scan', 'urllist')
+    fields = ('state', 'state_changed_on', 'account', 'scan', 'urllist', 'started_on', 'finished_on')
 
     @staticmethod
     def account__name(obj):
         return obj.account.internet_nl_api_username
 
     @staticmethod
-    def scan__finished_on(obj):
-        return obj.scan.finished_on
-
-    @staticmethod
-    def scan__started_on(obj):
-        return obj.scan.started_on
-
-    @staticmethod
-    def scan__message(obj):
-        return obj.scan.message
-
-    @staticmethod
-    def scan__last_check(obj):
-        return obj.scan.last_check
-
-    @staticmethod
     def internetnl_scan(obj):
         return obj.scan.id
+
+    actions = []
+
+    def attempt_rollback(self, request, queryset):
+        for scan in queryset:
+            recover_and_retry.apply_async([scan])
+        self.message_user(request, "Rolling back asynchronously. May take a while.")
+    attempt_rollback.short_description = "Attempt rollback (async)"
+    actions.append('attempt_rollback')
+
+    def progress_scan(self, request, queryset):
+        for scan in queryset:
+            tasks = progress_running_scan(scan)
+            tasks.apply_async()
+        self.message_user(request, "Attempting to progress scans (async).")
+    progress_scan.short_description = "Progress scan (async)"
+    actions.append('progress_scan')
 
 
 @admin.register(AccountInternetNLScanLog)

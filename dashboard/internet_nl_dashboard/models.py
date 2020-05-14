@@ -12,7 +12,7 @@ from jsonfield import JSONField
 from requests.auth import HTTPBasicAuth
 from websecmap.organizations.models import Url
 from websecmap.reporting.models import SeriesOfUrlsReportMixin
-from websecmap.scanners.models import InternetNLScan
+from websecmap.scanners.models import InternetNLV2Scan
 
 log = logging.getLogger(__package__)
 
@@ -306,7 +306,7 @@ class UrlList(models.Model):
         # finished_on = last_scan.scan.finished_on \
         #     if last_scan.scan.finished_on else timezone.now() - timedelta(days=30)
         # and finished_on < yesterday
-        if last_scan.scan.finished:
+        if last_scan.finished:
             # log.debug("Scan now available: last scan finished over 24 hours ago on list %s" % self)
             return True
 
@@ -416,7 +416,7 @@ class AccountInternetNLScan(models.Model):
     )
 
     scan = models.ForeignKey(
-        InternetNLScan,
+        InternetNLV2Scan,
         on_delete=models.CASCADE,
 
         # When there is no scan registered at internet.nl, but the scan has to show up as requested
@@ -436,6 +436,16 @@ class AccountInternetNLScan(models.Model):
         help_text="The current state"
     )
 
+    started_on = models.DateTimeField(
+        blank=True,
+        null=True
+    )
+
+    finished_on = models.DateTimeField(
+        blank=True,
+        null=True
+    )
+
     state_changed_on = models.DateTimeField(
         blank=True,
         null=True
@@ -445,10 +455,14 @@ class AccountInternetNLScan(models.Model):
         UrlListReport,
         null=True,
         blank=True,
-        on_delete=models.CASCADE,
+        on_delete=models.SET_NULL,
         help_text="After a scan has finished, a report is created. This points to that report so no guessing "
                   "is needed to figure out what report belongs to what scan."
     )
+
+    @property
+    def finished(self):
+        return self.state == "finished"
 
 
 class AccountInternetNLScanLog(models.Model):

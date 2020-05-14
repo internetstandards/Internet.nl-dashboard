@@ -1,7 +1,6 @@
 import os
 from collections import OrderedDict
 from datetime import timedelta
-from typing import Dict, Tuple
 
 import raven
 import raven.contrib.celery
@@ -315,6 +314,11 @@ LOGGING = {
             'level': os.getenv('DJANGO_LOG_LEVEL', 'INFO'),
         },
 
+        'celery.app.trace': {
+            'handlers': ['console'],
+            'level': os.getenv('DJANGO_LOG_LEVEL', 'DEBUG'),
+        },
+
         # We expect to be able to debug websecmap all of the time.
         'dashboard': {
             'handlers': ['console'],
@@ -476,24 +480,31 @@ CONSTANCE_CONFIG = {
         'In normal use cases these limits will not be reached.',
         int
     ),
-    'DASHBOARD_API_URL_MAIL_SCANS': (
-        'https://batch.internet.nl/api/batch/v1.1/mail/',
-        'The API url for running internet.nl mail scans.',
+
+    'INTERNET_NL_API_USERNAME': (
+        'dummy',
+        'Username for the internet.nl API. You can request one via the contact '
+        'options on their site, https://internet.nl.',
+        str),
+    'INTERNET_NL_API_PASSWORD': (
+        '',
+        'Password for the internet.nl API',
         str
     ),
-    'DASHBOARD_API_URL_WEB_SCANS': (
-        'https://batch.internet.nl/api/batch/v1.1/web/',
-        'The API url for running internet.nl web scans.',
-        str
-    ),
+    'INTERNET_NL_API_URL': ('https://batch.internet.nl/api/batch/v2',
+                            'The internet address for the Internet.nl API installation. Defaults to a version from '
+                            '2020.', str),
+    'INTERNET_NL_MAXIMUM_URLS':  (1000, 'The maximum amount of domains per scan.', int),
 }
 
-CONSTANCE_CONFIG_FIELDSETS: Dict[str, Tuple[str, ...]] = OrderedDict(
-    {'DASHBOARD': ('DASHBOARD_API_URL_MAIL_SCANS', 'DASHBOARD_API_URL_WEB_SCANS',
-                   'DASHBOARD_MAXIMUM_DOMAINS_PER_LIST',
-                   'DASHBOARD_MAXIMUM_DOMAINS_PER_SPREADSHEET', 'DASHBOARD_MAXIMUM_LISTS_PER_SPREADSHEET')}
-)
+CONSTANCE_CONFIG_FIELDSETS = OrderedDict([
 
+    ('DASHBOARD', ('DASHBOARD_MAXIMUM_DOMAINS_PER_LIST',
+                   'DASHBOARD_MAXIMUM_DOMAINS_PER_SPREADSHEET',
+                   'DASHBOARD_MAXIMUM_LISTS_PER_SPREADSHEET')),
+    ('Internet.nl Scans', ('INTERNET_NL_API_USERNAME', 'INTERNET_NL_API_PASSWORD', 'INTERNET_NL_API_URL',
+                           'INTERNET_NL_MAXIMUM_URLS'))
+])
 
 # the try-except makes sure autofix doesn't move the import to the top of the file.
 # Loaded here, otherwise: django.core.exceptions.AppRegistryNotReady: Apps aren't loaded yet.
@@ -522,7 +533,8 @@ JET_SIDE_MENU_ITEMS = [
     {'label': _('🔬 Scan'), 'items': [
         {'name': 'internet_nl_dashboard.accountinternetnlscan'},
         {'name': 'internet_nl_dashboard.accountinternetnlscanlog'},
-        {'name': 'scanners.internetnlscan', 'label': 'Internet.nl Scans Tasks'},
+        {'name': 'scanners.internetnlv2scan', 'label': 'Internet.nl Scans Tasks'},
+        {'name': 'scanners.internetnlv2statelog', 'label': 'Internet.nl Scans Log'},
     ]},
 
     {'label': _('💽 Data'), 'items': [

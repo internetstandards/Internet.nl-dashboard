@@ -104,7 +104,7 @@
       width: 32px;  /*Fits the 100% value too.*/
     }
     div.rotate > span {
-        padding: 5px 10px;
+        padding: 5px 3px;
         z-index: 1000;
     }
 
@@ -176,20 +176,20 @@
     }
 
     .arrow.asc {
-        border-left: 4px solid transparent;
-        border-right: 4px solid transparent;
-        border-bottom: 4px solid #00a0c6;
+        border-left: 10px solid transparent;
+        border-right: 10px solid transparent;
+        border-bottom: 10px solid #00a0c6;
     }
 
     .arrow.dsc {
-        border-left: 4px solid transparent;
-        border-right: 4px solid transparent;
-        border-top: 4px solid #00a0c6;
+        border-left: 10px solid transparent;
+        border-right: 10px solid transparent;
+        border-top: 10px solid #00a0c6;
     }
 
     .arrow.unknown {
-        border-left: 4px solid #00a0c6;
-        border-right: 4px solid #00a0c6;
+        border-left: 10px solid #00a0c6;
+        border-right: 10px solid #00a0c6;
         border-top: 4px solid #00a0c6;
     }
 
@@ -481,13 +481,22 @@
                 <span>{{ $t("report_header.type_of_scan_performed") }}:
                     <img src="/static/images/vendor/internet_nl/icon-website-test.svg" style="height: 1em;" v-if="selected_report[0].type === 'web'">
                     <img src="/static/images/vendor/internet_nl/icon-emailtest.svg" style="height: 1em;" v-if="selected_report[0].type === 'mail'"> {{ selected_report[0].type }}<br>
-                    {{ $t("report_header.number_of_domains") }}: {{ selected_report[0].number_of_urls }}<br> {{ $t("report_header.data_from") }} {{ humanize_date(selected_report[0].at_when) }}</span><br>
+                    {{ $t("report_header.number_of_domains") }}: {{ selected_report[0].number_of_urls }}<br> {{ $t("report_header.data_from") }} {{ humanize_date(selected_report[0].at_when) }}<br>
+                    📘 <router-link :to="{ name: 'numbered_lists', params: { list: selected_report[0].urllist_id }}">{{ selected_report[0].list_name }}</router-link><br>
+                </span><br>
+
+
+
 
                 <div v-for="report in selected_report" v-if="selected_report.length > 1" style="padding-left: 10px">
                     <!-- Skip the first report -->
                     <template v-if="report.id !== selected_report[0].id">
                         <h3>{{ $t("report_header.compared_to") }}: #{{report.id}} - {{ report.list_name }}</h3>
-                        <span>{{ $t("report_header.number_of_domains") }}: {{ report.number_of_urls }}<br> {{ $t("report_header.data_from") }} {{ humanize_date(report.at_when) }}<br></span>
+                        <span>
+                            {{ $t("report_header.number_of_domains") }}: {{ report.number_of_urls }}<br>
+                            {{ $t("report_header.data_from") }} {{ humanize_date(report.at_when) }}<br>
+                            📘 <router-link :to="{ name: 'numbered_lists', params: { list: report.urllist_id }}">{{ report.list_name }}</router-link><br>
+                        </span>
                     </template>
                 </div>
 
@@ -568,14 +577,14 @@
                             <tr class="sticky_labels">
                                 <th style="width: 75px; min-width: 75px; border: 0; background-color: white;" class="sticky-header">
                                     <div class="rotate">
-                                        <span class="arrow" :class="sortOrders['score'] === -1 ? 'dsc' : (sortOrders['score'] === 1 ? 'asc' : 'unknown')"></span>
+                                        <span @click="sortBy('score')" class="arrow" :class="sortOrders['score'] === -1 ? 'dsc' : (sortOrders['score'] === 1 ? 'asc' : 'unknown')"></span>
                                         <span @click="sortBy('score')">{{ $t("score") }}</span>
                                     </div>
                                 </th>
                                 <th style="width: 225px; min-width: 225px; border: 0; background-color: white;" class="sticky-header">
                                     <div class="rotate">
-                                        <span class="arrow" :class="sortOrders['url'] === -1 ? 'dsc' : (sortOrders['url'] === 1 ? 'asc' : 'unknown')"></span>
-                                        <span @click="sortBy('url')">{{ $t("domain") }}</span>
+                                        <div @click="sortBy('url')" class="arrow" :class="sortOrders['url'] === -1 ? 'dsc' : (sortOrders['url'] === 1 ? 'asc' : 'unknown')"></div>
+                                        <div @click="sortBy('url')" style="display: inline-block;">{{ $t("domain") }}</div>
                                     </div>
                                 </th>
 
@@ -584,7 +593,7 @@
 
                                         <div style="border: 0; float: left; width: 100px" v-for="category in relevant_categories_based_on_settings">
                                             <div class="rotate">
-                                                <span class="arrow" :class="sortOrders[category] === -1 ? 'dsc' : (sortOrders[category] === 1 ? 'asc' : 'unknown')"></span>
+                                                <span @click="sortBy(category)" class="arrow" :class="sortOrders[category] === -1 ? 'dsc' : (sortOrders[category] === 1 ? 'asc' : 'unknown')"></span>
                                                 <span @click="sortBy(category)">{{ $t("" + category) }}</span>
                                             </div>
                                         </div>
@@ -592,9 +601,9 @@
                                     </template><template v-else>
 
                                          <div style="border: 0; float: left; width: 56px" v-for="category in relevant_categories_based_on_settings">
-                                            <div class="rotate">
-                                                <span class="arrow" :class="sortOrders[category] === -1 ? 'dsc' : (sortOrders[category] === 1 ? 'asc' : 'unknown')"></span>
-                                                <span @click="sortBy(category)">{{ $t("" + category) }}</span>
+                                            <div class="rotate" style="white-space: nowrap;">
+                                                <div @click="sortBy(category)" class="arrow" :class="sortOrders[category] === -1 ? 'dsc' : (sortOrders[category] === 1 ? 'asc' : 'unknown')"></div>
+                                                <div @click="sortBy(category)" style="display: inline-block;">{{ $t("" + category) }}<div style="font-size: 0.7em; color: gray; margin-top: -3px; padding-left: 13px;" v-html="category_from_field_name(category)"></div></div>
                                             </div>
                                         </div>
 
@@ -1123,6 +1132,10 @@ const Report = Vue.component('report', {
                 internet_nl_web_https_cert_sig: {visible: true},
                 internet_nl_web_https_tls_compress: {visible: true},
                 internet_nl_web_https_tls_keyexchange: {visible: true},
+                internet_nl_web_https_tls_keyexchangehash: {visible: true},
+                internet_nl_web_https_tls_ocsp: {visible: true},
+                internet_nl_web_https_tls_0rtt: {visible: true},
+                internet_nl_web_https_tls_cipherorder: {visible: true},
                 internet_nl_web_dnssec_valid: {visible: true},
                 internet_nl_web_dnssec_exist: {visible: true},
                 internet_nl_web_ipv6_ws_similar: {visible: true},
@@ -1218,6 +1231,8 @@ const Report = Vue.component('report', {
             selected_report: [],
 
 
+            // show category headers in table only when there is a change of categeory:
+            previous_category: "",
 
 
             compare_charts: [],
@@ -1300,6 +1315,12 @@ const Report = Vue.component('report', {
             if (verdict === undefined)
                 return "unknown";
 
+            // Internet.nl API V2.0:
+            if (verdict.test_result !== undefined) {
+                return verdict.test_result;
+            }
+
+            // backwards compatible with API v1.0 reports:
             if (verdict.ok > 0) {return 'passed'}
             if (verdict.ok < 1) {
                 if (category_name === 'internet_nl_web_appsecpriv'){
@@ -1307,6 +1328,7 @@ const Report = Vue.component('report', {
                 }
                 return "failed"
             }
+
         },
 
         detail_value_with_comparison: function(category_name, url){
@@ -1317,11 +1339,22 @@ const Report = Vue.component('report', {
              * */
 
             let verdicts = url.endpoints[0].ratings_by_type[category_name];
+            let simple_value = "";
+            let simple_progression = "";
 
             // Adding the verdict to the report would speed things up...
-            let simple_value = verdicts.simple_verdict;  // not_applicable, not_testable, failed, warning, info, passed
-            let simple_progression = verdicts.simple_progression;
-
+            if (verdicts === undefined) {
+                simple_value = "unknown";
+                simple_progression = "unknown";
+            } else {
+                if (verdicts.test_result !== undefined)
+                    // API V2.0:
+                    simple_value = verdicts.test_result;  // not_applicable, not_testable, failed, warning, info, passed
+                else
+                    // API V1.0
+                    simple_value = verdicts.simple_verdict;
+                simple_progression = verdicts.simple_progression;
+            }
             /* disabling translations saves a second on 500 urls and the TLS page.
             report_result_string = this.$i18n.t("report.results." + simple_value);
 
@@ -1359,16 +1392,30 @@ const Report = Vue.component('report', {
 
             // older, previous...
             let other_verdicts = this.compare_charts[1].calculation.urls_by_url[url.url].endpoints[0].ratings_by_type[category_name];
-            let other_simple_value = other_verdicts.simple_verdict;
-            let other_simple_progression = other_verdicts.simple_progression;
+            let other_simple_value = "";
+            let other_simple_progression = "";
+
+            if (other_verdicts === undefined) {
+                other_simple_value = "unknown";
+                other_simple_progression = "unknown";
+            } else {
+                if (other_verdicts.test_result !== undefined)
+                    // API V2.0:
+                    other_simple_value = other_verdicts.test_result;  // not_applicable, not_testable, failed, warning, info, passed
+                else
+                    // API V1.0
+                    other_simple_value = other_verdicts.simple_verdict;
+                other_simple_progression = other_verdicts.simple_progression;
+            }
+
             let comparison_verdict = "";
 
             // all to and from not_tested or not_applicable is neutral, also going to the same state is neutral
             if (simple_value === other_simple_value)
                 comparison_verdict = "neutral";
 
-            if (["unknown", "not_applicable", "not_testable"].includes(simple_value) ||
-                ["unknown", "not_applicable", "not_testable"].includes(other_simple_value))
+            if (["unknown", "not_applicable", "not_testable", "good_not_testable"].includes(simple_value) ||
+                ["unknown", "not_applicable", "not_testable", "good_not_testable"].includes(other_simple_value))
                 comparison_verdict = "neutral";
 
             if (comparison_verdict === "") {
@@ -1496,6 +1543,15 @@ const Report = Vue.component('report', {
                     this.upgrade_issue_filter_with_new_field('category_mail_starttls_dane');
                     this.upgrade_issue_filter_with_new_field('category_mail_forum_standardisation_magazine');
                     this.upgrade_issue_filter_with_new_field('category_mail_forum_standardisation_ipv6_monitor');
+
+                    // new fields may 2020, api v2, tls 1.3:
+                    this.upgrade_issue_filter_with_new_field('internet_nl_web_https_tls_cipherorder');
+                    this.upgrade_issue_filter_with_new_field('internet_nl_web_https_tls_0rtt');
+                    this.upgrade_issue_filter_with_new_field('internet_nl_web_https_tls_ocsp');
+                    this.upgrade_issue_filter_with_new_field('internet_nl_web_https_tls_keyexchangehash');
+                    this.upgrade_issue_filter_with_new_field('internet_nl_mail_starttls_tls_cipherorder');
+                    this.upgrade_issue_filter_with_new_field('internet_nl_mail_starttls_tls_keyexchangehash');
+                    this.upgrade_issue_filter_with_new_field('internet_nl_mail_starttls_tls_0rtt');
                 }
             });
         },
@@ -1635,6 +1691,11 @@ const Report = Vue.component('report', {
                 let aref = a.endpoints[0].ratings_by_type[sortKey];
                 let bref = b.endpoints[0].ratings_by_type[sortKey];
 
+                // When switching reports (mail, web) some sort keys might not exist. In that case return 0 to not
+                // influence sorting:
+                if (aref === undefined)
+                    return 0;
+
                 a = aref.simple_progression;
                 b = bref.simple_progression;
                 return (a === b ? 0 : a > b ? 1 : -1) * order
@@ -1685,6 +1746,10 @@ const Report = Vue.component('report', {
             });
 
             return fields;
+        },
+
+        category_from_field_name: function(field_name){
+            return this.field_name_to_category_names[field_name];
         },
 
         check_fields: function(list_of_fields){
@@ -1836,7 +1901,7 @@ const Report = Vue.component('report', {
 
                             categories: [
                                 {
-                                    name: 'name_servers',
+                                    name: 'Name servers',
                                     key: 'category_web_ipv6_name_server',
                                     // there is NO translations for web, only for mail.
                                     label: internet_nl_messages[language].internet_nl.results_domain_mail_ipv6_name_servers_label,
@@ -1847,7 +1912,7 @@ const Report = Vue.component('report', {
                                     additional_fields: [],
                                 },
                                 {
-                                    name: 'web_server',
+                                    name: 'Web server',
                                     key: 'category_web_ipv6_web_server',
                                     label: internet_nl_messages[language].internet_nl.results_domain_ipv6_web_server_label,
                                     fields: [
@@ -1870,7 +1935,7 @@ const Report = Vue.component('report', {
                             categories: [
                                 {
                                     // the exception to the rule
-                                    name: '',
+                                    name: 'DNSSEC',
                                     key: 'category_web_dnssec_dnssec',
                                     label: internet_nl_messages[language].internet_nl.test_sitednssec_label,
                                     fields: [
@@ -1891,7 +1956,7 @@ const Report = Vue.component('report', {
                             additional_fields: [],
                             categories: [
                                 {
-                                    name: 'http',
+                                    name: 'HTTP',
                                     key: 'category_web_tls_http',
                                     label: internet_nl_messages[language].internet_nl.results_domain_tls_https_label,
                                     fields: [
@@ -1903,21 +1968,25 @@ const Report = Vue.component('report', {
                                     additional_fields: [],
                                 },
                                 {
-                                    name: 'tls',
+                                    name: 'TLS',
                                     key: 'category_web_tls_tls',
                                     label: internet_nl_messages[language].internet_nl.results_domain_tls_tls_label,
                                     fields: [
                                         {name: 'internet_nl_web_https_tls_version'},
                                         {name: 'internet_nl_web_https_tls_ciphers'},
+                                        {name: 'internet_nl_web_https_tls_cipherorder'},
                                         {name: 'internet_nl_web_https_tls_keyexchange'},
+                                        {name: 'internet_nl_web_https_tls_keyexchangehash'},
                                         {name: 'internet_nl_web_https_tls_compress'},
                                         {name: 'internet_nl_web_https_tls_secreneg'},
                                         {name: 'internet_nl_web_https_tls_clientreneg'},
+                                        {name: 'internet_nl_web_https_tls_0rtt'},
+                                        {name: 'internet_nl_web_https_tls_ocsp'},
                                     ],
                                     additional_fields: [],
                                 },
                                 {
-                                    name: 'certificate',
+                                    name: 'Certificate',
                                     key: 'category_web_tls_certificate',
                                     // mail is being reused as there is no alternative translation (!)
                                     label: internet_nl_messages[language].internet_nl.results_domain_mail_tls_certificate_label,
@@ -1930,7 +1999,7 @@ const Report = Vue.component('report', {
                                     additional_fields: [],
                                 },
                                 {
-                                    name: 'dane',
+                                    name: 'DANE',
                                     key: 'category_web_tls_dane',
                                     label: internet_nl_messages[language].internet_nl.results_domain_mail_tls_dane_label,
                                     fields: [
@@ -2065,7 +2134,7 @@ const Report = Vue.component('report', {
                             additional_fields: [],
                             categories: [
                                 {
-                                    name: 'email address domain',
+                                    name: 'Email address domain',
                                     key: 'category_mail_dnssec_email_address_domain',
                                     label: internet_nl_messages[language].internet_nl.results_mail_dnssec_domain_label,
                                     fields: [
@@ -2075,7 +2144,7 @@ const Report = Vue.component('report', {
                                     additional_fields: [],
                                 },
                                 {
-                                    name: 'mail server domain(s)',
+                                    name: 'Mail server domain(s)',
                                     key: 'category_mail_dnssec_mail_server_domain',
                                     label: internet_nl_messages[language].internet_nl.results_mail_dnssec_mail_servers_label,
                                     fields: [
@@ -2151,10 +2220,13 @@ const Report = Vue.component('report', {
                                         {name: 'internet_nl_mail_starttls_tls_available'},
                                         {name: 'internet_nl_mail_starttls_tls_version'},
                                         {name: 'internet_nl_mail_starttls_tls_ciphers'},
+                                        {name: 'internet_nl_mail_starttls_tls_cipherorder'},
                                         {name: 'internet_nl_mail_starttls_tls_keyexchange'},
+                                        {name: 'internet_nl_mail_starttls_tls_keyexchangehash'},
                                         {name: 'internet_nl_mail_starttls_tls_compress'},
                                         {name: 'internet_nl_mail_starttls_tls_secreneg'},
                                         {name: 'internet_nl_mail_starttls_tls_clientreneg'},
+                                        {name: 'internet_nl_mail_starttls_tls_0rtt'},
                                     ],
                                     additional_fields: [],
                                 },
@@ -2199,7 +2271,7 @@ const Report = Vue.component('report', {
 
                             categories: [
                                 {
-                                    name: 'magazine',
+                                    name: 'Magazine',
                                     label: 'Measurements on agreed security standards',
                                     key: 'category_mail_forum_standardisation_magazine',
                                     fields: [
@@ -2244,6 +2316,43 @@ const Report = Vue.component('report', {
                     ]
                 }
             ];
+        },
+
+        field_name_to_category_names: function(){
+            /** Based on the scan methods, the names of the categories is 1-1 associated with a category name.
+             * This can be used to generate "category" headers in the result table. This helps to distinguish
+             * several chapter headings for a set of scans. This is useful for mail dnssec scans, as the
+             * name of the dnssec tests is identical and very confusing to see what is what. */
+
+            let fields_mapping = {};
+
+            // 0 = web, 1 = mail, ugly.
+            this.scan_methods[0].categories.forEach((category) => {
+
+                category.categories.forEach((subcategory) => {
+                    subcategory.fields.forEach((field) => {
+                        fields_mapping[field.name] = subcategory.name;
+                    });
+                    subcategory.additional_fields.forEach((field) => {
+                        fields_mapping[field.name] = subcategory.name;
+                    });
+                });
+            });
+
+            this.scan_methods[1].categories.forEach((category) => {
+
+                category.categories.forEach((subcategory) => {
+                    subcategory.fields.forEach((field) => {
+                        fields_mapping[field.name] = subcategory.name;
+                    });
+                    subcategory.additional_fields.forEach((field) => {
+                        fields_mapping[field.name] = subcategory.name;
+                    });
+                });
+            });
+
+            console.log(fields_mapping);
+            return fields_mapping;
         },
 
         relevant_categories_based_on_settings: function(){

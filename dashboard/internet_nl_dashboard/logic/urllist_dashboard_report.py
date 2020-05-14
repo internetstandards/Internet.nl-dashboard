@@ -75,6 +75,11 @@ urllist_report_content = {
         'internet_nl_mail_legacy_dane',
         'internet_nl_mail_legacy_ipv6_nameserver',
         'internet_nl_mail_legacy_ipv6_mailserver',
+
+        # api 2.0 tls 1.3 fields, may 2020
+        'internet_nl_mail_starttls_tls_cipherorder',
+        'internet_nl_mail_starttls_tls_keyexchangehash',
+        'internet_nl_mail_starttls_tls_0rtt',
     ],
 
     'web': [
@@ -128,6 +133,12 @@ urllist_report_content = {
         'internet_nl_web_legacy_ipv6_nameserver',
         'internet_nl_web_legacy_ipv6_webserver',
         'internet_nl_web_legacy_dane',
+
+        # api 2.0 tls 1.3 fields, may 2020
+        'internet_nl_web_https_tls_cipherorder',
+        'internet_nl_web_https_tls_0rtt',
+        'internet_nl_web_https_tls_ocsp',
+        'internet_nl_web_https_tls_keyexchangehash',
     ]
 }
 
@@ -166,7 +177,12 @@ def create_dashboard_report(urllist):
     :param urllist:
     :return:
     """
-    now = datetime.now(pytz.utc)
+
+    # the time when a urlreport is created is rounded up to the end of a minute. This means that you'll never get
+    # the latest results. It should not happen with scans that happened today, but it does. Therefore, we move
+    # the report creation process one minute forward
+    # todo: this should be fixed to be more accurate.
+    now = datetime.now(pytz.utc) + timedelta(minutes=1)
     return rate_urllist_on_moment(urllist, when=now, prevent_duplicates=False)
 
 

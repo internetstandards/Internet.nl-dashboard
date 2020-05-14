@@ -216,7 +216,8 @@ def get_scan_status_of_list(account: Account, list_id: int) -> Dict[str, Any]:
 
     prefetch_last_scan = Prefetch(
         'accountinternetnlscan_set',
-        queryset=AccountInternetNLScan.objects.order_by('-id').select_related('scan').only('scan_id', 'scan__finished'),
+        queryset=AccountInternetNLScan.objects.order_by('-id').select_related('scan').only('scan_id',
+                                                                                           'finished_on'),
         to_attr='last_scan'
     )
 
@@ -238,7 +239,7 @@ def get_scan_status_of_list(account: Account, list_id: int) -> Dict[str, Any]:
 
     data = {}
     data['last_scan_id'] = None if not len(urllist.last_scan) else urllist.last_scan[0].scan.id
-    data['last_scan_finished'] = None if not len(urllist.last_scan) else urllist.last_scan[0].scan.finished
+    data['last_scan_finished'] = None if not len(urllist.last_scan) else urllist.last_scan[0].finished
     data['last_report_id'] = None if not len(urllist.last_report) else urllist.last_report[0].id
     data['last_report_date'] = None if not len(urllist.last_report) else urllist.last_report[0].at_when
     data['scan_now_available'] = urllist.is_scan_now_available()
@@ -264,11 +265,8 @@ def cancel_scan(account, scan_id: int):
     if scan.state == 'cancelled':
         return operation_response(success=True, message="scan already cancelled")
 
-    scan.scan.finished_on = timezone.now()
-    scan.scan.finished = True
-    scan.scan.success = False  # This is not used anymore.
-    scan.scan.save()
-
+    scan.finished_on = timezone.now()
+    scan.save()
     update_state("cancelled", scan)
 
     # Sprinkling an activity stream action.
@@ -346,8 +344,9 @@ def update_list_settings(account: Account, user_input: Dict) -> Dict[str, Any]:
 
     # inject the last scan information.
     data['last_scan_id'] = None if not len(urllist.last_scan) else urllist.last_scan[0].scan.id
-    data['last_scan'] = None if not len(urllist.last_scan) else urllist.last_scan[0].scan.started_on.isoformat()
-    data['last_scan_finished'] = None if not len(urllist.last_scan) else urllist.last_scan[0].scan.finished
+
+    data['last_scan'] = None if not len(urllist.last_scan) else urllist.last_scan[0].started_on.isoformat()
+    data['last_scan_finished'] = None if not len(urllist.last_scan) else urllist.last_scan[0].finished
     data['last_report_id'] = None if not len(urllist.last_report) else urllist.last_report[0].id
     data['last_report_date'] = None if not len(urllist.last_report) else urllist.last_report[0].at_when
 
@@ -459,8 +458,8 @@ def get_urllists_from_account(account: Account) -> Dict:
             'automated_scan_frequency': urllist.automated_scan_frequency,
             'scheduled_next_scan': urllist.scheduled_next_scan,
             'last_scan_id': None if not len(urllist.last_scan) else urllist.last_scan[0].scan.id,
-            'last_scan': None if not len(urllist.last_scan) else urllist.last_scan[0].scan.started_on.isoformat(),
-            'last_scan_finished': None if not len(urllist.last_scan) else urllist.last_scan[0].scan.finished,
+            'last_scan': None if not len(urllist.last_scan) else urllist.last_scan[0].started_on.isoformat(),
+            'last_scan_finished': None if not len(urllist.last_scan) else urllist.last_scan[0].finished,
             'scan_now_available': urllist.is_scan_now_available(),
             'last_report_id': None if not len(urllist.last_report) else urllist.last_report[0].id,
             'last_report_date': None if not len(urllist.last_report) else urllist.last_report[0].at_when,
