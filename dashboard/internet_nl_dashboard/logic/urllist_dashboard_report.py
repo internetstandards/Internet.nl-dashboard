@@ -177,7 +177,12 @@ def create_dashboard_report(urllist):
     :param urllist:
     :return:
     """
-    now = datetime.now(pytz.utc)
+
+    # the time when a urlreport is created is rounded up to the end of a minute. This means that you'll never get
+    # the latest results. It should not happen with scans that happened today, but it does. Therefore, we move
+    # the report creation process one minute forward
+    # todo: this should be fixed to be more accurate.
+    now = datetime.now(pytz.utc) + timedelta(minutes=1)
     return rate_urllist_on_moment(urllist, when=now, prevent_duplicates=False)
 
 
