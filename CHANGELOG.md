@@ -5,6 +5,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+##API 2.0 Version - 2020-05-??
+
+### Added
+- Works with API 2.0, which has more direct results, as well as technical details and translation keys which allows new features in the future
+- Various bugfixes, mainly in the report table
+
 ## [Second Version] - 2020-01-30
 Version 2 solves over 40 issues on our GitHub tracker. The most noteworthy are addressed in this log:
 
