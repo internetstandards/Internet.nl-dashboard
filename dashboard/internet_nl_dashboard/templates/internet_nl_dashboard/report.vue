@@ -583,8 +583,8 @@
                                 </th>
                                 <th style="width: 225px; min-width: 225px; border: 0; background-color: white;" class="sticky-header">
                                     <div class="rotate">
-                                        <span @click="sortBy('url')" class="arrow" :class="sortOrders['url'] === -1 ? 'dsc' : (sortOrders['url'] === 1 ? 'asc' : 'unknown')"></span>
-                                        <span @click="sortBy('url')">{{ $t("domain") }}</span>
+                                        <div @click="sortBy('url')" class="arrow" :class="sortOrders['url'] === -1 ? 'dsc' : (sortOrders['url'] === 1 ? 'asc' : 'unknown')"></div>
+                                        <div @click="sortBy('url')" style="display: inline-block;">{{ $t("domain") }}</div>
                                     </div>
                                 </th>
 
