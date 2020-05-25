@@ -18,9 +18,10 @@ const messages = {
 
         fields: {
             forum_standardistation: {
-                category_label: 'Forum Standaardisatie',
+                category_label: 'Extra Fields',
                 measurements_on_agreed_security_standards: 'Measurements on agreed security standards',
                 ipv6_monitor: 'IPv6 monitor',
+                status_fields: 'Status Fields',
             },
             additional_fields: {
                 label: 'Additional fields',
@@ -64,6 +65,22 @@ const messages = {
         internet_nl_web_legacy_ipv6_nameserver_explanation: 'Explanation...',
         internet_nl_web_legacy_ipv6_webserver: 'IPv6 webserver',
         internet_nl_web_legacy_ipv6_webserver_explanation: 'Explanation...',
+
+        // New extra fields in API 2.0
+        internet_nl_web_legacy_tls_1_3: 'TLS 1.3 Support',
+        internet_nl_mail_legacy_mail_non_sending_domain: 'Non e-mail sending domain',
+        internet_nl_mail_legacy_mail_server_testable: 'Mail server testable',
+        internet_nl_mail_legacy_mail_server_reachable: 'Mail server reachable',
+        internet_nl_mail_legacy_domain_has_mx: 'Mail server has MX record',
+        internet_nl_mail_legacy_tls_1_3: 'TLS 1.3 Support',
+        internet_nl_web_legacy_tls_1_3_explanation: 'Derives TLS1.3 support through the 0-RTT test. Explicitly testing for TLS1.3 support is not part of the compliance tool. However, TLS1.3 support could be derived from the 0-RTT test as the function is only available starting from TLS1.3. As there is no explicit TLS1.3 connection during testing, the test assumes that the server chose TLS1.3 when given the opportunity to do so.',
+        internet_nl_mail_legacy_mail_non_sending_domain_explanation: 'Checks if the domain is configured for _not_ sending email. For this test this is translated as:\n' +
+            '    SPF record with v=spf1 -all, and\n' +
+            '    DMARC record with v=DMARC1;p=reject;.\n',
+        internet_nl_mail_legacy_mail_server_testable_explanation: 'All mailservers communicated back and results are complete.',
+        internet_nl_mail_legacy_mail_server_reachable_explanation: 'Network connectivity was possible with at least one mailserver.',
+        internet_nl_mail_legacy_domain_has_mx_explanation: 'Mailservers are configured for the domain.',
+        internet_nl_mail_legacy_tls_1_3_explanation: 'Derives TLS1.3 support through the 0-RTT test. Explicitly testing for TLS1.3 support is not part of the compliance tool. However, TLS1.3 support could be derived from the 0-RTT test as the function is only available starting from TLS1.3. As there is no explicit TLS1.3 connection during testing, the test assumes that the server chose TLS1.3 when given the opportunity to do so.',
 
         // https://github.com/NLnetLabs/Internet.nl/blob/cece8255ac7f39bded137f67c94a10748970c3c7/checks/templates/mail-results.html
         internet_nl_mail_server_configured: 'Mail Server Configured (not in UI)',  // Added 24th of May 2019
@@ -121,9 +138,10 @@ const messages = {
 
         fields: {
             forum_standardistation: {
-                category_label: 'Forum Standaardisatie',
+                category_label: 'Extra Velden',
                 measurements_on_agreed_security_standards: 'Measurements on agreed security standards',
                 ipv6_monitor: 'IPv6 monitor',
+                status_fields: 'Status Velden'
             },
             additional_fields: {
                 label: 'Additionele velden',

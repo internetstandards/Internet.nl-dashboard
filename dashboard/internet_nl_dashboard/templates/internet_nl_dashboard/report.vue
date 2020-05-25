@@ -428,7 +428,7 @@
                                                     {{ $t(field.name) }}
                                                 </label>
                                                 <template v-if="field.explanation">
-                                                    <p>{{ $t(field.name + "_explanation") }}</p>
+                                                    <p><i>{{ $t(field.name + "_explanation") }}</i></p>
                                                 </template>
                                             </div>
 
@@ -440,7 +440,7 @@
                                                         {{ $t(field.name) }}
                                                     </label>
                                                     <template v-if="field.explanation">
-                                                        <p>{{ $t(field.name + "_explanation") }}</p>
+                                                        <p><i>{{ $t(field.name + "_explanation") }}</i></p>
                                                     </template>
                                                 </div>
                                             </template>
@@ -1092,6 +1092,10 @@ const Report = Vue.component('report', {
                     show_dynamic_average: true,
                     only_show_dynamic_average: false
                 },
+                category_web_forum_standardisation_status_fields: {
+                    show_dynamic_average: true,
+                    only_show_dynamic_average: false
+                },
 
                 category_mail_ipv6_name_servers: {show_dynamic_average: true, only_show_dynamic_average: false},
                 category_mail_ipv6_mail_servers: {show_dynamic_average: true, only_show_dynamic_average: false},
@@ -1208,6 +1212,13 @@ const Report = Vue.component('report', {
                 internet_nl_web_appsecpriv_x_content_type_options: {visible: true},  // Added 24th of May 2019
                 internet_nl_web_appsecpriv_x_frame_options: {visible: true},  // Added 24th of May 2019
                 internet_nl_web_appsecpriv_x_xss_protection: {visible: true},  // Added 24th of May 2019
+
+                internet_nl_web_legacy_tls_1_3: {visible: false},
+                internet_nl_mail_legacy_mail_non_sending_domain: {visible: false},
+                internet_nl_mail_legacy_mail_server_testable: {visible: false},
+                internet_nl_mail_legacy_mail_server_reachable: {visible: false},
+                internet_nl_mail_legacy_domain_has_mx: {visible: false},
+                internet_nl_mail_legacy_tls_1_3: {visible: false},
             },
 
             issue_filters_response: {},
@@ -1531,6 +1542,7 @@ const Report = Vue.component('report', {
                     this.upgrade_issue_filter_with_new_field('category_web_security_options_appsecpriv');
                     this.upgrade_issue_filter_with_new_field('category_web_forum_standardisation_magazine');
                     this.upgrade_issue_filter_with_new_field('category_web_forum_standardisation_ipv6_monitor');
+                    this.upgrade_issue_filter_with_new_field('category_web_forum_standardisation_status_fields');
                     this.upgrade_issue_filter_with_new_field('category_mail_ipv6_name_servers');
                     this.upgrade_issue_filter_with_new_field('category_mail_ipv6_mail_servers');
                     this.upgrade_issue_filter_with_new_field('category_mail_dnssec_email_address_domain');
@@ -1552,6 +1564,15 @@ const Report = Vue.component('report', {
                     this.upgrade_issue_filter_with_new_field('internet_nl_mail_starttls_tls_cipherorder');
                     this.upgrade_issue_filter_with_new_field('internet_nl_mail_starttls_tls_keyexchangehash');
                     this.upgrade_issue_filter_with_new_field('internet_nl_mail_starttls_tls_0rtt');
+
+                    // extra fields for v2.0
+                    this.upgrade_issue_filter_with_new_field('internet_nl_web_legacy_tls_1_3');
+                    this.upgrade_issue_filter_with_new_field('internet_nl_mail_legacy_mail_non_sending_domain');
+                    this.upgrade_issue_filter_with_new_field('internet_nl_mail_legacy_mail_server_testable');
+                    this.upgrade_issue_filter_with_new_field('internet_nl_mail_legacy_mail_server_reachable');
+                    this.upgrade_issue_filter_with_new_field('internet_nl_mail_legacy_domain_has_mx');
+                    this.upgrade_issue_filter_with_new_field('internet_nl_mail_legacy_tls_1_3');
+
                 }
             });
         },
@@ -2047,9 +2068,9 @@ const Report = Vue.component('report', {
 
                             categories: [
                                 {
-                                    name: 'Measurements on agreed security standards',
+                                    name: 'Baseline NL Government',
                                     key: 'category_web_forum_standardisation_magazine',
-                                    label: i18n.t('fields.forum_standardistation.measurements_on_agreed_security_standards'),
+                                    label: 'Baseline NL Government',
                                     fields: [
                                         {name: 'internet_nl_web_legacy_dnssec',
                                         explanation: 'fields.forum_standardistation.internet_nl_web_legacy_dnssec_explanation'},
@@ -2061,20 +2082,22 @@ const Report = Vue.component('report', {
                                         explanation: 'fields.forum_standardistation.internet_nl_web_legacy_https_enforced_explanation'},
                                         {name: 'internet_nl_web_legacy_hsts',
                                         explanation: 'fields.forum_standardistation.internet_nl_web_legacy_hsts_explanation'},
-                                        // {name: 'internet_nl_web_legacy_dane'},
-                                    ],
-                                    additional_fields: [],
-                                },
-                                {
-                                    name: 'IPv6 Monitor',
-                                    key: 'category_web_forum_standardisation_ipv6_monitor',
-                                    label: i18n.t('fields.forum_standardistation.ipv6_monitor'),
-                                    fields: [
+                                        {name: 'internet_nl_web_ipv6',
+                                        explanation: 'fields.forum_standardistation.internet_nl_web_legacy_ipv6_nameserver_explanation'},
                                         {name: 'internet_nl_web_legacy_ipv6_nameserver',
                                         explanation: 'fields.forum_standardistation.internet_nl_web_legacy_ipv6_nameserver_explanation'},
                                         {name: 'internet_nl_web_legacy_ipv6_webserver',
                                         explanation: 'fields.forum_standardistation.internet_nl_web_legacy_ipv6_webserver_explanation'},
-                                        // {name: 'internet_nl_web_legacy_dane'},
+                                    ],
+                                    additional_fields: [],
+                                },
+                                {
+                                    name: 'Status Fields',
+                                    key: 'category_web_forum_standardisation_status_fields',
+                                    label: i18n.t('fields.forum_standardistation.status_fields'),
+                                    fields: [
+                                        {name: 'internet_nl_web_legacy_tls_1_3',
+                                        explanation: 'fields.forum_standardistation.internet_nl_web_legacy_tls_1_3_explanation'},
                                     ],
                                     additional_fields: [],
                                 }
@@ -2271,8 +2294,8 @@ const Report = Vue.component('report', {
 
                             categories: [
                                 {
-                                    name: 'Magazine',
-                                    label: 'Measurements on agreed security standards',
+                                    name: 'Baseline NL Government',
+                                    label: 'Baseline NL Government',
                                     key: 'category_mail_forum_standardisation_magazine',
                                     fields: [
                                         {name: 'internet_nl_mail_legacy_dmarc',
@@ -2294,20 +2317,33 @@ const Report = Vue.component('report', {
                                         explanation: 'fields.forum_standardistation.internet_nl_mail_legacy_dnssec_mx_explanation'},
                                         {name: 'internet_nl_mail_legacy_dane',
                                         explanation: 'fields.forum_standardistation.internet_nl_mail_legacy_dane_explanation'},
-                                    ],
-                                    additional_fields: [],
-                                },
-                                {
-                                    name: 'IPv6 Monitor',
-                                    // todo: translate label
-                                    label: 'IPv6 Monitor',
-                                    key: 'category_mail_forum_standardisation_ipv6_monitor',
-                                    fields: [
+                                        // todo: rename this field.
+                                        {name: 'internet_nl_mail_dashboard_ipv6',
+                                        explanation: 'fields.forum_standardistation.internet_nl_mail_legacy_ipv6_category_explanation'},
                                         {name: 'internet_nl_mail_legacy_ipv6_nameserver',
                                         explanation: 'fields.forum_standardistation.internet_nl_mail_legacy_ipv6_nameserver_explanation'},
                                         {name: 'internet_nl_mail_legacy_ipv6_mailserver',
                                         explanation: 'fields.forum_standardistation.internet_nl_mail_legacy_ipv6_mailserver_explanation'},
-                                        // {name: 'internet_nl_mail_legacy_ipv6_mailserver'},
+
+                                    ],
+                                    additional_fields: [],
+                                },
+
+                                {
+                                    name: 'Status Fields',
+                                    key: 'category_web_forum_standardisation_status_fields',
+                                    label: i18n.t('fields.forum_standardistation.status_fields'),
+                                    fields: [
+                                        {name: 'internet_nl_mail_legacy_tls_1_3',
+                                        explanation: 'fields.forum_standardistation.internet_nl_mail_legacy_tls_1_3_explanation'},
+                                        {name: 'internet_nl_mail_legacy_domain_has_mx',
+                                        explanation: 'fields.forum_standardistation.internet_nl_mail_legacy_domain_has_mx_explanation'},
+                                        {name: 'internet_nl_mail_legacy_mail_server_reachable',
+                                        explanation: 'fields.forum_standardistation.internet_nl_mail_legacy_mail_server_reachable_explanation'},
+                                        {name: 'internet_nl_mail_legacy_mail_server_testable',
+                                        explanation: 'fields.forum_standardistation.internet_nl_mail_legacy_mail_server_testable_explanation'},
+                                        {name: 'internet_nl_mail_legacy_mail_non_sending_domain',
+                                        explanation: 'fields.forum_standardistation.internet_nl_mail_legacy_mail_non_sending_domain_explanation'},
                                     ],
                                     additional_fields: [],
                                 }
