@@ -16,7 +16,7 @@ git+https://github.com/avast/pytest-docker@9ce726f4a045addc777fb1cea837a6309cbbe
 git+https://github.com/stitch/ProxyBroker#egg=proxybroker
 
 # to update websecmap, update the SHA hash and run: make update_requirement_websecmap
-git+https://gitlab.com/internet-cleanup-foundation/web-security-map@59b3ec364da2e6897f910e83020cecc4c4255d0a#egg=websecmap
+git+https://gitlab.com/internet-cleanup-foundation/web-security-map@6a2dbe9a3a0a2c7bb282065668ddfbe04b4394e1#egg=websecmap
 
 django-otp
 django-two-factor-auth
