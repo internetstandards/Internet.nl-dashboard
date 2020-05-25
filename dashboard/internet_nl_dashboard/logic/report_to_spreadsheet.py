@@ -120,6 +120,9 @@ SANE_COLUMN_ORDER = {
             'internet_nl_web_legacy_ipv6_nameserver',
             'internet_nl_web_legacy_ipv6_webserver',
             'internet_nl_web_legacy_dane',
+
+            # added may 2020, api v2
+            'internet_nl_web_legacy_tls_1_3',
         ]
     },
     'dns_soa': {
@@ -212,6 +215,14 @@ SANE_COLUMN_ORDER = {
             'internet_nl_mail_legacy_dane',
             'internet_nl_mail_legacy_ipv6_nameserver',
             'internet_nl_mail_legacy_ipv6_mailserver',
+
+            # Added may 2020 internet.nl api v2
+            'internet_nl_mail_legacy_mail_non_sending_domain',
+            'internet_nl_mail_legacy_mail_server_testable',
+            'internet_nl_mail_legacy_mail_server_reachable',
+            'internet_nl_mail_legacy_domain_has_mx',
+            'internet_nl_mail_legacy_tls_1_3',
+
         ]
     },
 }
@@ -324,6 +335,13 @@ def translate_field(field_label):
         'internet_nl_web_legacy_ipv6_nameserver': 'IPv6 nameserver',
         'internet_nl_web_legacy_ipv6_webserver': 'IPv6 webserver',
         'internet_nl_web_legacy_dane': 'DANE',
+
+        'internet_nl_web_legacy_tls_1_3': 'TLS 1.3 Support',
+        'internet_nl_mail_legacy_mail_non_sending_domain': 'Non e-mail sending domain',
+        'internet_nl_mail_legacy_mail_server_testable': 'Mail server testable',
+        'internet_nl_mail_legacy_mail_server_reachable': 'Mail server reachable',
+        'internet_nl_mail_legacy_domain_has_mx': 'Mail server has MX record',
+        'internet_nl_mail_legacy_tls_1_3': 'TLS 1.3 Support',
 
         'legacy': 'nlgovernment_complyorexplain',
         'internet_nl_mail_dashboard_overall_score': 'Score',

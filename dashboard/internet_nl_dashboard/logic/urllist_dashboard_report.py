@@ -80,6 +80,14 @@ urllist_report_content = {
         'internet_nl_mail_starttls_tls_cipherorder',
         'internet_nl_mail_starttls_tls_keyexchangehash',
         'internet_nl_mail_starttls_tls_0rtt',
+
+        # api 2.0 extra fields
+        'internet_nl_mail_legacy_mail_non_sending_domain',
+        'internet_nl_mail_legacy_mail_server_testable',
+        'internet_nl_mail_legacy_mail_server_reachable',
+        'internet_nl_mail_legacy_domain_has_mx',
+        'internet_nl_mail_legacy_tls_1_3',
+
     ],
 
     'web': [
@@ -139,6 +147,9 @@ urllist_report_content = {
         'internet_nl_web_https_tls_0rtt',
         'internet_nl_web_https_tls_ocsp',
         'internet_nl_web_https_tls_keyexchangehash',
+
+        # api 2.0 extra fields
+        'internet_nl_web_legacy_tls_1_3',
     ]
 }
 
