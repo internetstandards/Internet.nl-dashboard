@@ -855,8 +855,8 @@ const Report = Vue.component('report', {
                 not_applicable: 'Not applicable',
 
                 // legacy values
-                mail_legacy: 'Mail Baseline NL Government',
-                web_legacy: 'Web Baseline NL Government',
+                mail_legacy: 'Extra Fields',
+                web_legacy: 'Extra Fields',
 
                 differences_compared_to_current_list: {
                     equal: "The domains in this report are equal to the domains in the associated list of domains.",
@@ -974,8 +974,8 @@ const Report = Vue.component('report', {
                 },
 
                 // legacy values
-                mail_legacy: 'Measurements on agreed security standards + IPv6 Monitor',
-                web_legacy: 'Measurements on agreed security standards + IPv6 Monitor',
+                mail_legacy: 'Extra Velden',
+                web_legacy: 'Extra Velden',
 
                 differences_compared_to_current_list: {
                     equal: "Domeinen in dit rapport zijn gelijk aan de domeinen in de bijbehorende lijst.",
@@ -1219,6 +1219,9 @@ const Report = Vue.component('report', {
                 internet_nl_mail_legacy_mail_server_reachable: {visible: false},
                 internet_nl_mail_legacy_domain_has_mx: {visible: false},
                 internet_nl_mail_legacy_tls_1_3: {visible: false},
+
+                internet_nl_mail_legacy_category_ipv6: {visible: false},
+                internet_nl_web_legacy_category_ipv6: {visible: false},
             },
 
             issue_filters_response: {},
@@ -1304,7 +1307,7 @@ const Report = Vue.component('report', {
             let other_verdicts = this.compare_charts[1].calculation.urls_by_url[url.url].endpoints[0].ratings_by_type[category_name];
             let other_simple_value = this.category_verdict_to_simple_value(other_verdicts, category_name);
 
-            let progression = {'passed': 4, 'warning': 3, 'failed': 2};
+            let progression = {'passed': 4, 'warning': 3, 'info': 2, 'failed': 1};
             let comparison_verdict = "";
 
             if (simple_value === other_simple_value || simple_value === "unknown" || other_simple_value === "unknown")
@@ -1425,8 +1428,9 @@ const Report = Vue.component('report', {
             if (simple_value === other_simple_value)
                 comparison_verdict = "neutral";
 
-            if (["unknown", "not_applicable", "not_testable", "good_not_testable"].includes(simple_value) ||
-                ["unknown", "not_applicable", "not_testable", "good_not_testable"].includes(other_simple_value))
+            const neutral_values = ["unknown", "not_applicable", "not_testable", 'no_mx', 'unreachable'];
+
+            if (neutral_values.includes(simple_value) || neutral_values.includes(other_simple_value))
                 comparison_verdict = "neutral";
 
             if (comparison_verdict === "") {
@@ -1572,6 +1576,9 @@ const Report = Vue.component('report', {
                     this.upgrade_issue_filter_with_new_field('internet_nl_mail_legacy_mail_server_reachable');
                     this.upgrade_issue_filter_with_new_field('internet_nl_mail_legacy_domain_has_mx');
                     this.upgrade_issue_filter_with_new_field('internet_nl_mail_legacy_tls_1_3');
+
+                    this.upgrade_issue_filter_with_new_field('internet_nl_web_legacy_category_ipv6');
+                    this.upgrade_issue_filter_with_new_field('internet_nl_mail_legacy_category_ipv6');
 
                 }
             });
@@ -2082,7 +2089,7 @@ const Report = Vue.component('report', {
                                         explanation: 'fields.forum_standardistation.internet_nl_web_legacy_https_enforced_explanation'},
                                         {name: 'internet_nl_web_legacy_hsts',
                                         explanation: 'fields.forum_standardistation.internet_nl_web_legacy_hsts_explanation'},
-                                        {name: 'internet_nl_web_ipv6',
+                                        {name: 'internet_nl_web_legacy_category_ipv6',
                                         explanation: 'fields.forum_standardistation.internet_nl_web_legacy_ipv6_nameserver_explanation'},
                                         {name: 'internet_nl_web_legacy_ipv6_nameserver',
                                         explanation: 'fields.forum_standardistation.internet_nl_web_legacy_ipv6_nameserver_explanation'},
@@ -2217,9 +2224,7 @@ const Report = Vue.component('report', {
                                         {name: 'internet_nl_mail_auth_spf_policy'},
                                     ],
                                     additional_fields: [
-                                        {name: 'internet_nl_mail_non_sending_domain'},
-                                        {name: 'internet_nl_mail_auth_dmarc_policy_only'},
-                                        {name: 'internet_nl_mail_auth_dmarc_ext_destination'},
+
                                     ],
                                 },
                             ]
@@ -2317,8 +2322,7 @@ const Report = Vue.component('report', {
                                         explanation: 'fields.forum_standardistation.internet_nl_mail_legacy_dnssec_mx_explanation'},
                                         {name: 'internet_nl_mail_legacy_dane',
                                         explanation: 'fields.forum_standardistation.internet_nl_mail_legacy_dane_explanation'},
-                                        // todo: rename this field.
-                                        {name: 'internet_nl_mail_dashboard_ipv6',
+                                        {name: 'internet_nl_mail_legacy_category_ipv6',
                                         explanation: 'fields.forum_standardistation.internet_nl_mail_legacy_ipv6_category_explanation'},
                                         {name: 'internet_nl_mail_legacy_ipv6_nameserver',
                                         explanation: 'fields.forum_standardistation.internet_nl_mail_legacy_ipv6_nameserver_explanation'},
