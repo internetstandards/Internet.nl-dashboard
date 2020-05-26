@@ -341,12 +341,12 @@ def add_simple_verdicts(report: UrlListReport):
     progression_table = {
         'not_applicable': 0,
         'not_testable': 0,
+        'no_mx': 0,
+        'unreachable': 0,
 
         'failed': 100,
         'warning': 200,
         'info': 300,
-
-        # todo: still not clear what good_not_tested means.
         'good_not_tested': 380,
         'passed': 400,
     }
