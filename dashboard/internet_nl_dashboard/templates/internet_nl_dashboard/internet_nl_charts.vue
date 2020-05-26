@@ -518,14 +518,15 @@
                 // fixing https://github.com/internetstandards/Internet.nl-dashboard/issues/65
                 // 1 report:
                 if (this.selected_report.length === 1) {
-                    return i18n.t('charts.adoption_bar_chart.title_single', {
-                        'list_information': this.selected_report[0].list_name,
-                        'number_of_domains': this.selected_report[0].number_of_urls,
-                    });
+                    return `📊 #${this.selected_report[0].id}: ${this.selected_report[0].list_name} ${moment(this.selected_report[0].at_when).format('LL')} n=${this.selected_report[0].number_of_urls}`;
                 } else {
-                    return i18n.t('charts.adoption_bar_chart.title_multiple', {
-                        'number_of_reports': this.selected_report.length,
+                    let titles = [];
+
+                    this.selected_report.forEach((report) => {
+                        titles.push(`📊 #${report.id}: ${report.list_name} ${moment(report.at_when).format('LL')} n=${report.number_of_urls}`);
                     });
+
+                    return titles.join(" vs ");
                 }
             },
         }

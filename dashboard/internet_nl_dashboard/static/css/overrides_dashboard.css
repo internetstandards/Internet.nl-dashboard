@@ -274,8 +274,8 @@ small {
 }
 
 .category_info {
-    background-image: url("/static/images/vendor/internet_nl/icon-circle-warning.png");
-    background-image: url("/static/images/vendor/internet_nl/icon-circle-warning.svg"), none;
+    background-image: url("/static/images/vendor/internet_nl/icon-info.png");
+    background-image: url("/static/images/vendor/internet_nl/icon-info.svg"), none;
 }
 
 .category_unknown {

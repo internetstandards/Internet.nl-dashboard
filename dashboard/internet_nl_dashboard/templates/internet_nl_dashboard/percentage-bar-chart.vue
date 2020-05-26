@@ -25,14 +25,20 @@ Vue.component('percentage-bar-chart', {
                         datalabels: {
                             color: '#262626',
                             clamp: true, // always shows the number, also when the number 100%
-                            anchor: 'end', // show the number at the top of the bar.
-                            align: 'end', // shows the value outside of the bar,
-                            display: true,
+                            anchor: 'center', // show the number at the top of the bar.
+                            align: 'center', // shows the value outside of the bar,
+                            backgroundColor: '#ffffff',
+                            borderRadius: 4,
+                            display: function(context) {
+                                let index = context.dataIndex;
+                                let value = context.dataset.data[index];
+                                return Math.round(value) > 1;
+                            },
                             // format as a percentage
                             formatter: function(value, context) {
                                 // The data labels should be rounded, while the rest of the data on hover etc is not.
                                 // https://github.com/internetstandards/Internet.nl-dashboard/issues/37
-                                return Math.round(value )+ '%';
+                                return Math.round(value)+ '%';
                             }
                         }
                     },
@@ -41,7 +47,18 @@ Vue.component('percentage-bar-chart', {
                         position: 'top',
                         labels: {
                             padding: 15,
-                        }
+                            filter: function(item, data) {
+                                // it's impossible to filter this. The datasetIndex does not define what dataset
+                                // you are in. So it's either show all or nothing or based on the
+                                // first dataset, which is not helping.
+                                return true;
+                                // let index = item.index;
+                                // let dsIndex = item.datasetIndex;
+                                // let currentDataValue =  data.datasets[0].data[dsIndex];
+                                // return currentDataValue > 0;
+                            },
+                        },
+
                     },
                     responsive: true,
                     maintainAspectRatio: false,
@@ -53,6 +70,9 @@ Vue.component('percentage-bar-chart', {
                     tooltips: {
                         mode: 'index',
                         intersect: false,
+                        filter: function(item, data) {
+                            return item.value > 0
+                        },
                     },
                     hover: {
                         mode: 'nearest',
@@ -123,39 +143,74 @@ Vue.component('percentage-bar-chart', {
                     return;
                 }
 
-                let axis_names = [];
-                let labels = [];
-                let chartdata = [];
-                let average = 0;
+                let shown_values = ['pct_ok_absolute', 'pct_low', 'pct_medium', 'pct_high', 'pct_not_testable', 'pct_not_applicable'];
+                let background_colors = {
+                    'pct_ok_absolute': "#009E46",
+                    'pct_low': "#08236B",
+                    'pct_medium': "#FFAA56",
+                    'pct_high': "#A71810",
 
-                this.axis.forEach((ax) => {
-                    if (ax in data) {
-                        if (!this.only_show_dynamic_average) {
-                            labels.push(i18n.t(ax));
-                            axis_names.push(ax);
-                            chartdata.push(data[ax].pct_ok);
+                    'pct_not_applicable': "rgba(41,41,41,0.73)",
+                    'pct_not_testable': "rgba(109,109,109,0.5)",
+                };
+
+                let tmp_translation = {
+                    'pct_ok_absolute': "passed",
+                    'pct_low': "info",
+                    'pct_medium': "warning",
+                    'pct_high': "failed",
+                    'pct_not_applicable': "not applicable",
+                    'pct_not_testable': "not testable",
+                };
+
+                shown_values.forEach((shown_value) => {
+                    let axis_names = [];
+                    let labels = [];
+                    let chartdata = [];
+                    let average = 0;
+
+                    this.axis.forEach((ax) => {
+                        if (ax in data) {
+                            if (!this.only_show_dynamic_average) {
+                                labels.push(i18n.t(ax));
+                                axis_names.push(ax);
+                                chartdata.push(data[ax][shown_value]);
+                            }
+                            average += parseFloat(data[ax][shown_value]);
                         }
-                        average += parseFloat(data[ax].pct_ok);
+                    });
+
+                    // add the average of all these to the report, not as a line, but as an additional bar
+                    if ((labels.length > 1 && this.show_dynamic_average) || this.only_show_dynamic_average) {
+                        // the extra fields are never in the first graph. If we recognize the first graph, then
+                        // deduct 1 axis.length
+                        if (['internet_nl_web_ipv6', 'internet_nl_web_dnssec', 'internet_nl_web_tls', 'internet_nl_web_appsecpriv',
+                        'internet_nl_mail_dashboard_ipv6', 'internet_nl_mail_dashboard_dnssec', 'internet_nl_mail_dashboard_auth',
+                        'internet_nl_mail_dashboard_tls'].includes(this.axis[0])) {
+                            chartdata.push(Math.round((average / (this.axis.length - 1)) * 100) / 100);
+                        } else {
+                            chartdata.push(Math.round((average / this.axis.length) * 100) / 100);
+                        }
+                        labels.push(i18n.t(this.translation_key + '.average'));
+                        axis_names.push("Average");
                     }
+
+                    this.chart.data.axis_names = axis_names;
+                    this.chart.data.labels = labels;
+                    this.chart.data.datasets.push({
+                        // The stack name has to be pretty unique, even if the list names are the same a comparsion must be made.
+                        stack: `{${this.chart_data[i].calculation.name} ${moment(this.chart_data[i].at_when).format('LL')} n=${this.chart_data[i].total_urls}`,
+                        data: chartdata,
+                        backgroundColor: background_colors[shown_value],
+                        borderColor: this.color_scheme.incremental[i].border,
+                        borderWidth: 0,
+                        lineTension: 0,
+                        label: `#${this.chart_data[i].id}: ${tmp_translation[shown_value]}`,
+                        // ${this.chart_data[i].calculation.name} ${moment(this.chart_data[i].at_when).format('LL')} n=${this.chart_data[i].total_urls}
+                    });
                 });
 
-                // add the average of all these to the report, not as a line, but as an additional bar
-                if ((labels.length > 1 && this.show_dynamic_average) || this.only_show_dynamic_average) {
-                    chartdata.push(Math.round((average / this.axis.length) * 100) / 100);
-                    labels.push(i18n.t(this.translation_key + '.average'));
-                    axis_names.push("Average");
-                }
 
-                this.chart.data.axis_names = axis_names;
-                this.chart.data.labels = labels;
-                this.chart.data.datasets.push({
-                    data: chartdata,
-                    backgroundColor: this.color_scheme.incremental[i].background,
-                    borderColor: this.color_scheme.incremental[i].border,
-                    borderWidth: 1,
-                    lineTension: 0,
-                    label: `${this.chart_data[i].calculation.name} ${moment(this.chart_data[i].at_when).format('LL')} n=${this.chart_data[i].total_urls}`,
-                });
 
             }
 
