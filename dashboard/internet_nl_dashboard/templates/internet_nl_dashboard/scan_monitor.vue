@@ -16,11 +16,9 @@
         <div class="wrap">
             <div class="block" v-if="scans" v-for="scan in scans">
                 <div class="wrapper">
-                    <span v-if="scan.finished">
-                        <template v-if="scan.state !== 'cancelled'">✅</template>
-                        <template v-if="scan.state === 'cancelled'">⭕</template>
-                    </span>
-                    <span v-if="!scan.finished"><img width="15" style="border-radius: 50%" src="/static/images/vendor/internet_nl/probe-animation.gif"></span>
+                    <span v-if="scan.state === 'finished'">✅</span>
+                    <span v-if="scan.state === 'cancelled'">⭕</span>
+                    <span v-if="!['finished', 'cancelled'].includes(scan.state)"><img width="15" style="border-radius: 50%" src="/static/images/vendor/internet_nl/probe-animation.gif"></span>
                     <b>{{ scan.type }} {{ $t("id") }}{{ scan.id }}</b><br>
                     <br>
                     <template v-if="scan.finished && (scan.state !== 'cancelled')">
@@ -35,16 +33,15 @@
                     </template>
                     📘 <router-link :to="{ name: 'numbered_lists', params: { list: scan.list_id }}">{{ scan.list }}</router-link><br>
                     <br>
-                    <template v-if="scan.finished">
+                    <template v-if="['finished', 'cancelled'].includes(scan.state)">
                         <b v-if="scan.state === 'cancelled'">{{ $t("cancelled_on") }}</b>
-                        <b v-if="scan.state !== 'cancelled'">{{ $t("finished_on") }}</b><br>
-                        <span :title="scan.finished_on">{{ humanize_date(scan.finished_on) }},<br>{{ humanize_relative_date(scan.finished_on) }}</span><br>
-                        <br>
+                        <b v-if="scan.state === 'finished'">{{ $t("finished_on") }}</b> <br>
+                        <span :title="scan.finished_on">{{ humanize_date(scan.finished_on) }},<br>{{ humanize_relative_date(scan.finished_on) }}</span><br><br>
                     </template>
                     <b>{{ $t("runtime") }}</b><br>
                         {{ humanize_duration(scan.runtime) }}<br>
                         <br>
-                    <template v-if="!scan.finished">
+                    <template v-if="!['finished', 'cancelled'].includes(scan.state)">
                         <b>{{ $t("message") }}</b>
                         <p>{{ scan.state }}</p>
                         <b>{{ $t("last_check") }}</b><br>
@@ -60,7 +57,7 @@
                         <h3 class="panel-title" >
                             <a href="" aria-expanded="false">
                                 <span class="visuallyhidden">-:</span>
-                                <span v-if="!scan.finished"><img width="15" style="border-radius: 50%" src="/static/images/vendor/internet_nl/probe-animation.gif"></span> {{ $t("scan history") }}
+                                <span v-if="!['finished', 'cancelled'].includes(scan.state)"><img width="15" style="border-radius: 50%" src="/static/images/vendor/internet_nl/probe-animation.gif"></span> {{ $t("scan history") }}
                                 <span class="pre-icon visuallyhidden"></span>
                                 <span class="icon"><img src="/static/images/vendor/internet_nl/push-open.png" alt=""></span>
                             </a>
@@ -79,7 +76,14 @@
                     <br>
 
                     <template v-if="scan.status_url">
-                    🔖 <a :href="scan.status_url" target="_blank">{{ $t("open_in_api") }}</a><br>
+                        🔖
+                        <template v-if="scan.state === 'finished'">
+                            <a :href="scan.status_url + '/results'" target="_blank">{{ $t("open_in_api") }}</a>
+                        </template>
+                        <template v-else>
+                            <a :href="scan.status_url" target="_blank">{{ $t("open_in_api") }}</a>
+                        </template>
+                        <br>
                     </template>
                 </div>
             </div>

@@ -117,6 +117,7 @@ SANE_COLUMN_ORDER = {
             'internet_nl_web_legacy_tls_ncsc_web',
             'internet_nl_web_legacy_https_enforced',
             'internet_nl_web_legacy_hsts',
+            'internet_nl_mail_legacy_category_ipv6',
             'internet_nl_web_legacy_ipv6_nameserver',
             'internet_nl_web_legacy_ipv6_webserver',
             'internet_nl_web_legacy_dane',
@@ -163,8 +164,8 @@ SANE_COLUMN_ORDER = {
             # DMARC
             'internet_nl_mail_auth_dmarc_exist',
             'internet_nl_mail_auth_dmarc_policy',
-            'internet_nl_mail_auth_dmarc_policy_only',  # Added 24th of May 2019
-            'internet_nl_mail_auth_dmarc_ext_destination',  # Added 24th of May 2019
+            # 'internet_nl_mail_auth_dmarc_policy_only',  # Added 24th of May 2019
+            # 'internet_nl_mail_auth_dmarc_ext_destination',  # Added 24th of May 2019
 
             # DKIM
             'internet_nl_mail_auth_dkim_exist',
@@ -213,6 +214,7 @@ SANE_COLUMN_ORDER = {
             'internet_nl_mail_legacy_dnssec_email_domain',
             'internet_nl_mail_legacy_dnssec_mx',
             'internet_nl_mail_legacy_dane',
+            'internet_nl_mail_legacy_category_ipv6',
             'internet_nl_mail_legacy_ipv6_nameserver',
             'internet_nl_mail_legacy_ipv6_mailserver',
 
@@ -324,6 +326,7 @@ def translate_field(field_label):
         'internet_nl_mail_legacy_dnssec_email_domain': 'DNSSEC e-mail domain',
         'internet_nl_mail_legacy_dnssec_mx': 'DNSSEC MX',
         'internet_nl_mail_legacy_dane': 'DANE',
+        'internet_nl_mail_legacy_category_ipv6': 'IPv6',
         'internet_nl_mail_legacy_ipv6_nameserver': 'IPv6 nameserver',
         'internet_nl_mail_legacy_ipv6_mailserver': 'IPv6 mailserver',
 
@@ -332,6 +335,7 @@ def translate_field(field_label):
         'internet_nl_web_legacy_tls_ncsc_web': 'TLS NCSC web',
         'internet_nl_web_legacy_https_enforced': 'HTTPS enforced',
         'internet_nl_web_legacy_hsts': 'HSTS',
+        'internet_nl_web_legacy_category_ipv6': 'IPv6',
         'internet_nl_web_legacy_ipv6_nameserver': 'IPv6 nameserver',
         'internet_nl_web_legacy_ipv6_webserver': 'IPv6 webserver',
         'internet_nl_web_legacy_dane': 'DANE',
@@ -343,7 +347,7 @@ def translate_field(field_label):
         'internet_nl_mail_legacy_domain_has_mx': 'Mail server has MX record',
         'internet_nl_mail_legacy_tls_1_3': 'TLS 1.3 Support',
 
-        'legacy': 'nlgovernment_complyorexplain',
+        'legacy': 'Extra Fields',
         'internet_nl_mail_dashboard_overall_score': 'Score',
         'internet_nl_web_overall_score': 'Score',
     }
@@ -654,14 +658,18 @@ def keyed_values_as_boolean(keyed_ratings: Dict[str, Any], protocol: str = 'dns_
                     values.append(value.get('test_result', '?'))
 
                 else:
-                    # backward compatible with api v1 reports
-                    if value['simple_verdict'] == "not_testable":
-                        values.append('not_testable')
-                    elif value['simple_verdict'] == "not_applicable":
-                        values.append('not_applicable')
+                    # unknown columns and data will be empty.
+                    if "simple_verdict" not in value:
+                        values.append('')
                     else:
-                        # When the value doesn't exist at all, we'll get a questionmark.
-                        values.append(value.get('ok', '?'))
+                        # backward compatible with api v1 reports
+                        if value['simple_verdict'] == "not_testable":
+                            values.append('not_testable')
+                        elif value['simple_verdict'] == "not_applicable":
+                            values.append('not_applicable')
+                        else:
+                            # When the value doesn't exist at all, we'll get a questionmark.
+                            values.append(value.get('ok', '?'))
 
         # add empty thing after each group to make distinction per group clearer
         # overall group already adds an extra value (url), so we don't need this.

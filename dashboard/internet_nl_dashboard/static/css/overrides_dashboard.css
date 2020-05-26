@@ -273,6 +273,17 @@ small {
     background-image: url("/static/images/vendor/internet_nl/icon-warning.svg"), none;
 }
 
+.category_info {
+    background-image: url("/static/images/vendor/internet_nl/icon-info.png");
+    background-image: url("/static/images/vendor/internet_nl/icon-info.svg"), none;
+}
+
+.category_unknown {
+    background-image: url("/static/images/vendor/internet_nl/icon-circle-check.png");
+    background-image: url("/static/images/vendor/internet_nl/icon-circle-check.svg"), none;
+}
+
+
 .category_warning {
     background-image: url("/static/images/vendor/internet_nl/icon-circle-warning.png");
     background-image: url("/static/images/vendor/internet_nl/icon-circle-warning.svg"), none;
@@ -284,7 +295,7 @@ small {
 }
 
 /* First name was old internet.nl v1 api, second is v2 api.*/
-.not_testable, .good_not_tested {
+.not_testable, .good_not_tested, .no_mx, .unreachable {
     background-image: url("/static/images/vendor/internet_nl/icon-not-tested-question-mark.png");
     background-image: url("/static/images/vendor/internet_nl/icon-not-tested-question-mark.svg"), none;
 }
