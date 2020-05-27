@@ -100,6 +100,7 @@
                                                     :accessibility_text="$t('charts.adoption_bar_chart.accessibility_text')"
                                                     :show_dynamic_average="issue_filters[category.key].show_dynamic_average"
                                                     :only_show_dynamic_average="false"
+                                                    :field_name_to_category_names="field_name_to_category_names"
                                                     :axis="visible_fields_from_categories(category)">
                                             </percentage-bar-chart>
                                         </div>
@@ -132,6 +133,7 @@
                                                         :accessibility_text="$t('charts.adoption_bar_chart.accessibility_text')"
                                                         :show_dynamic_average="issue_filters[category.key].show_dynamic_average"
                                                         :only_show_dynamic_average="false"
+                                                        :field_name_to_category_names="field_name_to_category_names"
                                                         :axis="fields_from_self(subcategory)">
                                                 </percentage-bar-chart>
                                             </div>
@@ -358,6 +360,7 @@
             scan_methods: {type: Array, required: true},
             issue_filters: {type: Object, required: true},
             selected_report: {type: Array, required: true},
+            field_name_to_category_names: {type: Object, required: false},
         },
         data: function () {
             return {

@@ -23,12 +23,15 @@ Vue.component('percentage-bar-chart', {
                     },
                     plugins:{
                         datalabels: {
-                            color: '#262626',
+                            color: '#ffffff',
                             clamp: true, // always shows the number, also when the number 100%
                             anchor: 'center', // show the number at the top of the bar.
                             align: 'center', // shows the value outside of the bar,
-                            backgroundColor: '#ffffff',
-                            borderRadius: 4,
+                            // backgroundColor: '#ffffff',
+                            font: {
+                                weight: 'bold'
+                            },
+                            // borderRadius: 4,
                             display: function(context) {
                                 let index = context.dataIndex;
                                 let value = context.dataset.data[index];
@@ -48,14 +51,11 @@ Vue.component('percentage-bar-chart', {
                         labels: {
                             padding: 15,
                             filter: function(item, data) {
-                                // it's impossible to filter this. The datasetIndex does not define what dataset
-                                // you are in. So it's either show all or nothing or based on the
-                                // first dataset, which is not helping.
-                                return true;
-                                // let index = item.index;
-                                // let dsIndex = item.datasetIndex;
-                                // let currentDataValue =  data.datasets[0].data[dsIndex];
-                                // return currentDataValue > 0;
+                                // Only shows legend labels for data types that are actually available
+                                // dataset 0 = good, dataset 1 is info etc...
+                                let dsIndex = item.datasetIndex;
+                                let currentDataValue =  data.datasets[dsIndex].data.reduce((a, b) => a + b, 0);
+                                return currentDataValue > 0;
                             },
                         },
 
@@ -143,19 +143,19 @@ Vue.component('percentage-bar-chart', {
                     return;
                 }
 
-                let shown_values = ['pct_ok_absolute', 'pct_low', 'pct_medium', 'pct_high', 'pct_not_testable', 'pct_not_applicable'];
+                let shown_values = ['pct_ok', 'pct_low', 'pct_medium', 'pct_high', 'pct_not_testable', 'pct_not_applicable'];
                 let background_colors = {
-                    'pct_ok_absolute': "#009E46",
+                    'pct_ok': "#009E46",
                     'pct_low': "#08236B",
                     'pct_medium': "#FFAA56",
                     'pct_high': "#A71810",
 
                     'pct_not_applicable': "rgba(41,41,41,0.73)",
-                    'pct_not_testable': "rgba(109,109,109,0.5)",
+                    'pct_not_testable': "rgba(109,109,109,0.8)",
                 };
 
                 let tmp_translation = {
-                    'pct_ok_absolute': "passed",
+                    'pct_ok': "passed",
                     'pct_low': "info",
                     'pct_medium': "warning",
                     'pct_high': "failed",
@@ -172,7 +172,7 @@ Vue.component('percentage-bar-chart', {
                     this.axis.forEach((ax) => {
                         if (ax in data) {
                             if (!this.only_show_dynamic_average) {
-                                labels.push(i18n.t(ax));
+                                labels.push([i18n.t(ax), this.field_name_to_category_names ? this.field_name_to_category_names[ax] : ""]);
                                 axis_names.push(ax);
                                 chartdata.push(data[ax][shown_value]);
                             }
@@ -199,12 +199,13 @@ Vue.component('percentage-bar-chart', {
                     this.chart.data.labels = labels;
                     this.chart.data.datasets.push({
                         // The stack name has to be pretty unique, even if the list names are the same a comparsion must be made.
-                        stack: `{${this.chart_data[i].calculation.name} ${moment(this.chart_data[i].at_when).format('LL')} n=${this.chart_data[i].total_urls}`,
+                        stack: this.chart_data[i].id,
                         data: chartdata,
                         backgroundColor: background_colors[shown_value],
                         borderColor: this.color_scheme.incremental[i].border,
                         borderWidth: 0,
                         lineTension: 0,
+                        hidden: shown_value === "pct_high",
                         label: `#${this.chart_data[i].id}: ${tmp_translation[shown_value]}`,
                         // ${this.chart_data[i].calculation.name} ${moment(this.chart_data[i].at_when).format('LL')} n=${this.chart_data[i].total_urls}
                     });
