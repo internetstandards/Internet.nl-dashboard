@@ -460,7 +460,6 @@ def add_percentages_to_statistics(report: UrlListReport):
         issue = report.calculation['statistics_per_issue_type'][key]
 
         # may 2020: we want to see the other issues in the graphs as being gray.
-        report_all = sum([issue['ok'], issue['high'], issue['medium'], issue['low']])
         graphs_all = sum([issue['ok'], issue['high'], issue['medium'], issue['low'],
                           issue['not_testable'], issue['not_applicable']])
         if all == 0:
@@ -472,34 +471,19 @@ def add_percentages_to_statistics(report: UrlListReport):
             report.calculation['statistics_per_issue_type'][key]['pct_not_ok'] = 0
             continue
 
-        report.calculation['statistics_per_issue_type'][key]['pct_high'] = round((issue['high'] / graphs_all) * 100, 2)
-        report.calculation['statistics_per_issue_type'][key]['pct_medium'] = round(
-            (issue['medium'] / graphs_all) * 100, 2)
-        report.calculation['statistics_per_issue_type'][key]['pct_low'] = round((issue['low'] / graphs_all) * 100, 2)
+        tcskp = report.calculation['statistics_per_issue_type'][key]
+        tcskp['pct_high'] = round((issue['high'] / graphs_all) * 100, 2)
+        tcskp['pct_medium'] = round((issue['medium'] / graphs_all) * 100, 2)
+        tcskp['pct_low'] = round((issue['low'] / graphs_all) * 100, 2)
         # all other possible stuff. Note that no_mx and such have been mapped to one of these.
-        report.calculation['statistics_per_issue_type'][key]['pct_not_applicable'] = round(
-            (issue['not_applicable'] / graphs_all) * 100, 2)
-        report.calculation['statistics_per_issue_type'][key]['pct_not_testable'] = round(
-            (issue['not_testable'] / graphs_all) * 100, 2)
+        tcskp['pct_not_applicable'] = round((issue['not_applicable'] / graphs_all) * 100, 2)
+        tcskp['pct_not_testable'] = round((issue['not_testable'] / graphs_all) * 100, 2)
 
         # May 2019 warning (=medium) and info(=low) do NOT have a score impact, only high has a score impact.
         # https://www.internet.nl/faqs/report/
-        # This has been altered in May 2020: now we want to see the exact value in the graphs, but not in the table.
-        # The table value will be pct_ok. The graph value will be pct_ok_absolute.
-        report.calculation['statistics_per_issue_type'][key]['pct_ok'] = round(
-            ((issue['ok'] + issue['low'] + issue['medium']) / report_all) * 100, 2)
-        report.calculation['statistics_per_issue_type'][key]['pct_ok_absolute'] = round(
-            ((issue['ok']) / graphs_all) * 100, 2)
-
-        report.calculation['statistics_per_issue_type'][key]['pct_not_ok'] = round(
-            (issue['not_ok'] / graphs_all) * 100, 2)
-
-        # May 2019:
-        # internet_nl_web_appsecpriv category is labelled as high, probably for some reason (could not find it quickly)
-        # but the category is a medium category, which means the score should _always_ be 100.
-        # So in this special case we will overwrite the pct_ok with 100%, even though it's lower:
-        # May 2020: Not needed anymore: the API will give the correct value and no altering is needed anymore
-        # if key == "internet_nl_web_appsecpriv":
-        #     report.calculation['statistics_per_issue_type'][key]['pct_ok'] = 100
+        # This has been altered in May 2020 to avoid confusion and show different kinds of values, it's now just OK
+        # instead of including medium and low as ok.
+        tcskp['pct_ok'] = round(((issue['ok']) / graphs_all) * 100, 2)
+        tcskp['pct_not_ok'] = round((issue['not_ok'] / graphs_all) * 100, 2)
 
     report.save()

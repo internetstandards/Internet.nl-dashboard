@@ -10,6 +10,7 @@ const chart_mixin = {
         accessibility_text: {type: String, required: true},
         show_dynamic_average: {type: Boolean, required: false},
         only_show_dynamic_average: {type: Boolean, required: false},
+        field_name_to_category_names: {type: Object, required: false},
     },
     data: function () {
         return {

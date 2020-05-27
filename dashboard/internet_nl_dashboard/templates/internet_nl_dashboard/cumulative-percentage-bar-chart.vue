@@ -23,11 +23,18 @@ Vue.component('cumulative-percentage-bar-chart', {
                     },
                     plugins:{
                         datalabels: {
-                            color: '#262626',
-                            display: true,  // auto hides overlapping labels, true always shows them.
+                            color: '#ffffff',
                             clamp: true, // always shows the number, also when the number 100%
-                            anchor: 'end', // show the number at the top of the bar.
-                            align: 'end', // shows the value outside of the bar,
+                            anchor: 'center', // show the number at the top of the bar.
+                            align: 'center', // shows the value outside of the bar,
+                            font: {
+                                weight: 'bold'
+                            },
+                            display: function(context) {
+                                let index = context.dataIndex;
+                                let value = context.dataset.data[index];
+                                return Math.round(value) > 1;
+                            },
                             // format as a percentage
                             formatter: function(value, context) {
                                 // https://github.com/internetstandards/Internet.nl-dashboard/issues/37
@@ -36,11 +43,16 @@ Vue.component('cumulative-percentage-bar-chart', {
                         }
                     },
                     legend: {
-                        display: false,
+                        display: true,
                         position: 'top',
                         labels: {
                             padding: 15,
-                        }
+                            filter: function(item, data) {
+                                let dsIndex = item.datasetIndex;
+                                let currentDataValue =  data.datasets[dsIndex].data.reduce((a, b) => a + b, 0);
+                                return currentDataValue > 0;
+                            },
+                        },
                     },
                     responsive: true,
                     maintainAspectRatio: false,
@@ -123,48 +135,88 @@ Vue.component('cumulative-percentage-bar-chart', {
                 this.axis.forEach((ax) => {
                     if (ax in data) {
                         if (!Object.keys(cumulative_axis_data).includes(ax)) {
-                            cumulative_axis_data[ax] = 0
+                            cumulative_axis_data[ax] = {pct_ok: 0, pct_low: 0, pct_medium: 0, pct_high: 0,
+                            pct_not_applicable: 0, pct_not_testable: 0}
                         }
-                        cumulative_axis_data[ax] += data[ax].pct_ok
+                        cumulative_axis_data[ax].pct_ok += data[ax].pct_ok;
+                        cumulative_axis_data[ax].pct_low += data[ax].pct_low;
+                        cumulative_axis_data[ax].pct_medium += data[ax].pct_medium;
+                        cumulative_axis_data[ax].pct_high += data[ax].pct_high;
+                        cumulative_axis_data[ax].pct_not_applicable += data[ax].pct_not_applicable;
+                        cumulative_axis_data[ax].pct_not_testable += data[ax].pct_not_testable;
+                    }
+                });
+            }
+
+
+            let shown_values = ['pct_ok', 'pct_low', 'pct_medium', 'pct_high', 'pct_not_testable', 'pct_not_applicable'];
+            let background_colors = {
+                'pct_ok': "#009E46",
+                'pct_low': "#08236B",
+                'pct_medium': "#FFAA56",
+                'pct_high': "#A71810",
+
+                'pct_not_applicable': "rgba(41,41,41,0.73)",
+                'pct_not_testable': "rgba(109,109,109,0.8)",
+            };
+
+            let tmp_translation = {
+                'pct_ok': "passed",
+                'pct_low': "info",
+                'pct_medium': "warning",
+                'pct_high': "failed",
+                'pct_not_applicable': "not applicable",
+                'pct_not_testable': "not testable",
+            };
+
+            shown_values.forEach((shown_value) => {
+                let data = this.chart_data[0].calculation.statistics_per_issue_type;
+                let axis_names = [];
+                let labels = [];
+                let chartdata = [];
+                let average = 0;
+
+
+
+                this.axis.forEach((ax) => {
+                    if (ax in data) {
+                        if (!this.only_show_dynamic_average) {
+                            labels.push([i18n.t(ax), this.field_name_to_category_names ? this.field_name_to_category_names[ax] : ""]);
+                            axis_names.push(ax);
+                            chartdata.push((Math.round(cumulative_axis_data[ax][shown_value] / this.chart_data.length * 100)) / 100);
+                        }
+                        // toFixed delivers some 81.32429999999999 results, which is total nonsense.
+                        average += (Math.round(cumulative_axis_data[ax][shown_value] / this.chart_data.length * 100)) / 100;
                     }
                 });
 
-            }
 
-            let data = this.chart_data[0].calculation.statistics_per_issue_type;
-            let axis_names = [];
-            let labels = [];
-            let chartdata = [];
-            let average = 0;
-
-            this.axis.forEach((ax) => {
-                if (ax in data) {
-                    if (!this.only_show_dynamic_average) {
-                        labels.push(i18n.t(ax));
-                        axis_names.push(ax);
-                        chartdata.push((Math.round(cumulative_axis_data[ax] / this.chart_data.length * 100)) / 100);
+                // add the average of all these to the report, not as a line, but as an additional bar
+                if ((labels.length > 1 && this.show_dynamic_average) || this.only_show_dynamic_average) {
+                    if (['internet_nl_web_ipv6', 'internet_nl_web_dnssec', 'internet_nl_web_tls', 'internet_nl_web_appsecpriv',
+                        'internet_nl_mail_dashboard_ipv6', 'internet_nl_mail_dashboard_dnssec', 'internet_nl_mail_dashboard_auth',
+                        'internet_nl_mail_dashboard_tls'].includes(this.axis[0])) {
+                        chartdata.push(Math.round((average / (this.axis.length - 1)) * 100) / 100);
+                    } else {
+                        chartdata.push(Math.round((average / this.axis.length) * 100) / 100);
                     }
-                    // toFixed delivers some 81.32429999999999 results, which is total nonsense.
-                    average += (Math.round(cumulative_axis_data[ax] / this.chart_data.length * 100)) / 100;
+                    labels.push(i18n.t(this.translation_key + '.average'));
+                    axis_names.push("Average");
                 }
-            });
 
-            // add the average of all these to the report, not as a line, but as an additional bar
-            if ((labels.length > 1 && this.show_dynamic_average) || this.only_show_dynamic_average) {
-                chartdata.push(Math.round((average / this.axis.length) * 100) / 100);
-                labels.push(i18n.t(this.translation_key + '.average'));
-                axis_names.push("Average");
-            }
+                this.chart.data.axis_names = axis_names;
+                this.chart.data.labels = labels;
+                this.chart.data.datasets.push({
+                    stack: 1,
+                    data: chartdata,
+                    backgroundColor: background_colors[shown_value],
+                    borderColor: this.color_scheme.incremental[0].border,
+                    borderWidth: 0,
+                    lineTension: 0,
+                    hidden: shown_value === "pct_high",
+                    label: `${tmp_translation[shown_value]}`,
+                });
 
-            this.chart.data.axis_names = axis_names;
-            this.chart.data.labels = labels;
-            this.chart.data.datasets.push({
-                data: chartdata,
-                backgroundColor: this.color_scheme.incremental[0].background,
-                borderColor: this.color_scheme.incremental[0].border,
-                borderWidth: 1,
-                lineTension: 0,
-                label: `${this.chart_data[0].calculation.name} ${moment(this.chart_data[0].at_when).format('LL')}`,
             });
 
             this.chart.update();

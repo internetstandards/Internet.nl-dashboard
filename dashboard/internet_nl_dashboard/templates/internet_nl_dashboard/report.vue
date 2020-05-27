@@ -510,7 +510,9 @@
                     :selected_report="selected_report"
                     :scan_methods="scan_methods"
                     :compare_charts="compare_charts"
-                    :issue_filters="issue_filters">
+                    :issue_filters="issue_filters"
+                    :field_name_to_category_names="field_name_to_category_names"
+            >
             </internet-nl-charts>
 
             <!-- The table is only displayed with up to two reports (the first as the source of the table, the second as a comparison). -->
@@ -617,20 +619,6 @@
 
                         <tbody class="gridtable">
                             <template>
-                                <!-- Summary row, same data as bar chart, but then in numbers.-->
-                                <tr class="summaryrow">
-                                    <td colspan="2">
-                                        &nbsp;
-                                    </td>
-                                    <td v-for="category_name in relevant_categories_based_on_settings">
-                                        <span v-if="category_name in reports[0]['calculation'].statistics_per_issue_type">
-                                            {{Math.round(reports[0]["calculation"].statistics_per_issue_type[category_name].pct_ok)}}%</span>
-                                    </td>
-
-                                    <td style="width: 100%"></td>
-
-                                </tr>
-
                                 <!-- Zoom buttons for accessibility -->
                                 <tr class="summaryrow">
                                     <td colspan="2" class="sticky_search">
@@ -2391,7 +2379,6 @@ const Report = Vue.component('report', {
                 });
             });
 
-            console.log(fields_mapping);
             return fields_mapping;
         },
 

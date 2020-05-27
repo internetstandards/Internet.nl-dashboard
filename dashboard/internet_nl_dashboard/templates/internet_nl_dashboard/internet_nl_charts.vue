@@ -100,6 +100,7 @@
                                                     :accessibility_text="$t('charts.adoption_bar_chart.accessibility_text')"
                                                     :show_dynamic_average="issue_filters[category.key].show_dynamic_average"
                                                     :only_show_dynamic_average="false"
+                                                    :field_name_to_category_names="field_name_to_category_names"
                                                     :axis="visible_fields_from_categories(category)">
                                             </percentage-bar-chart>
                                         </div>
@@ -132,6 +133,7 @@
                                                         :accessibility_text="$t('charts.adoption_bar_chart.accessibility_text')"
                                                         :show_dynamic_average="issue_filters[category.key].show_dynamic_average"
                                                         :only_show_dynamic_average="false"
+                                                        :field_name_to_category_names="field_name_to_category_names"
                                                         :axis="fields_from_self(subcategory)">
                                                 </percentage-bar-chart>
                                             </div>
@@ -150,6 +152,7 @@
                                                         :accessibility_text="$t('charts.adoption_bar_chart.accessibility_text')"
                                                         :show_dynamic_average="true"
                                                         :only_show_dynamic_average="true"
+                                                        :field_name_to_category_names="field_name_to_category_names"
                                                         :axis="fields_from_self_and_do_not_filter(subcategory)">
                                                 </percentage-bar-chart>
                                             </div>
@@ -179,8 +182,7 @@
                         <div class="chart-container"
                              style="position: relative; height:500px; width:100%; min-width: 950px;">
                             <cumulative-percentage-bar-chart
-                                    :title="$t('charts.cumulative_adoption_bar_chart.title', {
-                                                'number_of_reports': compare_charts.length})"
+                                    :title="graph_cumulative_bar_chart_title"
                                     :translation_key="'charts.adoption_bar_chart'"
                                     :color_scheme="color_scheme"
                                     :chart_data="compare_charts"
@@ -210,14 +212,14 @@
                                         <div class="chart-container"
                                              style="position: relative; height:500px; width:100%; min-width: 950px;">
                                             <cumulative-percentage-bar-chart
-                                                    :title="$t('charts.cumulative_adoption_bar_chart.title', {
-                                                    'number_of_reports': compare_charts.length})"
+                                                    :title="graph_cumulative_bar_chart_title"
                                                     :translation_key="'charts.adoption_bar_chart'"
                                                     :color_scheme="color_scheme"
                                                     :chart_data="compare_charts"
                                                     :accessibility_text="$t('charts.cumulative_adoption_bar_chart.accessibility_text')"
                                                     :show_dynamic_average="issue_filters[category.key].show_dynamic_average"
                                                     :only_show_dynamic_average="false"
+                                                    :field_name_to_category_names="field_name_to_category_names"
                                                     :axis="visible_fields_from_categories(category)">
                                             </cumulative-percentage-bar-chart>
                                         </div>
@@ -243,14 +245,14 @@
                                             <div class="chart-container"
                                                  style="position: relative; height:500px; width:100%; min-width: 950px;">
                                                 <cumulative-percentage-bar-chart
-                                                        :title="$t('charts.cumulative_adoption_bar_chart.title', {
-                                                    'number_of_reports': compare_charts.length})"
+                                                        :title="graph_cumulative_bar_chart_title"
                                                         :translation_key="'charts.adoption_bar_chart'"
                                                         :color_scheme="color_scheme"
                                                         :chart_data="compare_charts"
                                                         :accessibility_text="$t('charts.adoption_bar_chart.accessibility_text')"
                                                         :show_dynamic_average="issue_filters[subcategory.key].show_dynamic_average"
                                                         :only_show_dynamic_average="false"
+                                                        :field_name_to_category_names="field_name_to_category_names"
                                                         :axis="fields_from_self(subcategory)">
                                                 </cumulative-percentage-bar-chart>
                                             </div>
@@ -263,14 +265,14 @@
                                             <div class="chart-container"
                                                  style="position: relative; height:500px; width:100%; min-width: 950px;">
                                                 <cumulative-percentage-bar-chart
-                                                        :title="$t('charts.cumulative_adoption_bar_chart.title', {
-                                                    'number_of_reports': compare_charts.length})"
+                                                        :title="graph_cumulative_bar_chart_title"
                                                         :translation_key="'charts.adoption_bar_chart'"
                                                         :color_scheme="color_scheme"
                                                         :chart_data="compare_charts"
                                                         :accessibility_text="$t('charts.adoption_bar_chart.accessibility_text')"
                                                         :show_dynamic_average="true"
                                                         :only_show_dynamic_average="true"
+                                                        :field_name_to_category_names="field_name_to_category_names"
                                                         :axis="fields_from_self_and_do_not_filter(subcategory)">
                                                 </cumulative-percentage-bar-chart>
                                             </div>
@@ -358,6 +360,7 @@
             scan_methods: {type: Array, required: true},
             issue_filters: {type: Object, required: true},
             selected_report: {type: Array, required: true},
+            field_name_to_category_names: {type: Object, required: false},
         },
         data: function () {
             return {
@@ -527,6 +530,24 @@
                     });
 
                     return titles.join(" vs ");
+                }
+            },
+
+            graph_cumulative_bar_chart_title: function () {
+                // fixing https://github.com/internetstandards/Internet.nl-dashboard/issues/65
+                // 1 report:
+                if (this.selected_report.length === 1) {
+                    // not relevant
+                    return `📊 #${this.selected_report[0].id}: ${this.selected_report[0].list_name} ${moment(this.selected_report[0].at_when).format('LL')} n=${this.selected_report[0].number_of_urls}`;
+                } else {
+                    let titles = [];
+
+                    this.selected_report.forEach((report) => {
+                        titles.push(`📊 #${report.id}: ${report.list_name} ${moment(report.at_when).format('LL')} n=${report.number_of_urls}`);
+                    });
+
+                    let title_text = titles.join(" + ");
+                    return `(${title_text}) / ${this.selected_report.length}`
                 }
             },
         }
