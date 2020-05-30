@@ -289,6 +289,11 @@ small {
     background-image: url("/static/images/vendor/internet_nl/icon-circle-warning.svg"), none;
 }
 
+.category_error {
+    background-image: url("/static/images/vendor/internet_nl/probe-error.png");
+    background-image: url("/static/images/vendor/internet_nl/probe-error.svg"), none;
+}
+
 .info {
     background-image: url("/static/images/vendor/internet_nl/icon-info.png");
     background-image: url("/static/images/vendor/internet_nl/icon-info.svg"), none;
@@ -300,7 +305,7 @@ small {
     background-image: url("/static/images/vendor/internet_nl/icon-not-tested-question-mark.svg"), none;
 }
 
-.error_in_test {
+.error_in_test, .error {
     background-image: url("/static/images/vendor/internet_nl/icon-not-tested-bolt.png");
     background-image: url("/static/images/vendor/internet_nl/icon-not-tested-bolt.svg"), none;
 }
