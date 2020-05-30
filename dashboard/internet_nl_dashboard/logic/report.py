@@ -308,6 +308,7 @@ def clean_up_not_required_data_to_speed_up_report_on_client(report: UrlListRepor
                 del endpoint['ratings_by_type'][rating_key]['low']  # only 'ok' is used in spreadsheet export.
                 del endpoint['ratings_by_type'][rating_key]['not_testable']  # only 'ok' is used in spreadsheet export.
                 del endpoint['ratings_by_type'][rating_key]['not_applicable']  # only 'ok' is used in spreadsheet export
+                del endpoint['ratings_by_type'][rating_key]['error_in_test']  # only 'ok' is used in spreadsheet export
                 del endpoint['ratings_by_type'][rating_key]['since']
                 del endpoint['ratings_by_type'][rating_key]['last_scan']
                 del endpoint['ratings_by_type'][rating_key]['explanation']
@@ -341,6 +342,7 @@ def add_simple_verdicts(report: UrlListReport):
     progression_table = {
         'not_applicable': 0,
         'not_testable': 0,
+        'error_in_test': 0,
         'no_mx': 0,
         'unreachable': 0,
 
@@ -400,6 +402,7 @@ def split_score_and_url(report: UrlListReport):
                     "ok": 0,
                     "not_testable": False,
                     "not_applicable": False,
+                    "error_in_test": False,
                     'test_result': score,
                     "scan": scan,
                     "since": since,
@@ -428,7 +431,8 @@ def add_statistics_over_ratings(report: UrlListReport):
     for issue in possible_issues:
         # todo: could be a defaultdict. although explicit initialization is somewhat useful.
         report.calculation['statistics_per_issue_type'][issue] = {
-            'high': 0, 'medium': 0, 'low': 0, 'ok': 0, 'not_ok': 0, 'not_testable': 0, 'not_applicable': 0}
+            'high': 0, 'medium': 0, 'low': 0, 'ok': 0, 'not_ok': 0, 'not_testable': 0, 'not_applicable': 0,
+            'error_in_test': 0}
 
     # count the numbers, can we do this with some map/add function that is way faster?
     for issue in possible_issues:
@@ -442,10 +446,11 @@ def add_statistics_over_ratings(report: UrlListReport):
                 report.calculation['statistics_per_issue_type'][issue]['low'] += rating['low']
                 report.calculation['statistics_per_issue_type'][issue]['not_testable'] += rating['not_testable']
                 report.calculation['statistics_per_issue_type'][issue]['not_applicable'] += rating['not_applicable']
+                report.calculation['statistics_per_issue_type'][issue]['error_in_test'] += rating['error_in_test']
 
                 # things that are not_testable or not_applicable do not have impact on thigns being OK
                 # see: https://github.com/internetstandards/Internet.nl-dashboard/issues/68
-                if not any([rating['not_testable'], rating['not_applicable']]):
+                if not any([rating['not_testable'], rating['not_applicable'], rating['error_in_test']]):
                     report.calculation['statistics_per_issue_type'][issue]['ok'] += rating['ok']
                     # these can be summed because only one of high, med, low is 1
                     report.calculation['statistics_per_issue_type'][issue]['not_ok'] += \
@@ -461,7 +466,7 @@ def add_percentages_to_statistics(report: UrlListReport):
 
         # may 2020: we want to see the other issues in the graphs as being gray.
         graphs_all = sum([issue['ok'], issue['high'], issue['medium'], issue['low'],
-                          issue['not_testable'], issue['not_applicable']])
+                          issue['not_testable'], issue['not_applicable'], issue['error_in_test']])
         if all == 0:
             # This happens when everything tested is not applicable or not testable: thus no stats:
             report.calculation['statistics_per_issue_type'][key]['pct_high'] = 0
@@ -478,6 +483,7 @@ def add_percentages_to_statistics(report: UrlListReport):
         # all other possible stuff. Note that no_mx and such have been mapped to one of these.
         tcskp['pct_not_applicable'] = round((issue['not_applicable'] / graphs_all) * 100, 2)
         tcskp['pct_not_testable'] = round((issue['not_testable'] / graphs_all) * 100, 2)
+        tcskp['pct_error_in_test'] = round((issue['error_in_test'] / graphs_all) * 100, 2)
 
         # May 2019 warning (=medium) and info(=low) do NOT have a score impact, only high has a score impact.
         # https://www.internet.nl/faqs/report/

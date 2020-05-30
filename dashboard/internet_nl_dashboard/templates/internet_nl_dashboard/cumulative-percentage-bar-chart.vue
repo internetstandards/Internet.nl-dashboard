@@ -136,7 +136,7 @@ Vue.component('cumulative-percentage-bar-chart', {
                     if (ax in data) {
                         if (!Object.keys(cumulative_axis_data).includes(ax)) {
                             cumulative_axis_data[ax] = {pct_ok: 0, pct_low: 0, pct_medium: 0, pct_high: 0,
-                            pct_not_applicable: 0, pct_not_testable: 0}
+                            pct_not_applicable: 0, pct_not_testable: 0, pct_error_in_test: 0}
                         }
                         cumulative_axis_data[ax].pct_ok += data[ax].pct_ok;
                         cumulative_axis_data[ax].pct_low += data[ax].pct_low;
@@ -144,12 +144,13 @@ Vue.component('cumulative-percentage-bar-chart', {
                         cumulative_axis_data[ax].pct_high += data[ax].pct_high;
                         cumulative_axis_data[ax].pct_not_applicable += data[ax].pct_not_applicable;
                         cumulative_axis_data[ax].pct_not_testable += data[ax].pct_not_testable;
+                        cumulative_axis_data[ax].pct_error_in_test += data[ax].pct_error_in_test;
                     }
                 });
             }
 
 
-            let shown_values = ['pct_ok', 'pct_low', 'pct_medium', 'pct_high', 'pct_not_testable', 'pct_not_applicable'];
+            let shown_values = ['pct_ok', 'pct_low', 'pct_medium', 'pct_high', 'pct_not_testable', 'pct_not_applicable', 'pct_error_in_test'];
             let background_colors = {
                 'pct_ok': "#009E46",
                 'pct_low': "#08236B",
@@ -157,6 +158,7 @@ Vue.component('cumulative-percentage-bar-chart', {
                 'pct_high': "#A71810",
 
                 'pct_not_applicable': "rgba(41,41,41,0.73)",
+                'pct_error_in_test': "rgba(41,41,41,0.73)",
                 'pct_not_testable': "rgba(109,109,109,0.8)",
             };
 
@@ -167,6 +169,7 @@ Vue.component('cumulative-percentage-bar-chart', {
                 'pct_high': "failed",
                 'pct_not_applicable': "not applicable",
                 'pct_not_testable': "not testable",
+                'pct_error_in_test': "test error",
             };
 
             shown_values.forEach((shown_value) => {
