@@ -567,6 +567,7 @@
                             <li><span class="faq-subtest info"><span class="visuallyhidden">{{ $t("report.results.info") }}</span>{{ $t("icon_legend.subtest_info") }}</span></li>
                             <li><span class="faq-test not_applicable"><span class="visuallyhidden">{{ $t("report.results.not_applicable") }}</span>{{ $t("icon_legend.subtest_not_applicable") }}</span></li>
                             <li><span class="faq-test not_testable"><span class="visuallyhidden">{{ $t("report.results.not_testable") }}</span>{{ $t("icon_legend.subtest_not_testable") }}</span></li>
+                            <li><span class="faq-test error_in_test"><span class="visuallyhidden">{{ $t("report.results.error_in_test") }}</span>{{ $t("icon_legend.subtest_error_in_test") }}</span></li>
                         </ul>
                     </div>
                 </div>
@@ -736,6 +737,7 @@ const Report = Vue.component('report', {
                     subtest_info: internet_nl_messages.en.internet_nl.faqs_report_subtest_info,
                     subtest_not_applicable: "Not applicable ⇒ no score impact",
                     subtest_not_testable: "Not testable ⇒ no score impact",
+                    subtest_error_in_test: "Error occured while testing ⇒ null score",
                 },
 
                 header: {
@@ -770,6 +772,7 @@ const Report = Vue.component('report', {
                     results: {
                         not_applicable: "Not applicable",
                         not_testable: "Not testable",
+                        error_in_test: "Test error",
                         failed: "Failed",
                         warning: "Warning",
                         info: "Info",
@@ -841,6 +844,7 @@ const Report = Vue.component('report', {
                 // Test results
                 not_testable: 'Not testable',
                 not_applicable: 'Not applicable',
+                error_in_test: "Test error",
 
                 // legacy values
                 mail_legacy: 'Extra Fields',
@@ -889,6 +893,7 @@ const Report = Vue.component('report', {
                     subtest_info: internet_nl_messages.nl.internet_nl.faqs_report_subtest_info,
                     subtest_not_applicable:  "Niet van toepassing ⇒ geen score impact",
                     subtest_not_testable:  "Niet testbaar ⇒ geen score impact",
+                    subtest_error_in_test: "Fout in test ⇒ nulscore",
                 },
 
                 header: {
@@ -924,6 +929,7 @@ const Report = Vue.component('report', {
                     results: {
                         not_applicable: "Niet van toepassing",
                         not_testable: "Niet testbaar",
+                        error_in_test: "Testfout",
                         failed: "Niet goed",
                         warning: "Waarschuwing",
                         info: "Info",
@@ -1351,7 +1357,7 @@ const Report = Vue.component('report', {
             } else {
                 if (verdicts.test_result !== undefined)
                     // API V2.0:
-                    simple_value = verdicts.test_result;  // not_applicable, not_testable, failed, warning, info, passed
+                    simple_value = verdicts.test_result;  // error, not_testable, failed, warning, info, passed
                 else
                     // API V1.0
                     simple_value = verdicts.simple_verdict;
@@ -1403,7 +1409,7 @@ const Report = Vue.component('report', {
             } else {
                 if (other_verdicts.test_result !== undefined)
                     // API V2.0:
-                    other_simple_value = other_verdicts.test_result;  // not_applicable, not_testable, failed, warning, info, passed
+                    other_simple_value = other_verdicts.test_result;  // error_in_test, not_testable, failed, warning, info, passed
                 else
                     // API V1.0
                     other_simple_value = other_verdicts.simple_verdict;
@@ -1416,7 +1422,7 @@ const Report = Vue.component('report', {
             if (simple_value === other_simple_value)
                 comparison_verdict = "neutral";
 
-            const neutral_values = ["unknown", "not_applicable", "not_testable", 'no_mx', 'unreachable'];
+            const neutral_values = ["unknown", "not_applicable", "not_testable", 'no_mx', 'unreachable', 'error_in_test', 'error'];
 
             if (neutral_values.includes(simple_value) || neutral_values.includes(other_simple_value))
                 comparison_verdict = "neutral";

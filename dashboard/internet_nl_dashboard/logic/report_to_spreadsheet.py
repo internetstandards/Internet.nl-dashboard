@@ -651,7 +651,9 @@ def keyed_values_as_boolean(keyed_ratings: Dict[str, Any], protocol: str = 'dns_
                 values.append(keyed_ratings[issue_name]['internet_nl_url'])
             else:
                 # the issue name might not exist, the 'ok' value might not exist. In those cases replace it with a ?
-                value = keyed_ratings.get(issue_name, {'ok': '?', 'not_testable': False, 'not_applicable': False})
+                value = keyed_ratings.get(issue_name, {'ok': '?',
+                                                       'not_testable': False,
+                                                       'not_applicable': False, 'error_in_test': False})
 
                 # api v2, tls1.3 update
                 if value.get('test_result', False):
@@ -667,6 +669,8 @@ def keyed_values_as_boolean(keyed_ratings: Dict[str, Any], protocol: str = 'dns_
                             values.append('not_testable')
                         elif value['simple_verdict'] == "not_applicable":
                             values.append('not_applicable')
+                        elif value['simple_verdict'] == "error_in_test":
+                            values.append('error')
                         else:
                             # When the value doesn't exist at all, we'll get a questionmark.
                             values.append(value.get('ok', '?'))

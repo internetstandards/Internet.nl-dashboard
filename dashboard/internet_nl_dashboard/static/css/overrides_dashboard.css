@@ -300,6 +300,11 @@ small {
     background-image: url("/static/images/vendor/internet_nl/icon-not-tested-question-mark.svg"), none;
 }
 
+.error_in_test {
+    background-image: url("/static/images/vendor/internet_nl/icon-not-tested-bolt.png");
+    background-image: url("/static/images/vendor/internet_nl/icon-not-tested-bolt.svg"), none;
+}
+
 .not_applicable, .not_tested {
     background-image: url("/static/images/vendor/internet_nl/icon-not-tested.png");
     background-image: url("/static/images/vendor/internet_nl/icon-not-tested.svg"), none;

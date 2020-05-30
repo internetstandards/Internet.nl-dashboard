@@ -143,7 +143,7 @@ Vue.component('percentage-bar-chart', {
                     return;
                 }
 
-                let shown_values = ['pct_ok', 'pct_low', 'pct_medium', 'pct_high', 'pct_not_testable', 'pct_not_applicable'];
+                let shown_values = ['pct_ok', 'pct_low', 'pct_medium', 'pct_high', 'pct_not_testable', 'pct_not_applicable', 'pct_error_in_test'];
                 let background_colors = {
                     'pct_ok': "#009E46",
                     'pct_low': "#08236B",
@@ -151,6 +151,7 @@ Vue.component('percentage-bar-chart', {
                     'pct_high': "#A71810",
 
                     'pct_not_applicable': "rgba(41,41,41,0.73)",
+                    'pct_error_in_test': "rgba(41,41,41,0.73)",
                     'pct_not_testable': "rgba(109,109,109,0.8)",
                 };
 
@@ -161,6 +162,7 @@ Vue.component('percentage-bar-chart', {
                     'pct_high': "failed",
                     'pct_not_applicable': "not applicable",
                     'pct_not_testable': "not testable",
+                    'pct_error_in_test': "test error",
                 };
 
                 shown_values.forEach((shown_value) => {
