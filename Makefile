@@ -152,7 +152,7 @@ testcase: ${app}
 	# run specific testcase
 	# example: make test_testcase testargs=test_openstreetmaps
 	${env} DJANGO_SETTINGS_MODULE=${app_name}.settings DB_NAME=test.sqlite3 \
-		${env} pytest -k ${case}
+		${env} pytest -v -k ${case}
 
 test_datasets: ${app}
 	${env} /bin/sh -ec "find ${app_name}/ -path '*/fixtures/*.yaml' -print0 | \

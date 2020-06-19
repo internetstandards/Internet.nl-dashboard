@@ -18,6 +18,18 @@ def test_retrieve_urls_from_unfiltered_input() -> None:
     output = retrieve_urls_from_unfiltered_input("https://www.apple.com:443/nl/iphone-11/, bing.com, http://nu.nl")
     assert output == ['bing.com', 'nu.nl', 'www.apple.com']
 
+    # input contains multiple lines, whitespaces before and after the domains and some tabs mixed in.
+    unsanitized_input = """
+    ,
+     stichtingmediawijzer.nl	  
+            , , ,
+     	 
+    eskillsplatform.nl  ,        
+    """  # noqa violates python coding standard on points E101 and W191. Needed for this test :)
+
+    output = retrieve_urls_from_unfiltered_input(unsanitized_input)
+    assert output == ['eskillsplatform.nl', 'stichtingmediawijzer.nl']
+
 
 def test_urllists(db, redis_server) -> None:
     account, created = Account.objects.all().get_or_create(name="test")

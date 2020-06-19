@@ -529,6 +529,9 @@ def retrieve_urls_from_unfiltered_input(garbage: str) -> List[str]:
     # Split also removes double spaces etc
     garbage = garbage.split(" ")
 
+    # now remove _all_ whitespace characters
+    garbage = [re.sub(r"\s+", " ", u) for u in garbage]
+
     # remove port numbers and paths
     garbage = [re.sub(r":[^\s]*", "", u) for u in garbage]
 
