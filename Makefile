@@ -89,7 +89,7 @@ test: .make.test	## run test suite
 .make.test: ${pysrc} ${app}
 	# run testsuite
 	DJANGO_SETTINGS_MODULE=${app_name}.settings ${env} coverage run --include '${app_name}/*' \
-		-m pytest -k 'not integration and not system' ${testargs}
+		-m pytest -v -k 'not integration and not system' ${testargs}
 	# generate coverage
 	${env} coverage report
 	# and pretty html
