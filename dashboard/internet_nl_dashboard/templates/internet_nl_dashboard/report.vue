@@ -1037,34 +1037,14 @@ const Report = Vue.component('report', {
                 internet_nl_web_tls: {visible: true, show_dynamic_average: true, only_show_dynamic_average: false},
                 internet_nl_web_dnssec: {visible: true, show_dynamic_average: true, only_show_dynamic_average: false},
                 internet_nl_web_ipv6: {visible: true, show_dynamic_average: true, only_show_dynamic_average: false},
-                internet_nl_web_appsecpriv: {
-                    visible: true,
-                    show_dynamic_average: true,
-                    only_show_dynamic_average: false
-                },  // Added 24th of May 2019
+                internet_nl_web_appsecpriv: {visible: true, show_dynamic_average: true, only_show_dynamic_average: false},  // Added 24th of May 2019
 
                 mail: {visible: true, show_dynamic_average: true, only_show_dynamic_average: false},
                 mail_legacy: {visible: false, show_dynamic_average: true, only_show_dynamic_average: false},
-                internet_nl_mail_dashboard_tls: {
-                    visible: true,
-                    show_dynamic_average: true,
-                    only_show_dynamic_average: false
-                },
-                internet_nl_mail_dashboard_auth: {
-                    visible: true,
-                    show_dynamic_average: true,
-                    only_show_dynamic_average: false
-                },
-                internet_nl_mail_dashboard_dnssec: {
-                    visible: true,
-                    show_dynamic_average: true,
-                    only_show_dynamic_average: false
-                },
-                internet_nl_mail_dashboard_ipv6: {
-                    visible: true,
-                    show_dynamic_average: true,
-                    only_show_dynamic_average: false
-                },
+                internet_nl_mail_dashboard_tls: {visible: true, show_dynamic_average: true, only_show_dynamic_average: false},
+                internet_nl_mail_dashboard_auth: {visible: true, show_dynamic_average: true, only_show_dynamic_average: false},
+                internet_nl_mail_dashboard_dnssec: {visible: true, show_dynamic_average: true, only_show_dynamic_average: false},
+                internet_nl_mail_dashboard_ipv6: {visible: true, show_dynamic_average: true, only_show_dynamic_average: false},
 
                 // a request was made to enable/disable dynamic averages on every graph. For this each graph
                 // needed an identifier, which became "category" -> thing. In this, values are stored.
@@ -1076,29 +1056,14 @@ const Report = Vue.component('report', {
                 category_web_tls_tls: {show_dynamic_average: true, only_show_dynamic_average: false},
                 category_web_tls_certificate: {show_dynamic_average: true, only_show_dynamic_average: false},
                 category_web_tls_dane: {show_dynamic_average: true, only_show_dynamic_average: false},
-                category_web_security_options_appsecpriv: {
-                    show_dynamic_average: true,
-                    only_show_dynamic_average: false
-                },
-                category_web_forum_standardisation_magazine: {
-                    show_dynamic_average: true,
-                    only_show_dynamic_average: false
-                },
-                category_web_forum_standardisation_ipv6_monitor: {
-                    show_dynamic_average: true,
-                    only_show_dynamic_average: false
-                },
-                category_web_forum_standardisation_status_fields: {
-                    show_dynamic_average: true,
-                    only_show_dynamic_average: false
-                },
+                category_web_security_options_appsecpriv: {show_dynamic_average: true, only_show_dynamic_average: false},
+                category_web_forum_standardisation_magazine: {show_dynamic_average: true, only_show_dynamic_average: false},
+                category_web_forum_standardisation_ipv6_monitor: {show_dynamic_average: true, only_show_dynamic_average: false},
+                category_web_forum_standardisation_status_fields: {show_dynamic_average: true, only_show_dynamic_average: false},
 
                 category_mail_ipv6_name_servers: {show_dynamic_average: true, only_show_dynamic_average: false},
                 category_mail_ipv6_mail_servers: {show_dynamic_average: true, only_show_dynamic_average: false},
-                category_mail_dnssec_email_address_domain: {
-                    show_dynamic_average: true,
-                    only_show_dynamic_average: false
-                },
+                category_mail_dnssec_email_address_domain: {show_dynamic_average: true, only_show_dynamic_average: false},
                 category_mail_dnssec_mail_server_domain: {show_dynamic_average: true, only_show_dynamic_average: false},
                 category_mail_dashboard_auth_dmarc: {show_dynamic_average: true, only_show_dynamic_average: false},
                 category_mail_dashboard_aut_dkim: {show_dynamic_average: true, only_show_dynamic_average: false},
@@ -1106,15 +1071,8 @@ const Report = Vue.component('report', {
                 category_mail_starttls_tls: {show_dynamic_average: true, only_show_dynamic_average: false},
                 category_mail_starttls_certificate: {show_dynamic_average: true, only_show_dynamic_average: false},
                 category_mail_starttls_dane: {show_dynamic_average: true, only_show_dynamic_average: false},
-                category_mail_forum_standardisation_magazine: {
-                    show_dynamic_average: true,
-                    only_show_dynamic_average: false
-                },
-                category_mail_forum_standardisation_ipv6_monitor: {
-                    show_dynamic_average: true,
-                    only_show_dynamic_average: false
-                },
-
+                category_mail_forum_standardisation_magazine: {show_dynamic_average: true, only_show_dynamic_average: false},
+                category_mail_forum_standardisation_ipv6_monitor: {show_dynamic_average: true, only_show_dynamic_average: false},
 
                 internet_nl_web_https_cert_domain: {visible: true},
                 internet_nl_web_https_http_redirect: {visible: true},
@@ -1208,6 +1166,11 @@ const Report = Vue.component('report', {
                 internet_nl_web_appsecpriv_x_content_type_options: {visible: true},  // Added 24th of May 2019
                 internet_nl_web_appsecpriv_x_frame_options: {visible: true},  // Added 24th of May 2019
                 internet_nl_web_appsecpriv_x_xss_protection: {visible: true},  // Added 24th of May 2019
+
+                // added in 2.0:
+                internet_nl_mail_starttls_tls_cipherorder: {visible: false},
+                internet_nl_mail_starttls_tls_keyexchangehash: {visible: false},
+                internet_nl_mail_starttls_tls_0rtt: {visible: false},
 
                 internet_nl_web_legacy_tls_1_3: {visible: false},
                 internet_nl_mail_legacy_mail_non_sending_domain: {visible: false},
@@ -1524,66 +1487,82 @@ const Report = Vue.component('report', {
         load_issue_filters: function(){
             fetch(`/data/account/report_settings/get/`, {credentials: 'include'}).then(response => response.json()).then(data => {
                 if (!jQuery.isEmptyObject(data.data)) {
+                    // Get all possible issue fields before overwriting them with whatever is stored.
+                    const all_possible_fields = Object.keys(this.issue_filters);
+
+                    // now overwrite with the custom settings
                     this.issue_filters = data.data;
 
-                    // upgrade existing issue filters with new fields:
-                    this.upgrade_issue_filter_with_new_field('internet_nl_mail_non_sending_domain');
-                    this.upgrade_issue_filter_with_new_field('internet_nl_mail_server_configured');
-                    this.upgrade_issue_filter_with_new_field('internet_nl_mail_servers_testable');
-                    this.upgrade_issue_filter_with_new_field('internet_nl_mail_starttls_dane_ta');
-
-                    this.upgrade_issue_filter_with_new_field('category_web_ipv6_name_server');
-                    this.upgrade_issue_filter_with_new_field('category_web_ipv6_web_server');
-                    this.upgrade_issue_filter_with_new_field('category_web_dnssec_dnssec');
-                    this.upgrade_issue_filter_with_new_field('category_web_tls_http');
-                    this.upgrade_issue_filter_with_new_field('category_web_tls_tls');
-                    this.upgrade_issue_filter_with_new_field('category_web_tls_certificate');
-                    this.upgrade_issue_filter_with_new_field('category_web_tls_dane');
-                    this.upgrade_issue_filter_with_new_field('category_web_security_options_appsecpriv');
-                    this.upgrade_issue_filter_with_new_field('category_web_forum_standardisation_magazine');
-                    this.upgrade_issue_filter_with_new_field('category_web_forum_standardisation_ipv6_monitor');
-                    this.upgrade_issue_filter_with_new_field('category_web_forum_standardisation_status_fields');
-                    this.upgrade_issue_filter_with_new_field('category_mail_ipv6_name_servers');
-                    this.upgrade_issue_filter_with_new_field('category_mail_ipv6_mail_servers');
-                    this.upgrade_issue_filter_with_new_field('category_mail_dnssec_email_address_domain');
-                    this.upgrade_issue_filter_with_new_field('category_mail_dnssec_mail_server_domain');
-                    this.upgrade_issue_filter_with_new_field('category_mail_dashboard_auth_dmarc');
-                    this.upgrade_issue_filter_with_new_field('category_mail_dashboard_aut_dkim');
-                    this.upgrade_issue_filter_with_new_field('category_mail_dashboard_aut_spf');
-                    this.upgrade_issue_filter_with_new_field('category_mail_starttls_tls');
-                    this.upgrade_issue_filter_with_new_field('category_mail_starttls_certificate');
-                    this.upgrade_issue_filter_with_new_field('category_mail_starttls_dane');
-                    this.upgrade_issue_filter_with_new_field('category_mail_forum_standardisation_magazine');
-                    this.upgrade_issue_filter_with_new_field('category_mail_forum_standardisation_ipv6_monitor');
-
-                    // new fields may 2020, api v2, tls 1.3:
-                    this.upgrade_issue_filter_with_new_field('internet_nl_web_https_tls_cipherorder');
-                    this.upgrade_issue_filter_with_new_field('internet_nl_web_https_tls_0rtt');
-                    this.upgrade_issue_filter_with_new_field('internet_nl_web_https_tls_ocsp');
-                    this.upgrade_issue_filter_with_new_field('internet_nl_web_https_tls_keyexchangehash');
-                    this.upgrade_issue_filter_with_new_field('internet_nl_mail_starttls_tls_cipherorder');
-                    this.upgrade_issue_filter_with_new_field('internet_nl_mail_starttls_tls_keyexchangehash');
-                    this.upgrade_issue_filter_with_new_field('internet_nl_mail_starttls_tls_0rtt');
-
-                    // extra fields for v2.0
-                    this.upgrade_issue_filter_with_new_field('internet_nl_web_legacy_tls_1_3');
-                    this.upgrade_issue_filter_with_new_field('internet_nl_mail_legacy_mail_non_sending_domain');
-                    this.upgrade_issue_filter_with_new_field('internet_nl_mail_legacy_mail_server_testable');
-                    this.upgrade_issue_filter_with_new_field('internet_nl_mail_legacy_mail_server_reachable');
-                    this.upgrade_issue_filter_with_new_field('internet_nl_mail_legacy_domain_has_mx');
-                    this.upgrade_issue_filter_with_new_field('internet_nl_mail_legacy_tls_1_3');
-
-                    this.upgrade_issue_filter_with_new_field('internet_nl_web_legacy_category_ipv6');
-                    this.upgrade_issue_filter_with_new_field('internet_nl_mail_legacy_category_ipv6');
-
+                    // upgrade the saved issue filters with all fields we know. In case of missing fields, those will
+                    // be added with a default value (invisible).
+                    all_possible_fields.forEach((field_name) => {
+                        this.upgrade_issue_filter_with_new_field(field_name);
+                    })
                 }
             });
         },
 
 
         upgrade_issue_filter_with_new_field: function(field_name){
-            if (!Object.keys(this.issue_filters).includes(field_name))
-                        this.issue_filters[field_name] = {visible: false, show_dynamic_average: true, only_show_dynamic_average: false}
+            if (!Object.keys(this.issue_filters).includes(field_name)) {
+
+                // web and mail and default categories are always visible by default.: otherwise we'd never see any categories when this data is malformed.
+                // in totally empty data, all fields are invisble, which is ok.
+                if (["web", "mail",
+
+                    // default visible catagories
+                    "internet_nl_web_ipv6", "internet_nl_web_dnssec", "internet_nl_web_tls",
+                    "internet_nl_web_appsecpriv", "internet_nl_mail_dashboard_ipv6",
+                    "internet_nl_mail_dashboard_dnssec", "internet_nl_mail_dashboard_auth",
+                    "internet_nl_mail_dashboard_tls",
+
+                    // fields visible by default;
+                    "internet_nl_web_https_cert_domain", "internet_nl_web_https_http_redirect",
+                    "internet_nl_web_https_cert_chain", "internet_nl_web_https_tls_version",
+                    "internet_nl_web_https_tls_clientreneg", "internet_nl_web_https_tls_ciphers",
+                    "internet_nl_web_https_http_available", "internet_nl_web_https_dane_exist",
+                    "internet_nl_web_https_http_compress", "internet_nl_web_https_http_hsts",
+                    "internet_nl_web_https_tls_secreneg", "internet_nl_web_https_dane_valid",
+                    "internet_nl_web_https_cert_pubkey", "internet_nl_web_https_cert_sig",
+                    "internet_nl_web_https_tls_compress", "internet_nl_web_https_tls_keyexchange",
+                    "internet_nl_web_https_tls_keyexchangehash", "internet_nl_web_https_tls_ocsp",
+                    "internet_nl_web_https_tls_0rtt", "internet_nl_web_https_tls_cipherorder",
+                    "internet_nl_web_dnssec_valid", "internet_nl_web_dnssec_exist", "internet_nl_web_ipv6_ws_similar",
+                    "internet_nl_web_ipv6_ws_address", "internet_nl_web_ipv6_ns_reach", "internet_nl_web_ipv6_ws_reach",
+                    "internet_nl_web_ipv6_ns_address", "internet_nl_mail_starttls_cert_domain",
+                    "internet_nl_mail_starttls_tls_version", "internet_nl_mail_starttls_cert_chain",
+                    "internet_nl_mail_starttls_tls_available", "internet_nl_mail_starttls_tls_clientreneg",
+                    "internet_nl_mail_starttls_tls_ciphers", "internet_nl_mail_starttls_dane_valid",
+                    "internet_nl_mail_starttls_dane_exist", "internet_nl_mail_starttls_tls_secreneg",
+                    "internet_nl_mail_starttls_dane_rollover", "internet_nl_mail_starttls_cert_pubkey",
+                    "internet_nl_mail_starttls_cert_sig", "internet_nl_mail_starttls_tls_compress",
+                    "internet_nl_mail_starttls_tls_keyexchange", "internet_nl_mail_auth_dmarc_policy",
+                    "internet_nl_mail_auth_dmarc_exist", "internet_nl_mail_auth_spf_policy",
+                    "internet_nl_mail_auth_dkim_exist", "internet_nl_mail_auth_spf_exist",
+                    "internet_nl_mail_dnssec_mailto_exist", "internet_nl_mail_dnssec_mailto_valid",
+                    "internet_nl_mail_dnssec_mx_valid", "internet_nl_mail_dnssec_mx_exist",
+                    "internet_nl_mail_ipv6_mx_address", "internet_nl_mail_ipv6_mx_reach",
+                    "internet_nl_mail_ipv6_ns_reach", "internet_nl_mail_ipv6_ns_address",
+                    "internet_nl_web_appsecpriv_csp", "internet_nl_web_appsecpriv_referrer_policy",
+                    "internet_nl_web_appsecpriv_x_content_type_options", "internet_nl_web_appsecpriv_x_frame_options",
+                    "internet_nl_web_appsecpriv_x_xss_protection",
+
+                ].includes(field_name)){
+                    this.issue_filters[field_name] = {
+                        visible: true,
+                        show_dynamic_average: true,
+                        only_show_dynamic_average: false
+                    }
+                } else {
+                    // this is invisible because we don't want to tamper with existing settings when introducing new
+                    // fields. Users will have to enable it themselves.
+                    this.issue_filters[field_name] = {
+                        visible: false,
+                        show_dynamic_average: true,
+                        only_show_dynamic_average: false
+                    }
+                }
+            }
         },
 
         alphabet_sorting: function(a, b){
@@ -1795,6 +1774,12 @@ const Report = Vue.component('report', {
 
             let should_be_visible = false;
             for (let i=0; i< fields.length; i++){
+
+                // alerting if fields are missing:
+                if (this.issue_filters[fields[i]] === undefined){
+                    console.log(`Missing field ${fields[i]} in issue filters.`)
+                }
+
                 if (this.issue_filters[fields[i]].visible){
                     should_be_visible = true;
                     break;
