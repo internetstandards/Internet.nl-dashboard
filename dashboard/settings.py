@@ -585,7 +585,7 @@ if SENTRY_DSN:
                     release=__version__, send_default_pii=False)
 
 SENTRY_ORGANIZATION = 'internet-cleanup-foundation'
-SENTRY_PROJECT = 'dashboard'
+SENTRY_PROJECT = 'internet-nl-dashboard'
 SENTRY_PROJECT_URL = 'https://sentry.io/%s/%s' % (SENTRY_ORGANIZATION, SENTRY_PROJECT)
 
 
