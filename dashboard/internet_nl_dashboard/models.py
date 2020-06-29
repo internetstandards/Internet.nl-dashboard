@@ -239,18 +239,19 @@ class UrlList(models.Model):
 
         # months are base 1: january = 1 etc.
         if preference == 'every half year':
-            if now.month in range(1, 6):
+            if now.month in [1, 2, 3, 4, 5, 6]:
                 return datetime(year=now.year, month=7, day=1, hour=0, minute=0, second=0, tzinfo=pytz.utc)
             return datetime(year=now.year + 1, month=1, day=1, hour=0, minute=0, second=0, tzinfo=pytz.utc)
 
         if preference == 'at the start of every quarter':
-            if now.month in range(1, 3):
+
+            if now.month in [1, 2, 3]:
                 return datetime(year=now.year, month=4, day=1, hour=0, minute=0, second=0, tzinfo=pytz.utc)
-            if now.month in range(4, 6):
+            if now.month in [4, 5, 6]:
                 return datetime(year=now.year, month=7, day=1, hour=0, minute=0, second=0, tzinfo=pytz.utc)
-            if now.month in range(7, 9):
+            if now.month in [7, 8, 9]:
                 return datetime(year=now.year, month=10, day=1, hour=0, minute=0, second=0, tzinfo=pytz.utc)
-            if now.month in range(10, 12):
+            if now.month in [10, 11, 12]:
                 return datetime(year=now.year + 1, month=1, day=1, hour=0, minute=0, second=0, tzinfo=pytz.utc)
 
         if preference == 'every 1st day of the month':
@@ -260,7 +261,8 @@ class UrlList(models.Model):
 
         if preference == 'twice per month':
             # since the 14'th day never causes a month or year rollover, we can simply schedule for the 15th day.
-            if now.day in range(1, 14):
+            # note: range is not used because range is _to_ a certain moment.
+            if now.day in [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14]:
                 return datetime(year=now.year, month=now.month, day=15, hour=0, minute=0, second=0, tzinfo=pytz.utc)
 
             # otherwise exactly the same as the 1st day of every month
