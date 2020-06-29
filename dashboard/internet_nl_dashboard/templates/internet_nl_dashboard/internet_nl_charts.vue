@@ -50,77 +50,50 @@
             </div>
         </div>
 
-        <div class="block fullwidth" style="page-break-before: always;" v-if='compare_charts.length > 0'>
-            <h2>
-                {{ $t("chart_info.adoption_bar_chart.annotation.title") }}
-            </h2>
-            <p>{{ $t("chart_info.adoption_bar_chart.annotation.intro") }}</p>
+        <div class="block fullwidth" v-if="!can_show_charts()">
+            <h2>⚠️ {{ $t("selected_report_is_from_before_api_2.title") }}</h2>
+            <p>{{ $t("selected_report_is_from_before_api_2.intro") }}</p>
+        </div>
 
-            <template v-for="scan_form in scan_methods">
-                <template v-if="scan_form.name === selected_report[0].type">
+        <template v-else>
+            <div class="block fullwidth" style="page-break-before: always;" v-if='compare_charts.length > 0'>
+                <h2>
+                    {{ $t("chart_info.adoption_bar_chart.annotation.title") }}
+                </h2>
+                <p>{{ $t("chart_info.adoption_bar_chart.annotation.intro") }}</p>
 
-                    <div style="overflow: auto; width: 100%" v-if="visible_fields_from_scan_form(scan_form).length > 0">
-                        <div class="chart-container"
-                             style="position: relative; height:500px; width:100%; min-width: 950px;">
-                            <percentage-bar-chart
-                                    :title="graph_bar_chart_title"
-                                    :translation_key="'charts.adoption_bar_chart'"
-                                    :color_scheme="color_scheme"
-                                    :chart_data="compare_charts"
-                                    :accessibility_text="$t('charts.adoption_bar_chart.accessibility_text')"
-                                    :show_dynamic_average="issue_filters[scan_form.name].show_dynamic_average"
-                                    :only_show_dynamic_average="false"
-                                    :axis="visible_fields_from_scan_form(scan_form)">
-                            </percentage-bar-chart>
-                        </div>
-                    </div>
+                <template v-for="scan_form in scan_methods">
+                    <template v-if="scan_form.name === selected_report[0].type">
 
-                    <template v-for="category in scan_form.categories">
-                        <template v-if="category_is_visible(category.key)">
-                            <div class="testresult" style="page-break-inside: avoid;"
-                                 v-if="visible_fields_from_categories(category).length > 0">
-                                <h3 class="panel-title">
-                                    <a href="" aria-expanded="false">
-                                        <span class="visuallyhidden">-:</span>
-                                        {{ category.label }}
-                                        <span class="pre-icon visuallyhidden"></span>
-                                        <span class="icon"><img src="/static/images/vendor/internet_nl/push-open.png"
-                                                                alt=""></span>
-                                    </a>
-                                </h3>
-                                <div class="panel-content">
-                                    <div style="overflow: auto; width: 100%">
-                                        <div class="chart-container"
-                                             style="position: relative; height:500px; width:100%; min-width: 950px;">
-                                            <percentage-bar-chart
-                                                    :title="graph_bar_chart_title"
-                                                    :translation_key="'charts.adoption_bar_chart'"
-                                                    :color_scheme="color_scheme"
-                                                    :chart_data="compare_charts"
-                                                    :accessibility_text="$t('charts.adoption_bar_chart.accessibility_text')"
-                                                    :show_dynamic_average="issue_filters[category.key].show_dynamic_average"
-                                                    :only_show_dynamic_average="false"
-                                                    :field_name_to_category_names="field_name_to_category_names"
-                                                    :axis="visible_fields_from_categories(category)">
-                                            </percentage-bar-chart>
-                                        </div>
-                                    </div>
-                                </div>
+                        <div style="overflow: auto; width: 100%" v-if="visible_fields_from_scan_form(scan_form).length > 0">
+                            <div class="chart-container"
+                                 style="position: relative; height:500px; width:100%; min-width: 950px;">
+                                <percentage-bar-chart
+                                        :title="graph_bar_chart_title"
+                                        :translation_key="'charts.adoption_bar_chart'"
+                                        :color_scheme="color_scheme"
+                                        :chart_data="compare_charts"
+                                        :accessibility_text="$t('charts.adoption_bar_chart.accessibility_text')"
+                                        :show_dynamic_average="issue_filters[scan_form.name].show_dynamic_average"
+                                        :only_show_dynamic_average="false"
+                                        :axis="visible_fields_from_scan_form(scan_form)">
+                                </percentage-bar-chart>
                             </div>
+                        </div>
 
-                            <template v-for="subcategory in category.categories">
-                                <!-- Visibility depends on parent category, the labels themselves cannot yet be filtered for visibility. -->
+                        <template v-for="category in scan_form.categories">
+                            <template v-if="category_is_visible(category.key)">
                                 <div class="testresult" style="page-break-inside: avoid;"
-                                     v-if="fields_from_self(subcategory).length > 0">
-                                    <h4 class="panel-title">
+                                     v-if="visible_fields_from_categories(category).length > 0">
+                                    <h3 class="panel-title">
                                         <a href="" aria-expanded="false">
                                             <span class="visuallyhidden">-:</span>
-                                            {{ subcategory.label }}
+                                            {{ category.label }}
                                             <span class="pre-icon visuallyhidden"></span>
-                                            <span class="icon"><img
-                                                    src="/static/images/vendor/internet_nl/push-open.png" alt=""></span>
+                                            <span class="icon"><img src="/static/images/vendor/internet_nl/push-open.png"
+                                                                    alt=""></span>
                                         </a>
-                                    </h4>
+                                    </h3>
                                     <div class="panel-content">
                                         <div style="overflow: auto; width: 100%">
                                             <div class="chart-container"
@@ -134,41 +107,74 @@
                                                         :show_dynamic_average="issue_filters[category.key].show_dynamic_average"
                                                         :only_show_dynamic_average="false"
                                                         :field_name_to_category_names="field_name_to_category_names"
-                                                        :axis="fields_from_self(subcategory)">
-                                                </percentage-bar-chart>
-                                            </div>
-                                        </div>
-                                        <!-- Special graph for Forum standardisation, that cannot have the items disabled -->
-                                        <div style="overflow: auto; width: 100%"
-                                             v-if="['category_mail_forum_standardisation_magazine', 'category_web_forum_standardisation_magazine'].includes(subcategory.key)">
-                                            <p>{{ $t("chart_info.magazine.intro") }}</p>
-                                            <div class="chart-container"
-                                                 style="position: relative; height:500px; width:100%; min-width: 950px;">
-                                                <percentage-bar-chart
-                                                        :title="graph_bar_chart_title"
-                                                        :translation_key="'charts.adoption_bar_chart'"
-                                                        :color_scheme="color_scheme"
-                                                        :chart_data="compare_charts"
-                                                        :accessibility_text="$t('charts.adoption_bar_chart.accessibility_text')"
-                                                        :show_dynamic_average="true"
-                                                        :only_show_dynamic_average="true"
-                                                        :field_name_to_category_names="field_name_to_category_names"
-                                                        :axis="fields_from_self_and_do_not_filter(subcategory)">
+                                                        :axis="visible_fields_from_categories(category)">
                                                 </percentage-bar-chart>
                                             </div>
                                         </div>
                                     </div>
                                 </div>
+
+                                <template v-for="subcategory in category.categories">
+                                    <!-- Visibility depends on parent category, the labels themselves cannot yet be filtered for visibility. -->
+                                    <div class="testresult" style="page-break-inside: avoid;"
+                                         v-if="fields_from_self(subcategory).length > 0">
+                                        <h4 class="panel-title">
+                                            <a href="" aria-expanded="false">
+                                                <span class="visuallyhidden">-:</span>
+                                                {{ subcategory.label }}
+                                                <span class="pre-icon visuallyhidden"></span>
+                                                <span class="icon"><img
+                                                        src="/static/images/vendor/internet_nl/push-open.png" alt=""></span>
+                                            </a>
+                                        </h4>
+                                        <div class="panel-content">
+                                            <div style="overflow: auto; width: 100%">
+                                                <div class="chart-container"
+                                                     style="position: relative; height:500px; width:100%; min-width: 950px;">
+                                                    <percentage-bar-chart
+                                                            :title="graph_bar_chart_title"
+                                                            :translation_key="'charts.adoption_bar_chart'"
+                                                            :color_scheme="color_scheme"
+                                                            :chart_data="compare_charts"
+                                                            :accessibility_text="$t('charts.adoption_bar_chart.accessibility_text')"
+                                                            :show_dynamic_average="issue_filters[category.key].show_dynamic_average"
+                                                            :only_show_dynamic_average="false"
+                                                            :field_name_to_category_names="field_name_to_category_names"
+                                                            :axis="fields_from_self(subcategory)">
+                                                    </percentage-bar-chart>
+                                                </div>
+                                            </div>
+                                            <!-- Special graph for Forum standardisation, that cannot have the items disabled -->
+                                            <div style="overflow: auto; width: 100%"
+                                                 v-if="['category_mail_forum_standardisation_magazine', 'category_web_forum_standardisation_magazine'].includes(subcategory.key)">
+                                                <p>{{ $t("chart_info.magazine.intro") }}</p>
+                                                <div class="chart-container"
+                                                     style="position: relative; height:500px; width:100%; min-width: 950px;">
+                                                    <percentage-bar-chart
+                                                            :title="graph_bar_chart_title"
+                                                            :translation_key="'charts.adoption_bar_chart'"
+                                                            :color_scheme="color_scheme"
+                                                            :chart_data="compare_charts"
+                                                            :accessibility_text="$t('charts.adoption_bar_chart.accessibility_text')"
+                                                            :show_dynamic_average="true"
+                                                            :only_show_dynamic_average="true"
+                                                            :field_name_to_category_names="field_name_to_category_names"
+                                                            :axis="fields_from_self_and_do_not_filter(subcategory)">
+                                                    </percentage-bar-chart>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </template>
+
                             </template>
-
                         </template>
+
                     </template>
-
                 </template>
-            </template>
-        </div>
+            </div>
 
-        <div class="block fullwidth" style="page-break-before: always;" aria-hidden="true" v-if='compare_charts.length > 1'>
+            <div class="block fullwidth" style="page-break-before: always;" aria-hidden="true" v-if='compare_charts.length > 1'>
 
             <h2>
                 {{ $t("chart_info.cumulative_adoption_bar_chart.annotation.title") }}
@@ -288,6 +294,7 @@
                 </template>
             </template>
         </div>
+        </template>
 
     </div>
 </template>
@@ -297,6 +304,10 @@
         i18n: {
             messages: {
                 en: {
+                    selected_report_is_from_before_api_2: {
+                        title: "Unable to show all statistics",
+                        intro: "One of the selected reports are from before 30th of June 2020. Before that date, reports contained different calculations which are not consistent with the current version of the dashboard.",
+                    },
                     chart_info: {
                         adoption_timeline: {
                             annotation: {
@@ -324,6 +335,10 @@
 
                 },
                 nl: {
+                    selected_report_is_from_before_api_2: {
+                        title: "Niet mogelijk om alle statistieken te tonen",
+                        intro: "Een van de geselecteerde rapporten is van voor 30 juni 2020. Rapporten van voor deze datum gebruiken een andere rekenmethode, waardoor ze niet consistent zijn met de huidige versie van het dashboard.",
+                    },
                     chart_info: {
                         adoption_timeline: {
                             annotation: {
@@ -384,6 +399,29 @@
             }
         },
         methods: {
+
+            can_show_charts: function(){
+                // At June 30 2020 api 2.0 reports where introduced. Before that, calculations where done differently,
+                // where info and warning would be seen as passed. This has been changed, and since then there is more
+                // granularity. Because of differences in data: fields, statistics and how the data is used, a decision
+                // was made to delete all prior reports. Since that also affects scores over time, and since the data
+                // per metric in the metric table is still useful, the graphs have been set to hide.
+                // Of course it is still possible to download the graph data, or even show it in the interface if you
+                // know your way around javascript. But the result will be off the charts, literally :) -> thus hiding
+                // is the friendliest choice.
+
+                const api_2_introduced = Date.parse("2020-06-30 00:00:00.000000+00:00")
+
+                let showable = true;
+                this.compare_charts.forEach((item) => {
+                    // "2020-05-14 10:55:16.129108+00:00"
+                    if (Date.parse(item.at_when) < api_2_introduced)
+                        showable = false
+                });
+
+                return showable;
+            },
+
             generate_color_increments: function (number) {
                 // Generate n colors for charts, rotating over the available options. Returns a list with css properties.
                 // The first item is always the same in a single color to give a consistent look/feel to all first graphs
