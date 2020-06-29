@@ -5,17 +5,16 @@ Run these tests with tox -e test -- -k test_urllist_management
 """
 from websecmap.organizations.models import Url
 
-from dashboard.internet_nl_dashboard.logic.domains import (delete_list, delete_url_from_urllist,
-                                                           get_or_create_list_by_name,
-                                                           get_urllist_content,
-                                                           get_urllists_from_account, rename_list,
-                                                           retrieve_possible_urls_from_unfiltered_input,
-                                                           save_urllist_content_by_name)
+from dashboard.internet_nl_dashboard.logic.domains import (
+    delete_list, delete_url_from_urllist, get_or_create_list_by_name, get_urllist_content,
+    get_urllists_from_account, rename_list, retrieve_possible_urls_from_unfiltered_input,
+    save_urllist_content_by_name)
 from dashboard.internet_nl_dashboard.models import Account
 
 
 def test_retrieve_urls_from_unfiltered_input() -> None:
-    output = retrieve_possible_urls_from_unfiltered_input("https://www.apple.com:443/nl/iphone-11/, bing.com, http://nu.nl")
+    output = retrieve_possible_urls_from_unfiltered_input(
+        "https://www.apple.com:443/nl/iphone-11/, bing.com, http://nu.nl")
     assert output == ['bing.com', 'nu.nl', 'www.apple.com']
 
     # input contains multiple lines, whitespaces before and after the domains and some tabs mixed in.

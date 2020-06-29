@@ -2,9 +2,10 @@ import os
 from collections import OrderedDict
 from datetime import timedelta
 
-import raven
-import raven.contrib.celery
+import sentry_sdk
 from django.utils.translation import gettext_lazy as _
+from sentry_sdk.integrations.celery import CeleryIntegration
+from sentry_sdk.integrations.django import DjangoIntegration
 
 __version__ = '0.0.0'
 
@@ -577,22 +578,15 @@ if not DEBUG:
     SESSION_COOKIE_AGE = 1209600  # two weeks, could be longer
     CSRF_COOKIE_SECURE = True  # insecure by default
 
-# if sentry DSN is provided register raven to emit events on exceptions
 SENTRY_DSN = os.environ.get('SENTRY_DSN')
 if SENTRY_DSN:
-    INSTALLED_APPS += ('raven.contrib.django.raven_compat',)
-    RAVEN_CONFIG = {
-        'dsn': SENTRY_DSN,
-        'release': __version__,
-    }
-    # add sentry ID to request for inclusion in templates
-    # https://docs.sentry.io/clients/python/integrations/django/#message-references
-    MIDDLEWARE.insert(0, 'raven.contrib.django.raven_compat.middleware.SentryResponseErrorIdMiddleware')
+    # new sentry_sdk implementation, with hopes to also get exceptions from workers.
+    sentry_sdk.init(dsn=SENTRY_DSN, integrations=[CeleryIntegration(), DjangoIntegration()],
+                    release=__version__, send_default_pii=False)
 
-    # Celery specific handlers
-    client = raven.Client(SENTRY_DSN)
-    raven.contrib.celery.register_logger_signal(client)
-    raven.contrib.celery.register_signal(client)
+SENTRY_ORGANIZATION = 'internet-cleanup-foundation'
+SENTRY_PROJECT = 'dashboard'
+SENTRY_PROJECT_URL = 'https://sentry.io/%s/%s' % (SENTRY_ORGANIZATION, SENTRY_PROJECT)
 
 
 # Copied from internet.nl
