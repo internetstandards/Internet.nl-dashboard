@@ -408,7 +408,7 @@
                 // per metric in the metric table is still useful, the graphs have been set to hide.
                 // Of course it is still possible to download the graph data, or even show it in the interface if you
                 // know your way around javascript. But the result will be off the charts, literally :) -> thus hiding
-                // is the friendliest choice.
+                // is the friendliest choice..
 
                 const api_2_introduced = Date.parse("2020-06-30 00:00:00.000000+00:00")
 
