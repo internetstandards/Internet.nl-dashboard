@@ -6,7 +6,7 @@ Run these tests with tox -e test -- -k test_clean_urls
 from dashboard.internet_nl_dashboard.logic.domains import clean_urls
 
 
-def test_clean_urls(db) -> None:
+def test_clean_urls() -> None:
 
     # domains can't contain spaces...
     result = clean_urls(['kalsndlkas.asdakj .com'])
@@ -32,3 +32,7 @@ def test_clean_urls(db) -> None:
     # = xn--o1b5efa8g5c.xn--i1b6b1a6a2e
     result = clean_urls(['मुम्बई.संगठन'])
     assert len(result['incorrect']) == 0 and len(result['correct']) == 1
+
+    result = clean_urls([' ', ' ⠀ ', 'eskillsplatform.nl', 'stichtingmediawijzer.nl', '\u200b '])
+    assert len(result['incorrect']) == 3 and len(result['correct']) == 2
+    assert result['correct'] == ['eskillsplatform.nl', 'stichtingmediawijzer.nl']

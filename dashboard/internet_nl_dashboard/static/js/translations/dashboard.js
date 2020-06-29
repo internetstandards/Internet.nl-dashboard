@@ -29,42 +29,52 @@ const messages = {
         },
 
         internet_nl_mail_legacy_dmarc: 'DMARC',
-        internet_nl_mail_legacy_dmarc_explanation: 'Explanation',
+        internet_nl_mail_legacy_dmarc_explanation: 'Calculated by using the value from: mail_auth_dkim_exist.',
         internet_nl_mail_legacy_dkim: 'DKIM',
-        internet_nl_mail_legacy_dkim_explanation: 'Explanation',
+        internet_nl_mail_legacy_dkim_explanation: 'Calculated by using the value from: mail_auth_dkim_exist if it passes. If that\'s not available, see if the domain sends e-mail. If it does not, it\'s not applicable. Otherwise this fails.',
         internet_nl_mail_legacy_spf: 'SPF',
-        internet_nl_mail_legacy_spf_explanation: 'Explanation',
+        internet_nl_mail_legacy_spf_explanation: 'Calculated by using the value from: mail_auth_spf_exist.',
         internet_nl_mail_legacy_dmarc_policy: 'DMARC policy',
-        internet_nl_mail_legacy_dmarc_policy_explanation: 'Explanation',
+        internet_nl_mail_legacy_dmarc_policy_explanation: 'Calculated by using the value from: mail_auth_dmarc_policy.',
         internet_nl_mail_legacy_spf_policy: 'SPF policy',
-        internet_nl_mail_legacy_spf_policy_explanation: 'Explanation',
+        internet_nl_mail_legacy_spf_policy_explanation: 'Calculated by using the value from: mail_auth_spf_policy.',
         internet_nl_mail_legacy_start_tls: 'STARTTLS',
-        internet_nl_mail_legacy_start_tls_explanation: 'Explanation',
+        internet_nl_mail_legacy_start_tls_explanation: 'Calculated by using the value from: mail_starttls_tls_available. Can be overwritten by mail_servers_testable_status (no_mx, unreachable, not_testable).',
         internet_nl_mail_legacy_start_tls_ncsc: 'STARTTLS NCSC',
-        internet_nl_mail_legacy_start_tls_ncsc_explanation: 'Explanation',
+        internet_nl_mail_legacy_start_tls_ncsc_explanation: 'Calculated by using the worst value from: mail_starttls_tls_available, ' +
+            'mail_starttls_tls_keyexchange, mail_starttls_tls_compress, mail_starttls_tls_secreneg, ' +
+            'mail_starttls_tls_ciphers, mail_starttls_tls_clientreneg,  mail_starttls_tls_version, ' +
+            'mail_starttls_tls_cipherorder, mail_starttls_tls_keyexchangehash, mail_starttls_tls_0rtt, ' +
+            'mail_starttls_cert_sig, mail_starttls_cert_pubkey, mail_starttls_cert_chain,  mail_starttls_cert_domain. ' +
+            'Can be overwritten by mail_servers_testable_status (no_mx, unreachable, not_testable).',
         internet_nl_mail_legacy_dnssec_mx: 'DNSSEC MX',
-        internet_nl_mail_legacy_dnssec_mx_explanation: 'Explanation',
+        internet_nl_mail_legacy_dnssec_mx_explanation: 'Calculated by using the worst value from: mail_dnssec_mx_exist, mail_dnssec_mx_valid. Will be set to no_mx if there is no mx.',
         internet_nl_mail_legacy_dane: 'DANE',
-        internet_nl_mail_legacy_dane_explanation: 'Explanation',
+        internet_nl_mail_legacy_dane_explanation: 'Calculated by using the worst value from: mail_starttls_dane_exist, mail_starttls_dane_valid. Can be overwritten by mail_servers_testable_status (no_mx, unreachable, not_testable).',
         internet_nl_mail_legacy_ipv6_nameserver: 'IPv6 nameserver',
-        internet_nl_mail_legacy_ipv6_nameserver_explanation: 'Explanation',
+        internet_nl_mail_legacy_ipv6_nameserver_explanation: 'Calculated by using the worst value from: mail_ipv6_ns_address, mail_ipv6_ns_reach. Will be set to no_mx if there is no mx.',
         internet_nl_mail_legacy_ipv6_mailserver: "IPv6 mailserver",
-        internet_nl_mail_legacy_ipv6_mailserver_explanation: 'Explanation',
+        internet_nl_mail_legacy_ipv6_mailserver_explanation: 'Calculated by using the worst value from: mail_ipv6_mx_address, mail_ipv6_mx_reach. Will be set to no_mx if there is no mx.',
 
         internet_nl_web_legacy_dnssec: 'DNSSEC',
-        internet_nl_web_legacy_dnssec_explanation: 'Explanation...',
+        internet_nl_web_legacy_dnssec_explanation: 'Calculated by using the worst value from: web_dnssec_exist and web_dnssec_valid.',
         internet_nl_web_legacy_tls_available: 'TLS',
-        internet_nl_web_legacy_tls_available_explanation: 'Explanation...',
+        internet_nl_web_legacy_tls_available_explanation: 'Calculated by using the value from: web_https_http_available.',
         internet_nl_web_legacy_tls_ncsc_web: 'TLS_NCSC',
-        internet_nl_web_legacy_tls_ncsc_web_explanation: 'Explanation...',
+        internet_nl_web_legacy_tls_ncsc_web_explanation: "Calculated by using the worst value from: web_https_tls_keyexchange, " +
+            "web_https_tls_compress, web_https_tls_secreneg, web_https_tls_ciphers, web_https_tls_clientreneg, " +
+            "web_https_tls_version, web_https_tls_cipherorder, web_https_tls_0rtt, web_https_tls_ocsp, " +
+            "web_https_tls_keyexchangehash, web_https_cert_sig, web_https_cert_pubkey, web_https_cert_chain, web_https_cert_domain.",
         internet_nl_web_legacy_https_enforced: 'HTTPS',
-        internet_nl_web_legacy_https_enforced_explanation: 'Explanation...',
+        internet_nl_web_legacy_https_enforced_explanation: 'Calculated by using the value from: web_https_http_redirect.',
         internet_nl_web_legacy_hsts: 'HSTS',
-        internet_nl_web_legacy_hsts_explanation: 'Explanation...',
+        internet_nl_web_legacy_hsts_explanation: 'Calculated by using the value from: web_https_http_hsts.',
         internet_nl_web_legacy_ipv6_nameserver: 'IPv6 nameserver',
-        internet_nl_web_legacy_ipv6_nameserver_explanation: 'Explanation...',
+        internet_nl_web_legacy_ipv6_nameserver_explanation: 'Calculated by using the worst value from: web_ipv6_ns_address and web_ipv6_ns_reach.',
         internet_nl_web_legacy_ipv6_webserver: 'IPv6 webserver',
-        internet_nl_web_legacy_ipv6_webserver_explanation: 'Explanation...',
+        internet_nl_web_legacy_ipv6_webserver_explanation: 'Calculated by using the worst value from: web_ipv6_ws_address, web_ipv6_ws_reach and web_ipv6_ws_similar.',
+        internet_nl_web_legacy_dane: 'DANE',
+        internet_nl_web_legacy_dane_explanation: 'Calculated by using the worst value from: web_https_dane_exist and web_https_dane_valid.',
 
         // New extra fields in API 2.0
         internet_nl_web_legacy_tls_1_3: 'TLS 1.3 Support',
@@ -83,8 +93,9 @@ const messages = {
         internet_nl_mail_legacy_tls_1_3_explanation: 'Derives TLS1.3 support through the 0-RTT test. Explicitly testing for TLS1.3 support is not part of the compliance tool. However, TLS1.3 support could be derived from the 0-RTT test as the function is only available starting from TLS1.3. As there is no explicit TLS1.3 connection during testing, the test assumes that the server chose TLS1.3 when given the opportunity to do so.',
         internet_nl_mail_legacy_category_ipv6: "IPv6",
         internet_nl_web_legacy_category_ipv6: "IPv6",
-        internet_nl_mail_legacy_category_ipv6_explanation: "",
-        internet_nl_web_legacy_category_ipv6_explanation: "",
+
+        internet_nl_mail_legacy_category_ipv6_explanation: "Calculated by taken the category value for IPv6.",
+        internet_nl_web_legacy_category_ipv6_explanation: "Calculated by taken the category value for IPv6.",
 
         // https://github.com/NLnetLabs/Internet.nl/blob/cece8255ac7f39bded137f67c94a10748970c3c7/checks/templates/mail-results.html
         internet_nl_mail_server_configured: 'Mail Server Configured (not in UI)',  // Added 24th of May 2019

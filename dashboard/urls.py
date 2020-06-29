@@ -15,12 +15,20 @@ Including another URLconf
 """
 from django.conf.urls import include, url
 from django.contrib import admin
+from django.urls import path
 from two_factor.urls import urlpatterns as tf_urls
 
 admin.site.site_header = 'Dashboard Admin'
 admin.site.site_title = 'Dashboard Admin'
 
+
+def trigger_error(request):
+    # See: https://docs.sentry.io/platforms/python/django/
+    division_by_zero = 1 / 0  # noqa
+
+
 admin_urls = [
+    path('sentry-debug/', trigger_error),
     url(r'^admin/', admin.site.urls),
     url(r'^admin/doc/', include('django.contrib.admindocs.urls')),
     url(r'^jet/', include('jet.urls', 'jet')),
