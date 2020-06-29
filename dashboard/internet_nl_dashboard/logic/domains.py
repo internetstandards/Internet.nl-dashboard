@@ -516,7 +516,7 @@ def get_urllist_content(account: Account, urllist_id: int) -> dict:
     return response
 
 
-def retrieve_urls_from_unfiltered_input(garbage: str) -> List[str]:
+def retrieve_possible_urls_from_unfiltered_input(garbage: str) -> List[str]:
     # Protocols are irrelevant:
     garbage = garbage.replace("http://", "")
     garbage = garbage.replace("https://", "")
@@ -572,7 +572,7 @@ def save_urllist_content(account: Account, user_input: Dict[str, Any]) -> Dict:
     if not urllist:
         return operation_response(error=True, message="List does not exist")
 
-    urls = retrieve_urls_from_unfiltered_input(urls)
+    urls = retrieve_possible_urls_from_unfiltered_input(urls)
     cleaned_urls = clean_urls(urls)  # type: ignore
 
     if cleaned_urls['correct']:

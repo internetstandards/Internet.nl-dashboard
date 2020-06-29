@@ -9,26 +9,30 @@ from dashboard.internet_nl_dashboard.logic.domains import (delete_list, delete_u
                                                            get_or_create_list_by_name,
                                                            get_urllist_content,
                                                            get_urllists_from_account, rename_list,
-                                                           retrieve_urls_from_unfiltered_input,
+                                                           retrieve_possible_urls_from_unfiltered_input,
                                                            save_urllist_content_by_name)
 from dashboard.internet_nl_dashboard.models import Account
 
 
 def test_retrieve_urls_from_unfiltered_input() -> None:
-    output = retrieve_urls_from_unfiltered_input("https://www.apple.com:443/nl/iphone-11/, bing.com, http://nu.nl")
+    output = retrieve_possible_urls_from_unfiltered_input("https://www.apple.com:443/nl/iphone-11/, bing.com, http://nu.nl")
     assert output == ['bing.com', 'nu.nl', 'www.apple.com']
 
     # input contains multiple lines, whitespaces before and after the domains and some tabs mixed in.
+
+    # \s in regex only filters out: \t\n\r\f\v not all whitespace characters in unicode.
+    # All examples for https://qwerty.dev/whitespace/ are in the below input, which is invisible to the naked eye :)
     unsanitized_input = """
-    ,
-     stichtingmediawijzer.nl	  
-            , , ,
-     	 
+    ,  
+     stichtingmediawijzer.nl	  ​ 
+            , , ,   ⠀ 
+     	   
     eskillsplatform.nl  ,        
     """  # noqa violates python coding standard on points E101 and W191. Needed for this test :)
 
-    output = retrieve_urls_from_unfiltered_input(unsanitized_input)
-    assert output == ['eskillsplatform.nl', 'stichtingmediawijzer.nl']
+    output = retrieve_possible_urls_from_unfiltered_input(unsanitized_input)
+    # Zero width space is also seen as a string, and filtered out as a possible domain. See test_clean_urls.
+    assert output == [' ', ' ⠀ ', 'eskillsplatform.nl', 'stichtingmediawijzer.nl', '\u200b ']
 
 
 def test_urllists(db, redis_server) -> None:
