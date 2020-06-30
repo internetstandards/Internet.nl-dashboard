@@ -6,6 +6,7 @@ import sentry_sdk
 from django.utils.translation import gettext_lazy as _
 from sentry_sdk.integrations.celery import CeleryIntegration
 from sentry_sdk.integrations.django import DjangoIntegration
+from sentry_sdk.integrations.redis import RedisIntegration
 
 __version__ = '0.0.0'
 
@@ -581,7 +582,8 @@ if not DEBUG:
 SENTRY_DSN = os.environ.get('SENTRY_DSN')
 if SENTRY_DSN:
     # new sentry_sdk implementation, with hopes to also get exceptions from workers.
-    sentry_sdk.init(dsn=SENTRY_DSN, integrations=[CeleryIntegration(), DjangoIntegration()],
+    sentry_sdk.init(dsn=SENTRY_DSN, integrations=[CeleryIntegration(), DjangoIntegration(),
+                                                  RedisIntegration()],
                     release=__version__, send_default_pii=False)
 
 SENTRY_ORGANIZATION = 'internet-cleanup-foundation'
