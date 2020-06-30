@@ -53,8 +53,7 @@
             <p>
                 <span v-if="list.last_scan">
                     {{ $t("about_this_list.last_scan_started") }}: {{ humanize_date(list.last_scan) }}.
-                    <span v-if="!list.last_scan_finished">({{ $t("about_this_list.still_running") }})</span>
-                    <span v-if="list.last_scan_finished">({{ $t("about_this_list.finished") }})</span>
+                    ({{ list.last_scan_state }})
                 </span>
                 <span v-if="!list.last_scan">
                     {{ $t("about_this_list.last_scan_started") }}: {{ $t("about_this_list.not_scanned_before") }}.

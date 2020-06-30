@@ -88,7 +88,7 @@ _commit_update: requirements.txt
 test: .make.test	## run test suite
 .make.test: ${pysrc} ${app}
 	# run testsuite
-	DJANGO_SETTINGS_MODULE=${app_name}.settings ${env} coverage run --include '${app_name}/*' \
+	DJANGO_SETTINGS_MODULE=${app_name}.settings ${env} coverage run --include '${app_name}/*' --omit '*migrations*' \
 		-m pytest -vv -k 'not integration and not system' ${testargs}
 	# generate coverage
 	${env} coverage report

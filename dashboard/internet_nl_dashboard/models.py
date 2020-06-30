@@ -308,7 +308,7 @@ class UrlList(models.Model):
         # finished_on = last_scan.scan.finished_on \
         #     if last_scan.scan.finished_on else timezone.now() - timedelta(days=30)
         # and finished_on < yesterday
-        if last_scan.finished:
+        if last_scan.state in ['finished', 'cancelled']:
             # log.debug("Scan now available: last scan finished over 24 hours ago on list %s" % self)
             return True
 
