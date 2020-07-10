@@ -47,18 +47,18 @@ django-proxy==1.2.1       # via websecmap
 django-select2==7.2.0     # via websecmap
 django-statsd-mozilla==0.4.0  # via websecmap
 django-timezone-field==3.1  # via django-celery-beat, websecmap
-django-two-factor-auth==1.9.1  # via -r requirements.in
+django-two-factor-auth==1.12  # via -r requirements.in
 django-uwsgi==0.2.2       # via websecmap
 django==2.2.10            # via -r requirements.in, django-admin-sortable2, django-appconf, django-celery-beat, django-colorful, django-excel, django-formtools, django-geojson, django-import-export, django-jet, django-leaflet, django-otp, django-phonenumber-field, django-picklefield, django-select2, django-timezone-field, django-two-factor-auth, jsonfield, websecmap
 dnspython==1.16.0         # via eventlet, websecmap
-et-xmlfile==1.0.1         # via openpyxl, websecmap
+et_xmlfile==1.0.1         # via openpyxl, websecmap
 eventlet==0.25.1          # via celery, websecmap
 flower==0.9.3             # via websecmap
 googlemaps==4.2.0         # via websecmap
 greenlet==0.4.15          # via eventlet, websecmap
-idna-ssl==1.1.0           # via aiohttp, websecmap
+idna-ssl==1.1.0           # via websecmap
 idna==2.9                 # via idna-ssl, requests, tldextract, websecmap, yarl
-importlib-metadata==1.5.0  # via kombu, websecmap
+importlib-metadata==1.5.0  # via websecmap
 iso3166==1.0.1            # via websecmap
 jdcal==1.4.1              # via openpyxl, websecmap
 jsonfield==2.1.1          # via websecmap
@@ -120,8 +120,8 @@ tenacity==6.0.0           # via websecmap
 texttable==1.6.2          # via pyexcel, websecmap
 tldextract==2.2.2         # via websecmap
 tornado==5.1.1            # via flower, websecmap
-typing-extensions==3.7.4.2  # via aiohttp, websecmap
-typing==3.7.4.1           # via aiodns, websecmap
+typing-extensions==3.7.4.2  # via websecmap
+typing==3.7.4.1           # via websecmap
 urllib3==1.25.8           # via requests, sentry-sdk, websecmap
 uwsgi==2.0.18             # via websecmap
 validators==0.14.2        # via -r requirements.in, websecmap
