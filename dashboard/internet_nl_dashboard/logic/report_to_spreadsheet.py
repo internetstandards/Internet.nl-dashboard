@@ -429,9 +429,8 @@ def upgrade_excel_spreadsheet(spreadsheet_data):
         ws[f'B3'] = "Contains info"
         ws[f'B4'] = "Contains warning"
         ws[f'B5'] = "Contains failed"
-        ws[f'B6'] = "Contains good_not_tested"
-        ws[f'B7'] = "Contains not_tested"
-        ws[f'B8'] = "Percentage passed (ignoring not_tested)"
+        ws[f'B6'] = "Contains not_tested"
+        ws[f'B7'] = "Percentage passed (ignoring not_tested)"
 
         # bold totals:
         for i in range(1, 9):
@@ -457,15 +456,14 @@ def upgrade_excel_spreadsheet(spreadsheet_data):
                 ws[f'{cell}3'] = f'=COUNTIF({cell}12:{cell}5050, "info")'
                 ws[f'{cell}4'] = f'=COUNTIF({cell}12:{cell}5050, "warning")'
                 ws[f'{cell}5'] = f'=COUNTIF({cell}12:{cell}5050, "failed")'
-                ws[f'{cell}6'] = f'=COUNTIF({cell}12:{cell}5050, "good_not_tested")'
-                ws[f'{cell}7'] = f'=COUNTIF({cell}12:{cell}5050, "not_tested")'
+                ws[f'{cell}6'] = f'=COUNTIF({cell}12:{cell}5050, "not_tested")'
                 # Not applicable and not testable are subtracted from the total.
                 # See https://github.com/internetstandards/Internet.nl-dashboard/issues/68
                 # Rounding's num digits is NOT the number of digits behind the comma, but the total number of digits.
                 # todo: we should use the calculations in report.py. And there include the "missing" / empty stuff IF
                 # that is missing.
-                ws[f'{cell}8'] = f'=ROUND({cell}2/({cell}1 - ({cell}6 + {cell}7)), 4)'
-                ws[f'{cell}8'].number_format = '0.00%'
+                ws[f'{cell}7'] = f'=IF({cell}1-{cell}6=0, 0, ROUND({cell}2/({cell}1 - ({cell}6)), 4))'
+                ws[f'{cell}7'].number_format = '0.00%'
 
         # fold port and ip-version (and protocol?) from report as it's not useful in this case?
         ws.column_dimensions.group('C', 'E', hidden=True)
