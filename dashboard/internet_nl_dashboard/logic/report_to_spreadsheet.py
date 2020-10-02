@@ -480,7 +480,7 @@ def upgrade_excel_spreadsheet(spreadsheet_data):
             ws[f'{cell}11'].font = Font(bold=True)
 
         # Freeze pane to make navigation easier.
-        ws.freeze_panes = ws['H11']
+        ws.freeze_panes = ws['H12']
 
         # there is probably a feature that puts this in a single conditional value.
         greenFill = PatternFill(start_color='B7FFC8', end_color='B7FFC8', fill_type='solid')
