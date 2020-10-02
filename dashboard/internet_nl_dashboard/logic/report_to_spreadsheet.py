@@ -425,12 +425,13 @@ def upgrade_excel_spreadsheet(spreadsheet_data):
         ws.insert_rows(0, amount=8)
 
         ws[f'B1'] = "Total"
-        ws[f'B2'] = "Contains passed"
-        ws[f'B3'] = "Contains info"
-        ws[f'B4'] = "Contains warning"
-        ws[f'B5'] = "Contains failed"
-        ws[f'B6'] = "Contains not_tested"
-        ws[f'B7'] = "Percentage passed"
+        ws[f'B2'] = "Passed"
+        ws[f'B3'] = "Info"
+        ws[f'B4'] = "Warning"
+        ws[f'B5'] = "Failed"
+        ws[f'B6'] = "Not tested"
+        ws[f'B7'] = "Error"
+        ws[f'B8'] = "Percentage passed"
 
         # bold totals:
         for i in range(1, 9):
@@ -457,14 +458,15 @@ def upgrade_excel_spreadsheet(spreadsheet_data):
                 ws[f'{cell}4'] = f'=COUNTIF({cell}12:{cell}5050, "warning")'
                 ws[f'{cell}5'] = f'=COUNTIF({cell}12:{cell}5050, "failed")'
                 ws[f'{cell}6'] = f'=COUNTIF({cell}12:{cell}5050, "not_tested")'
+                ws[f'{cell}7'] = f'=COUNTIF({cell}12:{cell}5050, "error")'
                 # Not applicable and not testable are subtracted from the total.
                 # See https://github.com/internetstandards/Internet.nl-dashboard/issues/68
                 # Rounding's num digits is NOT the number of digits behind the comma, but the total number of digits.
                 # todo: we should use the calculations in report.py. And there include the "missing" / empty stuff IF
                 # that is missing.
                 #                   IF(     H1=0,0,ROUND(     H2÷     H1, 4))
-                ws[f'{cell}7'] = f'=IF({cell}1=0,0,ROUND({cell}2/{cell}1, 4))'
-                ws[f'{cell}7'].number_format = '0.00%'
+                ws[f'{cell}8'] = f'=IF({cell}1=0,0,ROUND({cell}2/{cell}1, 4))'
+                ws[f'{cell}8'].number_format = '0.00%'
 
         # fold port and ip-version (and protocol?) from report as it's not useful in this case?
         ws.column_dimensions.group('C', 'E', hidden=True)
@@ -486,6 +488,7 @@ def upgrade_excel_spreadsheet(spreadsheet_data):
         # there is probably a feature that puts this in a single conditional value.
         greenFill = PatternFill(start_color='B7FFC8', end_color='B7FFC8', fill_type='solid')
         redFill = PatternFill(start_color='FFB7B7', end_color='FFB7B7', fill_type='solid')
+        errorFill = PatternFill(start_color='fc5555', end_color='fc5555', fill_type='solid')
         blueFill = PatternFill(start_color='B7E3FF', end_color='B7E3FF', fill_type='solid')
         orangeFill = PatternFill(start_color='FFD9B7', end_color='FFD9B7', fill_type='solid')
         grayFill = PatternFill(start_color='99FFFF', end_color='DBDBDB', fill_type='solid')
@@ -500,6 +503,11 @@ def upgrade_excel_spreadsheet(spreadsheet_data):
         ws.conditional_formatting.add(
             'H12:CD9999',
             CellIsRule(operator='=', formula=['"failed"'], stopIfTrue=True, fill=redFill)
+        )
+
+        ws.conditional_formatting.add(
+            'H12:CD9999',
+            CellIsRule(operator='=', formula=['"error"'], stopIfTrue=True, fill=errorFill)
         )
 
         ws.conditional_formatting.add(
