@@ -8,9 +8,6 @@
 # - no requirements that are already provided by websecmap itself
 # - no version pinning, unless it is required and explained
 
-# pytest docker was not released to pypi
-git+https://github.com/avast/pytest-docker@9ce726f4a045addc777fb1cea837a6309cbbeef6#egg=pytest-docker
-
 # to update websecmap, update the SHA hash and run: make update_requirement_websecmap
 git+https://gitlab.com/internet-cleanup-foundation/web-security-map@bd96d3e92fdf18d2513204f4fb47d217b43e7b30#egg=websecmap
 
