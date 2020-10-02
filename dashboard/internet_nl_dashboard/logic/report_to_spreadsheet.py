@@ -422,7 +422,7 @@ def upgrade_excel_spreadsheet(spreadsheet_data):
         ws.column_dimensions["B"].width = "30"
 
         # Add statistic rows:
-        ws.insert_rows(0, amount=8)
+        ws.insert_rows(0, amount=9)
 
         ws[f'B1'] = "Total"
         ws[f'B2'] = "Passed"
@@ -431,10 +431,11 @@ def upgrade_excel_spreadsheet(spreadsheet_data):
         ws[f'B5'] = "Failed"
         ws[f'B6'] = "Not tested"
         ws[f'B7'] = "Error"
-        ws[f'B8'] = "Percentage passed"
+        ws[f'B8'] = "Test not applicable (mail only)"
+        ws[f'B9'] = "Percentage passed"
 
         # bold totals:
-        for i in range(1, 9):
+        for i in range(1, 10):
             ws[f'B{i}'].font = Font(bold=True)
 
         data_columns = [
@@ -447,26 +448,28 @@ def upgrade_excel_spreadsheet(spreadsheet_data):
 
         for cell in data_columns:
             # if header, then aggregate
-            if ws[f'{cell}11'].value:
+            if ws[f'{cell}12'].value:
                 # There is a max of 5000 domains per scan. So we set this to something lower.
                 # There is no good support of headers versus data, which makes working with excel a drama
                 # If you ever read this code, and want a good spreadsheet editor: try Apple Numbers. It's fantastic.
-                ws[f'{cell}1'] = f'=COUNTA({cell}12:{cell}5050)'
+                ws[f'{cell}1'] = f'=COUNTA({cell}13:{cell}5050)'
                 # todo: also support other values
-                ws[f'{cell}2'] = f'=COUNTIF({cell}12:{cell}5050, "passed")'
-                ws[f'{cell}3'] = f'=COUNTIF({cell}12:{cell}5050, "info")'
-                ws[f'{cell}4'] = f'=COUNTIF({cell}12:{cell}5050, "warning")'
-                ws[f'{cell}5'] = f'=COUNTIF({cell}12:{cell}5050, "failed")'
-                ws[f'{cell}6'] = f'=COUNTIF({cell}12:{cell}5050, "not_tested")'
-                ws[f'{cell}7'] = f'=COUNTIF({cell}12:{cell}5050, "error")'
+                ws[f'{cell}2'] = f'=COUNTIF({cell}13:{cell}5050, "passed")'
+                ws[f'{cell}3'] = f'=COUNTIF({cell}13:{cell}5050, "info")'
+                ws[f'{cell}4'] = f'=COUNTIF({cell}13:{cell}5050, "warning")'
+                ws[f'{cell}5'] = f'=COUNTIF({cell}13:{cell}5050, "failed")'
+                ws[f'{cell}6'] = f'=COUNTIF({cell}13:{cell}5050, "not_tested")'
+                ws[f'{cell}7'] = f'=COUNTIF({cell}13:{cell}5050, "error")'
+                ws[f'{cell}8'] = \
+                    f'=COUNTIF({cell}13:{cell}5050, "no_mx")+COUNTIF({cell}13:{cell}5050, "not_applicable")'
                 # Not applicable and not testable are subtracted from the total.
                 # See https://github.com/internetstandards/Internet.nl-dashboard/issues/68
                 # Rounding's num digits is NOT the number of digits behind the comma, but the total number of digits.
                 # todo: we should use the calculations in report.py. And there include the "missing" / empty stuff IF
                 # that is missing.
                 #                   IF(     H1=0,0,ROUND(     H2÷     H1, 4))
-                ws[f'{cell}8'] = f'=IF({cell}1=0,0,ROUND({cell}2/{cell}1, 4))'
-                ws[f'{cell}8'].number_format = '0.00%'
+                ws[f'{cell}9'] = f'=IF({cell}1=0,0,ROUND({cell}2/{cell}1, 4))'
+                ws[f'{cell}9'].number_format = '0.00%'
 
         # fold port and ip-version (and protocol?) from report as it's not useful in this case?
         ws.column_dimensions.group('C', 'E', hidden=True)
@@ -474,16 +477,16 @@ def upgrade_excel_spreadsheet(spreadsheet_data):
         # line 9 is an empty line
 
         # make headers bold
-        ws[f'A11'].font = Font(bold=True)
-        ws[f'B11'].font = Font(bold=True)
-        ws[f'F10'].font = Font(bold=True)
-        ws[f'F11'].font = Font(bold=True)
+        ws[f'A12'].font = Font(bold=True)  # List
+        ws[f'B12'].font = Font(bold=True)  # Url
+        ws[f'F11'].font = Font(bold=True)  # overall
+        ws[f'F12'].font = Font(bold=True)  # % Score
         for cell in data_columns:
-            ws[f'{cell}10'].font = Font(bold=True)
             ws[f'{cell}11'].font = Font(bold=True)
+            ws[f'{cell}12'].font = Font(bold=True)
 
         # Freeze pane to make navigation easier.
-        ws.freeze_panes = ws['H12']
+        ws.freeze_panes = ws['H13']
 
         # there is probably a feature that puts this in a single conditional value.
         greenFill = PatternFill(start_color='B7FFC8', end_color='B7FFC8', fill_type='solid')
@@ -496,37 +499,37 @@ def upgrade_excel_spreadsheet(spreadsheet_data):
         # Set the measurements to green/red depending on value using conditional formatting.
         # There is no true/false, but we can color based on value.
         ws.conditional_formatting.add(
-            'H12:CD9999',
+            'H13:CD9999',
             CellIsRule(operator='=', formula=['"passed"'], stopIfTrue=True, fill=greenFill)
         )
 
         ws.conditional_formatting.add(
-            'H12:CD9999',
+            'H13:CD9999',
             CellIsRule(operator='=', formula=['"failed"'], stopIfTrue=True, fill=redFill)
         )
 
         ws.conditional_formatting.add(
-            'H12:CD9999',
+            'H13:CD9999',
             CellIsRule(operator='=', formula=['"error"'], stopIfTrue=True, fill=errorFill)
         )
 
         ws.conditional_formatting.add(
-            'H12:CD9999',
+            'H13:CD9999',
             CellIsRule(operator='=', formula=['"warning"'], stopIfTrue=True, fill=orangeFill)
         )
 
         ws.conditional_formatting.add(
-            'H12:CD9999',
+            'H13:CD9999',
             CellIsRule(operator='=', formula=['"info"'], stopIfTrue=True, fill=blueFill)
         )
 
         ws.conditional_formatting.add(
-            'H12:CD9999',
+            'H13:CD9999',
             CellIsRule(operator='=', formula=['"good_not_tested"'], stopIfTrue=True, fill=altgrayFill)
         )
 
         ws.conditional_formatting.add(
-            'H12:CD9999',
+            'H13:CD9999',
             CellIsRule(operator='=', formula=['"not_tested"'], stopIfTrue=True, fill=grayFill)
         )
 
