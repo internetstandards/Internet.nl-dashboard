@@ -161,7 +161,7 @@ Vue.component('percentage-bar-chart', {
                     'pct_medium': "warning",
                     'pct_high': "failed",
                     'pct_not_applicable': "not applicable",
-                    'pct_not_testable': "not testable",
+                    'pct_not_testable': "untestable",
                     'pct_error_in_test': "test error",
                 };
 

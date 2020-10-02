@@ -668,7 +668,13 @@ def keyed_values_as_boolean(keyed_ratings: Dict[str, Any], protocol: str = 'dns_
 
                 # api v2, tls1.3 update
                 if value.get('test_result', False):
-                    values.append(value.get('test_result', '?'))
+                    test_value = value.get('test_result', '?')
+                    # per 205, translate not_testable to untestable. This is cosmetic as the 'not_testable' is
+                    # everywhere in the software and is just renamed, and will probably be renamed a few times
+                    # more in the future.
+                    if test_value == "not_testable":
+                        test_value = "untestable"
+                    values.append(test_value)
 
                 else:
                     # unknown columns and data will be empty.
@@ -677,7 +683,7 @@ def keyed_values_as_boolean(keyed_ratings: Dict[str, Any], protocol: str = 'dns_
                     else:
                         # backward compatible with api v1 reports
                         if value['simple_verdict'] == "not_testable":
-                            values.append('not_testable')
+                            values.append('untestable')
                         elif value['simple_verdict'] == "not_applicable":
                             values.append('not_applicable')
                         elif value['simple_verdict'] == "error_in_test":
