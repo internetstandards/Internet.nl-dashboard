@@ -144,7 +144,7 @@ def get_report(account: Account, report_id: int):
            f'"average_internet_nl_score": {report["average_internet_nl_score"]}, ' \
            f'"total_urls": {report["total_urls"]}, ' \
            f'"at_when": "{report["at_when"]}", ' \
-           f'"calculation": {report["calculation"]}}}]'
+           f'"calculation": {json.dumps(report["calculation"])}}}]'
 
 
 def get_report_differences_compared_to_current_list(account: Account, report_id: int):
@@ -168,7 +168,8 @@ def get_report_differences_compared_to_current_list(account: Account, report_id:
     if not report:
         return {}
 
-    calculation = json.loads(report["calculation"])
+    # since django 3.0 it's already retrieved as json
+    calculation = report["calculation"]
 
     urls_in_report: List[str] = [url['url'] for url in calculation['urls']]
 

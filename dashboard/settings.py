@@ -626,3 +626,13 @@ else:
 if DEBUG:
     # 25 megs for importing reports from live situations
     DATA_UPLOAD_MAX_MEMORY_SIZE = 26214400
+
+
+"""
+Django Jet 3:
+From Django 3.0 the default value of the X_FRAME_OPTIONS setting was changed from SAMEORIGIN to DENY. This can
+cause errors for popups such as for the Field Lookup Popup. To solve this you should add the following to your
+Django project settings.py file:
+Todo: Only needed for /admin urls, not for other urls: it's fine when people embed the map, desired even!
+"""
+X_FRAME_OPTIONS = "SAMEORIGIN"

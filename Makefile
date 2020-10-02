@@ -139,7 +139,7 @@ app: ${app}  ## perform arbitrary app commands
 	DEBUG=1 NETWORK_SUPPORTS_IPV6=1 ${env} ${app} ${cmd}
 
 run-worker: ${app}  ## only run worker component
-	DEBUG=1 NETWORK_SUPPORTS_IPV6=1 ${env} ${app} celery worker -ldebug -Q storage,celery
+	DEBUG=1 NETWORK_SUPPORTS_IPV6=1 ${env} ${app} celery worker -ldebug -Q storage,celery,reporting,ipv4,ipv6,4and6,internet,isolated
 
 run-broker:  ## only run broker
 	docker run --rm --name=redis -p 6379:6379 redis

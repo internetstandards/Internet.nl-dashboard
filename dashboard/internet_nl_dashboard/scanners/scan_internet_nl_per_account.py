@@ -198,6 +198,7 @@ def progress_running_scan(scan: AccountInternetNLScan) -> Task:
     After the scan is initiated, this will pick it up and continue.
     """
     if not scan:
+        log.debug("No scan received to progress...")
         return group([])
 
     steps = {
