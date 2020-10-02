@@ -44,6 +44,7 @@ SANE_COLUMN_ORDER = {
     'dns_a_aaaa': {
         'overall': [
             'internet_nl_score',
+            'internet_nl_score_report',
         ],
 
         'ipv6': [
@@ -129,7 +130,8 @@ SANE_COLUMN_ORDER = {
     'dns_soa': {
         # any grouping, every group has a empty column between them. The label is not used.
         'overall': [
-            'internet_nl_score'
+            'internet_nl_score',
+            'internet_nl_score_report',
         ],
         'ipv6': [
             # Category
@@ -314,6 +316,7 @@ def translate_field(field_label):
         'internet_nl_mail_dashboard_dnssec': 'test_maildnssec_label',
         'internet_nl_mail_dashboard_ipv6': 'test_mailipv6_label',
         'internet_nl_score': '% Score',
+        'internet_nl_score_report': 'Report',
 
         # directly translated fields.
         'internet_nl_mail_legacy_dmarc': 'DMARC',
@@ -439,13 +442,13 @@ def upgrade_excel_spreadsheet(spreadsheet_data):
             ws[f'B{i}'].font = Font(bold=True)
 
         data_columns = [
-            'H', 'I', 'J', 'K', 'L', "M", "N", 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z',
+            'F', 'G', 'H', 'I', 'J', 'K', 'L', "M", "N", 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z',
             'AA', 'AB', 'AC', 'AD', 'AE', 'AF', 'AG', 'AH', 'AI', 'AJ', 'AK', 'AL', 'AM', 'AN', 'AO',
             'AP', 'AQ', 'AR', 'AS', 'AT', 'AU', 'AV', 'AW', 'AX', 'AY', 'AZ', 'BA', 'BB', 'BC', 'BD',
-            'BE', 'BF', 'BG', 'BH', 'BI', 'BJ', 'BK', 'BL', 'BM', 'BN', 'BO', 'BP', 'BQ', 'BR', 'BS',
-            'BT', 'BU', 'BV', 'BW', 'BX', 'BY', 'BZ'
+            'BE'
         ]
 
+        # add some statistics
         for cell in data_columns:
             # if header, then aggregate
             if ws[f'{cell}12'].value:
@@ -471,22 +474,18 @@ def upgrade_excel_spreadsheet(spreadsheet_data):
                 ws[f'{cell}9'] = f'=IF({cell}1=0,0,ROUND({cell}2/{cell}1, 4))'
                 ws[f'{cell}9'].number_format = '0.00%'
 
-        # fold port and ip-version (and protocol?) from report as it's not useful in this case?
-        ws.column_dimensions.group('C', 'E', hidden=True)
-
-        # line 9 is an empty line
-
         # make headers bold
         ws[f'A12'].font = Font(bold=True)  # List
         ws[f'B12'].font = Font(bold=True)  # Url
-        ws[f'F11'].font = Font(bold=True)  # overall
-        ws[f'F12'].font = Font(bold=True)  # % Score
+        ws[f'C11'].font = Font(bold=True)  # overall
+        ws[f'C12'].font = Font(bold=True)  # % Score
+        ws[f'D12'].font = Font(bold=True)  # Report
         for cell in data_columns:
             ws[f'{cell}11'].font = Font(bold=True)
             ws[f'{cell}12'].font = Font(bold=True)
 
         # Freeze pane to make navigation easier.
-        ws.freeze_panes = ws['H13']
+        ws.freeze_panes = ws['E13']
 
         # there is probably a feature that puts this in a single conditional value.
         greenFill = PatternFill(start_color='B7FFC8', end_color='B7FFC8', fill_type='solid')
@@ -499,37 +498,37 @@ def upgrade_excel_spreadsheet(spreadsheet_data):
         # Set the measurements to green/red depending on value using conditional formatting.
         # There is no true/false, but we can color based on value.
         ws.conditional_formatting.add(
-            'H13:CD9999',
+            'F13:CD5050',
             CellIsRule(operator='=', formula=['"passed"'], stopIfTrue=True, fill=greenFill)
         )
 
         ws.conditional_formatting.add(
-            'H13:CD9999',
+            'F13:CD5050',
             CellIsRule(operator='=', formula=['"failed"'], stopIfTrue=True, fill=redFill)
         )
 
         ws.conditional_formatting.add(
-            'H13:CD9999',
+            'F13:CD5050',
             CellIsRule(operator='=', formula=['"error"'], stopIfTrue=True, fill=errorFill)
         )
 
         ws.conditional_formatting.add(
-            'H13:CD9999',
+            'F13:CD5050',
             CellIsRule(operator='=', formula=['"warning"'], stopIfTrue=True, fill=orangeFill)
         )
 
         ws.conditional_formatting.add(
-            'H13:CD9999',
+            'F13:CD5050',
             CellIsRule(operator='=', formula=['"info"'], stopIfTrue=True, fill=blueFill)
         )
 
         ws.conditional_formatting.add(
-            'H13:CD9999',
+            'F13:CD5050',
             CellIsRule(operator='=', formula=['"good_not_tested"'], stopIfTrue=True, fill=altgrayFill)
         )
 
         ws.conditional_formatting.add(
-            'H13:CD9999',
+            'F13:CD5050',
             CellIsRule(operator='=', formula=['"not_tested"'], stopIfTrue=True, fill=grayFill)
         )
 
@@ -540,7 +539,7 @@ def upgrade_excel_spreadsheet(spreadsheet_data):
 
 
 def category_headers(protocol: str = 'dns_soa'):
-    headers: List[str] = ['', '', '', '', '']
+    headers: List[str] = ['', '']
     for group in SANE_COLUMN_ORDER[protocol]:
         headers += [translate_field(group)]
 
@@ -554,7 +553,7 @@ def category_headers(protocol: str = 'dns_soa'):
 
 
 def headers(protocol: str = 'dns_soa'):
-    headers = ['List', 'Url', 'Port', 'Ip Version', '']
+    headers = ['List', 'Url']
     for group in SANE_COLUMN_ORDER[protocol]:
         headers += SANE_COLUMN_ORDER[protocol][group]
         # add empty thing after each group to make distinction per group clearer
@@ -602,8 +601,7 @@ def urllistreport_to_spreadsheet_data(category_name: str, urls: List[Any], proto
                 if endpoint['protocol'] != protocol:
                     continue
                 keyed_ratings = endpoint['ratings_by_type']
-                data.append([category_name, url['url'], endpoint['port'], endpoint['ip_version'], ''] +
-                            keyed_values_as_boolean(keyed_ratings, protocol))
+                data.append([category_name, url['url']] + keyed_values_as_boolean(keyed_ratings, protocol))
 
         else:
             data.append([category_name, url['url']])
@@ -612,8 +610,7 @@ def urllistreport_to_spreadsheet_data(category_name: str, urls: List[Any], proto
                 if endpoint['protocol'] != protocol:
                     continue
                 keyed_ratings = endpoint['ratings_by_type']
-                data.append(['', '', endpoint['port'], endpoint['ip_version'], ''] +
-                            keyed_values_as_boolean(keyed_ratings, protocol))
+                data.append(['', ''] + keyed_values_as_boolean(keyed_ratings, protocol))
 
     # log.debug(data)
     return data
@@ -658,7 +655,11 @@ def keyed_values_as_boolean(keyed_ratings: Dict[str, Any], protocol: str = 'dns_
                 # explanation":"75 https://batch.internet.nl/mail/portaal.digimelding.nl/289480/",
                 # Not steadily convertable to a percentage, so printing it as an integer instead.
                 values.append(int(keyed_ratings[issue_name]['internet_nl_score']))
-                values.append(keyed_ratings[issue_name]['internet_nl_url'])
+            elif issue_name == 'internet_nl_score_report':
+                # fake column to give the column a title per #205, also makes the report more explicit.
+                values.append(keyed_ratings['internet_nl_score']['internet_nl_url'])
+                # add empty column
+                values.append(" ")
             else:
                 # the issue name might not exist, the 'ok' value might not exist. In those cases replace it with a ?
                 value = keyed_ratings.get(issue_name, {'ok': '?',
