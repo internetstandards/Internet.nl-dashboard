@@ -65,7 +65,7 @@ const messages = {
             "web_https_tls_compress, web_https_tls_secreneg, web_https_tls_ciphers, web_https_tls_clientreneg, " +
             "web_https_tls_version, web_https_tls_cipherorder, web_https_tls_0rtt, web_https_tls_ocsp, " +
             "web_https_tls_keyexchangehash, web_https_cert_sig, web_https_cert_pubkey, web_https_cert_chain, web_https_cert_domain.",
-        internet_nl_web_legacy_https_enforced: 'HTTPS',
+        internet_nl_web_legacy_https_enforced: 'HTTPS redirect',
         internet_nl_web_legacy_https_enforced_explanation: 'Calculated by using the value from: web_https_http_redirect.',
         internet_nl_web_legacy_hsts: 'HSTS',
         internet_nl_web_legacy_hsts_explanation: 'Calculated by using the value from: web_https_http_hsts.',
@@ -216,7 +216,7 @@ const messages = {
         internet_nl_web_legacy_tls_available_explanation: 'Uitleg...',
         internet_nl_web_legacy_tls_ncsc_web: 'TLS_NCSC',
         internet_nl_web_legacy_tls_ncsc_web_explanation: 'Uitleg...',
-        internet_nl_web_legacy_https_enforced: 'HTTPS',
+        internet_nl_web_legacy_https_enforced: 'HTTPS redirect',
         internet_nl_web_legacy_https_enforced_explanation: 'Uitleg...',
         internet_nl_web_legacy_hsts: 'HSTS',
         internet_nl_web_legacy_hsts_explanation: 'Uitleg...',

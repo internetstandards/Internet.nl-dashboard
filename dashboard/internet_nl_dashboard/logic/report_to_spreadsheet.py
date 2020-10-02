@@ -336,7 +336,7 @@ def translate_field(field_label):
         'internet_nl_web_legacy_dnssec': 'DNSSEC',
         'internet_nl_web_legacy_tls_available': 'TLS available',
         'internet_nl_web_legacy_tls_ncsc_web': 'TLS NCSC web',
-        'internet_nl_web_legacy_https_enforced': 'HTTPS enforced',
+        'internet_nl_web_legacy_https_enforced': 'HTTPS redirect',
         'internet_nl_web_legacy_hsts': 'HSTS',
         'internet_nl_web_legacy_category_ipv6': 'IPv6',
         'internet_nl_web_legacy_ipv6_nameserver': 'IPv6 nameserver',
