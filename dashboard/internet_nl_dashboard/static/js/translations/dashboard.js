@@ -188,42 +188,50 @@ const messages = {
         },
 
         internet_nl_mail_legacy_dmarc: 'DMARC',
-        internet_nl_mail_legacy_dmarc_explanation: 'Uitleg',
+        internet_nl_mail_legacy_dmarc_explanation: 'Berekend door de waarde van het volgende veld te gebruiken: mail_auth_dkim_exist.',
         internet_nl_mail_legacy_dkim: 'DKIM',
-        internet_nl_mail_legacy_dkim_explanation: 'Uitleg',
+        internet_nl_mail_legacy_dkim_explanation: 'Berekend door de waarde het veld "mail_auth_dkim_exist" te gebruiken als deze passed is. Als dat niet zo is wordt er gekeken of het domein e-mail verstuurd, zo nee: dan is dit not_applicable. Zo wel dan faalt deze test.',
         internet_nl_mail_legacy_spf: 'SPF',
-        internet_nl_mail_legacy_spf_explanation: 'Uitleg',
+        internet_nl_mail_legacy_spf_explanation: 'Berekend door de waarde van het volgende veld te gebruiken: mail_auth_spf_exist.',
         internet_nl_mail_legacy_dmarc_policy: 'DMARC policy',
-        internet_nl_mail_legacy_dmarc_policy_explanation: 'Uitleg',
+        internet_nl_mail_legacy_dmarc_policy_explanation: 'Berekend door de waarde van het volgende veld te gebruiken: mail_auth_dmarc_policy.',
         internet_nl_mail_legacy_spf_policy: 'SPF policy',
-        internet_nl_mail_legacy_spf_policy_explanation: 'Uitleg',
+        internet_nl_mail_legacy_spf_policy_explanation: 'Berekend door de waarde van het volgende veld te gebruiken: mail_auth_spf_policy.',
         internet_nl_mail_legacy_start_tls: 'STARTTLS',
-        internet_nl_mail_legacy_start_tls_explanation: 'Uitleg',
+        internet_nl_mail_legacy_start_tls_explanation: 'Berekend door de waarde van het volgende veld te gebruiken: mail_starttls_tls_available. Kan overschreven worden door de mail_servers_testable_status (no_mx, unreachable, not_testable).',
         internet_nl_mail_legacy_start_tls_ncsc: 'STARTTLS NCSC',
-        internet_nl_mail_legacy_start_tls_ncsc_explanation: 'Uitleg',
+        internet_nl_mail_legacy_start_tls_ncsc_explanation: 'Wordt berekend door de slechtste waarde te gebruiken van de volgende velden: mail_starttls_tls_available, ' +
+            'mail_starttls_tls_keyexchange, mail_starttls_tls_compress, mail_starttls_tls_secreneg, ' +
+            'mail_starttls_tls_ciphers, mail_starttls_tls_clientreneg,  mail_starttls_tls_version, ' +
+            'mail_starttls_tls_cipherorder, mail_starttls_tls_keyexchangehash, mail_starttls_tls_0rtt, ' +
+            'mail_starttls_cert_sig, mail_starttls_cert_pubkey, mail_starttls_cert_chain,  mail_starttls_cert_domain. ' +
+            'Kan overschreven worden door mail_servers_testable_status (no_mx, unreachable, not_testable).',
         internet_nl_mail_legacy_dnssec_mx: 'DNSSEC MX',
-        internet_nl_mail_legacy_dnssec_mx_explanation: 'Uitleg',
+        internet_nl_mail_legacy_dnssec_mx_explanation: 'Berekend door de slechtste waarde van de volgende velden te gebruiken: mail_dnssec_mx_exist, mail_dnssec_mx_valid. Wordt op no_mx gezet als er geen mx is.',
         internet_nl_mail_legacy_dane: 'DANE',
-        internet_nl_mail_legacy_dane_explanation: 'Uitleg',
+        internet_nl_mail_legacy_dane_explanation: 'Berekend door de slechtste waarde van de volgende velden te gebruiken: mail_starttls_dane_exist, mail_starttls_dane_valid. Kan overschreven worden door de mail_servers_testable_status (no_mx, unreachable, not_testable).',
         internet_nl_mail_legacy_ipv6_nameserver: 'IPv6 nameserver',
-        internet_nl_mail_legacy_ipv6_nameserver_explanation: 'Uitleg',
+        internet_nl_mail_legacy_ipv6_nameserver_explanation: 'Berekend door de slechtste waarde van de volgende velden te gebruiken: mail_ipv6_ns_address, mail_ipv6_ns_reach. Wordt op no_mx gezet als er geen mx is.',
         internet_nl_mail_legacy_ipv6_mailserver: "IPv6 mailserver",
-        internet_nl_mail_legacy_ipv6_mailserver_explanation: 'Uitleg',
+        internet_nl_mail_legacy_ipv6_mailserver_explanation: 'Berekend door de slechtste waarde van de volgende velden te gebruiken: mail_ipv6_mx_address, mail_ipv6_mx_reach. Wordt op no_mx gezet als er geen mx is.',
 
         internet_nl_web_legacy_dnssec: 'DNSSEC',
-        internet_nl_web_legacy_dnssec_explanation: 'Uitleg...',
+        internet_nl_web_legacy_dnssec_explanation: 'Berekend door de slechtste waarde van de volgende velden te gebruiken: web_dnssec_exist, web_dnssec_valid.',
         internet_nl_web_legacy_tls_available: 'TLS',
-        internet_nl_web_legacy_tls_available_explanation: 'Uitleg...',
+        internet_nl_web_legacy_tls_available_explanation: 'Berekend door de waarde van het volgende veld te gebruiken: web_https_http_available.',
         internet_nl_web_legacy_tls_ncsc_web: 'TLS_NCSC',
-        internet_nl_web_legacy_tls_ncsc_web_explanation: 'Uitleg...',
+        internet_nl_web_legacy_tls_ncsc_web_explanation: "Wordt berekend door de slechtste waarde te gebruiken van de volgende velden: web_https_tls_keyexchange, " +
+            "web_https_tls_compress, web_https_tls_secreneg, web_https_tls_ciphers, web_https_tls_clientreneg, " +
+            "web_https_tls_version, web_https_tls_cipherorder, web_https_tls_0rtt, web_https_tls_ocsp, " +
+            "web_https_tls_keyexchangehash, web_https_cert_sig, web_https_cert_pubkey, web_https_cert_chain, web_https_cert_domain.",
         internet_nl_web_legacy_https_enforced: 'HTTPS redirect',
-        internet_nl_web_legacy_https_enforced_explanation: 'Uitleg...',
+        internet_nl_web_legacy_https_enforced_explanation: 'Berekend door de waarde van het volgende veld te gebruiken: web_https_http_redirect.',
         internet_nl_web_legacy_hsts: 'HSTS',
-        internet_nl_web_legacy_hsts_explanation: 'Uitleg...',
+        internet_nl_web_legacy_hsts_explanation: 'Berekend door de waarde van het volgende veld te gebruiken: web_https_http_hsts.',
         internet_nl_web_legacy_ipv6_nameserver: 'IPv6 nameserver',
-        internet_nl_web_legacy_ipv6_nameserver_explanation: 'Uitleg...',
+        internet_nl_web_legacy_ipv6_nameserver_explanation: 'Berekend door de slechtste waarde van de volgende velden te gebruiken: web_ipv6_ws_address, web_ipv6_ws_reach en web_ipv6_ws_similar.',
         internet_nl_web_legacy_ipv6_webserver: 'IPv6 webserver',
-        internet_nl_web_legacy_ipv6_webserver_explanation: 'Uitleg...',
+        internet_nl_web_legacy_ipv6_webserver_explanation: 'Berekend door de slechtste waarde van de volgende velden te gebruiken: web_https_dane_exist en web_https_dane_valid.',
 
         // https://github.com/NLnetLabs/Internet.nl/blob/cece8255ac7f39bded137f67c94a10748970c3c7/checks/templates/mail-results.html
         internet_nl_mail_server_configured: 'Mail Server Configured (not in UI)',  // Added 24th of May 2019
