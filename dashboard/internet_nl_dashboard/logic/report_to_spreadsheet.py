@@ -430,7 +430,7 @@ def upgrade_excel_spreadsheet(spreadsheet_data):
         ws[f'B4'] = "Contains warning"
         ws[f'B5'] = "Contains failed"
         ws[f'B6'] = "Contains not_tested"
-        ws[f'B7'] = "Percentage passed (ignoring not_tested)"
+        ws[f'B7'] = "Percentage passed"
 
         # bold totals:
         for i in range(1, 9):
@@ -462,7 +462,8 @@ def upgrade_excel_spreadsheet(spreadsheet_data):
                 # Rounding's num digits is NOT the number of digits behind the comma, but the total number of digits.
                 # todo: we should use the calculations in report.py. And there include the "missing" / empty stuff IF
                 # that is missing.
-                ws[f'{cell}7'] = f'=IF({cell}1-{cell}6=0, 0, ROUND({cell}2/({cell}1 - ({cell}6)), 4))'
+                #                   IF(     H1=0,0,ROUND(     H2÷     H1, 4))
+                ws[f'{cell}7'] = f'=IF({cell}1=0,0,ROUND({cell}2/{cell}1, 4))'
                 ws[f'{cell}7'].number_format = '0.00%'
 
         # fold port and ip-version (and protocol?) from report as it's not useful in this case?
