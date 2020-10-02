@@ -118,7 +118,7 @@ SANE_COLUMN_ORDER = {
             'internet_nl_web_legacy_tls_ncsc_web',
             'internet_nl_web_legacy_https_enforced',
             'internet_nl_web_legacy_hsts',
-            'internet_nl_mail_legacy_category_ipv6',
+            'internet_nl_web_legacy_category_ipv6',
             'internet_nl_web_legacy_ipv6_nameserver',
             'internet_nl_web_legacy_ipv6_webserver',
             'internet_nl_web_legacy_dane',
