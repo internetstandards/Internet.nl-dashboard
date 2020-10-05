@@ -773,7 +773,7 @@ const Report = Vue.component('report', {
                     empty_report: 'It looks like this report is empty... did you filter too much?',
                     results: {
                         not_applicable: "Not applicable",
-                        not_testable: "Untestable",
+                        not_testable: "Not testable",
                         error_in_test: "Test error",
                         failed: "Failed",
                         warning: "Warning",
@@ -844,7 +844,7 @@ const Report = Vue.component('report', {
                 // These fields do not have a hierarchical translation, this is how they are in websecmap.
                 // they are not 1-1 with the frontend. So have their own label for greater consistency.
                 // Test results
-                not_testable: 'Untestable',
+                not_testable: 'Not testable',
                 not_applicable: 'Not applicable',
                 error_in_test: "Test error",
 
@@ -930,7 +930,7 @@ const Report = Vue.component('report', {
                     empty_report: 'Geen meetgegevens gevonden, wordt er misschien teveel gefilterd?',
                     results: {
                         not_applicable: "Niet van toepassing",
-                        not_testable: "Ontestbaar",
+                        not_testable: "Niet testbaar",
                         error_in_test: "Testfout",
                         failed: "Niet goed",
                         warning: "Waarschuwing",

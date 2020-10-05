@@ -681,7 +681,7 @@ def keyed_values_as_boolean(keyed_ratings: Dict[str, Any], protocol: str = 'dns_
                     if "simple_verdict" not in value:
                         values.append('')
                     else:
-                        # backward compatible with api v1 reports
+                        # backward compatible with api v1 reportsunreachable
                         if value['simple_verdict'] == "not_testable":
                             values.append('untestable')
                         elif value['simple_verdict'] == "not_applicable":
