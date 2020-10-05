@@ -449,7 +449,7 @@ def upgrade_excel_spreadsheet(spreadsheet_data):
             'F', 'G', 'H', 'I', 'J', 'K', 'L', "M", "N", 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z',
             'AA', 'AB', 'AC', 'AD', 'AE', 'AF', 'AG', 'AH', 'AI', 'AJ', 'AK', 'AL', 'AM', 'AN', 'AO',
             'AP', 'AQ', 'AR', 'AS', 'AT', 'AU', 'AV', 'AW', 'AX', 'AY', 'AZ', 'BA', 'BB', 'BC', 'BD',
-            'BE'
+            'BE', 'BF', 'BG', 'BH', 'BI', 'BJ', 'BK'
         ]
 
         # add some statistics
@@ -466,9 +466,14 @@ def upgrade_excel_spreadsheet(spreadsheet_data):
                 ws[f'{cell}4'] = f'=COUNTIF({cell}13:{cell}5050, "warning")'
                 ws[f'{cell}5'] = f'=COUNTIF({cell}13:{cell}5050, "failed")'
                 ws[f'{cell}6'] = f'=COUNTIF({cell}13:{cell}5050, "not_tested")'
-                ws[f'{cell}7'] = f'=COUNTIF({cell}13:{cell}5050, "error")'
-                ws[f'{cell}8'] = \
-                    f'=COUNTIF({cell}13:{cell}5050, "no_mx")+COUNTIF({cell}13:{cell}5050, "not_applicable")'
+                ws[f'{cell}7'] = f'=' \
+                                 f'COUNTIF({cell}13:{cell}5050, "error")+' \
+                                 f'COUNTIF({cell}13:{cell}5050, "unreachable")+' \
+                                 f'COUNTIF({cell}13:{cell}5050, "untestable")+' \
+                                 f'COUNTIF({cell}13:{cell}5050, "not_testable")'
+                ws[f'{cell}8'] = f'=' \
+                                 f'COUNTIF({cell}13:{cell}5050, "no_mx")+' \
+                                 f'COUNTIF({cell}13:{cell}5050, "not_applicable")'
                 # Not applicable and not testable are subtracted from the total.
                 # See https://github.com/internetstandards/Internet.nl-dashboard/issues/68
                 # Rounding's num digits is NOT the number of digits behind the comma, but the total number of digits.
@@ -494,7 +499,6 @@ def upgrade_excel_spreadsheet(spreadsheet_data):
         # there is probably a feature that puts this in a single conditional value.
         greenFill = PatternFill(start_color='B7FFC8', end_color='B7FFC8', fill_type='solid')
         redFill = PatternFill(start_color='FFB7B7', end_color='FFB7B7', fill_type='solid')
-        errorFill = PatternFill(start_color='fc5555', end_color='fc5555', fill_type='solid')
         blueFill = PatternFill(start_color='B7E3FF', end_color='B7E3FF', fill_type='solid')
         orangeFill = PatternFill(start_color='FFD9B7', end_color='FFD9B7', fill_type='solid')
         grayFill = PatternFill(start_color='99FFFF', end_color='DBDBDB', fill_type='solid')
@@ -509,11 +513,6 @@ def upgrade_excel_spreadsheet(spreadsheet_data):
         ws.conditional_formatting.add(
             'F13:CD5050',
             CellIsRule(operator='=', formula=['"failed"'], stopIfTrue=True, fill=redFill)
-        )
-
-        ws.conditional_formatting.add(
-            'F13:CD5050',
-            CellIsRule(operator='=', formula=['"error"'], stopIfTrue=True, fill=errorFill)
         )
 
         ws.conditional_formatting.add(

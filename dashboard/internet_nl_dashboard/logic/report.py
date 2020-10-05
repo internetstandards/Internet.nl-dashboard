@@ -481,7 +481,7 @@ def add_percentages_to_statistics(report: UrlListReport):
         tcskp['pct_high'] = round((issue['high'] / graphs_all) * 100, 2)
         tcskp['pct_medium'] = round((issue['medium'] / graphs_all) * 100, 2)
         tcskp['pct_low'] = round((issue['low'] / graphs_all) * 100, 2)
-        # all other possible stuff. Note that no_mx and such have been mapped to one of these.
+        # all other possible stuff. Note that no_mx, unreachable and such have been mapped to one of these.
         tcskp['pct_not_applicable'] = round((issue['not_applicable'] / graphs_all) * 100, 2)
         tcskp['pct_not_testable'] = round((issue['not_testable'] / graphs_all) * 100, 2)
         tcskp['pct_error_in_test'] = round((issue['error_in_test'] / graphs_all) * 100, 2)
