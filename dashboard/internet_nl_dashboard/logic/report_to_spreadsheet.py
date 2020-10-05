@@ -121,7 +121,8 @@ SANE_COLUMN_ORDER = {
             'internet_nl_web_legacy_category_ipv6',
             'internet_nl_web_legacy_ipv6_nameserver',
             'internet_nl_web_legacy_ipv6_webserver',
-            'internet_nl_web_legacy_dane',
+            # Deleted on request
+            # 'internet_nl_web_legacy_dane',
 
             # added may 2020, api v2
             'internet_nl_web_legacy_tls_1_3',
@@ -222,6 +223,7 @@ SANE_COLUMN_ORDER = {
 
             # Added may 2020 internet.nl api v2
             'internet_nl_mail_legacy_mail_non_sending_domain',
+            'internet_nl_mail_legacy_mail_sending_domain',
             'internet_nl_mail_legacy_mail_server_testable',
             'internet_nl_mail_legacy_mail_server_reachable',
             'internet_nl_mail_legacy_domain_has_mx',
@@ -341,10 +343,12 @@ def translate_field(field_label):
         'internet_nl_web_legacy_category_ipv6': 'IPv6',
         'internet_nl_web_legacy_ipv6_nameserver': 'IPv6 nameserver',
         'internet_nl_web_legacy_ipv6_webserver': 'IPv6 webserver',
-        'internet_nl_web_legacy_dane': 'DANE',
+        # Deleted on request
+        # 'internet_nl_web_legacy_dane': 'DANE',
 
         'internet_nl_web_legacy_tls_1_3': 'TLS 1.3 Support',
         'internet_nl_mail_legacy_mail_non_sending_domain': 'Non e-mail sending domain',
+        'internet_nl_mail_legacy_mail_sending_domain': 'E-mail sending domain',
         'internet_nl_mail_legacy_mail_server_testable': 'Mail server testable',
         'internet_nl_mail_legacy_mail_server_reachable': 'Mail server reachable',
         'internet_nl_mail_legacy_domain_has_mx': 'Mail server has MX record',

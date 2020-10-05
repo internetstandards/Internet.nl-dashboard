@@ -1174,6 +1174,7 @@ const Report = Vue.component('report', {
 
                 internet_nl_web_legacy_tls_1_3: {visible: false},
                 internet_nl_mail_legacy_mail_non_sending_domain: {visible: false},
+                internet_nl_mail_legacy_mail_sending_domain: {visible: false},
                 internet_nl_mail_legacy_mail_server_testable: {visible: false},
                 internet_nl_mail_legacy_mail_server_reachable: {visible: false},
                 internet_nl_mail_legacy_domain_has_mx: {visible: false},
@@ -2329,6 +2330,8 @@ const Report = Vue.component('report', {
                                         explanation: 'fields.forum_standardistation.internet_nl_mail_legacy_mail_server_testable_explanation'},
                                         {name: 'internet_nl_mail_legacy_mail_non_sending_domain',
                                         explanation: 'fields.forum_standardistation.internet_nl_mail_legacy_mail_non_sending_domain_explanation'},
+                                        {name: 'internet_nl_mail_legacy_mail_sending_domain',
+                                        explanation: 'fields.forum_standardistation.internet_nl_mail_legacy_mail_sending_domain_explanation'},
                                     ],
                                     additional_fields: [],
                                 }
