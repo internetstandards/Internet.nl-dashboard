@@ -7,9 +7,6 @@ import pytz
 from actstream import action
 from celery import Task, chain, group
 from constance import config
-from django.conf import settings
-from django.contrib.auth.models import User
-from django.core.mail import send_mail
 from django.db import transaction
 from django.db.models import Count, Q
 from django.utils import timezone
@@ -20,6 +17,8 @@ from websecmap.scanners.scanner import add_model_filter, dns_endpoints, internet
 from websecmap.scanners.scanner.internet_nl_v2 import InternetNLApiSettings
 
 from dashboard.celery import app
+from dashboard.internet_nl_dashboard.logic.mail import (email_configration_is_correct,
+                                                        send_scan_finished_mails)
 from dashboard.internet_nl_dashboard.logic.report import (
     add_keyed_ratings, add_percentages_to_statistics, add_simple_verdicts,
     add_statistics_over_ratings, clean_up_not_required_data_to_speed_up_report_on_client,
@@ -553,51 +552,12 @@ def upgrade_report_with_unscannable_urls(urllistreport: UrlListReport, scan: Acc
 def send_after_scan_mail(scan: AccountInternetNLScan):
 
     # Do not try to send mail if no mailserver is configured
-    if not all([settings.EMAIL_HOST, settings.EMAIL_PORT, settings.EMAIL_HOST_USER, settings.EMAIL_HOST_PASSWORD]):
+    if email_configration_is_correct():
         return "skipped sending mail: no mail server configured"
 
-    scan_type = scan.scan.type
-    list_name = scan.urllist.name
-
-    subject = f'Your {scan_type} scan on {list_name} has finished!'
-    report = UrlListReport.objects.all().filter(urllist=scan.urllist).order_by("-id").first()
-
-    # Only send mail to users that are active and of course have a mail address...
-    users = User.objects.all().filter(dashboarduser__account=scan.account, email__isnull=False, is_active=True)
-
-    if not users:
+    mails_sent = send_scan_finished_mails(scan)
+    if not mails_sent:
         return "skipped sending mail: no e-mail addresses associated with account"
-
-    for user in users:
-
-        # figure out the best possible name:
-        if user.first_name:
-            addressing = user.first_name
-        elif user.last_name:
-            addressing = user.last_name
-        else:
-            addressing = user.username
-
-        content = f"""Hi {addressing},<br>
-        <br>
-        Good news! Your scan on {list_name} has finished.<br>
-        <br>
-        View the report here: <a href="https://dashboard.internet.nl/spa/#/report/{report.id}">
-        https://dashboard.internet.nl/spa/#/report/{report.id}</a><br>
-        <br>
-        If you have any questions, please contact us via vraag@internet.nl<br>
-        <br>
-        Regards,<br>
-        internet.nl
-        """
-        send_mail(
-            subject,
-            content,
-            'vraag@internet.nl',
-            [user.email],
-            fail_silently=False,
-            html_message=content
-        )
 
     return "sent mail"
 

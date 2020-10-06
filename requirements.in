@@ -25,3 +25,7 @@ pytz
 django
 polib
 django-activity-stream
+
+
+# sending mail notifications, per #54, translatable and managable templates in the admin interface
+django_mail_admin

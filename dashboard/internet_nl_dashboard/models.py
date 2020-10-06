@@ -8,6 +8,7 @@ from django.conf import settings
 from django.contrib.auth.models import User
 from django.db import models
 from django.utils import timezone
+from django_countries.fields import CountryField
 from jsonfield import JSONField
 from requests.auth import HTTPBasicAuth
 from websecmap.organizations.models import Url
@@ -120,6 +121,26 @@ class DashboardUser(models.Model):
     account = models.ForeignKey(
         Account,
         on_delete=models.CASCADE,
+    )
+
+    mail_preferred_mail_address = models.EmailField(
+        help_text="This address can deviate from the account mail address for password resets and other account"
+                  " features.",
+        null=True,
+        blank=True
+    )
+    mail_preferred_language = CountryField(default='EN')
+
+    mail_send_mail_after_scan_finished = models.BooleanField(
+        default=False,
+        help_text="After a scan is finished, an e-mail is sent informing the user that a report is ready."
+    )
+
+    mail_after_mail_unsubscribe_code = models.CharField(
+        max_length=255,
+        default="",
+        help_text="This is autofilled when sending an e-mail. The user can use this code to set "
+                  "mail_send_mail_after_scan_finished to false without logging in."
     )
 
     notes = models.TextField(
