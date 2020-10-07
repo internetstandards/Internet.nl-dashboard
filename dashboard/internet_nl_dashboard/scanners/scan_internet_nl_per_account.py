@@ -552,7 +552,7 @@ def upgrade_report_with_unscannable_urls(urllistreport: UrlListReport, scan: Acc
 def send_after_scan_mail(scan: AccountInternetNLScan):
 
     # Do not try to send mail if no mailserver is configured
-    if email_configration_is_correct():
+    if not email_configration_is_correct():
         return "skipped sending mail: no mail server configured"
 
     mails_sent = send_scan_finished_mails(scan)

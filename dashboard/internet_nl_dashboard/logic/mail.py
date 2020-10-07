@@ -5,11 +5,45 @@ from typing import Any
 
 from constance import config
 from django.contrib.auth.models import User
+from django.core.management import call_command
+from django.utils import timezone
 from django_mail_admin import mail
 from django_mail_admin.models import EmailTemplate, Outbox
 
+from dashboard.celery import app
 from dashboard.internet_nl_dashboard.models import (AccountInternetNLScan, DashboardUser,
                                                     UrlListReport)
+
+
+"""
+Mail is sent when a scan is finished and a report is ready. It uses django_mail_admin, a straightforward library
+that simplifies template management and sending. A sample template is below:
+
+Name:           scan_finished_en
+Description:    Used when a the scan on a list is finished and a report is being sent. You can translate this template
+                to other languages by creating a new template with _nl or another language code instead of _en for
+                english.
+Subject:        Report ready for {{list_name}}, scoring {{report_average_internet_nl_score}}
+Email text:     Hi {{recipient}}!<br>
+                <br>
+                Good news! The scan on {{list_name}} has finished. The average score of this report is
+                {{report_average_internet_nl_score}}. <br>
+                <br>
+                View the report at this link: <br>
+                <a href="https://dashboard.internet.nl/spa/#/report/{{report_id}}">
+                        https://dashboard.internet.nl/spa/#/report/{{report_id}}</a>/<br>
+                <br>
+                Regards,<br>
+                internet.nl<br>
+                <br>
+                <br>
+                [
+                <a href="http://localhost:8000/spa/#/unsubscribe?feed=scan_finished&unsubscribe_code=
+                {{unsubscribe_code}}">unsubscribe</a>
+                -
+                <a href="http://localhost:8000/spa/#/preferences">preferences</a>
+                 ]
+"""
 
 
 def email_configration_is_correct():
@@ -67,8 +101,10 @@ def send_scan_finished_mails(scan: AccountInternetNLScan):
 
             "scan_id": scan.id,
             "scan_started_on": scan.started_on.isoformat(),
-            "scan_finished_on": scan.finished_on.isoformat(),
-            "scan_duration": scan.finished_on - scan.started_on,
+            # the scan is not yet completely finished, because this step (mailing) is still performed
+            # so perform a guess, which might be a few minutes off...
+            "scan_finished_on": timezone.now().isoformat(),
+            "scan_duration": timezone.now() - scan.started_on,
 
             "scan_type": scan.scan.type,
 
@@ -137,3 +173,16 @@ def unsubscribe(feed: str = "scan_finished", unsubscribe_code: str = ""):
 
     # always say that the user has been unsubscribed, even if there was no subscription
     return {'unsubscribed': True}
+
+
+@app.task(queue='storage')
+def send_mail():
+    """
+    To use this, add a periodic task. The signature is:
+    dashboard.internet_nl_dashboard.logic.mail.send_mail
+
+    Todo: loops, the message does not get sent but other messages are being added.
+
+    :return:
+    """
+    call_command('send_queued_mail', processes=1, log_level=2)

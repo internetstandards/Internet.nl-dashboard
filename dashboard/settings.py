@@ -626,8 +626,9 @@ LANGUAGES = sorted([
 
 # email settings...
 # django_mail_admin.backends.OutboxEmailBackend = Store sent mails in outbox, so we know what has been sent.
+# It's not a log -> this is just a way to test things, and it will hang send_queued_mail.
 if DEBUG:
-    EMAIL_BACKEND = 'django_mail_admin.backends.OutboxEmailBackend'
+    EMAIL_BACKEND = 'django_mail_admin.backends.CustomEmailBackend'
     # As there are sanity checks, these settings need to be present during debugging too.
     EMAIL_HOST = ''
     EMAIL_PORT = ''
@@ -636,7 +637,7 @@ if DEBUG:
     EMAIL_USE_TLS = False
     EMAIL_USE_SSL = False
 else:
-    EMAIL_BACKEND = 'django_mail_admin.backends.OutboxEmailBackend'
+    EMAIL_BACKEND = 'django_mail_admin.backends.CustomEmailBackend'
     # todo: get these settings from internet.nl
     EMAIL_HOST = ''
     EMAIL_PORT = ''
