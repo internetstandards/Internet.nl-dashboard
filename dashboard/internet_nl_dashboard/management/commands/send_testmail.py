@@ -1,6 +1,6 @@
+from constance import config
 from django.core.management.base import BaseCommand
 from django_mail_admin import mail, models
-from constance import config
 
 
 class Command(BaseCommand):
