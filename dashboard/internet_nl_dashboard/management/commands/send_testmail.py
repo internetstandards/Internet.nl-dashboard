@@ -1,12 +1,13 @@
 from django.core.management.base import BaseCommand
 from django_mail_admin import mail, models
+from constance import config
 
 
 class Command(BaseCommand):
     def handle(self, *args, **options):
         mail.send(
-            'noreply@dashboard.internet.nl',
-            'elger@internetcleanup.foundation',
+            sender=config.EMAIL_NOTIFICATION_SENDER,
+            recipients=config.EMAIL_TEST_RECIPIENT,
             subject='Dashboard test e-mail',
             message='This is a test email from the dashboard.',
             priority=models.PRIORITY.now,

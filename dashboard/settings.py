@@ -506,8 +506,13 @@ CONSTANCE_CONFIG = {
         str
     ),
     'EMAIL_NOTIFICATION_SENDER': (
-        'vraag@internet.nl',
+        'noreply@dashboard.internet.nl',
         'The sender of email update notification, such as scan finished.',
+        str
+    ),
+    'EMAIL_TEST_RECIPIENT': (
+        'elger@internetcleanup.foundation',
+        'Who receives the testmail from dashboard send_testmail.',
         str
     ),
 }
@@ -518,7 +523,8 @@ CONSTANCE_CONFIG_FIELDSETS = OrderedDict([
                    'DASHBOARD_MAXIMUM_DOMAINS_PER_SPREADSHEET',
                    'DASHBOARD_MAXIMUM_LISTS_PER_SPREADSHEET')),
     ('E-Mail', ('EMAIL_NOTIFICATION_SENDER',
-                'EMAIL_FALLBACK_LANGUAGE')),
+                'EMAIL_FALLBACK_LANGUAGE',
+                'EMAIL_TEST_RECIPIENT')),
     ('Internet.nl Scans', ('INTERNET_NL_API_USERNAME', 'INTERNET_NL_API_PASSWORD', 'INTERNET_NL_API_URL',
                            'INTERNET_NL_MAXIMUM_URLS'))
 ])
