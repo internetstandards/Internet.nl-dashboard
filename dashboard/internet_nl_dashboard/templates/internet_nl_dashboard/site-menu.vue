@@ -10,8 +10,8 @@
             <li><router-link to="/domains" accesskey="d">{{ $t("domains") }}</router-link></li>
             <li><router-link to="/scans" accesskey="s">{{ $t("scans") }}</router-link></li>
             <li><router-link to="/report" accesskey="r">{{ $t("reports") }}</router-link></li>
+            <li><router-link to="/account" accesskey="a">{{ $t("account") }}</router-link></li>
 
-            <li class=""><a href="/account/two_factor/" accesskey="a">{{ $t("account") }}</a></li>
             <li class=""><a href="/logout/" accesskey="l">{{ $t("log_off") }}</a></li>
         </template>
         <template v-if="!is_authenticated">

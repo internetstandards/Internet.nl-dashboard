@@ -331,6 +331,8 @@
                 { path: '/tour', component: Demo },
                 { path: '/demo', component: Demo },
                 { path: '/unsubscribe', component: Unsubscribe },
+                { path: '/profile', component: Account },
+                { path: '/account', component: Account },
             ];
 
             const router = new VueRouter({
@@ -345,10 +347,55 @@
                 router,
                 i18n,
                 el: "#app",
+                data: {
+                    show_hamburgermenu: false,
+                    hamburgermenu_expanded: false,
+                },
                 mounted: function() {
                     console.log("App loaded");
+                },
+                methods: {
+                    toggleHamburgerMenuExpand: function () {
+                        this.hamburgermenu_expanded = !this.hamburgermenu_expanded;
+
+                        // this code was taken from menu-min.js
+                        var header = document.querySelector('header .wrap'),
+                            menu = document.querySelector('#sitenav'),
+                            langswitch = document.querySelector('#language-switch-header-container'),
+                            menuButton = document.querySelector('.menu-button');
+
+                        if (this.hamburgermenu_expanded) {
+                            header.classList.add('active');
+                            menu.classList.add('active');
+                            menu.setAttribute('aria-hidden', 'false');
+                            langswitch.classList.add('active');
+                            langswitch.setAttribute('aria-hidden', 'false');
+                            menuButton.setAttribute('aria-expanded', 'true');
+                        } else {
+                            header.classList.remove('active');
+                            menu.classList.remove('active');
+                            menu.setAttribute('aria-hidden', 'true');
+                            langswitch.classList.remove('active');
+                            langswitch.setAttribute('aria-hidden', 'true');
+                            menuButton.setAttribute('aria-expanded', 'false');
+                        }
+                    }
                 }
             })
+
+            // trigger actions on window resize:
+            function WidthChange(mq) {
+                app.show_hamburgermenu = !mq.matches;
+                // reset the menu state after resizing while the menu is open. So the next click it can be opened again.
+                if (!app.show_hamburgermenu){
+                    app.hamburgermenu_expanded = false;
+                }
+            }
+            if (matchMedia) {
+                var mq = window.matchMedia('(min-width: 740px)');
+                mq.addEventListener('change', WidthChange);
+                WidthChange(mq);
+            }
         });
 
         // this prevents the legend being written over the 100% scores
@@ -380,6 +427,7 @@
     {% include "internet_nl_dashboard/templates/internet_nl_dashboard/internet_nl_charts.vue" %}
     {% include "internet_nl_dashboard/templates/internet_nl_dashboard/demo.vue" %}
     {% include "internet_nl_dashboard/templates/internet_nl_dashboard/unsubscribe.vue" %}
+    {% include "internet_nl_dashboard/templates/internet_nl_dashboard/account.vue" %}
 
 
 </head>
@@ -393,7 +441,7 @@
         <div class="skiplink"><a href="#content">
             {% trans "page gotocontents" %}
         </a></div>
-        <div class="skiplink"><a href="#sitenav">
+        <div class="skiplink" id="skiplink-sitenav"><a href="#sitenav">
             {% trans "page gotomainmenu" %}
         </a></div>
         <div class="skiplink"><a href="#footer">
@@ -422,28 +470,66 @@
                     <p id="site-description"><span class="hidden">{% trans "page sitedescription" %}</span></p>
                 </div>
 
-                <div id="language-switch-header-container">
-                    <ul class="language-switch-list">
-                        {% with user_language=request.LANGUAGE_CODE %}
-                            {% get_language_info_list for LANGUAGES as languages %}
+                <template v-if="show_hamburgermenu">
+                    <button id="menu-button"
+                            aria-label="Menu"
+                            aria-expanded="false"
+                            aria-controls="sitenav"
+                            @click="toggleHamburgerMenuExpand"
+                            class="menu-button">
+                        <i>≡</i><b>&nbsp;menu</b>
+                    </button>
 
-                            {% for language in languages %}
-                                <li>
-                                {% if language.code == user_language %}
-                                    <button class="active-language" disabled>{{language.name_local}}</button>
-                                {% else %}
-                                    <a onclick="set_language('{{language.code}}')">{{language.name_local}}</a>
-                                {% endif %}
-                                </li>
-                            {% endfor %}
-                        {% endwith %}
-                    </ul>
-                </div>
 
-                <nav id="sitenav">
-                    <!-- Todo: move these types of variables to a general config, instead of sprinkling it around.-->
-                    <site-menu :is_authenticated="{{ user.is_authenticated | lower }}" :is_superuser="{{ user.is_superuser | lower }}"></site-menu>
-                </nav>
+                    <div id="language-switch-header-container" aria-hidden="true">
+                        <ul class="language-switch-list">
+                            {% with user_language=request.LANGUAGE_CODE %}
+                                {% get_language_info_list for LANGUAGES as languages %}
+
+                                {% for language in languages %}
+                                    <li>
+                                        {% if language.code == user_language %}
+                                            <button class="active-language" disabled>{{ language.name_local }}</button>
+                                        {% else %}
+                                            <a onclick="set_language('{{ language.code }}')">{{ language.name_local }}</a>
+                                        {% endif %}
+                                    </li>
+                                {% endfor %}
+                            {% endwith %}
+                        </ul>
+                    </div>
+
+                    <nav id="sitenav" aria-hidden="true" aria-labelledby="menu-button">
+                        <site-menu :is_authenticated="{{ user.is_authenticated | lower }}"
+                                   :is_superuser="{{ user.is_superuser | lower }}"></site-menu>
+                    </nav>
+                </template>
+                <template v-else>
+
+                    <div id="language-switch-header-container">
+                        <ul class="language-switch-list">
+                            {% with user_language=request.LANGUAGE_CODE %}
+                                {% get_language_info_list for LANGUAGES as languages %}
+
+                                {% for language in languages %}
+                                    <li>
+                                        {% if language.code == user_language %}
+                                            <button class="active-language" disabled>{{ language.name_local }}</button>
+                                        {% else %}
+                                            <a onclick="set_language('{{ language.code }}')">{{ language.name_local }}</a>
+                                        {% endif %}
+                                    </li>
+                                {% endfor %}
+                            {% endwith %}
+                        </ul>
+                    </div>
+
+                    <nav id="sitenav">
+                        <!-- Todo: move these types of variables to a general config, instead of sprinkling it around.-->
+                        <site-menu :is_authenticated="{{ user.is_authenticated | lower }}"
+                                   :is_superuser="{{ user.is_superuser | lower }}"></site-menu>
+                    </nav>
+                </template>
             </div>
         </header>
 
@@ -499,7 +585,6 @@
 
     </div>
 
-    <script type="text/javascript" src="/static/js/vendor/internet_nl/menu-min.js" defer></script>
     <script type="text/javascript" src="/static/js/vendor/internet_nl/accordion-min.js" defer></script>
     <script type="text/javascript" src="/static/js/vendor/internet_nl/matomo-min.js"></script>
 </body>
