@@ -176,13 +176,12 @@ def unsubscribe(feed: str = "scan_finished", unsubscribe_code: str = ""):
 
 
 @app.task(queue='storage')
-def send_mail():
+def send_queued_mail():
     """
     To use this, add a periodic task. The signature is:
-    dashboard.internet_nl_dashboard.logic.mail.send_mail
+    dashboard.internet_nl_dashboard.logic.mail.send_queued_mail
 
-    Todo: loops, the message does not get sent but other messages are being added.
-
+    Is added in the list of periodic tasks in the fixtures.
     :return:
     """
     call_command('send_queued_mail', processes=1, log_level=2)
