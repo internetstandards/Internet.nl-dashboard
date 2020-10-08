@@ -1,8 +1,7 @@
 # dashboard-internet.nl
 
 [![Build Status](https://travis-ci.com/internetstandards/Internet.nl-dashboard.svg?branch=master)](https://travis-ci.com/internetstandards/Internet.nl-dashboard)
-[![Badges](https://img.shields.io/badge/badges-3-yellowgreen.svg)](https://shields.io)
-[![Cyberveiligheid](https://img.shields.io/badge/Cyberveiligheid-97%25-yellow.svg)](https://eurocyber.nl)
+[![Badges](https://img.shields.io/badge/badges-2-yellowgreen.svg)](https://shields.io)
 
 These instructions will help you set up a development version of the dashboard.
 
