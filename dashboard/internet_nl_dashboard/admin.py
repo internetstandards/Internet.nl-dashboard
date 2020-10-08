@@ -21,6 +21,7 @@ from websecmap.scanners.models import Endpoint
 from dashboard.internet_nl_dashboard import models
 from dashboard.internet_nl_dashboard.forms import CustomAccountModelForm
 from dashboard.internet_nl_dashboard.logic.domains import scan_urllist_now_ignoring_business_rules
+from dashboard.internet_nl_dashboard.logic.mail import send_scan_finished_mails
 from dashboard.internet_nl_dashboard.models import (Account, AccountInternetNLScan,
                                                     AccountInternetNLScanLog, DashboardUser,
                                                     UploadLog, UrlList)
@@ -318,6 +319,16 @@ class AccountInternetNLScanAdmin(ImportExportModelAdmin, admin.ModelAdmin):
         self.message_user(request, "Attempting to progress scans (async).")
     progress_scan.short_description = "Progress scan (async)"
     actions.append('progress_scan')
+
+    def send_finish_mail(self, request, queryset):
+        sent = 0
+        for scan in queryset:
+            if scan.finished:
+                sent += 1
+                send_scan_finished_mails(scan)
+        self.message_user(request, f"A total of {sent} mails have been send.")
+    send_finish_mail.short_description = "Queue finished mail (finished only)"
+    actions.append('send_finish_mail')
 
 
 @admin.register(AccountInternetNLScanLog)
