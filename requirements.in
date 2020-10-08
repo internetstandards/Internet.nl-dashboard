@@ -8,22 +8,24 @@
 # - no requirements that are already provided by websecmap itself
 # - no version pinning, unless it is required and explained
 
-# pytest docker was not released to pypi
-git+https://github.com/avast/pytest-docker@9ce726f4a045addc777fb1cea837a6309cbbeef6#egg=pytest-docker
-
-# somehow proxybroker is not taken from the correct source when importing websecmap (which is a nuisance), therefore
-# it is hardlinked here, with a repository that has better requirements:
-git+https://github.com/stitch/ProxyBroker#egg=proxybroker
-
 # to update websecmap, update the SHA hash and run: make update_requirement_websecmap
-git+https://gitlab.com/internet-cleanup-foundation/web-security-map@bd96d3e92fdf18d2513204f4fb47d217b43e7b30#egg=websecmap
+git+https://gitlab.com/internet-cleanup-foundation/web-security-map@fb04b89464faea39f8efc9d30740b67e78e24917#egg=websecmap
 
 django-otp
 django-two-factor-auth
 django-picklefield
 validators
+
+# python-magic is a Python interface to the libmagic file type identification library. libmagic identifies file types
+# by checking their headers according to a predefined list of file types. This functionality is exposed to the command
+# line by the Unix command file.
+# Used to determine mimetype in spreadsheet uploads.
 python-magic
 pytz
 django
 polib
 django-activity-stream
+
+
+# sending mail notifications, per #54, translatable and managable templates in the admin interface
+django_mail_admin

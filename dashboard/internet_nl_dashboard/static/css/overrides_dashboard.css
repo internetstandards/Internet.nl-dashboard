@@ -300,17 +300,17 @@ small {
 }
 
 /* First name was old internet.nl v1 api, second is v2 api.*/
-.not_testable, .good_not_tested, .no_mx, .unreachable {
+.good_not_tested {
     background-image: url("/static/images/vendor/internet_nl/icon-not-tested-question-mark.png");
     background-image: url("/static/images/vendor/internet_nl/icon-not-tested-question-mark.svg"), none;
 }
 
-.error_in_test, .error {
+.error_in_test, .error, .not_testable, .unreachable {
     background-image: url("/static/images/vendor/internet_nl/icon-not-tested-bolt.png");
     background-image: url("/static/images/vendor/internet_nl/icon-not-tested-bolt.svg"), none;
 }
 
-.not_applicable, .not_tested {
+.not_applicable, .not_tested,  .no_mx {
     background-image: url("/static/images/vendor/internet_nl/icon-not-tested.png");
     background-image: url("/static/images/vendor/internet_nl/icon-not-tested.svg"), none;
 }

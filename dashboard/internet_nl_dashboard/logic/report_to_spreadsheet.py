@@ -44,6 +44,7 @@ SANE_COLUMN_ORDER = {
     'dns_a_aaaa': {
         'overall': [
             'internet_nl_score',
+            'internet_nl_score_report',
         ],
 
         'ipv6': [
@@ -117,10 +118,11 @@ SANE_COLUMN_ORDER = {
             'internet_nl_web_legacy_tls_ncsc_web',
             'internet_nl_web_legacy_https_enforced',
             'internet_nl_web_legacy_hsts',
-            'internet_nl_mail_legacy_category_ipv6',
+            'internet_nl_web_legacy_category_ipv6',
             'internet_nl_web_legacy_ipv6_nameserver',
             'internet_nl_web_legacy_ipv6_webserver',
-            'internet_nl_web_legacy_dane',
+            # Deleted on request
+            # 'internet_nl_web_legacy_dane',
 
             # added may 2020, api v2
             'internet_nl_web_legacy_tls_1_3',
@@ -129,7 +131,8 @@ SANE_COLUMN_ORDER = {
     'dns_soa': {
         # any grouping, every group has a empty column between them. The label is not used.
         'overall': [
-            'internet_nl_score'
+            'internet_nl_score',
+            'internet_nl_score_report',
         ],
         'ipv6': [
             # Category
@@ -220,6 +223,7 @@ SANE_COLUMN_ORDER = {
 
             # Added may 2020 internet.nl api v2
             'internet_nl_mail_legacy_mail_non_sending_domain',
+            'internet_nl_mail_legacy_mail_sending_domain',
             'internet_nl_mail_legacy_mail_server_testable',
             'internet_nl_mail_legacy_mail_server_reachable',
             'internet_nl_mail_legacy_domain_has_mx',
@@ -314,6 +318,7 @@ def translate_field(field_label):
         'internet_nl_mail_dashboard_dnssec': 'test_maildnssec_label',
         'internet_nl_mail_dashboard_ipv6': 'test_mailipv6_label',
         'internet_nl_score': '% Score',
+        'internet_nl_score_report': 'Report',
 
         # directly translated fields.
         'internet_nl_mail_legacy_dmarc': 'DMARC',
@@ -333,15 +338,17 @@ def translate_field(field_label):
         'internet_nl_web_legacy_dnssec': 'DNSSEC',
         'internet_nl_web_legacy_tls_available': 'TLS available',
         'internet_nl_web_legacy_tls_ncsc_web': 'TLS NCSC web',
-        'internet_nl_web_legacy_https_enforced': 'HTTPS enforced',
+        'internet_nl_web_legacy_https_enforced': 'HTTPS redirect',
         'internet_nl_web_legacy_hsts': 'HSTS',
         'internet_nl_web_legacy_category_ipv6': 'IPv6',
         'internet_nl_web_legacy_ipv6_nameserver': 'IPv6 nameserver',
         'internet_nl_web_legacy_ipv6_webserver': 'IPv6 webserver',
-        'internet_nl_web_legacy_dane': 'DANE',
+        # Deleted on request
+        # 'internet_nl_web_legacy_dane': 'DANE',
 
         'internet_nl_web_legacy_tls_1_3': 'TLS 1.3 Support',
         'internet_nl_mail_legacy_mail_non_sending_domain': 'Non e-mail sending domain',
+        'internet_nl_mail_legacy_mail_sending_domain': 'E-mail sending domain',
         'internet_nl_mail_legacy_mail_server_testable': 'Mail server testable',
         'internet_nl_mail_legacy_mail_server_reachable': 'Mail server reachable',
         'internet_nl_mail_legacy_domain_has_mx': 'Mail server has MX record',
@@ -422,65 +429,72 @@ def upgrade_excel_spreadsheet(spreadsheet_data):
         ws.column_dimensions["B"].width = "30"
 
         # Add statistic rows:
-        ws.insert_rows(0, amount=8)
+        ws.insert_rows(0, amount=9)
 
         ws[f'B1'] = "Total"
-        ws[f'B2'] = "Contains passed"
-        ws[f'B3'] = "Contains info"
-        ws[f'B4'] = "Contains warning"
-        ws[f'B5'] = "Contains failed"
-        ws[f'B6'] = "Contains not_tested"
-        ws[f'B7'] = "Percentage passed (ignoring not_tested)"
+        ws[f'B2'] = "Passed"
+        ws[f'B3'] = "Info"
+        ws[f'B4'] = "Warning"
+        ws[f'B5'] = "Failed"
+        ws[f'B6'] = "Not tested"
+        ws[f'B7'] = "Error"
+        ws[f'B8'] = "Test not applicable (mail only)"
+        ws[f'B9'] = "Percentage passed"
 
         # bold totals:
-        for i in range(1, 9):
+        for i in range(1, 10):
             ws[f'B{i}'].font = Font(bold=True)
 
         data_columns = [
-            'H', 'I', 'J', 'K', 'L', "M", "N", 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z',
+            'F', 'G', 'H', 'I', 'J', 'K', 'L', "M", "N", 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z',
             'AA', 'AB', 'AC', 'AD', 'AE', 'AF', 'AG', 'AH', 'AI', 'AJ', 'AK', 'AL', 'AM', 'AN', 'AO',
             'AP', 'AQ', 'AR', 'AS', 'AT', 'AU', 'AV', 'AW', 'AX', 'AY', 'AZ', 'BA', 'BB', 'BC', 'BD',
-            'BE', 'BF', 'BG', 'BH', 'BI', 'BJ', 'BK', 'BL', 'BM', 'BN', 'BO', 'BP', 'BQ', 'BR', 'BS',
-            'BT', 'BU', 'BV', 'BW', 'BX', 'BY', 'BZ'
+            'BE', 'BF', 'BG', 'BH', 'BI', 'BJ', 'BK'
         ]
 
+        # add some statistics
         for cell in data_columns:
             # if header, then aggregate
-            if ws[f'{cell}11'].value:
+            if ws[f'{cell}12'].value:
                 # There is a max of 5000 domains per scan. So we set this to something lower.
                 # There is no good support of headers versus data, which makes working with excel a drama
                 # If you ever read this code, and want a good spreadsheet editor: try Apple Numbers. It's fantastic.
-                ws[f'{cell}1'] = f'=COUNTA({cell}12:{cell}5050)'
+                ws[f'{cell}1'] = f'=COUNTA({cell}13:{cell}5050)'
                 # todo: also support other values
-                ws[f'{cell}2'] = f'=COUNTIF({cell}12:{cell}5050, "passed")'
-                ws[f'{cell}3'] = f'=COUNTIF({cell}12:{cell}5050, "info")'
-                ws[f'{cell}4'] = f'=COUNTIF({cell}12:{cell}5050, "warning")'
-                ws[f'{cell}5'] = f'=COUNTIF({cell}12:{cell}5050, "failed")'
-                ws[f'{cell}6'] = f'=COUNTIF({cell}12:{cell}5050, "not_tested")'
+                ws[f'{cell}2'] = f'=COUNTIF({cell}13:{cell}5050, "passed")'
+                ws[f'{cell}3'] = f'=COUNTIF({cell}13:{cell}5050, "info")'
+                ws[f'{cell}4'] = f'=COUNTIF({cell}13:{cell}5050, "warning")'
+                ws[f'{cell}5'] = f'=COUNTIF({cell}13:{cell}5050, "failed")'
+                ws[f'{cell}6'] = f'=COUNTIF({cell}13:{cell}5050, "not_tested")'
+                ws[f'{cell}7'] = f'=' \
+                                 f'COUNTIF({cell}13:{cell}5050, "error")+' \
+                                 f'COUNTIF({cell}13:{cell}5050, "unreachable")+' \
+                                 f'COUNTIF({cell}13:{cell}5050, "untestable")+' \
+                                 f'COUNTIF({cell}13:{cell}5050, "not_testable")'
+                ws[f'{cell}8'] = f'=' \
+                                 f'COUNTIF({cell}13:{cell}5050, "no_mx")+' \
+                                 f'COUNTIF({cell}13:{cell}5050, "not_applicable")'
                 # Not applicable and not testable are subtracted from the total.
                 # See https://github.com/internetstandards/Internet.nl-dashboard/issues/68
                 # Rounding's num digits is NOT the number of digits behind the comma, but the total number of digits.
                 # todo: we should use the calculations in report.py. And there include the "missing" / empty stuff IF
                 # that is missing.
-                ws[f'{cell}7'] = f'=IF({cell}1-{cell}6=0, 0, ROUND({cell}2/({cell}1 - ({cell}6)), 4))'
-                ws[f'{cell}7'].number_format = '0.00%'
-
-        # fold port and ip-version (and protocol?) from report as it's not useful in this case?
-        ws.column_dimensions.group('C', 'E', hidden=True)
-
-        # line 9 is an empty line
+                #                   IF(     H1=0,0,ROUND(     H2÷     H1, 4))
+                ws[f'{cell}9'] = f'=IF({cell}1=0,0,ROUND({cell}2/{cell}1, 4))'
+                ws[f'{cell}9'].number_format = '0.00%'
 
         # make headers bold
-        ws[f'A11'].font = Font(bold=True)
-        ws[f'B11'].font = Font(bold=True)
-        ws[f'F10'].font = Font(bold=True)
-        ws[f'F11'].font = Font(bold=True)
+        ws[f'A12'].font = Font(bold=True)  # List
+        ws[f'B12'].font = Font(bold=True)  # Url
+        ws[f'C11'].font = Font(bold=True)  # overall
+        ws[f'C12'].font = Font(bold=True)  # % Score
+        ws[f'D12'].font = Font(bold=True)  # Report
         for cell in data_columns:
-            ws[f'{cell}10'].font = Font(bold=True)
             ws[f'{cell}11'].font = Font(bold=True)
+            ws[f'{cell}12'].font = Font(bold=True)
 
         # Freeze pane to make navigation easier.
-        ws.freeze_panes = ws['H11']
+        ws.freeze_panes = ws['E13']
 
         # there is probably a feature that puts this in a single conditional value.
         greenFill = PatternFill(start_color='B7FFC8', end_color='B7FFC8', fill_type='solid')
@@ -492,32 +506,32 @@ def upgrade_excel_spreadsheet(spreadsheet_data):
         # Set the measurements to green/red depending on value using conditional formatting.
         # There is no true/false, but we can color based on value.
         ws.conditional_formatting.add(
-            'H12:CD9999',
+            'F13:CD5050',
             CellIsRule(operator='=', formula=['"passed"'], stopIfTrue=True, fill=greenFill)
         )
 
         ws.conditional_formatting.add(
-            'H12:CD9999',
+            'F13:CD5050',
             CellIsRule(operator='=', formula=['"failed"'], stopIfTrue=True, fill=redFill)
         )
 
         ws.conditional_formatting.add(
-            'H12:CD9999',
+            'F13:CD5050',
             CellIsRule(operator='=', formula=['"warning"'], stopIfTrue=True, fill=orangeFill)
         )
 
         ws.conditional_formatting.add(
-            'H12:CD9999',
+            'F13:CD5050',
             CellIsRule(operator='=', formula=['"info"'], stopIfTrue=True, fill=blueFill)
         )
 
         ws.conditional_formatting.add(
-            'H12:CD9999',
+            'F13:CD5050',
             CellIsRule(operator='=', formula=['"good_not_tested"'], stopIfTrue=True, fill=altgrayFill)
         )
 
         ws.conditional_formatting.add(
-            'H12:CD9999',
+            'F13:CD5050',
             CellIsRule(operator='=', formula=['"not_tested"'], stopIfTrue=True, fill=grayFill)
         )
 
@@ -528,7 +542,7 @@ def upgrade_excel_spreadsheet(spreadsheet_data):
 
 
 def category_headers(protocol: str = 'dns_soa'):
-    headers: List[str] = ['', '', '', '', '']
+    headers: List[str] = ['', '']
     for group in SANE_COLUMN_ORDER[protocol]:
         headers += [translate_field(group)]
 
@@ -542,7 +556,7 @@ def category_headers(protocol: str = 'dns_soa'):
 
 
 def headers(protocol: str = 'dns_soa'):
-    headers = ['List', 'Url', 'Port', 'Ip Version', '']
+    headers = ['List', 'Url']
     for group in SANE_COLUMN_ORDER[protocol]:
         headers += SANE_COLUMN_ORDER[protocol][group]
         # add empty thing after each group to make distinction per group clearer
@@ -590,8 +604,7 @@ def urllistreport_to_spreadsheet_data(category_name: str, urls: List[Any], proto
                 if endpoint['protocol'] != protocol:
                     continue
                 keyed_ratings = endpoint['ratings_by_type']
-                data.append([category_name, url['url'], endpoint['port'], endpoint['ip_version'], ''] +
-                            keyed_values_as_boolean(keyed_ratings, protocol))
+                data.append([category_name, url['url']] + keyed_values_as_boolean(keyed_ratings, protocol))
 
         else:
             data.append([category_name, url['url']])
@@ -600,8 +613,7 @@ def urllistreport_to_spreadsheet_data(category_name: str, urls: List[Any], proto
                 if endpoint['protocol'] != protocol:
                     continue
                 keyed_ratings = endpoint['ratings_by_type']
-                data.append(['', '', endpoint['port'], endpoint['ip_version'], ''] +
-                            keyed_values_as_boolean(keyed_ratings, protocol))
+                data.append(['', ''] + keyed_values_as_boolean(keyed_ratings, protocol))
 
     # log.debug(data)
     return data
@@ -646,7 +658,11 @@ def keyed_values_as_boolean(keyed_ratings: Dict[str, Any], protocol: str = 'dns_
                 # explanation":"75 https://batch.internet.nl/mail/portaal.digimelding.nl/289480/",
                 # Not steadily convertable to a percentage, so printing it as an integer instead.
                 values.append(int(keyed_ratings[issue_name]['internet_nl_score']))
-                values.append(keyed_ratings[issue_name]['internet_nl_url'])
+            elif issue_name == 'internet_nl_score_report':
+                # fake column to give the column a title per #205, also makes the report more explicit.
+                values.append(keyed_ratings['internet_nl_score']['internet_nl_url'])
+                # add empty column
+                values.append(" ")
             else:
                 # the issue name might not exist, the 'ok' value might not exist. In those cases replace it with a ?
                 value = keyed_ratings.get(issue_name, {'ok': '?',
@@ -655,16 +671,22 @@ def keyed_values_as_boolean(keyed_ratings: Dict[str, Any], protocol: str = 'dns_
 
                 # api v2, tls1.3 update
                 if value.get('test_result', False):
-                    values.append(value.get('test_result', '?'))
+                    test_value = value.get('test_result', '?')
+                    # per 205, translate not_testable to untestable. This is cosmetic as the 'not_testable' is
+                    # everywhere in the software and is just renamed, and will probably be renamed a few times
+                    # more in the future.
+                    if test_value == "not_testable":
+                        test_value = "untestable"
+                    values.append(test_value)
 
                 else:
                     # unknown columns and data will be empty.
                     if "simple_verdict" not in value:
                         values.append('')
                     else:
-                        # backward compatible with api v1 reports
+                        # backward compatible with api v1 reportsunreachable
                         if value['simple_verdict'] == "not_testable":
-                            values.append('not_testable')
+                            values.append('untestable')
                         elif value['simple_verdict'] == "not_applicable":
                             values.append('not_applicable')
                         elif value['simple_verdict'] == "error_in_test":

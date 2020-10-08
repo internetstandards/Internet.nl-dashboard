@@ -96,6 +96,9 @@ INSTALLED_APPS = [
     # https://django-activity-stream.readthedocs.io/en/latest/installation.html
     'django.contrib.sites',
     'actstream',
+
+    # Sending templated and translatable emails
+    'django_mail_admin',
 ]
 
 # django activity stream wants a site-id:
@@ -497,6 +500,21 @@ CONSTANCE_CONFIG = {
                             'The internet address for the Internet.nl API installation. Defaults to a version from '
                             '2020.', str),
     'INTERNET_NL_MAXIMUM_URLS':  (1000, 'The maximum amount of domains per scan.', int),
+    'EMAIL_FALLBACK_LANGUAGE': (
+        'en',
+        'Default language used for templates. Template should end with _en in lowercase.',
+        str
+    ),
+    'EMAIL_NOTIFICATION_SENDER': (
+        'noreply@dashboard.internet.nl',
+        'The sender of email update notification, such as scan finished.',
+        str
+    ),
+    'EMAIL_TEST_RECIPIENT': (
+        'elger@internetcleanup.foundation',
+        'Who receives the testmail from dashboard send_testmail.',
+        str
+    ),
 }
 
 CONSTANCE_CONFIG_FIELDSETS = OrderedDict([
@@ -504,6 +522,9 @@ CONSTANCE_CONFIG_FIELDSETS = OrderedDict([
     ('DASHBOARD', ('DASHBOARD_MAXIMUM_DOMAINS_PER_LIST',
                    'DASHBOARD_MAXIMUM_DOMAINS_PER_SPREADSHEET',
                    'DASHBOARD_MAXIMUM_LISTS_PER_SPREADSHEET')),
+    ('E-Mail', ('EMAIL_NOTIFICATION_SENDER',
+                'EMAIL_FALLBACK_LANGUAGE',
+                'EMAIL_TEST_RECIPIENT')),
     ('Internet.nl Scans', ('INTERNET_NL_API_USERNAME', 'INTERNET_NL_API_PASSWORD', 'INTERNET_NL_API_URL',
                            'INTERNET_NL_MAXIMUM_URLS'))
 ])
@@ -543,6 +564,13 @@ JET_SIDE_MENU_ITEMS = [
         {'name': 'organizations.url', 'label': 'Urls'},
         {'name': 'scanners.endpoint', 'label': 'Endpoints'},
         {'name': 'scanners.endpointgenericscan', 'label': 'Endpoint Scans'},
+    ]},
+
+    {'label': _('📨 E-Mail (beta)'), 'items': [
+        {'name': 'django_mail_admin.emailtemplate', 'label': 'Templates'},
+        {'name': 'django_mail_admin.outgoingemail', 'label': 'Sent mail'},
+        {'name': 'django_mail_admin.outbox', 'label': 'Outboxes'},
+        {'name': 'django_mail_admin.log', 'label': 'Logs'},
     ]},
 
     {'label': _('📊 Report'), 'items': [
@@ -603,8 +631,10 @@ LANGUAGES = sorted([
 
 
 # email settings...
+# django_mail_admin.backends.OutboxEmailBackend = Store sent mails in outbox, so we know what has been sent.
+# It's not a log -> this is just a way to test things, and it will hang send_queued_mail.
 if DEBUG:
-    EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+    EMAIL_BACKEND = 'django_mail_admin.backends.CustomEmailBackend'
     # As there are sanity checks, these settings need to be present during debugging too.
     EMAIL_HOST = ''
     EMAIL_PORT = ''
@@ -613,7 +643,7 @@ if DEBUG:
     EMAIL_USE_TLS = False
     EMAIL_USE_SSL = False
 else:
-    EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+    EMAIL_BACKEND = 'django_mail_admin.backends.CustomEmailBackend'
     # todo: get these settings from internet.nl
     EMAIL_HOST = ''
     EMAIL_PORT = ''
@@ -626,3 +656,13 @@ else:
 if DEBUG:
     # 25 megs for importing reports from live situations
     DATA_UPLOAD_MAX_MEMORY_SIZE = 26214400
+
+
+"""
+Django Jet 3:
+From Django 3.0 the default value of the X_FRAME_OPTIONS setting was changed from SAMEORIGIN to DENY. This can
+cause errors for popups such as for the Field Lookup Popup. To solve this you should add the following to your
+Django project settings.py file:
+Todo: Only needed for /admin urls, not for other urls: it's fine when people embed the map, desired even!
+"""
+X_FRAME_OPTIONS = "SAMEORIGIN"

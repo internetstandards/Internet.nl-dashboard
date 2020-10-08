@@ -469,5 +469,30 @@
       "date_changed": "2019-01-24T05:02:10Z",
       "description": ""
     }
+  },
+  {
+    "model": "django_celery_beat.periodictask",
+    "pk": 103,
+    "fields": {
+      "name": "Send queued e-mail",
+      "task": "dashboard.internet_nl_dashboard.logic.mail.send_queued_mail",
+      "interval": null,
+      "crontab": 33,
+      "solar": null,
+      "args": "[]",
+      "kwargs": "{}",
+      "queue": "storage",
+      "exchange": null,
+      "routing_key": null,
+      "priority": null,
+      "expires": null,
+      "one_off": false,
+      "start_time": null,
+      "enabled": false,
+      "last_run_at": "2019-01-24T05:00:00Z",
+      "total_run_count": 0,
+      "date_changed": "2019-01-24T05:02:10Z",
+      "description": ""
+    }
   }
 ]
