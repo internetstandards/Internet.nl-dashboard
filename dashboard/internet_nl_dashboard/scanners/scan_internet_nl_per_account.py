@@ -72,44 +72,6 @@ def create_api_settings(scan: InternetNLV2Scan):
 internet_nl_v2_websecmap.create_api_settings = create_api_settings
 
 
-def compose_task(
-    **kwargs
-) -> Task:
-
-    accounts = Account.objects.all().filter(
-        enable_scans=True,
-        internet_nl_api_username__isnull=False,
-        internet_nl_api_password__isnull=False,
-    )
-    accounts = add_model_filter(accounts, **kwargs)
-
-    # Then get all the lists. And create a scan per list.
-    # The requirement for a 'per list' comes from the idea to be able to see what account uses what urls in the
-    # back end.
-
-    tasks: List[Task] = []
-
-    # Do not scan lists that exceed the maximum number of domains:
-    max_urls = config.DASHBOARD_MAXIMUM_DOMAINS_PER_LIST
-
-    for account in accounts:
-
-        urllists = UrlList.objects.all().filter(
-            account=account, enable_scans=True, is_deleted=False).annotate(num_urls=Count('urls'))
-
-        urllists = add_model_filter(urllists, **kwargs)
-        for urllist in urllists:
-
-            # model_filters may circumvent the restriction we set, therefore we check it this way.
-            # (A filter might still overwrite this?)
-            if urllist.num_urls > max_urls:
-                continue
-
-            tasks.append(initialize_scan.si(urllist))
-
-    return group(tasks)
-
-
 @app.task(queue='storage')
 def initialize_scan(urllist: UrlList, manual_or_scheduled: str = "scheduled"):
     # We need to store the scan type in the InternetNLV2Scan at creation, because the type in the list might change:
