@@ -27,7 +27,7 @@ def get_user_settings(dashboarduser_id):
         'account_id': user.dashboarduser.account.id,
         'account_name': user.dashboarduser.account.name,
         'mail_preferred_mail_address': user.dashboarduser.mail_preferred_mail_address,
-        'mail_preferred_language': user.dashboarduser.mail_preferred_language,
+        'mail_preferred_language': user.dashboarduser.mail_preferred_language.code.lower(),
         'mail_send_mail_after_scan_finished': user.dashboarduser.mail_send_mail_after_scan_finished
     }
 

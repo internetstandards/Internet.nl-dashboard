@@ -588,7 +588,7 @@ article img {
     width: 100%
 }
 
-.block input[type="email"], .block input[type="url"], .block input[type="text"] {
+.block input[type="email"], .block input[type="url"], .block input[type="text"], .block select {
     border: 2px solid #dadada;
     border-radius: 4px;
     font-size: 1em;
@@ -637,7 +637,7 @@ article img {
     line-height: 1
 }
 
-.block p, .block a, .block input, .block ul, .block ol {
+.block p, .block a, .block input, .block ul, .block ol, .block select {
     margin-bottom: 1em
 }
 

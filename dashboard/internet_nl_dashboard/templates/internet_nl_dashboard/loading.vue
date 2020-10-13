@@ -13,7 +13,7 @@ Vue.component('loading', {
     },
 
     template: `
-    <div v-if="loading" class="block fullwidth loading">
+    <div v-if="loading" class="fullwidth loading">
         <div class="loading">
              <div class="lds-dual-ring"><div></div><div></div></div> <span>{{ $t("loading") }}</span>
         </div>

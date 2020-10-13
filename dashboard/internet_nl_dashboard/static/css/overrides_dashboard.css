@@ -554,3 +554,28 @@ a.anchor {
 .altbutton button:focus {
     outline: none
 }
+
+
+.block input[type="checkbox"]  {
+    width: 2em;
+
+    border: 2px solid #dadada;
+    font-size: 1em;
+    padding-left: .5em;
+    margin-top: .5em;
+
+}
+
+
+.block select {
+    border: 2px solid #dadada;
+    border-radius: 4px;
+    font-size: 1em;
+    padding-left: .5em;
+    margin-top: .5em;
+    height: 1.875em
+}
+
+.block select {
+    margin-bottom: 1em
+}
