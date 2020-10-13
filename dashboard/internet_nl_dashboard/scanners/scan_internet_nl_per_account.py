@@ -8,7 +8,7 @@ from actstream import action
 from celery import Task, chain, group
 from constance import config
 from django.db import transaction
-from django.db.models import Count, Q
+from django.db.models import Q
 from django.utils import timezone
 from websecmap.organizations.models import Url
 from websecmap.reporting.report import recreate_url_reports
@@ -24,9 +24,8 @@ from dashboard.internet_nl_dashboard.logic.report import (
     add_statistics_over_ratings, clean_up_not_required_data_to_speed_up_report_on_client,
     remove_comply_or_explain, split_score_and_url)
 from dashboard.internet_nl_dashboard.logic.urllist_dashboard_report import create_dashboard_report
-from dashboard.internet_nl_dashboard.models import (Account, AccountInternetNLScan,
-                                                    AccountInternetNLScanLog, UrlList,
-                                                    UrlListReport)
+from dashboard.internet_nl_dashboard.models import (AccountInternetNLScan, AccountInternetNLScanLog,
+                                                    UrlList, UrlListReport)
 
 # done: create more flexible filters
 # done: map mail scans to an endpoint (changed the scanner for it)

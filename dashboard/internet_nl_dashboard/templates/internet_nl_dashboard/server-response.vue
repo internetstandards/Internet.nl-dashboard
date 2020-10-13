@@ -23,7 +23,7 @@ Vue.component('server-response', {
       },
       nl: {
         error: 'Er is een foutsituatie opgetreden',
-        success: "Success!",
+        success: "Gelukt!",
       }
     }
   },
