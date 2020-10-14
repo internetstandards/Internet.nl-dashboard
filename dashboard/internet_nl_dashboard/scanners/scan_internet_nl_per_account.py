@@ -557,11 +557,11 @@ def update_state(state: str, scan: AccountInternetNLScan) -> None:
         return
 
     # First state, or a new state.
-    # New log message:
     scan.state = state
     scan.state_changed_on = timezone.now()
     scan.save()
 
+    # Then log the state change, if it changed, even if it already changed before, so it's clear things went wrong:
     scanlog = AccountInternetNLScanLog()
     scanlog.scan = scan
     scanlog.at_when = timezone.now()

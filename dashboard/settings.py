@@ -404,7 +404,6 @@ CELERY_BROKER_POOL_LIMIT = 30
 # default is empty, we can set things like 'max_connections': 30.
 CELERY_BROKER_TRANSPORT_OPTIONS = {}
 
-
 # Settings for statsd metrics collection. Statsd defaults over UDP port 8125.
 # https://django-statsd.readthedocs.io/en/latest/#celery-signals-integration
 STATSD_HOST = os.environ.get('STATSD_HOST', '127.0.0.1')
