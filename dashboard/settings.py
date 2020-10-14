@@ -347,30 +347,21 @@ LOGGING = {
 # It's preferable not to use pickle, yet it's overly convenient as the normal serializer can not
 # even serialize dicts.
 # http://docs.celeryproject.org/en/latest/userguide/configuration.html
-CELERY_accept_content = ['pickle', 'yaml']
-CELERY_task_serializer = 'pickle'
-CELERY_result_serializer = 'pickle'
+# see: https://blog.nelhage.com/2011/03/exploiting-pickle/
+CELERY_ACCEPT_CONTENT = ['pickle']
+CELERY_TASK_SERIALIZER = 'pickle'
+CELERY_RESULT_SERIALIZER = 'pickle'
 
 
 # Celery config
 CELERY_BROKER_URL = os.environ.get('BROKER', 'redis://localhost:6379/0')
-ENABLE_UTC = True
-
-# Any data transfered with pickle needs to be over tls... you can inject arbitrary objects with
-# this stuff... message signing makes it a bit better, not perfect as it peels the onion.
-# this stuff... message signing makes it a bit better, not perfect as it peels the onion.
-# see: https://blog.nelhage.com/2011/03/exploiting-pickle/
-# Yet pickle is the only convenient way of transporting objects without having to lean in all kinds
-# of directions to get the job done. Intermediate tables to store results could be an option.
-CELERY_ACCEPT_CONTENT = ['pickle']
-CELERY_TASK_SERIALIZER = 'pickle'
-CELERY_RESULT_SERIALIZER = 'pickle'
+CELERY_ENABLE_UTC = True
 CELERY_TIMEZONE = 'UTC'
 
 CELERY_BEAT_SCHEDULER = 'django_celery_beat.schedulers:DatabaseScheduler'
 
-CELERY_BROKER_CONNECTION_MAX_RETRIES = 1
-CELERY_BROKER_CONNECTION_RETRY = False
+CELERY_BROKER_CONNECTION_RETRY = True
+CELERY_BROKER_CONNECTION_MAX_RETRIES = 400
 CELERY_RESULT_EXPIRES = timedelta(hours=4)
 
 # Use the value of 2 for celery prefetch multiplier. Previous was 1. The
@@ -398,6 +389,21 @@ CELERY_WORKER_CONCURRENCY = 10
 # thus for tasks that are not programmed perfectly it will raise a number
 # of repeated exceptions which will need to be debugged.
 CELERY_ACKS_LATE = True
+
+"""
+This number can be tweaked depending on the number of threads/green-threads (eventlet/gevent) using a connection.
+For example running eventlet with 1000 greenlets that use a connection to the broker, contention can arise and you
+should consider increasing the limit.
+We use 20 greenthreads or so. The error we see is:
+redis.exceptions.ConnectionError: Error 104 while writing to socket. Connection reset by peer.
+The error is not visible when running a single task or just a scan, or progressing the individual task where the crash
+occurs. So probably connection limits are the issue. Defaults to 10. So that makes sense why things go wrong.
+"""
+CELERY_BROKER_POOL_LIMIT = 30
+
+# default is empty, we can set things like 'max_connections': 30.
+CELERY_BROKER_TRANSPORT_OPTIONS = {}
+
 
 # Settings for statsd metrics collection. Statsd defaults over UDP port 8125.
 # https://django-statsd.readthedocs.io/en/latest/#celery-signals-integration
