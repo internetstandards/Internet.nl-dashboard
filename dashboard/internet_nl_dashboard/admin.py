@@ -290,6 +290,9 @@ class AccountInternetNLScanAdmin(ImportExportModelAdmin, admin.ModelAdmin):
     list_display = ('account', 'account__name', 'state', 'internetnl_scan',
                     'urllist', 'started_on', 'finished_on')
 
+    list_filter = ['account', 'urllist', 'state', 'started_on', 'finished_on'][::-1]
+    search_fields = ('urllist__name', 'account__name')
+
     fields = ('state', 'state_changed_on', 'account', 'scan', 'urllist', 'started_on', 'finished_on')
 
     @staticmethod
