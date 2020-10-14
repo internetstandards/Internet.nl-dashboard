@@ -121,7 +121,7 @@ urllib3==1.25.10          # via requests, sentry-sdk, websecmap
 uwsgi==2.0.19.1           # via websecmap
 validators==0.18.1        # via -r requirements.in, websecmap
 vine==1.3.0               # via amqp, celery, websecmap
-git+https://gitlab.com/internet-cleanup-foundation/web-security-map@fb04b89464faea39f8efc9d30740b67e78e24917#egg=websecmap  # via -r requirements.in
+git+https://gitlab.com/internet-cleanup-foundation/web-security-map@72ef62931a6d72891a7813ef6964a018992c8714#egg=websecmap  # via -r requirements.in
 wikidata==0.7.0           # via websecmap
 xlrd==1.2.0               # via pyexcel-xls, tablib, websecmap
 xlwt==1.3.0               # via pyexcel-xls, tablib, websecmap
