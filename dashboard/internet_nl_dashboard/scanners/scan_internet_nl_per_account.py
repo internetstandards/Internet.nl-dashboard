@@ -582,7 +582,8 @@ def update_state(state: str, scan: AccountInternetNLScan) -> None:
     last_state_for_scan = AccountInternetNLScanLog.objects.all().filter(scan=scan).order_by("-at_when").first()
 
     if last_state_for_scan:
-        if last_state_for_scan.state == state:
+        # see: test_update_state
+        if last_state_for_scan.state == state == scan.state:
             return
 
     # do not update a cancelled scan (#159), even if a certain task has finished after a cancel was issued (letting the
