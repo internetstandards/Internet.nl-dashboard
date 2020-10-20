@@ -1,5 +1,6 @@
 import logging
 from datetime import datetime
+from typing import Any, Dict
 
 from tldextract import tldextract
 
@@ -149,7 +150,7 @@ def compare_report_in_detail(new_report, old_report):
 
         my_extract = tldextract.extract(url_key)
 
-        data = {
+        data: Dict[str, Any] = {
             'url': url_key,
             # Added for ordering the comparison results. So it's possible to sort like this:
             # - hyves.nl
@@ -238,6 +239,8 @@ def compare_report_in_detail(new_report, old_report):
             'neutral': neutral
         }
 
+        # todo: sort comparison on domain, then subdomain, alphabetically.
+
     return comparison_report
 
 
@@ -268,8 +271,6 @@ def determine_changes_in_ratings(new_ratings_data, old_ratings_data):
     ]
     neutral_test_result_values = \
         ["unknown", "not_applicable", "not_testable", 'no_mx', 'unreachable', 'error_in_test', 'error']
-
-    # todo: should categories be ignored? Such as internet_nl_web_appsecpriv?
 
     # prepare result
     changes = {
@@ -347,7 +348,6 @@ def key_calculation(report_data):
                           "test_result": "failed"
                         },
 
-    :param report:
     :return:
     """
 
