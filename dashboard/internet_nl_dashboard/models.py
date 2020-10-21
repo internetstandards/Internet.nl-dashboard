@@ -1,5 +1,6 @@
 import logging
 from datetime import datetime, timedelta
+from typing import Union
 
 import pytz
 import requests
@@ -425,6 +426,20 @@ class UrlListReport(SeriesOfUrlsReportMixin):
         index_together = [
             ["at_when", "id"],
         ]
+
+    def get_previous_report_from_this_list(self):
+        """
+        Get's the previous report of this list. This is useful for creating comparisons.
+        If there is no previous report None is returned.
+        :return:
+        """
+        try:
+            return UrlListReport.objects.all().filter(
+                urllist=self.urllist,
+                at_when__lt=self.at_when
+            ).exclude(id=self.id).latest()
+        except UrlListReport.DoesNotExist:
+            return None
 
 
 class AccountInternetNLScan(models.Model):

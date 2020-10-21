@@ -3,7 +3,8 @@ Compares reports, in a generic way.
 """
 from dashboard.internet_nl_dashboard.logic.report_comparison import (compare_report_in_detail,
                                                                      determine_changes_in_ratings,
-                                                                     key_calculation)
+                                                                     key_calculation, render_comparison_view,
+                                                                     filter_comparison_report)
 from dashboard.internet_nl_dashboard.tests.common import get_json_file
 
 
@@ -407,6 +408,163 @@ def test_compare_report_detail_differences():
         'urls_exclusive_in_new_report': [],
         'urls_exclusive_in_old_report': ['extradomain.internet.nl']
     }
+
+
+def test_filter_comparison_report():
+    # Five domains are used so we can verify the order of the results is correct.
+    # One domain before and after internet.nl and subdomain.
+    # One domain is ignored because it has a regression instead of an improvement
+
+    # the comparison reports have been made a little smaller, so they can be maintained
+    # more easily and there is less code.
+    comparison = {
+        'comparison': {
+            'www.internet.nl': {
+                'changes': {
+                    'improvement': 1,
+                    'improved_metrics': ['internet_nl_web_https_tls_version'],
+                },
+                'computed_domain_and_suffix': 'internet.nl',
+                'computed_subdomain': 'www',
+                'url': 'www.internet.nl'
+            },
+            'internet.nl': {
+                'changes': {
+                    'improvement': 1,
+                    'improved_metrics': ['internet_nl_web_https_tls_version'],
+                },
+                'computed_domain_and_suffix': 'internet.nl',
+                'computed_subdomain': '',
+                'url': 'internet.nl'
+            },
+            'example.com': {
+                'changes': {
+                    'improvement': 1,
+                    'improved_metrics': ['internet_nl_web_https_tls_version'],
+                },
+                'computed_domain_and_suffix': 'example.com',
+                'computed_subdomain': '',
+                'url': 'example.com'
+            },
+            'ignoreddomain.example.com': {
+                'changes': {
+                    'improvement': 0,
+                    'regression': 1,
+                    'improved_metrics': [],
+                },
+                'computed_domain_and_suffix': 'example.com',
+                'computed_subdomain': '',
+                'url': 'ignoreddomain.example.com'
+            },
+            'afterinternet.nl.wexample.com': {
+                'changes': {
+                    'improvement': 1,
+                    'improved_metrics': ['internet_nl_web_https_tls_version'],
+                },
+                'computed_domain_and_suffix': 'wexample.com',
+                'computed_subdomain': 'afterinternet.nl',
+                'url': 'afterinternet.nl.wexample.com'
+            }
+        }
+    }
+
+    # Expected:
+    # ignoreddomain.example.com will be ignored
+    output = filter_comparison_report(comparison, impact="improvement")
+    assert output[0]['url'] == "example.com"
+    assert output[1]['url'] == "internet.nl"
+    assert output[2]['url'] == "www.internet.nl"
+    assert output[3]['url'] == "afterinternet.nl.wexample.com"
+    assert len(output) == 4
+
+
+def test_render_comparison_view():
+    # no input, no output and no crashes:
+    output = render_comparison_view(
+        {},
+        impact="improvement",
+        language="nl"
+    )
+    assert output == ""
+
+    # See that rendering is happening, for both improvement and regression.
+    # The point is to see that the templating stuff works, not so much what HTML is being generated.
+    # And that translations are correct.
+    comparison = {
+        'comparison': {
+            'www.internet.nl': {
+                'changes': {
+                    'improvement': 1,
+                    'neutral': 0,
+                    'regression': 1,
+                    'improved_metrics': ['internet_nl_web_https_tls_version'],
+                    'regressed_metrics': ['internet_nl_web_https_tls_version'],
+                    'neutral_metrics': []
+                },
+                'computed_domain': 'internet',
+                'computed_domain_and_suffix': 'internet.nl',
+                'computed_subdomain': 'www',
+                'computed_suffix': 'nl',
+                'test_results_from_internet_nl_available': True,
+                'new': {
+                    'report': 'https://batch.internet.nl/site/www.internet.nl/2/',
+                    'score': 22.22
+                },
+                'old': {
+                    'report': 'https://batch.internet.nl/site/www.internet.nl/1/',
+                    'score': 11.11
+                },
+                'url': 'www.internet.nl'
+            },
+        },
+        'new': {
+            'average_internet_nl_score': 22.22,
+            'data_from': '2020-02-02 20:20:20.202020+00:00',
+            'number_of_urls': 2,
+            'report_id': 2,
+            'urllist_id': 2
+        },
+        'old': {
+            'average_internet_nl_score': 11.11,
+            'data_from': '2020-10-10 10:10:10.101010+00:00',
+            'number_of_urls': 1,
+            'report_id': 1,
+            'urllist_id': 1
+        },
+        'summary': {'improvement': 0, 'neutral': 0, 'regression': 1},
+        'urls_exclusive_in_new_report': [],
+        'urls_exclusive_in_old_report': ['extradomain.internet.nl']
+    }
+
+    output = render_comparison_view(
+        comparison,
+        impact="improvement",
+        language="nl"
+    )
+
+    # template engines add newlines and whitespace, which makes comparison harder.
+    output = output.strip()
+
+    assert output.startswith("<tr") is True
+    assert output.endswith("</tr>") is True
+    assert "www.internet.nl" in output
+    # the metric should be translated, the original key should not be present.
+    assert "internet_nl_web_https_tls_version" not in output
+    # the translated key should also not be present, but be translated with djangos translation system
+    # the translation is retrieved with the translation command
+    assert "detail_web_tls_version" not in output
+    # The label specifically should not be there...
+    assert "detail_web_tls_version_label" not in output
+    # The translation is now "TLS Versie" in Dutch...
+    assert "TLS-versie" in output
+
+    # test that translating to english also works.
+    output = render_comparison_view(
+        comparison,
+        impact="improvement",
+        language="en"
+    )
+    assert "TLS Version" in output
 
 
 def test_determine_changes(current_path):
