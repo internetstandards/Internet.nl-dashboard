@@ -11,6 +11,7 @@ from django_mail_admin import mail
 from django_mail_admin.models import EmailTemplate, Outbox
 
 from dashboard.celery import app
+from dashboard.internet_nl_dashboard.logic.report_comparison import compare_report_in_detail, render_comparison_view
 from dashboard.internet_nl_dashboard.models import (AccountInternetNLScan, DashboardUser,
                                                     UrlListReport)
 
@@ -81,6 +82,10 @@ def send_scan_finished_mails(scan: AccountInternetNLScan):
 
     # remove calculation because textfields are slow while filtering
     report = UrlListReport.objects.all().filter(urllist=scan.urllist).order_by("-id").defer('calculation').first()
+    previous_report = report.get_previous_report_from_this_list()
+    comparison = {}
+    if previous_report:
+        comparison = compare_report_in_detail(report, previous_report)
 
     for user in users:
 
@@ -108,8 +113,27 @@ def send_scan_finished_mails(scan: AccountInternetNLScan):
 
             "scan_type": scan.scan.type,
 
-            # todo: set unsubscribe code in database, to be something random when is empty and sending mail.
-            "unsubscribe_code": "9023u01923091283093123",
+            # comparison reports:
+            # The template system only knows strings, so the boolean is coded as string here
+            "comparison_report_available": "True" if comparison else "False",
+            "comparison_report_contains_improvement": "True" if comparison['summary']['improvement'] else "False",
+            "comparison_report_contains_regression": "True" if comparison['summary']['regression'] else "False",
+            "previous_report_id": previous_report.id,
+            "days_between_current_and_previous_report": (timezone.now() - previous_report.at_when()).days,
+            "comparison_table_improvement": render_comparison_view(
+                comparison,
+                impact="improvement",
+                language=user.dashboarduser.mail_preferred_language
+            ),
+            "comparison_table_regression": render_comparison_view(
+                comparison,
+                impact="regression",
+                language=user.dashboarduser.mail_preferred_language
+            ),
+
+            # todo: add list of items not present in this report, but present in previous.
+
+            "unsubscribe_code": user.dashboarduser.mail_after_mail_unsubscribe_code,
         }
 
         mail.send(
@@ -149,7 +173,7 @@ def xget_template(template_name: str = "scan_finished", preferred_language: Any 
                       f"the fallback language {config.EMAIL_FALLBACK_LANGUAGE}.")
 
 
-def generate_unsubscribe_code():
+def generate_unsubscribe_code() -> str:
     # https://pynative.com/python-generate-random-string/
     # secure random is not needed, would be ridiculous. A sleep(1) is enough to deter any attack
     return ''.join(choice(string.ascii_letters + string.digits) for i in range(128))

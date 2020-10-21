@@ -1,4 +1,4 @@
-from datetime import timedelta
+from datetime import timedelta, datetime
 
 from django.contrib.auth.models import User
 from django.utils import timezone
@@ -149,3 +149,33 @@ def test_email_configration_is_correct(db):
     outbox.save()
 
     assert email_configration_is_correct() is True
+
+
+def test_urllistreport_get_previous_report(db):
+    account = Account(**{'name': 'test'})
+    account.save()
+
+    u = UrlList(**{'name': '', 'account': account})
+    u.save()
+
+    urllistreport1 = UrlListReport(**{'urllist': u, 'average_internet_nl_score': 1, 'at_when': datetime(2020, 5, 1)})
+    urllistreport1.save()
+
+    urllistreport2 = UrlListReport(**{'urllist': u, 'average_internet_nl_score': 1, 'at_when': datetime(2020, 5, 2)})
+    urllistreport2.save()
+
+    urllistreport3 = UrlListReport(**{'urllist': u, 'average_internet_nl_score': 1, 'at_when': datetime(2020, 5, 3)})
+    urllistreport3.save()
+
+    urllistreport4 = UrlListReport(**{'urllist': u, 'average_internet_nl_score': 1, 'at_when': datetime(2020, 5, 4)})
+    urllistreport4.save()
+
+    urllistreport5 = UrlListReport(**{'urllist': u, 'average_internet_nl_score': 1, 'at_when': datetime(2020, 5, 5)})
+    urllistreport5.save()
+
+    assert urllistreport5.get_previous_report_from_this_list() == urllistreport4
+    assert urllistreport4.get_previous_report_from_this_list() == urllistreport3
+    assert urllistreport3.get_previous_report_from_this_list() == urllistreport2
+    assert urllistreport2.get_previous_report_from_this_list() == urllistreport1
+    assert urllistreport1.get_previous_report_from_this_list() is None
+

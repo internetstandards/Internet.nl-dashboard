@@ -1,0 +1,15 @@
+{% load i18n %}
+{% for record in data %}
+    <tr>
+        <td>{{ record.url }}</td>
+        <td><a href="{{ record.new.report }}" target="_blank">{{ record.new.score }}</a></td>
+        <td>{{ record.changes.improvement }}</td>
+        <td>
+            <ul>
+            {% for metric in record.changes.improved_metrics %}
+                <li>{% translate metric %}</li>
+            {% endfor %}
+            </ul>
+        </td>
+    </tr>
+{% endfor %}

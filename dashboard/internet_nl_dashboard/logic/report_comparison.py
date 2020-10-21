@@ -1,8 +1,13 @@
 import logging
 from datetime import datetime
-from typing import Any, Dict
+from typing import Any, Dict, List
 
+from django.http import HttpRequest
+from django.template import Context
+from django.template.loader import render_to_string
 from tldextract import tldextract
+
+from dashboard.internet_nl_dashboard.logic.internet_nl_translations import translate_field, get_po_as_dictionary_v2
 
 log = logging.getLogger(__name__)
 
@@ -14,30 +19,194 @@ A high level comparison contains this data:
      41 	        10 	        40112
 Improvements 	Regressions 	Neutral
 
-
-A detailed comparison contains this data:
-Domain 	        Report 	    Improvements 	    Metrics improved
-Internet.nl 	Link_old,   3 	                internet_nl_web_https_cert_chain,
-                link_new                        internet_nl_web_https_dane_exist,
-                                                internet_nl_web_dnssec_valid
-dashboard.i... 	Link 	    2 	                internet_nl_web_https_cert_domain,
-                                                internet_nl_web_https_tls_compress
-nu.nl 	        Link 	    15 	                internet_nl_web_https_cert_domain,
-                                                internet_nl_web_https_http_redirect,
-                                                internet_nl_web_https_cert_chain,
-                                                internet_nl_web_https_tls_version,
-                                                internet_nl_web_https_tls_clientreneg,
-                                                internet_nl_web_https_tls_ciphers,
-                                                ...
-websecurity.org Link 	    2 	                internet_nl_web_https_cert_domain,
-                                                internet_nl_web_https_tls_compress
-
 """
 
 
-# https://github.com/internetstandards/Internet.nl-dashboard/issues/201
+def filter_comparison_report(comparison_report: Dict[str, Any], impact: str = "improvement") -> List[Dict[str, Any]]:
+    """
+    Filters out the comparison report, to create a view such as this, but without the headers:
+    Domain 	        Report 	    Improvements 	    Metrics improved
+    Internet.nl 	Link_old,   3 	                internet_nl_web_https_cert_chain,
+                    link_new                        internet_nl_web_https_dane_exist,
+                                                    internet_nl_web_dnssec_valid
+    dashboard.i... 	Link 	    2 	                internet_nl_web_https_cert_domain,
+                                                    internet_nl_web_https_tls_compress
+    nu.nl 	        Link 	    15 	                internet_nl_web_https_cert_domain,
+                                                    internet_nl_web_https_http_redirect,
+                                                    internet_nl_web_https_cert_chain,
+                                                    internet_nl_web_https_tls_version,
+                                                    internet_nl_web_https_tls_clientreneg,
+                                                    internet_nl_web_https_tls_ciphers,
+                                                    ...
+    websecurity.org Link 	    2 	                internet_nl_web_https_cert_domain,
+                                                    internet_nl_web_https_tls_compress
 
-def compare_report_in_detail(new_report, old_report):
+
+
+    :param comparison_report:
+    :param impact:
+    :return:
+    """
+
+    data = []
+
+    # prevent key errors
+    if impact not in ['regression', 'improvement', 'neutral']:
+        return []
+
+    # perhaps there is nothing to compare
+    if "comparison" not in comparison_report:
+        return []
+
+    for comparison_url_key in comparison_report['comparison'].keys():
+        if comparison_report['comparison'][comparison_url_key]['changes'][impact] > 0:
+            data.append(comparison_report['comparison'][comparison_url_key])
+
+    # sort the data on domain and then subdomain. Make sure example.com and example.nl are separate and that
+    # the subdomains of example.com are near example.com
+    data = sorted(data, key=lambda k: (k['computed_domain_and_suffix'], k['computed_subdomain']), reverse=False)
+
+    return data
+
+
+def translate_issues_to_internet_nl_format(issue_name):
+    # taken from internet_nl_field_mapping in spa.html
+
+    mapping = {'internet_nl_web_tls': 'test_sitetls',
+               'internet_nl_web_dnssec': 'test_sitednssec',
+               'internet_nl_web_ipv6': 'test_siteipv6',
+               'internet_nl_mail_dashboard_tls': 'test_mailtls',
+               'internet_nl_mail_dashboard_auth': 'test_mailauth',
+               'internet_nl_mail_dashboard_dnssec': 'test_maildnssec',
+               'internet_nl_mail_dashboard_ipv6': 'test_mailipv6',
+               'internet_nl_web_appsecpriv': 'test_siteappsecpriv',
+               'internet_nl_web_appsecpriv_csp': 'detail_web_appsecpriv_http_csp',
+               'internet_nl_web_appsecpriv_referrer_policy': 'detail_web_appsecpriv_http_referrer_policy',
+               'internet_nl_web_appsecpriv_x_content_type_options': 'detail_web_appsecpriv_http_x_content_type',
+               'internet_nl_web_appsecpriv_x_frame_options': 'detail_web_appsecpriv_http_x_frame',
+               'internet_nl_web_appsecpriv_x_xss_protection': 'detail_web_appsecpriv_http_x_xss',
+               'internet_nl_web_https_cert_domain': 'detail_web_tls_cert_hostmatch',
+               'internet_nl_web_https_http_redirect': 'detail_web_tls_https_forced',
+               'internet_nl_web_https_cert_chain': 'detail_web_tls_cert_trust',
+               'internet_nl_web_https_tls_version': 'detail_web_tls_version',
+               'internet_nl_web_https_tls_clientreneg': 'detail_web_tls_renegotiation_client',
+               'internet_nl_web_https_tls_ciphers': 'detail_web_tls_ciphers',
+               'internet_nl_web_https_http_available': 'detail_web_tls_https_exists',
+               'internet_nl_web_https_dane_exist': 'detail_web_tls_dane_exists',
+               'internet_nl_web_https_http_compress': 'detail_web_tls_http_compression',
+               'internet_nl_web_https_http_hsts': 'detail_web_tls_https_hsts',
+               'internet_nl_web_https_tls_secreneg': 'detail_web_tls_renegotiation_secure',
+               'internet_nl_web_https_dane_valid': 'detail_web_tls_dane_valid',
+               'internet_nl_web_https_cert_pubkey': 'detail_web_tls_cert_pubkey',
+               'internet_nl_web_https_cert_sig': 'detail_web_tls_cert_signature',
+               'internet_nl_web_https_tls_compress': 'detail_web_tls_compression',
+               'internet_nl_web_https_tls_keyexchange': 'detail_web_tls_fs_params',
+               'internet_nl_web_dnssec_valid': 'detail_web_dnssec_valid',
+               'internet_nl_web_dnssec_exist': 'detail_web_dnssec_exists',
+               'internet_nl_web_ipv6_ws_similar': 'detail_web_ipv6_web_ipv46',
+               'internet_nl_web_ipv6_ws_address': 'detail_web_ipv6_web_aaaa',
+               'internet_nl_web_ipv6_ns_reach': 'detail_web_mail_ipv6_ns_reach',
+               'internet_nl_web_ipv6_ws_reach': 'detail_web_ipv6_web_reach',
+               'internet_nl_web_ipv6_ns_address': 'detail_web_mail_ipv6_ns_aaaa',
+               'internet_nl_web_https_tls_cipherorder': 'detail_web_tls_cipher_order',
+               'internet_nl_web_https_tls_0rtt': 'detail_web_tls_zero_rtt',
+               'internet_nl_web_https_tls_ocsp': 'detail_web_tls_ocsp_stapling',
+               'internet_nl_web_https_tls_keyexchangehash': 'detail_web_tls_kex_hash_func',
+               'internet_nl_mail_starttls_cert_domain': 'detail_mail_tls_cert_hostmatch',
+               'internet_nl_mail_starttls_tls_version': 'detail_mail_tls_version',
+               'internet_nl_mail_starttls_cert_chain': 'detail_mail_tls_cert_trust',
+               'internet_nl_mail_starttls_tls_available': 'detail_mail_tls_starttls_exists',
+               'internet_nl_mail_starttls_tls_clientreneg': 'detail_mail_tls_renegotiation_client',
+               'internet_nl_mail_starttls_tls_ciphers': 'detail_mail_tls_ciphers',
+               'internet_nl_mail_starttls_dane_valid': 'detail_mail_tls_dane_valid',
+               'internet_nl_mail_starttls_dane_exist': 'detail_mail_tls_dane_exists',
+               'internet_nl_mail_starttls_tls_secreneg': 'detail_mail_tls_renegotiation_secure',
+               'internet_nl_mail_starttls_dane_rollover': 'detail_mail_tls_dane_rollover',
+               'internet_nl_mail_starttls_cert_pubkey': 'detail_mail_tls_cert_pubkey',
+               'internet_nl_mail_starttls_cert_sig': 'detail_mail_tls_cert_signature',
+               'internet_nl_mail_starttls_tls_compress': 'detail_mail_tls_compression',
+               'internet_nl_mail_starttls_tls_keyexchange': 'detail_mail_tls_fs_params',
+               'internet_nl_mail_auth_dmarc_policy': 'detail_mail_auth_dmarc_policy',
+               'internet_nl_mail_auth_dmarc_exist': 'detail_mail_auth_dmarc',
+               'internet_nl_mail_auth_spf_policy': 'detail_mail_auth_spf_policy',
+               'internet_nl_mail_auth_dkim_exist': 'detail_mail_auth_dkim',
+               'internet_nl_mail_auth_spf_exist': 'detail_mail_auth_spf',
+               'internet_nl_mail_dnssec_mailto_exist': 'detail_mail_dnssec_exists',
+               'internet_nl_mail_dnssec_mailto_valid': 'detail_mail_dnssec_valid',
+               'internet_nl_mail_dnssec_mx_valid': 'detail_mail_dnssec_mx_valid',
+               'internet_nl_mail_dnssec_mx_exist': 'detail_mail_dnssec_mx_exists',
+               'internet_nl_mail_ipv6_mx_address': 'detail_mail_ipv6_mx_aaaa',
+               'internet_nl_mail_ipv6_mx_reach': 'detail_mail_ipv6_mx_reach',
+               'internet_nl_mail_ipv6_ns_reach': 'detail_web_mail_ipv6_ns_reach',
+               'internet_nl_mail_ipv6_ns_address': 'detail_web_mail_ipv6_ns_aaaa',
+               'internet_nl_mail_starttls_tls_cipherorder': 'detail_mail_tls_cipher_order',
+               'internet_nl_mail_starttls_tls_keyexchangehash': 'detail_mail_tls_kex_hash_func',
+               'internet_nl_mail_starttls_tls_0rtt': 'detail_mail_tls_zero_rtt'
+               }
+
+    # if it can't be translated, just return the original issue instead. Easy to debug.
+    mapped = mapping.get(issue_name, issue_name)
+    if mapped == issue_name:
+        return issue_name
+
+    # the 'label' is the exact label for a field.
+    return f'{mapped}_label'
+
+
+def render_comparison_view(comparison_report: Dict[str, Any], impact: str = "improvement", language: str = "nl") -> str:
+    """
+    This uses the Django Template engine to create a template that can be used in the report.
+    The template is translated using the usual django translations which are not ideal but documented.
+
+    The template does NOT contain table headers, so that is easier to template in the mail system we use.
+    Otherwise we'd have to do a pull request for simple things such as a header change.
+
+    :param language:
+    :param impact:
+    :param comparison_report:
+    :return:
+    """
+
+    # prevent an arbitrary file inclusion
+    if impact not in ['regression', 'improvement', 'neutral']:
+        return ""
+
+    data = filter_comparison_report(comparison_report, impact)
+
+    # In case there was nothing to compare, there is no output.
+    if not data:
+        return ""
+
+    metrics_keys = {
+        'regression': 'regressed_metrics',
+        'improvement': 'improved_metrics',
+        'neutral': 'neutral_metrics'
+    }
+
+    # make sure the translations are correct for the fields:
+    translation_dictionary = get_po_as_dictionary_v2(language)
+    for item in data:
+        translated = []
+        for metric in item['changes'][metrics_keys[impact]]:
+            translated.append(translate_field(metric, translation_dictionary=translation_dictionary))
+        item['changes'][metrics_keys[impact]] = translated
+
+    # This is how django sets the language for a template. It seems overly complicated, i think there is an easier way.
+    # https://docs.djangoproject.com/en/3.1/ref/request-response/
+    newrequest = HttpRequest()
+    newrequest.method = 'GET'
+    # todo: perhaps here the locale is wrong? The language is currently completely ignored and set to dutch?
+    newrequest.META = {'HTTP_ACCEPT_LANGUAGE': language.lower()}
+
+    return render_to_string(
+        f'mail_notifications/detailed_comparison_{impact}.html',
+        context={"data": data},
+        request=newrequest
+    )
+
+
+# https://github.com/internetstandards/Internet.nl-dashboard/issues/201
+def compare_report_in_detail(new_report, old_report) -> Dict[str, Any]:
     """
 
     Compares report 1 to report 2. Where report 1 is seen as the leading report, and report 2 are differences on
