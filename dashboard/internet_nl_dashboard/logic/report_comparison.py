@@ -104,12 +104,10 @@ def render_comparison_view(comparison_report: Dict[str, Any], impact: str = "imp
 
     # make sure the translations are correct for the fields:
     translation_dictionary = get_po_as_dictionary_v2(language)
-    log.debug(translation_dictionary['detail_web_tls_version_label'])
     for item in data:
         translated = []
         for metric in item['changes'][metrics_keys[impact]]:
             translated_field = translate_field(metric, translation_dictionary=translation_dictionary)
-            log.debug(f"{translated_field=} {language=}")
             translated.append(translated_field)
         item['changes'][metrics_keys[impact]] = translated
 
@@ -235,7 +233,6 @@ def compare_report_in_detail(new_report, old_report) -> Dict[str, Any]:
         'comparison': {}
     }
     for url_key in new_report['calculation']['urls_by_url'].keys():
-        # log.debug(f"Processing {url_key=}")
         new_url_data = new_report['calculation']['urls_by_url'][url_key]
         old_url_data = old_report['calculation']['urls_by_url'].get(url_key, {})
 
@@ -370,8 +367,6 @@ def determine_changes_in_ratings(new_ratings_data, old_ratings_data):
     }
 
     for rating_key in new_ratings_data.keys():
-        # log.debug(f"- {rating_key=}")
-
         # Note that the following logic should be extactly the same as in the dashboard report GUI.
         # skip internet.nl extra fields and the internet.nl score field handled above:
         if '_legacy_' in rating_key or rating_key in ratings_to_ignore:
