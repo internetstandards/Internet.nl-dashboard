@@ -3,11 +3,12 @@ from copy import deepcopy
 from datetime import datetime
 from typing import Any, Dict, List
 
-from django.template import Template, Context
+from django.template import Context, Template
 from django.utils import translation
 from tldextract import tldextract
 
-from dashboard.internet_nl_dashboard.logic.internet_nl_translations import translate_field, get_po_as_dictionary_v2
+from dashboard.internet_nl_dashboard.logic.internet_nl_translations import (get_po_as_dictionary_v2,
+                                                                            translate_field)
 from dashboard.internet_nl_dashboard.logic.mail_admin_templates import xget_template_as_string
 
 log = logging.getLogger(__name__)
@@ -205,12 +206,12 @@ def compare_report_in_detail(new_report, old_report) -> Dict[str, Any]:
 
     comparison_report = {
         'urls_exclusive_in_new_report': list(
-                set(new_report['calculation']['urls_by_url'].keys())
-                - set(old_report['calculation']['urls_by_url'].keys())
+            set(new_report['calculation']['urls_by_url'].keys())
+            - set(old_report['calculation']['urls_by_url'].keys())
         ),
         'urls_exclusive_in_old_report': list(
-                set(old_report['calculation']['urls_by_url'].keys())
-                - set(new_report['calculation']['urls_by_url'].keys())
+            set(old_report['calculation']['urls_by_url'].keys())
+            - set(new_report['calculation']['urls_by_url'].keys())
         ),
         'old': {
             'average_internet_nl_score': old_report.get('average_internet_nl_score', 0),

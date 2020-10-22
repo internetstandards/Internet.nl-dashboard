@@ -10,7 +10,8 @@ from openpyxl import load_workbook
 from openpyxl.formatting.rule import CellIsRule
 from openpyxl.styles import Font, PatternFill
 
-from dashboard.internet_nl_dashboard.logic.internet_nl_translations import get_po_as_dictionary_v2, translate_field
+from dashboard.internet_nl_dashboard.logic.internet_nl_translations import (get_po_as_dictionary_v2,
+                                                                            translate_field)
 from dashboard.internet_nl_dashboard.models import Account, UrlListReport
 
 log = logging.getLogger(__package__)

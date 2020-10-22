@@ -27,7 +27,7 @@ from dashboard.internet_nl_dashboard.models import (Account, AccountInternetNLSc
                                                     AccountInternetNLScanLog, DashboardUser,
                                                     UploadLog, UrlList)
 from dashboard.internet_nl_dashboard.scanners.scan_internet_nl_per_account import (
-    progress_running_scan, recover_and_retry, creating_report)
+    creating_report, progress_running_scan, recover_and_retry)
 
 log = logging.getLogger(__package__)
 
@@ -344,7 +344,6 @@ class AccountInternetNLScanAdmin(ImportExportModelAdmin, admin.ModelAdmin):
 
     create_extra_report.short_description = "Create additional report (async) (finished only)"
     actions.append('create_extra_report')
-
 
 
 @admin.register(AccountInternetNLScanLog)

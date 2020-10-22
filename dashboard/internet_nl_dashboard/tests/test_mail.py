@@ -1,4 +1,4 @@
-from datetime import timedelta, datetime
+from datetime import datetime, timedelta
 
 from django.contrib.auth.models import User
 from django.utils import timezone
@@ -178,4 +178,3 @@ def test_urllistreport_get_previous_report(db):
     assert urllistreport3.get_previous_report_from_this_list() == urllistreport2
     assert urllistreport2.get_previous_report_from_this_list() == urllistreport1
     assert urllistreport1.get_previous_report_from_this_list() is None
-
