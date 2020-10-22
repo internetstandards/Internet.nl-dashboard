@@ -395,5 +395,8 @@ def translate_field(field_label, translation_dictionary: Dict[str, str]):
     try:
         return translation_dictionary.get(field_mapping[field_label], field_mapping[field_label])
     except KeyError:
+        # This can happen when something is already translated and the translations overwrite the original values.
+        # When the re-translation is applied, the fields have been replaced by the translations and thus cannot be found
+        log.debug(f"Could not find a translation for {field_label}, returning the label as is.")
         return field_label
 

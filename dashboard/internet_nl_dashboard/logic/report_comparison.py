@@ -1,13 +1,14 @@
 import logging
+from copy import deepcopy
 from datetime import datetime
 from typing import Any, Dict, List
 
-from django.http import HttpRequest
-from django.template import Context
-from django.template.loader import render_to_string
+from django.template import Template, Context
+from django.utils import translation
 from tldextract import tldextract
 
 from dashboard.internet_nl_dashboard.logic.internet_nl_translations import translate_field, get_po_as_dictionary_v2
+from dashboard.internet_nl_dashboard.logic.mail_admin_templates import xget_template_as_string
 
 log = logging.getLogger(__name__)
 
@@ -69,90 +70,6 @@ def filter_comparison_report(comparison_report: Dict[str, Any], impact: str = "i
     return data
 
 
-def translate_issues_to_internet_nl_format(issue_name):
-    # taken from internet_nl_field_mapping in spa.html
-
-    mapping = {'internet_nl_web_tls': 'test_sitetls',
-               'internet_nl_web_dnssec': 'test_sitednssec',
-               'internet_nl_web_ipv6': 'test_siteipv6',
-               'internet_nl_mail_dashboard_tls': 'test_mailtls',
-               'internet_nl_mail_dashboard_auth': 'test_mailauth',
-               'internet_nl_mail_dashboard_dnssec': 'test_maildnssec',
-               'internet_nl_mail_dashboard_ipv6': 'test_mailipv6',
-               'internet_nl_web_appsecpriv': 'test_siteappsecpriv',
-               'internet_nl_web_appsecpriv_csp': 'detail_web_appsecpriv_http_csp',
-               'internet_nl_web_appsecpriv_referrer_policy': 'detail_web_appsecpriv_http_referrer_policy',
-               'internet_nl_web_appsecpriv_x_content_type_options': 'detail_web_appsecpriv_http_x_content_type',
-               'internet_nl_web_appsecpriv_x_frame_options': 'detail_web_appsecpriv_http_x_frame',
-               'internet_nl_web_appsecpriv_x_xss_protection': 'detail_web_appsecpriv_http_x_xss',
-               'internet_nl_web_https_cert_domain': 'detail_web_tls_cert_hostmatch',
-               'internet_nl_web_https_http_redirect': 'detail_web_tls_https_forced',
-               'internet_nl_web_https_cert_chain': 'detail_web_tls_cert_trust',
-               'internet_nl_web_https_tls_version': 'detail_web_tls_version',
-               'internet_nl_web_https_tls_clientreneg': 'detail_web_tls_renegotiation_client',
-               'internet_nl_web_https_tls_ciphers': 'detail_web_tls_ciphers',
-               'internet_nl_web_https_http_available': 'detail_web_tls_https_exists',
-               'internet_nl_web_https_dane_exist': 'detail_web_tls_dane_exists',
-               'internet_nl_web_https_http_compress': 'detail_web_tls_http_compression',
-               'internet_nl_web_https_http_hsts': 'detail_web_tls_https_hsts',
-               'internet_nl_web_https_tls_secreneg': 'detail_web_tls_renegotiation_secure',
-               'internet_nl_web_https_dane_valid': 'detail_web_tls_dane_valid',
-               'internet_nl_web_https_cert_pubkey': 'detail_web_tls_cert_pubkey',
-               'internet_nl_web_https_cert_sig': 'detail_web_tls_cert_signature',
-               'internet_nl_web_https_tls_compress': 'detail_web_tls_compression',
-               'internet_nl_web_https_tls_keyexchange': 'detail_web_tls_fs_params',
-               'internet_nl_web_dnssec_valid': 'detail_web_dnssec_valid',
-               'internet_nl_web_dnssec_exist': 'detail_web_dnssec_exists',
-               'internet_nl_web_ipv6_ws_similar': 'detail_web_ipv6_web_ipv46',
-               'internet_nl_web_ipv6_ws_address': 'detail_web_ipv6_web_aaaa',
-               'internet_nl_web_ipv6_ns_reach': 'detail_web_mail_ipv6_ns_reach',
-               'internet_nl_web_ipv6_ws_reach': 'detail_web_ipv6_web_reach',
-               'internet_nl_web_ipv6_ns_address': 'detail_web_mail_ipv6_ns_aaaa',
-               'internet_nl_web_https_tls_cipherorder': 'detail_web_tls_cipher_order',
-               'internet_nl_web_https_tls_0rtt': 'detail_web_tls_zero_rtt',
-               'internet_nl_web_https_tls_ocsp': 'detail_web_tls_ocsp_stapling',
-               'internet_nl_web_https_tls_keyexchangehash': 'detail_web_tls_kex_hash_func',
-               'internet_nl_mail_starttls_cert_domain': 'detail_mail_tls_cert_hostmatch',
-               'internet_nl_mail_starttls_tls_version': 'detail_mail_tls_version',
-               'internet_nl_mail_starttls_cert_chain': 'detail_mail_tls_cert_trust',
-               'internet_nl_mail_starttls_tls_available': 'detail_mail_tls_starttls_exists',
-               'internet_nl_mail_starttls_tls_clientreneg': 'detail_mail_tls_renegotiation_client',
-               'internet_nl_mail_starttls_tls_ciphers': 'detail_mail_tls_ciphers',
-               'internet_nl_mail_starttls_dane_valid': 'detail_mail_tls_dane_valid',
-               'internet_nl_mail_starttls_dane_exist': 'detail_mail_tls_dane_exists',
-               'internet_nl_mail_starttls_tls_secreneg': 'detail_mail_tls_renegotiation_secure',
-               'internet_nl_mail_starttls_dane_rollover': 'detail_mail_tls_dane_rollover',
-               'internet_nl_mail_starttls_cert_pubkey': 'detail_mail_tls_cert_pubkey',
-               'internet_nl_mail_starttls_cert_sig': 'detail_mail_tls_cert_signature',
-               'internet_nl_mail_starttls_tls_compress': 'detail_mail_tls_compression',
-               'internet_nl_mail_starttls_tls_keyexchange': 'detail_mail_tls_fs_params',
-               'internet_nl_mail_auth_dmarc_policy': 'detail_mail_auth_dmarc_policy',
-               'internet_nl_mail_auth_dmarc_exist': 'detail_mail_auth_dmarc',
-               'internet_nl_mail_auth_spf_policy': 'detail_mail_auth_spf_policy',
-               'internet_nl_mail_auth_dkim_exist': 'detail_mail_auth_dkim',
-               'internet_nl_mail_auth_spf_exist': 'detail_mail_auth_spf',
-               'internet_nl_mail_dnssec_mailto_exist': 'detail_mail_dnssec_exists',
-               'internet_nl_mail_dnssec_mailto_valid': 'detail_mail_dnssec_valid',
-               'internet_nl_mail_dnssec_mx_valid': 'detail_mail_dnssec_mx_valid',
-               'internet_nl_mail_dnssec_mx_exist': 'detail_mail_dnssec_mx_exists',
-               'internet_nl_mail_ipv6_mx_address': 'detail_mail_ipv6_mx_aaaa',
-               'internet_nl_mail_ipv6_mx_reach': 'detail_mail_ipv6_mx_reach',
-               'internet_nl_mail_ipv6_ns_reach': 'detail_web_mail_ipv6_ns_reach',
-               'internet_nl_mail_ipv6_ns_address': 'detail_web_mail_ipv6_ns_aaaa',
-               'internet_nl_mail_starttls_tls_cipherorder': 'detail_mail_tls_cipher_order',
-               'internet_nl_mail_starttls_tls_keyexchangehash': 'detail_mail_tls_kex_hash_func',
-               'internet_nl_mail_starttls_tls_0rtt': 'detail_mail_tls_zero_rtt'
-               }
-
-    # if it can't be translated, just return the original issue instead. Easy to debug.
-    mapped = mapping.get(issue_name, issue_name)
-    if mapped == issue_name:
-        return issue_name
-
-    # the 'label' is the exact label for a field.
-    return f'{mapped}_label'
-
-
 def render_comparison_view(comparison_report: Dict[str, Any], impact: str = "improvement", language: str = "nl") -> str:
     """
     This uses the Django Template engine to create a template that can be used in the report.
@@ -171,7 +88,8 @@ def render_comparison_view(comparison_report: Dict[str, Any], impact: str = "imp
     if impact not in ['regression', 'improvement', 'neutral']:
         return ""
 
-    data = filter_comparison_report(comparison_report, impact)
+    # # Do not _change_ the comparison report itself, as it might be used for different things. Or reused in a testcase.
+    data = filter_comparison_report(deepcopy(comparison_report), impact)
 
     # In case there was nothing to compare, there is no output.
     if not data:
@@ -185,24 +103,24 @@ def render_comparison_view(comparison_report: Dict[str, Any], impact: str = "imp
 
     # make sure the translations are correct for the fields:
     translation_dictionary = get_po_as_dictionary_v2(language)
+    log.debug(translation_dictionary['detail_web_tls_version_label'])
     for item in data:
         translated = []
         for metric in item['changes'][metrics_keys[impact]]:
-            translated.append(translate_field(metric, translation_dictionary=translation_dictionary))
+            translated_field = translate_field(metric, translation_dictionary=translation_dictionary)
+            log.debug(f"{translated_field=} {language=}")
+            translated.append(translated_field)
         item['changes'][metrics_keys[impact]] = translated
 
-    # This is how django sets the language for a template. It seems overly complicated, i think there is an easier way.
-    # https://docs.djangoproject.com/en/3.1/ref/request-response/
-    newrequest = HttpRequest()
-    newrequest.method = 'GET'
-    # todo: perhaps here the locale is wrong? The language is currently completely ignored and set to dutch?
-    newrequest.META = {'HTTP_ACCEPT_LANGUAGE': language.lower()}
+    # Make sure any translations in the template itself is done with the correct language.
+    # Try to _not_ use translations inside this template.
+    # Or wait! We should store the template in the mail templates database, then it's translatable like the rest.
+    # And we can change it without adding file management features inside this tool.
 
-    return render_to_string(
-        f'mail_notifications/detailed_comparison_{impact}.html',
-        context={"data": data},
-        request=newrequest
-    )
+    template_string = xget_template_as_string(f"detailed_comparison_{impact}", language)
+    with translation.override(language.lower()):
+        template = Template(template_string)
+        return template.render(context=Context({"data": data}))
 
 
 # https://github.com/internetstandards/Internet.nl-dashboard/issues/201
@@ -286,30 +204,33 @@ def compare_report_in_detail(new_report, old_report) -> Dict[str, Any]:
     """
 
     comparison_report = {
-        'urls_exclusive_in_new_report':
-            list(
+        'urls_exclusive_in_new_report': list(
                 set(new_report['calculation']['urls_by_url'].keys())
                 - set(old_report['calculation']['urls_by_url'].keys())
-            ),
-        'urls_exclusive_in_old_report':
-            list(
+        ),
+        'urls_exclusive_in_old_report': list(
                 set(old_report['calculation']['urls_by_url'].keys())
                 - set(new_report['calculation']['urls_by_url'].keys())
-            ),
+        ),
         'old': {
             'average_internet_nl_score': old_report.get('average_internet_nl_score', 0),
             'number_of_urls': old_report.get('total_urls', 0),
             'data_from': old_report.get('at_when', datetime.now()),
             'report_id': old_report.get('id', 0),
             'urllist_id': old_report.get('urllist_id', 0)
-            },
+        },
         'new': {
             'average_internet_nl_score': new_report.get('average_internet_nl_score', 0),
             'number_of_urls': new_report.get('total_urls', 0),
             'data_from': new_report.get('at_when', datetime.now()),
             'report_id': new_report.get('id', 0),
             'urllist_id': new_report.get('urllist_id', 0)
-            },
+        },
+        'summary': {
+            'improvement': 0,
+            'regression': 0,
+            'neutral': 0,
+        },
         'comparison': {}
     }
     for url_key in new_report['calculation']['urls_by_url'].keys():
@@ -402,13 +323,9 @@ def compare_report_in_detail(new_report, old_report) -> Dict[str, Any]:
             regression += comparison_report['comparison'][comparison_url_key]['changes']['regression']
             neutral += comparison_report['comparison'][comparison_url_key]['changes']['neutral']
 
-        comparison_report['summary'] = {
-            'improvement': improvement,
-            'regression': regression,
-            'neutral': neutral
-        }
-
-        # todo: sort comparison on domain, then subdomain, alphabetically.
+        comparison_report['summary']['improvement'] = improvement
+        comparison_report['summary']['regression'] = regression
+        comparison_report['summary']['neutral'] = neutral
 
     return comparison_report
 

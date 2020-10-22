@@ -1,6 +1,7 @@
 """
 Compares reports, in a generic way.
 """
+from dashboard.internet_nl_dashboard.logic.mail_admin_templates import store_template
 from dashboard.internet_nl_dashboard.logic.report_comparison import (compare_report_in_detail,
                                                                      determine_changes_in_ratings,
                                                                      key_calculation, render_comparison_view,
@@ -478,7 +479,28 @@ def test_filter_comparison_report():
     assert len(output) == 4
 
 
-def test_render_comparison_view():
+def test_render_comparison_view(db):
+    # Make sure the template for comparisons is available from the database:
+    store_template(
+        "detailed_comparison_improvement_en",
+        """
+            {% for record in data %}
+                <tr>
+                    <td>{{ record.url }}</td>
+                    <td><a href="{{ record.new.report }}" target="_blank">{{ record.new.score }}</a></td>
+                    <td>{{ record.changes.improvement }}</td>
+                    <td>
+                        <ul>
+                        {% for metric in record.changes.improved_metrics %}
+                            <li>{{ metric }}</li>
+                        {% endfor %}
+                        </ul>
+                    </td>
+                </tr>
+            {% endfor %} 
+        """
+    )
+
     # no input, no output and no crashes:
     output = render_comparison_view(
         {},
@@ -536,6 +558,9 @@ def test_render_comparison_view():
         'urls_exclusive_in_old_report': ['extradomain.internet.nl']
     }
 
+    # the first time called the correct translation language is used, the second time it's not...
+    # as activating a translation catalog is done on per-thread basis and such change will affect
+    # code running in the same thread.
     output = render_comparison_view(
         comparison,
         impact="improvement",
@@ -564,7 +589,7 @@ def test_render_comparison_view():
         impact="improvement",
         language="en"
     )
-    assert "TLS Version" in output
+    assert "TLS version" in output
 
 
 def test_determine_changes(current_path):
