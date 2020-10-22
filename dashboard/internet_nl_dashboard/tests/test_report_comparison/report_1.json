@@ -1,0 +1,851 @@
+{
+  "id": 1267,
+  "urllist_id": 1,
+  "average_internet_nl_score": 96.54,
+  "total_urls": 25,
+  "at_when": "2020-10-15 00:19:28.788709+00:00",
+  "calculation": {
+    "urls": [
+      {
+        "url": "acc.dashboard.internet.nl",
+        "ratings": [],
+        "endpoints": [
+          {
+            "id": 4959,
+            "concat": "dns_a_aaaa/0 IPv0",
+            "ip": 0,
+            "ip_version": 0,
+            "port": 0,
+            "protocol": "dns_a_aaaa",
+            "v4": false,
+            "ratings": [],
+            "high": 5,
+            "medium": 8,
+            "low": 4,
+            "ok": 9,
+            "ratings_by_type": {
+              "internet_nl_web_legacy_ipv6_webserver": {
+                "ok": 0,
+                "translation": "failed",
+                "technical_details": "",
+                "test_result": "failed",
+                "scan": 2400869,
+                "simple_progression": 100
+              },
+              "internet_nl_web_ipv6": {
+                "ok": 0,
+                "translation": "failed",
+                "technical_details": "https://batch.internet.nl/site/acc.dashboard.internet.nl/200719/",
+                "test_result": "failed",
+                "scan": 2400842,
+                "simple_progression": 100
+              },
+              "internet_nl_web_legacy_category_ipv6": {
+                "ok": 0,
+                "translation": "failed",
+                "technical_details": "",
+                "test_result": "failed",
+                "scan": 2400871,
+                "simple_progression": 100
+              },
+              "internet_nl_web_https_http_hsts": {
+                "ok": 0,
+                "translation": "bad",
+                "technical_details": "",
+                "test_result": "failed",
+                "scan": 2400849,
+                "simple_progression": 100
+              },
+              "internet_nl_web_ipv6_ws_reach": {
+                "ok": 0,
+                "translation": "bad",
+                "technical_details": "",
+                "test_result": "failed",
+                "scan": 2400845,
+                "simple_progression": 100
+              },
+              "internet_nl_web_appsecpriv": {
+                "ok": 0,
+                "translation": "warning",
+                "technical_details": "https://batch.internet.nl/site/acc.dashboard.internet.nl/200719/",
+                "test_result": "warning",
+                "scan": 2400844,
+                "simple_progression": 200
+              },
+              "internet_nl_web_https_tls_version": {
+                "ok": 0,
+                "translation": "phase-out",
+                "technical_details": "",
+                "test_result": "warning",
+                "scan": 1122825,
+                "simple_progression": 200
+              },
+              "internet_nl_web_appsecpriv_x_frame_options": {
+                "ok": 0,
+                "translation": "bad",
+                "technical_details": "",
+                "test_result": "warning",
+                "scan": 2400861,
+                "simple_progression": 200
+              },
+              "internet_nl_web_https_tls_cipherorder": {
+                "ok": 0,
+                "translation": "warning",
+                "technical_details": "",
+                "test_result": "warning",
+                "scan": 1122823,
+                "simple_progression": 200
+              },
+              "internet_nl_web_appsecpriv_x_content_type_options": {
+                "ok": 0,
+                "translation": "bad",
+                "technical_details": "",
+                "test_result": "warning",
+                "scan": 2400864,
+                "simple_progression": 200
+              },
+              "internet_nl_web_overall_score": {
+                "ok": 0,
+                "scan": 2400841,
+                "simple_progression": 0,
+                "internet_nl_score": 79,
+                "internet_nl_url": "https://batch.internet.nl/site/acc.dashboard.internet.nl/200719/"
+              },
+              "internet_nl_web_https_tls_ciphers": {
+                "ok": 0,
+                "translation": "phase-out",
+                "technical_details": "",
+                "test_result": "warning",
+                "scan": 1122821,
+                "simple_progression": 200
+              },
+              "internet_nl_web_appsecpriv_referrer_policy": {
+                "ok": 0,
+                "translation": "bad",
+                "technical_details": "",
+                "test_result": "warning",
+                "scan": 2400862,
+                "simple_progression": 200
+              },
+              "internet_nl_web_legacy_dane": {
+                "ok": 0,
+                "translation": "info",
+                "technical_details": "",
+                "test_result": "info",
+                "scan": 1122873,
+                "simple_progression": 300
+              },
+              "internet_nl_web_https_dane_exist": {
+                "ok": 0,
+                "translation": "bad",
+                "technical_details": "",
+                "test_result": "info",
+                "scan": 1122841,
+                "simple_progression": 300
+              },
+              "internet_nl_web_https_tls_ocsp": {
+                "ok": 0,
+                "translation": "ok",
+                "technical_details": "",
+                "test_result": "info",
+                "scan": 1122848,
+                "simple_progression": 300
+              },
+              "internet_nl_web_appsecpriv_csp": {
+                "ok": 0,
+                "translation": "bad",
+                "technical_details": "",
+                "test_result": "info",
+                "scan": 2400863,
+                "simple_progression": 300
+              },
+              "internet_nl_web_legacy_tls_available": {
+                "ok": 0,
+                "translation": "error",
+                "technical_details": "",
+                "test_result": "error",
+                "scan": 2400865,
+                "simple_progression": 0
+              },
+              "internet_nl_web_ipv6_ns_address": {
+                "ok": 1,
+                "translation": "good",
+                "technical_details": "",
+                "test_result": "passed",
+                "scan": 1122798,
+                "simple_progression": 400
+              },
+              "internet_nl_web_https_tls_clientreneg": {
+                "ok": 0,
+                "translation": "not-tested",
+                "technical_details": "",
+                "test_result": "not_tested",
+                "scan": 2400854,
+                "simple_progression": 0
+              },
+              "internet_nl_web_ipv6_ns_reach": {
+                "ok": 1,
+                "translation": "good",
+                "technical_details": "",
+                "test_result": "passed",
+                "scan": 1122800,
+                "simple_progression": 400
+              },
+              "internet_nl_web_https_http_compress": {
+                "ok": 0,
+                "translation": "not-tested",
+                "technical_details": "",
+                "test_result": "not_tested",
+                "scan": 2400850,
+                "simple_progression": 0
+              },
+              "internet_nl_web_https_cert_sig": {
+                "ok": 0,
+                "translation": "not-tested",
+                "technical_details": "",
+                "test_result": "not_tested",
+                "scan": 2400857,
+                "simple_progression": 0
+              },
+              "internet_nl_web_https_http_redirect": {
+                "ok": 0,
+                "translation": "not-tested",
+                "technical_details": "",
+                "test_result": "not_tested",
+                "scan": 2400848,
+                "simple_progression": 0
+              },
+              "internet_nl_web_https_dane_valid": {
+                "ok": 0,
+                "translation": "not-tested",
+                "technical_details": "",
+                "test_result": "not_tested",
+                "scan": 1122844,
+                "simple_progression": 0
+              },
+              "internet_nl_web_ipv6_ws_address": {
+                "ok": 1,
+                "translation": "good",
+                "technical_details": "",
+                "test_result": "passed",
+                "scan": 1122801,
+                "simple_progression": 400
+              },
+              "internet_nl_web_https_tls_0rtt": {
+                "ok": 0,
+                "translation": "not-tested",
+                "technical_details": "",
+                "test_result": "not_tested",
+                "scan": 2400859,
+                "simple_progression": 0
+              },
+              "internet_nl_web_legacy_tls_ncsc_web": {
+                "ok": 0,
+                "translation": "error",
+                "technical_details": "",
+                "test_result": "error",
+                "scan": 2400866,
+                "simple_progression": 0
+              },
+              "internet_nl_web_legacy_ipv6_nameserver": {
+                "ok": 1,
+                "translation": "passed",
+                "technical_details": "",
+                "test_result": "passed",
+                "scan": 1122869,
+                "simple_progression": 400
+              },
+              "internet_nl_web_dnssec_exist": {
+                "ok": 1,
+                "translation": "good",
+                "technical_details": "",
+                "test_result": "passed",
+                "scan": 1122809,
+                "simple_progression": 400
+              },
+              "internet_nl_web_dnssec": {
+                "ok": 1,
+                "translation": "passed",
+                "technical_details": "https://batch.internet.nl/site/acc.dashboard.internet.nl/41/",
+                "test_result": "passed",
+                "scan": 1122792,
+                "simple_progression": 400
+              },
+              "internet_nl_web_https_cert_domain": {
+                "ok": 0,
+                "translation": "not-tested",
+                "technical_details": "",
+                "test_result": "not_tested",
+                "scan": 2400858,
+                "simple_progression": 0
+              },
+              "internet_nl_web_legacy_dnssec": {
+                "ok": 1,
+                "translation": "passed",
+                "technical_details": "",
+                "test_result": "passed",
+                "scan": 1122858,
+                "simple_progression": 400
+              },
+              "internet_nl_web_https_tls_keyexchangehash": {
+                "ok": 0,
+                "translation": "not-tested",
+                "technical_details": "",
+                "test_result": "not_tested",
+                "scan": 2400860,
+                "simple_progression": 0
+              },
+              "internet_nl_web_https_tls_secreneg": {
+                "ok": 0,
+                "translation": "not-tested",
+                "technical_details": "",
+                "test_result": "not_tested",
+                "scan": 2400853,
+                "simple_progression": 0
+              },
+              "internet_nl_web_ipv6_ws_similar": {
+                "ok": 0,
+                "translation": "not-tested",
+                "technical_details": "",
+                "test_result": "not_tested",
+                "scan": 2400846,
+                "simple_progression": 0
+              },
+              "internet_nl_web_dnssec_valid": {
+                "ok": 1,
+                "translation": "good",
+                "technical_details": "",
+                "test_result": "passed",
+                "scan": 1122810,
+                "simple_progression": 400
+              },
+              "internet_nl_web_https_tls_compress": {
+                "ok": 0,
+                "translation": "not-tested",
+                "technical_details": "",
+                "test_result": "not_tested",
+                "scan": 2400852,
+                "simple_progression": 0
+              },
+              "internet_nl_web_https_cert_chain": {
+                "ok": 0,
+                "translation": "not-tested",
+                "technical_details": "",
+                "test_result": "not_tested",
+                "scan": 2400855,
+                "simple_progression": 0
+              },
+              "internet_nl_web_legacy_hsts": {
+                "ok": 0,
+                "translation": "error",
+                "technical_details": "",
+                "test_result": "error",
+                "scan": 2400868,
+                "simple_progression": 0
+              },
+              "internet_nl_web_https_cert_pubkey": {
+                "ok": 0,
+                "translation": "not-tested",
+                "technical_details": "",
+                "test_result": "not_tested",
+                "scan": 2400856,
+                "simple_progression": 0
+              },
+              "internet_nl_web_legacy_tls_1_3": {
+                "ok": 0,
+                "translation": "not_testable",
+                "technical_details": "",
+                "test_result": "not_testable",
+                "scan": 2400870,
+                "simple_progression": 0
+              },
+              "internet_nl_web_legacy_https_enforced": {
+                "ok": 0,
+                "translation": "error",
+                "technical_details": "",
+                "test_result": "error",
+                "scan": 2400867,
+                "simple_progression": 0
+              },
+              "internet_nl_web_appsecpriv_x_xss_protection": {
+                "ok": 1,
+                "scan": 111348,
+                "simple_progression": 0
+              },
+              "internet_nl_web_tls": {
+                "ok": 0,
+                "translation": "unreachable",
+                "technical_details": "https://batch.internet.nl/site/acc.dashboard.internet.nl/200719/",
+                "test_result": "error",
+                "scan": 2400843,
+                "simple_progression": 0
+              },
+              "internet_nl_web_https_http_available": {
+                "ok": 0,
+                "translation": "other",
+                "technical_details": "",
+                "test_result": "error",
+                "scan": 2400847,
+                "simple_progression": 0
+              },
+              "internet_nl_web_https_tls_keyexchange": {
+                "ok": 0,
+                "translation": "not-tested",
+                "technical_details": "",
+                "test_result": "not_tested",
+                "scan": 2400851,
+                "simple_progression": 0
+              },
+              "internet_nl_score": {
+                "internet_nl_score": 79,
+                "internet_nl_url": "https://batch.internet.nl/site/acc.dashboard.internet.nl/200719/",
+                "ok": 0,
+                "test_result": 79,
+                "scan": 2400841
+              }
+            }
+          }
+        ],
+        "total_issues": 17,
+        "high": 5,
+        "medium": 8,
+        "low": 4,
+        "ok": 9,
+        "total_endpoints": 1,
+        "high_endpoints": 1,
+        "medium_endpoints": 0,
+        "low_endpoints": 0,
+        "ok_endpoints": 0,
+        "total_url_issues": 0,
+        "url_issues_high": 0,
+        "url_issues_medium": 0,
+        "url_issues_low": 0,
+        "url_ok": 0,
+        "total_endpoint_issues": 17,
+        "endpoint_issues_high": 5,
+        "endpoint_issues_medium": 8,
+        "endpoint_issues_low": 4
+      },
+      {
+        "url": "pl.internet.nl",
+        "ratings": [],
+        "endpoints": [],
+        "total_issues": 0,
+        "high": 0,
+        "medium": 0,
+        "low": 0,
+        "ok": 0,
+        "total_endpoints": 0,
+        "high_endpoints": 0,
+        "medium_endpoints": 0,
+        "low_endpoints": 0,
+        "ok_endpoints": 0,
+        "total_url_issues": 0,
+        "url_issues_high": 0,
+        "url_issues_medium": 0,
+        "url_issues_low": 0,
+        "url_ok": 0,
+        "total_endpoint_issues": 0,
+        "endpoint_issues_high": 0,
+        "endpoint_issues_medium": 0,
+        "endpoint_issues_low": 0
+      },
+      {
+        "url": "www.internet.nl",
+        "ratings": [],
+        "endpoints": [
+          {
+            "id": 24,
+            "concat": "dns_a_aaaa/0 IPv0",
+            "ip": 0,
+            "ip_version": 0,
+            "port": 0,
+            "protocol": "dns_a_aaaa",
+            "v4": false,
+            "ratings": [],
+            "high": 0,
+            "medium": 0,
+            "low": 0,
+            "ok": 47,
+            "ratings_by_type": {
+              "internet_nl_web_legacy_ipv6_webserver": {
+                "ok": 1,
+                "translation": "passed",
+                "technical_details": "",
+                "test_result": "passed",
+                "scan": 1123241,
+                "simple_progression": 400
+              },
+              "internet_nl_web_legacy_tls_available": {
+                "ok": 1,
+                "translation": "passed",
+                "technical_details": "",
+                "test_result": "passed",
+                "scan": 1123232,
+                "simple_progression": 400
+              },
+              "internet_nl_web_appsecpriv": {
+                "ok": 1,
+                "translation": "passed",
+                "technical_details": "https://batch.internet.nl/site/www.internet.nl/35/",
+                "test_result": "passed",
+                "scan": 1123168,
+                "simple_progression": 400
+              },
+              "internet_nl_web_https_tls_version": {
+                "ok": 1,
+                "translation": "good",
+                "technical_details": "",
+                "test_result": "passed",
+                "scan": 1123198,
+                "simple_progression": 400
+              },
+              "internet_nl_web_ipv6_ns_address": {
+                "ok": 1,
+                "translation": "good",
+                "technical_details": "",
+                "test_result": "passed",
+                "scan": 1123170,
+                "simple_progression": 400
+              },
+              "internet_nl_web_https_tls_clientreneg": {
+                "ok": 1,
+                "translation": "good",
+                "technical_details": "",
+                "test_result": "passed",
+                "scan": 1123203,
+                "simple_progression": 400
+              },
+              "internet_nl_web_ipv6_ns_reach": {
+                "ok": 1,
+                "translation": "good",
+                "technical_details": "",
+                "test_result": "passed",
+                "scan": 1123172,
+                "simple_progression": 400
+              },
+              "internet_nl_web_https_http_compress": {
+                "ok": 1,
+                "translation": "good",
+                "technical_details": "",
+                "test_result": "passed",
+                "scan": 1123190,
+                "simple_progression": 400
+              },
+              "internet_nl_web_https_cert_sig": {
+                "ok": 1,
+                "translation": "good",
+                "technical_details": "",
+                "test_result": "passed",
+                "scan": 1123209,
+                "simple_progression": 400
+              },
+              "internet_nl_web_https_http_redirect": {
+                "ok": 1,
+                "translation": "good",
+                "technical_details": "",
+                "test_result": "passed",
+                "scan": 1123186,
+                "simple_progression": 400
+              },
+              "internet_nl_web_https_dane_valid": {
+                "ok": 1,
+                "translation": "good",
+                "technical_details": "",
+                "test_result": "passed",
+                "scan": 1123216,
+                "simple_progression": 400
+              },
+              "internet_nl_web_appsecpriv_x_frame_options": {
+                "ok": 1,
+                "translation": "good",
+                "technical_details": "",
+                "test_result": "passed",
+                "scan": 1123223,
+                "simple_progression": 400
+              },
+              "internet_nl_web_https_tls_cipherorder": {
+                "ok": 1,
+                "translation": "good",
+                "technical_details": "",
+                "test_result": "passed",
+                "scan": 1123196,
+                "simple_progression": 400
+              },
+              "internet_nl_web_ipv6_ws_address": {
+                "ok": 1,
+                "translation": "good",
+                "technical_details": "",
+                "test_result": "passed",
+                "scan": 1123174,
+                "simple_progression": 400
+              },
+              "internet_nl_web_appsecpriv_x_content_type_options": {
+                "ok": 1,
+                "translation": "good",
+                "technical_details": "",
+                "test_result": "passed",
+                "scan": 1123228,
+                "simple_progression": 400
+              },
+              "internet_nl_web_https_tls_0rtt": {
+                "ok": 1,
+                "translation": "good",
+                "technical_details": "",
+                "test_result": "passed",
+                "scan": 1123218,
+                "simple_progression": 400
+              },
+              "internet_nl_web_legacy_tls_ncsc_web": {
+                "ok": 1,
+                "translation": "passed",
+                "technical_details": "",
+                "test_result": "passed",
+                "scan": 1123234,
+                "simple_progression": 400
+              },
+              "internet_nl_web_legacy_ipv6_nameserver": {
+                "ok": 1,
+                "translation": "passed",
+                "technical_details": "",
+                "test_result": "passed",
+                "scan": 1123240,
+                "simple_progression": 400
+              },
+              "internet_nl_web_legacy_dane": {
+                "ok": 1,
+                "translation": "passed",
+                "technical_details": "",
+                "test_result": "passed",
+                "scan": 1123242,
+                "simple_progression": 400
+              },
+              "internet_nl_web_dnssec_exist": {
+                "ok": 1,
+                "translation": "good",
+                "technical_details": "",
+                "test_result": "passed",
+                "scan": 1123180,
+                "simple_progression": 400
+              },
+              "internet_nl_web_dnssec": {
+                "ok": 1,
+                "translation": "passed",
+                "technical_details": "https://batch.internet.nl/site/www.internet.nl/35/",
+                "test_result": "passed",
+                "scan": 1123164,
+                "simple_progression": 400
+              },
+              "internet_nl_web_https_cert_domain": {
+                "ok": 1,
+                "translation": "good",
+                "technical_details": "",
+                "test_result": "passed",
+                "scan": 1123212,
+                "simple_progression": 400
+              },
+              "internet_nl_web_overall_score": {
+                "ok": 1,
+                "scan": 2400838,
+                "simple_progression": 0,
+                "internet_nl_score": 100,
+                "internet_nl_url": "https://batch.internet.nl/site/www.internet.nl/200737/"
+              },
+              "internet_nl_web_ipv6": {
+                "ok": 1,
+                "translation": "passed",
+                "technical_details": "https://batch.internet.nl/site/www.internet.nl/35/",
+                "test_result": "passed",
+                "scan": 1123162,
+                "simple_progression": 400
+              },
+              "internet_nl_web_legacy_dnssec": {
+                "ok": 1,
+                "translation": "passed",
+                "technical_details": "",
+                "test_result": "passed",
+                "scan": 1123230,
+                "simple_progression": 400
+              },
+              "internet_nl_web_https_tls_keyexchangehash": {
+                "ok": 1,
+                "translation": "good",
+                "technical_details": "",
+                "test_result": "passed",
+                "scan": 1123221,
+                "simple_progression": 400
+              },
+              "internet_nl_web_https_dane_exist": {
+                "ok": 1,
+                "translation": "good",
+                "technical_details": "",
+                "test_result": "passed",
+                "scan": 1123214,
+                "simple_progression": 400
+              },
+              "internet_nl_web_https_tls_secreneg": {
+                "ok": 1,
+                "translation": "good",
+                "technical_details": "",
+                "test_result": "passed",
+                "scan": 1123201,
+                "simple_progression": 400
+              },
+              "internet_nl_web_ipv6_ws_similar": {
+                "ok": 1,
+                "translation": "good",
+                "technical_details": "",
+                "test_result": "passed",
+                "scan": 1123178,
+                "simple_progression": 400
+              },
+              "internet_nl_web_dnssec_valid": {
+                "ok": 1,
+                "translation": "good",
+                "technical_details": "",
+                "test_result": "passed",
+                "scan": 1123182,
+                "simple_progression": 400
+              },
+              "internet_nl_web_https_tls_compress": {
+                "ok": 1,
+                "translation": "good",
+                "technical_details": "",
+                "test_result": "passed",
+                "scan": 1123199,
+                "simple_progression": 400
+              },
+              "internet_nl_web_https_cert_chain": {
+                "ok": 1,
+                "translation": "good",
+                "technical_details": "",
+                "test_result": "passed",
+                "scan": 1123205,
+                "simple_progression": 400
+              },
+              "internet_nl_web_legacy_hsts": {
+                "ok": 1,
+                "translation": "passed",
+                "technical_details": "",
+                "test_result": "passed",
+                "scan": 1123238,
+                "simple_progression": 400
+              },
+              "internet_nl_web_legacy_category_ipv6": {
+                "ok": 1,
+                "translation": "passed",
+                "technical_details": "",
+                "test_result": "passed",
+                "scan": 1123245,
+                "simple_progression": 400
+              },
+              "internet_nl_web_https_tls_ciphers": {
+                "ok": 1,
+                "translation": "good",
+                "technical_details": "",
+                "test_result": "passed",
+                "scan": 1123194,
+                "simple_progression": 400
+              },
+              "internet_nl_web_https_cert_pubkey": {
+                "ok": 1,
+                "translation": "good",
+                "technical_details": "",
+                "test_result": "passed",
+                "scan": 1123207,
+                "simple_progression": 400
+              },
+              "internet_nl_web_legacy_https_enforced": {
+                "ok": 1,
+                "translation": "passed",
+                "technical_details": "",
+                "test_result": "passed",
+                "scan": 1123236,
+                "simple_progression": 400
+              },
+              "internet_nl_web_appsecpriv_x_xss_protection": {
+                "ok": 1,
+                "scan": 51,
+                "simple_progression": 0
+              },
+              "internet_nl_web_ipv6_ws_reach": {
+                "ok": 1,
+                "translation": "good",
+                "technical_details": "",
+                "test_result": "passed",
+                "scan": 1123176,
+                "simple_progression": 400
+              },
+              "internet_nl_web_tls": {
+                "ok": 1,
+                "translation": "passed",
+                "technical_details": "https://batch.internet.nl/site/www.internet.nl/35/",
+                "test_result": "passed",
+                "scan": 1123166,
+                "simple_progression": 400
+              },
+              "internet_nl_web_https_http_available": {
+                "ok": 1,
+                "translation": "good",
+                "technical_details": "",
+                "test_result": "passed",
+                "scan": 1123184,
+                "simple_progression": 400
+              },
+              "internet_nl_web_https_tls_keyexchange": {
+                "ok": 1,
+                "translation": "good",
+                "technical_details": "",
+                "test_result": "passed",
+                "scan": 1123192,
+                "simple_progression": 400
+              },
+              "internet_nl_web_appsecpriv_csp": {
+                "ok": 1,
+                "translation": "good",
+                "technical_details": "",
+                "test_result": "passed",
+                "scan": 1123227,
+                "simple_progression": 400
+              },
+              "internet_nl_web_appsecpriv_referrer_policy": {
+                "ok": 1,
+                "translation": "good",
+                "technical_details": "",
+                "test_result": "passed",
+                "scan": 1123225,
+                "simple_progression": 400
+              },
+              "internet_nl_score": {
+                "internet_nl_score": 100,
+                "internet_nl_url": "https://batch.internet.nl/site/www.internet.nl/200737/",
+                "ok": 0,
+                "test_result": 100,
+                "scan": 2400838
+              }
+            }
+          }
+        ],
+        "total_issues": 0,
+        "high": 0,
+        "medium": 0,
+        "low": 0,
+        "ok": 47,
+        "total_endpoints": 1,
+        "high_endpoints": 0,
+        "medium_endpoints": 0,
+        "low_endpoints": 0,
+        "ok_endpoints": 1,
+        "total_url_issues": 0,
+        "url_issues_high": 0,
+        "url_issues_medium": 0,
+        "url_issues_low": 0,
+        "url_ok": 1,
+        "total_endpoint_issues": 0,
+        "endpoint_issues_high": 0,
+        "endpoint_issues_medium": 0,
+        "endpoint_issues_low": 0
+      }
+    ]
+  }
+}

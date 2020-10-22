@@ -8,7 +8,9 @@ from requests import Response
 
 from dashboard.internet_nl_dashboard.logic.internet_nl_translations import (convert_vue_i18n_format,
                                                                             get_locale_content,
-                                                                            load_as_po_file)
+                                                                            get_po_as_dictionary_v2,
+                                                                            load_as_po_file,
+                                                                            translate_field)
 
 path = Path(__file__).parent
 
@@ -58,3 +60,20 @@ def test_urllists(db, tmpdir) -> None:
 
     # verify that this does not create a file in the filesystem, but only in the test environment.
     # store_vue_i18n_file('nl', formatted)
+
+
+def test_field_translation():
+    # Load dutch translation for a field
+    translation_dictionary = get_po_as_dictionary_v2('nl')
+    translated = translate_field('internet_nl_web_https_tls_version', translation_dictionary=translation_dictionary)
+    assert translated == "TLS-versie"
+
+    # Now verify that we can live switch to an english translation
+    translation_dictionary = get_po_as_dictionary_v2('en')
+    translated = translate_field('internet_nl_web_https_tls_version', translation_dictionary=translation_dictionary)
+    assert translated == "TLS version"
+
+    # And switch back to dutch again
+    translation_dictionary = get_po_as_dictionary_v2('nl')
+    translated = translate_field('internet_nl_web_https_tls_version', translation_dictionary=translation_dictionary)
+    assert translated == "TLS-versie"

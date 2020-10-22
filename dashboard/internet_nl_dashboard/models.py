@@ -426,6 +426,21 @@ class UrlListReport(SeriesOfUrlsReportMixin):
             ["at_when", "id"],
         ]
 
+    def get_previous_report_from_this_list(self):
+        """
+        Get's the previous report of this list. This is useful for creating comparisons.
+        If there is no previous report None is returned. Calculation is not included by default because it
+        makes sorting very slow. The deferred field is retrieved when requested explicitly with a direct query.
+        :return:
+        """
+        try:
+            return UrlListReport.objects.all().filter(
+                urllist=self.urllist,
+                at_when__lt=self.at_when
+            ).exclude(id=self.id).defer('calculation').latest()
+        except UrlListReport.DoesNotExist:
+            return None
+
 
 class AccountInternetNLScan(models.Model):
     """

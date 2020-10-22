@@ -1,3 +1,5 @@
+from pathlib import Path
+
 import pytest
 import redis
 
@@ -9,3 +11,9 @@ def redis_server():
         r.ping()
     except redis.exceptions.ConnectionError:
         pytest.skip("redis server not running")
+
+
+@pytest.fixture
+def current_path():
+    path = Path(__file__).parent
+    yield path

@@ -1,19 +1,25 @@
+import logging
 import string
 import time
 from random import choice
-from typing import Any
 
 from constance import config
 from django.contrib.auth.models import User
 from django.core.management import call_command
 from django.utils import timezone
 from django_mail_admin import mail
-from django_mail_admin.models import EmailTemplate, Outbox
+from django_mail_admin.models import Outbox
 
 from dashboard.celery import app
+from dashboard.internet_nl_dashboard.logic.mail_admin_templates import xget_template
+from dashboard.internet_nl_dashboard.logic.report import get_report_directly
+from dashboard.internet_nl_dashboard.logic.report_comparison import (compare_report_in_detail,
+                                                                     key_calculation,
+                                                                     render_comparison_view)
 from dashboard.internet_nl_dashboard.models import (AccountInternetNLScan, DashboardUser,
                                                     UrlListReport)
 
+log = logging.getLogger(__package__)
 
 """
 Mail is sent when a scan is finished and a report is ready. It uses django_mail_admin, a straightforward library
@@ -79,8 +85,40 @@ def send_scan_finished_mails(scan: AccountInternetNLScan):
 
     users = get_users_to_send_mail_to(scan)
 
-    # remove calculation because textfields are slow while filtering
+    # remove calculation because textfields are slow while filtering. Have to retrieve the textfield later
     report = UrlListReport.objects.all().filter(urllist=scan.urllist).order_by("-id").defer('calculation').first()
+    previous_report = report.get_previous_report_from_this_list()
+
+    if previous_report:
+        # Django retrieves fields that are deferred automatically when explicitly requested.
+        # This is a direct select query, and thus faster than adding the textfield in the search query.
+        comparison = compare_report_in_detail(
+            key_calculation(get_report_directly(report.id)),
+            key_calculation(get_report_directly(previous_report.id))
+        )
+        comparison_neutral = comparison['summary']['neutral']
+        comparison_improvement = comparison['summary']['improvement']
+        comparison_regression = comparison['summary']['regression']
+        comparison_report_available = True
+        comparison_report_contains_improvement = comparison['summary']['improvement'] > 0
+        comparison_report_contains_regression = comparison['summary']['regression'] > 0
+        previous_report_id = previous_report.id
+        difference = timezone.now() - previous_report.at_when
+        days_between_current_and_previous_report = difference.days
+        urls_exclusive_in_new_report = ",".join(sorted(comparison['urls_exclusive_in_new_report']))
+        urls_exclusive_in_old_report = ",".join(sorted(comparison['urls_exclusive_in_old_report']))
+    else:
+        comparison = {}
+        comparison_neutral = 0
+        comparison_improvement = 0
+        comparison_regression = 0
+        comparison_report_available = False
+        comparison_report_contains_improvement = False
+        comparison_report_contains_regression = False
+        previous_report_id = 0
+        days_between_current_and_previous_report = 0
+        urls_exclusive_in_new_report = ""
+        urls_exclusive_in_old_report = ""
 
     for user in users:
 
@@ -90,6 +128,8 @@ def send_scan_finished_mails(scan: AccountInternetNLScan):
             user.dashboarduser.save()
 
         placeholders = {
+            "unsubscribe_code": user.dashboarduser.mail_after_mail_unsubscribe_code,
+
             "recipient": user.first_name if user.first_name else user.last_name if user.last_name else user.username,
             "user_id": user.id,
 
@@ -105,11 +145,33 @@ def send_scan_finished_mails(scan: AccountInternetNLScan):
             # so perform a guess, which might be a few minutes off...
             "scan_finished_on": timezone.now().isoformat(),
             "scan_duration": timezone.now() - scan.started_on,
+            # Don't use 'mail_dashboard', only mail.
+            "scan_type": scan.scan.type if scan.scan.type == "web" else "mail",
 
-            "scan_type": scan.scan.type,
+            # comparison reports:
+            # The template system only knows strings, so the boolean is coded as string here
+            "improvement": comparison_improvement,
+            "regression": comparison_regression,
+            "neutral": comparison_neutral,
+            "comparison_report_available": str(comparison_report_available),
+            "comparison_report_contains_improvement": str(comparison_report_contains_improvement),
+            "comparison_report_contains_regression": str(comparison_report_contains_regression),
+            "compared_report_id": previous_report_id,
+            "days_between_current_and_previous_report": days_between_current_and_previous_report,
+            "comparison_table_improvement": render_comparison_view(
+                comparison,
+                impact="improvement",
+                language=user.dashboarduser.mail_preferred_language.code.lower()
+            ),
+            "comparison_table_regression": render_comparison_view(
+                comparison,
+                impact="regression",
+                language=user.dashboarduser.mail_preferred_language.code.lower()
+            ),
+            "domains_exclusive_in_current_report": urls_exclusive_in_new_report,
+            "domains_exclusive_in_other_report": urls_exclusive_in_old_report,
 
-            # todo: set unsubscribe code in database, to be something random when is empty and sending mail.
-            "unsubscribe_code": "9023u01923091283093123",
+            "dashboard_address": config.EMAIL_DASHBOARD_ADDRESS,
         }
 
         mail.send(
@@ -117,7 +179,7 @@ def send_scan_finished_mails(scan: AccountInternetNLScan):
             recipients=user.dashboarduser.mail_preferred_mail_address,  # List of email addresses also accepted
             template=xget_template(
                 template_name="scan_finished",
-                preferred_language=user.dashboarduser.mail_preferred_language
+                preferred_language=user.dashboarduser.mail_preferred_language.code.lower()
             ),
             variable_dict=placeholders
         )
@@ -126,30 +188,7 @@ def send_scan_finished_mails(scan: AccountInternetNLScan):
     return len(users)
 
 
-def xget_template(template_name: str = "scan_finished", preferred_language: Any = None):
-    """
-
-    :param template_name:
-    :param preferred_language: Countryfield value.
-    :return:
-    """
-
-    # tries to retrieve the preferred language for emails. If that template is not available,
-    # the fallback language (EN) is used.
-
-    template = EmailTemplate.objects.filter(name=f'{template_name}_{preferred_language.code.lower()}').first()
-    if template:
-        return template
-
-    template = EmailTemplate.objects.filter(name=f'{template_name}_{config.EMAIL_FALLBACK_LANGUAGE}').first()
-    if template:
-        return template
-
-    raise LookupError(f"Could not find e-mail template {template_name}, neither for language {preferred_language} nor"
-                      f"the fallback language {config.EMAIL_FALLBACK_LANGUAGE}.")
-
-
-def generate_unsubscribe_code():
+def generate_unsubscribe_code() -> str:
     # https://pynative.com/python-generate-random-string/
     # secure random is not needed, would be ridiculous. A sleep(1) is enough to deter any attack
     return ''.join(choice(string.ascii_letters + string.digits) for i in range(128))
