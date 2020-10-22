@@ -2,6 +2,7 @@ import logging
 from datetime import datetime, timedelta
 
 import pytz
+from celery import group
 from constance.admin import Config, ConstanceAdmin, ConstanceForm
 from django.contrib import admin
 from django.contrib.auth.admin import GroupAdmin as BaseGroupAdmin
@@ -26,7 +27,7 @@ from dashboard.internet_nl_dashboard.models import (Account, AccountInternetNLSc
                                                     AccountInternetNLScanLog, DashboardUser,
                                                     UploadLog, UrlList)
 from dashboard.internet_nl_dashboard.scanners.scan_internet_nl_per_account import (
-    progress_running_scan, recover_and_retry)
+    progress_running_scan, recover_and_retry, creating_report)
 
 log = logging.getLogger(__package__)
 
@@ -332,6 +333,18 @@ class AccountInternetNLScanAdmin(ImportExportModelAdmin, admin.ModelAdmin):
         self.message_user(request, f"A total of {sent} mails have been send.")
     send_finish_mail.short_description = "Queue finished mail (finished only)"
     actions.append('send_finish_mail')
+
+    # This is used to create ad-hoc reports for testing the send_finish_mail function.
+    def create_extra_report(self, request, queryset):
+        tasks = []
+        for scan in queryset:
+            tasks.append(creating_report(scan))
+        group(tasks).apply_async()
+        self.message_user(request, f"Creating additional reports (async).")
+
+    create_extra_report.short_description = "Create additional report (async) (finished only)"
+    actions.append('create_extra_report')
+
 
 
 @admin.register(AccountInternetNLScanLog)

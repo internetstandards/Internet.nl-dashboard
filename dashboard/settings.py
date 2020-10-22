@@ -521,6 +521,11 @@ CONSTANCE_CONFIG = {
         'Who receives the testmail from dashboard send_testmail.',
         str
     ),
+    'EMAIL_DASHBOARD_ADDRESS': (
+        'https://dashboard.internet.nl',
+        'The address of the dashboard, can be set to any url. Available in email template at {{dashboard_address}}',
+        str
+    ),
 }
 
 CONSTANCE_CONFIG_FIELDSETS = OrderedDict([
@@ -530,7 +535,8 @@ CONSTANCE_CONFIG_FIELDSETS = OrderedDict([
                    'DASHBOARD_MAXIMUM_LISTS_PER_SPREADSHEET')),
     ('E-Mail', ('EMAIL_NOTIFICATION_SENDER',
                 'EMAIL_FALLBACK_LANGUAGE',
-                'EMAIL_TEST_RECIPIENT')),
+                'EMAIL_TEST_RECIPIENT',
+                'EMAIL_DASHBOARD_ADDRESS')),
     ('Internet.nl Scans', ('INTERNET_NL_API_USERNAME', 'INTERNET_NL_API_PASSWORD', 'INTERNET_NL_API_URL',
                            'INTERNET_NL_MAXIMUM_URLS'))
 ])

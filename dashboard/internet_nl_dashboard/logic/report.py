@@ -137,14 +137,59 @@ def get_report(account: Account, report_id: int):
     ).only('id').first()
     action.send(account, verb='viewed report', target=log_report, public=False)
 
-    # do NOT create a python object, because that's incredibly slow. Instead rely on the capabilities of
-    # jsonfield to store json correctly and discard everything else.
-    return f'[{{"id": {report["id"]}, ' \
-           f'"urllist_id": {report["urllist_id"]}, ' \
-           f'"average_internet_nl_score": {report["average_internet_nl_score"]}, ' \
-           f'"total_urls": {report["total_urls"]}, ' \
-           f'"at_when": "{report["at_when"]}", ' \
-           f'"calculation": {json.dumps(report["calculation"])}}}]'
+    return f"[{dump_report_to_text_resembling_json(report)}]"
+
+
+def dump_report_to_text_resembling_json(report):
+    """
+    Does _not_ create a python object of a report, because that's slow. Instead it relies on the capanility
+    to store json as text and just dump it out there. This requires no conversion to python object or parsing first.
+
+    todo: the new jsonfield works in a different way, automatically retrieving it as a python object instead of text.
+
+    :param report:
+    :return:
+    """
+    return '{' \
+           f'"    id": {report["id"]}, ' \
+           f'"    urllist_id": {report["urllist_id"]}, ' \
+           f'"    average_internet_nl_score": {report["average_internet_nl_score"]}, ' \
+           f'"    total_urls": {report["total_urls"]}, ' \
+           f'"    at_when": "{report["at_when"]}", ' \
+           f'"    calculation": {json.dumps(report["calculation"])}' \
+           '}'
+
+
+def get_report_directly(report_id):
+    """
+    Variant of get_report without the account or availability check.
+
+    :param report_id:
+    :return:
+    """
+
+    report = UrlListReport.objects.all().filter(
+        pk=report_id
+    ).values('id', 'urllist_id', 'calculation', 'average_internet_nl_score', 'total_urls', 'at_when').first()
+
+    if not report:
+        return {}
+
+    return dump_report_to_json(report)
+
+
+def dump_report_to_json(report):
+    """
+    Creates a json variant of the report, used internally.
+    :return:
+    """
+    return {'id': report["id"],
+            'urllist_id': report["urllist_id"],
+            'average_internet_nl_score': report["average_internet_nl_score"],
+            'total_urls': report["total_urls"],
+            'at_when': report["at_when"],
+            'calculation': report["calculation"]
+            }
 
 
 def get_report_differences_compared_to_current_list(account: Account, report_id: int):
