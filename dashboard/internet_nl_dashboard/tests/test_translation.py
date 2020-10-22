@@ -8,7 +8,8 @@ from requests import Response
 
 from dashboard.internet_nl_dashboard.logic.internet_nl_translations import (convert_vue_i18n_format,
                                                                             get_locale_content,
-                                                                            load_as_po_file, get_po_as_dictionary_v2,
+                                                                            get_po_as_dictionary_v2,
+                                                                            load_as_po_file,
                                                                             translate_field)
 
 path = Path(__file__).parent

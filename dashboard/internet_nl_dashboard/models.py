@@ -1,6 +1,5 @@
 import logging
 from datetime import datetime, timedelta
-from typing import Union
 
 import pytz
 import requests

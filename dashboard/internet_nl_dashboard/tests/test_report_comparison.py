@@ -4,8 +4,9 @@ Compares reports, in a generic way.
 from dashboard.internet_nl_dashboard.logic.mail_admin_templates import store_template
 from dashboard.internet_nl_dashboard.logic.report_comparison import (compare_report_in_detail,
                                                                      determine_changes_in_ratings,
-                                                                     key_calculation, render_comparison_view,
-                                                                     filter_comparison_report)
+                                                                     filter_comparison_report,
+                                                                     key_calculation,
+                                                                     render_comparison_view)
 from dashboard.internet_nl_dashboard.tests.common import get_json_file
 
 
@@ -497,7 +498,7 @@ def test_render_comparison_view(db):
                         </ul>
                     </td>
                 </tr>
-            {% endfor %} 
+            {% endfor %}
         """
     )
 

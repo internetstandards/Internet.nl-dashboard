@@ -399,4 +399,3 @@ def translate_field(field_label, translation_dictionary: Dict[str, str]):
         # When the re-translation is applied, the fields have been replaced by the translations and thus cannot be found
         log.debug(f"Could not find a translation for {field_label}, returning the label as is.")
         return field_label
-
