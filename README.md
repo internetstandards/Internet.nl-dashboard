@@ -32,7 +32,7 @@ Or download and install each package separately:
 
 - [make](https://www.gnu.org/software/make/) (required, pre-installed on most systems)
 - [git](https://git-scm.com/downloads) (required, download and install)
-- [python3](https://www.python.org/downloads/) (required, download and install, 3.6 or higher)
+- [python3](https://www.python.org/downloads/) (required, download and install, 3.8 or higher)
 - [direnv](https://direnv.net/) (recommended, download and install, then follow [setup instructions](https://direnv.net/), see Direnv section below)
 - [Docker](https://docs.docker.com/engine/installation/) (recommended, follow instructions to install.)
 - [ShellCheck](https://github.com/koalaman/shellcheck#installing) (recommended, follow instructions to install

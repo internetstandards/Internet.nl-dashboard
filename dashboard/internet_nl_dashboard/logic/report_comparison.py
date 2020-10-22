@@ -286,7 +286,7 @@ def compare_report_in_detail(new_report, old_report) -> Dict[str, Any]:
             endpoint_key = "dns_a_aaaa/0 IPv0"
         # mail
         if "dns_soa/0 IPv0" in new_url_data['endpoints_by_key'].keys():
-            endpoint_key = "dns_a_aaaa/0 IPv0"
+            endpoint_key = "dns_soa/0 IPv0"
 
         if endpoint_key:
             data['test_results_from_internet_nl_available'] = True
