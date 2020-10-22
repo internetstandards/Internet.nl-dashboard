@@ -351,7 +351,15 @@ def determine_changes_in_ratings(new_ratings_data, old_ratings_data):
         'internet_nl_mail_dashboard_auth',
         'internet_nl_mail_dashboard_dnssec',
         'internet_nl_mail_dashboard_ipv6',
-        #
+
+        # Some fields that are status indications, old scans and old reports.
+        # They are ignored because they dont have a test_result field.
+        # Fields such as: 'internet_nl_mail_server_configured', and so on...
+        # 'internet_nl_mail_servers_testable',
+        # 'internet_nl_mail_starttls_dane_ta',
+        # 'internet_nl_mail_non_sending_domain',
+        # 'internet_nl_mail_auth_dmarc_policy_only',
+        # 'internet_nl_mail_auth_dmarc_ext_destination',
     ]
     neutral_test_result_values = \
         ["unknown", "not_applicable", "not_testable", 'no_mx', 'unreachable', 'error_in_test', 'error']
@@ -372,7 +380,12 @@ def determine_changes_in_ratings(new_ratings_data, old_ratings_data):
         if '_legacy_' in rating_key or rating_key in ratings_to_ignore:
             continue
 
-        new_test_result = new_ratings_data[rating_key]['test_result']
+        new_test_result = new_ratings_data[rating_key].get('test_result', None)
+        if new_test_result is None:
+            # fields that are not supported, status fields and all other stuff prior to the 'test_result' field:
+            continue
+
+        # both the rating_key as well as test_result could be missing
         old_test_result = old_ratings_data.get(rating_key, {}).get('test_result', 'unknown')
 
         # in case of uncomparable results, a neutral verdict is given:
