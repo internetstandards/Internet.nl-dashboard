@@ -86,7 +86,7 @@ def send_scan_finished_mails(scan: AccountInternetNLScan):
     users = get_users_to_send_mail_to(scan)
 
     # remove calculation because textfields are slow while filtering. Have to retrieve the textfield later
-    report = UrlListReport.objects.all().filter(urllist=scan.urllist).order_by("-id").defer('calculation').first()
+    report = UrlListReport.objects.all().filter(id=scan.report.id).order_by("-id").defer('calculation').first()
     previous_report = report.get_previous_report_from_this_list()
 
     if previous_report:
@@ -107,6 +107,10 @@ def send_scan_finished_mails(scan: AccountInternetNLScan):
         days_between_current_and_previous_report = difference.days
         urls_exclusive_in_new_report = ",".join(sorted(comparison['urls_exclusive_in_new_report']))
         urls_exclusive_in_old_report = ",".join(sorted(comparison['urls_exclusive_in_old_report']))
+        # used for the message, the previous report was {id} but no changes have been registered.
+        previous_report_available = True
+        comparison_is_empty = comparison_neutral + comparison_improvement + comparison_regression < 1
+        previous_report_average_internet_nl_score = comparison['old']['average_internet_nl_score']
     else:
         comparison = {}
         comparison_neutral = 0
@@ -119,6 +123,10 @@ def send_scan_finished_mails(scan: AccountInternetNLScan):
         days_between_current_and_previous_report = 0
         urls_exclusive_in_new_report = ""
         urls_exclusive_in_old_report = ""
+        # used for the message: this is the first report of this list.
+        previous_report_available = False
+        comparison_is_empty = True  # no previous report
+        previous_report_average_internet_nl_score = 0
 
     for user in users:
 
@@ -150,13 +158,18 @@ def send_scan_finished_mails(scan: AccountInternetNLScan):
 
             # comparison reports:
             # The template system only knows strings, so the boolean is coded as string here
+            "previous_report_available": str(previous_report_available),
+            "previous_report_average_internet_nl_score": previous_report_average_internet_nl_score,
+            "compared_report_id": previous_report_id,
+
+            "comparison_is_empty": str(comparison_is_empty),
             "improvement": comparison_improvement,
             "regression": comparison_regression,
             "neutral": comparison_neutral,
             "comparison_report_available": str(comparison_report_available),
             "comparison_report_contains_improvement": str(comparison_report_contains_improvement),
             "comparison_report_contains_regression": str(comparison_report_contains_regression),
-            "compared_report_id": previous_report_id,
+
             "days_between_current_and_previous_report": days_between_current_and_previous_report,
             "comparison_table_improvement": render_comparison_view(
                 comparison,
