@@ -775,6 +775,8 @@ const Report = Vue.component('report', {
                         not_applicable: "Not applicable",
                         not_testable: "Not testable",
                         error_in_test: "Test error",
+                        category_error_in_test: "Test error",
+                        not_tested: "Not tested",
                         failed: "Failed",
                         warning: "Warning",
                         info: "Info",
@@ -932,6 +934,8 @@ const Report = Vue.component('report', {
                         not_applicable: "Niet van toepassing",
                         not_testable: "Niet testbaar",
                         error_in_test: "Testfout",
+                        category_error_in_test: "Testfout",
+                        not_tested: "Niet getest",
                         failed: "Niet goed",
                         warning: "Waarschuwing",
                         info: "Info",
@@ -1226,16 +1230,32 @@ const Report = Vue.component('report', {
         // todo: this can be replaced by $route.params.report, which is much more readable.
         setTimeout(() => {
             if (window.location.href.split('/').length > 3) {
-                let get_id = window.location.href.split('/')[6];
+                let primary_report_id = window.location.href.split('/')[6];
+                let secondary_report_id = window.location.href.split('/')[7];
                 // can we change the select2 to a certain value?
 
                 this.filtered_recent_reports.forEach((option) => {
-                   if (option.id + "" === get_id){
-                       // also re-create label
-                       option.label = `#${option.id} - ${option.list_name} - type: ${option.type} - from: ${this.humanize_date(option.at_when)}`;
-                       this.selected_report = [option];
-                   }
+                    // Create label
+                    option.label = `#${option.id} - ${option.list_name} - type: ${option.type} - from: ${this.humanize_date(option.at_when)}`;
                 });
+
+                let reports_to_select = [];
+                // The primary report
+                this.filtered_recent_reports.forEach((option) => {
+                    if (option.id + "" === primary_report_id){
+                        reports_to_select.push(option);
+                    }
+                });
+
+                // loop again, so we're sure the first report is the primary report,
+                // and a compared report is compared:
+                this.filtered_recent_reports.forEach((option) => {
+                    if (option.id + "" === secondary_report_id){
+                        reports_to_select.push(option);
+                    }
+                });
+
+                this.selected_report = reports_to_select;
             }
         }, 1000)
         this.$nextTick(() => {accordinate();});
@@ -1797,12 +1817,25 @@ const Report = Vue.component('report', {
         $route: function(to, from){
             // https://router.vuejs.org/guide/essentials/dynamic-matching.html
             if (undefined !== to.params.report){
-                // See if we can find a report to mach:
+                // See if we can find a report to mach. Has to updated in 1 go due to the watch.
+                let reports_to_select = [];
+
+                // The primary report
                 this.available_recent_reports.forEach((item) => {
                     if (item.id === to.params.report){
-                        this.selected_report = [item];
+                        reports_to_select.push(item);
                     }
                 });
+
+                // loop again, so we're sure the first report is the primary report,
+                // and a compared report is compared:
+                this.available_recent_reports.forEach((item) => {
+                    if (item.id === to.params.compare_with) {
+                        reports_to_select.push(item);
+                    }
+                });
+
+                this.selected_report = reports_to_select;
             }
         },
 
@@ -1828,11 +1861,19 @@ const Report = Vue.component('report', {
             }
 
             // Always update the URL to reflect the latest report, so it can be easily shared and the page reloaded
-            history.pushState(
-                {},
-                null,
-                '/spa/#/report/' + new_value[0].id
-              );
+            if (new_value.length > 1){
+                history.pushState(
+                    {},
+                    null,
+                    '/spa/#/report/' + new_value[0].id + '/' + new_value[1].id
+                );
+            } else {
+                history.pushState(
+                    {},
+                    null,
+                    '/spa/#/report/' + new_value[0].id
+                );
+            }
 
             // when deleting any report, we will need to rebuild the compare charts...
             this.compare_charts = [];

@@ -151,12 +151,12 @@ def dump_report_to_text_resembling_json(report):
     :return:
     """
     return '{' \
-           f'"    id": {report["id"]}, ' \
-           f'"    urllist_id": {report["urllist_id"]}, ' \
-           f'"    average_internet_nl_score": {report["average_internet_nl_score"]}, ' \
-           f'"    total_urls": {report["total_urls"]}, ' \
-           f'"    at_when": "{report["at_when"]}", ' \
-           f'"    calculation": {json.dumps(report["calculation"])}' \
+           f'"id": {report["id"]}, ' \
+           f'"urllist_id": {report["urllist_id"]}, ' \
+           f'"average_internet_nl_score": {report["average_internet_nl_score"]}, ' \
+           f'"total_urls": {report["total_urls"]}, ' \
+           f'"at_when": "{report["at_when"]}", ' \
+           f'"calculation": {json.dumps(report["calculation"])}' \
            '}'
 
 
