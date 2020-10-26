@@ -1,15 +1,18 @@
-from datetime import timedelta, datetime
-from time import sleep
+import logging
+from datetime import datetime
 
 from django.contrib.auth.models import User
 from django.utils import timezone
 from websecmap.organizations.models import Url
 from websecmap.reporting.models import UrlReport
-from websecmap.scanners.models import InternetNLV2Scan, Endpoint, EndpointGenericScan
+from websecmap.scanners.models import Endpoint, EndpointGenericScan, InternetNLV2Scan
 
-from dashboard.internet_nl_dashboard.models import Account, DashboardUser, UrlList, UrlListReport, AccountInternetNLScan
-from dashboard.internet_nl_dashboard.scanners.scan_internet_nl_per_account import creating_report, \
-    processing_scan_results
+from dashboard.internet_nl_dashboard.models import (Account, AccountInternetNLScan, UrlList,
+                                                    UrlListReport)
+from dashboard.internet_nl_dashboard.scanners.scan_internet_nl_per_account import (
+    creating_report, processing_scan_results)
+
+log = logging.getLogger(__package__)
 
 
 def test_creating_report(db, redis_server):
@@ -18,14 +21,12 @@ def test_creating_report(db, redis_server):
     a report will be generated. This includes statistics and such.
 
     This report will be able to deal with error situations, where a scan fully failed and all scan values are
-    set to error.
-
-    Todo: for this to happen, previous metrics should be available in the database, which can be then set to error.
-        What happens when if this is the first time this is scanned? In that case no metrics are available.
+    set to error. This is done with the vitesse.nl domain, as this occurred in real life.
 
     :return:
     """
 
+    # preparing the data to use in this test:
     user, c = User.objects.all().get_or_create(first_name='testuser', last_name='test', username='test', is_active=True)
     account, c = Account.objects.all().get_or_create(name='testaccount')
     urllist, c = UrlList.objects.all().get_or_create(name='testlist', account=account)
@@ -52,11 +53,11 @@ def test_creating_report(db, redis_server):
     # Add a separate endpoint to verify that error scores do not hinder creating reports or statistics:
     # 'internet_nl_mail_dashboard_overall_score', 'internet_nl_web_overall_score'
     vitesse_endpoint = Endpoint.objects.all().filter(url__url='vitesse.nl').first()
-    vitesse_score_scan = EndpointGenericScan.objects.all().get_or_create(
+    EndpointGenericScan.objects.all().get_or_create(
         type='internet_nl_web_overall_score', rating="error", evidence="", endpoint=vitesse_endpoint,
         rating_determined_on=datetime(2010, 1, 1)
     )
-    vitesse_score_scan = EndpointGenericScan.objects.all().get_or_create(
+    EndpointGenericScan.objects.all().get_or_create(
         type='web_https_tls_version', rating="failed", evidence="", endpoint=vitesse_endpoint,
         rating_determined_on=datetime(2010, 1, 1)
     )
@@ -65,9 +66,10 @@ def test_creating_report(db, redis_server):
     # rare, but can happen due to all kinds of weird setups it can encounter.
     internetnlv2scan.retrieved_scan_report = {
         'vitesse.nl': {'status': 'error'},
-        'dierenscheboys.nl': {'status': 'ok',
-                              'report': {'url': 'https://batch.internet.nl/site/dierenscheboys.nl/219843/'},
-                              'scoring': {'percentage': 76}, 'results': {
+        'dierenscheboys.nl': {
+            'status': 'ok',
+            'report': {'url': 'https://batch.internet.nl/site/dierenscheboys.nl/219843/'},
+            'scoring': {'percentage': 76}, 'results': {
                 'categories': {'web_ipv6': {'verdict': 'failed', 'status': 'failed'},
                                'web_dnssec': {'verdict': 'passed', 'status': 'passed'},
                                'web_https': {'verdict': 'failed', 'status': 'failed'},
@@ -114,7 +116,7 @@ def test_creating_report(db, redis_server):
                     'web_legacy_dane': {'status': 'info', 'verdict': 'info', 'technical_details': []},
                     'web_legacy_tls_1_3': {'status': 'failed', 'verdict': 'failed', 'technical_details': []},
                     'web_legacy_category_ipv6': {'status': 'failed', 'verdict': 'failed', 'technical_details': []}}}}
-       }
+    }
     internetnlv2scan.save()
 
     # import the scan results to the database. Vitesse.nl will be empty here...
@@ -126,26 +128,26 @@ def test_creating_report(db, redis_server):
     tasks = creating_report(accountinternetnlscan)
     tasks.apply()
 
-    # vitesse had nothing, so nothing was added. for fcwaalwijk the same.
-    assert UrlReport.objects.all().count() == 1
+    # vitesse was added, has a very old one and a new report with the error update.
+    # dierenscheboys also has a report. fcwaalwijk has nothing.
+    assert UrlReport.objects.all().count() == 3
     first_urlreport = UrlReport.objects.all().filter(url__url='dierenscheboys.nl').first()
     assert first_urlreport.high == 10
     assert first_urlreport.medium == 7
     assert first_urlreport.low == 4
     assert first_urlreport.ok == 22
+    assert UrlReport.objects.all().filter(url__url='vitesse.nl').count() == 2
     # To see what the calculation is exactly: assert first_urlreport.calculation == {}
 
-    # vitesse was ignored, no results, but dierenscheboys should be in the report...:
+    # vitesse was added, has a very old one and a new report with the error update.
+    # dierenscheboys also has a report
     assert UrlListReport.objects.all().count() == 1
-    first_urllistreport = UrlListReport.objects.all().first()
+
+    first_urllistreport = UrlListReport.objects.all().filter().first()
     # association was made during creating_report
     assert first_urllistreport.urllist == urllist
     assert first_urllistreport.high == 10
     assert first_urllistreport.average_internet_nl_score == 76
     # stats per issue types have been added
 
-    # todo: add some rating for vitesse.nl, so we can see that this is being reused and agregated, and that
-    # vitesse.nl now has an error.
-
-    # todo: we can validated that a lot of stuff is in the report now
-    raise ValueError("w")
+    # todo: opportunity to verify if the report output is correct.

@@ -1,7 +1,7 @@
 import logging
 from copy import deepcopy
 from datetime import datetime, timedelta
-from typing import Any, Dict, List, Set
+from typing import Any, Dict, List
 
 import pytz
 from celery import group
