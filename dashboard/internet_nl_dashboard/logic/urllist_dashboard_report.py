@@ -1,7 +1,7 @@
 import logging
 from copy import deepcopy
 from datetime import datetime, timedelta
-from typing import List, Set
+from typing import Any, Dict, List, Set
 
 import pytz
 from celery import group
@@ -325,16 +325,24 @@ def relevant_urls_at_timepoint_urllist(urllist: UrlList, when: datetime):
     return relevant_urls_at_timepoint(queryset=queryset, when=when)
 
 
-def sum_internet_nl_scores_over_rating(url_ratings):
+def sum_internet_nl_scores_over_rating(url_ratings: Dict[str, Any]) -> float:
     score = 0
     number_of_scores = 0
 
-    for url in url_ratings['urls']:
-        for endpoint in url['endpoints']:
-            for rating in endpoint['ratings']:
-                if rating['type'] in ['internet_nl_mail_dashboard_overall_score', 'internet_nl_web_overall_score']:
+    score_fields = ['internet_nl_mail_dashboard_overall_score', 'internet_nl_web_overall_score']
+
+    for url in url_ratings.get('urls', []):
+        for endpoint in url.get('endpoints', []):
+            for rating in endpoint.get('ratings', []):
+                if rating.get('type', "") in score_fields:
                     # explanation":"75 https://batch.internet.nl/mail/portaal.digimelding.nl/289480/",
                     value = rating['explanation'].split(" ")
+
+                    # in case the internet.nl api fails for a domain, all scanned values are set to error.
+                    # this value is ignored in the average, not influencing the average with a 0 or 100.
+                    if value[0] == "error":
+                        continue
+
                     score += int(value[0])
                     number_of_scores += 1
 
