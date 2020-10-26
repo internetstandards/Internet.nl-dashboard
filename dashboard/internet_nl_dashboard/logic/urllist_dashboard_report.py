@@ -191,6 +191,7 @@ def create_dashboard_report(urllist):
     :param urllist:
     :return:
     """
+    log.debug(f"Creating dashboard report for urllist {urllist}.")
 
     # the time when a urlreport is created is rounded up to the end of a minute. This means that you'll never get
     # the latest results. It should not happen with scans that happened today, but it does. Therefore, we move
@@ -241,6 +242,7 @@ def rate_urllist_on_moment(urllist: UrlList, when: datetime = None, prevent_dupl
         return existing_report
 
     urls = relevant_urls_at_timepoint_urllist(urllist=urllist, when=when)
+    log.debug(f'Found {len(urls)} to be relevant at this moment.')
     all_url_ratings = get_latest_urlratings_fast(urls, when)
 
     # Clean the url_ratings to only include the content we need, only the content (being removed)
