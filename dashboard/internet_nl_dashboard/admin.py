@@ -330,7 +330,7 @@ class AccountInternetNLScanAdmin(ImportExportModelAdmin, admin.ModelAdmin):
             if scan.finished:
                 sent += 1
                 send_scan_finished_mails(scan)
-        self.message_user(request, f"A total of {sent} mails have been send.")
+        self.message_user(request, f"A total of {sent} mails have been sent.")
     send_finish_mail.short_description = "Queue finished mail (finished only)"
     actions.append('send_finish_mail')
 
