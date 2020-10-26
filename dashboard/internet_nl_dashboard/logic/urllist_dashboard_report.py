@@ -221,25 +221,6 @@ def rate_urllists_now(urllists: List[UrlList], prevent_duplicates: bool = True):
 
 
 @app.task(queue='storage')
-def rate_urllists_historically(urllists: List[UrlList]):
-    # weekly, and for the last 14 days daily. 64 calculations
-    # maybe this is not precise enough...
-    weeks: List[datetime] = [datetime.now(pytz.utc) - timedelta(days=t) for t in range(365, 0, -7)]
-    weeks += [datetime.now(pytz.utc) - timedelta(days=t) for t in range(14, 0, -1)]
-    dates: Set[datetime] = set(weeks)
-
-    today = datetime.now(pytz.utc).date()
-
-    # round off days to the latest possible moment on that day, except for the last day, so to not overwrite.
-    # note that if this is run every day, you'll still get reports for all days where things change (more inefficiently)
-    dates = set([x.replace(hour=23, minute=59, second=59, microsecond=9999999) for x in dates if x.date() is not today])
-
-    for urllist in urllists:
-        for date in dates:
-            rate_urllist_on_moment(urllist, date)
-
-
-@app.task(queue='storage')
 def rate_urllist_on_moment(urllist: UrlList, when: datetime = None, prevent_duplicates: bool = True):
     """
     :param urllist:
