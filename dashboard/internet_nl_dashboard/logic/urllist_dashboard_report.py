@@ -1,7 +1,7 @@
 import logging
 from copy import deepcopy
 from datetime import datetime, timedelta
-from typing import List, Set
+from typing import Any, Dict, List
 
 import pytz
 from celery import group
@@ -191,6 +191,7 @@ def create_dashboard_report(urllist):
     :param urllist:
     :return:
     """
+    log.debug(f"Creating dashboard report for urllist {urllist}.")
 
     # the time when a urlreport is created is rounded up to the end of a minute. This means that you'll never get
     # the latest results. It should not happen with scans that happened today, but it does. Therefore, we move
@@ -221,25 +222,6 @@ def rate_urllists_now(urllists: List[UrlList], prevent_duplicates: bool = True):
 
 
 @app.task(queue='storage')
-def rate_urllists_historically(urllists: List[UrlList]):
-    # weekly, and for the last 14 days daily. 64 calculations
-    # maybe this is not precise enough...
-    weeks: List[datetime] = [datetime.now(pytz.utc) - timedelta(days=t) for t in range(365, 0, -7)]
-    weeks += [datetime.now(pytz.utc) - timedelta(days=t) for t in range(14, 0, -1)]
-    dates: Set[datetime] = set(weeks)
-
-    today = datetime.now(pytz.utc).date()
-
-    # round off days to the latest possible moment on that day, except for the last day, so to not overwrite.
-    # note that if this is run every day, you'll still get reports for all days where things change (more inefficiently)
-    dates = set([x.replace(hour=23, minute=59, second=59, microsecond=9999999) for x in dates if x.date() is not today])
-
-    for urllist in urllists:
-        for date in dates:
-            rate_urllist_on_moment(urllist, date)
-
-
-@app.task(queue='storage')
 def rate_urllist_on_moment(urllist: UrlList, when: datetime = None, prevent_duplicates: bool = True):
     """
     :param urllist:
@@ -260,6 +242,7 @@ def rate_urllist_on_moment(urllist: UrlList, when: datetime = None, prevent_dupl
         return existing_report
 
     urls = relevant_urls_at_timepoint_urllist(urllist=urllist, when=when)
+    log.debug(f'Found {len(urls)} to be relevant at this moment.')
     all_url_ratings = get_latest_urlratings_fast(urls, when)
 
     # Clean the url_ratings to only include the content we need, only the content (being removed)
@@ -325,16 +308,24 @@ def relevant_urls_at_timepoint_urllist(urllist: UrlList, when: datetime):
     return relevant_urls_at_timepoint(queryset=queryset, when=when)
 
 
-def sum_internet_nl_scores_over_rating(url_ratings):
+def sum_internet_nl_scores_over_rating(url_ratings: Dict[str, Any]) -> float:
     score = 0
     number_of_scores = 0
 
-    for url in url_ratings['urls']:
-        for endpoint in url['endpoints']:
-            for rating in endpoint['ratings']:
-                if rating['type'] in ['internet_nl_mail_dashboard_overall_score', 'internet_nl_web_overall_score']:
+    score_fields = ['internet_nl_mail_dashboard_overall_score', 'internet_nl_web_overall_score']
+
+    for url in url_ratings.get('urls', []):
+        for endpoint in url.get('endpoints', []):
+            for rating in endpoint.get('ratings', []):
+                if rating.get('type', "") in score_fields:
                     # explanation":"75 https://batch.internet.nl/mail/portaal.digimelding.nl/289480/",
                     value = rating['explanation'].split(" ")
+
+                    # in case the internet.nl api fails for a domain, all scanned values are set to error.
+                    # this value is ignored in the average, not influencing the average with a 0 or 100.
+                    if value[0] == "error":
+                        continue
+
                     score += int(value[0])
                     number_of_scores += 1
 

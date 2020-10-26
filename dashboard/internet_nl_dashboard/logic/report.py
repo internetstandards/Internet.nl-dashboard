@@ -425,7 +425,10 @@ def split_score_and_url(report: UrlListReport):
                 if rating['type'] in ["internet_nl_web_overall_score", "internet_nl_mail_dashboard_overall_score"]:
                     # explanation	"78 https://batch.interne…zuiderzeeland.nl/886818/"
                     explanation = rating['explanation'].split(" ")
-                    rating['internet_nl_score'] = score = int(explanation[0])
+                    if explanation[0] == "error":
+                        rating['internet_nl_score'] = score = "error"
+                    else:
+                        rating['internet_nl_score'] = score = int(explanation[0])
                     rating['internet_nl_url'] = url = explanation[1]
                     scan = rating['scan']
                     since = rating['since']

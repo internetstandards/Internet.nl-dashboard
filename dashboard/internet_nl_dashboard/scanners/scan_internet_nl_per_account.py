@@ -449,6 +449,8 @@ def connect_urllistreport_to_accountinternetnlscan(urllistreport: UrlListReport,
 
 @app.task(queue='storage')
 def upgrade_report_with_statistics(urllistreport: UrlListReport):
+    log.debug(f"Creating statistics over urllistreport {urllistreport}.")
+
     # This saves a lot of data / weight.
     remove_comply_or_explain(urllistreport)
 
@@ -498,6 +500,8 @@ def upgrade_report_with_unscannable_urls(urllistreport: UrlListReport, scan: Acc
     :param scan:
     :return:
     """
+
+    log.debug("Adding unscannable urls to report.")
 
     # See if all urls in the list are also mentioned in the report, if not, add them and also make sure the stats
     # for the report are correct(!). This means all unscannable domains _will_ be in the report, as that matches
