@@ -397,31 +397,6 @@
   },
   {
     "model": "django_celery_beat.periodictask",
-    "pk": 100,
-    "fields": {
-      "name": "Run dashboard scans on internet.nl",
-      "task": "websecmap.app.models.create_job",
-      "interval": null,
-      "crontab": 10,
-      "solar": null,
-      "args": "[\"dashboard.internet_nl_dashboard.scanners.scan_internet_nl_per_account\"]",
-      "kwargs": "{}",
-      "queue": "storage",
-      "exchange": null,
-      "routing_key": null,
-      "priority": null,
-      "expires": null,
-      "one_off": false,
-      "start_time": null,
-      "enabled": false,
-      "last_run_at": "2019-01-24T05:00:00Z",
-      "total_run_count": 0,
-      "date_changed": "2019-01-24T05:02:10Z",
-      "description": ""
-    }
-  },
-  {
-    "model": "django_celery_beat.periodictask",
     "pk": 101,
     "fields": {
       "name": "&#x1F501; Check running dashboard scans",

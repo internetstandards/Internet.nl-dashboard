@@ -5,7 +5,7 @@ from django.urls import path, register_converter
 import dashboard.internet_nl_dashboard.signals  # noqa
 from dashboard.internet_nl_dashboard.views import (__init__, account, domains, download_spreadsheet,
                                                    mail, powertools, report, scan_monitor,
-                                                   spreadsheet)
+                                                   spreadsheet, user)
 
 
 class SpreadsheetFileTypeConverter:
@@ -46,6 +46,9 @@ urlpatterns = [
     # account management:
     path('data/account/report_settings/get/', account.get_report_settings_),
     path('data/account/report_settings/save/', account.save_report_settings_),
+
+    path('data/user/get/', user.get_user_settings_),
+    path('data/user/save/', user.save_user_settings_),
 
     # uploads of domains
     path('upload/', spreadsheet.upload),

@@ -8,7 +8,7 @@ from actstream import action
 from celery import Task, chain, group
 from constance import config
 from django.db import transaction
-from django.db.models import Count, Q
+from django.db.models import Q
 from django.utils import timezone
 from websecmap.organizations.models import Url
 from websecmap.reporting.report import recreate_url_reports
@@ -24,9 +24,8 @@ from dashboard.internet_nl_dashboard.logic.report import (
     add_statistics_over_ratings, clean_up_not_required_data_to_speed_up_report_on_client,
     remove_comply_or_explain, split_score_and_url)
 from dashboard.internet_nl_dashboard.logic.urllist_dashboard_report import create_dashboard_report
-from dashboard.internet_nl_dashboard.models import (Account, AccountInternetNLScan,
-                                                    AccountInternetNLScanLog, UrlList,
-                                                    UrlListReport)
+from dashboard.internet_nl_dashboard.models import (AccountInternetNLScan, AccountInternetNLScanLog,
+                                                    UrlList, UrlListReport)
 
 # done: create more flexible filters
 # done: map mail scans to an endpoint (changed the scanner for it)
@@ -70,44 +69,6 @@ def create_api_settings(scan: InternetNLV2Scan):
 # overwrite the create API settings with one that handles credentials for every separate account. This is needed
 # for internet.nl to generate some statistics over API usage.
 internet_nl_v2_websecmap.create_api_settings = create_api_settings
-
-
-def compose_task(
-    **kwargs
-) -> Task:
-
-    accounts = Account.objects.all().filter(
-        enable_scans=True,
-        internet_nl_api_username__isnull=False,
-        internet_nl_api_password__isnull=False,
-    )
-    accounts = add_model_filter(accounts, **kwargs)
-
-    # Then get all the lists. And create a scan per list.
-    # The requirement for a 'per list' comes from the idea to be able to see what account uses what urls in the
-    # back end.
-
-    tasks: List[Task] = []
-
-    # Do not scan lists that exceed the maximum number of domains:
-    max_urls = config.DASHBOARD_MAXIMUM_DOMAINS_PER_LIST
-
-    for account in accounts:
-
-        urllists = UrlList.objects.all().filter(
-            account=account, enable_scans=True, is_deleted=False).annotate(num_urls=Count('urls'))
-
-        urllists = add_model_filter(urllists, **kwargs)
-        for urllist in urllists:
-
-            # model_filters may circumvent the restriction we set, therefore we check it this way.
-            # (A filter might still overwrite this?)
-            if urllist.num_urls > max_urls:
-                continue
-
-            tasks.append(initialize_scan.si(urllist))
-
-    return group(tasks)
 
 
 @app.task(queue='storage')
@@ -596,11 +557,11 @@ def update_state(state: str, scan: AccountInternetNLScan) -> None:
         return
 
     # First state, or a new state.
-    # New log message:
     scan.state = state
     scan.state_changed_on = timezone.now()
     scan.save()
 
+    # Then log the state change, if it changed, even if it already changed before, so it's clear things went wrong:
     scanlog = AccountInternetNLScanLog()
     scanlog.scan = scan
     scanlog.at_when = timezone.now()
