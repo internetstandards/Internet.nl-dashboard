@@ -13,6 +13,7 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='dashboarduser',
             name='mail_after_mail_unsubscribe_code',
-            field=models.CharField(blank=True, default='', help_text='This is autofilled when sending an e-mail. The user can use this code to set mail_send_mail_after_scan_finished to false without logging in.', max_length=255),
+            field=models.CharField(
+                blank=True, default='', help_text='This is autofilled when sending an e-mail. The user can use this code to set mail_send_mail_after_scan_finished to false without logging in.', max_length=255),
         ),
     ]
