@@ -359,7 +359,7 @@ This template will probably be quickly outdated, but shows how to build a nice t
     [
     <a href="{{dashboard_address}}/spa/#/unsubscribe?feed=scan_finished&unsubscribe_code={{unsubscribe_code}}">unsubscribe</a>
     -
-    <a href="{{dashboard_address}}/spa/#/preferences">preferences</a>
+    <a href="{{dashboard_address}}/spa/#/account">preferences</a>
      ]
 
     <style>

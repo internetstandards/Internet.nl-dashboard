@@ -5,6 +5,23 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+## Version 3 - Email improvements
+
+### Added
+- Sends out templated e-mails when a report is finished
+- Change report is included in sent e-mail
+
+### Changed
+- Bugfix on crashing scans from the api.
+- Bugfixes on non-progressing scans.
+- Bugfixes on crashes with workers.
+- Hamburger menu fixes
+- The project is now on Python 3.8
+- Dependencies have been upgraded
+
+### Removed
+Support for Python < 3.8
+
 ##API 2.0 Version - 2020-05-??
 
 ### Added
