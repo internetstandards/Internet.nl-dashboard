@@ -24,6 +24,9 @@ pytest-docker
 sphinx
 sphinx-autobuild
 recommonmark
+sphinx-markdown-builder
+rst2pdf
+
 
 # tests (of scanners)
 httmock

@@ -30,7 +30,10 @@ author = 'internet.nl'
 extensions = [
     'sphinx.ext.autodoc',
     'sphinx.ext.napoleon',
+    'rst2pdf.pdfbuilder',
 ]
+
+pdf_documents = [('index', u'dashboard', u'Internet.nl Dashboard Documentation', u'internet.nl'), ]
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']

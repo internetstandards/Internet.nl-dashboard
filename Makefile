@@ -171,6 +171,15 @@ push_image:
 image:  ## Create Docker image
 	docker build -t ${docker_image_name} .
 
+docsa: ## Generate documentation in various formats
+	# Remove existing documentation folder
+	-rm -rf docs_html/*
+	-rm -rf docs_markdown/*
+	-rm -rf docs_pdf/*
+	-${bin}/python3 -m sphinx -b html docs docs_html
+	-${bin}/python3 -m sphinx -b markdown docs docs_markdown
+	-${bin}/python3 -m sphinx -b pdf docs docs_pdf
+
 ## Housekeeping
 clean:  ## cleanup build artifacts, caches, databases, etc.
 	# remove python cache files
@@ -189,14 +198,6 @@ clean_virtualenv:  ## cleanup virtualenv and installed app/dependencies
 	-rm -fr ${VIRTUAL_ENV}/
 
 mrproper: clean clean_virtualenv ## thorough cleanup, also removes virtualenv
-
-docs:
-	-rm -rf docs_html/*
-	-rm -rf docs_markdown/*
-	-rm -rf docs_pdf/*
-	-${bin}/python3 -m sphinx -b html docs docs_html
-	-${bin}/python3 -m sphinx -b markdown docs docs_markdown
-	-${bin}/python3 -m sphinx -b pdf docs docs_pdf
 
 ## Base requirements
 
