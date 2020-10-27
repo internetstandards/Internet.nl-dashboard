@@ -152,7 +152,7 @@ def send_scan_finished_mails(scan: AccountInternetNLScan):
             # the scan is not yet completely finished, because this step (mailing) is still performed
             # so perform a guess, which might be a few minutes off...
             "scan_finished_on": timezone.now().isoformat(),
-            "scan_duration": timezone.now() - scan.started_on,
+            "scan_duration": (timezone.now() - scan.started_on).seconds,
             # Don't use 'mail_dashboard', only mail.
             "scan_type": scan.scan.type if scan.scan.type == "web" else "mail",
 
