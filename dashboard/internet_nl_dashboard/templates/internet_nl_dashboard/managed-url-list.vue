@@ -265,7 +265,15 @@
             <h1 slot="header">{{ $t("bulk_add_form.title") }}</h1>
             <div slot="body">
 
-                <server-response :response="bulk_add_new_server_response"></server-response>
+                <server-response :response="bulk_add_new_server_response" :message="$t('bulk_add_form.' + bulk_add_new_server_response.message)"></server-response>
+
+                <div v-if="bulk_add_new_server_response.success === true">
+                    <ul>
+                        <li v-if="bulk_add_new_server_response.data.duplicates_removed">{{ $t("bulk_add_form.removed_n_duplicates", [bulk_add_new_server_response.data.duplicates_removed]) }}</li>
+                        <li v-if="bulk_add_new_server_response.data.already_in_list">{{ $t("bulk_add_form.ignored_n", [bulk_add_new_server_response.data.already_in_list]) }}</li>
+                        <li>{{ $t("bulk_add_form.added_n_to_list", [bulk_add_new_server_response.data.added_to_list]) }}</li>
+                    </ul>
+                </div>
 
                 <template v-if="bulk_add_new_server_response.data">
                     <span v-if="bulk_add_new_server_response.data.incorrect_urls.length">
@@ -273,28 +281,15 @@
                         <span v-html='$t("bulk_add_form.warning_message")'></span>:
                         <textarea style="width: 100%; background-color: #ffd9d9; height: 60px;">{{ bulk_add_new_server_response.data.incorrect_urls.join(', ') }}</textarea>
                     </span>
-                    <br><br>
+                    <br>
                 </template>
 
-                <p>{{ $t("bulk_add_form.message") }}</p>
+                <label for="edited_domains">{{ $t("bulk_add_form.domains_label") }}:</label>
+                <textarea id="edited_domains" v-model="bulk_add_new_urls" style="width: 100%; height: 300px;" :placeholder="$t('bulk_add_form.message')"></textarea>
 
-                <label for="edited_domains">Domains:</label>
-                <textarea id="edited_domains" v-model="bulk_add_new_urls" style="width: 100%; height: 300px;"></textarea>
-
-                <div v-if="bulk_add_new_server_response">
-                    <span v-if="bulk_add_new_server_response.success === true">
-                        {{ $t("bulk_add_form.status") }}:
-                        {{ $t("bulk_add_form.added_n_to_list", [bulk_add_new_server_response.data.added_to_list]) }}
-
-                        <span v-if="bulk_add_new_server_response.data.already_in_list">
-                            {{ $t("bulk_add_form.ignored_n", [bulk_add_new_server_response.data.already_in_list]) }}<br>
-                        </span>
-                    </span>
-                </div>
-                <div v-if="!bulk_add_new_server_response.message">
-                    <p>{{ $t("bulk_add_form.status") }}: {{ $t("bulk_add_form.nothing_added") }}.</p>
-                </div>
                 <br>
+                <br>
+
                 <button class="altbutton" @click="stop_bulk_add_new()">{{ $t("bulk_add_form.cancel") }}</button>
 
                 <button v-if="!bulk_add_new_loading" class="defaultbutton modal-default-button" @click="bulk_add_new()">{{ $t("bulk_add_form.ok") }}</button>
@@ -394,18 +389,22 @@ Vue.component('managed-url-list', {
 
                 bulk_add_form: {
                     title: 'Bulk add domains',
-                    message: 'You can add many domains in one go. To do this, seperate each domain with a comma, space, new line or mixed.',
+                    domains_label: "Add domains in the text field below",
+                    message: 'Domains are separated by a comma, space or new line. These can be mixed. For example: ' +
+                        '\n\ninternet.nl, dashboard.internet.nl\nexample.com www.example.com, \n\nhttps://my.example.com:80/index.html',
                     ok: 'Add the above domains to the list',
-                    cancel: 'Cancel',
+                    cancel: 'Close',
                     status: 'Status',
                     nothing_added: 'nothing added yet.',
-                    added_n_to_list: 'Added {0} domains to this list.',
-                    ignored_n: 'Additionally, {0} domains have been\n' +
-                        '                            ignored as they are already in this list.',
+                    added_n_to_list: '{0} domains added to this list.',
+                    removed_n_duplicates: '{0} duplicates removed from the input.',
+                    ignored_n: '{0} domains are already in this list.',
                     warning: 'Warning!',
                     warning_message: 'Some domains where not added because they are in an incorrect format. <br>\n' +
                         '                            The following domains where not added',
                     loading: "Domains are being processed",
+                    add_domains_valid_urls_added: 'New domains have processed, see the status report for details.',
+                    add_domains_list_does_not_exist: 'This list does not exist.',
                 }
             },
             nl: {
@@ -478,17 +477,22 @@ Vue.component('managed-url-list', {
 
                 bulk_add_form: {
                     title: 'Toevoegen van domeinen',
-                    message: 'Voeg hieronder een of meerdere domeinen toe, gescheiden door een komma, spatie, nieuwe regel of door elkaar.',
+                    domains_label: "Voer nieuwe domeinen in:",
+                    message: 'Domeinen worden gescheiden door een komma, spatie, nieuwe regel. Deze mogen ook door elkaar worden gebruikt. Bijvoorbeeld: ' +
+                        '\n\ninternet.nl, dashboard.internet.nl\nexample.com www.example.com\n\nhttps://my.example.com:80/index.html',
                     ok: 'Voeg bovenstaande domeinen toe aan de lijst',
                     status: 'Status',
-                    cancel: 'Annuleer',
+                    cancel: 'Sluiten',
                     nothing_added: 'nog niets toegevoegd.',
-                    added_n_to_list: 'Er zijn {0} domeinen aan de lijst toegevoegd.',
-                    ignored_n: 'Verder zijn er {0} domeinen genegeerd omdat ze al in de lijst zaten.',
+                    added_n_to_list: '{0} domeinen zijn aan de lijst toegevoegd.',
+                    removed_n_duplicates: '{0} dubbel ingevoerde domeinen zijn overgeslagen.',
+                    ignored_n: '{0} domeinen zitten al in de lijst.',
                     warning: 'Waarschuwing!',
                     warning_message: 'Sommige domeinen zijn niet in een geldig formaat. Controleer de volgende domeinen en' +
                         'probeer het opnieuw:',
                     loading: "Domeinen worden verwerkt",
+                    add_domains_valid_urls_added: 'Nieuwe domeinen zijn verwerkt, zie het statusoverzicht voor details.',
+                    add_domains_list_does_not_exist: 'Deze lijst bestaat niet.',
                 }
             }
         }
