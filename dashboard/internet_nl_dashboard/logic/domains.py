@@ -237,14 +237,17 @@ def get_scan_status_of_list(account: Account, list_id: int) -> Dict[str, Any]:
     if not urllist:
         return {}
 
-    data = {}
-    data['last_scan_id'] = None if not len(urllist.last_scan) else urllist.last_scan[0].scan.id
-    data['last_scan_state'] = None if not len(urllist.last_scan) else urllist.last_scan[0].state
-    data['last_scan_finished'] = None if not len(urllist.last_scan) else urllist.last_scan[0].state in [
-        "finished", "cancelled"]
-    data['last_report_id'] = None if not len(urllist.last_report) else urllist.last_report[0].id
-    data['last_report_date'] = None if not len(urllist.last_report) else urllist.last_report[0].at_when
-    data['scan_now_available'] = urllist.is_scan_now_available()
+    data = {'last_scan_id': None, 'last_scan_state': None, 'last_scan_finished': None, 'last_report_id': None,
+            'last_report_date': None, 'scan_now_available': urllist.is_scan_now_available()}
+
+    if len(urllist.last_scan):
+        data['last_scan_id'] = urllist.last_scan[0].scan.id
+        data['last_scan_state'] = urllist.last_scan[0].state
+        data['last_scan_finished'] = urllist.last_scan[0].state in ["finished", "cancelled"]
+
+    if len(urllist.last_report):
+        data['last_report_id'] = urllist.last_report[0].id
+        data['last_report_date'] = urllist.last_report[0].at_when
 
     return data
 
