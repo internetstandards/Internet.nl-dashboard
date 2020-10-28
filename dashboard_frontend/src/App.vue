@@ -15,7 +15,7 @@
             {% trans "page gotofooter" %}
         </a></div>
 
-        <header class="header-js-animated">
+        <header>
             <div class="wrap">
                 <div class="hidethis" aria-hidden="true">
                     <span id="panel-button-show">
@@ -51,18 +51,18 @@
                     <div id="language-switch-header-container" aria-hidden="true">
                         <ul class="language-switch-list">
                             <li v-for="(language_code, index) in supported_languages" :key="index">
-                                <button v-if="language_code === $store.state.active_language" class="active-language" disabled>
+                                <button v-if="language_code === active_language" class="active-language" disabled>
                                     {{ $t(language_code) }}
                                 </button>
-                                <a v-if="language_code !== $store.state.active_language"
+                                <a v-if="language_code !== active_language"
                                    onclick="set_language(language_code)">{{ $t(language_code) }}</a>
                             </li>
                         </ul>
                     </div>
 
                     <nav id="sitenav" aria-hidden="true" aria-labelledby="menu-button">
-                        <SiteMenu :is_authenticated="$store.state.user.is_authenticated"
-                                  :is_superuser="$store.state.user.is_superuser"></SiteMenu>
+                        <SiteMenu :is_authenticated="user.is_authenticated"
+                                  :is_superuser="user.is_superuser"></SiteMenu>
                     </nav>
                 </template>
                 <template v-else>
@@ -70,18 +70,18 @@
                     <div id="language-switch-header-container" aria-hidden="true">
                         <ul class="language-switch-list">
                             <li v-for="(language_code, index) in supported_languages" :key="index">
-                                <button v-if="language_code === $store.state.active_language" class="active-language" disabled>
+                                <button v-if="language_code === active_language" class="active-language" disabled>
                                     {{ $t(language_code) }}
                                 </button>
-                                <a v-if="language_code !== $store.state.active_language"
+                                <a v-if="language_code !== active_language"
                                    onclick="set_language(language_code)">{{ $t(language_code) }}</a>
                             </li>
                         </ul>
                     </div>
 
                     <nav id="sitenav">
-                        <SiteMenu :is_authenticated="$store.state.user.is_authenticated"
-                                  :is_superuser="$store.state.user.is_superuser"></SiteMenu>
+                        <SiteMenu :is_authenticated="user.is_authenticated"
+                                  :is_superuser="user.is_superuser"></SiteMenu>
                     </nav>
                 </template>
             </div>
@@ -118,7 +118,7 @@
         </main>
 
         <footer id="footer">
-            <img id="flag" src="{% static 'images/vendor/internet_nl/clear.gif' %}" alt="">
+            <img id="flag" src="static/images/vendor/internet_nl/clear.gif" alt="">
             <div class="wrap">
                 {{ $t('base.info') }}
                 <hr>
@@ -150,6 +150,9 @@ import VueI18n from 'vue-i18n'
 Vue.use(VueI18n)
 Vue.use(VueRouter)
 Vue.use(require('vue-moment'));
+
+import Headroom from "headroom.js";
+
 
 // https://stackoverflow.com/questions/10730362/get-cookie-by-name
 // todo: how to get rid of this?
@@ -230,6 +233,12 @@ import loading from './components/loading.vue'
 import modal from './components/modal.vue'
 import server_response from './components/server-response.vue'
 
+var MatomoTracker = require('matomo-tracker');
+var matomo = new MatomoTracker(2, '//matomo.internet.nl/matomo.php');
+matomo.on('error', function(err) {
+  console.log('error tracking request: ', err);
+});
+
 Vue.component('autorefresh', autorefresh)
 Vue.component('loading', loading)
 Vue.component('modal', modal)
@@ -247,6 +256,7 @@ import InstantAddAccount from './components/InstantAddAccount.vue'
 import Account from './components/Account.vue'
 import Demo from './components/Demo.vue'
 import Unsubscribe from './components/Unsubscribe.vue'
+import {mapState} from 'vuex'
 
 // todo make sure the menu works
 import SiteMenu from './components/site-menu.vue'
@@ -342,13 +352,16 @@ export default {
     store,
 
     i18n: {
+        locale: 'en',
+        fallbackLocale: 'en',
+        silentFallbackWarn: true,
         messages: {
             en: {
                 en: "English",
                 nl: "Nederlands",
                 page: {
                     sitetitle: 'Internet.nl',
-                    sitedesscription: 'Test for modern Internet Standards like IPv6, DNSSEC, HTTPS, DMARC, STARTTLS\n' +
+                    sitedescription: 'Test for modern Internet Standards like IPv6, DNSSEC, HTTPS, DMARC, STARTTLS\n' +
                         ' and DANE.',
                 },
                 base: {
@@ -362,13 +375,25 @@ export default {
             nl: {}
         }
     },
-    mounted: function() {
+    mounted: function () {
         // retrieve logged-in status
 
         // todo: how to log in? Needs a login component :) Is that already written?
         // we also need that to retrieve the csrf token.
+        this.status();
 
-
+        this.$nextTick(function () {
+            // give some headroom, just like in the original...
+            let theHeader = document.querySelector("header");
+            let fixedHeaderbody = document.querySelector("body");
+            fixedHeaderbody.classList.add("body-with-semifixed-header");
+            var fixedHeader = new Headroom(theHeader, {
+                "offset": 205,
+                "tolerance": 5,
+                "classes": {"initial": "header-js-animated", "pinned": "header-pinned", "unpinned": "header-unpinned"}
+            });
+            fixedHeader.init();
+        })
 
     },
     name: 'App',
@@ -381,9 +406,6 @@ export default {
             supported_languages: ['en', 'nl'],
             maximum_lists_per_spreadsheet: 200,
             maximum_urls_per_spreadsheet: 5000,
-
-            // user settings
-            active_language: 'en',  // todo: how to switch this, also post to server to set django language.
         }
     },
     methods: {
@@ -400,11 +422,32 @@ export default {
             // todo: make a post to the django system to set the language. Probably a cookie value.
             // document.cookie = "dashboard_language=" + (language_code || "en") + "; path=/";
             //location.reload();
-        }
+        },
+        status: function () {
+            this.server_response = {};
+            this.loading = true;
+            fetch(`${this.$store.state.dashboard_endpoint}/session/status/`, {
+                    method: 'GET',
+                    credentials: 'include',
+                    headers: {
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': this.get_cookie('csrftoken')
+                    }
+                }
+            ).then(response => response.json()).then(data => {
+                this.$store.commit("set_user", data);
+                this.loading = false;
+            }).catch((fail) => {
+                this.error_occurred = true;
+                console.log('A loading error occurred: ' + fail);
+            });
+        },
     },
     components: {
         SiteMenu
-    }
+    },
+    computed: mapState(['user', 'active_language']),
 }
 </script>
 

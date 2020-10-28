@@ -7,10 +7,8 @@
             <loading :loading="loading"></loading>
             <server-response :response="server_response" :message="$t(server_response.message)"></server-response>
 
-        </div>
 
-        <div class="wrap" v-if="!user.is_authenticated">
-            <div class="block">
+            <div v-if="!user.is_authenticated">
                 <label class='first_name' for="first_name">{{ $t("username") }}</label>
                 <input id="username" type="text" maxlength="120" v-model="username"><br><br>
                 <br>
@@ -20,17 +18,18 @@
                 <br>
                 <button id="login" type="button" @click="login">{{ $t("login") }}</button>
             </div>
+            <div v-else>
+                {{ $t('logged_in') }}
+                <button id="logout" type="button" @click="logout">{{ $t("logout") }}</button>
+            </div>
         </div>
-        <div class="wrap" v-else>
-            {{ $t('logged_in') }}
-            <button id="logout" type="button" @click="logout">{{ $t("logout") }}</button>
-        </div>
+
     </div>
 </template>
 
 <script>
 
-import { mapState } from 'vuex'
+import {mapState} from 'vuex'
 
 export default {
     i18n: {

@@ -15,7 +15,7 @@
             <li class=""><a href="/logout/" accesskey="l">{{ $t("log_off") }}</a></li>
         </template>
         <template v-if="!is_authenticated">
-            <li class="current"><a href="/account/login/" accesskey="l">{ $t("log_in") }}</a></li>
+            <li class="current"><a href="/account/login/" accesskey="l">{{ $t("log_in") }}</a></li>
         </template>
     </ul>
 </template>
