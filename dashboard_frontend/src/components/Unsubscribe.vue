@@ -42,7 +42,7 @@
 </template>
 
 <script>
-const Unsubscribe = Vue.component('unsubscribe', {
+export default {
   i18n: {
     messages: {
       en: {
@@ -115,5 +115,5 @@ const Unsubscribe = Vue.component('unsubscribe', {
   },
   name: 'unsubscribe',
   template: '#unsubscribe_template',
-});
+}
 </script>

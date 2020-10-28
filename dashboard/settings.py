@@ -66,6 +66,9 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'django.contrib.humanize',
 
+    # Allow a client to access the data:
+    'corsheaders',
+
     # Periodic tasks
     'django_celery_beat',
 
@@ -120,6 +123,7 @@ MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.locale.LocaleMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
@@ -677,3 +681,15 @@ Django project settings.py file:
 Todo: Only needed for /admin urls, not for other urls: it's fine when people embed the map, desired even!
 """
 X_FRAME_OPTIONS = "SAMEORIGIN"
+
+# See
+# https://github.com/adamchainz/django-cors-headers
+CORS_ALLOWED_ORIGINS = [
+    "https://acc.dashboard.internet.nl",
+    "https://dashboard.internet.nl",
+    "http://localhost:8080",
+    "http://127.0.0.1:8080"
+]
+
+# allow cookies to be sent as well, we have to, because there are logins and such.
+CORS_ALLOW_CREDENTIALS = True

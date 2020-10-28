@@ -1,7 +1,3 @@
-<style>
-
-</style>
-
 <template type="text/x-template" id="account_template">
   <div class="account">
     <div class="block fullwidth">
@@ -61,7 +57,10 @@
 </template>
 
 <script>
-const Account = Vue.component('account', {
+
+import http_mixin from './http_mixin.vue'
+
+export default {
   i18n: {
     messages: {
       en: {
@@ -162,5 +161,5 @@ const Account = Vue.component('account', {
   },
   name: 'account',
   template: '#account_template',
-});
+}
 </script>

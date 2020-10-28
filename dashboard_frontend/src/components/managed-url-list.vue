@@ -1,4 +1,3 @@
-{% verbatim %}
 <template type="x-template" id="managed-url-list">
     <article class="managed-url-list block fullwidth" :id="list.id">
         <span>
@@ -110,7 +109,7 @@
             <loading :loading="loading"></loading>
 
             <ul style="column-count: 2; list-style: none;">
-                <li v-for="url in urls">
+                <li v-for="url in urls" :key="url.id">
 
                     <template v-if="list.scan_type === 'mail'">
                         <span v-if="url.has_mail_endpoint === true" :title="$t('domains.eligeble_mail', [url.url])">
@@ -279,7 +278,7 @@
                     <span v-if="bulk_add_new_server_response.data.incorrect_urls.length">
                         ⚠️ <b>{{ $t("bulk_add_form.warning") }}</b><br>
                         <span v-html='$t("bulk_add_form.warning_message")'></span>:
-                        <textarea style="width: 100%; background-color: #ffd9d9; height: 60px;">{{ bulk_add_new_server_response.data.incorrect_urls.join(', ') }}</textarea>
+                        <div style="width: 100%; background-color: #ffd9d9; height: 60px; overflow: scroll;">{{ bulk_add_new_server_response.data.incorrect_urls.join(', ') }}</div>
                     </span>
                     <br>
                 </template>
@@ -304,12 +303,12 @@
         <autorefresh :visible="false" :callback="get_scan_status_of_list" :refresh_per_seconds="600"></autorefresh>
     </article>
 </template>
-{% endverbatim %}
 
 <script>
-Vue.component('managed-url-list', {
-    store,
 
+// todo: it seems we need to define these globally, they are used everywhere, which is annoying to re-call them.
+
+export default {
     i18n: { // `i18n` option, setup locale info for component
         messages: {
             en: {
@@ -498,7 +497,6 @@ Vue.component('managed-url-list', {
         }
     },
     template: '#managed-url-list',
-    mixins: [humanize_mixin, http_mixin],
 
     data: function () {
         return {
@@ -555,7 +553,7 @@ Vue.component('managed-url-list', {
         },
 
         // support keep alive routing
-        $route: function(to, from){
+        $route: function(to){
             // https://router.vuejs.org/guide/essentials/dynamic-matching.html
             // If this param is set, and this list is the one requested, open this list.
             // todo: how to anchor-navigate to the part of the page where this list is?
@@ -604,16 +602,17 @@ Vue.component('managed-url-list', {
         },
         get_urls: function(){
             this.loading = true;
-            fetch(`/data/urllist_content/get/${this.list.id}/`, {credentials: 'include'}).then(response => response.json()).then(data => {
+            fetch(`${this.$store.state.dashboard_endpoint}/data/urllist_content/get/${this.list.id}/`, {credentials: 'include'}).then(response => response.json()).then(data => {
                 this.urls = data.urls;
                 this.loading = false;
+                this.update_list_warnings();
             }).catch((fail) => {console.log('A loading error occurred: ' + fail);});
         },
         update_list_settings: function(){
             this.settings_loading = true;
 
             this.asynchronous_json_post(
-                '/data/urllist/update_list_settings/', this.list, (server_response) => {
+                `${this.$store.state.dashboard_endpoint}/data/urllist/update_list_settings/`, this.list, (server_response) => {
                     this.settings_update_response = server_response;
                     this.settings_loading = false;
 
@@ -630,7 +629,7 @@ Vue.component('managed-url-list', {
         // update the list with the most recent data regarding reports and scanning, not intruding on the UI experience
         // this can be autorefreshed to show the most current scanning and report information
         get_scan_status_of_list: function() {
-            fetch(`/data/urllist/get_scan_status_of_list/${this.list.id}/`, {credentials: 'include'}).then(response => response.json()).then(data => {
+            fetch(`${this.$store.state.dashboard_endpoint}/data/urllist/get_scan_status_of_list/${this.list.id}/`, {credentials: 'include'}).then(response => response.json()).then(data => {
                 this.list['last_report_id'] = data['last_report_id'];
                 this.list['scan_now_available'] = data['scan_now_available'];
                 this.list['last_report_date'] = data['last_report_date'];
@@ -667,7 +666,7 @@ Vue.component('managed-url-list', {
         },
         confirm_deletion: function() {
             this.asynchronous_json_post(
-                '/data/urllist/delete/', {'id': this.list.id}, (server_response) => {
+                `${this.$store.state.dashboard_endpoint}/data/urllist/delete/`, {'id': this.list.id}, (server_response) => {
                     this.delete_response = server_response;
 
                     if (server_response.success){
@@ -700,12 +699,13 @@ Vue.component('managed-url-list', {
             return document.getElementById(this.url_edit).value;
         },
         remove_edit_url: function(list_id, url_id){
-            data = {'list_id': list_id, 'url_id': url_id};
+            let data = {'list_id': list_id, 'url_id': url_id};
             this.asynchronous_json_post(
-                '/data/urllist/url/delete/', data, (server_response) => {
+                `${this.$store.state.dashboard_endpoint}/data/urllist/url/delete/`, data, (server_response) => {
                     this.delete_response = server_response;
 
                     if (server_response.success) {
+                        this.update_list_warnings();
                         this.urls.forEach(function (item, index, object) {
                             if (url_id === item.id) {
                                 object.splice(index, 1)
@@ -721,7 +721,7 @@ Vue.component('managed-url-list', {
             * The save does not 'alter' the existing URL in the database. It will do some list operations.
             * */
             this.asynchronous_json_post(
-                '/data/urllist/url/save/', data, (server_response) => {
+                `${this.$store.state.dashboard_endpoint}/data/urllist/url/save/`, data, (server_response) => {
                     if (server_response.success === true){
                         this.url_edit = '';
                         // and make sure the current url list is updated as well. Should'nt this be data bound and
@@ -754,11 +754,11 @@ Vue.component('managed-url-list', {
             this.get_urls();
         },
         bulk_add_new: function(){
-            data = {'urls': this.bulk_add_new_urls, 'list_id': this.list.id};
+            let data = {'urls': this.bulk_add_new_urls, 'list_id': this.list.id};
             this.bulk_add_new_loading = true;
 
             this.asynchronous_json_post(
-                '/data/urllist/url/add/', data, (server_response) => {
+                `${this.$store.state.dashboard_endpoint}/data/urllist/url/add/`, data, (server_response) => {
                     // {'incorrect_urls': [], 'added_to_list': int, 'already_in_list': int}
                     this.bulk_add_new_server_response = server_response;
                     this.bulk_add_new_loading = false;
@@ -767,6 +767,8 @@ Vue.component('managed-url-list', {
                     if (server_response.success) {
                         this.get_urls();
                     }
+
+                    this.update_list_warnings()
                     // The select2 box is cleared when opened again. We don't need to clear it.
                 }
             );
@@ -782,13 +784,13 @@ Vue.component('managed-url-list', {
             this.scan_now_server_response = {};
         },
         confirm_scan_now: function(){
-            data = {'id': this.list.id};
+            let data = {'id': this.list.id};
 
             // disable the button to prevent double scans (todo: api should fix this)
             this.scan_now_confirmed = true;
 
             this.asynchronous_json_post(
-                '/data/urllist/scan_now/', data, (server_response) => {
+                `${this.$store.state.dashboard_endpoint}/data/urllist/scan_now/`, data, (server_response) => {
                     this.scan_now_server_response = server_response;
 
                     if (server_response.success) {
@@ -802,11 +804,25 @@ Vue.component('managed-url-list', {
                     }
                 }
             );
+        },
+
+        update_list_warnings: function(){
+            // The list warnings is not automatically updated. So we replicate the behavior here.
+            if (this.urls.length > this.maximum_domains){
+                if (this.list.list_warnings.indexOf("WARNING_DOMAINS_IN_LIST_EXCEED_MAXIMUM_ALLOWED") === -1) {
+                    this.list.list_warnings.push('WARNING_DOMAINS_IN_LIST_EXCEED_MAXIMUM_ALLOWED');
+                }
+            } else {
+                let index = this.list.list_warnings.indexOf("WARNING_DOMAINS_IN_LIST_EXCEED_MAXIMUM_ALLOWED");
+                if (index > -1) {
+                   this.list.list_warnings.splice("WARNING_DOMAINS_IN_LIST_EXCEED_MAXIMUM_ALLOWED", 1);
+                }
+            }
         }
     },
     computed: {
         csv_value: function(){
-            urls = [];
+            let urls = [];
             this.urls.forEach(function(item) {
                 urls.push(item.url);
             });
@@ -814,39 +830,22 @@ Vue.component('managed-url-list', {
         },
         list_contains_warnings: function(){
             // As long as we don't have the urls loaded, the warnings as they are stand.
-            // console.log("checking warnings");
+            // see update list warnings...
             if (!this.urls.length){
                 return this.list.list_warnings.length > 0;
-            }
-
-            //
-            // The list warnings is not automatically updated. So we replicate the behavior here.
-            if (this.urls.length > this.maximum_domains){
-                // console.log("adding WARNING_DOMAINS_IN_LIST_EXCEED_MAXIMUM_ALLOWED");
-                if (this.list.list_warnings.indexOf("WARNING_DOMAINS_IN_LIST_EXCEED_MAXIMUM_ALLOWED") === -1) {
-                    // console.log("adding WARNING_DOMAINS_IN_LIST_EXCEED_MAXIMUM_ALLOWED really");
-                    this.list.list_warnings.push('WARNING_DOMAINS_IN_LIST_EXCEED_MAXIMUM_ALLOWED');
-                }
-            } else {
-                // console.log("Removing WARNING_DOMAINS_IN_LIST_EXCEED_MAXIMUM_ALLOWED");
-                let index = this.list.list_warnings.indexOf("WARNING_DOMAINS_IN_LIST_EXCEED_MAXIMUM_ALLOWED");
-                if (index > -1) {
-                    // console.log("Removing WARNING_DOMAINS_IN_LIST_EXCEED_MAXIMUM_ALLOWED really");
-                   this.list.list_warnings.splice("WARNING_DOMAINS_IN_LIST_EXCEED_MAXIMUM_ALLOWED", 1);
-                }
             }
 
             return this.list.list_warnings.length > 0;
         },
         // can't seem to find the mapstate method the old school way:
         current_scan_status_from_scan_monitor: function() {
-            if (store.state.scan_monitor_data.length === 0)
+            if (this.$store.state.scan_monitor_data.length === 0)
                 return "";
 
             // the first scan-monitor record where list_id is the same, is the one with the most recent state
-            for(let i = 0; i < store.state.scan_monitor_data.length; i++){
-                if (store.state.scan_monitor_data[i].list_id === this.list.id){
-                    return store.state.scan_monitor_data[i].state;
+            for(let i = 0; i < this.$store.state.scan_monitor_data.length; i++){
+                if (this.$store.state.scan_monitor_data[i].list_id === this.list.id){
+                    return this.$store.state.scan_monitor_data[i].state;
                 }
             }
 
@@ -854,7 +853,7 @@ Vue.component('managed-url-list', {
             return "";
         }
     },
-});
+}
 </script>
 <!--
 Todo: use vue-i18n-loader to support editing text in babeledit.

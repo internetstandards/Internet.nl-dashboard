@@ -1,6 +1,13 @@
-{% verbatim %}
+<template id="autorefresh_template">
+    <div v-if='visible' style='margin-bottom: 0 !important;'>
+        <button @click="reload_now()">{{ $t("refresh_now") }}</button>
+        {{ $t("refresh_happening_in") }} <span v-html="this.current_step_inverted"></span>
+        {{ $t("units") }}
+    </div>
+</template>
+
 <script>
-Vue.component('autorefresh', {
+export default {
     i18n: {
         messages: {
             en: {
@@ -16,11 +23,7 @@ Vue.component('autorefresh', {
         }
     },
 
-    template: `<div v-if='visible' style='margin-bottom: 0 !important;'>
-        <button @click="reload_now()">{{ $t("refresh_now") }}</button>
-        {{ $t("refresh_happening_in") }} <span v-html="this.current_step_inverted"></span>
-        {{ $t("units") }}
-    </div>`,
+    template: 'autorefresh_template',
 
     data: function () {
         return {
@@ -45,9 +48,18 @@ Vue.component('autorefresh', {
     },
 
     props:{
-        callback: null,
-        visible: true,
-        refresh_per_seconds: Number,
+        callback: {
+            type: Function,
+            default: null
+        },
+        visible: {
+            type: Boolean,
+            default: true,
+        },
+        refresh_per_seconds: {
+            type: Number,
+            default: 600
+        }
     },
 
     methods: {
@@ -80,6 +92,5 @@ Vue.component('autorefresh', {
             return this.countdown_steps - this.current_step;
         }
     }
-});
+}
 </script>
-{% endverbatim %}

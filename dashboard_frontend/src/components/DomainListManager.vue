@@ -116,12 +116,12 @@ Fixed: when deleting a list, it is re-added to the list of lists when adding a n
         What we would like is that when rerendering, the state (data) would also transfer to the correct component
         https://michaelnthiessen.com/force-re-render/
         -->
-        <managed-url-list
+        <managed_url_list
                 :initial_list="list"
                 :maximum_domains="maximum_domains_per_list"
                 v-bind:key="list.id"
                 v-on:removelist="removelist"
-                v-for="list in lists"></managed-url-list>
+                v-for="list in lists"></managed_url_list>
 
         <div v-if="!lists.length" class="no-content block fullwidth">
             {{ $t("inital_list.start") }} <br>
@@ -138,8 +138,15 @@ Fixed: when deleting a list, it is re-added to the list of lists when adding a n
 import jQuery from 'jquery'
 import http_mixin from './http_mixin.vue'
 import legacy_mixin from './legacy_mixin.vue'
+import loading from './loading.vue'
+
+import managed_url_list from './managed-url-list.vue'
 
 export default {
+    components: {
+        loading,
+        managed_url_list
+    },
     i18n: {
         messages: {
             en: {
@@ -246,7 +253,7 @@ export default {
         },
         get_lists: function(){
             this.loading = true;
-            fetch(`/data/urllists/get/`, {credentials: 'include'}).then(response => response.json()).then(data => {
+            fetch(`${this.$store.state.dashboard_endpoint}/data/urllists/get/`, {credentials: 'include'}).then(response => response.json()).then(data => {
 
                 this.lists = data['lists'];
                 this.maximum_domains_per_list = data['maximum_domains_per_list'];

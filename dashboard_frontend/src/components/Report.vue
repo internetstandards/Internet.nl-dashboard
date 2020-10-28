@@ -1,295 +1,296 @@
 <style>
+#report-template {
+    width: 100%;
+    min-height: 500px;
+}
+
+/* Do print the whole table... */
+@media print {
+    body {
+        background-color: red;
+    }
+
     #report-template {
-        width: 100%;
-        min-height: 500px;
+        min-height: 100% !important;
     }
 
-    /* Do print the whole table... */
-    @media print {
-        body {
-            background-color: red;
-        }
-        #report-template {
-            min-height: 100% !important;
-        }
-
-        /* When printing, the table should fill several pages */
-        #report-template .sticky-table-container {
-            max-height: none !important;
-            overflow-x: inherit;
-            overflow-y: inherit;
-        }
-
-        /* Allow printing of graphs, make sure they don't go wider than the page width... */
-        /* https://stackoverflow.com/questions/41674976/resize-chart-js-canvas-for-printing */
-        /* We'll resize the image to fit plain a4 paper, otherwise the aspect ratios are distorted.*/
-        canvas.graph-image {
-            height: 60% !important;
-            width: 60% !important;
-        }
-
-        /* Also remove the superfluous container sizes during print, as the image is a bit smaller now: */
-        .chart-container {
-            height: 100% !important;
-            min-height: 100% !important;
-        }
-    }
-
-    /* Use fixed headers, and search. If you scroll down the headers stay visible. Looks good, even better than aggrid.
-    Note that chrome has issues making thead and tr sticky. Therefore it is applied to td and th (because...). */
+    /* When printing, the table should fill several pages */
     #report-template .sticky-table-container {
-        max-height: 80vh;
-        overflow-x: scroll;
-        overflow-y: scroll;
+        max-height: none !important;
+        overflow-x: inherit;
+        overflow-y: inherit;
     }
 
-    /* Make the header stay up with a white background. */
-    #report-template thead {
-        position: sticky;
-        top: 0;
-        background-color: white;
+    /* Allow printing of graphs, make sure they don't go wider than the page width... */
+    /* https://stackoverflow.com/questions/41674976/resize-chart-js-canvas-for-printing */
+    /* We'll resize the image to fit plain a4 paper, otherwise the aspect ratios are distorted.*/
+    canvas.graph-image {
+        height: 60% !important;
+        width: 60% !important;
     }
 
-    #horrible-chrome-td-sticky-white-background-fix {
-        /* Chrome white sticky headers overlap, causing text to disappear, firefox does render it correctly.
-        This fix creates a white background behind the text labels. */
-        width: 100%;
-        height: 210px;
-        position: absolute;
-        top: 0px;
-        background: white;
+    /* Also remove the superfluous container sizes during print, as the image is a bit smaller now: */
+    .chart-container {
+        height: 100% !important;
+        min-height: 100% !important;
     }
+}
 
-    #report-template th {
-        /* Firefox does not need this set to white, chrome does, otherwise the background will bleed through... */
-        /* background-color: white; */
-    }
+/* Use fixed headers, and search. If you scroll down the headers stay visible. Looks good, even better than aggrid.
+Note that chrome has issues making thead and tr sticky. Therefore it is applied to td and th (because...). */
+#report-template .sticky-table-container {
+    max-height: 80vh;
+    overflow-x: scroll;
+    overflow-y: scroll;
+}
 
-    #report-template th:after {
-        /* Chrome uses translucent background, */
-        background-color: white;
-    }
+/* Make the header stay up with a white background. */
+#report-template thead {
+    position: sticky;
+    top: 0;
+    background-color: white;
+}
 
-    #report-template th.sticky-header {
-        position: sticky;
-        top: -1px;
-    }
+#horrible-chrome-td-sticky-white-background-fix {
+    /* Chrome white sticky headers overlap, causing text to disappear, firefox does render it correctly.
+    This fix creates a white background behind the text labels. */
+    width: 100%;
+    height: 210px;
+    position: absolute;
+    top: 0px;
+    background: white;
+}
 
-    #report-template td.sticky_search {
-        position: sticky;
-        top: 206px;
+#report-template th {
+    /* Firefox does not need this set to white, chrome does, otherwise the background will bleed through... */
+    /* background-color: white; */
+}
 
-        /* 100% background is needed to not mix content: this content is on top. */
-        background-color: white;
-    }
+#report-template th:after {
+    /* Chrome uses translucent background, */
+    background-color: white;
+}
 
-    #report-template tr.result_row {
-        /* For testing purposes. */
-        /* height: 200px; */
-    }
+#report-template th.sticky-header {
+    position: sticky;
+    top: -1px;
+}
 
+#report-template td.sticky_search {
+    position: sticky;
+    top: 206px;
 
-    /* https://css-tricks.com/rotated-table-column-headers/*/
-    /* It's not possible to dynamically resize the height of the TH or th container :( */
-    div.rotate {
-        white-space: nowrap;
-        vertical-align: bottom;
-        margin-top: 160px;
-    }
+    /* 100% background is needed to not mix content: this content is on top. */
+    background-color: white;
+}
 
-    div.rotate {
-      transform:
-        rotate(315deg);
-      width: 32px;  /*Fits the 100% value too.*/
-    }
-    div.rotate > span {
-        padding: 5px 3px;
-        z-index: 1000;
-    }
-
-    /* Why emulate bootstrap? */
-    .table {
-        width: 100%;
-        max-width: 100%;
-        margin-bottom: 1rem;
-        background-color: white;
-    }
-
-    .table-striped tbody tr:nth-of-type(2n+1) {
-        background-color: rgba(0,0,0,.05);
-    }
-
-    .table td, .table th {
-        padding: .75rem;
-        vertical-align: top;
-        border-top: 1px solid #dee2e6;
-    }
-
-    .direct_link_to_report{
-        font-size: 0.8em;
-    }
-
-    .table .summaryrow {
-        font-size: 0.8em;
-    }
+#report-template tr.result_row {
+    /* For testing purposes. */
+    /* height: 200px; */
+}
 
 
-    #report-template .testresultcell span{
-        background-size: 1.125em 1.125em;
-        background-repeat: no-repeat;
-        /**
-        The reason we're not using padding-left 1.5em is that we want the results to be copy-pasteable.
-        So there is invisible text on the icon that can be copied.
-        */
-        width: 32px; /* Needs to be 32 px for comparison to be visible.*/
-        height: 20px;
-        display: block;
-        color: transparent;
+/* https://css-tricks.com/rotated-table-column-headers/*/
+/* It's not possible to dynamically resize the height of the TH or th container :( */
+div.rotate {
+    white-space: nowrap;
+    vertical-align: bottom;
+    margin-top: 160px;
+}
 
-        /** While hidden, can a screen reader still find it? */
-        overflow: hidden;
-    }
+div.rotate {
+    transform: rotate(315deg);
+    width: 32px; /*Fits the 100% value too.*/
+}
 
-    #report-template .testresultcell span span {
-        font-size: 1px;
-    }
+div.rotate > span {
+    padding: 5px 3px;
+    z-index: 1000;
+}
 
-    .testresultcell {
-        border-left: 1px solid #dee2e6;
-    }
+/* Why emulate bootstrap? */
+.table {
+    width: 100%;
+    max-width: 100%;
+    margin-bottom: 1rem;
+    background-color: white;
+}
 
+.table-striped tbody tr:nth-of-type(2n+1) {
+    background-color: rgba(0, 0, 0, .05);
+}
+
+.table td, .table th {
+    padding: .75rem;
+    vertical-align: top;
+    border-top: 1px solid #dee2e6;
+}
+
+.direct_link_to_report {
+    font-size: 0.8em;
+}
+
+.table .summaryrow {
+    font-size: 0.8em;
+}
+
+
+#report-template .testresultcell span {
+    background-size: 1.125em 1.125em;
+    background-repeat: no-repeat;
     /**
-     Sortable Tables
-     https://vuejs.org/v2/examples/grid-component.html
+    The reason we're not using padding-left 1.5em is that we want the results to be copy-pasteable.
+    So there is invisible text on the icon that can be copied.
     */
+    width: 32px; /* Needs to be 32 px for comparison to be visible.*/
+    height: 20px;
+    display: block;
+    color: transparent;
 
-    .arrow {
-        transform: rotate(-315deg);
-        display: inline-block;
-        vertical-align: middle;
-        width: 0;
-        height: 0;
-        margin-left: 5px;
-        opacity: 0.66;
-        padding: 0px 0px !important;
-    }
+    /** While hidden, can a screen reader still find it? */
+    overflow: hidden;
+}
 
-    .arrow.asc {
-        border-left: 10px solid transparent;
-        border-right: 10px solid transparent;
-        border-bottom: 10px solid #00a0c6;
-    }
+#report-template .testresultcell span span {
+    font-size: 1px;
+}
 
-    .arrow.dsc {
-        border-left: 10px solid transparent;
-        border-right: 10px solid transparent;
-        border-top: 10px solid #00a0c6;
-    }
+.testresultcell {
+    border-left: 1px solid #dee2e6;
+}
 
-    .arrow.unknown {
-        border-left: 10px solid #00a0c6;
-        border-right: 10px solid #00a0c6;
-        border-top: 4px solid #00a0c6;
-    }
+/**
+ Sortable Tables
+ https://vuejs.org/v2/examples/grid-component.html
+*/
 
-    .select-deselect-category {
-        font-size: 0.9em;
-        display: block;
-        width: 100%;
-        text-align: right;
-        padding-top: 5px;
-        padding-bottom: 10px;
-    }
+.arrow {
+    transform: rotate(-315deg);
+    display: inline-block;
+    vertical-align: middle;
+    width: 0;
+    height: 0;
+    margin-left: 5px;
+    opacity: 0.66;
+    padding: 0px 0px !important;
+}
+
+.arrow.asc {
+    border-left: 10px solid transparent;
+    border-right: 10px solid transparent;
+    border-bottom: 10px solid #00a0c6;
+}
+
+.arrow.dsc {
+    border-left: 10px solid transparent;
+    border-right: 10px solid transparent;
+    border-top: 10px solid #00a0c6;
+}
+
+.arrow.unknown {
+    border-left: 10px solid #00a0c6;
+    border-right: 10px solid #00a0c6;
+    border-top: 4px solid #00a0c6;
+}
+
+.select-deselect-category {
+    font-size: 0.9em;
+    display: block;
+    width: 100%;
+    text-align: right;
+    padding-top: 5px;
+    padding-bottom: 10px;
+}
 
 
-    .tabs-component {
-      margin: 1em 0;
-    }
+.tabs-component {
+    margin: 1em 0;
+}
 
+.tabs-component-tabs {
+    border: solid 1px #ddd;
+    border-radius: 6px;
+    margin-bottom: 5px;
+}
+
+@media (min-width: 700px) {
     .tabs-component-tabs {
-      border: solid 1px #ddd;
-      border-radius: 6px;
-      margin-bottom: 5px;
-    }
-
-    @media (min-width: 700px) {
-      .tabs-component-tabs {
         border: 0;
         align-items: stretch;
         display: flex;
         justify-content: flex-start;
         margin-bottom: -1px;
-      }
     }
+}
 
+.tabs-component-tab {
+    color: #999;
+    font-size: 14px;
+    font-weight: 600;
+    margin-right: 0;
+    list-style: none;
+}
+
+.tabs-component-tab:not(:last-child) {
+    border-bottom: dotted 1px #ddd;
+}
+
+.tabs-component-tab:hover {
+    color: #666;
+}
+
+.tabs-component-tab.is-active {
+    color: #000;
+}
+
+.tabs-component-tab.is-disabled * {
+    color: #cdcdcd;
+    cursor: not-allowed !important;
+}
+
+@media (min-width: 700px) {
     .tabs-component-tab {
-      color: #999;
-      font-size: 14px;
-      font-weight: 600;
-      margin-right: 0;
-      list-style: none;
-    }
-
-    .tabs-component-tab:not(:last-child) {
-      border-bottom: dotted 1px #ddd;
-    }
-
-    .tabs-component-tab:hover {
-      color: #666;
-    }
-
-    .tabs-component-tab.is-active {
-      color: #000;
-    }
-
-    .tabs-component-tab.is-disabled * {
-      color: #cdcdcd;
-      cursor: not-allowed !important;
-    }
-
-    @media (min-width: 700px) {
-      .tabs-component-tab {
         background-color: #fff;
         border: solid 1px #ddd;
         border-radius: 3px 3px 0 0;
         margin-right: .5em;
         transform: translateY(2px);
         transition: transform .3s ease;
-      }
+    }
 
-      .tabs-component-tab.is-active {
+    .tabs-component-tab.is-active {
         border-bottom: solid 1px #fff;
         z-index: 2;
         transform: translateY(0);
-      }
     }
+}
 
-    .tabs-component-tab-a {
-      align-items: center;
-      color: inherit;
-      display: flex;
-      padding: .75em 1em;
-      text-decoration: none;
-    }
+.tabs-component-tab-a {
+    align-items: center;
+    color: inherit;
+    display: flex;
+    padding: .75em 1em;
+    text-decoration: none;
+}
 
+.tabs-component-panels {
+    padding: 1em 0;
+    margin-top: -22px;
+}
+
+@media (min-width: 700px) {
     .tabs-component-panels {
-      padding: 1em 0;
-        margin-top: -22px;
-    }
-
-    @media (min-width: 700px) {
-      .tabs-component-panels {
         border-top-left-radius: 0;
         background-color: #fff;
         border: solid 1px #ddd;
         border-radius: 0 6px 6px 6px;
         box-shadow: 0 0 10px rgba(0, 0, 0, .05);
         padding: 4em 2em;
-          padding-top: 2em;
-          padding-bottom: 2em;
-          margin-top: -22px;
-      }
+        padding-top: 2em;
+        padding-bottom: 2em;
+        margin-top: -22px;
     }
+}
 </style>
 
 <template type="x-template" id="report_template">
@@ -300,12 +301,12 @@
 
             <div aria-live="polite" style="margin-bottom: 30px;">
                 <v-select
-                        v-model="selected_report"
-                        :placeholder="$t('header.select_report')"
-                        :options="filtered_recent_reports"
-                        label="label"
-                        :multiple="true"
-                        :selectable="() => selected_report.length < 6"
+                    v-model="selected_report"
+                    :placeholder="$t('header.select_report')"
+                    :options="filtered_recent_reports"
+                    label="label"
+                    :multiple="true"
+                    :selectable="() => selected_report.length < 6"
                 >
                     <slot name="no-options">{{ $t('header.no_options') }}</slot>
 
@@ -315,7 +316,7 @@
             <template v-if="reports.length && !is_loading">
 
                 <div class="do-not-print testresult_without_icon" v-if="selected_report.length < 2">
-                    <h2 style="font-size: 1.0em;" class="panel-title" >
+                    <h2 style="font-size: 1.0em;" class="panel-title">
                         <a href="" aria-expanded="false">
                             <span class="visuallyhidden">-:</span>
                             {{ $t("download.title") }}
@@ -326,15 +327,21 @@
                     <div class="panel-content">
                         <p>{{ $t("download.intro") }}</p>
                         <ul style="list-style: disc !important; padding-left: 20px">
-                            <li><a :href="'/data/download-spreadsheet/' + reports[0].id + '/xlsx/'">{{ $t("download.xlsx") }}</a></li>
-                            <li><a :href="'/data/download-spreadsheet/' + reports[0].id + '/ods/'">{{ $t("download.ods") }}</a></li>
-                            <li><a :href="'/data/download-spreadsheet/' + reports[0].id + '/csv/'">{{ $t("download.csv") }}</a></li>
+                            <li><a :href="'/data/download-spreadsheet/' + reports[0].id + '/xlsx/'">{{
+                                    $t("download.xlsx")
+                                }}</a></li>
+                            <li><a :href="'/data/download-spreadsheet/' + reports[0].id + '/ods/'">{{
+                                    $t("download.ods")
+                                }}</a></li>
+                            <li><a :href="'/data/download-spreadsheet/' + reports[0].id + '/csv/'">{{
+                                    $t("download.csv")
+                                }}</a></li>
                         </ul>
                     </div>
                 </div>
 
                 <div class="do-not-print testresult_without_icon">
-                    <h2 style="font-size: 1.0em;" class="panel-title" >
+                    <h2 style="font-size: 1.0em;" class="panel-title">
                         <a href="" aria-expanded="false">
                             <span class="visuallyhidden">-:</span>
                             {{ $t("settings.title") }}
@@ -353,7 +360,9 @@
                                         <br>
                                         <p>
                                             <label :for="scan_form.name + '_show_dynamic_average'">
-                                                <input type="checkbox" v-model="issue_filters[scan_form.name].show_dynamic_average" :id="scan_form.name + '_show_dynamic_average'">
+                                                <input type="checkbox"
+                                                       v-model="issue_filters[scan_form.name].show_dynamic_average"
+                                                       :id="scan_form.name + '_show_dynamic_average'">
                                                 {{ $t("settings.show_dynamic_average") }}
                                             </label><br>
                                             <!-- disabled as per #107
@@ -367,100 +376,141 @@
                                             -->
 
                                             <template v-if="scan_form.additional_fields.length">
-                                                <div class="test-subsection">{{ $t("fields.additional_fields.label") }}</div>
-                                                <div v-for="field in scan_form.additional_fields" class="testresult_without_icon" :key="field">
-                                                <label :for="field.name + '_visible'">
-                                                    <input type="checkbox" v-model="issue_filters[field.name].visible" :id="field.name + '_visible'">
-                                                    {{ $t(field.name) }}
-                                                </label>
+                                                <div class="test-subsection">{{
+                                                        $t("fields.additional_fields.label")
+                                                    }}
+                                                </div>
+                                                <div v-for="field in scan_form.additional_fields"
+                                                     class="testresult_without_icon" :key="field">
+                                                    <label :for="field.name + '_visible'">
+                                                        <input type="checkbox"
+                                                               v-model="issue_filters[field.name].visible"
+                                                               :id="field.name + '_visible'">
+                                                        {{ $t(field.name) }}
+                                                    </label>
                                                 </div>
                                             </template>
                                         </p>
 
                                         <div>
-                                                <button @click="reset_issue_filters()">{{ $t("settings.buttons.reset") }}<span class="visuallyhidden"></span></button>
-                                                <button @click="save_issue_filters()">{{ $t("settings.buttons.save") }}<span class="visuallyhidden"></span></button>
-                                                <br>
-                                                <template v-if="issue_filters_response.success || issue_filters_response.error">
-                                                    <div :class="'server-response-' + issue_filters_response.state">
-                                                        <span>{{ $t(issue_filters_response.message) }} on {{ humanize_date(issue_filters_response.timestamp) }}.</span>
-                                                    </div>
-                                                </template>
-                                            </div>
+                                            <button @click="reset_issue_filters()">{{
+                                                    $t("settings.buttons.reset")
+                                                }}<span class="visuallyhidden"></span></button>
+                                            <button @click="save_issue_filters()">{{ $t("settings.buttons.save") }}<span
+                                                class="visuallyhidden"></span></button>
+                                            <br>
+                                            <template
+                                                v-if="issue_filters_response.success || issue_filters_response.error">
+                                                <div :class="'server-response-' + issue_filters_response.state">
+                                                    <span>{{
+                                                            $t(issue_filters_response.message)
+                                                        }} on {{
+                                                            humanize_date(issue_filters_response.timestamp)
+                                                        }}.</span>
+                                                </div>
+                                            </template>
+                                        </div>
 
                                     </tab>
 
-                                <tab v-for="category in scan_form.categories" :name="category.label" :key="category.label">
-                                    <section class="test-header">
-                                        <div class="test-title">
-                                            <h3>{{category.label}}</h3>
-                                            <br>
-                                            <p>
-                                                <template v-for="field in category.fields">
+                                    <tab v-for="category in scan_form.categories" :name="category.label"
+                                         :key="category.label">
+                                        <section class="test-header">
+                                            <div class="test-title">
+                                                <h3>{{ category.label }}</h3>
+                                                <br>
+                                                <p>
+                                                    <template v-for="field in category.fields">
 
-                                                    <label :for="field.name + '_show_dynamic_average'" :key="field.name">
-                                                        <input type="checkbox" v-model="issue_filters[field.name].show_dynamic_average" :onchange="visible_metrics_see_if_category_is_relevant(category)" :id="field.name + '_show_dynamic_average'">
-                                                        {{ $t("settings.show_dynamic_average") }}
-                                                    </label><br>
-                                                    <!-- Disabled as per #107
-                                                    <label :for="field.name + '_only_show_dynamic_average'">
-                                                        <input type="checkbox"
-                                                               v-model="issue_filters[field.name].only_show_dynamic_average"
-                                                               :id="field.name + '_only_show_dynamic_average'"
-                                                                :disabled="!issue_filters[field.name].show_dynamic_average">
-                                                        {{ $t("settings.only_show_dynamic_average") }}
-                                                    </label>
-                                                    -->
-                                                </template>
-                                            </p>
+                                                        <label :for="field.name + '_show_dynamic_average'"
+                                                               :key="field.name">
+                                                            <input type="checkbox"
+                                                                   v-model="issue_filters[field.name].show_dynamic_average"
+                                                                   :onchange="visible_metrics_see_if_category_is_relevant(category)"
+                                                                   :id="field.name + '_show_dynamic_average'">
+                                                            {{ $t("settings.show_dynamic_average") }}
+                                                        </label><br>
+                                                        <!-- Disabled as per #107
+                                                        <label :for="field.name + '_only_show_dynamic_average'">
+                                                            <input type="checkbox"
+                                                                   v-model="issue_filters[field.name].only_show_dynamic_average"
+                                                                   :id="field.name + '_only_show_dynamic_average'"
+                                                                    :disabled="!issue_filters[field.name].show_dynamic_average">
+                                                            {{ $t("settings.only_show_dynamic_average") }}
+                                                        </label>
+                                                        -->
+                                                    </template>
+                                                </p>
 
-                                        </div>
-                                    </section>
-                                    <section class="testresults">
-                                        <span class="select-deselect-category"><a @click="check_fields(all_field_names_from_categories(category))">{{ $t("check") }}</a> / <a @click="uncheck_fields(all_field_names_from_categories(category))">{{ $t("uncheck") }}</a></span>
-
-                                        <template v-for="category in category.categories">
-                                            <div class="test-subsection">{{ category.label }}<br></div>
-                                            <div v-for="field in category.fields" class="testresult_without_icon">
-                                                <label :for="field.name + '_visible'" :key="field.name">
-                                                    <input type="checkbox" v-model="issue_filters[field.name].visible" :id="field.name + '_visible'">
-                                                    {{ $t(field.name) }}
-                                                </label>
-                                                <template v-if="field.explanation">
-                                                    <p><i>{{ $t(field.name + "_explanation") }}</i></p>
-                                                </template>
                                             </div>
+                                        </section>
+                                        <section class="testresults">
+                                            <span class="select-deselect-category"><a
+                                                @click="check_fields(all_field_names_from_categories(category))">{{
+                                                    $t("check")
+                                                }}</a> / <a
+                                                @click="uncheck_fields(all_field_names_from_categories(category))">{{
+                                                    $t("uncheck")
+                                                }}</a></span>
 
-                                            <template v-if="category.additional_fields.length">
-                                                <div class="test-subsection">{{ $t("fields.additional_fields.label") }}</div>
-                                                <div v-for="field in category.additional_fields" class="testresult_without_icon" :key="field">
+                                            <template v-for="category in category.categories">
+                                                <div class="test-subsection">{{ category.label }}<br></div>
+                                                <div v-for="field in category.fields" class="testresult_without_icon">
                                                     <label :for="field.name + '_visible'" :key="field.name">
-                                                        <input type="checkbox" v-model="issue_filters[field.name].visible" :id="field.name + '_visible'">
+                                                        <input type="checkbox"
+                                                               v-model="issue_filters[field.name].visible"
+                                                               :id="field.name + '_visible'">
                                                         {{ $t(field.name) }}
                                                     </label>
                                                     <template v-if="field.explanation">
                                                         <p><i>{{ $t(field.name + "_explanation") }}</i></p>
                                                     </template>
                                                 </div>
+
+                                                <template v-if="category.additional_fields.length">
+                                                    <div class="test-subsection">{{
+                                                            $t("fields.additional_fields.label")
+                                                        }}
+                                                    </div>
+                                                    <div v-for="field in category.additional_fields"
+                                                         class="testresult_without_icon" :key="field">
+                                                        <label :for="field.name + '_visible'" :key="field.name">
+                                                            <input type="checkbox"
+                                                                   v-model="issue_filters[field.name].visible"
+                                                                   :id="field.name + '_visible'">
+                                                            {{ $t(field.name) }}
+                                                        </label>
+                                                        <template v-if="field.explanation">
+                                                            <p><i>{{ $t(field.name + "_explanation") }}</i></p>
+                                                        </template>
+                                                    </div>
+                                                </template>
+
                                             </template>
-
-                                        </template>
-                                    </section>
+                                        </section>
 
 
-                                    <div>
-                                        <button @click="reset_issue_filters()">{{ $t("settings.buttons.reset") }}<span class="visuallyhidden"></span></button>
-                                        <button @click="save_issue_filters()">{{ $t("settings.buttons.save") }}<span class="visuallyhidden"></span></button>
-                                        <br>
-                                        <template v-if="issue_filters_response.success || issue_filters_response.error">
-                                            <div :class="'server-response-' + issue_filters_response.state">
-                                                <span>{{ $t(issue_filters_response.message) }} on {{ humanize_date(issue_filters_response.timestamp) }}.</span>
-                                            </div>
-                                        </template>
-                                    </div>
+                                        <div>
+                                            <button @click="reset_issue_filters()">{{
+                                                    $t("settings.buttons.reset")
+                                                }}<span class="visuallyhidden"></span></button>
+                                            <button @click="save_issue_filters()">{{ $t("settings.buttons.save") }}<span
+                                                class="visuallyhidden"></span></button>
+                                            <br>
+                                            <template
+                                                v-if="issue_filters_response.success || issue_filters_response.error">
+                                                <div :class="'server-response-' + issue_filters_response.state">
+                                                    <span>{{
+                                                            $t(issue_filters_response.message)
+                                                        }} on {{
+                                                            humanize_date(issue_filters_response.timestamp)
+                                                        }}.</span>
+                                                </div>
+                                            </template>
+                                        </div>
 
-                                </tab>
-                            </tabs>
+                                    </tab>
+                                </tabs>
 
                             </template>
                         </template>
@@ -476,28 +526,36 @@
 
             <div class="block fullwidth">
                 <h2>
-                    📊 #{{selected_report[0].id}} - {{ selected_report[0].list_name }}</h2>
+                    📊 #{{ selected_report[0].id }} - {{ selected_report[0].list_name }}</h2>
                 <span>{{ $t("report_header.type_of_scan_performed") }}:
-                    <img src="/static/images/vendor/internet_nl/icon-website-test.svg" style="height: 1em;" v-if="selected_report[0].type === 'web'">
-                    <img src="/static/images/vendor/internet_nl/icon-emailtest.svg" style="height: 1em;" v-if="selected_report[0].type === 'mail'"> {{ selected_report[0].type }}<br>
-                    {{ $t("report_header.number_of_domains") }}: {{ selected_report[0].number_of_urls }}<br> {{ $t("report_header.data_from") }} {{ humanize_date(selected_report[0].at_when) }}<br>
-                    📘 <router-link :to="{ name: 'numbered_lists', params: { list: selected_report[0].urllist_id }}">{{ selected_report[0].list_name }}</router-link><br>
+                    <img src="/static/images/vendor/internet_nl/icon-website-test.svg" style="height: 1em;"
+                         v-if="selected_report[0].type === 'web'">
+                    <img src="/static/images/vendor/internet_nl/icon-emailtest.svg" style="height: 1em;"
+                         v-if="selected_report[0].type === 'mail'"> {{ selected_report[0].type }}<br>
+                    {{ $t("report_header.number_of_domains") }}: {{
+                        selected_report[0].number_of_urls
+                    }}<br> {{ $t("report_header.data_from") }} {{ humanize_date(selected_report[0].at_when) }}<br>
+                    📘 <router-link :to="{ name: 'numbered_lists', params: { list: selected_report[0].urllist_id }}">{{
+                            selected_report[0].list_name
+                        }}</router-link><br>
                 </span><br>
 
 
-
-
-                <div v-for="report in selected_report" v-if="selected_report.length > 1" style="padding-left: 10px" :key="report">
-                    <!-- Skip the first report -->
-                    <template v-if="report.id !== selected_report[0].id">
-                        <h3>{{ $t("report_header.compared_to") }}: #{{report.id}} - {{ report.list_name }}</h3>
-                        <span>
+                <template v-if="selected_report.length > 1">
+                    <div v-for="report in selected_report" style="padding-left: 10px" :key="report">
+                        <!-- Skip the first report -->
+                        <template v-if="report.id !== selected_report[0].id">
+                            <h3>{{ $t("report_header.compared_to") }}: #{{ report.id }} - {{ report.list_name }}</h3>
+                            <span>
                             {{ $t("report_header.number_of_domains") }}: {{ report.number_of_urls }}<br>
                             {{ $t("report_header.data_from") }} {{ humanize_date(report.at_when) }}<br>
-                            📘 <router-link :to="{ name: 'numbered_lists', params: { list: report.urllist_id }}">{{ report.list_name }}</router-link><br>
+                            📘 <router-link :to="{ name: 'numbered_lists', params: { list: report.urllist_id }}">{{
+                                    report.list_name
+                                }}</router-link><br>
                         </span>
-                    </template>
-                </div>
+                        </template>
+                    </div>
+                </template>
 
                 <template v-if="selected_report.length > 2">
                     <p style="padding-top: 1em;">⚠️ {{ $t("report_header.only_graphs") }}</p>
@@ -506,16 +564,17 @@
             </div>
 
             <internet-nl-charts
-                    :selected_report="selected_report"
-                    :scan_methods="scan_methods"
-                    :compare_charts="compare_charts"
-                    :issue_filters="issue_filters"
-                    :field_name_to_category_names="field_name_to_category_names"
+                :selected_report="selected_report"
+                :scan_methods="scan_methods"
+                :compare_charts="compare_charts"
+                :issue_filters="issue_filters"
+                :field_name_to_category_names="field_name_to_category_names"
             >
             </internet-nl-charts>
 
             <!-- The table is only displayed with up to two reports (the first as the source of the table, the second as a comparison). -->
-            <div v-if="filtered_urls !== undefined && selected_report.length < 3" class="block fullwidth" style="page-break-before: always;">
+            <div v-if="filtered_urls !== undefined && selected_report.length < 3" class="block fullwidth"
+                 style="page-break-before: always;">
                 <h2>{{ $t("report.title") }}</h2>
                 <a class="anchor" name="report"></a>
                 <p>{{ $t("report.intro") }}</p>
@@ -523,27 +582,37 @@
                 <p v-if="differences_compared_to_current_list">
                     <template v-if="differences_compared_to_current_list.both_are_equal">
                         {{ $t("differences_compared_to_current_list.equal") }}
-                        {{ $t("differences_compared_to_current_list.both_list_contain_n_urls", [differences_compared_to_current_list.number_of_urls_in_urllist]) }}
+                        {{
+                            $t("differences_compared_to_current_list.both_list_contain_n_urls", [differences_compared_to_current_list.number_of_urls_in_urllist])
+                        }}
                     </template>
                     <template v-if="!differences_compared_to_current_list.both_are_equal">
                         ⚠️ {{ $t("differences_compared_to_current_list.not_equal") }}
-                        <template v-if="differences_compared_to_current_list.number_of_urls_in_urllist === differences_compared_to_current_list.number_of_urls_in_report">
-                            {{ $t("differences_compared_to_current_list.both_list_contain_n_urls", [differences_compared_to_current_list.number_of_urls_in_urllist]) }}
+                        <template
+                            v-if="differences_compared_to_current_list.number_of_urls_in_urllist === differences_compared_to_current_list.number_of_urls_in_report">
+                            {{
+                                $t("differences_compared_to_current_list.both_list_contain_n_urls", [differences_compared_to_current_list.number_of_urls_in_urllist])
+                            }}
                         </template>
-                        <template v-if="differences_compared_to_current_list.number_of_urls_in_urllist !== differences_compared_to_current_list.number_of_urls_in_report">
-                            {{ $t("differences_compared_to_current_list.report_contains_n_urllist_contains_n", [differences_compared_to_current_list.number_of_urls_in_report, differences_compared_to_current_list.number_of_urls_in_urllist]) }}
+                        <template
+                            v-if="differences_compared_to_current_list.number_of_urls_in_urllist !== differences_compared_to_current_list.number_of_urls_in_report">
+                            {{
+                                $t("differences_compared_to_current_list.report_contains_n_urllist_contains_n", [differences_compared_to_current_list.number_of_urls_in_report, differences_compared_to_current_list.number_of_urls_in_urllist])
+                            }}
                         </template>
                         <template v-if="differences_compared_to_current_list.in_report_but_not_in_urllist !== ''">
-                            {{ $t("differences_compared_to_current_list.in_report_but_not_in_urllist") }}: {{ differences_compared_to_current_list.in_report_but_not_in_urllist }}.
+                            {{ $t("differences_compared_to_current_list.in_report_but_not_in_urllist") }}:
+                            {{ differences_compared_to_current_list.in_report_but_not_in_urllist }}.
                         </template>
                         <template v-if="differences_compared_to_current_list.in_urllist_but_not_in_report !== ''">
-                            {{ $t("differences_compared_to_current_list.in_urllist_but_not_in_report") }}: {{ differences_compared_to_current_list.in_urllist_but_not_in_report }}.
+                            {{ $t("differences_compared_to_current_list.in_urllist_but_not_in_report") }}:
+                            {{ differences_compared_to_current_list.in_urllist_but_not_in_report }}.
                         </template>
                     </template>
                 </p>
 
                 <div class="testresult_without_icon faq-report">
-                    <h2 style="font-size: 1.0em;"  class="panel-title" >
+                    <h2 style="font-size: 1.0em;" class="panel-title">
                         <a href="" aria-expanded="false">
                             <span class="visuallyhidden">-:</span>
                             {{ $t("icon_legend.title") }}
@@ -554,19 +623,39 @@
                     <div class="panel-content">
                         <h3>{{ $t("icon_legend.test_title") }}</h3>
                         <ul>
-                            <li><span class="faq-test category_passed"><span class="visuallyhidden">{{ $t("report.results.passed") }}</span>{{ $t("icon_legend.test_good") }}</span></li>
-                            <li><span class="faq-test category_failed"><span class="visuallyhidden">{{ $t("report.results.failed") }}</span>{{ $t("icon_legend.test_bad") }}</span></li>
-                            <li><span class="faq-test category_warning"><span class="visuallyhidden">{{ $t("report.results.warning") }}</span>{{ $t("icon_legend.test_warning") }}</span></li>
-                            <li><span class="faq-test category_error"><span class="visuallyhidden">{{ $t("report.results.category_error_in_test") }}</span>{{ $t("icon_legend.category_error_in_test") }}</span></li>
+                            <li><span class="faq-test category_passed"><span class="visuallyhidden">{{
+                                    $t("report.results.passed")
+                                }}</span>{{ $t("icon_legend.test_good") }}</span></li>
+                            <li><span class="faq-test category_failed"><span class="visuallyhidden">{{
+                                    $t("report.results.failed")
+                                }}</span>{{ $t("icon_legend.test_bad") }}</span></li>
+                            <li><span class="faq-test category_warning"><span class="visuallyhidden">{{
+                                    $t("report.results.warning")
+                                }}</span>{{ $t("icon_legend.test_warning") }}</span></li>
+                            <li><span class="faq-test category_error"><span class="visuallyhidden">{{
+                                    $t("report.results.category_error_in_test")
+                                }}</span>{{ $t("icon_legend.category_error_in_test") }}</span></li>
                         </ul>
                         <h3>{{ $t("icon_legend.subtest_title") }}</h3>
                         <ul>
-                            <li><span class="faq-subtest passed"><span class="visuallyhidden">{{ $t("report.results.passed") }}</span>{{ $t("icon_legend.subtest_good") }}</span></li>
-                            <li><span class="faq-subtest failed"><span class="visuallyhidden">{{ $t("report.results.failed") }}</span>{{ $t("icon_legend.subtest_bad") }}</span></li>
-                            <li><span class="faq-subtest warning"><span class="visuallyhidden">{{ $t("report.results.warning") }}</span>{{ $t("icon_legend.subtest_warning") }}</span></li>
-                            <li><span class="faq-subtest info"><span class="visuallyhidden">{{ $t("report.results.info") }}</span>{{ $t("icon_legend.subtest_info") }}</span></li>
-                            <li><span class="faq-test not_tested"><span class="visuallyhidden">{{ $t("report.results.not_tested") }}</span>{{ $t("icon_legend.subtest_not_tested") }}</span></li>
-                            <li><span class="faq-test error_in_test"><span class="visuallyhidden">{{ $t("report.results.error_in_test") }}</span>{{ $t("icon_legend.subtest_error_in_test") }}</span></li>
+                            <li><span class="faq-subtest passed"><span class="visuallyhidden">{{
+                                    $t("report.results.passed")
+                                }}</span>{{ $t("icon_legend.subtest_good") }}</span></li>
+                            <li><span class="faq-subtest failed"><span class="visuallyhidden">{{
+                                    $t("report.results.failed")
+                                }}</span>{{ $t("icon_legend.subtest_bad") }}</span></li>
+                            <li><span class="faq-subtest warning"><span class="visuallyhidden">{{
+                                    $t("report.results.warning")
+                                }}</span>{{ $t("icon_legend.subtest_warning") }}</span></li>
+                            <li><span class="faq-subtest info"><span class="visuallyhidden">{{
+                                    $t("report.results.info")
+                                }}</span>{{ $t("icon_legend.subtest_info") }}</span></li>
+                            <li><span class="faq-test not_tested"><span class="visuallyhidden">{{
+                                    $t("report.results.not_tested")
+                                }}</span>{{ $t("icon_legend.subtest_not_tested") }}</span></li>
+                            <li><span class="faq-test error_in_test"><span class="visuallyhidden">{{
+                                    $t("report.results.error_in_test")
+                                }}</span>{{ $t("icon_legend.subtest_error_in_test") }}</span></li>
                         </ul>
                     </div>
                 </div>
@@ -576,117 +665,151 @@
                     <table class="table table-striped">
                         <thead class="sticky_labels">
 
-                            <tr class="sticky_labels">
-                                <th style="width: 75px; min-width: 75px; border: 0; background-color: white;" class="sticky-header">
-                                    <div class="rotate">
-                                        <span @click="sortBy('score')" class="arrow" :class="sortOrders['score'] === -1 ? 'dsc' : (sortOrders['score'] === 1 ? 'asc' : 'unknown')"></span>
-                                        <span @click="sortBy('score')">{{ $t("score") }}</span>
-                                    </div>
-                                </th>
-                                <th style="width: 225px; min-width: 225px; border: 0; background-color: white;" class="sticky-header">
-                                    <div class="rotate">
-                                        <div @click="sortBy('url')" class="arrow" :class="sortOrders['url'] === -1 ? 'dsc' : (sortOrders['url'] === 1 ? 'asc' : 'unknown')"></div>
-                                        <div @click="sortBy('url')" style="display: inline-block;">{{ $t("domain") }}</div>
-                                    </div>
-                                </th>
+                        <tr class="sticky_labels">
+                            <th style="width: 75px; min-width: 75px; border: 0; background-color: white;"
+                                class="sticky-header">
+                                <div class="rotate">
+                                    <span @click="sortBy('score')" class="arrow"
+                                          :class="sortOrders['score'] === -1 ? 'dsc' : (sortOrders['score'] === 1 ? 'asc' : 'unknown')"></span>
+                                    <span @click="sortBy('score')">{{ $t("score") }}</span>
+                                </div>
+                            </th>
+                            <th style="width: 225px; min-width: 225px; border: 0; background-color: white;"
+                                class="sticky-header">
+                                <div class="rotate">
+                                    <div @click="sortBy('url')" class="arrow"
+                                         :class="sortOrders['url'] === -1 ? 'dsc' : (sortOrders['url'] === 1 ? 'asc' : 'unknown')"></div>
+                                    <div @click="sortBy('url')" style="display: inline-block;">{{ $t("domain") }}</div>
+                                </div>
+                            </th>
 
-                                <th colspan="200" class="sticky-header" style="background-color: white;">
-                                    <template v-if="['web', 'mail'].includes(selected_category)">
+                            <th colspan="200" class="sticky-header" style="background-color: white;">
+                                <template v-if="['web', 'mail'].includes(selected_category)">
 
-                                        <div style="border: 0; float: left; width: 100px" v-for="category in relevant_categories_based_on_settings" :key="category">
-                                            <div class="rotate">
-                                                <span @click="sortBy(category)" class="arrow" :class="sortOrders[category] === -1 ? 'dsc' : (sortOrders[category] === 1 ? 'asc' : 'unknown')"></span>
-                                                <span @click="sortBy(category)">{{ $t("" + category) }}</span>
+                                    <div style="border: 0; float: left; width: 100px"
+                                         v-for="category in relevant_categories_based_on_settings" :key="category">
+                                        <div class="rotate">
+                                            <span @click="sortBy(category)" class="arrow"
+                                                  :class="sortOrders[category] === -1 ? 'dsc' : (sortOrders[category] === 1 ? 'asc' : 'unknown')"></span>
+                                            <span @click="sortBy(category)">{{ $t("" + category) }}</span>
+                                        </div>
+                                    </div>
+
+                                </template>
+                                <template v-else>
+
+                                    <div style="border: 0; float: left; width: 56px"
+                                         v-for="category in relevant_categories_based_on_settings" :key="category">
+                                        <div class="rotate" style="white-space: nowrap;">
+                                            <div @click="sortBy(category)" class="arrow"
+                                                 :class="sortOrders[category] === -1 ? 'dsc' : (sortOrders[category] === 1 ? 'asc' : 'unknown')"></div>
+                                            <div @click="sortBy(category)" style="display: inline-block;">
+                                                {{ $t("" + category) }}
+                                                <div
+                                                    style="font-size: 0.7em; color: gray; margin-top: -3px; padding-left: 13px;"
+                                                    v-html="category_from_field_name(category)"></div>
                                             </div>
                                         </div>
+                                    </div>
 
-                                    </template><template v-else>
+                                </template>
 
-                                         <div style="border: 0; float: left; width: 56px" v-for="category in relevant_categories_based_on_settings" :key="category">
-                                            <div class="rotate" style="white-space: nowrap;">
-                                                <div @click="sortBy(category)" class="arrow" :class="sortOrders[category] === -1 ? 'dsc' : (sortOrders[category] === 1 ? 'asc' : 'unknown')"></div>
-                                                <div @click="sortBy(category)" style="display: inline-block;">{{ $t("" + category) }}<div style="font-size: 0.7em; color: gray; margin-top: -3px; padding-left: 13px;" v-html="category_from_field_name(category)"></div></div>
-                                            </div>
-                                        </div>
+                            </th>
 
-                                    </template>
-
-                                </th>
-
-                            </tr>
+                        </tr>
 
                         </thead>
 
                         <tbody class="gridtable">
-                            <template>
-                                <!-- Zoom buttons for accessibility -->
-                                <tr class="summaryrow">
-                                    <td colspan="2" class="sticky_search">
-                                        <label class="visuallyhidden" for="url_filter">{{ $t('report.url_filter') }}</label>
-                                        <input v-if="selected_report" type="text" v-model="url_filter" id="url_filter" :placeholder="$t('report.url_filter')">
-                                        <p class="visuallyhidden">{{ $t('report.zoom.explanation') }}</p>
+                        <template>
+                            <!-- Zoom buttons for accessibility -->
+                            <tr class="summaryrow">
+                                <td colspan="2" class="sticky_search">
+                                    <label class="visuallyhidden" for="url_filter">{{ $t('report.url_filter') }}</label>
+                                    <input v-if="selected_report" type="text" v-model="url_filter" id="url_filter"
+                                           :placeholder="$t('report.url_filter')">
+                                    <p class="visuallyhidden">{{ $t('report.zoom.explanation') }}</p>
+                                </td>
+                                <template v-if="['web', 'mail'].includes(selected_category)">
+                                    <td style="width: 100px; min-width: 100px;"
+                                        v-for="category_name in relevant_categories_based_on_settings"
+                                        class="sticky_search" :key="category_name">
+                                        <button @click="select_category(category_name)">
+                                            {{ $t("report.zoom.buttons.zoom") }}
+                                            <span class="visuallyhidden">{{
+                                                    $t("report.zoom.buttons.zoom_in_on", [$t("" + category_name)])
+                                                }}</span>
+                                        </button>
                                     </td>
+                                    <td class="sticky_search" style="width: 100%"></td>
+                                </template>
+                                <template v-else>
+                                    <td :colspan="relevant_categories_based_on_settings.length + 1"
+                                        style="text-align: center" class="sticky_search">
+                                        <button style='width: 100%'
+                                                @click="select_category(selected_report.urllist_scan_type)">
+                                            <span role="img" :aria-label="$t('icons.remove_filter')">❌</span>
+                                            {{ $t("report.zoom.buttons.remove_zoom") }}
+                                        </button>
+                                        <br>
+                                        {{ $t("report.zoom.zoomed_in_on") }} {{ $t("" + selected_category) }}.
+                                    </td>
+                                </template>
+
+                            </tr>
+                        </template>
+
+                        <template v-if="!filtered_urls.length">
+                            <tr>
+                                <td :colspan="relevant_categories_based_on_settings.length + 2"
+                                    style="text-align: center;">😱 {{ $t("report.empty_report") }}
+                                </td>
+                            </tr>
+                        </template>
+                        <template v-else>
+
+                            <tr v-for="url in filtered_urls" class="result_row" :key="url">
+                                <template v-if="!url.endpoints.length">
+                                    <td>
+                                        -
+                                    </td>
+                                    <td>{{ url.url }}</td>
+                                    <td colspan="200">
+                                        <small>{{ $t('report.not_eligeble_for_scanning') }}</small>
+                                    </td>
+                                </template>
+                                <template v-else>
+                                    <td style="width: 75px; min-width: 75px;">
+                                        <a class='direct_link_to_report'
+                                           :href='url.endpoints[0].ratings_by_type.internet_nl_score.internet_nl_url'
+                                           target="_blank">
+                                            <img src="/static/images/vendor/internet_nl/favicon.png"
+                                                 style="height: 16px;">
+                                            {{ url.endpoints[0].ratings_by_type.internet_nl_score.internet_nl_score }}%
+                                            <span class="visuallyhidden">${this.$i18n.t('report.link_to_report', {'url': url})}</span>
+                                        </a>
+                                    </td>
+                                    <td style="width: 225px; min-width: 225px;">{{ url.url }}</td>
                                     <template v-if="['web', 'mail'].includes(selected_category)">
-                                        <td style="width: 100px; min-width: 100px;" v-for="category_name in relevant_categories_based_on_settings" class="sticky_search" :key="category_name">
-                                            <button @click="select_category(category_name)">{{ $t("report.zoom.buttons.zoom") }}
-                                            <span class="visuallyhidden">{{ $t("report.zoom.buttons.zoom_in_on", [$t("" + category_name)]) }}</span>
-                                            </button>
-                                        </td>
-                                        <td class="sticky_search" style="width: 100%"></td>
-                                    </template>
-                                    <template v-else>
-                                        <td :colspan="relevant_categories_based_on_settings.length + 1" style="text-align: center" class="sticky_search">
-                                            <button style='width: 100%' @click="select_category(selected_report.urllist_scan_type)">
-                                                <span role="img" :aria-label="$t('icons.remove_filter')">❌</span> {{ $t("report.zoom.buttons.remove_zoom") }}
-                                            </button><br>
-                                            {{ $t("report.zoom.zoomed_in_on") }} {{ $t("" + selected_category) }}.
-                                        </td>
-                                    </template>
-
-                                </tr>
-                            </template>
-
-                            <template v-if="!filtered_urls.length">
-                                <tr>
-                                    <td :colspan="relevant_categories_based_on_settings.length + 2" style="text-align: center;">😱 {{ $t("report.empty_report") }}</td>
-                                </tr>
-                            </template>
-                            <template v-else>
-
-                                <tr v-for="url in filtered_urls" class="result_row" :key="url">
-                                    <template v-if="!url.endpoints.length">
-                                        <td>
-                                            -
-                                        </td>
-                                        <td>{{url.url}}</td>
-                                        <td colspan="200">
-                                            <small>{{ $t('report.not_eligeble_for_scanning') }}</small>
+                                        <td class="testresultcell" style="width: 100px"
+                                            v-for="category_name in relevant_categories_based_on_settings"
+                                            :key="category_name">
+                                            <div v-html="category_value_with_comparison(category_name, url)"></div>
                                         </td>
                                     </template>
                                     <template v-else>
-                                        <td style="width: 75px; min-width: 75px;">
-                                            <a class='direct_link_to_report' :href='url.endpoints[0].ratings_by_type.internet_nl_score.internet_nl_url' target="_blank">
-                                                <img src="/static/images/vendor/internet_nl/favicon.png" style="height: 16px;"> {{url.endpoints[0].ratings_by_type.internet_nl_score.internet_nl_score}}%
-                                                <span class="visuallyhidden">${this.$i18n.t('report.link_to_report', {'url': url})}</span>
-                                            </a>
-                                        </td>
-                                        <td style="width: 225px; min-width: 225px;">{{url.url}}</td>
-                                        <template v-if="['web', 'mail'].includes(selected_category)">
-                                            <td class="testresultcell" style="width: 100px" v-for="category_name in relevant_categories_based_on_settings" :key="category_name">
-                                                <div v-html="category_value_with_comparison(category_name, url)"></div>
-                                            </td>
-                                        </template>
-                                        <template v-else>
-                                            <td class="testresultcell" style="width: 56px" v-for="category_name in relevant_categories_based_on_settings" :key="category_name">
-                                                <div v-html="detail_value_with_comparison(category_name, url)"></div>
-                                            </td>
-                                        </template>
-                                        <td>
-
+                                        <td class="testresultcell" style="width: 56px"
+                                            v-for="category_name in relevant_categories_based_on_settings"
+                                            :key="category_name">
+                                            <div v-html="detail_value_with_comparison(category_name, url)"></div>
                                         </td>
                                     </template>
-                                </tr>
-                            </template>
+                                    <td>
+
+                                    </td>
+                                </template>
+                            </tr>
+                        </template>
                         </tbody>
                     </table>
                 </div>
@@ -707,6 +830,8 @@
 // Done: how to translate graphs?
 
 import jQuery from 'jquery'
+import lodash from 'lodash'
+
 import http_mixin from './http_mixin.vue'
 import legacy_mixin from './legacy_mixin.vue'
 import humanize_mixin from './humanize_mixin.vue'
@@ -900,7 +1025,7 @@ export default {
                     subtest_bad: internet_nl_messages.nl.internet_nl.faqs_report_subtest_bad,
                     subtest_warning: internet_nl_messages.nl.internet_nl.faqs_report_subtest_warning,
                     subtest_info: internet_nl_messages.nl.internet_nl.faqs_report_subtest_info,
-                    subtest_not_tested:  "Niet getest ⇒ geen score impact",
+                    subtest_not_tested: "Niet getest ⇒ geen score impact",
                     subtest_error_in_test: "Fout in test ⇒ nulscore",
                 },
 
@@ -1002,7 +1127,7 @@ export default {
     name: 'report',
     template: '#report_template',
     mixins: [humanize_mixin, http_mixin, legacy_mixin],
-    data: function() {
+    data: function () {
         return {
             is_loading: false,
 
@@ -1045,14 +1170,34 @@ export default {
                 internet_nl_web_tls: {visible: true, show_dynamic_average: true, only_show_dynamic_average: false},
                 internet_nl_web_dnssec: {visible: true, show_dynamic_average: true, only_show_dynamic_average: false},
                 internet_nl_web_ipv6: {visible: true, show_dynamic_average: true, only_show_dynamic_average: false},
-                internet_nl_web_appsecpriv: {visible: true, show_dynamic_average: true, only_show_dynamic_average: false},  // Added 24th of May 2019
+                internet_nl_web_appsecpriv: {
+                    visible: true,
+                    show_dynamic_average: true,
+                    only_show_dynamic_average: false
+                },  // Added 24th of May 2019
 
                 mail: {visible: true, show_dynamic_average: true, only_show_dynamic_average: false},
                 mail_legacy: {visible: false, show_dynamic_average: true, only_show_dynamic_average: false},
-                internet_nl_mail_dashboard_tls: {visible: true, show_dynamic_average: true, only_show_dynamic_average: false},
-                internet_nl_mail_dashboard_auth: {visible: true, show_dynamic_average: true, only_show_dynamic_average: false},
-                internet_nl_mail_dashboard_dnssec: {visible: true, show_dynamic_average: true, only_show_dynamic_average: false},
-                internet_nl_mail_dashboard_ipv6: {visible: true, show_dynamic_average: true, only_show_dynamic_average: false},
+                internet_nl_mail_dashboard_tls: {
+                    visible: true,
+                    show_dynamic_average: true,
+                    only_show_dynamic_average: false
+                },
+                internet_nl_mail_dashboard_auth: {
+                    visible: true,
+                    show_dynamic_average: true,
+                    only_show_dynamic_average: false
+                },
+                internet_nl_mail_dashboard_dnssec: {
+                    visible: true,
+                    show_dynamic_average: true,
+                    only_show_dynamic_average: false
+                },
+                internet_nl_mail_dashboard_ipv6: {
+                    visible: true,
+                    show_dynamic_average: true,
+                    only_show_dynamic_average: false
+                },
 
                 // a request was made to enable/disable dynamic averages on every graph. For this each graph
                 // needed an identifier, which became "category" -> thing. In this, values are stored.
@@ -1064,14 +1209,29 @@ export default {
                 category_web_tls_tls: {show_dynamic_average: true, only_show_dynamic_average: false},
                 category_web_tls_certificate: {show_dynamic_average: true, only_show_dynamic_average: false},
                 category_web_tls_dane: {show_dynamic_average: true, only_show_dynamic_average: false},
-                category_web_security_options_appsecpriv: {show_dynamic_average: true, only_show_dynamic_average: false},
-                category_web_forum_standardisation_magazine: {show_dynamic_average: true, only_show_dynamic_average: false},
-                category_web_forum_standardisation_ipv6_monitor: {show_dynamic_average: true, only_show_dynamic_average: false},
-                category_web_forum_standardisation_status_fields: {show_dynamic_average: true, only_show_dynamic_average: false},
+                category_web_security_options_appsecpriv: {
+                    show_dynamic_average: true,
+                    only_show_dynamic_average: false
+                },
+                category_web_forum_standardisation_magazine: {
+                    show_dynamic_average: true,
+                    only_show_dynamic_average: false
+                },
+                category_web_forum_standardisation_ipv6_monitor: {
+                    show_dynamic_average: true,
+                    only_show_dynamic_average: false
+                },
+                category_web_forum_standardisation_status_fields: {
+                    show_dynamic_average: true,
+                    only_show_dynamic_average: false
+                },
 
                 category_mail_ipv6_name_servers: {show_dynamic_average: true, only_show_dynamic_average: false},
                 category_mail_ipv6_mail_servers: {show_dynamic_average: true, only_show_dynamic_average: false},
-                category_mail_dnssec_email_address_domain: {show_dynamic_average: true, only_show_dynamic_average: false},
+                category_mail_dnssec_email_address_domain: {
+                    show_dynamic_average: true,
+                    only_show_dynamic_average: false
+                },
                 category_mail_dnssec_mail_server_domain: {show_dynamic_average: true, only_show_dynamic_average: false},
                 category_mail_dashboard_auth_dmarc: {show_dynamic_average: true, only_show_dynamic_average: false},
                 category_mail_dashboard_aut_dkim: {show_dynamic_average: true, only_show_dynamic_average: false},
@@ -1079,8 +1239,14 @@ export default {
                 category_mail_starttls_tls: {show_dynamic_average: true, only_show_dynamic_average: false},
                 category_mail_starttls_certificate: {show_dynamic_average: true, only_show_dynamic_average: false},
                 category_mail_starttls_dane: {show_dynamic_average: true, only_show_dynamic_average: false},
-                category_mail_forum_standardisation_magazine: {show_dynamic_average: true, only_show_dynamic_average: false},
-                category_mail_forum_standardisation_ipv6_monitor: {show_dynamic_average: true, only_show_dynamic_average: false},
+                category_mail_forum_standardisation_magazine: {
+                    show_dynamic_average: true,
+                    only_show_dynamic_average: false
+                },
+                category_mail_forum_standardisation_ipv6_monitor: {
+                    show_dynamic_average: true,
+                    only_show_dynamic_average: false
+                },
 
                 internet_nl_web_https_cert_domain: {visible: true},
                 internet_nl_web_https_http_redirect: {visible: true},
@@ -1225,7 +1391,7 @@ export default {
             sortOrders: {'url': 1},
         }
     },
-    mounted: function(){
+    mounted: function () {
 
         this.load_issue_filters();
         this.get_recent_reports();
@@ -1245,7 +1411,7 @@ export default {
                 let reports_to_select = [];
                 // The primary report
                 this.filtered_recent_reports.forEach((option) => {
-                    if (option.id + "" === primary_report_id){
+                    if (option.id + "" === primary_report_id) {
                         reports_to_select.push(option);
                     }
                 });
@@ -1253,7 +1419,7 @@ export default {
                 // loop again, so we're sure the first report is the primary report,
                 // and a compared report is compared:
                 this.filtered_recent_reports.forEach((option) => {
-                    if (option.id + "" === secondary_report_id){
+                    if (option.id + "" === secondary_report_id) {
                         reports_to_select.push(option);
                     }
                 });
@@ -1261,22 +1427,25 @@ export default {
                 this.selected_report = reports_to_select;
             }
         }, 1000)
-        this.$nextTick(() => {this.accordinate();});
+        this.$nextTick(() => {
+            this.accordinate();
+        });
     },
-    // common issue that debounce does not work on a watch:
+    // common issue that debounce does not work on a watch.
+    // todo: there is probably a vue thing that is smaller than lodash that can debounce.
     // https://stackoverflow.com/questions/47172952/vuejs-2-debounce-not-working-on-a-watch-option
     created() {
-        this.debounce = _.debounce( (func) => {
-          // console.log('Debounced term: ' + func);
-          func.apply();
+        this.debounce = lodash._.debounce((func) => {
+            // console.log('Debounced term: ' + func);
+            func.apply();
         }, 300)
     },
     methods: {
-        load: function(report_id) {
+        load: function (report_id) {
             this.get_report_data(report_id);
         },
 
-        category_value_with_comparison: function(category_name, url){
+        category_value_with_comparison: function (category_name, url) {
             let verdicts = url.endpoints[0].ratings_by_type[category_name];
             let simple_value = this.category_verdict_to_simple_value(verdicts, category_name);
 
@@ -1296,7 +1465,7 @@ export default {
             if (simple_value === other_simple_value || simple_value === "unknown" || other_simple_value === "unknown")
                 comparison_verdict = "neutral";
             else {
-                if (progression[simple_value] > progression[other_simple_value]){
+                if (progression[simple_value] > progression[other_simple_value]) {
                     comparison_verdict = "improved";
                 } else {
                     comparison_verdict = "regressed";
@@ -1308,7 +1477,7 @@ export default {
             return `<span class="category_${simple_value} compared_with_next_report_${comparison_verdict}">${comparison_text} ${simple_value}</span>`
         },
 
-        category_verdict_to_simple_value: function(verdict, category_name) {
+        category_verdict_to_simple_value: function (verdict, category_name) {
             if (verdict === undefined)
                 return "unknown";
 
@@ -1318,9 +1487,11 @@ export default {
             }
 
             // backwards compatible with API v1.0 reports:
-            if (verdict.ok > 0) {return 'passed'}
+            if (verdict.ok > 0) {
+                return 'passed'
+            }
             if (verdict.ok < 1) {
-                if (category_name === 'internet_nl_web_appsecpriv'){
+                if (category_name === 'internet_nl_web_appsecpriv') {
                     return "warning";
                 }
                 return "failed"
@@ -1328,7 +1499,7 @@ export default {
 
         },
 
-        detail_value_with_comparison: function(category_name, url){
+        detail_value_with_comparison: function (category_name, url) {
             /**
              * This function is called numerous times. It has been optimzed in the following ways:
              * - Translations have been removed, saving 1 second for (500 * 16) = 8000 metrics.
@@ -1433,7 +1604,7 @@ export default {
             this.sortKey = key;
 
             // dynamically populate the orders
-            if (!(key in this.sortOrders)){
+            if (!(key in this.sortOrders)) {
                 // console.log('autopopulating sortOrder');
                 this.sortOrders[key] = 1;
             }
@@ -1442,16 +1613,16 @@ export default {
             this.filtered_urls = this.order_urls(this.filtered_urls);
         },
 
-        get_issue_filter_data(key){
+        get_issue_filter_data(key) {
             try {
                 return this.issue_filters[key];
-            } catch(err) {
+            } catch (err) {
                 this.issue_filters[key] = {'visible': true};
                 // console.log(`Issue filter for ${key} does not exist. Created it.`)
             }
         },
 
-        get_report_data: function(report_id){
+        get_report_data: function (report_id) {
             this.is_loading = true;
             // You'll notice a load time at a random point in this function, this means Vue is processing the response.
             fetch(`/data/report/get/${report_id}/`, {credentials: 'include'}).then(response => response.json()).then(data => {
@@ -1476,14 +1647,21 @@ export default {
                 this.is_loading = false;
 
                 // new accordions are created, reduce their size.
-                this.$nextTick(() => {this.accordinate(); this.$forceUpdate()});
-            }).catch((fail) => {console.log('A loading error occurred: ' + fail);});
+                this.$nextTick(() => {
+                    this.accordinate();
+                    this.$forceUpdate()
+                });
+            }).catch((fail) => {
+                console.log('A loading error occurred: ' + fail);
+            });
 
             fetch(`/data/report/differences_compared_to_current_list/${report_id}/`, {credentials: 'include'}).then(response => response.json()).then(data => {
                 this.differences_compared_to_current_list = data;
-            }).catch((fail) => {console.log('A loading error occurred: ' + fail);});
+            }).catch((fail) => {
+                console.log('A loading error occurred: ' + fail);
+            });
         },
-        save_issue_filters: function(){
+        save_issue_filters: function () {
             /*
             * This overrides the account level issue filters. Filters are saved per account and this is done by
             * design. This prevents the 'having to reset for each report or for each user' dilemma, which results
@@ -1498,7 +1676,7 @@ export default {
                 }
             );
         },
-        reset_issue_filters: function(){
+        reset_issue_filters: function () {
             fetch(`/data/account/report_settings/get/`, {credentials: 'include'}).then(response => response.json()).then(data => {
                 if (!jQuery.isEmptyObject(data)) {
                     this.issue_filters = data.data;
@@ -1508,7 +1686,7 @@ export default {
             this.load_issue_filters();
 
         },
-        load_issue_filters: function(){
+        load_issue_filters: function () {
             fetch(`/data/account/report_settings/get/`, {credentials: 'include'}).then(response => response.json()).then(data => {
                 if (!jQuery.isEmptyObject(data.data)) {
                     // Get all possible issue fields before overwriting them with whatever is stored.
@@ -1527,7 +1705,7 @@ export default {
         },
 
 
-        upgrade_issue_filter_with_new_field: function(field_name){
+        upgrade_issue_filter_with_new_field: function (field_name) {
             if (!Object.keys(this.issue_filters).includes(field_name)) {
 
                 // web and mail and default categories are always visible by default.: otherwise we'd never see any categories when this data is malformed.
@@ -1570,7 +1748,7 @@ export default {
                     "internet_nl_web_appsecpriv_csp", "internet_nl_web_appsecpriv_referrer_policy",
                     "internet_nl_web_appsecpriv_x_content_type_options",
                     "internet_nl_web_appsecpriv_x_frame_options",
-                ].includes(field_name)){
+                ].includes(field_name)) {
                     this.issue_filters[field_name] = {
                         visible: true,
                         show_dynamic_average: true,
@@ -1588,7 +1766,7 @@ export default {
             }
         },
 
-        alphabet_sorting: function(a, b){
+        alphabet_sorting: function (a, b) {
             // i already mis sorted()
             if (a.url < b.url) {
                 return -1;
@@ -1599,7 +1777,7 @@ export default {
             return 0;
         },
 
-        compare_with: function(id, compare_chart_id){
+        compare_with: function (id, compare_chart_id) {
             fetch(`/data/report/get/${id}/`, {credentials: 'include'}).then(response => response.json()).then(report => {
 
                 if (!jQuery.isEmptyObject(report)) {
@@ -1623,25 +1801,32 @@ export default {
 
                     // given the charts are on a fixed number in the array, vue doesn't pick up changes.
                     // and as the order matters, this is a solution that fixes that.
-                    this.$nextTick(() => {this.accordinate(); this.$forceUpdate();});
+                    this.$nextTick(() => {
+                        this.accordinate();
+                        this.$forceUpdate();
+                    });
                 }
 
-            }).catch((fail) => {console.log('A loading error occurred: ' + fail);});
+            }).catch((fail) => {
+                console.log('A loading error occurred: ' + fail);
+            });
         },
 
-        get_recent_reports: function(){
+        get_recent_reports: function () {
             fetch(`/data/report/recent/`, {credentials: 'include'}).then(response => response.json()).then(data => {
                 // console.log("Get recent reports");
                 let options = [];
-                for(let i = 0; i < data.length; i++){
+                for (let i = 0; i < data.length; i++) {
                     data[i].label = `#${data[i].id} - ${data[i].list_name} - type: ${data[i].type} - from: ${this.humanize_date(data[i].at_when)}`;
                     options.push(data[i]);
                 }
                 this.available_recent_reports = options;
                 this.filtered_recent_reports = options;
-            }).catch((fail) => {console.log('A loading error occurred: ' + fail);});
+            }).catch((fail) => {
+                console.log('A loading error occurred: ' + fail);
+            });
         },
-        select_category: function(category_name){
+        select_category: function (category_name) {
             if (Object.keys(this.categories).includes(category_name))
                 this.selected_category = category_name;
             else
@@ -1652,19 +1837,19 @@ export default {
 
             // keep the search order, use a correctly ordered set of original urls:
             let tmp_urls = this.order_urls(this.original_urls);
-            tmp_urls.forEach(function(value) {
+            tmp_urls.forEach(function (value) {
                 if (value.url.includes(keyword))
                     urls.push(value)
             });
             this.filtered_urls = this.order_urls(urls);
 
         },
-        order_urls: function(data){
+        order_urls: function (data) {
             // todo: add sorting icons :)
             // todo: transform this to a component too, move translations here.
             // https://alligator.io/vuejs/grid-component/
             let sortKey = this.sortKey;
-            if (!sortKey){
+            if (!sortKey) {
                 return data;
             }
 
@@ -1672,7 +1857,7 @@ export default {
 
             // The ordering keys are in different places in the data. See websecmap for the structure of the data.
             // So filter based on this structure.
-            if (sortKey === "url"){
+            if (sortKey === "url") {
                 data = data.slice().sort(function (a, b) {
                     // for everything that is not the url name itself, is neatly tucked away.
                     a = a[sortKey];
@@ -1683,15 +1868,15 @@ export default {
 
                 return data;
             }
-            if (sortKey === "score"){
+            if (sortKey === "score") {
                 data = data.slice().sort(function (a, b) {
 
                     // deal with urls without endpoints:
-                    if (a.endpoints.length === 0){
+                    if (a.endpoints.length === 0) {
                         return -1 * order;
                     }
 
-                    if (b.endpoints.length === 0){
+                    if (b.endpoints.length === 0) {
                         return 1 * order;
                     }
 
@@ -1706,11 +1891,11 @@ export default {
                 // for everything that is not the url name itself, is neatly tucked away. Only filter on high? Or on what kind of structure?
 
                 // deal with urls without endpoints:
-                if (a.endpoints.length === 0){
+                if (a.endpoints.length === 0) {
                     return -1 * order;
                 }
 
-                if (b.endpoints.length === 0){
+                if (b.endpoints.length === 0) {
                     return 1 * order;
                 }
 
@@ -1729,7 +1914,7 @@ export default {
 
             return data;
         },
-        all_field_names_from_categories(categories){
+        all_field_names_from_categories(categories) {
             let fields = [];
 
             categories.categories.forEach((category) => {
@@ -1745,7 +1930,7 @@ export default {
 
             return fields;
         },
-        all_subcategory_fields_from_category(category_name){
+        all_subcategory_fields_from_category(category_name) {
             let fields = [];
 
             let i = 0;
@@ -1756,7 +1941,7 @@ export default {
 
             this.scan_methods[i].categories.forEach((category) => {
 
-                if (category.key !== category_name.key){
+                if (category.key !== category_name.key) {
                     return
                 }
 
@@ -1774,36 +1959,36 @@ export default {
             return fields;
         },
 
-        category_from_field_name: function(field_name){
+        category_from_field_name: function (field_name) {
             return this.field_name_to_category_names[field_name];
         },
 
-        check_fields: function(list_of_fields){
+        check_fields: function (list_of_fields) {
             list_of_fields.forEach((field) => {
                 this.issue_filters[field].visible = true;
             })
         },
 
-        uncheck_fields: function(list_of_fields){
+        uncheck_fields: function (list_of_fields) {
             list_of_fields.forEach((field) => {
                 this.issue_filters[field].visible = false;
             })
         },
 
-        visible_metrics_see_if_category_is_relevant: function(category_name) {
+        visible_metrics_see_if_category_is_relevant: function (category_name) {
             // if all fields in the category are deselected, deselect the category, otherwise, select it.
 
             let fields = this.all_subcategory_fields_from_category(category_name);
 
             let should_be_visible = false;
-            for (let i=0; i< fields.length; i++){
+            for (let i = 0; i < fields.length; i++) {
 
                 // alerting if fields are missing:
-                if (this.issue_filters[fields[i]] === undefined){
+                if (this.issue_filters[fields[i]] === undefined) {
                     console.log(`Missing field ${fields[i]} in issue filters.`)
                 }
 
-                if (this.issue_filters[fields[i]].visible){
+                if (this.issue_filters[fields[i]].visible) {
                     should_be_visible = true;
                     break;
                 }
@@ -1816,15 +2001,15 @@ export default {
     watch: {
 
         // support keep alive routing
-        $route: function(to, from){
+        $route: function (to) {
             // https://router.vuejs.org/guide/essentials/dynamic-matching.html
-            if (undefined !== to.params.report){
+            if (undefined !== to.params.report) {
                 // See if we can find a report to mach. Has to updated in 1 go due to the watch.
                 let reports_to_select = [];
 
                 // The primary report
                 this.available_recent_reports.forEach((item) => {
-                    if (item.id === to.params.report){
+                    if (item.id === to.params.report) {
                         reports_to_select.push(item);
                     }
                 });
@@ -1841,7 +2026,7 @@ export default {
             }
         },
 
-        selected_report: function (new_value, old_value) {
+        selected_report: function (new_value) {
             // when multiple items are selected, the old value is always 1 item, the new one is always 2 items.
             // as such it is not possible to determine reload without trickery safely...
 
@@ -1851,19 +2036,19 @@ export default {
             console.log(old_value);*/
 
             // totally empty list, list was emptied by clicking the crosshair everywhere.
-            if (new_value[0] === undefined){
+            if (new_value[0] === undefined) {
                 // console.log('List was emptied');
 
                 // all reports are available again:
                 this.filtered_recent_reports = this.available_recent_reports;
 
-                this.reports=[];
+                this.reports = [];
                 this.is_loading = false;
                 return;
             }
 
             // Always update the URL to reflect the latest report, so it can be easily shared and the page reloaded
-            if (new_value.length > 1){
+            if (new_value.length > 1) {
                 history.pushState(
                     {},
                     null,
@@ -1888,7 +2073,7 @@ export default {
             // filter reports on type:
             let filtered_reports = [];
             this.available_recent_reports.forEach((item) => {
-                if (item.type === new_value[0].type){
+                if (item.type === new_value[0].type) {
                     filtered_reports.push(item);
                 }
             });
@@ -1896,7 +2081,7 @@ export default {
 
             // we already have the first chart, don't load that again.
             // the first chart is always loaded through the load method.
-            for(let i=1; i<new_value.length; i++){
+            for (let i = 1; i < new_value.length; i++) {
                 // console.log(`Comparing with report ${new_value[i].id}`);
                 // todo: this causes an extra load of the data, which is slow... At least it always works
                 // without syncing issues etc...
@@ -1905,14 +2090,14 @@ export default {
                 this.compare_with(new_value[i].id, i);
             }
         },
-        amount_of_finished_scans: function(new_value, old_value) {
+        amount_of_finished_scans: function (new_value, old_value) {
             // If there are more scans finished, this list is updated.
             if (new_value === old_value)
                 return;
 
             this.get_recent_reports();
         },
-        url_filter: function(newValue, oldValue){
+        url_filter: function (newValue) {
             this.filter_urls(newValue);
             // aside from debouncing not working, as it doesn't understand the vue context, it is not needed
             // up until 400 + items in the list.
@@ -1921,19 +2106,17 @@ export default {
     },
     computed: {
         // graph titles:
-        graph_radar_chart_title: function(){
+        graph_radar_chart_title: function () {
             return this.$i18n.t('charts.adoption_radar_chart.title', {
                 'list_information': this.selected_report[0].list_name,
                 'number_of_domains': this.original_urls.length
             });
         },
 
-        scan_methods: function() {
-
-            let language = get_cookie('dashboard_language');
-            if (language === undefined || language.length > 3){
-                language = "en"
-            }
+        scan_methods: function () {
+            // todo: watch the active language for changes. This should be done differently, with normal
+            // translations (or generated ones).
+            var language = this.$store.active_language;
 
             return [
                 {
@@ -2103,22 +2286,38 @@ export default {
                                     key: 'category_web_forum_standardisation_magazine',
                                     label: 'Baseline NL Government',
                                     fields: [
-                                        {name: 'internet_nl_web_legacy_dnssec',
-                                        explanation: 'fields.forum_standardistation.internet_nl_web_legacy_dnssec_explanation'},
-                                        {name: 'internet_nl_web_legacy_tls_available',
-                                        explanation: 'fields.forum_standardistation.internet_nl_web_legacy_tls_available_explanation'},
-                                        {name: 'internet_nl_web_legacy_tls_ncsc_web',
-                                        explanation: 'fields.forum_standardistation.internet_nl_web_legacy_tls_ncsc_web_explanation'},
-                                        {name: 'internet_nl_web_legacy_https_enforced',
-                                        explanation: 'fields.forum_standardistation.internet_nl_web_legacy_https_enforced_explanation'},
-                                        {name: 'internet_nl_web_legacy_hsts',
-                                        explanation: 'fields.forum_standardistation.internet_nl_web_legacy_hsts_explanation'},
-                                        {name: 'internet_nl_web_legacy_category_ipv6',
-                                        explanation: 'fields.forum_standardistation.internet_nl_web_legacy_ipv6_nameserver_explanation'},
-                                        {name: 'internet_nl_web_legacy_ipv6_nameserver',
-                                        explanation: 'fields.forum_standardistation.internet_nl_web_legacy_ipv6_nameserver_explanation'},
-                                        {name: 'internet_nl_web_legacy_ipv6_webserver',
-                                        explanation: 'fields.forum_standardistation.internet_nl_web_legacy_ipv6_webserver_explanation'},
+                                        {
+                                            name: 'internet_nl_web_legacy_dnssec',
+                                            explanation: 'fields.forum_standardistation.internet_nl_web_legacy_dnssec_explanation'
+                                        },
+                                        {
+                                            name: 'internet_nl_web_legacy_tls_available',
+                                            explanation: 'fields.forum_standardistation.internet_nl_web_legacy_tls_available_explanation'
+                                        },
+                                        {
+                                            name: 'internet_nl_web_legacy_tls_ncsc_web',
+                                            explanation: 'fields.forum_standardistation.internet_nl_web_legacy_tls_ncsc_web_explanation'
+                                        },
+                                        {
+                                            name: 'internet_nl_web_legacy_https_enforced',
+                                            explanation: 'fields.forum_standardistation.internet_nl_web_legacy_https_enforced_explanation'
+                                        },
+                                        {
+                                            name: 'internet_nl_web_legacy_hsts',
+                                            explanation: 'fields.forum_standardistation.internet_nl_web_legacy_hsts_explanation'
+                                        },
+                                        {
+                                            name: 'internet_nl_web_legacy_category_ipv6',
+                                            explanation: 'fields.forum_standardistation.internet_nl_web_legacy_ipv6_nameserver_explanation'
+                                        },
+                                        {
+                                            name: 'internet_nl_web_legacy_ipv6_nameserver',
+                                            explanation: 'fields.forum_standardistation.internet_nl_web_legacy_ipv6_nameserver_explanation'
+                                        },
+                                        {
+                                            name: 'internet_nl_web_legacy_ipv6_webserver',
+                                            explanation: 'fields.forum_standardistation.internet_nl_web_legacy_ipv6_webserver_explanation'
+                                        },
                                     ],
                                     additional_fields: [],
                                 },
@@ -2127,8 +2326,10 @@ export default {
                                     key: 'category_web_forum_standardisation_status_fields',
                                     label: this.$i18n.t('fields.forum_standardistation.status_fields'),
                                     fields: [
-                                        {name: 'internet_nl_web_legacy_tls_1_3',
-                                        explanation: 'fields.forum_standardistation.internet_nl_web_legacy_tls_1_3_explanation'},
+                                        {
+                                            name: 'internet_nl_web_legacy_tls_1_3',
+                                            explanation: 'fields.forum_standardistation.internet_nl_web_legacy_tls_1_3_explanation'
+                                        },
                                     ],
                                     additional_fields: [],
                                 }
@@ -2139,8 +2340,7 @@ export default {
                 {
                     name: 'mail',
                     fields: [],
-                    additional_fields: [
-                    ],
+                    additional_fields: [],
 
                     label: internet_nl_messages[language].internet_nl.base_test_mail_label,
                     categories: [
@@ -2216,9 +2416,7 @@ export default {
                             fields: [
                                 {name: 'internet_nl_mail_dashboard_auth'}
                             ],
-                            additional_fields: [
-
-                            ],
+                            additional_fields: [],
                             categories: [
                                 {
                                     name: 'DMARC',
@@ -2247,9 +2445,7 @@ export default {
                                         {name: 'internet_nl_mail_auth_spf_exist'},
                                         {name: 'internet_nl_mail_auth_spf_policy'},
                                     ],
-                                    additional_fields: [
-
-                                    ],
+                                    additional_fields: [],
                                 },
                             ]
                         },
@@ -2260,9 +2456,7 @@ export default {
                             fields: [
                                 {name: 'internet_nl_mail_dashboard_tls'},
                             ],
-                            additional_fields: [
-
-                            ],
+                            additional_fields: [],
                             categories: [
                                 {
                                     name: 'TLS',
@@ -2327,31 +2521,55 @@ export default {
                                     label: 'Baseline NL Government',
                                     key: 'category_mail_forum_standardisation_magazine',
                                     fields: [
-                                        {name: 'internet_nl_mail_legacy_dmarc',
-                                        explanation: 'fields.forum_standardistation.internet_nl_mail_legacy_dmarc_explanation'},
-                                        {name: 'internet_nl_mail_legacy_dkim',
-                                        explanation: 'fields.forum_standardistation.internet_nl_mail_legacy_dkim_explanation'},
-                                        {name: 'internet_nl_mail_legacy_spf',
-                                        explanation: 'fields.forum_standardistation.internet_nl_mail_legacy_spf_explanation'},
-                                        {name: 'internet_nl_mail_legacy_dmarc_policy',
-                                        explanation: 'fields.forum_standardistation.internet_nl_mail_legacy_dmarc_policy_explanation'},
-                                        {name: 'internet_nl_mail_legacy_spf_policy',
-                                        explanation: 'fields.forum_standardistation.internet_nl_mail_legacy_spf_policy_explanation'},
-                                        {name: 'internet_nl_mail_legacy_start_tls',
-                                        explanation: 'fields.forum_standardistation.internet_nl_mail_legacy_start_tls_explanation'},
-                                        {name: 'internet_nl_mail_legacy_start_tls_ncsc',
-                                        explanation: 'fields.forum_standardistation.internet_nl_mail_legacy_start_tls_ncsc_explanation'},
+                                        {
+                                            name: 'internet_nl_mail_legacy_dmarc',
+                                            explanation: 'fields.forum_standardistation.internet_nl_mail_legacy_dmarc_explanation'
+                                        },
+                                        {
+                                            name: 'internet_nl_mail_legacy_dkim',
+                                            explanation: 'fields.forum_standardistation.internet_nl_mail_legacy_dkim_explanation'
+                                        },
+                                        {
+                                            name: 'internet_nl_mail_legacy_spf',
+                                            explanation: 'fields.forum_standardistation.internet_nl_mail_legacy_spf_explanation'
+                                        },
+                                        {
+                                            name: 'internet_nl_mail_legacy_dmarc_policy',
+                                            explanation: 'fields.forum_standardistation.internet_nl_mail_legacy_dmarc_policy_explanation'
+                                        },
+                                        {
+                                            name: 'internet_nl_mail_legacy_spf_policy',
+                                            explanation: 'fields.forum_standardistation.internet_nl_mail_legacy_spf_policy_explanation'
+                                        },
+                                        {
+                                            name: 'internet_nl_mail_legacy_start_tls',
+                                            explanation: 'fields.forum_standardistation.internet_nl_mail_legacy_start_tls_explanation'
+                                        },
+                                        {
+                                            name: 'internet_nl_mail_legacy_start_tls_ncsc',
+                                            explanation: 'fields.forum_standardistation.internet_nl_mail_legacy_start_tls_ncsc_explanation'
+                                        },
                                         // {name: 'internet_nl_mail_legacy_dnssec_email_domain'},
-                                        {name: 'internet_nl_mail_legacy_dnssec_mx',
-                                        explanation: 'fields.forum_standardistation.internet_nl_mail_legacy_dnssec_mx_explanation'},
-                                        {name: 'internet_nl_mail_legacy_dane',
-                                        explanation: 'fields.forum_standardistation.internet_nl_mail_legacy_dane_explanation'},
-                                        {name: 'internet_nl_mail_legacy_category_ipv6',
-                                        explanation: 'fields.forum_standardistation.internet_nl_mail_legacy_ipv6_category_explanation'},
-                                        {name: 'internet_nl_mail_legacy_ipv6_nameserver',
-                                        explanation: 'fields.forum_standardistation.internet_nl_mail_legacy_ipv6_nameserver_explanation'},
-                                        {name: 'internet_nl_mail_legacy_ipv6_mailserver',
-                                        explanation: 'fields.forum_standardistation.internet_nl_mail_legacy_ipv6_mailserver_explanation'},
+                                        {
+                                            name: 'internet_nl_mail_legacy_dnssec_mx',
+                                            explanation: 'fields.forum_standardistation.internet_nl_mail_legacy_dnssec_mx_explanation'
+                                        },
+                                        {
+                                            name: 'internet_nl_mail_legacy_dane',
+                                            explanation: 'fields.forum_standardistation.internet_nl_mail_legacy_dane_explanation'
+                                        },
+                                        {
+                                            name: 'internet_nl_mail_legacy_category_ipv6',
+                                            explanation: 'fields.forum_standardistation.internet_nl_mail_legacy_ipv6_category_explanation'
+                                        },
+                                        {
+                                            name: 'internet_nl_mail_legacy_ipv6_nameserver',
+                                            explanation: 'fields.forum_standardistation.internet_nl_mail_legacy_ipv6_nameserver_explanation'
+                                        },
+                                        {
+                                            name: 'internet_nl_mail_legacy_ipv6_mailserver',
+                                            explanation: 'fields.forum_standardistation.internet_nl_mail_legacy_ipv6_mailserver_explanation'
+                                        },
 
                                     ],
                                     additional_fields: [],
@@ -2362,18 +2580,30 @@ export default {
                                     key: 'category_web_forum_standardisation_status_fields',
                                     label: this.$i18n.t('fields.forum_standardistation.status_fields'),
                                     fields: [
-                                        {name: 'internet_nl_mail_legacy_tls_1_3',
-                                        explanation: 'fields.forum_standardistation.internet_nl_mail_legacy_tls_1_3_explanation'},
-                                        {name: 'internet_nl_mail_legacy_domain_has_mx',
-                                        explanation: 'fields.forum_standardistation.internet_nl_mail_legacy_domain_has_mx_explanation'},
-                                        {name: 'internet_nl_mail_legacy_mail_server_reachable',
-                                        explanation: 'fields.forum_standardistation.internet_nl_mail_legacy_mail_server_reachable_explanation'},
-                                        {name: 'internet_nl_mail_legacy_mail_server_testable',
-                                        explanation: 'fields.forum_standardistation.internet_nl_mail_legacy_mail_server_testable_explanation'},
-                                        {name: 'internet_nl_mail_legacy_mail_non_sending_domain',
-                                        explanation: 'fields.forum_standardistation.internet_nl_mail_legacy_mail_non_sending_domain_explanation'},
-                                        {name: 'internet_nl_mail_legacy_mail_sending_domain',
-                                        explanation: 'fields.forum_standardistation.internet_nl_mail_legacy_mail_sending_domain_explanation'},
+                                        {
+                                            name: 'internet_nl_mail_legacy_tls_1_3',
+                                            explanation: 'fields.forum_standardistation.internet_nl_mail_legacy_tls_1_3_explanation'
+                                        },
+                                        {
+                                            name: 'internet_nl_mail_legacy_domain_has_mx',
+                                            explanation: 'fields.forum_standardistation.internet_nl_mail_legacy_domain_has_mx_explanation'
+                                        },
+                                        {
+                                            name: 'internet_nl_mail_legacy_mail_server_reachable',
+                                            explanation: 'fields.forum_standardistation.internet_nl_mail_legacy_mail_server_reachable_explanation'
+                                        },
+                                        {
+                                            name: 'internet_nl_mail_legacy_mail_server_testable',
+                                            explanation: 'fields.forum_standardistation.internet_nl_mail_legacy_mail_server_testable_explanation'
+                                        },
+                                        {
+                                            name: 'internet_nl_mail_legacy_mail_non_sending_domain',
+                                            explanation: 'fields.forum_standardistation.internet_nl_mail_legacy_mail_non_sending_domain_explanation'
+                                        },
+                                        {
+                                            name: 'internet_nl_mail_legacy_mail_sending_domain',
+                                            explanation: 'fields.forum_standardistation.internet_nl_mail_legacy_mail_sending_domain_explanation'
+                                        },
                                     ],
                                     additional_fields: [],
                                 }
@@ -2384,7 +2614,7 @@ export default {
             ];
         },
 
-        field_name_to_category_names: function(){
+        field_name_to_category_names: function () {
             /** Based on the scan methods, the names of the categories is 1-1 associated with a category name.
              * This can be used to generate "category" headers in the result table. This helps to distinguish
              * several chapter headings for a set of scans. This is useful for mail dnssec scans, as the
@@ -2420,7 +2650,7 @@ export default {
             return fields_mapping;
         },
 
-        relevant_categories_based_on_settings: function(){
+        relevant_categories_based_on_settings: function () {
             let preferred_fields = [];  // this.categories[this.selected_category];
 
             // console.log(`Selected category: ${this.selected_category}`);
@@ -2429,7 +2659,7 @@ export default {
                 // console.log("scan_method " + scan_method.name);
                 // todo: also get relevant column for scan_methods, just like with graphs. But given large refactor,
                 // we'll do that later.
-                if (['web', 'mail'].includes(scan_method.name) && scan_method.name === this.selected_category){
+                if (['web', 'mail'].includes(scan_method.name) && scan_method.name === this.selected_category) {
 
                     scan_method.categories.forEach((category) => {
 
@@ -2466,15 +2696,15 @@ export default {
             // now determine for each field if they should be visible or not. Perhaps this should be in
             // the new_categories
             let returned_fields = [];
-            for(let i = 0; i<preferred_fields.length; i++){
+            for (let i = 0; i < preferred_fields.length; i++) {
 
-                if(this.issue_filters[preferred_fields[i]].visible)
+                if (this.issue_filters[preferred_fields[i]].visible)
                     returned_fields.push(preferred_fields[i])
             }
             return returned_fields;
         },
 
-        amount_of_finished_scans: function() {
+        amount_of_finished_scans: function () {
             // this helps auto-reloading the list of available reports
 
             // In the case no scans
@@ -2483,7 +2713,7 @@ export default {
 
             let finished = 0;
             // the first scan-monitor record where list_id is the same, is the one with the most recent state
-            for(let i = 0; i < this.$store.state.scan_monitor_data.length; i++) {
+            for (let i = 0; i < this.$store.state.scan_monitor_data.length; i++) {
                 if (this.$store.state.scan_monitor_data[i].state === "finished") {
                     finished++;
                 }

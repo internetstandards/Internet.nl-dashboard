@@ -5,7 +5,7 @@ from django.urls import path, register_converter
 import dashboard.internet_nl_dashboard.signals  # noqa
 from dashboard.internet_nl_dashboard.views import (__init__, account, domains, download_spreadsheet,
                                                    mail, powertools, report, scan_monitor,
-                                                   spreadsheet, user)
+                                                   spreadsheet, user, session)
 
 
 class SpreadsheetFileTypeConverter:
@@ -70,6 +70,11 @@ urlpatterns = [
          download_spreadsheet.download_spreadsheet),
 
     path('mail/unsubscribe/<str:feed>/<str:unsubscribe_code>/', mail.unsubscribe_),
+
+    # session management
+    path('session/login/', session.session_login),
+    path('session/logout/', session.session_logout),
+    path('session/status/', session.session_status),
 
     # Would you enable the below login form, you will bypass all second factor authentication. Therefore do not enable
     # this url (!)

@@ -21,7 +21,7 @@
 </template>
 {% endverbatim %}
 <script>
-Vue.component('site-menu', {
+export default {
     i18n: {
         messages: {
             en: {
@@ -45,10 +45,16 @@ Vue.component('site-menu', {
         }
     },
     props: {
-        is_authenticated: Boolean,
-        is_superuser: Boolean,
+        is_authenticated: {
+            type: Boolean,
+            default: false,
+        },
+        is_superuser: {
+            type: Boolean,
+            default: false,
+        }
     },
     name: 'site-menu',
     template: '#menu_template',
-});
+}
 </script>

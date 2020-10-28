@@ -15,7 +15,7 @@
             {% trans "page gotofooter" %}
         </a></div>
 
-        <header>
+        <header class="header-js-animated">
             <div class="wrap">
                 <div class="hidethis" aria-hidden="true">
                     <span id="panel-button-show">
@@ -51,18 +51,18 @@
                     <div id="language-switch-header-container" aria-hidden="true">
                         <ul class="language-switch-list">
                             <li v-for="(language_code, index) in supported_languages" :key="index">
-                                <button v-if="language_code === activated_langauge" class="active-language" disabled>
+                                <button v-if="language_code === $store.state.active_language" class="active-language" disabled>
                                     {{ $t(language_code) }}
                                 </button>
-                                <a v-if="language_code !== activated_langauge"
+                                <a v-if="language_code !== $store.state.active_language"
                                    onclick="set_language(language_code)">{{ $t(language_code) }}</a>
                             </li>
                         </ul>
                     </div>
 
                     <nav id="sitenav" aria-hidden="true" aria-labelledby="menu-button">
-                        <site-menu :is_authenticated="user.is_authenticated"
-                                   :is_superuser="user.is_superuser"></site-menu>
+                        <SiteMenu :is_authenticated="$store.state.user.is_authenticated"
+                                  :is_superuser="$store.state.user.is_superuser"></SiteMenu>
                     </nav>
                 </template>
                 <template v-else>
@@ -70,18 +70,18 @@
                     <div id="language-switch-header-container" aria-hidden="true">
                         <ul class="language-switch-list">
                             <li v-for="(language_code, index) in supported_languages" :key="index">
-                                <button v-if="language_code === activated_langauge" class="active-language" disabled>
+                                <button v-if="language_code === $store.state.active_language" class="active-language" disabled>
                                     {{ $t(language_code) }}
                                 </button>
-                                <a v-if="language_code !== activated_langauge"
+                                <a v-if="language_code !== $store.state.active_language"
                                    onclick="set_language(language_code)">{{ $t(language_code) }}</a>
                             </li>
                         </ul>
                     </div>
 
                     <nav id="sitenav">
-                        <site-menu :is_authenticated="user.is_authenticated"
-                                   :is_superuser="user.is_superuser"></site-menu>
+                        <SiteMenu :is_authenticated="$store.state.user.is_authenticated"
+                                  :is_superuser="$store.state.user.is_superuser"></SiteMenu>
                     </nav>
                 </template>
             </div>
@@ -149,27 +149,111 @@ import VueI18n from 'vue-i18n'
 
 Vue.use(VueI18n)
 Vue.use(VueRouter)
+Vue.use(require('vue-moment'));
 
 // https://stackoverflow.com/questions/10730362/get-cookie-by-name
+// todo: how to get rid of this?
 function get_cookie(name) {
     let value = "; " + document.cookie;
     let parts = value.split("; " + name + "=");
     if (parts.length === 2) return parts.pop().split(";").shift();
 }
 
+// these methods are used over and over.
+Vue.mixin(
+    {
+        methods: {
+            // this can probably be replaced with axios or whatever. Or not if we want tos ave on dependencies.
+            asynchronous_json_post: function (url, data, callback) {
+                // the context parameter is somewhat dangerous, but this allows us to say 'self.' in the callback.
+                // which could be done somewhat better.
+                // https://stackoverflow.com/questions/20279484/how-to-access-the-correct-this-inside-a-callback
+                let server_response = {};
+                // console.log(`Posting to ${url}, with data ${data}`)
+                (async () => {
+                    const rawResponse = await fetch(url, {
+                        method: 'POST',
+                        credentials: 'include',
+                        headers: {
+                            'Accept': 'application/json',
+                            'Content-Type': 'application/json',
+                            'X-CSRFToken': this.get_cookie('csrftoken')
+                        },
+                        body: JSON.stringify(data)
+                    });
+                    try {
+                        // here is your synchronous part.
+                        server_response = await rawResponse.json();
+                    } catch (e) {
+                        // SyntaxError: JSON.parse: unexpected character at line 1 column 1 of the JSON data
+                        server_response = {'error': true, 'message': 'Server error'}
+                    }
+                    callback(server_response)
+                })();
+            },
+            get_cookie: function (name) {
+                let value = "; " + document.cookie;
+                let parts = value.split("; " + name + "=");
+                if (parts.length === 2) return parts.pop().split(";").shift();
+            },
+
+            // humanize mixin:
+            humanize_date: function (date) {
+                // Uses localized date and time format with day name, which is pretty advanced and complete
+                return this.$moment(date).format('LLLL');
+            },
+            humanize_date_date_only: function (date) {
+                // Uses localized date and time format with day name, which is pretty advanced and complete
+                return this.$moment(date).format('LL');
+            },
+            humanize_relative_date: function (date) {
+                // says things like 'days ago'...
+                return this.$moment(date).fromNow();
+            },
+            humanize_duration: function (duration_in_milliseconds) {
+                return this.$moment.duration(duration_in_milliseconds).humanize()
+            },
+            humanize_filesize: function (size_in_bytes, decimals = 0) {
+                if (size_in_bytes === 0) return '0 Bytes';
+                let k = 1024,
+                    dm = decimals <= 0 ? 0 : decimals || 2,
+                    sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB'],
+                    i = Math.floor(Math.log(size_in_bytes) / Math.log(k));
+                return parseFloat((size_in_bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i];
+            }
+        }
+    }
+);
+
+import autorefresh from './components/autorefresh.vue'
+import loading from './components/loading.vue'
+import modal from './components/modal.vue'
+import server_response from './components/server-response.vue'
+
+Vue.component('autorefresh', autorefresh)
+Vue.component('loading', loading)
+Vue.component('modal', modal)
+Vue.component('server-response', server_response)
+
+
 // import Loading from './components/Loading.vue'
+import Login from './components/Login.vue'
 import DomainListManager from './components/DomainListManager.vue'
 import SpreadsheetUpload from './components/SpreadsheetUpload.vue'
 import ScanMonitor from './components/SpreadsheetUpload.vue'
-import Report from './components/Report.vue'
+// import Report from './components/Report.vue'
 import SwitchAccount from './components/SwitchAccount.vue'
 import InstantAddAccount from './components/InstantAddAccount.vue'
 import Account from './components/Account.vue'
 import Demo from './components/Demo.vue'
 import Unsubscribe from './components/Unsubscribe.vue'
 
+// todo make sure the menu works
+import SiteMenu from './components/site-menu.vue'
+
+
 const routes = [
-    {path: '/', component: DomainListManager,},
+    {path: '/', component: Login},
 
     // refreshing the app on a control panel will lead to nothing, make sure it leads to something.
     {path: '/control-panel-:id', component: DomainListManager,},
@@ -185,9 +269,10 @@ const routes = [
         }
     },
     {path: '/scans', component: ScanMonitor},
-    {path: '/report/:report/:compare_with', component: Report, name: 'compared_numbered_report'},
-    {path: '/report/:report', component: Report, name: 'numbered_report'},
-    {path: '/report', component: Report},
+    // todo: make sure what to do with internet_nl_messages...
+    // {path: '/report/:report/:compare_with', component: Report, name: 'compared_numbered_report'},
+    // {path: '/report/:report', component: Report, name: 'numbered_report'},
+    // {path: '/report', component: Report},
     {path: '/switch-account', component: SwitchAccount},
     {path: '/add-user', component: InstantAddAccount},
     {path: '/tour', component: Demo},
@@ -218,6 +303,18 @@ const store = new Vuex.Store({
         // the scan monitor is used to determine if lists of domains or the reports dropdowns need to be
         // updated. If the scan monitor is not loaded, a standard autorefresh strategy is used.
         scan_monitor_data: [],
+
+        // active language:
+        active_language: 'en',
+
+        // It's always port 8000.
+        dashboard_endpoint: 'http://localhost:8000',
+
+        // login states
+        user: {
+            is_authenticated: false,
+            is_superuser: false,
+        }
     },
 
     mutations: {
@@ -227,6 +324,15 @@ const store = new Vuex.Store({
         },
         update_scan_monitor_data(state, value) {
             state.scan_monitor_data = value;
+        },
+        set_active_language(state, value) {
+            state.active_language = value;
+        },
+        set_dashboard_endpoint(state, value) {
+            state.dashboard_endpoint = value;
+        },
+        set_user(state, value) {
+            state.user = value;
         }
     },
 });
@@ -234,6 +340,7 @@ const store = new Vuex.Store({
 export default {
     router,
     store,
+
     i18n: {
         messages: {
             en: {
@@ -255,6 +362,15 @@ export default {
             nl: {}
         }
     },
+    mounted: function() {
+        // retrieve logged-in status
+
+        // todo: how to log in? Needs a login component :) Is that already written?
+        // we also need that to retrieve the csrf token.
+
+
+
+    },
     name: 'App',
     data: function () {
         return {
@@ -267,18 +383,18 @@ export default {
             maximum_urls_per_spreadsheet: 5000,
 
             // user settings
-            activated_language: 'en',  // todo: how to switch this, also post to server to set django language.
-            user: {
-                // This is only gui stuff, all open source. There is no security in gui's.
-                is_authenticated: false,
-                is_superuser: false,
-            }
+            active_language: 'en',  // todo: how to switch this, also post to server to set django language.
         }
     },
     methods: {
-        set_language: function(language_code){
+        set_language: function (language_code) {
+            if (!this.supported_languages.includes(language_code))
+                return
 
-            this.$moment.locale(language_code)
+            this.active_language = language_code;
+            this.$moment.locale(language_code);
+
+            this.$store.commit("set_active_language", language_code);
 
             // old school.
             // todo: make a post to the django system to set the language. Probably a cookie value.
@@ -286,7 +402,9 @@ export default {
             //location.reload();
         }
     },
-    components: {}
+    components: {
+        SiteMenu
+    }
 }
 </script>
 

@@ -1,9 +1,17 @@
 {
   "dependencies": {
+    "chart.js": "^2.9.4",
+    "dropzone": "^5.7.2",
     "jquery": "^3.5.1",
     "vue-i18n": "^8.22.1",
+    "vue-lodash": "^2.1.2",
     "vue-moment": "^4.1.0",
     "vue-router": "^3.4.8",
+    "vue-select": "^3.10.8",
     "vuex": "^3.5.1"
+  },
+  "devDependencies": {
+    "sass": "^1.27.0",
+    "sass-loader": "^10.0.4"
   }
 }

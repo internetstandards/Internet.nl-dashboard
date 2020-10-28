@@ -16,9 +16,8 @@
     img.scaled {
       width: 100%;
     }
-
-
 </style>
+
 <template type="x-template" id="demo-template">
     <div id="demo-template">
         <div class="block fullwidth">
@@ -111,7 +110,7 @@
 </template>
 
 <script>
-const Demo = Vue.component('demo', {
+export default {
     i18n: {
         messages: {
             en: {
@@ -186,6 +185,5 @@ const Demo = Vue.component('demo', {
     },
     methods: {
     }
-});
-
+}
 </script>
