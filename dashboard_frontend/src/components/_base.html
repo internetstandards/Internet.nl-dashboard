@@ -1,0 +1,257 @@
+<!DOCTYPE html>{% load static %} {% load i18n %} {% load compress %}
+{% get_current_language as LANGUAGE_CODE %}
+<html lang="{{ LANGUAGE_CODE }}">
+<head>
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+    <meta charset="utf-8">
+    <title>{% trans "home pagetitle" %}</title>
+    <meta name="viewport" content="width=device-width,initial-scale=1.0">
+    <meta name="author" content="Platform Internetstandaarden / Internet Standards Platform">
+    <link rel="icon" href="https://www.internet.nl/static/favicon.png" sizes="32x32">
+    <link rel="icon" href="https://www.internet.nl/static/favicon.png" sizes="192x192">
+    <link rel="apple-touch-icon-precomposed" href="https://www.internet.nl/static/favicon.png">
+    <meta name="msapplication-TileImage" content="/static/favicon.png">
+
+    {% compress css %}
+        <link rel="stylesheet" type="text/css" href="{% static 'css/vendor/internet_nl/style-min.css' %}">
+        <link rel="stylesheet" type="text/css" media="print" href="{% static 'css/vendor/internet_nl/print-min.css' %}">
+        <link rel="stylesheet" type="text/css" id="overrides" href="{% static 'css/overrides_dashboard.css' %}">
+
+    {% endcompress %}
+
+    <script type="text/javascript" src="{% static 'js/vendor/internet_nl/imagecheck-min.js' %}" defer="defer"></script>
+
+    {% if debug %}
+        <script type="text/javascript" src="{% static 'js/node_modules/jquery/dist/jquery.js' %}"></script>
+        <script type="text/javascript" src="{% static 'js/vendor/internet_nl/headroom-min.js' %}"></script>
+        <script type="text/javascript" src="{% static 'js/vendor/internet_nl/functions-min.js' %}"></script>
+        <script type="text/javascript" src="{% static 'js/vendor/internet_nl/internetnl.results-min.js' %}"></script>
+        <script type="text/javascript" src="{% static 'js/node_modules/vue/dist/vue.js' %}"></script>
+        <script type="text/javascript" src="{% static 'js/node_modules/vue-i18n/dist/vue-i18n.js' %}"></script>
+    {% else %}{% compress js %}
+        <script type="text/javascript" src="{% static 'js/node_modules/jquery/dist/jquery.min.js' %}"></script>
+        <script type="text/javascript" src="{% static 'js/vendor/internet_nl/headroom-min.js' %}"></script>
+        <script type="text/javascript" src="{% static 'js/vendor/internet_nl/functions-min.js' %}"></script>
+        <script type="text/javascript" src="{% static 'js/vendor/internet_nl/internetnl.results-min.js' %}"></script>
+        <script type="text/javascript" src="{% static 'js/node_modules/vue/dist/vue.min.js' %}"></script>
+        <script type="text/javascript" src="{% static 'js/node_modules/vue-i18n/dist/vue-i18n.min.js' %}"></script>
+    {% endcompress %}{% endif %}
+
+    <script type="text/javascript" src="{% static 'js/translations/internet_nl.js' %}"></script>
+    <script type="text/javascript" src="{% static 'js/translations/dashboard.js' %}"></script>
+
+    {% include 'internet_nl_dashboard/demo.vue' %}
+
+    <script>
+        function interpolate_translations(){
+            let translation = messages;
+
+            translation.nl = Object.assign(translation.nl);
+            translation.en = Object.assign(translation.en);
+
+            return translation;
+        };
+
+        // used in various vue components to translate the GUI
+        const i18n = new VueI18n({
+            locale: get_cookie('dashboard_language'),
+            fallbackLocale: 'en',
+            silentFallbackWarn: true,
+            // it's required this is called messages.
+            messages: interpolate_translations()
+        });
+
+        function set_language(language_code){
+            document.cookie = "dashboard_language=" + (language_code || "en") + "; path=/";
+            location.reload();
+        }
+
+        // https://stackoverflow.com/questions/10730362/get-cookie-by-name
+        function get_cookie(name) {
+            let value = "; " + document.cookie;
+            let parts = value.split("; " + name + "=");
+            if (parts.length === 2) return parts.pop().split(";").shift();
+        }
+
+        // date and time to the current locale, whatever it may be:
+        // read the cookie value for the correct locale. Fallback to browser locale. The browser locale is
+        // the same as the UI locale and is not overwritten by the User-Accept parameter the browser sends.
+        // This, in some cases, causes two languages to show up depending on what renders.
+        // Django (python) defaults to Accept Language, the browser (javascript) defaults to the OS language.
+        // Setting the language explicitly using a cookie solves this problem.
+        // Various pages set this cookie to syncronize with the Request Language if the cookie is not set
+        current_language = get_cookie('dashboard_language') ? get_cookie('dashboard_language') : window.navigator.language;
+
+        Vue.component('site-menu', {
+            i18n: {
+                messages: {
+                    en: {
+                        admin: 'Admin',
+                        domains: "Domains",
+                        scans: "Scans",
+                        reports: "Reports",
+                        account: "Account",
+                        log_off: "Log off",
+                        log_in: "Log in",
+                    },
+                    nl: {
+                        admin: 'Beheer',
+                        domains: "Domeinen",
+                        scans: "Scans",
+                        reports: "Rapporten",
+                        account: "Account",
+                        log_off: "Uitloggen",
+                        log_in: "Inloggen",
+                    }
+                }
+            },
+            name: 'site-menu',
+            template: '#menu_template',
+        });
+
+        $( document ).ready(function() {
+            new Vue({ el: '#menu', template: `<site-menu></site-menu>`, i18n});
+            new Vue({ el: '#demo', template: `<demo></demo>`, i18n});
+        });
+    </script>
+
+
+
+<template type="x-template" id="menu_template">
+    <ul>
+        {% if user.is_authenticated %}
+
+            {% if user.is_superuser %}
+                <li class="{{menu_item_powertools}}"><a href="/spa/#/add-user/" accesskey="a">👤</a></li>
+                <li class="{{menu_item_powertools}}"><a href="/spa/#/switch-account/" accesskey="a">🔀</a></li>
+            {% endif %}
+
+            <li class="{{menu_item_addressmanager}}"><a href="/spa/#/domains/" accesskey="d">{% verbatim %}{{ $t("domains") }}{% endverbatim %}</a></li>
+            <li class="{{menu_item_scan_monitor}}"><a href="/spa/#/scans/" accesskey="s">{% verbatim %}{{ $t("scans") }}{% endverbatim %}</a></li>
+            <li class="{{menu_item_dashboard}}"><a href="/spa/#/report/" accesskey="r">{% verbatim %}{{ $t("reports") }}{% endverbatim %}</a></li>
+            <li class=""><a href="/account/two_factor/" accesskey="a">{% verbatim %}{{ $t("account") }}{% endverbatim %}</a></li>
+            <li class=""><a href="/logout/" accesskey="l">{% verbatim %}{{ $t("log_off") }}{% endverbatim %}</a></li>
+        {% else %}
+            <li class="current"><a href="/account/login/" accesskey="l">{% verbatim %}{{ $t("log_in") }}{% endverbatim %}</a></li>
+        {% endif %}
+    </ul>
+</template>
+
+
+</head>
+<body class="home body-with-semifixed-header" cz-shortcut-listen="true">
+<div class="hidethis" aria-hidden="true">
+    <span id="matomo-url">//matomo.internet.nl/</span>
+    <span id="matomo-siteid">2</span>
+    <span id="matomo-subdomain-tracking">*.internet.nl</span>
+  </div>
+<div class="skiplink"><a href="#content">
+    {% trans "page gotocontents" %}
+</a></div>
+<div class="skiplink"><a href="#sitenav">
+    {% trans "page gotomainmenu" %}
+</a></div>
+<div class="skiplink"><a href="#footer">
+    {% trans "page gotofooter" %}
+</a></div>
+
+<header>
+    <div class="wrap">
+        <div class="hidethis" aria-hidden="true">
+            <span id="panel-button-show">
+                Show details
+            </span>
+            <span id="panel-button-hide">
+                Hide details
+            </span>
+            <span id="panel-item-open">
+                open
+            </span>
+            <span id="panel-item-close">
+                close
+            </span>
+        </div>
+
+        <div id="masthead">
+            <p id="site-title"><a href="/"><span class="hidden">{% trans "page sitetitle" %}</span></a></p>
+            <p id="site-description"><span class="hidden">{% trans "page sitedescription" %}</span></p>
+        </div>
+
+        <div id="language-switch-header-container">
+            <ul class="language-switch-list">
+                {% with user_language=request.LANGUAGE_CODE %}
+                    {% get_language_info_list for LANGUAGES as languages %}
+
+                    {% for language in languages %}
+                        <li>
+                        {% if language.code == user_language %}
+                            <button class="active-language" disabled>{{language.name_local}}</button>
+                        {% else %}
+                            <a onclick="set_language('{{language.code}}')">{{language.name_local}}</a>
+                        {% endif %}
+                        </li>
+                    {% endfor %}
+                {% endwith %}
+            </ul>
+        </div>
+
+        <nav id="sitenav">
+            <div id="menu"></div>
+        </nav>
+    </div>
+</header>
+
+<main id="content" class="clearfix" tabindex="-1">
+    <div class="mainwrap">
+
+    </div>
+    <div class="wrap">
+        {% block logicontent_wrapper_hack_begin %}{% endblock %}
+        {% block content %}
+        {% endblock %}
+        {% block logicontent_wrapper_hack_end %}{% endblock %}
+    </div>
+
+    <div class="wrap do-not-print">
+        <div id="demo"></div>
+    </div>
+
+    <div class="wrap">
+        <section class="block do-not-print">
+            <div class="wrapper">
+                <p style="font-size: 0.9em; font-style: italic; margin-bottom: 0em;">
+                    Thank you for using the internet.nl dashboard. Please report issues on <a href="https://github.com/internetstandards/Internet.nl-dashboard/issues" target="_blank">this GitHub page</a>.
+                </p>
+            </div>
+        </section>
+    </div>
+
+</main>
+
+<footer id="footer">
+    <img id="flag" src="{% static 'images/vendor/internet_nl/clear.gif' %}" alt="">
+    <div class="wrap">
+        {% trans "base info" %}
+        <hr>
+        <ul>
+            <li><a class="footlink" href="https://www.internet.nl/disclosure/">
+                {% trans "base disclosure" %}
+            </a></li>
+            <li><a class="footlink" href="https://www.internet.nl/privacy/">
+                {% trans "base privacy" %}
+            </a></li>
+            <li><a class="footlink" href="https://www.internet.nl/copyright/">
+                {% trans "base copyright" %}
+            </a></li>
+            <li class="follow-us"><a class="footlink twitterfollow" href="https://twitter.com/internet_nl">
+                {% trans "base followtwitter" %}
+            </a></li>
+        </ul>
+    </div>
+</footer>
+
+<script type="text/javascript" src="/static/js/vendor/internet_nl/menu-min.js" defer></script>
+<script type="text/javascript" src="/static/js/vendor/internet_nl/accordion-min.js" defer></script>
+<script type="text/javascript" src="/static/js/vendor/internet_nl/matomo-min.js"></script>
+</body>
+</html>
