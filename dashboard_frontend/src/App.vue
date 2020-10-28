@@ -48,14 +48,14 @@
                         <i>≡</i><b>&nbsp;menu</b>
                     </button>
 
-                    <div id="language-switch-header-container" aria-hidden="true">
+                    <div id="language-switch-header-container">
                         <ul class="language-switch-list">
                             <li v-for="(language_code, index) in supported_languages" :key="index">
                                 <button v-if="language_code === active_language" class="active-language" disabled>
                                     {{ $t(language_code) }}
                                 </button>
                                 <a v-if="language_code !== active_language"
-                                   onclick="set_language(language_code)">{{ $t(language_code) }}</a>
+                                   @click="set_language(language_code)">{{ $t(language_code) }}</a>
                             </li>
                         </ul>
                     </div>
@@ -67,14 +67,14 @@
                 </template>
                 <template v-else>
 
-                    <div id="language-switch-header-container" aria-hidden="true">
+                    <div id="language-switch-header-container">
                         <ul class="language-switch-list">
                             <li v-for="(language_code, index) in supported_languages" :key="index">
                                 <button v-if="language_code === active_language" class="active-language" disabled>
                                     {{ $t(language_code) }}
                                 </button>
                                 <a v-if="language_code !== active_language"
-                                   onclick="set_language(language_code)">{{ $t(language_code) }}</a>
+                                   @click="set_language(language_code)">{{ $t(language_code) }}</a>
                             </li>
                         </ul>
                     </div>
@@ -372,7 +372,22 @@ export default {
                     followtwitter: "Folllow us on Twitter",
                 },
             },
-            nl: {}
+            nl: {
+                en: "English",
+                nl: "Nederlands",
+                page: {
+                    sitetitle: 'Internet.nl',
+                    sitedescription: 'Test for modern Internet Standards like IPv6, DNSSEC, HTTPS, DMARC, STARTTLS\n' +
+                        ' and DANE.',
+                },
+                base: {
+                    info: "Internet.nl is an initiative of the Internet community and the Dutch government.",
+                    disclosure: "Responsible disclosure",
+                    privacy: "Privacy statement",
+                    copyright: "Copyright",
+                    followtwitter: "Folllow us on Twitter",
+                },
+            }
         }
     },
     mounted: function () {
@@ -410,18 +425,20 @@ export default {
     },
     methods: {
         set_language: function (language_code) {
-            if (!this.supported_languages.includes(language_code))
+            console.log(language_code);
+            if (!this.supported_languages.includes(language_code)) {
+                console.log(`Language ${language_code} not supported`)
                 return
+            }
 
-            this.active_language = language_code;
             this.$moment.locale(language_code);
-
             this.$store.commit("set_active_language", language_code);
+            this.$i18n.locale = language_code;
+            // how to switch i18n?
 
-            // old school.
-            // todo: make a post to the django system to set the language. Probably a cookie value.
-            // document.cookie = "dashboard_language=" + (language_code || "en") + "; path=/";
-            //location.reload();
+            // make a request to django and set the language. This cookie value is used for translating
+            // spreadsheet downloads and error messages. The latter should be neutral asap.
+            document.cookie = "dashboard_language=" + (language_code || "en") + "; path=/; SameSite=Lax;";
         },
         status: function () {
             this.server_response = {};
