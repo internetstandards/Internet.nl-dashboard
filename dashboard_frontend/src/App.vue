@@ -244,13 +244,11 @@ Vue.component('loading', loading)
 Vue.component('modal', modal)
 Vue.component('server-response', server_response)
 
-
-// import Loading from './components/Loading.vue'
 import Login from './components/Login.vue'
 import DomainListManager from './components/DomainListManager.vue'
 import SpreadsheetUpload from './components/SpreadsheetUpload.vue'
-import ScanMonitor from './components/SpreadsheetUpload.vue'
-// import Report from './components/Report.vue'
+import ScanMonitor from './components/ScanMonitor.vue'
+import Report from './components/Report.vue'
 import SwitchAccount from './components/SwitchAccount.vue'
 import InstantAddAccount from './components/InstantAddAccount.vue'
 import Account from './components/Account.vue'
@@ -280,9 +278,9 @@ const routes = [
     },
     {path: '/scans', component: ScanMonitor},
     // todo: make sure what to do with internet_nl_messages...
-    // {path: '/report/:report/:compare_with', component: Report, name: 'compared_numbered_report'},
-    // {path: '/report/:report', component: Report, name: 'numbered_report'},
-    // {path: '/report', component: Report},
+    {path: '/report/:report/:compare_with', component: Report, name: 'compared_numbered_report'},
+    {path: '/report/:report', component: Report, name: 'numbered_report'},
+    {path: '/report', component: Report},
     {path: '/switch-account', component: SwitchAccount},
     {path: '/add-user', component: InstantAddAccount},
     {path: '/tour', component: Demo},
@@ -431,10 +429,11 @@ export default {
                 return
             }
 
+            // todo: make sure i18n is shared and language switching works in all components.
+            // todo: how does moment work with language switching?
             this.$moment.locale(language_code);
             this.$store.commit("set_active_language", language_code);
             this.$i18n.locale = language_code;
-            // how to switch i18n?
 
             // make a request to django and set the language. This cookie value is used for translating
             // spreadsheet downloads and error messages. The latter should be neutral asap.

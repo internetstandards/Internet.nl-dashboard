@@ -41,7 +41,7 @@ export default {
             accounts: [],
             current_account: 0, // still doesn't work...
             selected_account: 0,
-            server_response: "",
+            server_response: {},
         }
     },
     mounted: function () {
@@ -49,7 +49,7 @@ export default {
     },
     methods: {
         get_accounts: function () {
-            fetch(`/data/powertools/get_accounts/`, {credentials: 'include'}).then(response => response.json()).then(data => {
+            fetch(`${this.$store.state.dashboard_endpoint}/data/powertools/get_accounts/`, {credentials: 'include'}).then(response => response.json()).then(data => {
                 this.accounts = data['accounts'];
                 this.current_account = data['current_account'][0];
             }).catch((fail) => {
@@ -61,7 +61,7 @@ export default {
             let data = {'id': this.selected_account};
 
             this.asynchronous_json_post(
-                '/data/powertools/set_account/', data, (server_response) => {
+                `${this.$store.state.dashboard_endpoint}/data/powertools/set_account/`, data, (server_response) => {
                     if (server_response) {
                         this.server_response = server_response;
                         this.get_accounts();

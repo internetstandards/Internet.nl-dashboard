@@ -38,7 +38,7 @@ export default {
         return {
             username: "",
             password: "",
-            server_response: "",
+            server_response: {},
         }
     },
     methods: {
@@ -46,7 +46,7 @@ export default {
             let data = {'username': this.username, 'password': this.password};
 
             this.asynchronous_json_post(
-                '/data/powertools/save_instant_account/', data, (server_response) => {
+                `${this.$store.state.dashboard_endpoint}/data/powertools/save_instant_account/`, data, (server_response) => {
                     if (server_response)
                         this.server_response = server_response;
                 }

@@ -351,7 +351,7 @@ div.rotate > span {
                     </h2>
                     <div class="panel-content">
                         <p>{{ $t("settings.intro") }}</p>
-                        <template v-for="scan_form in scan_methods">
+                        <div v-for="scan_form in scan_methods">
                             <template v-if="scan_form.name === selected_report[0].type">
 
                                 <tabs :options="{ useUrlFragment: false }">
@@ -420,7 +420,7 @@ div.rotate > span {
                                                 <h3>{{ category.label }}</h3>
                                                 <br>
                                                 <p>
-                                                    <template v-for="field in category.fields">
+                                                    <span v-for="field in category.fields" :key="field.id">
 
                                                         <label :for="field.name + '_show_dynamic_average'"
                                                                :key="field.name">
@@ -439,7 +439,7 @@ div.rotate > span {
                                                             {{ $t("settings.only_show_dynamic_average") }}
                                                         </label>
                                                         -->
-                                                    </template>
+                                                    </span>
                                                 </p>
 
                                             </div>
@@ -453,9 +453,9 @@ div.rotate > span {
                                                     $t("uncheck")
                                                 }}</a></span>
 
-                                            <template v-for="category in category.categories">
+                                            <div v-for="category in category.categories" :key="category.name">
                                                 <div class="test-subsection">{{ category.label }}<br></div>
-                                                <div v-for="field in category.fields" class="testresult_without_icon">
+                                                <div v-for="field in category.fields" :key="field.name" class="testresult_without_icon">
                                                     <label :for="field.name + '_visible'" :key="field.name">
                                                         <input type="checkbox"
                                                                v-model="issue_filters[field.name].visible"
@@ -473,7 +473,7 @@ div.rotate > span {
                                                         }}
                                                     </div>
                                                     <div v-for="field in category.additional_fields"
-                                                         class="testresult_without_icon" :key="field">
+                                                         class="testresult_without_icon" :key="field.name">
                                                         <label :for="field.name + '_visible'" :key="field.name">
                                                             <input type="checkbox"
                                                                    v-model="issue_filters[field.name].visible"
@@ -486,7 +486,7 @@ div.rotate > span {
                                                     </div>
                                                 </template>
 
-                                            </template>
+                                            </div>
                                         </section>
 
 
@@ -513,7 +513,7 @@ div.rotate > span {
                                 </tabs>
 
                             </template>
-                        </template>
+                        </div>
                     </div>
                 </div>
             </template>
@@ -832,9 +832,7 @@ div.rotate > span {
 import jQuery from 'jquery'
 import lodash from 'lodash'
 
-import http_mixin from './http_mixin.vue'
 import legacy_mixin from './legacy_mixin.vue'
-import humanize_mixin from './humanize_mixin.vue'
 
 export default {
     i18n: {
@@ -1126,7 +1124,7 @@ export default {
     },
     name: 'report',
     template: '#report_template',
-    mixins: [humanize_mixin, http_mixin, legacy_mixin],
+    mixins: [legacy_mixin],
     data: function () {
         return {
             is_loading: false,
@@ -1625,7 +1623,7 @@ export default {
         get_report_data: function (report_id) {
             this.is_loading = true;
             // You'll notice a load time at a random point in this function, this means Vue is processing the response.
-            fetch(`/data/report/get/${report_id}/`, {credentials: 'include'}).then(response => response.json()).then(data => {
+            fetch(`${this.$store.state.dashboard_endpoint}/data/report/get/${report_id}/`, {credentials: 'include'}).then(response => response.json()).then(data => {
                 this.reports = data;
                 this.selected_category = this.selected_report[0].urllist_scan_type;
 
@@ -1655,7 +1653,7 @@ export default {
                 console.log('A loading error occurred: ' + fail);
             });
 
-            fetch(`/data/report/differences_compared_to_current_list/${report_id}/`, {credentials: 'include'}).then(response => response.json()).then(data => {
+            fetch(`${this.$store.state.dashboard_endpoint}/data/report/differences_compared_to_current_list/${report_id}/`, {credentials: 'include'}).then(response => response.json()).then(data => {
                 this.differences_compared_to_current_list = data;
             }).catch((fail) => {
                 console.log('A loading error occurred: ' + fail);
@@ -1677,7 +1675,7 @@ export default {
             );
         },
         reset_issue_filters: function () {
-            fetch(`/data/account/report_settings/get/`, {credentials: 'include'}).then(response => response.json()).then(data => {
+            fetch(`${this.$store.state.dashboard_endpoint}/data/account/report_settings/get/`, {credentials: 'include'}).then(response => response.json()).then(data => {
                 if (!jQuery.isEmptyObject(data)) {
                     this.issue_filters = data.data;
                     this.issue_filters_response = data;
@@ -1687,7 +1685,7 @@ export default {
 
         },
         load_issue_filters: function () {
-            fetch(`/data/account/report_settings/get/`, {credentials: 'include'}).then(response => response.json()).then(data => {
+            fetch(`${this.$store.state.dashboard_endpoint}/data/account/report_settings/get/`, {credentials: 'include'}).then(response => response.json()).then(data => {
                 if (!jQuery.isEmptyObject(data.data)) {
                     // Get all possible issue fields before overwriting them with whatever is stored.
                     const all_possible_fields = Object.keys(this.issue_filters);
@@ -1778,7 +1776,7 @@ export default {
         },
 
         compare_with: function (id, compare_chart_id) {
-            fetch(`/data/report/get/${id}/`, {credentials: 'include'}).then(response => response.json()).then(report => {
+            fetch(`${this.$store.state.dashboard_endpoint}/data/report/get/${id}/`, {credentials: 'include'}).then(response => response.json()).then(report => {
 
                 if (!jQuery.isEmptyObject(report)) {
                     // The comparison report require direct data access to urls to be able to compare
@@ -1813,7 +1811,7 @@ export default {
         },
 
         get_recent_reports: function () {
-            fetch(`/data/report/recent/`, {credentials: 'include'}).then(response => response.json()).then(data => {
+            fetch(`${this.$store.state.dashboard_endpoint}/data/report/recent/`, {credentials: 'include'}).then(response => response.json()).then(data => {
                 // console.log("Get recent reports");
                 let options = [];
                 for (let i = 0; i < data.length; i++) {

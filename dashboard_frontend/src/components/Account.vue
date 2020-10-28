@@ -133,7 +133,7 @@ export default {
     get: function () {
       this.server_response = {};
       this.loading = true;
-      fetch(`/data/user/get/`).then(response => response.json()).then(data => {
+      fetch(`${this.$store.state.dashboard_endpoint}/data/user/get/`).then(response => response.json()).then(data => {
         this.user = data;
         this.loading = false;
         this.first_load = false;
@@ -152,7 +152,7 @@ export default {
         'mail_send_mail_after_scan_finished': this.user.mail_send_mail_after_scan_finished
       };
       this.asynchronous_json_post(
-          '/data/user/save/', data, (server_response) => {
+          `${this.$store.state.dashboard_endpoint}/data/user/save/`, data, (server_response) => {
             if (server_response)
               this.server_response = server_response;
           }

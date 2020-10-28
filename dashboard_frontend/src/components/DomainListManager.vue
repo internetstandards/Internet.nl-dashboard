@@ -275,7 +275,7 @@ export default {
         },
         create_list: function() {
             this.asynchronous_json_post(
-                '/data/urllist/create_list/', this.add_new_new_list, (server_response) => {
+                `${this.$store.state.dashboard_endpoint}/data/urllist/create_list/`, this.add_new_new_list, (server_response) => {
                     this.add_new_server_response = server_response;
                     // if we get data back, the addition was succesful.
                     if (!jQuery.isEmptyObject(this.add_new_server_response.data)){

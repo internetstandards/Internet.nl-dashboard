@@ -12,8 +12,8 @@
             <autorefresh :visible="true" :callback="load" :refresh_per_seconds="60"></autorefresh>
         </div>
 
-        <div class="wrap">
-            <div class="block" v-if="scans" v-for="scan in scans">
+        <div class="wrap" v-if="scans">
+            <div class="block" v-for="scan in scans" :key="scan.id">
                 <div class="wrapper">
                     <span v-if="scan.state === 'finished'">✅</span>
                     <span v-if="scan.state === 'cancelled'">⭕</span>
@@ -63,7 +63,7 @@
                         </h3>
                         <div class="panel-content" style="font-size: 0.7em;">
                             <ul>
-                                <li v-for="log_item in scan.log">
+                                <li v-for="log_item in scan.log" :key="log_item.id">
                                     - {{ log_item.state }}, {{ humanize_relative_date(log_item.at_when) }}
                                 </li>
                             </ul>
@@ -127,7 +127,9 @@
 
 
 <script>
-const ScanMonitor = Vue.component('ScanMonitor', {
+import legacy_mixin from './legacy_mixin.vue'
+
+export default {
     i18n: {
         messages: {
             en: {
@@ -196,7 +198,8 @@ const ScanMonitor = Vue.component('ScanMonitor', {
     },
     name: 'scan_monitor',
     template: '#scan_monitor_template',
-    mixins: [humanize_mixin, http_mixin],
+    mixins: [legacy_mixin],
+
     data: function() {
         return {
             scans: [],
@@ -215,10 +218,10 @@ const ScanMonitor = Vue.component('ScanMonitor', {
             this.update_scan_data();
         },
         update_scan_data: function(){
-            fetch(`/data/scan-monitor/`, {credentials: 'include'}).then(response => response.json()).then(data => {
+            fetch(`${this.$store.state.dashboard_endpoint}/data/scan-monitor/`, {credentials: 'include'}).then(response => response.json()).then(data => {
                 this.scans = data;
-                store.commit("update_scan_monitor_data", data);
-                this.$nextTick(() => {accordinate();});
+                this.$store.commit("update_scan_monitor_data", data);
+                this.$nextTick(() => {this.accordinate();});
             }).catch((fail) => {console.log('A loading error occurred: ' + fail);});
         },
 
@@ -226,13 +229,13 @@ const ScanMonitor = Vue.component('ScanMonitor', {
             this.stop_scan = scan;
             this.show_stop_scan = true;
         },
-        stop_stop_scan: function(scan){
+        stop_stop_scan: function(){
             this.stop_scan = null;
             this.show_stop_scan = false;
         },
         confirm_stop_scan: function() {
             this.asynchronous_json_post(
-                '/data/scan/cancel/', {'id': this.stop_scan.id}, (server_response) => {
+                '/data/scan/cancel/', {'id': this.stop_scan.id}, () => {
                     this.update_scan_data();
                     // if already cancelled...
                     this.stop_stop_scan();
@@ -240,5 +243,5 @@ const ScanMonitor = Vue.component('ScanMonitor', {
             );
         }
     }
-});
+}
 </script>
