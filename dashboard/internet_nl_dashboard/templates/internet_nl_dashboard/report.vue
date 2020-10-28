@@ -1169,7 +1169,6 @@ const Report = Vue.component('report', {
                 internet_nl_web_appsecpriv_referrer_policy: {visible: true},  // Added 24th of May 2019
                 internet_nl_web_appsecpriv_x_content_type_options: {visible: true},  // Added 24th of May 2019
                 internet_nl_web_appsecpriv_x_frame_options: {visible: true},  // Added 24th of May 2019
-                internet_nl_web_appsecpriv_x_xss_protection: {visible: true},  // Added 24th of May 2019
 
                 // added in 2.0:
                 internet_nl_mail_starttls_tls_cipherorder: {visible: false},
@@ -1565,9 +1564,8 @@ const Report = Vue.component('report', {
                     "internet_nl_mail_ipv6_mx_address", "internet_nl_mail_ipv6_mx_reach",
                     "internet_nl_mail_ipv6_ns_reach", "internet_nl_mail_ipv6_ns_address",
                     "internet_nl_web_appsecpriv_csp", "internet_nl_web_appsecpriv_referrer_policy",
-                    "internet_nl_web_appsecpriv_x_content_type_options", "internet_nl_web_appsecpriv_x_frame_options",
-                    "internet_nl_web_appsecpriv_x_xss_protection",
-
+                    "internet_nl_web_appsecpriv_x_content_type_options",
+                    "internet_nl_web_appsecpriv_x_frame_options",
                 ].includes(field_name)){
                     this.issue_filters[field_name] = {
                         visible: true,
@@ -2078,7 +2076,6 @@ const Report = Vue.component('report', {
                                     fields: [
                                         {name: 'internet_nl_web_appsecpriv_x_frame_options'},
                                         {name: 'internet_nl_web_appsecpriv_x_content_type_options'},
-                                        {name: 'internet_nl_web_appsecpriv_x_xss_protection'},
                                         {name: 'internet_nl_web_appsecpriv_csp'},
                                         {name: 'internet_nl_web_appsecpriv_referrer_policy'},
                                     ],

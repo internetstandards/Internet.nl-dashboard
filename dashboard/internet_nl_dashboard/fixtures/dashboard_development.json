@@ -185,14 +185,6 @@
   },
   {
     "model": "database.constance",
-    "pk": 24,
-    "fields": {
-      "key": "REPORT_INCLUDE_HTTP_SECURITY_HEADER_X_XSS_PROTECTION",
-      "value": true
-    }
-  },
-  {
-    "model": "database.constance",
     "pk": 25,
     "fields": {
       "key": "SHOW_HTTP_SECURITY_HEADER_STRICT_TRANSPORT_SECURITY",
@@ -212,14 +204,6 @@
     "pk": 27,
     "fields": {
       "key": "SHOW_HTTP_SECURITY_HEADER_X_FRAME_OPTIONS",
-      "value": true
-    }
-  },
-  {
-    "model": "database.constance",
-    "pk": 28,
-    "fields": {
-      "key": "SHOW_HTTP_SECURITY_HEADER_X_XSS_PROTECTION",
       "value": true
     }
   },
@@ -1593,14 +1577,6 @@
   },
   {
     "model": "database.constance",
-    "pk": 200,
-    "fields": {
-      "key": "REPORT_INCLUDE_INTERNET_NL_WEB_APPSECPRIV_X_XSS_PROTECTION",
-      "value": true
-    }
-  },
-  {
-    "model": "database.constance",
     "pk": 201,
     "fields": {
       "key": "REPORT_INCLUDE_INTERNET_NL_WEB_HTTPS_TLS_CIPHERORDER",
@@ -1964,14 +1940,6 @@
     "pk": 246,
     "fields": {
       "key": "SHOW_INTERNET_NL_WEB_APPSECPRIV_X_FRAME_OPTIONS",
-      "value": true
-    }
-  },
-  {
-    "model": "database.constance",
-    "pk": 247,
-    "fields": {
-      "key": "SHOW_INTERNET_NL_WEB_APPSECPRIV_X_XSS_PROTECTION",
       "value": true
     }
   },
