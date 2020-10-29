@@ -3,6 +3,7 @@ import Chart from 'chart.js';
 import chart_mixin from './chart_mixin.vue'
 
 export default {
+
     mixins: [chart_mixin],
 
     methods: {
@@ -116,11 +117,17 @@ export default {
 
             let cumulative_axis_data = {};
 
+            if (this.chart_data === undefined)
+                return;
+
             for(let i=0; i < this.chart_data.length; i++) {
 
                 // it's possible the report data is not yet in, but the item in the array has been made.
                 // so well:
                 if (this.chart_data[i] === undefined)
+                    return;
+
+                if (this.chart_data[i].calculation === undefined)
                     return;
 
                 let data = this.chart_data[i].calculation.statistics_per_issue_type;

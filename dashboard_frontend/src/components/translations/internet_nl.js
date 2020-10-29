@@ -1,4 +1,4 @@
-const internet_nl_messages = {
+export default {
     nl: {
         internet_nl: {
             about_contact: '<h2>Contact</h2><p>Platform Internetstandaarden<br />p/a ECP<br />Overgoo 13<br />Postbus 262<br />2260 AG  Leidschendam  </p><p>KvK-nummer: 27169301</p><h3>E-mail</h3><p><a href="mailto:vraag@internet.nl">vraag@internet.nl</a>  </p><p><a href="/static/question@internet.nl_0x45028563.asc">PGP publieke sleutel</a><br />Vingerafdruk: ACB7 8829 4C7E 12BA E922 8C60 D894 E15F 4502 8563<br />Vervaldatum: 5 maart 2023</p>',

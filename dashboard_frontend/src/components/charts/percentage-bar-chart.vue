@@ -3,7 +3,6 @@ import Chart from 'chart.js';
 import chart_mixin from './chart_mixin.vue'
 
 export default {
-    i18n,
     mixins: [chart_mixin],
 
     methods: {
@@ -93,7 +92,7 @@ export default {
                             },
                             scaleLabel: {
 								display: true,
-								labelString: i18n.t(this.translation_key + '.yAxis_label')
+								labelString: this.$i18n.t(this.translation_key + '.yAxis_label')
 							},
                         }]
 				    },
@@ -177,7 +176,7 @@ export default {
                     this.axis.forEach((ax) => {
                         if (ax in data) {
                             if (!this.only_show_dynamic_average) {
-                                labels.push([i18n.t(ax), this.field_name_to_category_names ? this.field_name_to_category_names[ax] : ""]);
+                                labels.push([this.$i18n.t(ax), this.field_name_to_category_names ? this.field_name_to_category_names[ax] : ""]);
                                 axis_names.push(ax);
                                 chartdata.push(data[ax][shown_value]);
                             }
@@ -196,7 +195,7 @@ export default {
                         } else {
                             chartdata.push(Math.round((average / this.axis.length) * 100) / 100);
                         }
-                        labels.push(i18n.t(this.translation_key + '.average'));
+                        labels.push(this.$i18n.t(this.translation_key + '.average'));
                         axis_names.push("Average");
                     }
 

@@ -42,13 +42,13 @@
                     <button id="menu-button"
                             aria-label="Menu"
                             aria-expanded="false"
-                            aria-controls="sitenav"
+
                             @click="toggleHamburgerMenuExpand"
                             class="menu-button">
                         <i>≡</i><b>&nbsp;menu</b>
                     </button>
 
-                    <div id="language-switch-header-container">
+                    <div id="language-switch-header-container" aria-hidden="true">
                         <ul class="language-switch-list">
                             <li v-for="(language_code, index) in supported_languages" :key="index">
                                 <button v-if="language_code === locale" class="active-language" disabled>
@@ -215,6 +215,13 @@ export default {
                 "classes": {"initial": "header-js-animated", "pinned": "header-pinned", "unpinned": "header-unpinned"}
             });
             fixedHeader.init();
+
+            // and make sure the hamburger menu shows when the window gets too small...
+            if (matchMedia) {
+                var mq = window.matchMedia('(min-width: 740px)');
+                mq.addEventListener('change', this.WidthChange);
+                this.WidthChange(mq);
+            }
         })
 
     },
@@ -248,6 +255,13 @@ export default {
             // spreadsheet downloads and error messages. The latter should be neutral asap.
             // works only with a dashboard installation on the same address i assume...
             document.cookie = "dashboard_language=" + (locale || "en") + "; path=/; SameSite=Lax;";
+        },
+        WidthChange: function (mq) {
+            this.show_hamburgermenu = !mq.matches;
+            // reset the menu state after resizing while the menu is open. So the next click it can be opened again.
+            if (!this.show_hamburgermenu){
+                this.hamburgermenu_expanded = false;
+            }
         },
         // login status
         status: function () {

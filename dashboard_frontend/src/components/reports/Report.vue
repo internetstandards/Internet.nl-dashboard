@@ -455,7 +455,8 @@ div.rotate > span {
 
                                             <div v-for="category in category.categories" :key="category.name">
                                                 <div class="test-subsection">{{ category.label }}<br></div>
-                                                <div v-for="field in category.fields" :key="field.name" class="testresult_without_icon">
+                                                <div v-for="field in category.fields" :key="field.name"
+                                                     class="testresult_without_icon">
                                                     <label :for="field.name + '_visible'" :key="field.name">
                                                         <input type="checkbox"
                                                                v-model="issue_filters[field.name].visible"
@@ -832,10 +833,15 @@ div.rotate > span {
 import jQuery from 'jquery'
 import _ from 'lodash'
 
-import legacy_mixin from './legacy_mixin.vue'
+import legacy_mixin from './../legacy_mixin'
+import field_translations from './../field_translations'
+// import sharedMessages from './../translations/dashboard.js'
+
+// const translations = Object.assign({}, field_translations, sharedMessages);
 
 export default {
     i18n: {
+        sharedMessages: field_translations,
         messages: {
             en: {
                 mail: 'E-Mail',
@@ -1096,7 +1102,7 @@ export default {
         }
     },
     name: 'report',
-    template: '#report_template',
+    template: 'report_template',
     mixins: [legacy_mixin],
     data: function () {
         return {
@@ -1363,6 +1369,7 @@ export default {
         }
     },
     mounted: function () {
+        this.$i18n.locale = this.locale;
 
         this.load_issue_filters();
         this.get_recent_reports();
