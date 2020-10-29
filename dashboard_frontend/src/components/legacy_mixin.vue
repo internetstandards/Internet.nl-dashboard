@@ -32,8 +32,8 @@ export default {
 
             // reset onclicks, because adding on-clicks stack: each one will be called causing the panel to open and close multiple times
             // after calling accordinate multiple times.
+            let self = this;
             $('.panel-title a').off("click").click(function () {
-                let self = this;
                 var stateObj = {foo: "bar"};
                 if ($(this).attr('aria-expanded') == 'false') {
                     $(this).attr('aria-expanded', true).addClass('active').parent().next('.panel-content').slideDown(200).attr('aria-hidden', 'false');
