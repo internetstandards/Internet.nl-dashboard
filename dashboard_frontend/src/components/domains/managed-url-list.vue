@@ -20,30 +20,30 @@
             <div v-if="is_opened" style="float:right;">
                 <button @click="start_editing_settings()">
                     <span role="img" :aria-label="$t('icons.settings')">📝</span>
-                    {{ $t("button_labels.configure") }}</button>
+                    {{ $t("button_labels.configure") }}</button> &nbsp;
                 <button @click="start_bulk_add_new()">
                     <span role="img" :aria-label="$t('icons.bulk_add_new')">💖</span>
-                    {{ $t("button_labels.add_domains") }}</button>
+                    {{ $t("button_labels.add_domains") }}</button> &nbsp;
                 <template v-if="urls.length">
                     <template v-if="list.enable_scans">
                         <button v-if="list.scan_now_available" @click="start_scan_now()">
                             <span role="img" :aria-label="$t('icons.scan')">🔬</span>
                             {{ $t("button_labels.scan_now") }}
-                        </button>
+                        </button> &nbsp;
                         <button v-if="!list.scan_now_available" disabled="disabled"
                                 :title='$t("button_labels.scan_now_scanning")'>
                             <img width="15" style="border-radius: 50%"
                                  src="/static/images/vendor/internet_nl/probe-animation.gif">
                             {{ $t("button_labels.scan_now_scanning") }}
-                        </button>
+                        </button> &nbsp;
                     </template>
                     <button v-if="!list.enable_scans" disabled="disabled"
                             :title='$t("button_labels.scanning_disabled")'>
                         <span role="img" :aria-label="$t('icons.scan')">🔬</span>
                         {{ $t("button_labels.scanning_disabled") }}
-                    </button>
+                    </button> &nbsp;
                 </template>
-                <button @click="start_deleting()">🔪 {{ $t("button_labels.delete") }}</button>
+                <button @click="start_deleting()">🗑️ {{ $t("button_labels.delete") }}</button>
             </div>
         </span>
         <br>
@@ -77,7 +77,7 @@
                         <span v-if="!urls">
                             {{ $t("about_this_list.number_of_domains") }}: {{ list.num_urls }}
                         </span><br>
-                        {{ $t("about_this_list.scan_frequency") }}: {{ list.automated_scan_frequency }} <br>
+                        {{ $t("about_this_list.scan_frequency") }}: {{ $t(`about_this_list.${list.automated_scan_frequency}`) }} <br>
                         <div v-if="list.automated_scan_frequency !== 'disabled'">
                             {{ $t("about_this_list.next_scheduled_scan") }}: {{
                                 humanize_date(list.scheduled_next_scan)
@@ -751,7 +751,7 @@ export default {
             "scan_now_scanning": "Scanning",
             "scan_now_scanning_title": "The scan now option is available only once a day, when no scan is running.",
             "delete": "Delete",
-            "view_csv": "View .csv",
+            "view_csv": "View as .CSV file",
             "scanning_disabled": "Scanning disabled"
         },
         "about_this_list": {
@@ -765,7 +765,12 @@ export default {
             "scan_frequency": "Scan frequency",
             "next_scheduled_scan": "Next scheduled scan",
             "scanning_disabled": "Scanning of this list is disabled.",
-            "latest_report": "Latest report"
+            "latest_report": "Latest report",
+            "disabled": "disabled",
+            "every half year": "every half year",
+            "at the start of every quarter": "at the start of every quarter",
+            "every 1st day of the month": "every first day of the month",
+            "twice per month": "every two weeks, from the first day of the month",
         },
         "domains": {
             "header": "Domains",
@@ -833,7 +838,7 @@ export default {
             "scan_now_scanning": "Aan het scannen",
             "scan_now_scanning_title": "Nu scannen is alleen beschikbaar als er geen scan draait, en kan maximaal 1x per dag worden aangeroepen.",
             "delete": "Verwijder",
-            "view_csv": "Bekijk.csv",
+            "view_csv": "Bekijk CSV bestand",
             "scanning_disabled": "Scans uitgeschakeld"
         },
         "about_this_list": {
@@ -847,10 +852,16 @@ export default {
             "scan_frequency": "Scan frequentie",
             "next_scheduled_scan": "Volgende ingeplande scan",
             "scanning_disabled": "Scannen van deze lijst is uitgeschakeld.",
-            "latest_report": "Meest actuele rapportage"
+            "latest_report": "Meest actuele rapportage",
+            "disabled": "uitgeschakeld",
+            "every half year": "ieder half jaar",
+            "at the start of every quarter": "aan het begin van ieder kwartaal",
+            "every 1st day of the month": "elke eerste dag van de maand",
+            "twice per month": "om de twee weken, vanaf de 1e van de maand",
         },
         "domains": {
             "header": "Domeinen",
+            "intro": "Deze domeinen worden meegenomen in een scan. De mogelijkheid om te scannen wordt voor aanvang van de scan bijgewerkt. De iconen geven een beeld van de bereikbaarheid van deze domeinen, maar deze status kan mogelijk anders zijn bij een scan.",
             "eligeble_mail": "E-mail scannen is mogelijk",
             "start_editing_url": "Bewerk {0}.",
             "unknown_eligeble_mail": "Onbekend of E-mail scannen mogelijk is",

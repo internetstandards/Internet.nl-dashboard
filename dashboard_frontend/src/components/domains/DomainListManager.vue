@@ -38,8 +38,8 @@ Fixed: when deleting a list, it is re-added to the list of lists when adding a n
             <h1>{{ $t("title") }}</h1>
             <p>{{ $t("intro") }}</p>
             <p>
-                <button @click="start_adding_new()" accesskey="n">{{ $t("new_list.add_new_list") }}</button>
-            <router-link to="/upload">{{ $t("bulk_upload_link") }}</router-link></p>
+                <button @click="start_adding_new()" accesskey="n">📚 {{ $t("new_list.add_new_list") }}</button>
+                &nbsp; <router-link tag="button" to="/upload">📓 {{ $t("bulk_upload_link") }}</router-link></p>
 
             <div class="testresult_without_icon">
                 <h2 style="font-size: 1.0em;" class="panel-title" >
@@ -151,7 +151,7 @@ export default {
             en: {
                 title: "Domains",
                 intro: "Manage lists with domains",
-                bulk_upload_link: "Upload large amount of data by using the Bulk Address uploader, here.",
+                bulk_upload_link: "Upload spreadsheets with data.",
                 warning_found_in_list: "One or more lists contain issues, this will prevent scans from running.",
 
                 icons: {
@@ -194,7 +194,7 @@ export default {
 
                 title: "Domeinen",
                 intro: "Beheer lijsten met domeinen",
-                bulk_upload_link: "Een groot aantal domeinen kan worden geüpload met de Bulk Addressen Uploader, hier.",
+                bulk_upload_link: "Spreadsheet met domeinen uploaden",
                 warning_found_in_list: "Eén of meerdere lijsten bevatten waarschuwingen. Deze lijsten worden niet gescand.",
 
                 icon_legend: {
