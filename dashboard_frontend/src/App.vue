@@ -51,11 +51,11 @@
                     <div id="language-switch-header-container">
                         <ul class="language-switch-list">
                             <li v-for="(language_code, index) in supported_languages" :key="index">
-                                <button v-if="language_code === active_language" class="active-language" disabled>
+                                <button v-if="language_code === locale" class="active-language" disabled>
                                     {{ $t(language_code) }}
                                 </button>
-                                <a v-if="language_code !== active_language"
-                                   @click="set_language(language_code)">{{ $t(language_code) }}</a>
+                                <a v-if="language_code !== locale"
+                                   @click="set_locale(language_code)">{{ $t(language_code) }}</a>
                             </li>
                         </ul>
                     </div>
@@ -70,11 +70,11 @@
                     <div id="language-switch-header-container">
                         <ul class="language-switch-list">
                             <li v-for="(language_code, index) in supported_languages" :key="index">
-                                <button v-if="language_code === active_language" class="active-language" disabled>
+                                <button v-if="language_code === locale" class="active-language" disabled>
                                     {{ $t(language_code) }}
                                 </button>
-                                <a v-if="language_code !== active_language"
-                                   @click="set_language(language_code)">{{ $t(language_code) }}</a>
+                                <a v-if="language_code !== locale"
+                                   @click="set_locale(language_code)">{{ $t(language_code) }}</a>
                             </li>
                         </ul>
                     </div>
@@ -142,227 +142,12 @@
 </template>
 
 <script>
-import Vue from 'vue'
-import VueRouter from 'vue-router'
-import Vuex from 'vuex'
-import VueI18n from 'vue-i18n'
-import vSelect from 'vue-select'
-import {Tabs, Tab} from 'vue-tabs-component';
-
-Vue.use(VueI18n)
-Vue.use(VueRouter)
-Vue.use(require('vue-moment'));
-
-Vue.component('v-select', vSelect);
-Vue.component('tabs', Tabs);
-Vue.component('tab', Tab);
-
 import Headroom from "headroom.js";
-
-// https://stackoverflow.com/questions/10730362/get-cookie-by-name
-// todo: how to get rid of this?
-function get_cookie(name) {
-    let value = "; " + document.cookie;
-    let parts = value.split("; " + name + "=");
-    if (parts.length === 2) return parts.pop().split(";").shift();
-}
-
-// these methods are used over and over.
-Vue.mixin(
-    {
-        methods: {
-            // this can probably be replaced with axios or whatever. Or not if we want tos ave on dependencies.
-            asynchronous_json_post: function (url, data, callback) {
-                // the context parameter is somewhat dangerous, but this allows us to say 'self.' in the callback.
-                // which could be done somewhat better.
-                // https://stackoverflow.com/questions/20279484/how-to-access-the-correct-this-inside-a-callback
-                let server_response = {};
-                // console.log(`Posting to ${url}, with data ${data}`)
-                (async () => {
-                    const rawResponse = await fetch(url, {
-                        method: 'POST',
-                        credentials: 'include',
-                        headers: {
-                            'Accept': 'application/json',
-                            'Content-Type': 'application/json',
-                            'X-CSRFToken': this.get_cookie('csrftoken')
-                        },
-                        body: JSON.stringify(data)
-                    });
-                    try {
-                        // here is your synchronous part.
-                        server_response = await rawResponse.json();
-                    } catch (e) {
-                        // SyntaxError: JSON.parse: unexpected character at line 1 column 1 of the JSON data
-                        server_response = {'error': true, 'message': 'Server error'}
-                    }
-                    callback(server_response)
-                })();
-            },
-            get_cookie: function (name) {
-                let value = "; " + document.cookie;
-                let parts = value.split("; " + name + "=");
-                if (parts.length === 2) return parts.pop().split(";").shift();
-            },
-
-            // humanize mixin:
-            humanize_date: function (date) {
-                // Uses localized date and time format with day name, which is pretty advanced and complete
-                return this.$moment(date).format('LLLL');
-            },
-            humanize_date_date_only: function (date) {
-                // Uses localized date and time format with day name, which is pretty advanced and complete
-                return this.$moment(date).format('LL');
-            },
-            humanize_relative_date: function (date) {
-                // says things like 'days ago'...
-                return this.$moment(date).fromNow();
-            },
-            humanize_duration: function (duration_in_milliseconds) {
-                return this.$moment.duration(duration_in_milliseconds).humanize()
-            },
-            humanize_filesize: function (size_in_bytes, decimals = 0) {
-                if (size_in_bytes === 0) return '0 Bytes';
-                let k = 1024,
-                    dm = decimals <= 0 ? 0 : decimals || 2,
-                    sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB'],
-                    i = Math.floor(Math.log(size_in_bytes) / Math.log(k));
-                return parseFloat((size_in_bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i];
-            }
-        }
-    }
-);
-
-import autorefresh from './components/autorefresh.vue'
-import loading from './components/loading.vue'
-import modal from './components/modal.vue'
-import server_response from './components/server-response.vue'
-
-var MatomoTracker = require('matomo-tracker');
-var matomo = new MatomoTracker(2, '//matomo.internet.nl/matomo.php');
-matomo.on('error', function(err) {
-  console.log('error tracking request: ', err);
-});
-
-Vue.component('autorefresh', autorefresh)
-Vue.component('loading', loading)
-Vue.component('modal', modal)
-Vue.component('server-response', server_response)
-
-import Login from './components/Login'
-import DomainListManager from './components/domains/DomainListManager'
-import SpreadsheetUpload from './components/domains/SpreadsheetUpload'
-import ScanMonitor from './components/ScanMonitor'
-import Report from './components/Report'
-import SwitchAccount from './components/admin/SwitchAccount'
-import InstantAddAccount from './components/admin/InstantAddAccount'
-import Account from './components/Account'
-import Demo from './components/Demo'
-import Unsubscribe from './components/Unsubscribe'
-import {mapState} from 'vuex'
-
 // todo make sure the menu works
 import SiteMenu from './components/site-menu.vue'
-
-import ReportCharts from './components/ReportCharts'
-Vue.component('internet-nl-charts', ReportCharts)
-import CumulativePercentageBarChart from './components/charts/cumulative-percentage-bar-chart'
-Vue.component('cumulative-percentage-bar-chart', CumulativePercentageBarChart)
-import LineChart from './components/charts/cumulative-percentage-bar-chart'
-Vue.component('line-chart', LineChart)
-import PercentageBarChart from './components/charts/cumulative-percentage-bar-chart'
-Vue.component('percentage-bar-chart', PercentageBarChart)
-
-
-const routes = [
-    {path: '/', component: Login},
-
-    // refreshing the app on a control panel will lead to nothing, make sure it leads to something.
-    {path: '/control-panel-:id', component: DomainListManager,},
-
-    {path: '/domains/:list', component: DomainListManager, name: 'numbered_lists'},
-    {path: '/domains', component: DomainListManager,},
-    {
-        path: '/upload', component: SpreadsheetUpload,
-        props: {
-            csrf_token: get_cookie('csrftoken'),
-            max_lists: 200,
-            max_urls: 5000,
-        }
-    },
-    {path: '/scans', component: ScanMonitor},
-    // todo: make sure what to do with internet_nl_messages...
-    {path: '/report/:report/:compare_with', component: Report, name: 'compared_numbered_report'},
-    {path: '/report/:report', component: Report, name: 'numbered_report'},
-    {path: '/report', component: Report},
-    {path: '/switch-account', component: SwitchAccount},
-    {path: '/add-user', component: InstantAddAccount},
-    {path: '/tour', component: Demo},
-    {path: '/demo', component: Demo},
-    {path: '/unsubscribe', component: Unsubscribe},
-    {path: '/profile', component: Account},
-    {path: '/account', component: Account},
-];
-
-const router = new VueRouter({
-    routes, // short for `routes: routes`
-    props: true,
-    // https://reactgo.com/scroll-to-anchor-tags-vue-router/
-    // does not work, as nested anchors is not a thing (and not reliable). So do this in component.
-    scrollBehavior: function (to) {
-        if (to.hash) {
-            return {selector: to.hash}
-        }
-    },
-});
-
-Vue.use(Vuex);
-const store = new Vuex.Store({
-    state: {
-        // -2 is used, to be able to distinct for the first upload and zero uploads.
-        uploads_performed: -2,
-
-        // the scan monitor is used to determine if lists of domains or the reports dropdowns need to be
-        // updated. If the scan monitor is not loaded, a standard autorefresh strategy is used.
-        scan_monitor_data: [],
-
-        // active language:
-        active_language: 'en',
-
-        // It's always port 8000.
-        dashboard_endpoint: 'http://localhost:8000',
-
-        // login states
-        user: {
-            is_authenticated: false,
-            is_superuser: false,
-        }
-    },
-
-    mutations: {
-        // this.$store.commit('set_uploads_performed', 0)
-        set_uploads_performed(state, value) {
-            state.uploads_performed = value;
-        },
-        update_scan_monitor_data(state, value) {
-            state.scan_monitor_data = value;
-        },
-        set_active_language(state, value) {
-            state.active_language = value;
-        },
-        set_dashboard_endpoint(state, value) {
-            state.dashboard_endpoint = value;
-        },
-        set_user(state, value) {
-            state.user = value;
-        }
-    },
-});
+import {mapState} from 'vuex'
 
 export default {
-    router,
-    store,
-
     i18n: {
         locale: 'en',
         fallbackLocale: 'en',
@@ -389,21 +174,21 @@ export default {
                 nl: "Nederlands",
                 page: {
                     sitetitle: 'Internet.nl',
-                    sitedescription: 'Test for modern Internet Standards like IPv6, DNSSEC, HTTPS, DMARC, STARTTLS\n' +
-                        ' and DANE.',
+                    sitedescription: 'Test voor moderne Internetstandaarden zoals IPv6, DNSSEC, HTTPS, DMARC, STARTTLS en DANE.',
                 },
                 base: {
-                    info: "Internet.nl is an initiative of the Internet community and the Dutch government.",
+                    info: "Internet.nl is een initiatief van de internetgemeenschap en de Nederlandse overheid.",
                     disclosure: "Responsible disclosure",
-                    privacy: "Privacy statement",
+                    privacy: "Privacyverklaring",
                     copyright: "Copyright",
-                    followtwitter: "Folllow us on Twitter",
+                    followtwitter: "Volg ons op Twitter",
                 },
             }
         }
     },
     mounted: function () {
         // retrieve logged-in status
+        this.$i18n.locale = this.locale;
 
         // todo: how to log in? Needs a login component :) Is that already written?
         // we also need that to retrieve the csrf token.
@@ -436,23 +221,25 @@ export default {
         }
     },
     methods: {
-        set_language: function (language_code) {
-            console.log(language_code);
-            if (!this.supported_languages.includes(language_code)) {
-                console.log(`Language ${language_code} not supported`)
+        set_locale: function (locale) {
+            console.log(`Switching app to language: ${locale}.`);
+            if (!this.supported_languages.includes(locale)) {
+                console.log(`Language ${locale} not supported`)
                 return
             }
 
             // todo: make sure i18n is shared and language switching works in all components.
             // todo: how does moment work with language switching?
-            this.$moment.locale(language_code);
-            this.$store.commit("set_active_language", language_code);
-            this.$i18n.locale = language_code;
+            this.$moment.locale(locale);
+            this.$store.commit("set_locale", locale);
+            // this.$i18n.locale = locale;
 
             // make a request to django and set the language. This cookie value is used for translating
             // spreadsheet downloads and error messages. The latter should be neutral asap.
-            document.cookie = "dashboard_language=" + (language_code || "en") + "; path=/; SameSite=Lax;";
+            // works only with a dashboard installation on the same address i assume...
+            document.cookie = "dashboard_language=" + (locale || "en") + "; path=/; SameSite=Lax;";
         },
+        // login status
         status: function () {
             this.server_response = {};
             this.loading = true;
@@ -473,11 +260,36 @@ export default {
                 console.log('A loading error occurred: ' + fail);
             });
         },
+        toggleHamburgerMenuExpand: function () {
+            this.hamburgermenu_expanded = !this.hamburgermenu_expanded;
+
+            // this code was taken from menu-min.js
+            var header = document.querySelector('header .wrap'),
+                menu = document.querySelector('#sitenav'),
+                langswitch = document.querySelector('#language-switch-header-container'),
+                menuButton = document.querySelector('.menu-button');
+
+            if (this.hamburgermenu_expanded) {
+                header.classList.add('active');
+                menu.classList.add('active');
+                menu.setAttribute('aria-hidden', 'false');
+                langswitch.classList.add('active');
+                langswitch.setAttribute('aria-hidden', 'false');
+                menuButton.setAttribute('aria-expanded', 'true');
+            } else {
+                header.classList.remove('active');
+                menu.classList.remove('active');
+                menu.setAttribute('aria-hidden', 'true');
+                langswitch.classList.remove('active');
+                langswitch.setAttribute('aria-hidden', 'true');
+                menuButton.setAttribute('aria-expanded', 'false');
+            }
+        }
     },
     components: {
         SiteMenu
     },
-    computed: mapState(['user', 'active_language']),
+    computed: mapState(['user']),
 }
 </script>
 

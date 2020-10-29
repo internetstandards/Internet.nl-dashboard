@@ -1,4 +1,4 @@
-const messages = {
+export default {
     en: {
         icons: {
             list_closed: "List closed",

@@ -239,6 +239,7 @@ export default {
         }
     },
     mounted: function () {
+        this.$i18n.locale = this.locale;
         this.get_lists();
     },
     methods: {
