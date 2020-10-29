@@ -34,15 +34,15 @@ export default {
             // after calling accordinate multiple times.
             let self = this;
             $('.panel-title a').off("click").click(function () {
-                var stateObj = {foo: "bar"};
+                // var stateObj = {foo: "bar"};
                 if ($(this).attr('aria-expanded') == 'false') {
                     $(this).attr('aria-expanded', true).addClass('active').parent().next('.panel-content').slideDown(200).attr('aria-hidden', 'false');
                     self.setPanelItemFoldText($('.pre-icon', this), 'close');
                     self.refreshPanelButtonText($(this), 'open');
-                    window.history.pushState(stateObj, null, "#" + $(this).attr('id'));
+                    // window.history.pushState(stateObj, null, "#" + $(this).attr('id'));
                 } else {
                     $(this).attr('aria-expanded', false).removeClass('active').parent().next('.panel-content').slideUp(200).attr('aria-hidden', 'true');
-                    history.pushState(stateObj, null, '#')
+                    // history.pushState(stateObj, null, '#')
                     self.setPanelItemFoldText($('.pre-icon', this), 'open');
                     self.refreshPanelButtonText($(this), 'close');
                 }
