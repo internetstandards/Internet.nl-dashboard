@@ -1,5 +1,7 @@
 <script>
-const chart_mixin = {
+import _ from 'lodash'
+
+export default {
 
     props: {
         chart_data: {type: Array, required: true},
@@ -68,6 +70,7 @@ const chart_mixin = {
         // You cannot add a debounce on a watch:
         // https://stackoverflow.com/questions/47172952/vuejs-2-debounce-not-working-on-a-watch-option
         this.unwatch = this.$watch('chart_data', _.debounce((newVal) => {
+            console.log(newVal);
             this.renderData();
         }, 300), {
             // Note that you don’t need to do so to listen for in-Array mutations as they won't happen and the

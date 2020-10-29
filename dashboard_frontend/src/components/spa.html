@@ -154,7 +154,42 @@
             internet_nl_mail_starttls_tls_cipherorder: 'detail_mail_tls_cipher_order',
             internet_nl_mail_starttls_tls_keyexchangehash: 'detail_mail_tls_kex_hash_func',
             internet_nl_mail_starttls_tls_0rtt: 'detail_mail_tls_zero_rtt',
+
+            // categories and such
+            web: 'base_test_website',
+            category_web_ipv6_name_server: 'results_domain_mail_ipv6_name_servers',
+            category_web_ipv6_web_server: 'results_domain_ipv6_web_server',
+            category_web_dnssec_dnssec: 'test_sitednssec',
+            category_web_tls_http: 'results_domain_tls_https',
+            category_web_tls_tls: 'results_domain_tls_tls',
+            category_web_tls_certificate: 'results_domain_mail_tls_certificate',
+            category_web_tls_dane: 'results_domain_mail_tls_dane',
+            category_web_security_options_appsecpriv: 'results_domain_appsecpriv_http_headers',
+            mail: 'base_test_mail',
+            category_mail_ipv6_name_servers: 'results_domain_mail_ipv6_name_servers',
+            category_mail_ipv6_mail_servers: 'results_mail_ipv6_mail_servers',
+            category_mail_dnssec_email_address_domain: 'results_mail_dnssec_domain',
+            category_mail_dnssec_mail_server_domain: 'results_mail_dnssec_mail_servers',
+            category_mail_dashboard_auth_dmarc: 'results_mail_auth_dmarc',
+            category_mail_dashboard_aut_dkim: 'results_mail_auth_dkim',
+            category_mail_dashboard_aut_spf: 'results_mail_auth_spf',
+            category_mail_starttls_tls: 'results_mail_tls_starttls',
+            category_mail_starttls_certificate: 'results_domain_mail_tls_certificate',
+            category_mail_starttls_dane: 'results_domain_mail_tls_dane',
         };
+
+        const additional_mapping = {
+            test_title: 'faqs_report_test_title',
+            test_good: 'faqs_report_test_good',
+            test_bad: 'faqs_report_test_bad',
+            test_warning: 'faqs_report_test_warning',
+            test_info: 'faqs_report_test_info',
+            subtest_title: 'faqs_report_subtest_title',
+            subtest_good: 'faqs_report_subtest_good',
+            subtest_bad: 'faqs_report_subtest_bad',
+            subtest_warning: 'faqs_report_subtest_warning',
+            subtest_info: 'faqs_report_subtest_info',
+        }
 
         // categories are translated with _passed_summary or _failed_summary. The rest with their label. Should be in
         // the retrieved translations anyway.
@@ -162,6 +197,9 @@
             let mapping = {};
             for (let key of Object.keys(internet_nl_field_mapping)) {
                 mapping[key] = internet_nl_messages[language].internet_nl[internet_nl_field_mapping[key] + '_label']
+            }
+            for (let key of Object.keys(additional_mapping)) {
+                mapping[key] = internet_nl_messages[language].internet_nl[additional_mapping[key]]
             }
             return mapping;
         }

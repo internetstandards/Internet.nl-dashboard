@@ -1,5 +1,4 @@
-{% verbatim %}
-<template type="text/x-template" id="internet-nl-charts-template">
+<template id="internet-nl-charts-template">
 
     <div v-if="color_scheme.incremental.length > 1">
         <div class="block fullwidth">
@@ -18,7 +17,7 @@
                     </line-chart>
 
                     <div style="overflow-x: scroll; overflow-y: hidden;">
-                        <template  v-for="timeline in issue_timeline_of_related_urllists">
+                        <span  v-for="timeline in issue_timeline_of_related_urllists" :key="timeline.name">
                             <table class="table table-striped" style="font-size: 0.8em;">
                                 <caption>{{timeline.name}}: {{ $t("charts.adoption_timeline.title") }}</caption>
                                 <thead>
@@ -33,7 +32,7 @@
                                 </thead>
 
                                 <tbody class="gridtable">
-                                    <tr v-for="stat in timeline.data">
+                                    <tr v-for="(stat, index) in timeline.data" :key="index">
                                         <td>
                                             {{ humanize_date_date_only(stat.date) }}
                                         </td>
@@ -43,7 +42,7 @@
                                     </tr>
                                 </tbody>
                             </table>
-                        </template>
+                        </span>
                     </div>
 
                 </div>
@@ -62,7 +61,7 @@
                 </h2>
                 <p>{{ $t("chart_info.adoption_bar_chart.annotation.intro") }}</p>
 
-                <template v-for="scan_form in scan_methods">
+                <div v-for="scan_form in scan_methods" :key="scan_form.name">
                     <template v-if="scan_form.name === selected_report[0].type">
 
                         <div style="overflow: auto; width: 100%" v-if="visible_fields_from_scan_form(scan_form).length > 0">
@@ -81,7 +80,7 @@
                             </div>
                         </div>
 
-                        <template v-for="category in scan_form.categories">
+                        <div v-for="category in scan_form.categories" :key="category.key">
                             <template v-if="category_is_visible(category.key)">
                                 <div class="testresult" style="page-break-inside: avoid;"
                                      v-if="visible_fields_from_categories(category).length > 0">
@@ -114,7 +113,7 @@
                                     </div>
                                 </div>
 
-                                <template v-for="subcategory in category.categories">
+                                <div v-for="subcategory in category.categories" :key="subcategory.label">
                                     <!-- Visibility depends on parent category, the labels themselves cannot yet be filtered for visibility. -->
                                     <div class="testresult" style="page-break-inside: avoid;"
                                          v-if="fields_from_self(subcategory).length > 0">
@@ -165,13 +164,13 @@
                                             </div>
                                         </div>
                                     </div>
-                                </template>
+                                </div>
 
                             </template>
-                        </template>
+                        </div>
 
                     </template>
-                </template>
+                </div>
             </div>
 
             <div class="block fullwidth" style="page-break-before: always;" aria-hidden="true" v-if='compare_charts.length > 1'>
@@ -181,7 +180,7 @@
             </h2>
             <p>{{ $t("chart_info.cumulative_adoption_bar_chart.annotation.intro") }}</p>
 
-            <template v-for="scan_form in scan_methods">
+            <div v-for="scan_form in scan_methods" :key="scan_form.name">
                 <template v-if="scan_form.name === selected_report[0].type">
 
                     <div style="overflow: auto; width: 100%" v-if="visible_fields_from_scan_form(scan_form).length > 0">
@@ -200,7 +199,7 @@
                         </div>
                     </div>
 
-                    <template v-for="category in scan_form.categories">
+                    <div v-for="category in scan_form.categories" :key="category.key">
                         <template v-if="category_is_visible(category.key)">
                             <div class="testresult" style="page-break-inside: avoid;"
                                  v-if="visible_fields_from_categories(category).length > 0">
@@ -233,7 +232,7 @@
                                 </div>
                             </div>
 
-                            <template v-for="subcategory in category.categories">
+                            <div v-for="subcategory in category.categories" :key="subcategory.label">
                                 <!-- Visibility depends on parent category, the labels themselves cannot yet be filtered for visibility. -->
                                 <div class="testresult" style="page-break-inside: avoid;"
                                      v-if="fields_from_self(subcategory).length > 0">
@@ -285,22 +284,24 @@
                                         </div>
                                     </div>
                                 </div>
-                            </template>
+                            </div>
 
 
                         </template>
-                    </template>
+                    </div>
 
                 </template>
-            </template>
+            </div>
         </div>
         </template>
 
     </div>
 </template>
 <script>
-    Vue.component('internet-nl-charts', {
-        mixins: [humanize_mixin, http_mixin],
+
+import pattern from 'patternomaly'
+
+export default {
         i18n: {
             messages: {
                 en: {
@@ -452,7 +453,7 @@
                     report_ids.push(item.urllist_id)
                 });
 
-                fetch(`/data/report/urllist_timeline_graph/${report_ids.join(",")}/`, {credentials: 'include'}).then(response => response.json()).then(data => {
+                fetch(`${this.$store.state.dashboard_endpoint}/data/report/urllist_timeline_graph/${report_ids.join(",")}/`, {credentials: 'include'}).then(response => response.json()).then(data => {
                     this.issue_timeline_of_related_urllists = data;
                 }).catch((fail) => {console.log('A loading error occurred: ' + fail);});
 
@@ -559,12 +560,12 @@
                 // fixing https://github.com/internetstandards/Internet.nl-dashboard/issues/65
                 // 1 report:
                 if (this.selected_report.length === 1) {
-                    return `📊 #${this.selected_report[0].id}: ${this.selected_report[0].list_name} ${moment(this.selected_report[0].at_when).format('LL')} n=${this.selected_report[0].number_of_urls}`;
+                    return `📊 #${this.selected_report[0].id}: ${this.selected_report[0].list_name} ${this.$moment(this.selected_report[0].at_when).format('LL')} n=${this.selected_report[0].number_of_urls}`;
                 } else {
                     let titles = [];
 
                     this.selected_report.forEach((report) => {
-                        titles.push(`📊 #${report.id}: ${report.list_name} ${moment(report.at_when).format('LL')} n=${report.number_of_urls}`);
+                        titles.push(`📊 #${report.id}: ${report.list_name} ${this.$moment(report.at_when).format('LL')} n=${report.number_of_urls}`);
                     });
 
                     return titles.join(" vs ");
@@ -576,12 +577,12 @@
                 // 1 report:
                 if (this.selected_report.length === 1) {
                     // not relevant
-                    return `📊 #${this.selected_report[0].id}: ${this.selected_report[0].list_name} ${moment(this.selected_report[0].at_when).format('LL')} n=${this.selected_report[0].number_of_urls}`;
+                    return `📊 #${this.selected_report[0].id}: ${this.selected_report[0].list_name} ${this.$moment(this.selected_report[0].at_when).format('LL')} n=${this.selected_report[0].number_of_urls}`;
                 } else {
                     let titles = [];
 
                     this.selected_report.forEach((report) => {
-                        titles.push(`📊 #${report.id}: ${report.list_name} ${moment(report.at_when).format('LL')} n=${report.number_of_urls}`);
+                        titles.push(`📊 #${report.id}: ${report.list_name} ${this.$moment(report.at_when).format('LL')} n=${report.number_of_urls}`);
                     });
 
                     let title_text = titles.join(" + ");
@@ -589,6 +590,5 @@
                 }
             },
         }
-    });
+}
 </script>
-{% endverbatim %}

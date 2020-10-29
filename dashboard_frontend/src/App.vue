@@ -146,13 +146,18 @@ import Vue from 'vue'
 import VueRouter from 'vue-router'
 import Vuex from 'vuex'
 import VueI18n from 'vue-i18n'
+import vSelect from 'vue-select'
+import {Tabs, Tab} from 'vue-tabs-component';
 
 Vue.use(VueI18n)
 Vue.use(VueRouter)
 Vue.use(require('vue-moment'));
 
-import Headroom from "headroom.js";
+Vue.component('v-select', vSelect);
+Vue.component('tabs', Tabs);
+Vue.component('tab', Tab);
 
+import Headroom from "headroom.js";
 
 // https://stackoverflow.com/questions/10730362/get-cookie-by-name
 // todo: how to get rid of this?
@@ -244,20 +249,29 @@ Vue.component('loading', loading)
 Vue.component('modal', modal)
 Vue.component('server-response', server_response)
 
-import Login from './components/Login.vue'
-import DomainListManager from './components/DomainListManager.vue'
-import SpreadsheetUpload from './components/SpreadsheetUpload.vue'
-import ScanMonitor from './components/ScanMonitor.vue'
-import Report from './components/Report.vue'
-import SwitchAccount from './components/SwitchAccount.vue'
-import InstantAddAccount from './components/InstantAddAccount.vue'
-import Account from './components/Account.vue'
-import Demo from './components/Demo.vue'
-import Unsubscribe from './components/Unsubscribe.vue'
+import Login from './components/Login'
+import DomainListManager from './components/DomainListManager'
+import SpreadsheetUpload from './components/SpreadsheetUpload'
+import ScanMonitor from './components/ScanMonitor'
+import Report from './components/Report'
+import SwitchAccount from './components/SwitchAccount'
+import InstantAddAccount from './components/InstantAddAccount'
+import Account from './components/Account'
+import Demo from './components/Demo'
+import Unsubscribe from './components/Unsubscribe'
 import {mapState} from 'vuex'
 
 // todo make sure the menu works
 import SiteMenu from './components/site-menu.vue'
+
+import ReportCharts from './components/ReportCharts'
+Vue.component('internet-nl-charts', ReportCharts)
+import CumulativePercentageBarChart from './components/charts/cumulative-percentage-bar-chart'
+Vue.component('cumulative-percentage-bar-chart', CumulativePercentageBarChart)
+import LineChart from './components/charts/cumulative-percentage-bar-chart'
+Vue.component('line-chart', LineChart)
+import PercentageBarChart from './components/charts/cumulative-percentage-bar-chart'
+Vue.component('percentage-bar-chart', PercentageBarChart)
 
 
 const routes = [
@@ -469,11 +483,8 @@ export default {
 
 <style>
 #app {
-    font-family: Avenir, Helvetica, Arial, sans-serif;
+    /* https://developer.mozilla.org/en-US/docs/Web/CSS/font-smooth */
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
-    text-align: center;
-    color: #2c3e50;
-    margin-top: 60px;
 }
 </style>

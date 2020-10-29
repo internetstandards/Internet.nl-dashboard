@@ -1,6 +1,8 @@
 <script>
-// done: place different labels  (add info about date in image)
-Vue.component('line-chart', {
+import Chart from 'chart.js';
+import chart_mixin from './chart_mixin.vue'
+
+export default {
     mixins: [chart_mixin],
 
     methods: {
@@ -166,5 +168,5 @@ Vue.component('line-chart', {
             this.chart.options.title.text = this.title;
         },
     }
-});
+}
 </script>

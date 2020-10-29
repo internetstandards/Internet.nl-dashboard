@@ -351,7 +351,7 @@ div.rotate > span {
                     </h2>
                     <div class="panel-content">
                         <p>{{ $t("settings.intro") }}</p>
-                        <div v-for="scan_form in scan_methods">
+                        <div v-for="scan_form in scan_methods" :key="scan_form.name">
                             <template v-if="scan_form.name === selected_report[0].type">
 
                                 <tabs :options="{ useUrlFragment: false }">
@@ -621,35 +621,35 @@ div.rotate > span {
                         </a>
                     </h2>
                     <div class="panel-content">
-                        <h3>{{ $t("icon_legend.test_title") }}</h3>
+                        <h3>{{ $t("test_title") }}</h3>
                         <ul>
                             <li><span class="faq-test category_passed"><span class="visuallyhidden">{{
                                     $t("report.results.passed")
-                                }}</span>{{ $t("icon_legend.test_good") }}</span></li>
+                                }}</span>{{ $t("test_good") }}</span></li>
                             <li><span class="faq-test category_failed"><span class="visuallyhidden">{{
                                     $t("report.results.failed")
-                                }}</span>{{ $t("icon_legend.test_bad") }}</span></li>
+                                }}</span>{{ $t("test_bad") }}</span></li>
                             <li><span class="faq-test category_warning"><span class="visuallyhidden">{{
                                     $t("report.results.warning")
-                                }}</span>{{ $t("icon_legend.test_warning") }}</span></li>
+                                }}</span>{{ $t("test_warning") }}</span></li>
                             <li><span class="faq-test category_error"><span class="visuallyhidden">{{
                                     $t("report.results.category_error_in_test")
                                 }}</span>{{ $t("icon_legend.category_error_in_test") }}</span></li>
                         </ul>
-                        <h3>{{ $t("icon_legend.subtest_title") }}</h3>
+                        <h3>{{ $t("subtest_title") }}</h3>
                         <ul>
                             <li><span class="faq-subtest passed"><span class="visuallyhidden">{{
                                     $t("report.results.passed")
-                                }}</span>{{ $t("icon_legend.subtest_good") }}</span></li>
+                                }}</span>{{ $t("subtest_good") }}</span></li>
                             <li><span class="faq-subtest failed"><span class="visuallyhidden">{{
                                     $t("report.results.failed")
-                                }}</span>{{ $t("icon_legend.subtest_bad") }}</span></li>
+                                }}</span>{{ $t("subtest_bad") }}</span></li>
                             <li><span class="faq-subtest warning"><span class="visuallyhidden">{{
                                     $t("report.results.warning")
-                                }}</span>{{ $t("icon_legend.subtest_warning") }}</span></li>
+                                }}</span>{{ $t("subtest_warning") }}</span></li>
                             <li><span class="faq-subtest info"><span class="visuallyhidden">{{
                                     $t("report.results.info")
-                                }}</span>{{ $t("icon_legend.subtest_info") }}</span></li>
+                                }}</span>{{ $t("subtest_info") }}</span></li>
                             <li><span class="faq-test not_tested"><span class="visuallyhidden">{{
                                     $t("report.results.not_tested")
                                 }}</span>{{ $t("icon_legend.subtest_not_tested") }}</span></li>
@@ -768,7 +768,7 @@ div.rotate > span {
                         </template>
                         <template v-else>
 
-                            <tr v-for="url in filtered_urls" class="result_row" :key="url">
+                            <tr v-for="url in filtered_urls" class="result_row" :key="url.url">
                                 <template v-if="!url.endpoints.length">
                                     <td>
                                         -
@@ -830,7 +830,7 @@ div.rotate > span {
 // Done: how to translate graphs?
 
 import jQuery from 'jquery'
-import lodash from 'lodash'
+import _ from 'lodash'
 
 import legacy_mixin from './legacy_mixin.vue'
 
@@ -849,21 +849,7 @@ export default {
 
                 icon_legend: {
                     title: "Legend of used icons",
-
-                    // this has been placed here, because not_applicable and not_testable reuse icons and have
-                    // a different meaning. That translation is not available in internet.nl
-                    test_title: internet_nl_messages.en.internet_nl.faqs_report_test_title,
-                    test_good: internet_nl_messages.en.internet_nl.faqs_report_test_good,
-                    test_bad: internet_nl_messages.en.internet_nl.faqs_report_test_bad,
-                    test_warning: internet_nl_messages.en.internet_nl.faqs_report_test_warning,
-                    test_info: internet_nl_messages.en.internet_nl.faqs_report_test_info,
-                    // todo: translation will be given.
                     category_error_in_test: "Error occured while testing ⇒ null score",
-                    subtest_title: internet_nl_messages.en.internet_nl.faqs_report_subtest_title,
-                    subtest_good: internet_nl_messages.en.internet_nl.faqs_report_subtest_good,
-                    subtest_bad: internet_nl_messages.en.internet_nl.faqs_report_subtest_bad,
-                    subtest_warning: internet_nl_messages.en.internet_nl.faqs_report_subtest_warning,
-                    subtest_info: internet_nl_messages.en.internet_nl.faqs_report_subtest_info,
                     subtest_not_applicable: "Not applicable ⇒ no score impact",
                     subtest_not_tested: "Not tested ⇒ no score impact",
                     subtest_error_in_test: "Error occured while testing ⇒ null score",
@@ -1009,20 +995,7 @@ export default {
 
                 icon_legend: {
                     title: "Legenda van gebruikte pictogrammen",
-
-                    // this has been placed here, because not_applicable and not_testable reuse icons and have
-                    // a different meaning. That translation is not available in internet.nl
-                    test_title: internet_nl_messages.nl.internet_nl.faqs_report_test_title,
-                    test_good: internet_nl_messages.nl.internet_nl.faqs_report_test_good,
-                    test_bad: internet_nl_messages.nl.internet_nl.faqs_report_test_bad,
-                    test_warning: internet_nl_messages.nl.internet_nl.faqs_report_test_warning,
                     category_error_in_test: "Fout in test ⇒ nulscore",
-                    test_info: internet_nl_messages.nl.internet_nl.faqs_report_test_info,
-                    subtest_title: internet_nl_messages.nl.internet_nl.faqs_report_subtest_title,
-                    subtest_good: internet_nl_messages.nl.internet_nl.faqs_report_subtest_good,
-                    subtest_bad: internet_nl_messages.nl.internet_nl.faqs_report_subtest_bad,
-                    subtest_warning: internet_nl_messages.nl.internet_nl.faqs_report_subtest_warning,
-                    subtest_info: internet_nl_messages.nl.internet_nl.faqs_report_subtest_info,
                     subtest_not_tested: "Niet getest ⇒ geen score impact",
                     subtest_error_in_test: "Fout in test ⇒ nulscore",
                 },
@@ -1433,7 +1406,7 @@ export default {
     // todo: there is probably a vue thing that is smaller than lodash that can debounce.
     // https://stackoverflow.com/questions/47172952/vuejs-2-debounce-not-working-on-a-watch-option
     created() {
-        this.debounce = lodash._.debounce((func) => {
+        this.debounce = _.debounce((func) => {
             // console.log('Debounced term: ' + func);
             func.apply();
         }, 300)
@@ -2112,20 +2085,16 @@ export default {
         },
 
         scan_methods: function () {
-            // todo: watch the active language for changes. This should be done differently, with normal
-            // translations (or generated ones).
-            var language = this.$store.active_language;
-
             return [
                 {
                     name: 'web',
                     fields: [],
                     additional_fields: [],
-                    label: internet_nl_messages[language].internet_nl.base_test_website_label,
+                    label: this.$i18n.t('web'),
                     categories: [
                         {
                             name: 'ipv6',
-                            label: internet_nl_messages[language].internet_nl.test_siteipv6_label,
+                            label: this.$i18n.t('internet_nl_web_ipv6'),
                             // key is being used by selected categories to not iterate through fields.
                             key: 'internet_nl_web_ipv6',
                             fields: [
@@ -2138,7 +2107,7 @@ export default {
                                     name: 'Name servers',
                                     key: 'category_web_ipv6_name_server',
                                     // there is NO translations for web, only for mail.
-                                    label: internet_nl_messages[language].internet_nl.results_domain_mail_ipv6_name_servers_label,
+                                    label: this.$i18n.t('category_web_ipv6_name_server'),
                                     fields: [
                                         {name: 'internet_nl_web_ipv6_ns_address'},
                                         {name: 'internet_nl_web_ipv6_ns_reach'},
@@ -2148,7 +2117,7 @@ export default {
                                 {
                                     name: 'Web server',
                                     key: 'category_web_ipv6_web_server',
-                                    label: internet_nl_messages[language].internet_nl.results_domain_ipv6_web_server_label,
+                                    label: this.$i18n.t('category_web_ipv6_web_server'),
                                     fields: [
                                         {name: 'internet_nl_web_ipv6_ws_address'},
                                         {name: 'internet_nl_web_ipv6_ws_reach'},
@@ -2160,7 +2129,7 @@ export default {
                         },
                         {
                             name: 'dnssec',
-                            label: internet_nl_messages[language].internet_nl.test_sitednssec_label,
+                            label: this.$i18n.t('internet_nl_web_dnssec'),
                             key: 'internet_nl_web_dnssec',
                             fields: [
                                 {name: 'internet_nl_web_dnssec'}
@@ -2171,7 +2140,7 @@ export default {
                                     // the exception to the rule
                                     name: 'DNSSEC',
                                     key: 'category_web_dnssec_dnssec',
-                                    label: internet_nl_messages[language].internet_nl.test_sitednssec_label,
+                                    label: this.$i18n.t('category_web_dnssec_dnssec'),
                                     fields: [
                                         {name: 'internet_nl_web_dnssec_exist'},
                                         {name: 'internet_nl_web_dnssec_valid'},
@@ -2182,7 +2151,7 @@ export default {
                         },
                         {
                             name: 'tls',
-                            label: internet_nl_messages[language].internet_nl.test_sitetls_label,
+                            label: this.$i18n.t('internet_nl_web_tls'),
                             key: 'internet_nl_web_tls',
                             fields: [
                                 {name: 'internet_nl_web_tls'},
@@ -2192,7 +2161,7 @@ export default {
                                 {
                                     name: 'HTTP',
                                     key: 'category_web_tls_http',
-                                    label: internet_nl_messages[language].internet_nl.results_domain_tls_https_label,
+                                    label: this.$i18n.t('category_web_tls_http'),
                                     fields: [
                                         {name: 'internet_nl_web_https_http_available'},
                                         {name: 'internet_nl_web_https_http_redirect'},
@@ -2204,7 +2173,7 @@ export default {
                                 {
                                     name: 'TLS',
                                     key: 'category_web_tls_tls',
-                                    label: internet_nl_messages[language].internet_nl.results_domain_tls_tls_label,
+                                    label: this.$i18n.t('category_web_tls_tls'),
                                     fields: [
                                         {name: 'internet_nl_web_https_tls_version'},
                                         {name: 'internet_nl_web_https_tls_ciphers'},
@@ -2223,7 +2192,7 @@ export default {
                                     name: 'Certificate',
                                     key: 'category_web_tls_certificate',
                                     // mail is being reused as there is no alternative translation (!)
-                                    label: internet_nl_messages[language].internet_nl.results_domain_mail_tls_certificate_label,
+                                    label: this.$i18n.t('category_web_tls_certificate'),
                                     fields: [
                                         {name: 'internet_nl_web_https_cert_chain'},
                                         {name: 'internet_nl_web_https_cert_pubkey'},
@@ -2235,7 +2204,7 @@ export default {
                                 {
                                     name: 'DANE',
                                     key: 'category_web_tls_dane',
-                                    label: internet_nl_messages[language].internet_nl.results_domain_mail_tls_dane_label,
+                                    label: this.$i18n.t('category_web_tls_dane'),
                                     fields: [
                                         {name: 'internet_nl_web_https_dane_exist'},
                                         {name: 'internet_nl_web_https_dane_valid'},
@@ -2246,7 +2215,7 @@ export default {
                         },
                         {
                             name: 'security_options',
-                            label: internet_nl_messages[language].internet_nl.test_siteappsecpriv_label,
+                            label: this.$i18n.t('internet_nl_web_appsecpriv'),
                             key: 'internet_nl_web_appsecpriv',
                             fields: [
                                 {name: 'internet_nl_web_appsecpriv'},
@@ -2257,7 +2226,7 @@ export default {
                                 {
                                     name: 'HTTP security headers',
                                     key: 'category_web_security_options_appsecpriv',
-                                    label: internet_nl_messages[language].internet_nl.results_domain_appsecpriv_http_headers_label,
+                                    label: this.$i18n.t('category_web_security_options_appsecpriv'),
                                     fields: [
                                         {name: 'internet_nl_web_appsecpriv_x_frame_options'},
                                         {name: 'internet_nl_web_appsecpriv_x_content_type_options'},
@@ -2271,7 +2240,7 @@ export default {
                         },
                         {
                             name: 'forum_standardisation',
-                            label: this.$i18n.t('fields.forum_standardistation.category_label'),
+                            label: this.$i18n.t('web_legacy'),
                             key: 'web_legacy',
                             fields: [
                                 {name: 'web_legacy'},
@@ -2340,11 +2309,11 @@ export default {
                     fields: [],
                     additional_fields: [],
 
-                    label: internet_nl_messages[language].internet_nl.base_test_mail_label,
+                    label: this.$i18n.t('mail'),
                     categories: [
                         {
                             name: 'IPv6',
-                            label: internet_nl_messages[language].internet_nl.test_mailipv6_label,
+                            label: this.$i18n.t('internet_nl_mail_dashboard_ipv6'),
                             key: 'internet_nl_mail_dashboard_ipv6',
                             fields: [
                                 {name: 'internet_nl_mail_dashboard_ipv6'}
@@ -2355,7 +2324,7 @@ export default {
                                 {
                                     name: 'Name servers',
                                     key: 'category_mail_ipv6_name_servers',
-                                    label: internet_nl_messages[language].internet_nl.results_domain_mail_ipv6_name_servers_label,
+                                    label: this.$i18n.t('category_mail_ipv6_name_servers'),
                                     fields: [
                                         {name: 'internet_nl_mail_ipv6_ns_address'},
                                         {name: 'internet_nl_mail_ipv6_ns_reach'},
@@ -2365,7 +2334,7 @@ export default {
                                 {
                                     name: 'Mail server(s)',
                                     key: 'category_mail_ipv6_mail_servers',
-                                    label: internet_nl_messages[language].internet_nl.results_mail_ipv6_mail_servers_label,
+                                    label: this.$i18n.t('category_mail_ipv6_mail_servers'),
                                     fields: [
                                         {name: 'internet_nl_mail_ipv6_mx_address'},
                                         {name: 'internet_nl_mail_ipv6_mx_reach'},
@@ -2378,7 +2347,7 @@ export default {
                         },
                         {
                             name: 'DNSSEC',
-                            label: internet_nl_messages[language].internet_nl.test_maildnssec_label,
+                            label: this.$i18n.t('internet_nl_mail_dashboard_dnssec'),
                             key: 'internet_nl_mail_dashboard_dnssec',
                             fields: [
                                 {name: 'internet_nl_mail_dashboard_dnssec',}
@@ -2388,7 +2357,7 @@ export default {
                                 {
                                     name: 'Email address domain',
                                     key: 'category_mail_dnssec_email_address_domain',
-                                    label: internet_nl_messages[language].internet_nl.results_mail_dnssec_domain_label,
+                                    label: this.$i18n.t('category_mail_dnssec_email_address_domain'),
                                     fields: [
                                         {name: 'internet_nl_mail_dnssec_mailto_exist'},
                                         {name: 'internet_nl_mail_dnssec_mailto_valid'},
@@ -2398,7 +2367,7 @@ export default {
                                 {
                                     name: 'Mail server domain(s)',
                                     key: 'category_mail_dnssec_mail_server_domain',
-                                    label: internet_nl_messages[language].internet_nl.results_mail_dnssec_mail_servers_label,
+                                    label: this.$i18n.t('category_mail_dnssec_mail_server_domain'),
                                     fields: [
                                         {name: 'internet_nl_mail_dnssec_mx_exist'},
                                         {name: 'internet_nl_mail_dnssec_mx_valid'},
@@ -2409,7 +2378,7 @@ export default {
                         },
                         {
                             name: 'DMARC, DKIM and SPF',
-                            label: internet_nl_messages[language].internet_nl.test_mailauth_label,
+                            label: this.$i18n.t('internet_nl_mail_dashboard_auth'),
                             key: 'internet_nl_mail_dashboard_auth',
                             fields: [
                                 {name: 'internet_nl_mail_dashboard_auth'}
@@ -2419,7 +2388,7 @@ export default {
                                 {
                                     name: 'DMARC',
                                     key: 'category_mail_dashboard_auth_dmarc',
-                                    label: internet_nl_messages[language].internet_nl.results_mail_auth_dmarc_label,
+                                    label: this.$i18n.t('category_mail_dashboard_auth_dmarc'),
                                     fields: [
                                         {name: 'internet_nl_mail_auth_dmarc_exist'},
                                         {name: 'internet_nl_mail_auth_dmarc_policy'},
@@ -2429,7 +2398,7 @@ export default {
                                 {
                                     name: 'DKIM',
                                     key: 'category_mail_dashboard_aut_dkim',
-                                    label: internet_nl_messages[language].internet_nl.results_mail_auth_dkim_label,
+                                    label: this.$i18n.t('category_mail_dashboard_aut_dkim'),
                                     fields: [
                                         {name: 'internet_nl_mail_auth_dkim_exist'},
                                     ],
@@ -2438,7 +2407,7 @@ export default {
                                 {
                                     name: 'SPF',
                                     key: 'category_mail_dashboard_aut_spf',
-                                    label: internet_nl_messages[language].internet_nl.results_mail_auth_spf_label,
+                                    label: this.$i18n.t('category_mail_dashboard_aut_spf'),
                                     fields: [
                                         {name: 'internet_nl_mail_auth_spf_exist'},
                                         {name: 'internet_nl_mail_auth_spf_policy'},
@@ -2449,7 +2418,7 @@ export default {
                         },
                         {
                             name: 'STARTTLS and DANE',
-                            label: internet_nl_messages[language].internet_nl.test_mailtls_label,
+                            label: this.$i18n.t('internet_nl_mail_dashboard_tls'),
                             key: 'internet_nl_mail_dashboard_tls',
                             fields: [
                                 {name: 'internet_nl_mail_dashboard_tls'},
@@ -2459,7 +2428,7 @@ export default {
                                 {
                                     name: 'TLS',
                                     key: 'category_mail_starttls_tls',
-                                    label: internet_nl_messages[language].internet_nl.results_mail_tls_starttls_label,
+                                    label: this.$i18n.t('category_mail_starttls_tls'),
                                     fields: [
                                         {name: 'internet_nl_mail_starttls_tls_available'},
                                         {name: 'internet_nl_mail_starttls_tls_version'},
@@ -2477,7 +2446,7 @@ export default {
                                 {
                                     name: 'Certificate',
                                     key: 'category_mail_starttls_certificate',
-                                    label: internet_nl_messages[language].internet_nl.results_domain_mail_tls_certificate_label,
+                                    label: this.$i18n.t('category_mail_starttls_certificate'),
                                     fields: [
                                         {name: 'internet_nl_mail_starttls_cert_chain'},
                                         {name: 'internet_nl_mail_starttls_cert_pubkey'},
@@ -2489,7 +2458,7 @@ export default {
                                 {
                                     name: 'DANE',
                                     key: 'category_mail_starttls_dane',
-                                    label: internet_nl_messages[language].internet_nl.results_domain_mail_tls_dane_label,
+                                    label: this.$i18n.t('category_mail_starttls_dane'),
                                     fields: [
                                         {name: 'internet_nl_mail_starttls_dane_exist'},
                                         {name: 'internet_nl_mail_starttls_dane_valid'},
@@ -2504,7 +2473,7 @@ export default {
                         },
                         {
                             name: 'forum_standardisation',
-                            label: this.$i18n.t('fields.forum_standardistation.category_label'),
+                            label: this.$i18n.t('mail_legacy'),
                             key: 'mail_legacy',
                             fields: [
                                 {
