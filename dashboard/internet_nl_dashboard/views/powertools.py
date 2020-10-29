@@ -62,28 +62,48 @@ def set_account(request) -> HttpResponse:
 
 @user_passes_test(is_powertool_user, login_url=LOGIN_URL)
 def get_accounts(request) -> HttpResponse:
-    account = get_account(request)
+    myaccount = get_account(request)
+    scans = AccountInternetNLScan.objects.all().filter(account=myaccount.id).count()
+    lists = UrlList.objects.all().filter(account=myaccount.id).count()
+    users = list(User.objects.all().filter(dashboarduser__account=myaccount.id).values_list('username', flat=True))
+    current_account = {
+        'id': myaccount.id,
+        'name': myaccount.name,
+        'scans': scans,
+        'lists': lists,
+        'users': users,
+        'label': f"{myaccount.id}: {myaccount.name} (Lists: {lists}, Scans: {scans}, Users: {len(users)})"
+    }
 
-    accounts = Account.objects.all().values_list('id', 'name')
+    accounts = Account.objects.all().values_list('id', 'name').order_by('id')
 
     account_data = []
     # add some metadata to the accounts, so it's more clear where you are switching to:
     for account in accounts:
-        account_information = {'id': account[0], 'name': account[1]}
-        account_information['scans'] = AccountInternetNLScan.objects.all().filter(
-            account=account_information['id']).count()
-        account_information['lists'] = UrlList.objects.all().filter(account=account_information['id']).count()
-        account_information['users'] = list(User.objects.all().filter(
-            dashboarduser__account=account_information['id']).values_list('username', flat=True))
+        scans = AccountInternetNLScan.objects.all().filter(account=account[0]).count()
+        lists = UrlList.objects.all().filter(account=account[0]).count()
+        users = list(User.objects.all().filter(dashboarduser__account=account[0]).values_list('username', flat=True))
+        account_information = {
+            'id': account[0],
+            'name': account[1],
+            'scans': scans,
+            'lists': lists,
+            'users': users,
+            'label': f"{account[0]}: {account[1]} (Lists: {lists}, Scans: {scans}, Users: {len(users)})"
+        }
 
         account_data.append(account_information)
 
-    return JsonResponse({'current_account': account, 'accounts': account_data})
+    return JsonResponse(
+        {
+            'current_account': current_account,
+            'accounts': account_data
+        }
+    )
 
 
 @user_passes_test(is_powertool_user, login_url=LOGIN_URL)
 def save_instant_account(request) -> HttpResponse:
-
     request = get_json_body(request)
     username = request['username']
     password = request['password']

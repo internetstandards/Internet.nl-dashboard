@@ -136,9 +136,8 @@ Fixed: when deleting a list, it is re-added to the list of lists when adding a n
 
 <script>
 import jQuery from 'jquery'
-import http_mixin from './http_mixin.vue'
-import legacy_mixin from './legacy_mixin.vue'
-import loading from './loading.vue'
+import legacy_mixin from '../legacy_mixin.vue'
+import loading from '../loading.vue'
 
 import managed_url_list from './managed-url-list.vue'
 
@@ -224,7 +223,7 @@ export default {
         }
     },
     template: '#listss',
-    mixins: [http_mixin, legacy_mixin],
+    mixins: [legacy_mixin],
     data: function() {
         return {
             loading: false,

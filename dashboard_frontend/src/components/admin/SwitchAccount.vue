@@ -1,25 +1,30 @@
 <template type="x-template" id="switch-account-template">
     <div id="switch-account" class="block fullwidth">
         <h2>{{ $t("title") }}</h2>
-        <p>{{ $t("intro") }}</p>
+        <p v-html="$t('intro')"></p>
 
         <server-response :response="server_response"></server-response>
 
         <label for="account_selection">{{ $t("select") }}:</label>
-        <select id="account_selection" v-model="selected_account" @change="set_account" :size="accounts.length">
-            <option v-for="(account, index) in accounts" :key="index"
-                    :value="account['id']" :selected="account['id'] === current_account">
-                {{ account['id'] }}: {{ account['name'] }} (lists: {{ account['lists'] }}, scans: {{
-                    account['scans']
-                }}, users: {{ account['users'].length }})
-            </option>
-        </select>
+
+        <v-select
+            id="account_selection"
+            v-model="current_account"
+            placeholder="Select account..."
+            :options="accounts"
+            code="id"
+            label="label"
+            :multiple="false"
+            :size="accounts.length"
+            @input="set_account"
+        >
+            <slot name="no-options">No options...</slot>
+        </v-select>
 
     </div>
 </template>
 
 <script>
-import http_mixin from './http_mixin.vue'
 
 export default {
 
@@ -27,20 +32,18 @@ export default {
         messages: {
             en: {
                 title: "Switch Account",
-                intro: "This feature allows you to switch to another account, and use this site as them." +
-                    "Important: refresh the page after choosing an account!",
+                intro: "This feature allows you to switch to another account, and use this site as them. " +
+                    "<br><b>Important: refresh the page after choosing an account!</b>",
                 select: "Select account to use"
             }
         }
     },
-    template: '#switch-account-template',
-    mixins: [http_mixin],
+    template: 'switch-account-template',
 
     data: function () {
         return {
             accounts: [],
-            current_account: 0, // still doesn't work...
-            selected_account: 0,
+            current_account: 0,
             server_response: {},
         }
     },
@@ -51,14 +54,17 @@ export default {
         get_accounts: function () {
             fetch(`${this.$store.state.dashboard_endpoint}/data/powertools/get_accounts/`, {credentials: 'include'}).then(response => response.json()).then(data => {
                 this.accounts = data['accounts'];
-                this.current_account = data['current_account'][0];
+                this.current_account = data['current_account'];
+
+                // create options for nice accounts.
+
             }).catch((fail) => {
                 console.log('A loading error occurred: ' + fail);
             });
         },
 
         set_account: function () {
-            let data = {'id': this.selected_account};
+            let data = {'id': this.current_account.id};
 
             this.asynchronous_json_post(
                 `${this.$store.state.dashboard_endpoint}/data/powertools/set_account/`, data, (server_response) => {

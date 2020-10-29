@@ -250,12 +250,12 @@ Vue.component('modal', modal)
 Vue.component('server-response', server_response)
 
 import Login from './components/Login'
-import DomainListManager from './components/DomainListManager'
-import SpreadsheetUpload from './components/SpreadsheetUpload'
+import DomainListManager from './components/domains/DomainListManager'
+import SpreadsheetUpload from './components/domains/SpreadsheetUpload'
 import ScanMonitor from './components/ScanMonitor'
 import Report from './components/Report'
-import SwitchAccount from './components/SwitchAccount'
-import InstantAddAccount from './components/InstantAddAccount'
+import SwitchAccount from './components/admin/SwitchAccount'
+import InstantAddAccount from './components/admin/InstantAddAccount'
 import Account from './components/Account'
 import Demo from './components/Demo'
 import Unsubscribe from './components/Unsubscribe'
@@ -483,8 +483,6 @@ export default {
 
 <style>
 #app {
-    /* https://developer.mozilla.org/en-US/docs/Web/CSS/font-smooth */
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
+
 }
 </style>

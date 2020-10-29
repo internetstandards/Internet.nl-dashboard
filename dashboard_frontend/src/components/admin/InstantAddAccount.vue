@@ -18,8 +18,6 @@
 
 <script>
 
-import http_mixin from './http_mixin.vue'
-
 export default {
     i18n: {
         messages: {
@@ -32,7 +30,6 @@ export default {
         }
     },
     template: '#add-account-template',
-    mixins: [http_mixin],
 
     data: function () {
         return {

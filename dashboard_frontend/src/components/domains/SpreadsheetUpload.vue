@@ -1,4 +1,3 @@
-{% verbatim %}
 <style>
     #spreadsheet-upload-template .block form {
         overflow: visible;
@@ -99,12 +98,10 @@
         </div>
     </div>
 </template>
-{% endverbatim %}
 
 <script>
 
 import $ from 'jquery'
-import humanize_mixin from './humanize_mixin.vue'
 
 export default {
     i18n: {
@@ -196,7 +193,7 @@ export default {
         }
     },
     template: '#spreadsheet-upload-template',
-    mixins: [humanize_mixin],
+    mixins: [],
     data: function () {
         return {
             upload_history: [],

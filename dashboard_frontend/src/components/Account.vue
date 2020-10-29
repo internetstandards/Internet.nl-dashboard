@@ -58,8 +58,6 @@
 
 <script>
 
-import http_mixin from './http_mixin.vue'
-
 export default {
   i18n: {
     messages: {
@@ -117,7 +115,6 @@ export default {
       }
     }
   },
-  mixins: [http_mixin],
   data: function () {
     return {
       loading: false,
