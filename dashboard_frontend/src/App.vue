@@ -107,9 +107,9 @@
                 <section class="block do-not-print">
                     <div class="wrapper">
                         <p style="font-size: 0.9em; font-style: italic; margin-bottom: 0em;">
-                            Thank you for using the internet.nl dashboard. Please report issues on <a
-                            href="https://github.com/internetstandards/Internet.nl-dashboard/issues" target="_blank">this
-                            GitHub page</a>.
+                            {{ $t('report_issues.thank_you') }}
+                            {{ $t('report_issues.report_issues') }}
+                            <a href="https://github.com/internetstandards/Internet.nl-dashboard/issues" target="_blank">{{ $t('report_issues.link_text') }}</a>.
                         </p>
                     </div>
                 </section>
@@ -161,6 +161,11 @@ export default {
                     sitedescription: 'Test for modern Internet Standards like IPv6, DNSSEC, HTTPS, DMARC, STARTTLS\n' +
                         ' and DANE.',
                 },
+                "report_issues": {
+                    "thank_you": "Thank you for using the internet.nl dashboard.",
+                    "report_issues": "Please report issues on ",
+                    "link_text": "this GitHub page"
+                },
                 base: {
                     info: "Internet.nl is an initiative of the Internet community and the Dutch government.",
                     disclosure: "Responsible disclosure",
@@ -175,6 +180,11 @@ export default {
                 page: {
                     sitetitle: 'Internet.nl',
                     sitedescription: 'Test voor moderne Internetstandaarden zoals IPv6, DNSSEC, HTTPS, DMARC, STARTTLS en DANE.',
+                },
+                "report_issues": {
+                    "thank_you": "Bedankt voor het gebruiken van het internet.nl Dashboard.",
+                    "report_issues": "Meld fouten of suggesties op",
+                    "link_text": "onze GitHub pagina."
                 },
                 base: {
                     info: "Internet.nl is een initiatief van de internetgemeenschap en de Nederlandse overheid.",

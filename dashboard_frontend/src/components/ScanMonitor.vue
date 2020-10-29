@@ -197,7 +197,7 @@ export default {
         }
     },
     name: 'scan_monitor',
-    template: '#scan_monitor_template',
+    template: 'scan_monitor_template',
     mixins: [legacy_mixin],
 
     data: function() {
@@ -211,6 +211,7 @@ export default {
         }
     },
     mounted: function () {
+        this.$i18n.locale = this.locale;
         this.load();
     },
     methods: {

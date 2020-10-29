@@ -770,7 +770,7 @@ export default {
             "every half year": "every half year",
             "at the start of every quarter": "at the start of every quarter",
             "every 1st day of the month": "every first day of the month",
-            "twice per month": "every two weeks, from the first day of the month",
+            "twice per month": "every two weeks, from the first day of the month"
         },
         "domains": {
             "header": "Domains",
@@ -857,7 +857,7 @@ export default {
             "every half year": "ieder half jaar",
             "at the start of every quarter": "aan het begin van ieder kwartaal",
             "every 1st day of the month": "elke eerste dag van de maand",
-            "twice per month": "om de twee weken, vanaf de 1e van de maand",
+            "twice per month": "om de twee weken, vanaf de 1e van de maand"
         },
         "domains": {
             "header": "Domeinen",

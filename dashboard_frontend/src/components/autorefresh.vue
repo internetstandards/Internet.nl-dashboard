@@ -1,6 +1,6 @@
 <template id="autorefresh_template">
     <div v-if='visible' style='margin-bottom: 0 !important;'>
-        <button @click="reload_now()">{{ $t("refresh_now") }}</button>
+        <button @click="reload_now()">🔁 {{ $t("refresh_now") }}</button>
         {{ $t("refresh_happening_in") }} <span v-html="this.current_step_inverted"></span>
         {{ $t("units") }}
     </div>
@@ -13,12 +13,12 @@ export default {
             en: {
                 refresh_happening_in: 'Auto refresh in:',
                 units: 's',
-                refresh_now: 'refresh data'
+                refresh_now: 'refresh data now'
             },
             nl: {
                 refresh_happening_in: 'Lijst wordt ververst over:',
                 units: 's',
-                refresh_now: 'ververs gegevens'
+                refresh_now: 'ververs gegevens nu'
             }
         }
     },
