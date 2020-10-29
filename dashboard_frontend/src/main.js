@@ -67,35 +67,68 @@ import PercentageBarChart from './components/charts/cumulative-percentage-bar-ch
 
 Vue.component('percentage-bar-chart', PercentageBarChart)
 
+const i18n = new VueI18n({
+    locale: 'en',
+    fallbackLocale: 'en',
+    silentFallbackWarn: true,
+    // it's required this is called messages.
+    messages: {
+        en: {
+            "title_domains": "Internet.nl Dashboard / Domains",
+        },
+        nl: {
+            "title_domains": "Internet.nl Dashboard / Domeinen",
+        }
+    },
+    sharedMessages: {}
+});
+
 
 const routes = [
-    {path: '/', component: Login},
+    // todo: Make nice translations...
+    {path: '/', component: Login, meta: {title: 'Internet.nl Dashboard'}},
 
     // refreshing the app on a control panel will lead to nothing, make sure it leads to something.
     {path: '/control-panel-:id', component: DomainListManager,},
 
-    {path: '/domains/:list', component: DomainListManager, name: 'numbered_lists'},
-    {path: '/domains', component: DomainListManager,},
+    {
+        path: '/domains/:list',
+        component: DomainListManager,
+        name: 'numbered_lists',
+        meta: {title: i18n.t("title_domains")}
+    },
+    {path: '/domains', component: DomainListManager, meta: {title: i18n.t("title_domains")}},
     {
         path: '/upload', component: SpreadsheetUpload,
         props: {
             csrf_token: get_cookie('csrftoken'),
             max_lists: 200,
             max_urls: 5000,
-        }
+        },
+        meta: {title: 'Internet.nl Dashboard / Domains / Upload'}
     },
-    {path: '/scans', component: ScanMonitor},
+    {path: '/scans', component: ScanMonitor, meta: {title: 'Internet.nl Dashboard / Scan Monitor'}},
     // todo: make sure what to do with internet_nl_messages...
-    {path: '/report/:report/:compare_with', component: Report, name: 'compared_numbered_report'},
-    {path: '/report/:report', component: Report, name: 'numbered_report'},
-    {path: '/report', component: Report},
-    {path: '/switch-account', component: SwitchAccount},
-    {path: '/add-user', component: InstantAddAccount},
-    {path: '/tour', component: Demo},
-    {path: '/demo', component: Demo},
-    {path: '/unsubscribe', component: Unsubscribe},
-    {path: '/profile', component: Account},
-    {path: '/account', component: Account},
+    {
+        path: '/report/:report/:compare_with',
+        component: Report,
+        name: 'compared_numbered_report',
+        meta: {title: 'Internet.nl Dashboard / Reports'}
+    },
+    {
+        path: '/report/:report',
+        component: Report,
+        name: 'numbered_report',
+        meta: {title: 'Internet.nl Dashboard / Reports'}
+    },
+    {path: '/report', component: Report, meta: {title: 'Internet.nl Dashboard / Reports'}},
+    {path: '/switch-account', component: SwitchAccount, meta: {title: 'Internet.nl Dashboard / Switch Account'}},
+    {path: '/add-user', component: InstantAddAccount, meta: {title: 'Internet.nl Dashboard / Add User'}},
+    {path: '/tour', component: Demo, meta: {title: 'Internet.nl Dashboard / Tour'}},
+    {path: '/demo', component: Demo, meta: {title: 'Internet.nl Dashboard / Tour'}},
+    {path: '/unsubscribe', component: Unsubscribe, meta: {title: 'Internet.nl Dashboard / Unsubscribe'}},
+    {path: '/profile', component: Account, meta: {title: 'Internet.nl Dashboard / Account'}},
+    {path: '/account', component: Account, meta: {title: 'Internet.nl Dashboard / Account'}},
 ];
 
 const router = new VueRouter({
@@ -108,6 +141,16 @@ const router = new VueRouter({
             return {selector: to.hash}
         }
     },
+});
+
+// https://www.digitalocean.com/community/tutorials/vuejs-vue-router-modify-head
+router.beforeEach((to, from, next) => {
+    const nearestWithTitle = to.matched.slice().reverse().find(r => r.meta && r.meta.title);
+    if (nearestWithTitle) {
+        document.title = nearestWithTitle.meta.title;
+    }
+
+    next();
 });
 
 // these methods are used over and over.
@@ -247,19 +290,6 @@ const store = new Vuex.Store({
     },
 
     plugins: [createPersistedState()],
-});
-
-
-
-
-
-const i18n = new VueI18n({
-    locale: 'en',
-    fallbackLocale: 'en',
-    silentFallbackWarn: true,
-    // it's required this is called messages.
-    messages: {},
-    sharedMessages: {}
 });
 
 
