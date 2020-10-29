@@ -2,6 +2,11 @@
 import Chart from 'chart.js';
 import chart_mixin from './chart_mixin.vue'
 
+// this prevents the legend being written over the 100% scores
+Chart.Legend.prototype.afterFit = function() {
+    this.height = this.height + 20;
+};
+
 export default {
     mixins: [chart_mixin],
 
