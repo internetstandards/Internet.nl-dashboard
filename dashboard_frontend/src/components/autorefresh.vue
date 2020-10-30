@@ -81,6 +81,7 @@ export default {
         }
     },
     mounted: function(){
+        this.$i18n.locale = this.locale;
         this.init_auto_refresh();
     },
     beforeDestroy: function() {

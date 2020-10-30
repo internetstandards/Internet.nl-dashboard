@@ -88,7 +88,10 @@ export default {
                 if (this.$store.state.user.is_authenticated) {
                     // don't keep the 'succesful login' message:
                     this.server_response = {};
-                    
+                    // clear the login form, which contains the password in cache
+                    this.username = "";
+                    this.password = "";
+
                     // This is not a solution to double navigation, but i think the error is weird and incorrect.
                     // https://stackoverflow.com/questions/62462276/how-to-solve-avoided-redundant-navigation-to-current-location-error-in-vue
                     if (this.$router.name !== 'domains') {

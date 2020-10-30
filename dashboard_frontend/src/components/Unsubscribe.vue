@@ -76,6 +76,7 @@ export default {
     }
   },
   mounted: function () {
+      this.$i18n.locale = this.locale;
     // support: http://[]/spa/#/unsubscribe?feed=asdasd&unsubscribe_code=3819318
     if (this.$route.query.feed !== undefined) {
       this.feed = this.$route.query.feed;

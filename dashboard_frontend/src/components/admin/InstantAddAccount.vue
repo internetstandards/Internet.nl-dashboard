@@ -30,7 +30,9 @@ export default {
         }
     },
     template: '#add-account-template',
-
+    mounted: function () {
+        this.$i18n.locale = this.locale;
+    },
     data: function () {
         return {
             username: "",

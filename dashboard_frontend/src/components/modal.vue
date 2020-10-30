@@ -37,7 +37,10 @@
 <script>
 export default {
     template: '#modal-template',
+
     mounted: function () {
+        this.$i18n.locale = this.locale;
+
         // Emit a close when the escape key is hit.
         document.addEventListener('keyup', (e) => {
             if (e.keyCode === 27) {

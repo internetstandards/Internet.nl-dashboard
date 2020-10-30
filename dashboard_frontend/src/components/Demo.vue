@@ -182,6 +182,7 @@ export default {
     props: {
     },
     mounted: function () {
+        this.$i18n.locale = this.locale;
     },
     methods: {
     }

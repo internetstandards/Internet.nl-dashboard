@@ -34,7 +34,13 @@ export default {
                 title: "Switch Account",
                 intro: "This feature allows you to switch to another account, and use this site as them. " +
                     "<br><b>Important: refresh the page after choosing an account!</b>",
-                select: "Select account to use"
+                select: "Select account to use..."
+            },
+            nl: {
+                title: "Wissel van account",
+                intro: "Hiermee is te wisselen van account. Na een wissel voer je bijvoorbeeld scans uit vanuit die " +
+                    "organisatie. <br><b>Let op: herlaad de pagina na het wisselen van account!</b>",
+                select: "Selecteer het account om te gebruiken..."
             }
         }
     },
@@ -48,6 +54,7 @@ export default {
         }
     },
     mounted: function () {
+        this.$i18n.locale = this.locale;
         this.get_accounts();
     },
     methods: {

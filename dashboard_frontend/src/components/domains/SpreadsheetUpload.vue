@@ -207,6 +207,7 @@ export default {
         max_lists: {type: String, required: true},
     },
     mounted: function () {
+        this.$i18n.locale = this.locale;
         this.get_recent_uploads();
         this.configure_upload_field();
     },

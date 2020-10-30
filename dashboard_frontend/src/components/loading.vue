@@ -37,5 +37,9 @@ export default {
             default: false
         },
     },
+
+    mounted: function(){
+        this.$i18n.locale = this.locale;
+    }
 }
 </script>

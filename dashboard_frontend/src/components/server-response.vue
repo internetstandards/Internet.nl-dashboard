@@ -38,6 +38,10 @@ export default {
             default: ""
         }
     },
-    template: '#server_response_template',
+    template: 'server_response_template',
+
+    mounted: function(){
+        this.$i18n.locale = this.locale;
+    }
 }
 </script>
