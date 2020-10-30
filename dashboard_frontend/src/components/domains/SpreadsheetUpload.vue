@@ -1,11 +1,12 @@
 <style>
-#spreadsheet-upload-template .block form {
+#my-spreadsheet-upload-template .block form {
     overflow: visible;
 }
 </style>
-<template type="x-template" id="spreadsheet-upload-template">
-    <div id="spreadsheet-upload-template">
+<template id="spreadsheet-upload-template">
+    <div id="my-spreadsheet-upload-template">
         <div class="block fullwidth">
+            <p>&nbsp; <router-link tag="button" to="/domains">📚 {{ $t("back_to_domains") }}</router-link></p>
             <h1>{{ $t("upload.bulk_data_uploader.title") }}</h1>
             <p>{{ $t("upload.bulk_data_uploader.introduction") }}</p>
             <table>
@@ -113,6 +114,7 @@ export default {
     i18n: {
         messages: {
             en: {
+                back_to_domains: "Back to domains",
                 dropzone: {
                     title: "Drag and drop to upload content!",
                     subtitle: "...or click to select a file from your computer"
@@ -159,6 +161,7 @@ export default {
                 },
             },
             nl: {
+                back_to_domains: "Terug naar domeinen",
                 dropzone: {
                     title: "Sleep bestanden naar dit vlak om ze te uploaden!",
                     subtitle: "...of klik hier om bestanden te selecteren"

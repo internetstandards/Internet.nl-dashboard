@@ -39,7 +39,7 @@ Fixed: when deleting a list, it is re-added to the list of lists when adding a n
             <p>{{ $t("intro") }}</p>
             <p>
                 <button @click="start_adding_new()" accesskey="n">📚 {{ $t("new_list.add_new_list") }}</button>
-                &nbsp; <router-link tag="button" to="/upload">📓 {{ $t("bulk_upload_link") }}</router-link></p>
+                &nbsp; <router-link tag="button" to="/domains/upload">📓 {{ $t("bulk_upload_link") }}</router-link></p>
 
             <div class="testresult_without_icon">
                 <h2 style="font-size: 1.0em;" class="panel-title" >

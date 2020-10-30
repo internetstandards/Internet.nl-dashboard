@@ -123,18 +123,15 @@ const routes = [
     {path: '/', component: DomainListManager, meta: {title: 'Internet.nl Dashboard / Domains'}},
     {path: '/login', component: Login, name: "login", meta: {title: 'Internet.nl Dashboard / Login'}},
 
-    // refreshing the app on a control panel will lead to nothing, make sure it leads to something.
-    {path: '/control-panel-:id', component: DomainListManager,},
-
     {
-        path: '/domains/:list',
+        path: '/domains/list/:list',
         component: DomainListManager,
         name: 'numbered_lists',
         meta: {title: i18n.t("title_domains")}
     },
     {path: '/domains', component: DomainListManager, name: 'domains', meta: {title: i18n.t("title_domains")}},
     {
-        path: '/upload', component: SpreadsheetUpload,
+        path: '/domains/upload', component: SpreadsheetUpload,
         props: {
             csrf_token: get_cookie('csrftoken'),
             max_lists: 200,

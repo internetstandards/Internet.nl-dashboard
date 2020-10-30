@@ -147,8 +147,7 @@
                             <span role="img" :aria-label="$t('domains.not_eligeble_web', [url.url])">🚫</span>
                         </span>
                     </template>
-
-
+                    &nbsp;
                     <button style="font-size: 12px;" v-if="url_edit !== '' + list.id + url.url" class="inline-edit"
                             :title="$t('domains.start_editing_url', [url.url])"
                             @click="start_url_editing(list.id, url.url)" aria-expanded="false">
@@ -161,7 +160,7 @@
                         🖊
                         <span class="visuallyhidden">{{ $t('domains.cancel_editing_url', [url.url]) }}</span>
                     </button>
-
+                    &nbsp;
                     <template v-if="url.subdomain">
                         <a v-if="!url_is_edited(list.id, url.url)"
                            @click="start_url_editing(list.id, url.url)">{{ url.subdomain }}.<b>{{
@@ -174,17 +173,17 @@
                     </template>
 
                     <span class="inline-edit" v-if="url_is_edited(list.id, url.url)">
-                            <input autofocus :placeholder="url.url" :value="url.url" :id="'' + list.id + url.url">
+                            <input autofocus :placeholder="url.url" :value="url.url" :id="'' + list.id + url.url">&nbsp;
                             <button
                                 @click="save_edit_url({'list_id': list.id,'url_id': url.id, 'new_url_string': get_url_edit_value()})"
                                 :title="$t('domains.save_edited_url', [url.url])">
                                 {{ $t("domains.button_labels.save") }}
                                 <span class="visuallyhidden">{{ $t('domains.save_edited_url', [url.url]) }}</span>
-                            </button>
+                            </button>&nbsp;
                             <button @click="cancel_edit_url()" :title="$t('domains.cancel_editing_url', [url.url])">
                                 {{ $t("domains.button_labels.cancel") }}
                                 <span class="visuallyhidden">{{ $t('domains.cancel_editing_url', [url.url]) }}</span>
-                            </button>
+                            </button>&nbsp;
                         <!-- The remove is real, as it will only remove 1 items -->
                             <button @click="remove_edit_url(list.id, url.id)"
                                     :title="$t('domains.delete_edited_url', [url.url])">
