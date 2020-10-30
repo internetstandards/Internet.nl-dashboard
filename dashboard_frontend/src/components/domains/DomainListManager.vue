@@ -140,6 +140,8 @@ import legacy_mixin from '../legacy_mixin.vue'
 import loading from '../loading.vue'
 
 import managed_url_list from './managed-url-list.vue'
+import sharedMessages from './../translations/dashboard.js'
+
 
 export default {
     components: {
@@ -147,6 +149,7 @@ export default {
         managed_url_list
     },
     i18n: {
+        sharedMessages: sharedMessages,
         messages: {
             en: {
                 title: "Domains",
