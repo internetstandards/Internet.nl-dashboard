@@ -223,6 +223,19 @@ function interpolate_translations(internet_nl_messages) {
             internet_nl_mail_auth_dmarc_policy_only: 'Mail Auth DMARC Policy Only (not in UI)',   // Added 24th of May 2019
             internet_nl_mail_auth_dmarc_ext_destination: 'Mail Auth DMARC Ext Destination (not in UI)',  // Added 24th of May 2019
         }, 'nl': {
+
+           fields: {
+                forum_standardistation: {
+                    category_label: 'Extra Velden',
+                    measurements_on_agreed_security_standards: 'Extra Velden',
+                    ipv6_monitor: 'IPv6 monitor',
+                    status_fields: 'Status Velden'
+                },
+                additional_fields: {
+                    label: 'Additionele velden',
+                },
+            },
+
             internet_nl_mail_legacy_dmarc: 'DMARC',
             internet_nl_mail_legacy_dmarc_explanation: 'Berekend door de waarde van het volgende veld te gebruiken: mail_auth_dkim_exist.',
             internet_nl_mail_legacy_dkim: 'DKIM',

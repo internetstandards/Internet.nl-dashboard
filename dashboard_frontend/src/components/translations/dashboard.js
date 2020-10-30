@@ -16,7 +16,6 @@ export default {
             report: "report",
         },
 
-
         urllist: {
             field_label_id: 'id',
             field_label_name: 'List Name',
@@ -39,16 +38,20 @@ export default {
     },
     nl: {
 
-        fields: {
-            forum_standardistation: {
-                category_label: 'Extra Velden',
-                measurements_on_agreed_security_standards: 'Extra Velden',
-                ipv6_monitor: 'IPv6 monitor',
-                status_fields: 'Status Velden'
-            },
-            additional_fields: {
-                label: 'Additionele velden',
-            },
+        icons: {
+            list_closed: "Lijst geopend",
+            list_opened: "Lijst gesloten",
+
+            settings: "Instellingen",
+
+            scan: "scannen",
+            can_connect: "Icoon: verbinding is mogelijk",
+            unknown_connectivity: "Icoon: verbinding is onbekend",
+            cannot_connect: "Icoon: kan niet verbinden",
+
+            bulk_add_new: "Voeg domeinen toe in bulk",
+            remove_filter: 'Bekijk categorien',
+            report: "rapport",
         },
 
         urllist: {
