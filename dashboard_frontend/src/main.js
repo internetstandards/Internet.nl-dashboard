@@ -53,20 +53,6 @@ import Account from './components/account/Account'
 import Demo from './components/Demo'
 import Unsubscribe from './components/Unsubscribe'
 
-
-import ReportCharts from './components/reports/ReportCharts'
-
-Vue.component('internet-nl-charts', ReportCharts)
-import CumulativePercentageBarChart from './components/charts/cumulative-percentage-bar-chart'
-
-Vue.component('cumulative-percentage-bar-chart', CumulativePercentageBarChart)
-import LineChart from './components/charts/cumulative-percentage-bar-chart'
-
-Vue.component('line-chart', LineChart)
-import PercentageBarChart from './components/charts/cumulative-percentage-bar-chart'
-
-Vue.component('percentage-bar-chart', PercentageBarChart)
-
 const i18n = new VueI18n({
     locale: 'en',
     fallbackLocale: 'en',

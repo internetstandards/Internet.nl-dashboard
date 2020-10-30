@@ -125,6 +125,9 @@ export default {
             if (this.chart_data === undefined)
                 return;
 
+            if (this.chart_data[0] === undefined)
+                return;
+
             for(let i=0; i < this.chart_data.length; i++) {
 
                 // it's possible the report data is not yet in, but the item in the array has been made.
@@ -176,17 +179,8 @@ export default {
                 'pct_not_testable': "rgba(109,109,109,0.8)",
             };
 
-            let tmp_translation = {
-                'pct_ok': "passed",
-                'pct_low': "info",
-                'pct_medium': "warning",
-                'pct_high': "failed",
-                'pct_not_applicable': "not applicable",
-                'pct_not_testable': "not testable",
-                'pct_error_in_test': "test error",
-            };
-
             shown_values.forEach((shown_value) => {
+
                 let data = this.chart_data[0].calculation.statistics_per_issue_type;
                 let axis_names = [];
                 let labels = [];
@@ -231,7 +225,7 @@ export default {
                     borderWidth: 0,
                     lineTension: 0,
                     hidden: shown_value === "pct_high",
-                    label: `${tmp_translation[shown_value]}`,
+                    label: `${this.$i18n.t(shown_value)}`,
                 });
 
             });

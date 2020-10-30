@@ -45,7 +45,7 @@ export default {
                                 return Math.round(value) > 1;
                             },
                             // format as a percentage
-                            formatter: function(value, context) {
+                            formatter: function(value) {
                                 // The data labels should be rounded, while the rest of the data on hover etc is not.
                                 // https://github.com/internetstandards/Internet.nl-dashboard/issues/37
                                 return Math.round(value)+ '%';
@@ -77,7 +77,7 @@ export default {
                     tooltips: {
                         mode: 'index',
                         intersect: false,
-                        filter: function(item, data) {
+                        filter: function(item) {
                             return item.value > 0
                         },
                     },
@@ -91,7 +91,7 @@ export default {
                             ticks: {
                                 min: 0,
                                 max: 100,
-                                callback: function(label, index, labels) {
+                                callback: function(label) {
                                     return label + '%';
                                 }
                             },
@@ -100,7 +100,7 @@ export default {
 								labelString: this.$i18n.t(this.translation_key + '.yAxis_label')
 							},
                         }]
-				    },
+                    },
                     onClick: (event, item) => {
                         if (item[0] === undefined) {
                             return;
@@ -162,16 +162,6 @@ export default {
                     'pct_not_testable': "rgba(109,109,109,0.8)",
                 };
 
-                let tmp_translation = {
-                    'pct_ok': "passed",
-                    'pct_low': "info",
-                    'pct_medium': "warning",
-                    'pct_high': "failed",
-                    'pct_not_applicable': "not applicable",
-                    'pct_not_testable': "not testable",
-                    'pct_error_in_test': "test error",
-                };
-
                 shown_values.forEach((shown_value) => {
                     let axis_names = [];
                     let labels = [];
@@ -215,7 +205,7 @@ export default {
                         borderWidth: 0,
                         lineTension: 0,
                         hidden: shown_value === "pct_high",
-                        label: `#${this.chart_data[i].id}: ${tmp_translation[shown_value]}`,
+                        label: `#${this.chart_data[i].id}: ${this.$i18n.t(shown_value)}`,
                         // ${this.chart_data[i].calculation.name} ${moment(this.chart_data[i].at_when).format('LL')} n=${this.chart_data[i].total_urls}
                     });
                 });

@@ -564,14 +564,14 @@ div.rotate > span {
 
             </div>
 
-            <internet-nl-charts
+            <ReportCharts
                 :selected_report="selected_report"
                 :scan_methods="scan_methods"
                 :compare_charts="compare_charts"
                 :issue_filters="issue_filters"
                 :field_name_to_category_names="field_name_to_category_names"
             >
-            </internet-nl-charts>
+            </ReportCharts>
 
             <!-- The table is only displayed with up to two reports (the first as the source of the table, the second as a comparison). -->
             <div v-if="filtered_urls !== undefined && selected_report.length < 3" class="block fullwidth"
@@ -837,9 +837,14 @@ import legacy_mixin from './../legacy_mixin'
 import field_translations from './../field_translations'
 // import sharedMessages from './../translations/dashboard.js'
 
+import ReportCharts from './ReportCharts'
+
 // const translations = Object.assign({}, field_translations, sharedMessages);
 
 export default {
+    components: {
+        ReportCharts
+    },
     i18n: {
         sharedMessages: field_translations,
         messages: {

@@ -7,9 +7,14 @@
             <p>{{ $t("chart_info.adoption_timeline.annotation.intro") }}</p>
 
             <div style="overflow: auto; width: 100%;">
-                <div class="chart-container" style="position: relative; height:300px; width:100%; min-width: 950px;">
+                <!-- :key is used because that key changes when chaning the language, causing the graph to rerender and thus translate.
+                this cannot be done inside the graph, even with rerender title unfortunately. Perhaps it can, but cant figure it out. -->
+                <div class="chart-container" style="position: relative; height:300px; width:100%; min-width: 950px;"
+                 v-for="item in [$i18n.t(scan_methods[0].name)]" :key="item">
+
                     <line-chart
                         :color_scheme="color_scheme"
+                        :trigger_rerender_when_this_changes="locale"
                         :translation_key="'charts.adoption_timeline'"
                         :chart_data="issue_timeline_of_related_urllists"
                         :accessibility_text="$t('charts.adoption_timeline.accessibility_text')"
@@ -61,7 +66,9 @@
                 </h2>
                 <p>{{ $t("chart_info.adoption_bar_chart.annotation.intro") }}</p>
 
-                <div v-for="scan_form in scan_methods" :key="scan_form.name">
+                <!-- :key is used because that key changes when chaning the language, causing the graph to rerender and thus translate.
+                this cannot be done inside the graph, even with rerender title unfortunately. Perhaps it can, but cant figure it out. -->
+                <div v-for="scan_form in scan_methods" :key="$i18n.t(scan_form.name)">
                     <template v-if="scan_form.name === selected_report[0].type">
 
                         <div style="overflow: auto; width: 100%"
@@ -76,6 +83,7 @@
                                     :accessibility_text="$t('charts.adoption_bar_chart.accessibility_text')"
                                     :show_dynamic_average="issue_filters[scan_form.name].show_dynamic_average"
                                     :only_show_dynamic_average="false"
+                                    :trigger_rerender_when_this_changes="locale"
                                     :axis="visible_fields_from_scan_form(scan_form)">
                                 </percentage-bar-chart>
                             </div>
@@ -115,7 +123,7 @@
                                     </div>
                                 </div>
 
-                                <div v-for="subcategory in category.categories" :key="subcategory.label">
+                                <div v-for="subcategory in category.categories" :key="subcategory.key">
                                     <!-- Visibility depends on parent category, the labels themselves cannot yet be filtered for visibility. -->
                                     <div class="testresult" style="page-break-inside: avoid;"
                                          v-if="fields_from_self(subcategory).length > 0">
@@ -309,7 +317,19 @@ import pattern from 'patternomaly'
 
 import field_translations from './../field_translations'
 
+
+
+
+import CumulativePercentageBarChart from './../charts/cumulative-percentage-bar-chart'
+import LineChart from './../charts/line-chart'
+import PercentageBarChart from './../charts/percentage-bar-chart'
+
 export default {
+    components: {
+      'cumulative-percentage-bar-chart': CumulativePercentageBarChart,
+        'line-chart': LineChart,
+        'percentage-bar-chart': PercentageBarChart
+    },
     i18n: {
         sharedMessages: field_translations,
 

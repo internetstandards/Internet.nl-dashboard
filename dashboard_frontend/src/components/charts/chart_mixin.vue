@@ -8,6 +8,13 @@ export default {
 
         messages: {
             en: {
+                'pct_ok': "passed",
+                'pct_low': "info",
+                'pct_medium': "warning",
+                'pct_high': "failed",
+                'pct_not_applicable': "not applicable",
+                'pct_not_testable': "not testable",
+                'pct_error_in_test': "test error",
                 charts: {
                     adoption_timeline: {
                         title: 'Average internet.nl score over time.',
@@ -32,7 +39,13 @@ export default {
                 },
             },
             nl: {
-
+                'pct_ok': "geslaagd",
+                'pct_low': "info",
+                'pct_medium': "waarschuwing",
+                'pct_high': "gezakt",
+                'pct_not_applicable': "niet van toepassing",
+                'pct_not_testable': "niet testbaar",
+                'pct_error_in_test': "testfout",
                 charts: {
                     adoption_timeline: {
                         title: 'Adoptie van standaarden over tijd.',
@@ -61,6 +74,7 @@ export default {
         }
     },
     props: {
+        trigger_rerender_when_this_changes: {type: String, required:false},
         chart_data: {type: Array, required: true},
         axis: {type: Array, required: false},
         color_scheme: {type: Object, required: false},
@@ -127,8 +141,7 @@ export default {
         // This also prevents some of the "me.getDatasetMeta(...).controller is null" errors in charts.js (nov 2019)
         // You cannot add a debounce on a watch:
         // https://stackoverflow.com/questions/47172952/vuejs-2-debounce-not-working-on-a-watch-option
-        this.unwatch = this.$watch('chart_data', _.debounce((newVal) => {
-            console.log(newVal);
+        this.unwatch = this.$watch('chart_data', _.debounce(() => {
             this.renderData();
         }, 300), {
             // Note that you don’t need to do so to listen for in-Array mutations as they won't happen and the
@@ -137,7 +150,9 @@ export default {
         })
     },
     watch: {
-
+        trigger_rerender_when_this_changes: function (){
+            this.renderTitle();
+        },
         axis: function (new_value, old_value) {
             if (!this.arraysEqual(old_value, new_value)) {
                 this.renderData();

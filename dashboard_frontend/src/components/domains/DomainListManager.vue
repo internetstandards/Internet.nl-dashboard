@@ -137,7 +137,6 @@ Fixed: when deleting a list, it is re-added to the list of lists when adding a n
 <script>
 import jQuery from 'jquery'
 import legacy_mixin from '../legacy_mixin.vue'
-import loading from '../loading.vue'
 
 import managed_url_list from './managed-url-list.vue'
 import sharedMessages from './../translations/dashboard.js'
@@ -145,7 +144,6 @@ import sharedMessages from './../translations/dashboard.js'
 
 export default {
     components: {
-        loading,
         managed_url_list
     },
     i18n: {

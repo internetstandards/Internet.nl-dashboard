@@ -28,7 +28,7 @@ export default {
                             anchor: 'end', // show the number at the top of the bar.
                             align: 'end', // shows the value outside of the bar,
                             // format as a percentage
-                            formatter: function(value, context) {
+                            formatter: function(value) {
                                 // https://github.com/internetstandards/Internet.nl-dashboard/issues/37
                                 return Math.round(value.y)+ '%';
                             }
@@ -84,7 +84,7 @@ export default {
                                 padding: 20,
                                 min: 0,
                                 max: 100,
-                                callback: function(label, index, labels) {
+                                callback: function(label) {
                                     return label + '%';
                                 }
                             },
@@ -126,7 +126,6 @@ export default {
             let data = this.chart_data;
 
             let labels = Array();
-            let average_internet_nl_score = [];
 
             // There will be a large assortment of moment in time. These are added in random order, charts.js fixes it
             data.forEach((item) => {
