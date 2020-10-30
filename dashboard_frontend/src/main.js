@@ -207,7 +207,7 @@ Vue.mixin(
                         headers: {
                             'Accept': 'application/json',
                             'Content-Type': 'application/json',
-                            'X-CSRFToken': this.get_cookie('csrftoken')
+                            'X-CSRFToken': this.get_cookie('csrftoken'),
                         },
                         body: JSON.stringify(data)
                     });

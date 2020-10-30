@@ -696,6 +696,8 @@ CSRF_HEADER_NAME = 'X-CSRFToken'
 
 CORS_ALLOW_HEADERS = list(default_headers) + [
     'cache-control',
+    'X-CSRFToken',
+    'csrfmiddlewaretoken',
     CSRF_HEADER_NAME
 ]
 

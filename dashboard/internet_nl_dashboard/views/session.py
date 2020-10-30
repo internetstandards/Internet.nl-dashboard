@@ -39,7 +39,8 @@ def session_login_(request):
     if not user.is_active:
         return operation_response(error=True, message=f"user_not_active")
 
-    # todo: does login set a session at the client? we need that to happen.
+    # how will this work with second factor?
+
     login(request, user)
     return operation_response(success=True, message=f"logged_in")
 

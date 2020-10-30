@@ -108,6 +108,7 @@ export default {
             let data = {
                 'username': this.username,
                 'password': this.password,
+                'csrfmiddlewaretoken': this.get_cookie('csrftoken'),
             };
             this.asynchronous_json_post(
                 `${this.$store.state.dashboard_endpoint}/session/login/`, data, (server_response) => {

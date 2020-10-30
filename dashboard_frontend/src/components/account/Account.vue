@@ -51,7 +51,8 @@
             </div>
             <div class="block">
                 <h2>{{ $t("authentication_options") }}</h2>
-                <a href="/account/two_factor/">{{ $t("two_factor_options") }}</a>
+                <p>{{ $t("authentication_options_secondfactor") }}</p>
+                <a :href="`${this.$store.state.dashboard_endpoint}/account/two_factor/`" target="_blank">{{ $t("two_factor_options") }}</a>
             </div>
         </div>
 
@@ -74,6 +75,7 @@ export default {
                 mail_preferred_language: "E-mail language",
                 mail_send_mail_after_scan_finished: "Send notification after scan is finished",
                 authentication_options: "Authentication options",
+                authentication_options_secondfactor: "Due to technical limitations setting up second factor authentication and entering the code will happen in a new window.",
                 save_user_settings_success: 'Account updated successfully.',
                 save_user_settings_error_form_incorrect_mail_address: 'Mail address is not correct.',
                 save_user_settings_error_form_unsupported_language: 'This language is not supported, select a different language.',
@@ -100,6 +102,7 @@ export default {
                 mail_preferred_language: "E-mail taal",
                 mail_send_mail_after_scan_finished: "Stuur een melding als een scan klaar is",
                 authentication_options: "Inlog opties",
+                authentication_options_secondfactor: "Door technische beperkingen wordt het instellen en gebruiken in een apart venster.",
                 save_user_settings_success: 'Account succesvol bijgewerkt.',
                 save_user_settings_error_form_incorrect_mail_address: 'Mail adres is niet correct.',
                 save_user_settings_error_form_unsupported_language: 'Deze taal wordt niet ondersteund. Kies een andere taal.',
