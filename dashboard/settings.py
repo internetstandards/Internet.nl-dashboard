@@ -1,6 +1,7 @@
 import os
 from collections import OrderedDict
 from datetime import timedelta
+from corsheaders.defaults import default_headers
 
 import sentry_sdk
 from django.utils.translation import gettext_lazy as _
@@ -689,6 +690,13 @@ CORS_ALLOWED_ORIGINS = [
     "https://dashboard.internet.nl",
     "http://localhost:8080",
     "http://127.0.0.1:8080"
+]
+
+CSRF_HEADER_NAME = 'X-CSRF-TOKEN'
+
+CORS_ALLOW_HEADERS = list(default_headers) + [
+    'cache-control',
+    CSRF_HEADER_NAME
 ]
 
 # allow cookies to be sent as well, we have to, because there are logins and such.

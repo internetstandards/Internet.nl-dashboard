@@ -1,7 +1,7 @@
 <style>
-    #spreadsheet-upload-template .block form {
-        overflow: visible;
-    }
+#spreadsheet-upload-template .block form {
+    overflow: visible;
+}
 </style>
 <template type="x-template" id="spreadsheet-upload-template">
     <div id="spreadsheet-upload-template">
@@ -55,43 +55,41 @@
             <p>{{ $t("upload.drag_and_drop_uploader.process") }}</p>
             <p>{{ $t("upload.drag_and_drop_uploader.details_after_upload") }}</p>
             <p><i>{{ $t("upload.drag_and_drop_uploader.warnings", [max_urls, max_lists]) }}</i></p>
-            <form action="/data/upload-spreadsheet/" method="POST"
-              class="dropzone"
-              id="my-awesome-dropzone" enctype="multipart/form-data">
-                <div class="fallback">
-                    <p>{{ $t("upload.drag_and_drop_uploader.fallback_select_a_file") }}</p>
-                    <input name="file" type="file"/>
-                    <input type="submit">
-                </div>
-                <input type="hidden" name="csrfmiddlewaretoken" :value="csrf_token">
-            </form>
-            <form action="/data/upload-spreadsheet/" method="POST" enctype="multipart/form-data">
-                <div class="fallback">
-                    <p>{{ $t("upload.drag_and_drop_uploader.fallback_select_a_file") }}</p>
-                    <input name="file" type="file"/>
-                    <input type="submit">
-                </div>
-                <input type="hidden" name="csrfmiddlewaretoken" :value="csrf_token">
-            </form>
 
+
+            <vue-dropzone ref="myVueDropzone" id="dropzone" :options="dropzoneOptions">
+                <input type="hidden" name="csrfmiddlewaretoken" :value="csrf_token">
+            </vue-dropzone>
+
+            <form :action="`${this.$store.state.dashboard_endpoint}/data/upload-spreadsheet/`" method="POST" enctype="multipart/form-data">
+                <div class="fallback">
+                    <p>{{ $t("upload.drag_and_drop_uploader.fallback_select_a_file") }}</p>
+                    <input name="file" type="file"/>
+                    <input type="submit">
+                </div>
+                <input type="hidden" name="csrfmiddlewaretoken" :value="csrf_token">
+            </form>
             <h3>{{ $t("upload.recent_uploads.title") }}</h3>
             <p>{{ $t("upload.recent_uploads.intro") }}</p>
             <table v-if="upload_history">
                 <thead>
-                    <tr>
-                        <th>{{ $t("upload.recent_uploads.date") }}</th>
-                        <th>{{ $t("upload.recent_uploads.filename") }}</th>
-                        <th>{{ $t("upload.recent_uploads.filesize") }}</th>
-                        <th>{{ $t("upload.recent_uploads.status") }}</th>
-                    </tr>
+                <tr>
+                    <th>{{ $t("upload.recent_uploads.date") }}</th>
+                    <th>{{ $t("upload.recent_uploads.filename") }}</th>
+                    <th>{{ $t("upload.recent_uploads.filesize") }}</th>
+                    <th>{{ $t("upload.recent_uploads.status") }}</th>
+                </tr>
                 </thead>
                 <tbody>
-                    <tr v-for="(upload, index) in upload_history" :key="index">
-                        <td width="15%"><span :title="upload.upload_date">{{ humanize_date(upload.upload_date) }}</span></td>
-                        <td width="20%">{{ upload.original_filename }}</td>
-                        <td width="8%"><span :title="upload.filesize + ' bytes'">{{ humanize_filesize(upload.filesize) }}</span></td>
-                        <td>{{ upload.message }}</td>
-                    </tr>
+                <tr v-for="(upload, index) in upload_history" :key="index">
+                    <td width="15%"><span :title="upload.upload_date">{{ humanize_date(upload.upload_date) }}</span>
+                    </td>
+                    <td width="20%">{{ upload.original_filename }}</td>
+                    <td width="8%"><span :title="upload.filesize + ' bytes'">{{
+                            humanize_filesize(upload.filesize)
+                        }}</span></td>
+                    <td>{{ upload.message }}</td>
+                </tr>
                 </tbody>
             </table>
             <span v-if="!upload_history.length">{{ $t("upload.recent_uploads.no_uploads") }}</span>
@@ -100,8 +98,8 @@
 </template>
 
 <script>
-
-import $ from 'jquery'
+import vue2Dropzone from 'vue2-dropzone'
+import 'vue2-dropzone/dist/vue2Dropzone.min.css'
 
 export default {
     i18n: {
@@ -192,35 +190,21 @@ export default {
             },
         }
     },
-    template: '#spreadsheet-upload-template',
+    template: 'spreadsheet-upload-template',
     mixins: [],
     data: function () {
+        let self = this;
         return {
             upload_history: [],
-        }
-    },
-    props: {
-        csrf_token: {type: String, required: true},
-
-        // Something weird happens when an integer is passed, it is still seen as a string.
-        max_urls: {type: String, required: true},
-        max_lists: {type: String, required: true},
-    },
-    mounted: function () {
-        this.$i18n.locale = this.locale;
-        this.get_recent_uploads();
-        this.configure_upload_field();
-    },
-    methods: {
-        configure_upload_field: function(){
-            let self = this;
-
-            $("#my-awesome-dropzone").dropzone({
-                // The name that will be used to transfer the file
-                paramName: "file",
-
-                // 1MB is more than enough to house 10.000+ urls.
+            dropzoneOptions: {
+                url: `${this.$store.state.dashboard_endpoint}/data/upload-spreadsheet/`,
+                thumbnailWidth: 150,
                 maxFilesize: 1,
+
+                // no need for CSRF token here anymore...
+                withCredentials: true,
+                paramName: "file",
+                headers: {"X-CSRF-TOKEN": self.csrf_token},
 
                 // https://gitlab.com/meno/dropzone#enqueuing-file-uploads
                 parallelUploads: 1, // handle one at a time to reduce load a bit (except not if you bypass this)
@@ -246,24 +230,44 @@ export default {
                 forceFallback: false,
 
                 // Some events reload the recent uploaded file list.
-                init: function() {
+                init: function () {
                     // function(file, server_response)
-                    this.on("success", function() {
+                    this.on("success", function () {
                         // todo: update the domain lists...
+                        // That can be done with a state change...
                         self.get_recent_uploads();
                     });
-                    this.on("error", function() {
+                    this.on("error", function () {
                         self.get_recent_uploads();
                     });
                 }
-            });
 
-        },
-        get_recent_uploads: function(){
-            fetch(`/data/upload-history/`, {credentials: 'include'}).then(response => response.json()).then(data => {
+            }
+        }
+    },
+    props: {
+        csrf_token: {type: String, required: true},
+
+        // Something weird happens when an integer is passed, it is still seen as a string.
+        max_urls: {type: Number, required: true},
+        max_lists: {type: Number, required: true},
+    },
+    mounted: function () {
+        this.$i18n.locale = this.locale;
+        this.get_recent_uploads();
+
+    },
+    components: {
+        vueDropzone: vue2Dropzone
+    },
+    methods: {
+        get_recent_uploads: function () {
+            fetch(`${this.$store.state.dashboard_endpoint}/data/upload-history/`, {credentials: 'include'}).then(response => response.json()).then(data => {
                 this.upload_history = data;
                 this.$store.commit("set_uploads_performed", data.length);
-            }).catch((fail) => {console.log('A loading error occurred: ' + fail);});
+            }).catch((fail) => {
+                console.log('A loading error occurred: ' + fail);
+            });
         },
     }
 }
