@@ -692,7 +692,7 @@ CORS_ALLOWED_ORIGINS = [
     "http://127.0.0.1:8080"
 ]
 
-CSRF_HEADER_NAME = 'X-CSRF-TOKEN'
+CSRF_HEADER_NAME = 'X-CSRFToken'
 
 CORS_ALLOW_HEADERS = list(default_headers) + [
     'cache-control',

@@ -48,7 +48,8 @@
                     </td>
                 </tr>
             </table>
-
+        </div>
+        <div class="block fullwidth">
             <h3>{{ $t("upload.drag_and_drop_uploader.title") }}</h3>
             <p>{{ $t("upload.drag_and_drop_uploader.first_instruction") }}</p>
             <p>{{ $t("upload.drag_and_drop_uploader.nomouse") }}</p>
@@ -56,12 +57,16 @@
             <p>{{ $t("upload.drag_and_drop_uploader.details_after_upload") }}</p>
             <p><i>{{ $t("upload.drag_and_drop_uploader.warnings", [max_urls, max_lists]) }}</i></p>
 
-
-            <vue-dropzone ref="myVueDropzone" id="dropzone" :options="dropzoneOptions">
-                <input type="hidden" name="csrfmiddlewaretoken" :value="csrf_token">
+            <vue-dropzone ref="myVueDropzone" id="dropzone" :options="dropzoneOptions" :useCustomSlot=true
+                          v-on:vdropzone-sending="dropzone_sendingEvent">
+                <div class="dropzone-custom-content">
+                    <h3 class="dropzone-custom-title">{{ $t("dropzone.title") }}</h3>
+                    <div class="subtitle">{{ $t("dropzone.subtitle") }}</div>
+                </div>
             </vue-dropzone>
 
-            <form :action="`${this.$store.state.dashboard_endpoint}/data/upload-spreadsheet/`" method="POST" enctype="multipart/form-data">
+            <form :action="`${this.$store.state.dashboard_endpoint}/data/upload-spreadsheet/`" method="POST"
+                  enctype="multipart/form-data">
                 <div class="fallback">
                     <p>{{ $t("upload.drag_and_drop_uploader.fallback_select_a_file") }}</p>
                     <input name="file" type="file"/>
@@ -69,6 +74,9 @@
                 </div>
                 <input type="hidden" name="csrfmiddlewaretoken" :value="csrf_token">
             </form>
+
+        </div>
+        <div class="block fullwidth">
             <h3>{{ $t("upload.recent_uploads.title") }}</h3>
             <p>{{ $t("upload.recent_uploads.intro") }}</p>
             <table v-if="upload_history">
@@ -105,9 +113,13 @@ export default {
     i18n: {
         messages: {
             en: {
+                dropzone: {
+                    title: "Drag and drop to upload content!",
+                    subtitle: "...or click to select a file from your computer"
+                },
                 upload: {
                     bulk_data_uploader: {
-                        title: 'Bulk Address Uploader',
+                        title: 'Domain Spreadsheet Uploader',
                         introduction: 'It\'s possible to upload large amounts of internet addresses and lists using spreadsheets. To do so,\n' +
                             '            please expand on the example spreadsheets listed below. This shows how the data has to be structured.\n' +
                             '            Examples with and without data are provided as Open Document Spreadsheet, Microsoft Office Excel and Comma Separated.',
@@ -147,9 +159,13 @@ export default {
                 },
             },
             nl: {
+                dropzone: {
+                    title: "Sleep bestanden naar dit vlak om ze te uploaden!",
+                    subtitle: "...of klik hier om bestanden te selecteren"
+                },
                 upload: {
                     bulk_data_uploader: {
-                        title: 'Bulk Address Uploader',
+                        title: 'Spreadsheet Domeinen Uploader',
                         introduction: 'Hiermee is het mogelijk om grote hoeveelheden internet adressen en lijsten toe ' +
                             'te voegen. Dit gebeurd met spreadsheets. Begin met het downloaden van de voorbeelden hieronder, ' +
                             'deze geven aan wat het juiste formaat is. De voorbeeldbestanden zijn te downloaden in het ' +
@@ -204,7 +220,7 @@ export default {
                 // no need for CSRF token here anymore...
                 withCredentials: true,
                 paramName: "file",
-                headers: {"X-CSRF-TOKEN": self.csrf_token},
+                headers: {"X-CSRFToken": self.csrf_token},
 
                 // https://gitlab.com/meno/dropzone#enqueuing-file-uploads
                 parallelUploads: 1, // handle one at a time to reduce load a bit (except not if you bypass this)
@@ -241,7 +257,6 @@ export default {
                         self.get_recent_uploads();
                     });
                 }
-
             }
         }
     },
@@ -261,6 +276,11 @@ export default {
         vueDropzone: vue2Dropzone
     },
     methods: {
+        dropzone_sendingEvent (file, xhr, formData) {
+            // add the csrfmiddlewaretoken to the form.
+            formData.append('csrfmiddlewaretoken', this.csrf_token);
+        },
+
         get_recent_uploads: function () {
             fetch(`${this.$store.state.dashboard_endpoint}/data/upload-history/`, {credentials: 'include'}).then(response => response.json()).then(data => {
                 this.upload_history = data;
