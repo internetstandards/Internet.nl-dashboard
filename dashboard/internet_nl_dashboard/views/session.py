@@ -1,8 +1,11 @@
+import logging
+
 from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth.models import AnonymousUser
 from django.http import JsonResponse
 
 from dashboard.internet_nl_dashboard.logic import operation_response
-from dashboard.internet_nl_dashboard.views import get_json_body
+from dashboard.internet_nl_dashboard.views import get_json_body, get_account, get_dashboarduser
 
 """
 Uses django sessions to keep users logged in, so no trickery with JWT is needed.
@@ -10,6 +13,8 @@ This of course will _only_ work on the same machine. So you cannot access a remo
 
 The login stuff will be as strong as django's stuff, which is acceptable. 
 """
+
+log = logging.getLogger(__package__)
 
 
 def session_login_(request):
@@ -40,9 +45,15 @@ def session_login_(request):
 
 
 def session_logout_(request):
-    # todo: 'dict' object has no attribute 'status_code'
-    logout(request)
-    return operation_response(success=True, message=f"logged_out")
+    # If you don't include credentials in your get request, you'll get an AnonymousUser.
+    # The preferred method of detecting anonymous users is to see if they are authenticated, according to:
+    # https://docs.djangoproject.com/en/3.1/ref/contrib/auth/
+    if not request.user.is_authenticated:
+        log.debug('User is not authenticated...')
+        return operation_response(success=True, message=f"logged_out")
+    else:
+        logout(request)
+        return operation_response(success=True, message=f"logged_out")
 
 
 def session_status_(request):
@@ -73,5 +84,5 @@ def session_status(request):
 
 
 def session_logout(request):
-    return session_logout_(request)
+    return JsonResponse(session_logout_(request))
 

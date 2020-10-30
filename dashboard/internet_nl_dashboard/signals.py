@@ -12,4 +12,6 @@ def stream_login(sender, **kwargs):
 @receiver(user_logged_out)
 def stream_logout(sender, **kwargs):
     # sender = user
-    action.send(kwargs['user'], verb='logged out', public=False)
+    # logging out via json requests went wrong somehow.
+    if kwargs.get('user', None):
+        action.send(kwargs['user'], verb='logged out', public=False)

@@ -24,10 +24,10 @@
                 <router-link to="/account" accesskey="a">{{ $t("account") }}</router-link>
             </li>
 
-            <li class=""><a href="/logout/" accesskey="l">{{ $t("log_off") }}</a></li>
+            <li class=""><a @click="logout" accesskey="l">{{ $t("log_off") }}</a></li>
         </template>
         <template v-if="!is_authenticated">
-            <li class="current"><a href="/account/login/" accesskey="l">{{ $t("log_in") }}</a></li>
+            <router-link to="/login" accesskey="l">{{ $t("log_in") }}</router-link>
         </template>
     </ul>
 </template>
@@ -49,6 +49,45 @@ export default {
     },
     name: 'site-menu',
     template: 'menu_template',
+    methods: {
+        logout: function () {
+            this.loading = true;
+            fetch(`${this.$store.state.dashboard_endpoint}/session/logout/`, {
+                    method: 'GET',
+                    credentials: 'include',
+                }
+            ).then(response => response.json()).then(() => {
+                this.loading = false;
+                this.status();
+            }).catch((fail) => {
+                this.error_occurred = true;
+                console.log('A loading error occurred: ' + fail);
+            });
+        },
+        status: function () {
+            this.server_response = {};
+            this.loading = true;
+            fetch(`${this.$store.state.dashboard_endpoint}/session/status/`, {
+                    method: 'GET',
+                    credentials: 'include',
+                    headers: {
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': this.get_cookie('csrftoken')
+                    }
+                }
+            ).then(response => response.json()).then(data => {
+                this.$store.commit("set_user", data);
+                this.loading = false;
+                if (!this.$store.state.user.is_authenticated) {
+                    this.$router.push({'name': 'login'});
+                }
+            }).catch((fail) => {
+                this.error_occurred = true;
+                console.log('A loading error occurred: ' + fail);
+            });
+        },
+    }
 }
 </script>
 <i18n lang="json5">

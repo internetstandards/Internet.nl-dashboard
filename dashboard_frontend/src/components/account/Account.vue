@@ -130,7 +130,10 @@ export default {
     get: function () {
       this.server_response = {};
       this.loading = true;
-      fetch(`${this.$store.state.dashboard_endpoint}/data/user/get/`).then(response => response.json()).then(data => {
+      fetch(`${this.$store.state.dashboard_endpoint}/data/user/get/`, {
+                    method: 'GET',
+                    credentials: 'include'}
+                    ).then(response => response.json()).then(data => {
         this.user = data;
         this.loading = false;
         this.first_load = false;

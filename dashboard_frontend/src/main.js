@@ -49,7 +49,7 @@ import ScanMonitor from './components/ScanMonitor'
 import Report from './components/reports/Report'
 import SwitchAccount from './components/admin/SwitchAccount'
 import InstantAddAccount from './components/admin/InstantAddAccount'
-import Account from './components/Account'
+import Account from './components/account/Account'
 import Demo from './components/Demo'
 import Unsubscribe from './components/Unsubscribe'
 
@@ -84,9 +84,58 @@ const i18n = new VueI18n({
 });
 
 
+
+Vue.use(Vuex);
+import createPersistedState from "vuex-persistedstate";
+
+const store = new Vuex.Store({
+    state: {
+        // -2 is used, to be able to distinct for the first upload and zero uploads.
+        uploads_performed: -2,
+
+        // the scan monitor is used to determine if lists of domains or the reports dropdowns need to be
+        // updated. If the scan monitor is not loaded, a standard autorefresh strategy is used.
+        scan_monitor_data: [],
+
+        // active language:
+        locale: 'en',
+
+        // It's always port 8000.
+        dashboard_endpoint: 'http://localhost:8000',
+
+        // login states
+        user: {
+            is_authenticated: false,
+            is_superuser: false,
+        }
+    },
+
+    mutations: {
+        // this.$store.commit('set_uploads_performed', 0)
+        set_uploads_performed(state, value) {
+            state.uploads_performed = value;
+        },
+        update_scan_monitor_data(state, value) {
+            state.scan_monitor_data = value;
+        },
+        set_locale(state, value) {
+            state.locale = value;
+        },
+        set_dashboard_endpoint(state, value) {
+            state.dashboard_endpoint = value;
+        },
+        set_user(state, value) {
+            state.user = value;
+        }
+    },
+
+    plugins: [createPersistedState()],
+});
+
 const routes = [
     // todo: Make nice translations...
-    {path: '/', component: Login, meta: {title: 'Internet.nl Dashboard'}},
+    {path: '/', component: DomainListManager, meta: {title: 'Internet.nl Dashboard / Domains'}},
+    {path: '/login', component: Login, name: "login", meta: {title: 'Internet.nl Dashboard / Login'}},
 
     // refreshing the app on a control panel will lead to nothing, make sure it leads to something.
     {path: '/control-panel-:id', component: DomainListManager,},
@@ -97,7 +146,7 @@ const routes = [
         name: 'numbered_lists',
         meta: {title: i18n.t("title_domains")}
     },
-    {path: '/domains', component: DomainListManager, meta: {title: i18n.t("title_domains")}},
+    {path: '/domains', component: DomainListManager, name: 'domains', meta: {title: i18n.t("title_domains")}},
     {
         path: '/upload', component: SpreadsheetUpload,
         props: {
@@ -150,11 +199,14 @@ router.beforeEach((to, from, next) => {
         document.title = nearestWithTitle.meta.title;
     }
 
-    next();
+    // https://router.vuejs.org/guide/advanced/navigation-guards.html#global-before-guards
+    if (to.name !== 'login' && !store.state.user.is_authenticated) next({ name: 'login' })
+    else next()
 });
 
-// these methods are used over and over.
 
+
+// these methods are used over and over.
 Vue.mixin(
     {
         methods: {
@@ -245,52 +297,6 @@ Vue.mixin(
 );
 
 
-Vue.use(Vuex);
-import createPersistedState from "vuex-persistedstate";
-
-const store = new Vuex.Store({
-    state: {
-        // -2 is used, to be able to distinct for the first upload and zero uploads.
-        uploads_performed: -2,
-
-        // the scan monitor is used to determine if lists of domains or the reports dropdowns need to be
-        // updated. If the scan monitor is not loaded, a standard autorefresh strategy is used.
-        scan_monitor_data: [],
-
-        // active language:
-        locale: 'en',
-
-        // It's always port 8000.
-        dashboard_endpoint: 'http://localhost:8000',
-
-        // login states
-        user: {
-            is_authenticated: false,
-            is_superuser: false,
-        }
-    },
-
-    mutations: {
-        // this.$store.commit('set_uploads_performed', 0)
-        set_uploads_performed(state, value) {
-            state.uploads_performed = value;
-        },
-        update_scan_monitor_data(state, value) {
-            state.scan_monitor_data = value;
-        },
-        set_locale(state, value) {
-            state.locale = value;
-        },
-        set_dashboard_endpoint(state, value) {
-            state.dashboard_endpoint = value;
-        },
-        set_user(state, value) {
-            state.user = value;
-        }
-    },
-
-    plugins: [createPersistedState()],
-});
 
 
 import App from './App.vue'
