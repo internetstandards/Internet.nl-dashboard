@@ -41,7 +41,7 @@ export default {
                     maintainAspectRatio: false,
                     title: {
                         display: true,
-                        text: i18n.t(this.translation_key + '.title')
+                        text: this.$i18n.t(this.translation_key + '.title')
                     },
                     tooltips: {
                         mode: 'index',
@@ -90,7 +90,7 @@ export default {
                             },
                             scaleLabel: {
 								display: true,
-								labelString: i18n.t(this.translation_key + '.yAxis_label'),
+								labelString: this.$i18n.t(this.translation_key + '.yAxis_label'),
 							},
                         }]
                     }

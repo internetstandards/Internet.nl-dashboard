@@ -315,6 +315,28 @@ export default {
 
         messages: {
             en: {
+                charts: {
+                    adoption_timeline: {
+                        title: 'Average internet.nl score over time.',
+                        yAxis_label: 'Average internet.nl score',
+                        xAxis_label: 'Date',
+                        average_internet_nl_score: "Average internet.nl score",
+                        accessibility_text: "A table with the content of this graph is shown below.",
+                    },
+                    adoption_bar_chart: {
+                        title_single: 'Average adoption of standards, %{list_information}, %{number_of_domains} domains.',
+                        title_multiple: 'Comparison of adoption of standards between %{number_of_reports} reports.',
+                        yAxis_label: 'Adoption',
+                        average: "Average",
+                        accessibility_text: "A table with the content of this graph is shown below.",
+                    },
+                    cumulative_adoption_bar_chart: {
+                        title: 'Average adoption of standards over %{number_of_reports} reports.',
+                        yAxis_label: 'Adoption',
+                        average: "Average",
+                        accessibility_text: "A table with the content of this graph is shown below.",
+                    }
+                },
                 selected_report_is_from_before_api_2: {
                     title: "Unable to show all statistics",
                     intro: "One of the selected reports are from before 30th of June 2020. Before that date, reports contained different calculations which are not consistent with the current version of the dashboard.",
@@ -346,6 +368,30 @@ export default {
 
             },
             nl: {
+                charts: {
+                    adoption_timeline: {
+                        title: 'Adoptie van standaarden over tijd.',
+                        yAxis_label: 'Gemiddelde internet.nl score',
+                        xAxis_label: 'Datum',
+                        average_internet_nl_score: "Gemiddelde internet.nl score",
+                        accessibility_text: "Een tabel met de inhoud van deze grafiek wordt hieronder getoond.",
+                    },
+
+                    adoption_bar_chart: {
+                        title_single: 'Adoptie van standaarden, %{list_information}, %{number_of_domains} domeinen.',
+                        title_multiple: 'Vergelijking adoptie van standaarden tussen %{number_of_reports} rapporten.',
+                        yAxis_label: 'Adoptiegraad',
+                        average: "Gemiddeld",
+                        accessibility_text: "Een tabel met de inhoud van deze grafiek wordt hieronder getoond.",
+                    },
+                    cumulative_adoption_bar_chart: {
+                        title: 'Gemiddelde adoptie van standaarden van %{number_of_reports} rapporten.',
+                        yAxis_label: 'Adoptiegraad',
+                        average: "Gemiddeld",
+                        accessibility_text: "Een tabel met de inhoud van deze grafiek wordt hieronder getoond.",
+                    }
+                },
+
                 selected_report_is_from_before_api_2: {
                     title: "Niet mogelijk om alle statistieken te tonen",
                     intro: "Een van de geselecteerde rapporten is van voor 30 juni 2020. Rapporten van voor deze datum gebruiken een andere rekenmethode, waardoor ze niet consistent zijn met de huidige versie van het dashboard.",

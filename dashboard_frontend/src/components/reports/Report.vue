@@ -2083,14 +2083,6 @@ export default {
         },
     },
     computed: {
-        // graph titles:
-        graph_radar_chart_title: function () {
-            return this.$i18n.t('charts.adoption_radar_chart.title', {
-                'list_information': this.selected_report[0].list_name,
-                'number_of_domains': this.original_urls.length
-            });
-        },
-
         scan_methods: function () {
             return [
                 {
