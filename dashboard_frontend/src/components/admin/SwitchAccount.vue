@@ -1,10 +1,20 @@
 <template type="x-template" id="switch-account-template">
-    <div id="switch-account" class="block fullwidth">
+    <div id="switch-account" class="block fullwidth" style="min-height: 600px;">
         <h2>{{ $t("title") }}</h2>
         <p v-html="$t('intro')"></p>
 
+        <template v-if="server_response.success">
+        <server-response :response="server_response" :message="$t('switched_account', [server_response.data.account_name])"></server-response>
+        </template>
+        <template v-else>
         <server-response :response="server_response"></server-response>
+        </template>
 
+
+        <p>
+
+        <button role="link" @click="get_accounts">{{ $t("reload_list") }}</button>
+            <br><br>
         <label for="account_selection">{{ $t("select") }}:</label>
 
         <v-select
@@ -20,6 +30,7 @@
         >
             <slot name="no-options">No options...</slot>
         </v-select>
+        </p>
 
     </div>
 </template>
@@ -34,13 +45,17 @@ export default {
                 title: "Switch Account",
                 intro: "This feature allows you to switch to another account, and use this site as them. " +
                     "<br><b>Important: refresh the page after choosing an account!</b>",
-                select: "Select account to use"
+                select: "Select account to use, the account is instantly switched.",
+                reload_list: "Reload account list",
+                switched_account: "Switched to account {0}."
             },
             nl: {
                 title: "Wissel van account",
                 intro: "Hiermee is te wisselen van account. Na een wissel voer je bijvoorbeeld scans uit vanuit die " +
                     "organisatie. <br><b>Let op: herlaad de pagina na het wisselen van account!</b>",
-                select: "Selecteer het account om te gebruiken"
+                select: "Selecteer het account om te gebruiken, wisselen gebeurd direct.",
+                reload_list: "Lijst met accounts verversen",
+                switched_account: "Geswitched naar account {0}."
             }
         }
     },

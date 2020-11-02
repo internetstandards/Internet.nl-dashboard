@@ -57,7 +57,12 @@ def set_account(request) -> HttpResponse:
     dashboard_user.account = Account.objects.get(id=selected_account_id)
     dashboard_user.save()
 
-    return JsonResponse(operation_response(success=True, message=f"Switched account."))
+    return JsonResponse(operation_response(
+        success=True,
+        message=f"switched_account",
+        data={'account_name': dashboard_user.account.name}
+        )
+    )
 
 
 @user_passes_test(is_powertool_user, login_url=LOGIN_URL)
