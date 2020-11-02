@@ -1,8 +1,8 @@
 import logging
 
 from django.contrib.auth import authenticate, login, logout
-from django.contrib.auth.models import AnonymousUser
 from django.http import JsonResponse
+from django.middleware.csrf import get_token
 
 from dashboard.internet_nl_dashboard.logic import operation_response
 from dashboard.internet_nl_dashboard.views import get_json_body, get_account, get_dashboarduser
@@ -10,7 +10,6 @@ from dashboard.internet_nl_dashboard.views import get_json_body, get_account, ge
 """
 Uses django sessions to keep users logged in, so no trickery with JWT is needed.
 This of course will _only_ work on the same machine. So you cannot access a remote installation by design.
-
 The login stuff will be as strong as django's stuff, which is acceptable. 
 """
 
@@ -18,6 +17,16 @@ log = logging.getLogger(__package__)
 
 
 def session_login_(request):
+    """
+    Note that login is not possible, as the session cookie must be set correctly. The CSRF is tied to the session
+    cookie, so you cannot retrieve that in a different fashion. There are frameworks that allow you to login
+    such as djoser, but they DO NOT do second factor authentication and there is nothing equivalent to
+    django_second_factor_auth. So all logins and session management must be done, until we drop second factor auth
+    or when there is a json api available for the latter.
+
+    :param request:
+    :return:
+    """
     # taken from: https://stackoverflow.com/questions/11891322/setting-up-a-user-login-in-python-django-using-json-and-
     if request.method != 'POST':
         return operation_response(success=True, message=f"post_only")
@@ -68,6 +77,7 @@ def session_status_(request):
         return {
             'is_authenticated': False,
             'is_superuser': False,
+            'second_factor_enabled': False
         }
 
     return {
@@ -76,8 +86,12 @@ def session_status_(request):
     }
 
 
-def session_login(request):
-    return JsonResponse(session_login_(request))
+def get_csrf_(request):
+    return get_token(request)
+
+
+def session_csrf(request):
+    return JsonResponse({'token': get_csrf_(request)})
 
 
 def session_status(request):
@@ -86,4 +100,8 @@ def session_status(request):
 
 def session_logout(request):
     return JsonResponse(session_logout_(request))
+
+
+def session_login(request):
+    return JsonResponse(session_login_(request))
 

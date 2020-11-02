@@ -3,9 +3,6 @@
         <div class="block fullwidth">
             <h1>{{ $t("title") }}</h1>
             <p>{{ $t("intro") }}</p>
-            <p>
-                <button id="save" type="button" @click="save">{{ $t("save") }}</button>
-            </p>
             <server-response :response="server_response" :message="$t(server_response.message)"></server-response>
             <loading :loading="loading"></loading>
         </div>
@@ -21,6 +18,7 @@
                 <label class='ad_hoc_label' for="last_name">{{ $t("last_name") }}</label>
                 <input id="last_name" type="text" maxlength="120" v-model="user.last_name"><br><br>
                 <br>
+                <button id="save" type="button" @click="save">{{ $t("save") }}</button>
             </div>
 
             <div class="block">
@@ -31,6 +29,7 @@
                     }}</label>
                 <span style="margin-top: 1em;"><input id="mail_send_mail_after_scan_finished" type="checkbox"
                                                       v-model="user.mail_send_mail_after_scan_finished">
+
           <template v-if="user.mail_send_mail_after_scan_finished">{{ $t("yes") }}</template>
           <template v-if="!user.mail_send_mail_after_scan_finished">{{ $t("no") }}</template></span>
 
@@ -48,7 +47,10 @@
                     <option value="nl">{{ $t("nl") }}</option>
                 </select>
                 <br>
+                <button id="save" type="button" @click="save">{{ $t("save") }}</button>
             </div>
+        </div>
+        <div class="wrap">
             <div class="block">
                 <h2>{{ $t("authentication_options") }}</h2>
                 <p>{{ $t("authentication_options_secondfactor") }}</p>

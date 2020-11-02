@@ -27,16 +27,14 @@
             <li class=""><a @click="logout" accesskey="l">{{ $t("log_off") }}</a></li>
         </template>
         <template v-if="!is_authenticated">
-            <router-link to="/login" accesskey="l">{{ $t("log_in") }}</router-link>
+            <router-link to="/login" accesskey="a">{{ $t("log_in") }}</router-link>
         </template>
     </ul>
 </template>
 
 <script>
 export default {
-    mounted: function () {
-        this.$i18n.locale = this.locale;
-    },
+
     props: {
         is_authenticated: {
             type: Boolean,
@@ -45,6 +43,11 @@ export default {
         is_superuser: {
             type: Boolean,
             default: false,
+        }
+    },
+    data: function() {
+        return {
+            django_path: "",
         }
     },
     name: 'site-menu',

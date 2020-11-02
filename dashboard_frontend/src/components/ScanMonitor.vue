@@ -211,7 +211,6 @@ export default {
         }
     },
     mounted: function () {
-        this.$i18n.locale = this.locale;
         this.load();
     },
     methods: {

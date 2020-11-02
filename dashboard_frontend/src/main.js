@@ -70,7 +70,6 @@ const i18n = new VueI18n({
 });
 
 
-
 Vue.use(Vuex);
 import createPersistedState from "vuex-persistedstate";
 
@@ -87,7 +86,7 @@ const store = new Vuex.Store({
         locale: 'en',
 
         // It's always port 8000.
-        dashboard_endpoint: 'http://localhost:8000',
+        dashboard_endpoint: process.env.VUE_APP_DJANGO_PATH,
 
         // login states
         user: {
@@ -120,7 +119,7 @@ const store = new Vuex.Store({
 
 const routes = [
     // todo: Make nice translations...
-    {path: '/', component: DomainListManager, meta: {title: 'Internet.nl Dashboard / Domains'}},
+    // {path: '/', component: DomainListManager, meta: {title: 'Internet.nl Dashboard / Domains'}},
     {path: '/login', component: Login, name: "login", meta: {title: 'Internet.nl Dashboard / Login'}},
 
     {
@@ -129,7 +128,7 @@ const routes = [
         name: 'numbered_lists',
         meta: {title: i18n.t("title_domains")}
     },
-    {path: '/domains', component: DomainListManager, name: 'domains', meta: {title: i18n.t("title_domains")}},
+    {path: '/domains', component: DomainListManager, name: 'domains', meta: {title: i18n.t("title_domains")}, alias: '/'},
     {
         path: '/domains/upload', component: SpreadsheetUpload,
         props: {
@@ -183,15 +182,27 @@ router.beforeEach((to, from, next) => {
     }
 
     // https://router.vuejs.org/guide/advanced/navigation-guards.html#global-before-guards
-    if (to.name !== 'login' && !store.state.user.is_authenticated) next({ name: 'login' })
+    if (to.name !== 'login' && !store.state.user.is_authenticated) next({name: 'login'})
     else next()
 });
-
 
 
 // these methods are used over and over.
 Vue.mixin(
     {
+        // add some properties to each and every object.
+        beforeMount: function () {
+            // translate everything.
+            this.$i18n.locale = this.locale;
+            // make sure the django path for logins, second factor setup and such are available.
+            this.django_path = process.env.VUE_APP_DJANGO_PATH;
+        },
+        data() {
+            return {
+                // unique, so easy to merge property
+                django_path: '',
+            }
+        },
         methods: {
             // this can probably be replaced with axios or whatever. Or not if we want tos ave on dependencies.
             asynchronous_json_post: function (url, data, callback) {
@@ -226,7 +237,16 @@ Vue.mixin(
                 let parts = value.split("; " + name + "=");
                 if (parts.length === 2) return parts.pop().split(";").shift();
             },
-
+            // https://stackoverflow.com/questions/14573223/set-cookie-and-get-cookie-with-javascript
+            set_cookie: function (name, value, days) {
+                let expires = "";
+                if (days) {
+                    let date = new Date();
+                    date.setTime(date.getTime() + (days * 24 * 60 * 60 * 1000));
+                    expires = "; expires=" + date.toUTCString();
+                }
+                document.cookie = name + "=" + (value || "") + expires + "; path=/";
+            },
             // humanize mixin:
             humanize_date: function (date) {
                 // Uses localized date and time format with day name, which is pretty advanced and complete
@@ -278,8 +298,6 @@ Vue.mixin(
         },
     }
 );
-
-
 
 
 import App from './App.vue'

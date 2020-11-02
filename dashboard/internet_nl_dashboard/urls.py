@@ -6,6 +6,7 @@ import dashboard.internet_nl_dashboard.signals  # noqa
 from dashboard.internet_nl_dashboard.views import (__init__, account, domains, download_spreadsheet,
                                                    mail, powertools, report, scan_monitor,
                                                    spreadsheet, user, session)
+from constance import config
 
 
 class SpreadsheetFileTypeConverter:
@@ -23,8 +24,9 @@ register_converter(SpreadsheetFileTypeConverter, 'spreadsheet_filetype')
 
 
 urlpatterns = [
-    path('', lambda request: redirect('/spa/#/domains')),
-    path('spa/', powertools.spa),
+    path('', lambda request: redirect(config.DASHBOARD_FRONTEND_URL)),
+    # The SPA is not reachable anymore.
+    # path('spa/', powertools.spa),
     path('data/powertools/get_accounts/', powertools.get_accounts),
     path('data/powertools/set_account/', powertools.set_account),
     path('data/powertools/save_instant_account/', powertools.save_instant_account),
@@ -72,10 +74,15 @@ urlpatterns = [
     path('mail/unsubscribe/<str:feed>/<str:unsubscribe_code>/', mail.unsubscribe_),
 
     # session management
+    # logging in via javascript is not possible, because the CSRF is tied to the session cookie.
+    # The session cookie cannot be requested by javascript, and we're not going to use JWT because
+    # the second factor part is also django only, and not implmented as REST methods.
+    # So there is currently no way to move to rest based auth _including_ second factor authentication.
+    # of course except OAUTH, but there is no knowledge for that yet.
     path('session/login/', session.session_login),
     path('session/logout/', session.session_logout),
     path('session/status/', session.session_status),
-
+    path('session/csrf/', session.session_csrf),
     # Would you enable the below login form, you will bypass all second factor authentication. Therefore do not enable
     # this url (!)
     # url(r'^login/$', auth_views.LoginView.as_view(template_name='internet_nl_dashboard/registration/login.html'),

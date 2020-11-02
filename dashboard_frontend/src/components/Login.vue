@@ -4,20 +4,25 @@
         <div class="block fullwidth">
             <h1>{{ $t("title") }}</h1>
             <p>{{ $t("intro") }}</p>
-            <loading :loading="loading"></loading>
             <server-response :response="server_response" :message="$t(server_response.message)"></server-response>
 
             <div v-if="!user.is_authenticated">
-                <form v-on:submit.prevent="login">
-                <label class='first_name' for="first_name">{{ $t("username") }}</label>
-                <input id="username" type="text" maxlength="120" v-model="username">
-                <br>
+                <p>
+                    You are currently not logged in. Enter your credentials to log into the dashboard.<br>
+                    <i><small>If second factor authentication is enabled, use this alternate login link: <a :href="django_path + '/account/login/'">{{ django_path }}/account/login/</a></small></i>
+                </p>
 
-                <label class='last_name' for="last_name">{{ $t("password") }}</label>
-                <input id="password" type="password" maxlength="120" v-model="password">
-                <br>
-                <button id="login" type="submit" @click="login">{{ $t("login") }}</button>
+                <form v-on:submit.prevent="login">
+                    <label class='first_name' for="first_name">{{ $t("username") }}</label>
+                    <input id="username" type="text" maxlength="120" v-model="username">
+                    <br>
+
+                    <label class='last_name' for="last_name">{{ $t("password") }}</label>
+                    <input id="password" type="password" maxlength="120" v-model="password">
+                    <br>
+                    <button id="login" type="submit" @click="login">{{ $t("login") }}</button>
                 </form>
+
             </div>
             <div v-else>
                 {{ $t('logged_in') }}
@@ -40,6 +45,7 @@ export default {
                 username: "Username",
                 password: "Password",
                 login: "Log in",
+                not_logged_in: "You are currently not logged in. Enter your credentials to log into the dashboard.",
 
                 // messages:
                 no_credentials_supplied: "Enter a username and password to log in.",
@@ -47,14 +53,18 @@ export default {
                 user_not_active: "User is not active.",
                 logged_in: "You have succesfully logged in.",
                 logged_out: "You have succesfully logged out.",
-
-                // todo: show two-factor stuff inside an iframe. It's a hack :))
             },
             nl: {
                 title: 'Inloggen',
                 intro: "Log in op het dashboard.",
                 username: "gebruikersnaam",
                 password: "wachtwoord",
+
+                no_credentials_supplied: "Voer een gebruikersnaam en wachtwoord in.",
+                invalid_credentials: "Gebruikersnaam of wachtwoord niet correct.",
+                user_not_active: "Gebruiker is niet actief.",
+                logged_in: "Succesvol ingelogd.",
+                logged_out: "Succesvol uitgelogd.",
             }
         }
     },
@@ -95,7 +105,8 @@ export default {
                     // This is not a solution to double navigation, but i think the error is weird and incorrect.
                     // https://stackoverflow.com/questions/62462276/how-to-solve-avoided-redundant-navigation-to-current-location-error-in-vue
                     if (this.$router.name !== 'domains') {
-                        this.$router.push({'name': 'domains'}).catch(()=>{});
+                        this.$router.push({'name': 'domains'}).catch(() => {
+                        });
                     }
                 }
             }).catch((fail) => {
@@ -104,22 +115,31 @@ export default {
             });
         },
         login: function () {
+            // on first load there is no csrf at all:
             this.loading = true;
-            let data = {
+
+            fetch(`${this.$store.state.dashboard_endpoint}/session/csrf/`, {method: 'GET', credentials: 'include'})
+            .then(response => response.json()).then((data) => {
+                let csrf_token = data.token;
+                let login_data = {
                 'username': this.username,
                 'password': this.password,
-                'csrfmiddlewaretoken': this.get_cookie('csrftoken'),
-            };
-            this.asynchronous_json_post(
-                `${this.$store.state.dashboard_endpoint}/session/login/`, data, (server_response) => {
-                    if (server_response) {
-                        this.status();
-                        // redirect to desired page? Or is that not possible anymore?
-                        this.server_response = server_response;
-                        this.loading = false;
+                'csrfmiddlewaretoken': csrf_token,
+                };
+                this.asynchronous_json_post(
+                    `${this.$store.state.dashboard_endpoint}/session/login/`, login_data, (server_response) => {
+                        if (server_response) {
+                            this.status();
+                            // redirect to desired page? Or is that not possible anymore?
+                            this.server_response = server_response;
+                            this.loading = false;
+                        }
                     }
-                }
-            );
+                );
+
+            }).catch((fail) => {
+                console.log('A login error occurred: ' + fail);
+            });
         },
     },
     computed: mapState(['user']),

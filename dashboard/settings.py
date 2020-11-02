@@ -495,6 +495,14 @@ CONSTANCE_CONFIG = {
         'In normal use cases these limits will not be reached.',
         int
     ),
+    'DASHBOARD_FRONTEND_URL': (
+      'https://dashboard.internet.nl',
+      'The frontend of the dashboard is split from the django application, as move to more easily develop the '
+      'frontend with modern techniques. Unfortunately autentication and second factor authentication are not '
+      'converted to a javascript only approach. A good second factor alternative has to be figured out before '
+      'we can move to a javascript-only frontend.',
+      str
+    ),
 
     'INTERNET_NL_API_USERNAME': (
         'dummy',
@@ -534,7 +542,8 @@ CONSTANCE_CONFIG = {
 
 CONSTANCE_CONFIG_FIELDSETS = OrderedDict([
 
-    ('DASHBOARD', ('DASHBOARD_MAXIMUM_DOMAINS_PER_LIST',
+    ('DASHBOARD', ('DASHBOARD_FRONTEND_URL',
+                   'DASHBOARD_MAXIMUM_DOMAINS_PER_LIST',
                    'DASHBOARD_MAXIMUM_DOMAINS_PER_SPREADSHEET',
                    'DASHBOARD_MAXIMUM_LISTS_PER_SPREADSHEET')),
     ('E-Mail', ('EMAIL_NOTIFICATION_SENDER',
@@ -692,13 +701,13 @@ CORS_ALLOWED_ORIGINS = [
     "http://127.0.0.1:8080"
 ]
 
-CSRF_HEADER_NAME = 'X-CSRFToken'
+# as soon as this is set, the vue post stuff doesn't work anymore.
+# CSRF_HEADER_NAME = 'X-CSRFToken'
 
 CORS_ALLOW_HEADERS = list(default_headers) + [
     'cache-control',
     'X-CSRFToken',
     'csrfmiddlewaretoken',
-    CSRF_HEADER_NAME
 ]
 
 # allow cookies to be sent as well, we have to, because there are logins and such.

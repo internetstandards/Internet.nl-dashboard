@@ -129,8 +129,13 @@ run: ${app}  ## run complete application stack (frontend, worker, broker)
 run-frontend: ${app}  ## only run frontend component
 	DEBUG=1 NETWORK_SUPPORTS_IPV6=1 ${env} ${app} runserver
 
-run-gui:  ## only run the gui
-	cd dashboard_frontend; npm run serve
+run-gui-development:  ## only run the gui
+	# the extra -- is because of hell and fail. https://github.com/vuejs/vue-cli/issues/1528
+	cd dashboard_frontend; npm run serve -- --mode development
+
+build-gui:  ## only run the gui
+	# the extra -- is because of hell and fail. https://github.com/vuejs/vue-cli/issues/1528
+	cd dashboard_frontend; npm run build
 
 app: ${app}  ## perform arbitrary app commands
 	## For example: make app cmd=migrate
