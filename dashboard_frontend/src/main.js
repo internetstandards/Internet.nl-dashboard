@@ -45,13 +45,13 @@ Vue.component('server-response', server_response)
 import Login from './components/Login'
 import DomainListManager from './components/domains/DomainListManager'
 import SpreadsheetUpload from './components/domains/SpreadsheetUpload'
-import ScanMonitor from './components/ScanMonitor'
+import ScanMonitor from './components/scans/ScanMonitor'
 import Report from './components/reports/Report'
 import SwitchAccount from './components/admin/SwitchAccount'
 import InstantAddAccount from './components/admin/InstantAddAccount'
 import Account from './components/account/Account'
 import Demo from './components/Demo'
-import Unsubscribe from './components/Unsubscribe'
+import Unsubscribe from './components/mail/Unsubscribe'
 
 const i18n = new VueI18n({
     locale: 'en',
