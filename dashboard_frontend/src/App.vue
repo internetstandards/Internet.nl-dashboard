@@ -197,19 +197,14 @@ export default {
         }
     },
     mounted: function () {
-        // retrieve logged-in status
         this.$i18n.locale = this.locale;
-
-        // todo: how to log in? Needs a login component :) Is that already written?
-        // we also need that to retrieve the csrf token.
-        this.status();
-
+        this.login_status();
         this.$nextTick(function () {
             // give some headroom, just like in the original...
             let theHeader = document.querySelector("header");
             let fixedHeaderbody = document.querySelector("body");
             fixedHeaderbody.classList.add("body-with-semifixed-header");
-            var fixedHeader = new Headroom(theHeader, {
+            let fixedHeader = new Headroom(theHeader, {
                 "offset": 205,
                 "tolerance": 5,
                 "classes": {"initial": "header-js-animated", "pinned": "header-pinned", "unpinned": "header-unpinned"}
@@ -245,15 +240,12 @@ export default {
                 return
             }
 
-            // todo: make sure i18n is shared and language switching works in all components.
-            // todo: how does moment work with language switching?
+            // todo: moment does not yet switch locale live.
             this.$moment.locale(locale);
             this.$store.commit("set_locale", locale);
             // this.$i18n.locale = locale;
 
-            // make a request to django and set the language. This cookie value is used for translating
-            // spreadsheet downloads and error messages. The latter should be neutral asap.
-            // works only with a dashboard installation on the same address i assume...
+            // Using this cookie Django knows what language translations need to be (if still applicable)
             document.cookie = "dashboard_language=" + (locale || "en") + "; path=/; SameSite=Lax;";
         },
         WidthChange: function (mq) {
@@ -263,8 +255,7 @@ export default {
                 this.hamburgermenu_expanded = false;
             }
         },
-        // login status
-        status: function () {
+        login_status: function () {
             this.server_response = {};
             this.loading = true;
             fetch(`${this.$store.state.dashboard_endpoint}/session/status/`, {
