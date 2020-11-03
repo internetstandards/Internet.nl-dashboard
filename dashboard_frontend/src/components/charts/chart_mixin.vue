@@ -111,7 +111,6 @@ export default {
         )
     },
     mounted: function () {
-        this.$i18n.locale = this.locale;
         this.buildChart();
         this.renderData();
     },

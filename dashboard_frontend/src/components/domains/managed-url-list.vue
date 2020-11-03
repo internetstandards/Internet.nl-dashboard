@@ -461,8 +461,6 @@ export default {
         }
     },
     mounted: function () {
-        this.$i18n.locale = this.locale;
-
         if (window.location.href.split('/').length > 3) {
             // todo: this can be replaced by $route.params.report, which is much more readable.
             let get_id = window.location.href.split('/')[6];
@@ -740,7 +738,7 @@ export default {
     },
 }
 </script>
-<i18n lang="json5">
+<i18n>
 {
     "en": {
         "button_labels": {

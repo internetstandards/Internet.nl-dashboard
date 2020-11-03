@@ -1,5 +1,4 @@
-{% verbatim %}
-<template type="text/x-template" id="menu_template">
+<template>
     <ul>
         <template v-if="is_authenticated">
             <template v-if="is_superuser">
@@ -31,10 +30,8 @@
         </template>
     </ul>
 </template>
-
 <script>
 export default {
-
     props: {
         is_authenticated: {
             type: Boolean,
@@ -46,7 +43,6 @@ export default {
         }
     },
     name: 'site-menu',
-    template: 'menu_template',
     methods: {
         logout: function () {
             this.loading = true;
@@ -88,25 +84,25 @@ export default {
     }
 }
 </script>
-<i18n lang="json5">
+<i18n>
 {
-    "en": {
-        "admin": "Admin",
-        "domains": "Domains",
-        "scans": "Scans",
-        "reports": "Reports",
-        "account": "Account",
-        "log_off": "Log off",
-        "log_in": "Log in"
-    },
-    "nl": {
-        "admin": "Beheer",
-        "domains": "Domeinen",
-        "scans": "Scans",
-        "reports": "Rapporten",
-        "account": "Account",
-        "log_off": "Uitloggen",
-        "log_in": "Inloggen"
-    }
+	"en": {
+		"account": "Account",
+		"admin": "Admin",
+		"domains": "Domains",
+		"log_in": "Log in",
+		"log_off": "Log off",
+		"reports": "Reports",
+		"scans": "Scans"
+	},
+	"nl": {
+		"account": "Account",
+		"admin": "Beheer",
+		"domains": "Domeinen",
+		"log_in": "Inloggen",
+		"log_off": "Uitloggen",
+		"reports": "Rapporten",
+		"scans": "  Scans"
+	}
 }
 </i18n>

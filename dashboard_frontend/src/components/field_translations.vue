@@ -142,6 +142,9 @@ function interpolate_translations(internet_nl_messages) {
                 },
             },
 
+            mail_legacy: 'Extra Fields',
+            web_legacy: 'Extra Fields',
+
             internet_nl_mail_legacy_dmarc: 'DMARC',
             internet_nl_mail_legacy_dmarc_explanation: 'Calculated by using the value from: mail_auth_dkim_exist.',
             internet_nl_mail_legacy_dkim: 'DKIM',
@@ -224,7 +227,7 @@ function interpolate_translations(internet_nl_messages) {
             internet_nl_mail_auth_dmarc_ext_destination: 'Mail Auth DMARC Ext Destination (not in UI)',  // Added 24th of May 2019
         }, 'nl': {
 
-           fields: {
+            fields: {
                 forum_standardistation: {
                     category_label: 'Extra Velden',
                     measurements_on_agreed_security_standards: 'Extra Velden',
@@ -235,6 +238,9 @@ function interpolate_translations(internet_nl_messages) {
                     label: 'Additionele velden',
                 },
             },
+
+            mail_legacy: 'Extra Velden',
+            web_legacy: 'Extra Velden',
 
             internet_nl_mail_legacy_dmarc: 'DMARC',
             internet_nl_mail_legacy_dmarc_explanation: 'Berekend door de waarde van het volgende veld te gebruiken: mail_auth_dkim_exist.',

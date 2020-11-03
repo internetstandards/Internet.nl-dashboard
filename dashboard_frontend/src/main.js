@@ -79,7 +79,10 @@ const store = new Vuex.Store({
         user: {
             is_authenticated: false,
             is_superuser: false,
-        }
+        },
+
+        // Visible metrics in report, report graphs and visible metrics configuration pane
+        visible_metrics: {},
     },
 
     mutations: {
@@ -98,6 +101,9 @@ const store = new Vuex.Store({
         },
         set_user(state, value) {
             state.user = value;
+        },
+        set_visible_metrics(state, value) {
+            state.visible_metrics = value;
         }
     },
 
@@ -179,12 +185,155 @@ router.beforeEach((to, from, next) => {
 // these methods are used over and over.
 Vue.mixin(
     {
+        data: function () {
+            return {
+                metric_visibility: {
+                    // contains all fields in the application and some default values
+                    web: {visible: true, show_dynamic_average: true},
+                    web_legacy: {visible: false, show_dynamic_average: true},
+                    internet_nl_web_tls: {visible: true, show_dynamic_average: true},
+                    internet_nl_web_dnssec: {visible: true, show_dynamic_average: true},
+                    internet_nl_web_ipv6: {visible: true, show_dynamic_average: true},
+                    internet_nl_web_appsecpriv: {visible: true, show_dynamic_average: true},
+                    mail: {visible: true, show_dynamic_average: true},
+                    mail_legacy: {visible: false, show_dynamic_average: true},
+                    internet_nl_mail_dashboard_tls: {visible: true, show_dynamic_average: true},
+                    internet_nl_mail_dashboard_auth: {visible: true, show_dynamic_average: true},
+                    internet_nl_mail_dashboard_dnssec: {visible: true, show_dynamic_average: true},
+                    internet_nl_mail_dashboard_ipv6: {visible: true, show_dynamic_average: true},
+                    category_web_ipv6_name_server: {show_dynamic_average: true},
+                    category_web_ipv6_web_server: {show_dynamic_average: true},
+                    category_web_dnssec_dnssec: {show_dynamic_average: true},
+                    category_web_tls_http: {show_dynamic_average: true},
+                    category_web_tls_tls: {show_dynamic_average: true},
+                    category_web_tls_certificate: {show_dynamic_average: true},
+                    category_web_tls_dane: {show_dynamic_average: true},
+                    category_web_security_options_appsecpriv: {show_dynamic_average: true},
+                    category_web_forum_standardisation_magazine: {show_dynamic_average: true},
+                    category_web_forum_standardisation_ipv6_monitor: {show_dynamic_average: true},
+                    category_web_forum_standardisation_status_fields: {show_dynamic_average: true},
+                    category_mail_ipv6_name_servers: {show_dynamic_average: true},
+                    category_mail_ipv6_mail_servers: {show_dynamic_average: true},
+                    category_mail_dnssec_email_address_domain: {show_dynamic_average: true},
+                    category_mail_dnssec_mail_server_domain: {show_dynamic_average: true},
+                    category_mail_dashboard_auth_dmarc: {show_dynamic_average: true},
+                    category_mail_dashboard_aut_dkim: {show_dynamic_average: true},
+                    category_mail_dashboard_aut_spf: {show_dynamic_average: true},
+                    category_mail_starttls_tls: {show_dynamic_average: true},
+                    category_mail_starttls_certificate: {show_dynamic_average: true},
+                    category_mail_starttls_dane: {show_dynamic_average: true},
+                    category_mail_forum_standardisation_magazine: {show_dynamic_average: true},
+                    category_mail_forum_standardisation_ipv6_monitor: {show_dynamic_average: true},
+                    internet_nl_web_https_cert_domain: {visible: true},
+                    internet_nl_web_https_http_redirect: {visible: true},
+                    internet_nl_web_https_cert_chain: {visible: true},
+                    internet_nl_web_https_tls_version: {visible: true},
+                    internet_nl_web_https_tls_clientreneg: {visible: true},
+                    internet_nl_web_https_tls_ciphers: {visible: true},
+                    internet_nl_web_https_http_available: {visible: true},
+                    internet_nl_web_https_dane_exist: {visible: true},
+                    internet_nl_web_https_http_compress: {visible: true},
+                    internet_nl_web_https_http_hsts: {visible: true},
+                    internet_nl_web_https_tls_secreneg: {visible: true},
+                    internet_nl_web_https_dane_valid: {visible: true},
+                    internet_nl_web_https_cert_pubkey: {visible: true},
+                    internet_nl_web_https_cert_sig: {visible: true},
+                    internet_nl_web_https_tls_compress: {visible: true},
+                    internet_nl_web_https_tls_keyexchange: {visible: true},
+                    internet_nl_web_https_tls_keyexchangehash: {visible: true},
+                    internet_nl_web_https_tls_ocsp: {visible: true},
+                    internet_nl_web_https_tls_0rtt: {visible: true},
+                    internet_nl_web_https_tls_cipherorder: {visible: true},
+                    internet_nl_web_dnssec_valid: {visible: true},
+                    internet_nl_web_dnssec_exist: {visible: true},
+                    internet_nl_web_ipv6_ws_similar: {visible: true},
+                    internet_nl_web_ipv6_ws_address: {visible: true},
+                    internet_nl_web_ipv6_ns_reach: {visible: true},
+                    internet_nl_web_ipv6_ws_reach: {visible: true},
+                    internet_nl_web_ipv6_ns_address: {visible: true},
+                    internet_nl_mail_starttls_cert_domain: {visible: true},
+                    internet_nl_mail_starttls_tls_version: {visible: true},
+                    internet_nl_mail_starttls_cert_chain: {visible: true},
+                    internet_nl_mail_starttls_tls_available: {visible: true},
+                    internet_nl_mail_starttls_tls_clientreneg: {visible: true},
+                    internet_nl_mail_starttls_tls_ciphers: {visible: true},
+                    internet_nl_mail_starttls_dane_valid: {visible: true},
+                    internet_nl_mail_starttls_dane_exist: {visible: true},
+                    internet_nl_mail_starttls_tls_secreneg: {visible: true},
+                    internet_nl_mail_starttls_dane_rollover: {visible: true},
+                    internet_nl_mail_starttls_cert_pubkey: {visible: true},
+                    internet_nl_mail_starttls_cert_sig: {visible: true},
+                    internet_nl_mail_starttls_tls_compress: {visible: true},
+                    internet_nl_mail_starttls_tls_keyexchange: {visible: true},
+                    internet_nl_mail_auth_dmarc_policy: {visible: true},
+                    internet_nl_mail_auth_dmarc_exist: {visible: true},
+                    internet_nl_mail_auth_spf_policy: {visible: true},
+                    internet_nl_mail_auth_dkim_exist: {visible: true},
+                    internet_nl_mail_auth_spf_exist: {visible: true},
+                    internet_nl_mail_dnssec_mailto_exist: {visible: true},
+                    internet_nl_mail_dnssec_mailto_valid: {visible: true},
+                    internet_nl_mail_dnssec_mx_valid: {visible: true},
+                    internet_nl_mail_dnssec_mx_exist: {visible: true},
+                    internet_nl_mail_ipv6_mx_address: {visible: true},
+                    internet_nl_mail_ipv6_mx_reach: {visible: true},
+                    internet_nl_mail_ipv6_ns_reach: {visible: true},
+                    internet_nl_mail_ipv6_ns_address: {visible: true},
+                    internet_nl_mail_legacy_dmarc: {visible: false},
+                    internet_nl_mail_legacy_dkim: {visible: false},
+                    internet_nl_mail_legacy_spf: {visible: false},
+                    internet_nl_mail_legacy_dmarc_policy: {visible: false},
+                    internet_nl_mail_legacy_spf_policy: {visible: false},
+                    internet_nl_mail_legacy_start_tls: {visible: false},
+                    internet_nl_mail_legacy_start_tls_ncsc: {visible: false},
+                    internet_nl_mail_legacy_dnssec_email_domain: {visible: false},
+                    internet_nl_mail_legacy_dnssec_mx: {visible: false},
+                    internet_nl_mail_legacy_dane: {visible: false},
+                    internet_nl_mail_legacy_ipv6_nameserver: {visible: false},
+                    internet_nl_mail_legacy_ipv6_mailserver: {visible: false},
+                    internet_nl_web_legacy_dnssec: {visible: false},
+                    internet_nl_web_legacy_tls_available: {visible: false},
+                    internet_nl_web_legacy_tls_ncsc_web: {visible: false},
+                    internet_nl_web_legacy_https_enforced: {visible: false},
+                    internet_nl_web_legacy_hsts: {visible: false},
+                    internet_nl_web_legacy_ipv6_nameserver: {visible: false},
+                    internet_nl_web_legacy_ipv6_webserver: {visible: false},
+                    internet_nl_web_legacy_dane: {visible: false},
+                    internet_nl_mail_auth_dmarc_policy_only: {visible: false},
+                    internet_nl_mail_auth_dmarc_ext_destination: {visible: false},
+                    internet_nl_mail_non_sending_domain: {visible: false},
+                    internet_nl_mail_server_configured: {visible: false},
+                    internet_nl_mail_servers_testable: {visible: false},
+                    internet_nl_mail_starttls_dane_ta: {visible: false},
+                    internet_nl_web_appsecpriv_csp: {visible: true},
+                    internet_nl_web_appsecpriv_referrer_policy: {visible: true},
+                    internet_nl_web_appsecpriv_x_content_type_options: {visible: true},
+                    internet_nl_web_appsecpriv_x_frame_options: {visible: true},
+                    internet_nl_mail_starttls_tls_cipherorder: {visible: false},
+                    internet_nl_mail_starttls_tls_keyexchangehash: {visible: false},
+                    internet_nl_mail_starttls_tls_0rtt: {visible: false},
+                    internet_nl_web_legacy_tls_1_3: {visible: false},
+                    internet_nl_mail_legacy_mail_non_sending_domain: {visible: false},
+                    internet_nl_mail_legacy_mail_sending_domain: {visible: false},
+                    internet_nl_mail_legacy_mail_server_testable: {visible: false},
+                    internet_nl_mail_legacy_mail_server_reachable: {visible: false},
+                    internet_nl_mail_legacy_domain_has_mx: {visible: false},
+                    internet_nl_mail_legacy_tls_1_3: {visible: false},
+                    internet_nl_mail_legacy_category_ipv6: {visible: false},
+                    internet_nl_web_legacy_category_ipv6: {visible: false},
+                }
+            }
+        },
         // add some properties to each and every object.
         beforeMount: function () {
             // translate everything.
             this.$i18n.locale = this.locale;
         },
         methods: {
+            isEmptyObject: function (my_object) {
+                // This replaces the jQuery.isEmptyObject(), which is not a good reason to include the entirity of jquery
+                // Documentation: https://www.samanthaming.com/tidbits/94-how-to-check-if-object-is-empty/
+                return Object.keys(my_object).length === 0 && my_object.constructor === Object
+            },
             // this can probably be replaced with axios or whatever. Or not if we want tos ave on dependencies.
             asynchronous_json_post: function (url, data, callback) {
                 // the context parameter is somewhat dangerous, but this allows us to say 'self.' in the callback.
@@ -251,7 +400,115 @@ Vue.mixin(
                     sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB'],
                     i = Math.floor(Math.log(size_in_bytes) / Math.log(k));
                 return parseFloat((size_in_bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i];
-            }
+            },
+            load_visible_metrics: function () {
+                fetch(`${this.$store.state.dashboard_endpoint}/data/account/report_settings/get/`, {credentials: 'include'}).then(response => response.json()).then(data => {
+                    if (!this.isEmptyObject(data.data)) {
+                        // Get all possible issue fields before overwriting them with whatever is stored.
+                        const all_possible_fields = Object.keys(this.metric_visibility);
+
+                        // now overwrite with the custom settings
+                        let issue_filters = data.data;
+
+                        // upgrade the saved issue filters with all fields we know. In case of missing fields, those will
+                        // be added with a default value (invisible).
+                        all_possible_fields.forEach((field_name) => {
+                            this.upgrade_issue_filter_with_new_field(issue_filters, field_name);
+                        })
+                        this.$store.commit("set_visible_metrics", issue_filters);
+                    }
+                });
+            },
+            upgrade_issue_filter_with_new_field: function (issue_filters, field_name) {
+                if (!Object.keys(issue_filters).includes(field_name)) {
+
+                    // web and mail and default categories are always visible by default.: otherwise we'd never see any categories when this data is malformed.
+                    // in totally empty data, all fields are invisible, which is ok.
+                    if (["web",
+                        "mail",
+                        "internet_nl_web_ipv6",
+                        "internet_nl_web_dnssec",
+                        "internet_nl_web_tls",
+                        "internet_nl_web_appsecpriv",
+                        "internet_nl_mail_dashboard_ipv6",
+                        "internet_nl_mail_dashboard_dnssec",
+                        "internet_nl_mail_dashboard_auth",
+                        "internet_nl_mail_dashboard_tls",
+                        "internet_nl_web_https_cert_domain",
+                        "internet_nl_web_https_http_redirect",
+                        "internet_nl_web_https_cert_chain",
+                        "internet_nl_web_https_tls_version",
+                        "internet_nl_web_https_tls_clientreneg",
+                        "internet_nl_web_https_tls_ciphers",
+                        "internet_nl_web_https_http_available",
+                        "internet_nl_web_https_dane_exist",
+                        "internet_nl_web_https_http_compress",
+                        "internet_nl_web_https_http_hsts",
+                        "internet_nl_web_https_tls_secreneg",
+                        "internet_nl_web_https_dane_valid",
+                        "internet_nl_web_https_cert_pubkey",
+                        "internet_nl_web_https_cert_sig",
+                        "internet_nl_web_https_tls_compress",
+                        "internet_nl_web_https_tls_keyexchange",
+                        "internet_nl_web_https_tls_keyexchangehash",
+                        "internet_nl_web_https_tls_ocsp",
+                        "internet_nl_web_https_tls_0rtt",
+                        "internet_nl_web_https_tls_cipherorder",
+                        "internet_nl_web_dnssec_valid",
+                        "internet_nl_web_dnssec_exist",
+                        "internet_nl_web_ipv6_ws_similar",
+                        "internet_nl_web_ipv6_ws_address",
+                        "internet_nl_web_ipv6_ns_reach",
+                        "internet_nl_web_ipv6_ws_reach",
+                        "internet_nl_web_ipv6_ns_address",
+                        "internet_nl_mail_starttls_cert_domain",
+                        "internet_nl_mail_starttls_tls_version",
+                        "internet_nl_mail_starttls_cert_chain",
+                        "internet_nl_mail_starttls_tls_available",
+                        "internet_nl_mail_starttls_tls_clientreneg",
+                        "internet_nl_mail_starttls_tls_ciphers",
+                        "internet_nl_mail_starttls_dane_valid",
+                        "internet_nl_mail_starttls_dane_exist",
+                        "internet_nl_mail_starttls_tls_secreneg",
+                        "internet_nl_mail_starttls_dane_rollover",
+                        "internet_nl_mail_starttls_cert_pubkey",
+                        "internet_nl_mail_starttls_cert_sig",
+                        "internet_nl_mail_starttls_tls_compress",
+                        "internet_nl_mail_starttls_tls_keyexchange",
+                        "internet_nl_mail_auth_dmarc_policy",
+                        "internet_nl_mail_auth_dmarc_exist",
+                        "internet_nl_mail_auth_spf_policy",
+                        "internet_nl_mail_auth_dkim_exist",
+                        "internet_nl_mail_auth_spf_exist",
+                        "internet_nl_mail_dnssec_mailto_exist",
+                        "internet_nl_mail_dnssec_mailto_valid",
+                        "internet_nl_mail_dnssec_mx_valid",
+                        "internet_nl_mail_dnssec_mx_exist",
+                        "internet_nl_mail_ipv6_mx_address",
+                        "internet_nl_mail_ipv6_mx_reach",
+                        "internet_nl_mail_ipv6_ns_reach",
+                        "internet_nl_mail_ipv6_ns_address",
+                        "internet_nl_web_appsecpriv_csp",
+                        "internet_nl_web_appsecpriv_referrer_policy",
+                        "internet_nl_web_appsecpriv_x_content_type_options",
+                        "internet_nl_web_appsecpriv_x_frame_options",
+                    ].includes(field_name)) {
+                        issue_filters[field_name] = {
+                            visible: true,
+                            show_dynamic_average: true,
+                            only_show_dynamic_average: false
+                        }
+                    } else {
+                        // this is invisible because we don't want to tamper with existing settings when introducing new
+                        // fields. Users will have to enable it themselves.
+                        issue_filters[field_name] = {
+                            visible: false,
+                            show_dynamic_average: true,
+                            only_show_dynamic_average: false
+                        }
+                    }
+                }
+            },
         },
         // make sure all components are also translated when the locale is switched.
         // see: https://github.com/kazupon/vue-i18n/issues/411,

@@ -1,6 +1,6 @@
-<template id="modal-template">
+<template>
     <transition name="modal">
-        <div class="modal-mask">
+        <div class="modal-mask"  @keyup.esc="$emit('close');">
             <div class="modal-wrapper">
                 <div class="modal-container">
 
@@ -36,18 +36,7 @@
 </template>
 <script>
 export default {
-    template: '#modal-template',
-
     mounted: function () {
-        this.$i18n.locale = this.locale;
-
-        // Emit a close when the escape key is hit.
-        document.addEventListener('keyup', (e) => {
-            if (e.keyCode === 27) {
-                this.$emit('close');
-            }
-        });
-
         // focus on the default button for keyboard users.
         // todo: should it be the first input, and how do you do that easily / sanely
         document.getElementsByClassName('modal-default-button')[0].focus();

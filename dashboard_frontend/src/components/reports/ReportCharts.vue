@@ -444,8 +444,6 @@ export default {
     },
     template: 'internet-nl-charts-template',
     mounted: function () {
-        this.$i18n.locale = this.locale;
-
         this.color_scheme.incremental = this.generate_color_increments(10);
         this.get_timeline();
     },

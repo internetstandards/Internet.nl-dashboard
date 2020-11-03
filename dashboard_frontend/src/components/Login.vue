@@ -1,4 +1,4 @@
-<template id="account_template">
+<template>
     <div class="account">
 
         <div class="block fullwidth">
@@ -115,11 +115,9 @@ export default {
         },
     },
     computed: mapState(['user']),
-    name: 'account',
-    template: 'account_template',
 }
 </script>
-<i18n lang="json5">
+<i18n>
 {
     "en": {
         "title": "Login",

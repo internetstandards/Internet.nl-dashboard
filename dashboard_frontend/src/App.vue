@@ -156,7 +156,6 @@ export default {
         silentFallbackWarn: true,
     },
     mounted: function () {
-        this.$i18n.locale = this.locale;
         this.login_status();
         this.$nextTick(function () {
             // give some headroom, just like in the original...
@@ -272,47 +271,47 @@ export default {
 
 }
 </style>
-<i18n lang="json5">
+<i18n>
 {
-    "en": {
-        "en": "English",
-        "nl": "Nederlands",
-        "page": {
-            "sitetitle": "Internet.nl",
-            "sitedescription": "Test for modern Internet Standards like IPv6, DNSSEC, HTTPS, DMARC, STARTTLS and DANE."
-        },
-        "report_issues": {
-            "thank_you": "Thank you for using the internet.nl dashboard.",
-            "report_issues": "Please report issues on ",
-            "link_text": "this GitHub page"
-        },
-        "base": {
-            "info": "Internet.nl is an initiative of the Internet community and the Dutch government.",
-            "disclosure": "Responsible disclosure",
-            "privacy": "Privacy statement",
-            "copyright": "Copyright",
-            "followtwitter": "Folllow us on Twitter"
-        }
-    },
-    "nl": {
-        "en": "English",
-        "nl": "Nederlands",
-        "page": {
-            "sitetitle": "Internet.nl",
-            "sitedescription": "Test voor moderne Internetstandaarden zoals IPv6, DNSSEC, HTTPS, DMARC, STARTTLS en DANE."
-        },
-        "report_issues": {
-            "thank_you": "Bedankt voor het gebruiken van het internet.nl Dashboard.",
-            "report_issues": "Meld fouten of suggesties op",
-            "link_text": "onze GitHub pagina."
-        },
-        "base": {
-            "info": "Internet.nl is een initiatief van de internetgemeenschap en de Nederlandse overheid.",
-            "disclosure": "Responsible disclosure",
-            "privacy": "Privacyverklaring",
-            "copyright": "Copyright",
-            "followtwitter": "Volg ons op Twitter"
-        }
-    }
+	"en": {
+		"base": {
+			"copyright": "Copyright",
+			"disclosure": "Responsible disclosure",
+			"followtwitter": "Folllow us on Twitter",
+			"info": "Internet.nl is an initiative of the Internet community and the Dutch government.",
+			"privacy": "Privacy statement"
+		},
+		"en": "English",
+		"nl": "Nederlands",
+		"page": {
+			"sitedescription": "Test for modern Internet Standards like IPv6, DNSSEC, HTTPS, DMARC, STARTTLS and DANE.",
+			"sitetitle": "Internet.nl"
+		},
+		"report_issues": {
+			"link_text": "this GitHub page",
+			"report_issues": "Please report issues on ",
+			"thank_you": "Thank you for using the internet.nl dashboard."
+		}
+	},
+	"nl": {
+		"base": {
+			"copyright": "Copyright",
+			"disclosure": "Responsible disclosure",
+			"followtwitter": "Volg ons op Twitter",
+			"info": "Internet.nl is een initiatief van de internetgemeenschap en de Nederlandse overheid.",
+			"privacy": "Privacyverklaring"
+		},
+		"en": "English",
+		"nl": "Nederlands",
+		"page": {
+			"sitedescription": "Test voor moderne Internetstandaarden zoals IPv6, DNSSEC, HTTPS, DMARC, STARTTLS en DANE.",
+			"sitetitle": "Internet.nl"
+		},
+		"report_issues": {
+			"link_text": "onze GitHub pagina.",
+			"report_issues": "Meld fouten of suggesties op",
+			"thank_you": "Bedankt voor het gebruiken van het internet.nl Dashboard."
+		}
+	}
 }
 </i18n>
