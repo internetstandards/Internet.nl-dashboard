@@ -1,47 +1,14 @@
 import Vue from 'vue'
-
-Vue.config.productionTip = false
-
 import VueRouter from 'vue-router'
 import Vuex from 'vuex'
 import VueI18n from 'vue-i18n'
 import vSelect from 'vue-select'
 import {Tabs, Tab} from 'vue-tabs-component';
-
-Vue.use(VueI18n)
-Vue.use(VueRouter)
-Vue.use(require('vue-moment'));
-
-Vue.component('v-select', vSelect);
-Vue.component('tabs', Tabs);
-Vue.component('tab', Tab);
-
-
-// https://stackoverflow.com/questions/10730362/get-cookie-by-name
-// todo: how to get rid of this?
-function get_cookie(name) {
-    let value = "; " + document.cookie;
-    let parts = value.split("; " + name + "=");
-    if (parts.length === 2) return parts.pop().split(";").shift();
-}
-
-
+import createPersistedState from "vuex-persistedstate";
 import autorefresh from './components/autorefresh.vue'
 import loading from './components/loading.vue'
 import modal from './components/modal.vue'
 import server_response from './components/server-response.vue'
-
-var MatomoTracker = require('matomo-tracker');
-var matomo = new MatomoTracker(2, '//matomo.internet.nl/matomo.php');
-matomo.on('error', function (err) {
-    console.log('error tracking request: ', err);
-});
-
-Vue.component('autorefresh', autorefresh)
-Vue.component('loading', loading)
-Vue.component('modal', modal)
-Vue.component('server-response', server_response)
-
 import Login from './components/Login'
 import DomainListManager from './components/domains/DomainListManager'
 import SpreadsheetUpload from './components/domains/SpreadsheetUpload'
@@ -52,6 +19,30 @@ import InstantAddAccount from './components/admin/InstantAddAccount'
 import Account from './components/account/Account'
 import Demo from './components/Demo'
 import Unsubscribe from './components/mail/Unsubscribe'
+import App from './App.vue'
+// https://stackoverflow.com/questions/50925793/proper-way-of-adding-css-file-in-vue-js-application
+import './assets/css/styles.scss';
+
+Vue.component('v-select', vSelect);
+Vue.component('tabs', Tabs);
+Vue.component('tab', Tab);
+Vue.use(VueI18n)
+Vue.use(VueRouter)
+Vue.use(require('vue-moment'));
+Vue.use(Vuex);
+
+Vue.component('autorefresh', autorefresh)
+Vue.component('loading', loading)
+Vue.component('modal', modal)
+Vue.component('server-response', server_response)
+
+Vue.config.productionTip = false
+
+var MatomoTracker = require('matomo-tracker');
+var matomo = new MatomoTracker(2, '//matomo.internet.nl/matomo.php');
+matomo.on('error', function (err) {
+    console.log('error tracking request: ', err);
+});
 
 const i18n = new VueI18n({
     locale: 'en',
@@ -68,10 +59,6 @@ const i18n = new VueI18n({
     },
     sharedMessages: {}
 });
-
-
-Vue.use(Vuex);
-import createPersistedState from "vuex-persistedstate";
 
 const store = new Vuex.Store({
     state: {
@@ -118,28 +105,30 @@ const store = new Vuex.Store({
 });
 
 const routes = [
-    // todo: Make nice translations...
-    // {path: '/', component: DomainListManager, meta: {title: 'Internet.nl Dashboard / Domains'}},
+    // todo: Make page title translations...
     {path: '/login', component: Login, name: "login", meta: {title: 'Internet.nl Dashboard / Login'}},
-
     {
         path: '/domains/list/:list',
         component: DomainListManager,
         name: 'numbered_lists',
         meta: {title: i18n.t("title_domains")}
     },
-    {path: '/domains', component: DomainListManager, name: 'domains', meta: {title: i18n.t("title_domains")}, alias: '/'},
+    {
+        path: '/domains',
+        component: DomainListManager,
+        name: 'domains',
+        meta: {title: i18n.t("title_domains")},
+        alias: '/'
+    },
     {
         path: '/domains/upload', component: SpreadsheetUpload,
         props: {
-            csrf_token: get_cookie('csrftoken'),
             max_lists: 200,
             max_urls: 5000,
         },
         meta: {title: 'Internet.nl Dashboard / Domains / Upload'}
     },
     {path: '/scans', component: ScanMonitor, meta: {title: 'Internet.nl Dashboard / Scan Monitor'}},
-    // todo: make sure what to do with internet_nl_messages...
     {
         path: '/report/:report/:compare_with',
         component: Report,
@@ -300,8 +289,6 @@ Vue.mixin(
 );
 
 
-import App from './App.vue'
-
 new Vue({
     i18n,
     router,
@@ -309,5 +296,3 @@ new Vue({
     render: h => h(App),
 }).$mount('#app')
 
-// https://stackoverflow.com/questions/50925793/proper-way-of-adding-css-file-in-vue-js-application
-import './assets/css/styles.scss';

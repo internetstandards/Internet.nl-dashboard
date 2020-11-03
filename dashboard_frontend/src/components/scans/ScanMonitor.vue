@@ -127,7 +127,7 @@
 
 
 <script>
-import legacy_mixin from './legacy_mixin.vue'
+import legacy_mixin from './../legacy_mixin.vue'
 
 export default {
     i18n: {

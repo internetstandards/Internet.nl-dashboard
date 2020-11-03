@@ -214,6 +214,7 @@ export default {
     data: function () {
         let self = this;
         return {
+            csrf_token: "",
             upload_history: [],
             dropzoneOptions: {
                 url: `${this.$store.state.dashboard_endpoint}/data/upload-spreadsheet/`,
@@ -223,7 +224,7 @@ export default {
                 // no need for CSRF token here anymore...
                 withCredentials: true,
                 paramName: "file",
-                headers: {"X-CSRFToken": self.csrf_token},
+                headers: {"X-CSRFToken": this.get_cookie('csrftoken')},
 
                 // https://gitlab.com/meno/dropzone#enqueuing-file-uploads
                 parallelUploads: 1, // handle one at a time to reduce load a bit (except not if you bypass this)
@@ -264,8 +265,6 @@ export default {
         }
     },
     props: {
-        csrf_token: {type: String, required: true},
-
         // Something weird happens when an integer is passed, it is still seen as a string.
         max_urls: {type: Number, required: true},
         max_lists: {type: Number, required: true},
@@ -273,7 +272,7 @@ export default {
     mounted: function () {
         this.$i18n.locale = this.locale;
         this.get_recent_uploads();
-
+        this.csrf_token = this.get_cookie('csrftoken');
     },
     components: {
         vueDropzone: vue2Dropzone
@@ -281,7 +280,7 @@ export default {
     methods: {
         dropzone_sendingEvent (file, xhr, formData) {
             // add the csrfmiddlewaretoken to the form.
-            formData.append('csrfmiddlewaretoken', this.csrf_token);
+            formData.append('csrfmiddlewaretoken', this.get_cookie('csrftoken'));
         },
 
         get_recent_uploads: function () {
