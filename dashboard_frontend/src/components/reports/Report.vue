@@ -128,7 +128,7 @@
                     :differences_compared_to_current_list="differences_compared_to_current_list"
                     :field_name_to_category_names="field_name_to_category_names"
                     :original_urls="original_urls"
-                    :selected_category="selected_category"
+                    :report_category="report_category"
                     :scan_methods="scan_methods"
                     :compare_charts="compare_charts"
                 ></ReportTable>
@@ -254,8 +254,7 @@ export default {
             original_urls: [],
 
             // settings
-
-            selected_category: '',
+            report_category: '',
 
             // such basic functionality missing in vue, it even got removed.
             debounce_timer: 0,
@@ -275,8 +274,6 @@ export default {
 
             compare_charts: [],
             compare_oldest_data: "",
-
-
         }
     },
     mounted: function () {
@@ -287,6 +284,8 @@ export default {
         // todo: this can be replaced by $route.params.report, which is much more readable.
 
         // why is this not done at nextTick?
+        // because the report selection has not been loaded yet, so move this to the result of get latest reports...
+        // and you only want to do this at load of the page, not every time latest report is called.
         setTimeout(() => {
             if (window.location.href.split('/').length > 3) {
                 let primary_report_id = window.location.href.split('/')[6];
@@ -316,7 +315,7 @@ export default {
 
                 this.selected_report = reports_to_select;
             }
-        }, 1000)
+        }, 1500)
         this.$nextTick(() => {
             this.accordinate();
         });
@@ -341,7 +340,7 @@ export default {
             fetch(`${this.$store.state.dashboard_endpoint}/data/report/get/${report_id}/`, {credentials: 'include'})
                 .then(response => response.json()).then(data => {
                 this.reports = data;
-                this.selected_category = this.selected_report[0].urllist_scan_type;
+                this.report_category = this.selected_report[0].urllist_scan_type;
                 this.original_urls = data[0].calculation.urls.sort(this.alphabet_sorting);
 
                 // we already have the first report, so don't request it again.

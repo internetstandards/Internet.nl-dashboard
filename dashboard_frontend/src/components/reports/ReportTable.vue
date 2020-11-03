@@ -171,7 +171,7 @@
                             <td :colspan="relevant_categories_based_on_settings.length + 1"
                                 style="text-align: center" class="sticky_search">
                                 <button style='width: 100%'
-                                        @click="select_category(selected_report.urllist_scan_type)">
+                                        @click="select_category(report_category)">
                                     <span role="img" :aria-label="$t('icons.remove_filter')">❌</span>
                                     {{ $t("report.zoom.buttons.remove_zoom") }}
                                 </button>
@@ -183,7 +183,7 @@
                     </tr>
                 </template>
 
-                <template v-if="!filtered_urls.length < 1">
+                <template v-if="filtered_urls.length < 1">
                     <tr>
                         <td :colspan="relevant_categories_based_on_settings.length + 2"
                             style="text-align: center;">😱 {{ $t("report.empty_report") }}
@@ -258,7 +258,7 @@ export default {
         original_urls: {
             type: Array, required: true
         },
-        selected_category: {
+        report_category: {
             type: String
         },
         scan_methods: {
@@ -298,10 +298,14 @@ export default {
 
             // url_filter allows the filtering of names in the list of urls.
             url_filter: '',
+
+            // category selection with report category as fallback.
+            selected_category: '',
         }
     },
     watch: {
         original_urls: function (new_value) {
+            console.log('Setting original urls')
             this.filtered_urls = new_value;
             this.filter_urls();
         },
@@ -312,16 +316,29 @@ export default {
             // this.debounce(function() {this.methods.filter_urls(newValue);});
         },
     },
+    mounted: function(){
+        // should be copied?
+        this.filtered_urls = this.original_urls;
+
+        // fall back to defailt category
+        this.select_category()
+    },
     methods: {
         select_category: function (category_name) {
             if (Object.keys(this.categories).includes(category_name))
                 this.selected_category = category_name;
             else
-                this.selected_category = this.selected_report[0].urllist_scan_type;
+                this.selected_category = this.report_category;
         },
         filter_urls(keyword) {
-            let urls = [];
+            // in case of filter reset, or initializiation of this value.
+            if (keyword === ""){
+                console.log("Removing filter");
+                this.filtered_urls = this.order_urls(this.original_urls)
+                return
+            }
 
+            let urls = [];
             // keep the search order, use a correctly ordered set of original urls:
             let tmp_urls = this.order_urls(this.original_urls);
             tmp_urls.forEach(function (value) {
@@ -849,6 +866,9 @@ div.rotate > span {
                 }
             }
         },
+        "icons": {
+            "remove_filter": "Remove filter"
+        },
         "icon_legend": {
             "title": "Legend of used icons",
             "category_error_in_test": "Error occured while testing ⇒ null score",
@@ -902,6 +922,9 @@ div.rotate > span {
                     "regressed": "Verslechterd vergeleken met het 2e geselecteerde rapport."
                 }
             }
+        },
+        "icons": {
+            "remove_filter": "Wis filter"
         },
         "icon_legend": {
             "title": "Legenda van gebruikte pictogrammen",
