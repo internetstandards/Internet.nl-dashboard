@@ -45,11 +45,6 @@ export default {
             default: false,
         }
     },
-    data: function() {
-        return {
-            django_path: "",
-        }
-    },
     name: 'site-menu',
     template: 'menu_template',
     methods: {

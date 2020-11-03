@@ -9,7 +9,7 @@
             <div v-if="!user.is_authenticated">
                 <p>
                     You are currently not logged in. Enter your credentials to log into the dashboard.<br>
-                    <i><small>If second factor authentication is enabled, use this alternate login link: <a :href="django_path + '/account/login/'">{{ django_path }}/account/login/</a></small></i>
+                    <i><small>If second factor authentication is enabled, use this alternate login link: <a :href="$store.state.dashboard_endpoint + '/account/login/'">{{ $store.state.dashboard_endpoint }}/account/login/</a></small></i>
                 </p>
 
                 <form v-on:submit.prevent="login">

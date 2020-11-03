@@ -183,14 +183,6 @@ Vue.mixin(
         beforeMount: function () {
             // translate everything.
             this.$i18n.locale = this.locale;
-            // make sure the django path for logins, second factor setup and such are available.
-            this.django_path = process.env.VUE_APP_DJANGO_PATH;
-        },
-        data() {
-            return {
-                // unique, so easy to merge property
-                django_path: '',
-            }
         },
         methods: {
             // this can probably be replaced with axios or whatever. Or not if we want tos ave on dependencies.
