@@ -9,15 +9,18 @@
             <div v-if="!user.is_authenticated">
                 <p>
                     You are currently not logged in. Enter your credentials to log into the dashboard.<br>
-                    <i><small>If second factor authentication is enabled, use this alternate login link: <a :href="$store.state.dashboard_endpoint + '/account/login/'">{{ $store.state.dashboard_endpoint }}/account/login/</a></small></i>
+                    <i><small>If second factor authentication is enabled, use this alternate login link: <a
+                        :href="$store.state.dashboard_endpoint + '/account/login/'">{{
+                            $store.state.dashboard_endpoint
+                        }}/account/login/</a></small></i>
                 </p>
 
                 <form v-on:submit.prevent="login">
-                    <label class='first_name' for="first_name">{{ $t("username") }}</label>
+                    <label class='username' for="username">{{ $t("username") }}</label>
                     <input id="username" type="text" maxlength="120" v-model="username">
                     <br>
 
-                    <label class='last_name' for="last_name">{{ $t("password") }}</label>
+                    <label class='password' for="password">{{ $t("password") }}</label>
                     <input id="password" type="password" maxlength="120" v-model="password">
                     <br>
                     <button id="login" type="submit" @click="login">{{ $t("login") }}</button>
@@ -37,37 +40,6 @@
 import {mapState} from 'vuex'
 
 export default {
-    i18n: {
-        messages: {
-            en: {
-                title: 'Login',
-                intro: "Log into the dashboard.",
-                username: "Username",
-                password: "Password",
-                login: "Log in",
-                not_logged_in: "You are currently not logged in. Enter your credentials to log into the dashboard.",
-
-                // messages:
-                no_credentials_supplied: "Enter a username and password to log in.",
-                invalid_credentials: "Username or password not correct.",
-                user_not_active: "User is not active.",
-                logged_in: "You have succesfully logged in.",
-                logged_out: "You have succesfully logged out.",
-            },
-            nl: {
-                title: 'Inloggen',
-                intro: "Log in op het dashboard.",
-                username: "gebruikersnaam",
-                password: "wachtwoord",
-
-                no_credentials_supplied: "Voer een gebruikersnaam en wachtwoord in.",
-                invalid_credentials: "Gebruikersnaam of wachtwoord niet correct.",
-                user_not_active: "Gebruiker is niet actief.",
-                logged_in: "Succesvol ingelogd.",
-                logged_out: "Succesvol uitgelogd.",
-            }
-        }
-    },
     data: function () {
         return {
             loading: false,
@@ -77,10 +49,10 @@ export default {
         }
     },
     mounted: function () {
-        this.status();
+        this.login_status();
     },
     methods: {
-        status: function () {
+        login_status: function () {
             this.server_response = {};
             this.loading = true;
             fetch(`${this.$store.state.dashboard_endpoint}/session/status/`, {
@@ -119,12 +91,12 @@ export default {
             this.loading = true;
 
             fetch(`${this.$store.state.dashboard_endpoint}/session/csrf/`, {method: 'GET', credentials: 'include'})
-            .then(response => response.json()).then((data) => {
+                .then(response => response.json()).then((data) => {
                 let csrf_token = data.token;
                 let login_data = {
-                'username': this.username,
-                'password': this.password,
-                'csrfmiddlewaretoken': csrf_token,
+                    'username': this.username,
+                    'password': this.password,
+                    'csrfmiddlewaretoken': csrf_token,
                 };
                 this.asynchronous_json_post(
                     `${this.$store.state.dashboard_endpoint}/session/login/`, login_data, (server_response) => {
@@ -144,6 +116,35 @@ export default {
     },
     computed: mapState(['user']),
     name: 'account',
-    template: '#account_template',
+    template: 'account_template',
 }
 </script>
+<i18n lang="json5">
+{
+    "en": {
+        "title": "Login",
+        "intro": "Log into the dashboard.",
+        "username": "Username",
+        "password": "Password",
+        "login": "Log in",
+        "not_logged_in": "You are currently not logged in. Enter your credentials to log into the dashboard.",
+        "no_credentials_supplied": "Enter a username and password to log in.",
+        "invalid_credentials": "Username or password not correct.",
+        "user_not_active": "User is not active.",
+        "logged_in": "You have succesfully logged in.",
+        "logged_out": "You have succesfully logged out."
+    },
+    "nl": {
+        "title": "Inloggen",
+        "intro": "Log in op het dashboard.",
+        "username": "gebruikersnaam",
+        "password": "wachtwoord",
+        "no_credentials_supplied": "Voer een gebruikersnaam en wachtwoord in.",
+        "invalid_credentials": "Gebruikersnaam of wachtwoord niet correct.",
+        "user_not_active": "Gebruiker is niet actief.",
+        "logged_in": "Succesvol ingelogd.",
+        "logged_out": "Succesvol uitgelogd."
+    }
+}
+
+</i18n>
