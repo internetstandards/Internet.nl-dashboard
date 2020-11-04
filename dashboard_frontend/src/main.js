@@ -10,7 +10,7 @@ import vSelect from 'vue-select'
 import {Tabs, Tab} from 'vue-tabs-component';
 import autorefresh from './components/autorefresh'
 import loading from './components/loading'
-import modal from './components/modal'
+import internet_nl_modal from './components/modal'
 import server_response from './components/server-response'
 import Login from './components/Login'
 import DomainListManager from './components/domains/DomainListManager'
@@ -41,7 +41,7 @@ Vue.use(BootstrapVue)
 
 Vue.component('autorefresh', autorefresh)
 Vue.component('loading', loading)
-Vue.component('modal', modal)
+Vue.component('internet_nl_modal', internet_nl_modal)
 Vue.component('server-response', server_response)
 
 Vue.config.productionTip = false

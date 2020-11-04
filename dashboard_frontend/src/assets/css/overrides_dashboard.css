@@ -61,3 +61,9 @@ a.anchor {
     border-bottom: 1px solid #b3b3b3;
     background-color: #fff;
 }
+
+
+.home main:first-of-type {
+    /* After bootstrap was imported the first block on the page was moved up. */
+    margin-top: 1.75em !important;
+}

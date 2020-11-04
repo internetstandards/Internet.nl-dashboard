@@ -56,8 +56,8 @@
                             <img width="15" style="border-radius: 50%"
                                  src="/static/images/vendor/internet_nl/probe-animation.gif">
                             {{ $t("button_labels.scan_now_scanning") }}
-                        </button> &nbsp;
-                    </template>
+                        </button>
+                    </template> &nbsp;
                     <button v-if="!list.enable_scans" disabled="disabled"
                             :title='$t("button_labels.scanning_disabled")'>
                         <span role="img" :aria-label="$t('icons.scan')">🔬</span>
@@ -224,8 +224,8 @@
         </div>
 
         <!-- modal dialogs are below the content to make sure the tab order stays working. -->
-        <modal v-if="show_list_settings" @close="cancel_editing_settings()">
-            <h1 slot="header">🖊 {{ $t("edit_form.title") }}</h1>
+        <internet_nl_modal v-if="show_list_settings" @close="cancel_editing_settings()">
+            <h3 slot="header">📝 {{ $t("edit_form.title") }}</h3>
             <div slot="body">
 
                 <server-response :response="settings_update_response"></server-response>
@@ -264,15 +264,16 @@
             </div>
             <div slot="footer">
                 <button class='altbutton' @click="cancel_editing_settings()">{{ $t("edit_form.cancel") }}</button>
+                &nbsp;
                 <button class="modal-default-button defaultbutton" @click="update_list_settings()">{{
                         $t("edit_form.ok")
                     }}
                 </button>
             </div>
-        </modal>
+        </internet_nl_modal>
 
-        <modal v-if="show_deletion" @close="stop_deleting()">
-            <h1 slot="header">{{ $t("delete_form.title") }}</h1>
+        <internet_nl_modal v-if="show_deletion" @close="stop_deleting()">
+            <h3 slot="header">🗑️ {{ $t("delete_form.title") }}</h3>
             <div slot="body">
 
                 <server-response :response="delete_response"></server-response>
@@ -300,15 +301,16 @@
             </div>
             <div slot="footer">
                 <button class="altbutton" @click="stop_deleting()">{{ $t("delete_form.cancel") }}</button>
+                &nbsp;
                 <button class="defaultbutton modal-default-button" @click="confirm_deletion()">{{
                         $t("delete_form.ok")
                     }}
                 </button>
             </div>
-        </modal>
+        </internet_nl_modal>
 
-        <modal v-if="show_scan_now" @close="stop_scan_now()">
-            <h1 slot="header">{{ $t("scan_now_form.title") }}</h1>
+        <internet_nl_modal v-if="show_scan_now" @close="stop_scan_now()">
+            <h3 slot="header">🔬 {{ $t("scan_now_form.title") }}</h3>
             <div slot="body">
 
                 <server-response :response="scan_now_server_response"></server-response>
@@ -318,6 +320,7 @@
             </div>
             <div slot="footer">
                 <button class="altbutton" @click="stop_scan_now()">{{ $t("scan_now_form.cancel") }}</button>
+                &nbsp;
                 <button class="defaultbutton modal-default-button"
                         :disabled="scan_now_confirmed"
                         @click="confirm_scan_now()">
@@ -325,10 +328,10 @@
                     <template v-if="scan_now_confirmed">{{ $t("scan_now_form.starting") }}</template>
                 </button>
             </div>
-        </modal>
+        </internet_nl_modal>
 
-        <modal v-if="show_bulk_add_new" @close="stop_bulk_add_new()">
-            <h1 slot="header">{{ $t("bulk_add_form.title") }}</h1>
+        <internet_nl_modal v-if="show_bulk_add_new" @close="stop_bulk_add_new()">
+            <h3 slot="header">💖 {{ $t("bulk_add_form.title") }}</h3>
             <div slot="body">
 
                 <server-response :response="bulk_add_new_server_response"
@@ -362,26 +365,29 @@
                 </template>
 
                 <label for="edited_domains">{{ $t("bulk_add_form.domains_label") }}:</label>
-                <textarea id="edited_domains" v-model="bulk_add_new_urls" style="width: 100%; height: 300px;"
+                <textarea id="edited_domains" v-model="bulk_add_new_urls" style="width: 100%; height: 150px;"
                           :placeholder="$t('bulk_add_form.message')"></textarea>
 
                 <br>
                 <br>
 
-                <button class="altbutton" @click="stop_bulk_add_new()">{{ $t("bulk_add_form.cancel") }}</button>
-
-                <button v-if="!bulk_add_new_loading" class="defaultbutton modal-default-button" @click="bulk_add_new()">
-                    {{ $t("bulk_add_form.ok") }}
-                </button>
-                <button v-if="bulk_add_new_loading" disabled="disabled" class="defaultbutton modal-default-button"><img
-                    width="15" style="border-radius: 50%" src="/static/images/vendor/internet_nl/probe-animation.gif">
-                    {{ $t("bulk_add_form.loading") }}
-                </button>
-
             </div>
             <div slot="footer">
+                <button class="altbutton" @click="stop_bulk_add_new()">{{ $t("bulk_add_form.cancel") }}</button>
+                &nbsp;
+                <template v-if="!bulk_add_new_loading">
+                    <button class="defaultbutton modal-default-button" @click="bulk_add_new()">
+                        {{ $t("bulk_add_form.ok") }}
+                    </button>
+                </template>
+                <template v-else>
+                    <button disabled="disabled" class="defaultbutton modal-default-button"><img
+                        width="15" style="border-radius: 50%" src="/static/images/vendor/internet_nl/probe-animation.gif">
+                        {{ $t("bulk_add_form.loading") }}
+                    </button>
+                </template>
             </div>
-        </modal>
+        </internet_nl_modal>
         <!-- This is already auto-refreshed by a watch, but we keep this as a backup solution for edge cases like
          the monitor page not loading or the used did not open the monitor page. -->
         <autorefresh :visible="false" :callback="get_scan_status_of_list" :refresh_per_seconds="600"></autorefresh>
@@ -812,7 +818,7 @@ export default {
             "domains_exceed_maximum": "The amount of domains in this list exceeds the maximum of {0}. Scanning is paused."
         },
         "edit_form": {
-            "title": "Edit list settings",
+            "title": "Configure list settings",
             "cancel": "Cancel",
             "ok": "Update"
         },
@@ -830,7 +836,7 @@ export default {
             "starting": "Starting..."
         },
         "bulk_add_form": {
-            "title": "Bulk add domains",
+            "title": "Add domains",
             "domains_label": "Add domains in the text field below",
             "message": "Domains are separated by a comma, space or new line. These can be mixed. For example: \n\ninternet.nl, dashboard.internet.nl\nexample.com www.example.com, \n\nhttps://my.example.com:80/index.html",
             "ok": "Add the above domains to the list",
@@ -914,7 +920,7 @@ export default {
             "starting": "Opstarten..."
         },
         "bulk_add_form": {
-            "title": "Toevoegen van domeinen",
+            "title": "Domeinen toevoegen",
             "domains_label": "Voer nieuwe domeinen in:",
             "message": "Domeinen worden gescheiden door een komma, spatie, nieuwe regel. Deze mogen ook door elkaar worden gebruikt. Bijvoorbeeld: \n\ninternet.nl, dashboard.internet.nl\nexample.com www.example.com\n\nhttps://my.example.com:80/index.html",
             "ok": "Voeg bovenstaande domeinen toe aan de lijst",

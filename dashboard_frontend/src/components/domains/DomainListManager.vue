@@ -71,8 +71,8 @@ Fixed: when deleting a list, it is re-added to the list of lists when adding a n
                 </div>
             </div>
 
-            <modal v-if="show_add_new" @close="stop_adding_new()">
-                <h3 slot="header">{{ $t("new_list.add_new_list") }}</h3>
+            <internet_nl_modal v-if="show_add_new" @close="stop_adding_new()">
+                <h3 slot="header">📚 {{ $t("new_list.add_new_list") }}</h3>
 
                 <div slot="body">
 
@@ -114,12 +114,12 @@ Fixed: when deleting a list, it is re-added to the list of lists when adding a n
                     <button class='altbutton' @click="stop_adding_new()">{{
                             $t("new_list.button_close_label")
                         }}
-                    </button>
+                    </button>&nbsp;
                     <button class="defaultbutton modal-default-button" @click="create_list()">
                         {{ $t("new_list.button_create_list_label") }}
                     </button>
                 </div>
-            </modal>
+            </internet_nl_modal>
 
         </div>
 

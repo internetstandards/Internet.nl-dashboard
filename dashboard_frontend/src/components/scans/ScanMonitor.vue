@@ -1,7 +1,26 @@
-<style>
+<style scoped>
 .websitetest table th {
     word-break: keep-all;
 }
+
+h4 {
+    font-size: 1.0em;
+}
+
+.monitor-block {
+    background-color: white;
+    background: linear-gradient(180deg, #00BFD6 0%, #00BFD6 3em, white 3em, rgba(255,255,255,1) 100%);
+    border-radius: 4px;
+}
+
+.monitor-block h2 {
+    color: white;
+    padding-left: 0.4em;
+    font-size: 1.2em;
+    display: inline-block;
+    margin: 0px;
+}
+
 </style>
 <template>
     <div style="width: 100%;">
@@ -13,14 +32,15 @@
         </div>
 
         <div class="wrap" v-if="scans">
-            <div class="block" v-for="scan in scans" :key="scan.id">
+            <div class="block monitor-block" v-for="scan in scans" :key="scan.id">
                 <div class="wrapper">
+                    <h2>
                     <span v-if="scan.state === 'finished'">✅</span>
                     <span v-if="scan.state === 'cancelled'">⭕</span>
-                    <span v-if="!['finished', 'cancelled'].includes(scan.state)"><img width="15"
-                                                                                      style="border-radius: 50%"
-                                                                                      src="/static/images/vendor/internet_nl/probe-animation.gif"></span>
-                    <b>{{ scan.type }} {{ $t("id") }}{{ scan.id }}</b><br>
+                    <span v-if="!['finished', 'cancelled'].includes(scan.state)">
+                        <img width="15" style="border-radius: 50%"
+                             src="/static/images/vendor/internet_nl/probe-animation.gif"></span>
+                    &nbsp; {{ scan.type }} {{ $t("id") }}{{ scan.id }}</h2><br>
                     <br>
                     <template v-if="scan.finished && (scan.state !== 'cancelled')">
                         <template v-if="scan.last_report_id">
@@ -70,18 +90,19 @@
 
 
                     <div class="testresult" style="padding-left: 0px !important;">
-                        <h3 class="panel-title">
+                        <h4 class="panel-title">
                             <a href="" aria-expanded="false">
                                 <span class="visuallyhidden">-:</span>
-                                <span v-if="!['finished', 'cancelled'].includes(scan.state)"><img width="15"
-                                                                                                  style="border-radius: 50%"
-                                                                                                  src="/static/images/vendor/internet_nl/probe-animation.gif"></span>
+                                <span v-if="!['finished', 'cancelled'].includes(scan.state)">
+                                <img width="15" style="border-radius: 50%"
+                                     src="/static/images/vendor/internet_nl/probe-animation.gif">
+                                </span> &nbsp;
                                 {{ $t("scan history") }}
                                 <span class="pre-icon visuallyhidden"></span>
-                                <span class="icon"><img src="/static/images/vendor/internet_nl/push-open.png"
-                                                        alt=""></span>
+                                <span class="icon">
+                                    <img src="/static/images/vendor/internet_nl/push-open.png" alt=""></span>
                             </a>
-                        </h3>
+                        </h4>
                         <div class="panel-content" style="font-size: 0.7em;">
                             <ul>
                                 <li v-for="log_item in scan.log" :key="log_item.id">
@@ -111,15 +132,15 @@
 
         <div class='block fullwidth' v-if="!scans.length">{{ $t("no_scans") }}</div>
 
-        <modal v-if="show_stop_scan" @close="stop_stop_scan()">
-            <h1 slot="header">{{ $t("cancel.are_you_sure") }}</h1>
+        <internet_nl_modal v-if="show_stop_scan" @close="stop_stop_scan()">
+            <h3 slot="header">🛑 {{ $t("cancel.are_you_sure") }}</h3>
             <div slot="body">
 
                 <server-response :response="stop_scan_server_response"></server-response>
                 <div class="block" style="width: 100%">
                     <div class="wrapper">
                         <span><img width="15" style="border-radius: 50%"
-                                   src="/static/images/vendor/internet_nl/probe-animation.gif"></span>
+                                   src="/static/images/vendor/internet_nl/probe-animation.gif"></span> &nbsp;
                         <b>{{ stop_scan.type }} {{ $t("id") }}{{ stop_scan.id }}</b><br>
                         <br>
                         📘 {{ stop_scan.list }}<br>
@@ -149,7 +170,7 @@
                     }}
                 </button>
             </div>
-        </modal>
+        </internet_nl_modal>
 
     </div>
 </template>
