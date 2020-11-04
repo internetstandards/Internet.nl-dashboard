@@ -1,4 +1,25 @@
-<template type="x-template" id="managed-url-list">
+<style>
+
+.managed-url-list h2 {
+    display: inline;
+    font-size: 1.2em;
+}
+.view-csv {
+    width: 100%;
+    height: 200px;
+}
+.inline-edit input {
+    margin-bottom: 0 !important;
+}
+
+.inline-edit button {
+    font-size: 0.7em !important;
+    margin: 0 !important;
+    height: 23px;
+}
+</style>
+
+<template>
     <article class="managed-url-list block fullwidth" :id="list.id">
         <span>
             <a :name="list.id"></a>
@@ -375,7 +396,6 @@ export default {
         sharedMessages: sharedMessages,
         messages: {}
     },
-    template: 'managed-url-list',
 
     data: function () {
         return {

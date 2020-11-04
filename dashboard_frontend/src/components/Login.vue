@@ -17,11 +17,12 @@
 
                 <form v-on:submit.prevent="login">
                     <label class='username' for="username">{{ $t("username") }}</label>
-                    <input id="username" type="text" maxlength="120" v-model="username">
+                    <b-form-input id="username" type="text" maxlength="120" v-model="username" :placeholder="$t('username')"></b-form-input>
                     <br>
 
                     <label class='password' for="password">{{ $t("password") }}</label>
-                    <input id="password" type="password" maxlength="120" v-model="password">
+                    <b-form-input id="password" type="password" maxlength="120" v-model="password" :placeholder="$t('password')"></b-form-input>
+
                     <br>
                     <button id="login" type="submit" @click="login">{{ $t("login") }}</button>
                 </form>
@@ -101,7 +102,7 @@ export default {
                 this.asynchronous_json_post(
                     `${this.$store.state.dashboard_endpoint}/session/login/`, login_data, (server_response) => {
                         if (server_response) {
-                            this.status();
+                            this.login_status();
                             // redirect to desired page? Or is that not possible anymore?
                             this.server_response = server_response;
                             this.loading = false;

@@ -11,12 +11,14 @@
 
             <div class="block">
                 <h2>{{ $t("personalia") }}</h2>
-                <label class='ad_hoc_label' for="first_name">{{ $t("first_name") }}</label>
-                <input id="first_name" type="text" maxlength="120" v-model="user.first_name"><br><br>
+                <label class='ad_hoc_label' for="first_name">{{ $t("first_name") }}:</label>
+                <b-form-input id="first_name" type="text" maxlength="120" v-model="user.first_name" :placeholder="$t('first_name')"></b-form-input>
+                <br><br>
                 <br>
 
-                <label class='ad_hoc_label' for="last_name">{{ $t("last_name") }}</label>
-                <input id="last_name" type="text" maxlength="120" v-model="user.last_name"><br><br>
+                <label class='ad_hoc_label' for="last_name">{{ $t("last_name") }}:</label>
+                <b-form-input id="last_name" type="text" maxlength="120" v-model="user.last_name" :placeholder="$t('last_name')"></b-form-input>
+                <br><br>
                 <br>
                 <button id="save" type="button" @click="save">{{ $t("save") }}</button>
             </div>
@@ -27,25 +29,32 @@
                 <label class='ad_hoc_label' for="mail_send_mail_after_scan_finished">{{
                         $t("mail_send_mail_after_scan_finished")
                     }}</label>
-                <span style="margin-top: 1em;"><input id="mail_send_mail_after_scan_finished" type="checkbox"
-                                                      v-model="user.mail_send_mail_after_scan_finished">
-
-          <template v-if="user.mail_send_mail_after_scan_finished">{{ $t("yes") }}</template>
-          <template v-if="!user.mail_send_mail_after_scan_finished">{{ $t("no") }}</template></span>
-
+                <b-form-checkbox
+                    id="checkbox-1"
+                    v-model="user.mail_send_mail_after_scan_finished"
+                    name="checkbox-1"
+                    :value="true"
+                    :unchecked-value="false"
+                    switch>{{ $t(`check_${user.mail_send_mail_after_scan_finished}`) }}
+                </b-form-checkbox>
+                <br><br>
 
                 <label class='ad_hoc_label' for="mail_preferred_mail_address">{{
                         $t("mail_preferred_mail_address")
                     }}</label>
-                <input id="mail_preferred_mail_address" type="text" class="ad_hoc_input"
-                       v-model="user.mail_preferred_mail_address"><br><br>
+
+                <b-form-input id="last_name" type="email" v-model="user.mail_preferred_mail_address"></b-form-input>
+
+                <br><br>
                 <br>
 
                 <label class='ad_hoc_label' for="mail_preferred_language">{{ $t("mail_preferred_language") }}</label>
-                <select id="mail_preferred_language" v-model="user.mail_preferred_language" class="ad_hoc_input">
-                    <option value="en">{{ $t("en") }}</option>
-                    <option value="nl">{{ $t("nl") }}</option>
-                </select>
+                <b-form-select v-model="user.mail_preferred_language" class="mb-3">
+                    <b-form-select-option :value="null">Please select an option</b-form-select-option>
+                    <b-form-select-option value="en">{{ $t("en") }}</b-form-select-option>
+                    <b-form-select-option value="nl">{{ $t("nl") }}</b-form-select-option>
+                </b-form-select>
+
                 <br>
                 <button id="save" type="button" @click="save">{{ $t("save") }}</button>
             </div>
@@ -134,8 +143,8 @@ export default {
         "save_user_settings_error_could_not_retrieve_user": "Could not retrieve account information.",
         "save": "Save changes",
         "reset": "Reset",
-        "yes": "Yes",
-        "no": "No",
+        "check_true": "Yes",
+        "check_false": "No",
         "en": "English",
         "nl": "Dutch",
         "two_factor_options": "Setup / Change Two Factor Authentication"
@@ -159,8 +168,8 @@ export default {
         "save_user_settings_error_could_not_retrieve_user": "Kan geen gegevens ophalen voor dit account.",
         "save": "Deze gegevens opslaan",
         "reset": "Reset",
-        "yes": "Ja",
-        "no": "Nee",
+        "check_true": "Ja",
+        "check_false": "Nee",
         "en": "Engels",
         "nl": "Nederlands",
         "two_factor_options": "Instellen / Aanpassen twee-factor authenticatie"

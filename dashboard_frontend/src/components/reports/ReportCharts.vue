@@ -1,4 +1,9 @@
-<template id="internet-nl-charts-template">
+<style>
+.testresult h3 {
+    margin-top: 0;
+}
+</style>
+<template>
 
     <div v-if="color_scheme.incremental.length > 1">
         <div class="block fullwidth">
@@ -442,7 +447,6 @@ export default {
             }
         }
     },
-    template: 'internet-nl-charts-template',
     mounted: function () {
         this.color_scheme.incremental = this.generate_color_increments(10);
         this.get_timeline();

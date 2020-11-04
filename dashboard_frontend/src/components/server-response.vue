@@ -1,3 +1,22 @@
+<style>
+.server-response-error {
+    border: 1px solid silver;
+    border-radius: 5px;
+    padding: 10px;
+    margin-bottom: 10px;
+    background-color: #f9e0e4;
+    color: darkred;
+}
+
+.server-response-success{
+    border: 1px solid silver;
+    border-radius: 5px;
+    padding: 10px;
+    margin-bottom: 10px;
+    background-color: #daffda;
+    color: #004f00;
+}
+</style>
 <template>
     <div role="alert">
         <div v-if="response.error" class="server-response-error">
@@ -38,7 +57,7 @@ export default {
         "success": "Success!"
     },
     "nl": {
-        "error": "Er is een foutsituatie opgetreden",
+        "error": "Er is iets mis gegaan",
         "success": "Gelukt!"
     }
 }

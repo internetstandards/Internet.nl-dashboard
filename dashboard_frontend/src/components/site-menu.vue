@@ -1,3 +1,9 @@
+<style scoped>
+.router-link-active {
+    font-weight: bold;
+    border-bottom: 3px solid #ffab4c;
+}
+</style>
 <template>
     <ul>
         <template v-if="is_authenticated">

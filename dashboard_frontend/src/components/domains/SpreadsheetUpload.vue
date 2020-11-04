@@ -2,6 +2,38 @@
 #my-spreadsheet-upload-template .block form {
     overflow: visible;
 }
+
+/* Improve contrast for uploads, even though you might not see the right colors, you can now actually see the
+ symbol and the result. */
+.dropzone .dz-preview.dz-success .dz-success-mark svg g path {
+    fill: green;
+}
+
+.dropzone .dz-preview.dz-error .dz-error-mark svg g g {
+    fill: #ff0000;
+}
+
+.dz-error {
+    border: 5px solid red;
+    border-radius: 23px;
+    width: 130px !important;
+}
+
+.dz-success {
+    border: 5px solid green;
+    border-radius: 23px;
+    width: 130px !important;
+}
+
+/** Having the OK sign disappear does not help, and it flies over too fast... */
+.dropzone .dz-preview.dz-success .dz-success-mark {
+  opacity: 1;
+  -webkit-animation: slide-in 3s cubic-bezier(0.77, 0, 0.175, 1) !important;
+  -moz-animation: slide-in 3s cubic-bezier(0.77, 0, 0.175, 1) !important;
+  -o-animation: slide-in 3s cubic-bezier(0.77, 0, 0.175, 1) !important;
+  animation: slide-in 3s cubic-bezier(0.77, 0, 0.175, 1) !important;
+}
+
 </style>
 <template>
     <div id="my-spreadsheet-upload-template">

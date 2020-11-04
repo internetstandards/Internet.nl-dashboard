@@ -9,10 +9,11 @@
                 <b-spinner type="grow" label="Spinning"></b-spinner>
                 <b-spinner variant="primary" label="Spinning"></b-spinner>
                 <b-spinner variant="primary" type="grow" label="Spinning"></b-spinner>
-                <b-spinner variant="success" label="Spinning"></b-spinner>
-                <b-spinner variant="success" type="grow" label="Spinning"></b-spinner>
+                <b-spinner variant="info" label="Spinning" style="width: 3rem; height: 3rem;"></b-spinner>
+                <b-spinner variant="info" type="grow" label="Spinning" style="width: 3rem; height: 3rem;"></b-spinner>
             </div>
         </div>
+        <loading :loading="true"></loading>
 
         <div class="block fullwidth do-not-print">
             <h2>Collapse</h2>

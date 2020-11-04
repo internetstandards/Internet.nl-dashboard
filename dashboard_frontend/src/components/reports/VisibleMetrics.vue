@@ -17,7 +17,6 @@
                         <div class="test-title">
                             <h4>{{ category.label }}</h4>
                             <p>
-
                                 <span v-for="field in category.fields" :key="field.id">
                                     <b-form-checkbox v-model="issue_filters[field.name].show_dynamic_average"
                                                      @change="visible_metrics_see_if_category_is_relevant(category)"
