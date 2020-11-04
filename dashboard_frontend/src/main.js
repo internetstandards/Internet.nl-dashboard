@@ -28,6 +28,11 @@ import Beta from './components/beta'
 import './assets/css/styles.scss';
 import PortalVue from 'portal-vue'
 import { BootstrapVue } from 'bootstrap-vue'
+// Requiring moment is a little bit evil:
+// https://github.com/brockpetrie/vue-moment/issues/121
+import VueMoment from 'vue-moment';
+import moment from 'moment'
+Vue.use(VueMoment, { moment });
 
 Vue.component('v-select', vSelect);
 Vue.component('tabs', Tabs);
@@ -35,7 +40,7 @@ Vue.component('tab', Tab);
 Vue.use(PortalVue)
 Vue.use(VueI18n)
 Vue.use(VueRouter)
-Vue.use(require('vue-moment'));
+
 Vue.use(Vuex);
 Vue.use(BootstrapVue)
 

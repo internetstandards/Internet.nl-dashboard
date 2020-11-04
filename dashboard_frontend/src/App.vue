@@ -157,7 +157,12 @@ export default {
     },
     mounted: function () {
         this.login_status();
+        // set default locale
+        this.$moment.locale(this.locale);
+
         this.$nextTick(function () {
+
+
             // give some headroom, just like in the original...
             let theHeader = document.querySelector("header");
             let fixedHeaderbody = document.querySelector("body");
@@ -199,11 +204,12 @@ export default {
             }
 
             // todo: moment does not yet switch locale live.
-            this.$moment.locale(locale);
+            // there is no way to set it to locale, it always says 'en', even though NL is being required.
             this.$store.commit("set_locale", locale);
-            // this.$i18n.locale = locale;
+            this.$moment.locale(locale);
 
             // Using this cookie Django knows what language translations need to be (if still applicable)
+            // this should not matter in the future though.
             document.cookie = "dashboard_language=" + (locale || "en") + "; path=/; SameSite=Lax;";
         },
         WidthChange: function (mq) {

@@ -1,4 +1,5 @@
-<style>
+<style scoped>
+/* Todo: add toast notification */
 .server-response-error {
     border: 1px solid silver;
     border-radius: 5px;
@@ -16,6 +17,15 @@
     background-color: #daffda;
     color: #004f00;
 }
+
+h2{
+    font-size: 1.5em;
+    padding-bottom: 0.5em;
+}
+
+p {
+    margin-bottom: 0;
+}
 </style>
 <template>
     <div role="alert">
@@ -25,13 +35,15 @@
                 <span v-if="!message">{{ response.message }}</span>
                 <span v-if="message">{{ message }}</span>
             </p>
+            <span><small>{{ $t('at') }}{{ humanize_date(response.timestamp) }}.</small></span>
         </div>
-        <div v-if="response.success" class="server-response-success">
+        <div v-if="response.success" class="server-response-success hideMe">
             <h2>✅ {{ $t('success') }}</h2>
             <p>
                 <span v-if="!message">{{ response.message }}</span>
                 <span v-if="message">{{ message }}</span>
             </p>
+            <span><small>{{ $t('at') }} {{ humanize_date(response.timestamp) }}.</small></span>
         </div>
     </div>
 </template>
@@ -54,11 +66,13 @@ export default {
 {
     "en": {
         "error": "An error occurred",
-        "success": "Success!"
+        "success": "Success!",
+        "at": "At"
     },
     "nl": {
         "error": "Er is iets mis gegaan",
-        "success": "Gelukt!"
+        "success": "Gelukt!",
+        "at": "Op"
     }
 }
 </i18n>
