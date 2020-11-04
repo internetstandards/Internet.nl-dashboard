@@ -15,7 +15,7 @@
                 <!-- :key is used because that key changes when chaning the language, causing the graph to rerender and thus translate.
                 this cannot be done inside the graph, even with rerender title unfortunately. Perhaps it can, but cant figure it out. -->
                 <div class="chart-container" style="position: relative; height:300px; width:100%; min-width: 950px;"
-                 v-for="item in [$i18n.t(scan_methods[0].name)]" :key="item">
+                     v-for="item in [$i18n.t(scan_methods[0].name)]" :key="item">
 
                     <line-chart
                         :color_scheme="color_scheme"
@@ -323,129 +323,18 @@ import pattern from 'patternomaly'
 import field_translations from './../field_translations'
 
 
-
-
 import CumulativePercentageBarChart from './../charts/cumulative-percentage-bar-chart'
 import LineChart from './../charts/line-chart'
 import PercentageBarChart from './../charts/percentage-bar-chart'
 
 export default {
     components: {
-      'cumulative-percentage-bar-chart': CumulativePercentageBarChart,
+        'cumulative-percentage-bar-chart': CumulativePercentageBarChart,
         'line-chart': LineChart,
         'percentage-bar-chart': PercentageBarChart
     },
     i18n: {
         sharedMessages: field_translations,
-
-        messages: {
-            en: {
-                charts: {
-                    adoption_timeline: {
-                        title: 'Average internet.nl score over time.',
-                        yAxis_label: 'Average internet.nl score',
-                        xAxis_label: 'Date',
-                        average_internet_nl_score: "Average internet.nl score",
-                        accessibility_text: "A table with the content of this graph is shown below.",
-                    },
-                    adoption_bar_chart: {
-                        title_single: 'Average adoption of standards, %{list_information}, %{number_of_domains} domains.',
-                        title_multiple: 'Comparison of adoption of standards between %{number_of_reports} reports.',
-                        yAxis_label: 'Adoption',
-                        average: "Average",
-                        accessibility_text: "A table with the content of this graph is shown below.",
-                    },
-                    cumulative_adoption_bar_chart: {
-                        title: 'Average adoption of standards over %{number_of_reports} reports.',
-                        yAxis_label: 'Adoption',
-                        average: "Average",
-                        accessibility_text: "A table with the content of this graph is shown below.",
-                    }
-                },
-                selected_report_is_from_before_api_2: {
-                    title: "Unable to show all statistics",
-                    intro: "One of the selected reports are from before 30th of June 2020. Before that date, reports contained different calculations which are not consistent with the current version of the dashboard.",
-                },
-                chart_info: {
-                    adoption_timeline: {
-                        annotation: {
-                            title: 'Internet.nl score over time',
-                            intro: 'This graph compares the average internet.nl score over time.'
-                        },
-                    },
-                    magazine: {
-                        intro: "Below graph only shows the average of all magazine fields. Other fields cannot be enabled/disabled and changing their visibility does " +
-                            "not influence this average.",
-                    },
-                    adoption_bar_chart: {
-                        annotation: {
-                            title: 'Average adoption of standards ',
-                            intro: 'This graph shows the average adoption per standard per report.',
-                        },
-                    },
-                    cumulative_adoption_bar_chart: {
-                        annotation: {
-                            title: 'Average adoption of standards over multiple reports',
-                            intro: 'This graph shows the average adoption per standard averaged over multiple reports.',
-                        },
-                    }
-                },
-
-            },
-            nl: {
-                charts: {
-                    adoption_timeline: {
-                        title: 'Adoptie van standaarden over tijd.',
-                        yAxis_label: 'Gemiddelde internet.nl score',
-                        xAxis_label: 'Datum',
-                        average_internet_nl_score: "Gemiddelde internet.nl score",
-                        accessibility_text: "Een tabel met de inhoud van deze grafiek wordt hieronder getoond.",
-                    },
-
-                    adoption_bar_chart: {
-                        title_single: 'Adoptie van standaarden, %{list_information}, %{number_of_domains} domeinen.',
-                        title_multiple: 'Vergelijking adoptie van standaarden tussen %{number_of_reports} rapporten.',
-                        yAxis_label: 'Adoptiegraad',
-                        average: "Gemiddeld",
-                        accessibility_text: "Een tabel met de inhoud van deze grafiek wordt hieronder getoond.",
-                    },
-                    cumulative_adoption_bar_chart: {
-                        title: 'Gemiddelde adoptie van standaarden van %{number_of_reports} rapporten.',
-                        yAxis_label: 'Adoptiegraad',
-                        average: "Gemiddeld",
-                        accessibility_text: "Een tabel met de inhoud van deze grafiek wordt hieronder getoond.",
-                    }
-                },
-
-                selected_report_is_from_before_api_2: {
-                    title: "Niet mogelijk om alle statistieken te tonen",
-                    intro: "Een van de geselecteerde rapporten is van voor 30 juni 2020. Rapporten van voor deze datum gebruiken een andere rekenmethode, waardoor ze niet consistent zijn met de huidige versie van het dashboard.",
-                },
-                chart_info: {
-                    adoption_timeline: {
-                        annotation: {
-                            title: 'Gemiddelde internet.nl score over tijd.',
-                            intro: 'Deze grafiek toont de gemiddelde internet.nl score over tijd.'
-                        },
-                    },
-                    magazine: {
-                        intro: "Onderstaande grafiek toont het gemiddelde van alle magazine velden. Deze grafiek kan niet worden aangepast, ook niet door de zichtbaarheid van velden aan te passen.",
-                    },
-                    adoption_bar_chart: {
-                        annotation: {
-                            title: 'Adoptie van standaarden',
-                            intro: 'Deze grafiek toont het percentage adoptie per categorie en onderliggende metingen.',
-                        },
-                    },
-                    cumulative_adoption_bar_chart: {
-                        annotation: {
-                            title: 'Gemiddelde adoptie, waarbij rapporten bij elkaar worden opgeteld',
-                            intro: 'In deze grafiek worden de geselecteerde rapporten bij elkaar opgeteld, en daar het gemiddelde van getoond.',
-                        },
-                    }
-                },
-            }
-        }
     },
     mounted: function () {
         this.color_scheme.incremental = this.generate_color_increments(10);
@@ -662,3 +551,109 @@ export default {
     }
 }
 </script>
+<i18n>
+{
+    "en": {
+        "charts": {
+            "adoption_timeline": {
+                "title": "Average internet.nl score over time.",
+                "yAxis_label": "Average internet.nl score",
+                "xAxis_label": "Date",
+                "average_internet_nl_score": "Average internet.nl score",
+                "accessibility_text": "A table with the content of this graph is shown below."
+            },
+            "adoption_bar_chart": {
+                "title_single": "Average adoption of standards, %{list_information}, %{number_of_domains} domains.",
+                "title_multiple": "Comparison of adoption of standards between %{number_of_reports} reports.",
+                "yAxis_label": "Adoption",
+                "average": "Average",
+                "accessibility_text": "A table with the content of this graph is shown below."
+            },
+            "cumulative_adoption_bar_chart": {
+                "title": "Average adoption of standards over %{number_of_reports} reports.",
+                "yAxis_label": "Adoption",
+                "average": "Average",
+                "accessibility_text": "A table with the content of this graph is shown below."
+            }
+        },
+        "selected_report_is_from_before_api_2": {
+            "title": "Unable to show all statistics",
+            "intro": "One of the selected reports are from before 30th of June 2020. Before that date, reports contained different calculations which are not consistent with the current version of the dashboard."
+        },
+        "chart_info": {
+            "adoption_timeline": {
+                "annotation": {
+                    "title": "Internet.nl score over time",
+                    "intro": "This graph compares the average internet.nl score over time."
+                }
+            },
+            "magazine": {
+                "intro": "Below graph only shows the average of all magazine fields. Other fields cannot be enabled/disabled and changing their visibility does not influence this average."
+            },
+            "adoption_bar_chart": {
+                "annotation": {
+                    "title": "Average adoption of standards ",
+                    "intro": "This graph shows the average adoption per standard per report."
+                }
+            },
+            "cumulative_adoption_bar_chart": {
+                "annotation": {
+                    "title": "Average adoption of standards over multiple reports",
+                    "intro": "This graph shows the average adoption per standard averaged over multiple reports."
+                }
+            }
+        }
+    },
+    "nl": {
+        "charts": {
+            "adoption_timeline": {
+                "title": "Adoptie van standaarden over tijd.",
+                "yAxis_label": "Gemiddelde internet.nl score",
+                "xAxis_label": "Datum",
+                "average_internet_nl_score": "Gemiddelde internet.nl score",
+                "accessibility_text": "Een tabel met de inhoud van deze grafiek wordt hieronder getoond."
+            },
+            "adoption_bar_chart": {
+                "title_single": "Adoptie van standaarden, %{list_information}, %{number_of_domains} domeinen.",
+                "title_multiple": "Vergelijking adoptie van standaarden tussen %{number_of_reports} rapporten.",
+                "yAxis_label": "Adoptiegraad",
+                "average": "Gemiddeld",
+                "accessibility_text": "Een tabel met de inhoud van deze grafiek wordt hieronder getoond."
+            },
+            "cumulative_adoption_bar_chart": {
+                "title": "Gemiddelde adoptie van standaarden van %{number_of_reports} rapporten.",
+                "yAxis_label": "Adoptiegraad",
+                "average": "Gemiddeld",
+                "accessibility_text": "Een tabel met de inhoud van deze grafiek wordt hieronder getoond."
+            }
+        },
+        "selected_report_is_from_before_api_2": {
+            "title": "Niet mogelijk om alle statistieken te tonen",
+            "intro": "Een van de geselecteerde rapporten is van voor 30 juni 2020. Rapporten van voor deze datum gebruiken een andere rekenmethode, waardoor ze niet consistent zijn met de huidige versie van het dashboard."
+        },
+        "chart_info": {
+            "adoption_timeline": {
+                "annotation": {
+                    "title": "Gemiddelde internet.nl score over tijd.",
+                    "intro": "Deze grafiek toont de gemiddelde internet.nl score over tijd."
+                }
+            },
+            "magazine": {
+                "intro": "Onderstaande grafiek toont het gemiddelde van alle magazine velden. Deze grafiek kan niet worden aangepast, ook niet door de zichtbaarheid van velden aan te passen."
+            },
+            "adoption_bar_chart": {
+                "annotation": {
+                    "title": "Adoptie van standaarden",
+                    "intro": "Deze grafiek toont het percentage adoptie per categorie en onderliggende metingen."
+                }
+            },
+            "cumulative_adoption_bar_chart": {
+                "annotation": {
+                    "title": "Gemiddelde adoptie, waarbij rapporten bij elkaar worden opgeteld",
+                    "intro": "In deze grafiek worden de geselecteerde rapporten bij elkaar opgeteld, en daar het gemiddelde van getoond."
+                }
+            }
+        }
+    }
+}
+</i18n>

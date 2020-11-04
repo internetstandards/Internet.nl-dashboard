@@ -7,7 +7,6 @@ Chart.Legend.prototype.afterFit = function() {
     this.height = this.height + 20;
 };
 
-
 export default {
     mixins: [chart_mixin],
 
@@ -74,7 +73,7 @@ export default {
                             },
                             scaleLabel: {
                                 display: true,
-                                labelString: 'Month'
+                                labelString: this.$i18n.t(this.translation_key + '.month'),
                             }
                         }],
                         yAxes: [{

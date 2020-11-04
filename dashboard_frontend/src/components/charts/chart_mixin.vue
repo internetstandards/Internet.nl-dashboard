@@ -5,76 +5,9 @@ import field_translations from "@/components/field_translations";
 export default {
     i18n: {
         sharedMessages: field_translations,
-
-        messages: {
-            en: {
-                'pct_ok': "passed",
-                'pct_low': "info",
-                'pct_medium': "warning",
-                'pct_high': "failed",
-                'pct_not_applicable': "not applicable",
-                'pct_not_testable': "not testable",
-                'pct_error_in_test': "test error",
-                charts: {
-                    adoption_timeline: {
-                        title: 'Average internet.nl score over time.',
-                        yAxis_label: 'Average internet.nl score',
-                        xAxis_label: 'Date',
-                        average_internet_nl_score: "Average internet.nl score",
-                        accessibility_text: "A table with the content of this graph is shown below.",
-                    },
-                    adoption_bar_chart: {
-                        title_single: 'Average adoption of standards, %{list_information}, %{number_of_domains} domains.',
-                        title_multiple: 'Comparison of adoption of standards between %{number_of_reports} reports.',
-                        yAxis_label: 'Adoption',
-                        average: "Average",
-                        accessibility_text: "A table with the content of this graph is shown below.",
-                    },
-                    cumulative_adoption_bar_chart: {
-                        title: 'Average adoption of standards over %{number_of_reports} reports.',
-                        yAxis_label: 'Adoption',
-                        average: "Average",
-                        accessibility_text: "A table with the content of this graph is shown below.",
-                    }
-                },
-            },
-            nl: {
-                'pct_ok': "geslaagd",
-                'pct_low': "info",
-                'pct_medium': "waarschuwing",
-                'pct_high': "gezakt",
-                'pct_not_applicable': "niet van toepassing",
-                'pct_not_testable': "niet testbaar",
-                'pct_error_in_test': "testfout",
-                charts: {
-                    adoption_timeline: {
-                        title: 'Adoptie van standaarden over tijd.',
-                        yAxis_label: 'Gemiddelde internet.nl score',
-                        xAxis_label: 'Datum',
-                        average_internet_nl_score: "Gemiddelde internet.nl score",
-                        accessibility_text: "Een tabel met de inhoud van deze grafiek wordt hieronder getoond.",
-                    },
-
-                    adoption_bar_chart: {
-                        title_single: 'Adoptie van standaarden, %{list_information}, %{number_of_domains} domeinen.',
-                        title_multiple: 'Vergelijking adoptie van standaarden tussen %{number_of_reports} rapporten.',
-                        yAxis_label: 'Adoptiegraad',
-                        average: "Gemiddeld",
-                        accessibility_text: "Een tabel met de inhoud van deze grafiek wordt hieronder getoond.",
-                    },
-                    cumulative_adoption_bar_chart: {
-                        title: 'Gemiddelde adoptie van standaarden van %{number_of_reports} rapporten.',
-                        yAxis_label: 'Adoptiegraad',
-                        average: "Gemiddeld",
-                        accessibility_text: "Een tabel met de inhoud van deze grafiek wordt hieronder getoond.",
-                    }
-                },
-
-            }
-        }
     },
     props: {
-        trigger_rerender_when_this_changes: {type: String, required:false},
+        trigger_rerender_when_this_changes: {type: String, required: false},
         chart_data: {type: Array, required: true},
         axis: {type: Array, required: false},
         color_scheme: {type: Object, required: false},
@@ -149,7 +82,7 @@ export default {
         })
     },
     watch: {
-        trigger_rerender_when_this_changes: function (){
+        trigger_rerender_when_this_changes: function () {
             this.renderTitle();
         },
         axis: function (new_value, old_value) {
@@ -179,3 +112,71 @@ export default {
     }
 };
 </script>
+<i18n>
+{
+    "en": {
+        "pct_ok": "passed",
+        "pct_low": "info",
+        "pct_medium": "warning",
+        "pct_high": "failed",
+        "pct_not_applicable": "not applicable",
+        "pct_not_testable": "not testable",
+        "pct_error_in_test": "test error",
+        "charts": {
+            "adoption_timeline": {
+                "title": "Average internet.nl score over time.",
+                "month": "Month",
+                "yAxis_label": "Average internet.nl score",
+                "xAxis_label": "Date",
+                "average_internet_nl_score": "Average internet.nl score",
+                "accessibility_text": "A table with the content of this graph is shown below."
+            },
+            "adoption_bar_chart": {
+                "title_single": "Average adoption of standards, %{list_information}, %{number_of_domains} domains.",
+                "title_multiple": "Comparison of adoption of standards between %{number_of_reports} reports.",
+                "yAxis_label": "Adoption",
+                "average": "Average",
+                "accessibility_text": "A table with the content of this graph is shown below."
+            },
+            "cumulative_adoption_bar_chart": {
+                "title": "Average adoption of standards over %{number_of_reports} reports.",
+                "yAxis_label": "Adoption",
+                "average": "Average",
+                "accessibility_text": "A table with the content of this graph is shown below."
+            }
+        }
+    },
+    "nl": {
+        "pct_ok": "geslaagd",
+        "pct_low": "info",
+        "pct_medium": "waarschuwing",
+        "pct_high": "gezakt",
+        "pct_not_applicable": "niet van toepassing",
+        "pct_not_testable": "niet testbaar",
+        "pct_error_in_test": "testfout",
+        "charts": {
+            "adoption_timeline": {
+                "title": "Adoptie van standaarden over tijd.",
+                "month": "Maand",
+                "yAxis_label": "Gemiddelde internet.nl score",
+                "xAxis_label": "Datum",
+                "average_internet_nl_score": "Gemiddelde internet.nl score",
+                "accessibility_text": "Een tabel met de inhoud van deze grafiek wordt hieronder getoond."
+            },
+            "adoption_bar_chart": {
+                "title_single": "Adoptie van standaarden, %{list_information}, %{number_of_domains} domeinen.",
+                "title_multiple": "Vergelijking adoptie van standaarden tussen %{number_of_reports} rapporten.",
+                "yAxis_label": "Adoptiegraad",
+                "average": "Gemiddeld",
+                "accessibility_text": "Een tabel met de inhoud van deze grafiek wordt hieronder getoond."
+            },
+            "cumulative_adoption_bar_chart": {
+                "title": "Gemiddelde adoptie van standaarden van %{number_of_reports} rapporten.",
+                "yAxis_label": "Adoptiegraad",
+                "average": "Gemiddeld",
+                "accessibility_text": "Een tabel met de inhoud van deze grafiek wordt hieronder getoond."
+            }
+        }
+    }
+}
+</i18n>
