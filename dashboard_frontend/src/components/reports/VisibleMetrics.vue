@@ -20,7 +20,7 @@
 
                                 <span v-for="field in category.fields" :key="field.id">
                                     <b-form-checkbox v-model="issue_filters[field.name].show_dynamic_average"
-                                                     :onchange="visible_metrics_see_if_category_is_relevant(category)"
+                                                     @change="visible_metrics_see_if_category_is_relevant(category)"
                                                      switch>
                                         {{ $t("show_dynamic_average") }}
                                     </b-form-checkbox>
@@ -44,7 +44,7 @@
 
                                 <b-form-checkbox
                                     v-model="issue_filters[field.name].visible" :id="field.name + '_visible'"
-                                    :onchange="visible_metrics_see_if_category_is_relevant(category)" switch>
+                                    switch>
                                     {{ $t(field.name) }}
                                 </b-form-checkbox>
 
@@ -154,8 +154,10 @@ export default {
         },
         visible_metrics_see_if_category_is_relevant: function (category_name) {
             // if all fields in the category are deselected, deselect the category, otherwise, select it.
+            // console.log(category_name);
 
             let fields = this.all_subcategory_fields_from_category(category_name);
+            // console.log(fields)
 
             let should_be_visible = false;
             for (let i = 0; i < fields.length; i++) {
@@ -174,29 +176,21 @@ export default {
             this.issue_filters[category_name.key].visible = should_be_visible;
         },
         all_subcategory_fields_from_category(category_name) {
+            const mail = 1;
+            const web = 0;
             let fields = [];
+            let method = (this.report_type === 'mail') ? mail : web;
 
-            let i = 0;
-            // hack to get the right stuff from the scan methods. Should be done differently.
-            if (this.selected_category === 'mail')
-                i = 1;
-
-
-            this.scan_methods[i].categories.forEach((category) => {
-
-                if (category.key !== category_name.key) {
-                    return
-                }
-
-                category.categories.forEach((subcategory) => {
-                    subcategory.fields.forEach((field) => {
-                        fields.push(field.name);
+            this.scan_methods[method].categories.forEach((category) => {
+                // console.log(`Comparing ${category.key} to ${category_name.key}.`)
+                if (category.key === category_name.key) {
+                    category.categories.forEach((subcategory) => {
+                        subcategory.fields.forEach((field) => {
+                            fields.push(field.name);
+                        });
                     });
-
-                });
-
+                }
             });
-
             return fields;
         },
     },

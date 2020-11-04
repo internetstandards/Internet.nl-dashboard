@@ -50,9 +50,9 @@
                 <ul>
                     <li><span class="faq-test category_passed"><span
                         class="visuallyhidden">{{ $t("report.results.passed") }}</span>{{ $t("test_good") }}</span></li>
-                    <li><span class="faq-test category_failed"><span class="visuallyhidden">{{
-                            $t("report.results.failed")
-                        }}</span>{{ $t("test_bad") }}</span></li>
+                    <li><span class="faq-test category_failed">
+                        <span class="visuallyhidden">{{ $t("report.results.failed") }}</span>{{ $t("test_bad") }}</span>
+                    </li>
                     <li><span class="faq-test category_warning"><span class="visuallyhidden">{{
                             $t("report.results.warning")
                         }}</span>{{ $t("test_warning") }}</span></li>
@@ -584,22 +584,15 @@ export default {
     computed: {
         relevant_categories_based_on_settings: function () {
             let preferred_fields = [];  // this.categories[this.selected_category];
-
             this.scan_methods.forEach((scan_method) => {
-                // console.log("scan_method " + scan_method.name);
                 // todo: also get relevant column for scan_methods, just like with graphs. But given large refactor,
                 // we'll do that later.
                 if (['web', 'mail'].includes(scan_method.name) && scan_method.name === this.selected_category) {
-
                     scan_method.categories.forEach((category) => {
-
                         category.fields.forEach((field) => {
                             preferred_fields.push(field.name);
                         });
-
-
                     });
-
                 } else {
                     // subcategories, dirty fix using the 'key' field to save a lot of iteration.
                     scan_method.categories.forEach((category) => {
@@ -610,21 +603,22 @@ export default {
                                 subcategory.fields.forEach((field) => {
                                     preferred_fields.push(field.name);
                                 });
-
                             });
                         }
                     });
                 }
             });
+            // console.log("Prefered fields: " + preferred_fields)
 
             // now determine for each field if they should be visible or not. Perhaps this should be in
             // the new_categories
             let returned_fields = [];
-            for (let i = 0; i < preferred_fields.length; i++) {
-
-                if (this.$store.state.visible_metrics[preferred_fields[i]].visible)
-                    returned_fields.push(preferred_fields[i])
-            }
+            preferred_fields.forEach((preferred_field) => {
+                if (this.$store.state.visible_metrics[preferred_field].visible) {
+                    returned_fields.push(preferred_field)
+                }
+            });
+            // console.log("Returned fields: " + returned_fields)
             return returned_fields;
         },
     }

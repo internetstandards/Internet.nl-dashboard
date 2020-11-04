@@ -756,8 +756,6 @@ export default {
                 {
                     name: 'mail',
                     fields: [],
-
-
                     label: this.$i18n.t('mail'),
                     categories: [
                         {
