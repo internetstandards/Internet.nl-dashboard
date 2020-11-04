@@ -104,6 +104,7 @@ def get_urllist_timeline_graph(account: Account, urllist_ids: str):
                 'date': per_report_statistics.at_when.date().isoformat(),
                 'urls': per_report_statistics.total_urls,
                 'average_internet_nl_score': per_report_statistics.average_internet_nl_score,
+                'report': per_report_statistics.id
             })
 
     # echo the results in the order you got them:

@@ -1,5 +1,6 @@
 <script>
 import Chart from 'chart.js';
+import ChartDataLabels from 'chartjs-plugin-datalabels';
 import chart_mixin from './chart_mixin.vue'
 
 // this prevents the legend being written over the 100% scores
@@ -8,9 +9,8 @@ Chart.Legend.prototype.afterFit = function() {
 };
 
 export default {
-
     mixins: [chart_mixin],
-
+    plugins: [ChartDataLabels],
     methods: {
 
         buildChart: function(){
