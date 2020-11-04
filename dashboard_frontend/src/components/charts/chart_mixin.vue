@@ -17,6 +17,7 @@ export default {
         show_dynamic_average: {type: Boolean, required: false},
         only_show_dynamic_average: {type: Boolean, required: false},
         field_name_to_category_names: {type: Object, required: false},
+        selected_report_ids: {type: Array, required: false}
     },
     data: function () {
         return {

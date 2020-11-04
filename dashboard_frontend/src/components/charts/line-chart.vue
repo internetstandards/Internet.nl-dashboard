@@ -29,8 +29,12 @@ export default {
                             align: 'end', // shows the value outside of the bar,
                             // format as a percentage
                             formatter: function(value) {
-                                // https://github.com/internetstandards/Internet.nl-dashboard/issues/37
-                                return Math.round(value.y)+ '%';
+                                if (value.is_selected) {
+                                    return `#${value.report}\n${Math.round(value.y)}%`;
+                                } else {
+                                    // https://github.com/internetstandards/Internet.nl-dashboard/issues/37
+                                    return Math.round(value.y) + '%';
+                                }
                             }
                         }
                     },
@@ -144,7 +148,12 @@ export default {
 
                  let line_data = [];
                  item.data.forEach((item_data) => {
-                    line_data.push({x: item_data.date, y: item_data.average_internet_nl_score, z: item_data.urls})
+                    line_data.push({
+                        x: item_data.date,
+                        y: item_data.average_internet_nl_score,
+                        z: item_data.urls,
+                        is_selected: this.selected_report_ids.includes(item_data.report),
+                        report: item_data.report})
                  });
 
                  let line_dataset =

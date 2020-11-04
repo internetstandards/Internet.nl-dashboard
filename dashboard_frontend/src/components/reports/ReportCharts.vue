@@ -22,6 +22,7 @@
                         :trigger_rerender_when_this_changes="locale"
                         :translation_key="'charts.adoption_timeline'"
                         :chart_data="issue_timeline_of_related_urllists"
+                        :selected_report_ids="selected_report_ids"
                         :accessibility_text="$t('charts.adoption_timeline.accessibility_text')"
                         :axis="['average_internet_nl_score']">
                     </line-chart>
@@ -296,6 +297,7 @@ export default {
         issue_filters: {type: Object, required: true},
         selected_report: {type: Array, required: true},
         field_name_to_category_names: {type: Object, required: false},
+        selected_report_ids: {type: Array, required: false},
     },
     data: function () {
         return {

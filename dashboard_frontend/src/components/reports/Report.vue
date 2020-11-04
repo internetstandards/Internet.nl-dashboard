@@ -117,6 +117,7 @@
                 :scan_methods="scan_methods"
                 :compare_charts="compare_charts"
                 :issue_filters="visible_metrics"
+                :selected_report_ids="selected_report_ids"
                 :field_name_to_category_names="field_name_to_category_names"
             >
             </ReportCharts>
@@ -268,6 +269,9 @@ export default {
 
             // a list of reports...
             selected_report: [],
+
+            // a list used to highlight certain reports in the timeline graph.
+            selected_report_ids: [],
 
             // show category headers in table only when there is a change of category:
             previous_category: "",
@@ -471,8 +475,14 @@ export default {
                 this.filtered_recent_reports = this.available_recent_reports;
 
                 this.reports = [];
+                this.selected_report_ids = [];
                 this.is_loading = false;
                 return;
+            } else {
+                this.selected_report_ids = [];
+                for (let i = 0; i < new_value.length; i++) {
+                    this.selected_report_ids.push(new_value[i].id);
+                }
             }
 
             // Always update the URL to reflect the latest report, so it can be easily shared and the page reloaded
