@@ -546,9 +546,6 @@ export default {
                     category.fields.forEach((field) => {
                         fields.push(field.name);
                     });
-                    category.additional_fields.forEach((field) => {
-                        fields.push(field.name);
-                    });
                 }
             });
             return fields;
@@ -557,9 +554,6 @@ export default {
             let fields = [];
 
             category.fields.forEach((field) => {
-                fields.push(field.name);
-            });
-            category.additional_fields.forEach((field) => {
                 fields.push(field.name);
             });
 
@@ -585,9 +579,6 @@ export default {
                 category.fields.forEach((field) => {
                     fields.push(field.name);
                 });
-                category.additional_fields.forEach((field) => {
-                    fields.push(field.name);
-                });
 
             });
 
@@ -603,9 +594,6 @@ export default {
             let fields = [];
 
             category.fields.forEach((field) => {
-                fields.push(field.name);
-            });
-            category.additional_fields.forEach((field) => {
                 fields.push(field.name);
             });
             return fields;

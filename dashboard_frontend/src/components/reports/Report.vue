@@ -539,7 +539,7 @@ export default {
                 {
                     name: 'web',
                     fields: [],
-                    additional_fields: [],
+
                     label: this.$i18n.t('web'),
                     categories: [
                         {
@@ -550,7 +550,7 @@ export default {
                             fields: [
                                 {name: 'internet_nl_web_ipv6'}
                             ],
-                            additional_fields: [],
+
 
                             categories: [
                                 {
@@ -562,7 +562,7 @@ export default {
                                         {name: 'internet_nl_web_ipv6_ns_address'},
                                         {name: 'internet_nl_web_ipv6_ns_reach'},
                                     ],
-                                    additional_fields: [],
+
                                 },
                                 {
                                     name: 'Web server',
@@ -573,7 +573,7 @@ export default {
                                         {name: 'internet_nl_web_ipv6_ws_reach'},
                                         {name: 'internet_nl_web_ipv6_ws_similar'},
                                     ],
-                                    additional_fields: [],
+
                                 }
                             ]
                         },
@@ -584,7 +584,7 @@ export default {
                             fields: [
                                 {name: 'internet_nl_web_dnssec'}
                             ],
-                            additional_fields: [],
+
                             categories: [
                                 {
                                     // the exception to the rule
@@ -595,7 +595,7 @@ export default {
                                         {name: 'internet_nl_web_dnssec_exist'},
                                         {name: 'internet_nl_web_dnssec_valid'},
                                     ],
-                                    additional_fields: [],
+
                                 },
                             ]
                         },
@@ -606,7 +606,7 @@ export default {
                             fields: [
                                 {name: 'internet_nl_web_tls'},
                             ],
-                            additional_fields: [],
+
                             categories: [
                                 {
                                     name: 'HTTP',
@@ -618,7 +618,7 @@ export default {
                                         {name: 'internet_nl_web_https_http_compress'},
                                         {name: 'internet_nl_web_https_http_hsts'},
                                     ],
-                                    additional_fields: [],
+
                                 },
                                 {
                                     name: 'TLS',
@@ -636,7 +636,6 @@ export default {
                                         {name: 'internet_nl_web_https_tls_0rtt'},
                                         {name: 'internet_nl_web_https_tls_ocsp'},
                                     ],
-                                    additional_fields: [],
                                 },
                                 {
                                     name: 'Certificate',
@@ -649,7 +648,7 @@ export default {
                                         {name: 'internet_nl_web_https_cert_sig'},
                                         {name: 'internet_nl_web_https_cert_domain'},
                                     ],
-                                    additional_fields: [],
+
                                 },
                                 {
                                     name: 'DANE',
@@ -659,7 +658,7 @@ export default {
                                         {name: 'internet_nl_web_https_dane_exist'},
                                         {name: 'internet_nl_web_https_dane_valid'},
                                     ],
-                                    additional_fields: [],
+
                                 }
                             ]
                         },
@@ -670,7 +669,7 @@ export default {
                             fields: [
                                 {name: 'internet_nl_web_appsecpriv'},
                             ],
-                            additional_fields: [],
+
 
                             categories: [
                                 {
@@ -683,7 +682,7 @@ export default {
                                         {name: 'internet_nl_web_appsecpriv_csp'},
                                         {name: 'internet_nl_web_appsecpriv_referrer_policy'},
                                     ],
-                                    additional_fields: [],
+
                                 }
                             ]
 
@@ -695,7 +694,7 @@ export default {
                             fields: [
                                 {name: 'web_legacy'},
                             ],
-                            additional_fields: [],
+
 
                             categories: [
                                 {
@@ -736,7 +735,7 @@ export default {
                                             explanation: 'fields.forum_standardistation.internet_nl_web_legacy_ipv6_webserver_explanation'
                                         },
                                     ],
-                                    additional_fields: [],
+
                                 },
                                 {
                                     name: 'Status Fields',
@@ -748,7 +747,7 @@ export default {
                                             explanation: 'fields.forum_standardistation.internet_nl_web_legacy_tls_1_3_explanation'
                                         },
                                     ],
-                                    additional_fields: [],
+
                                 }
                             ]
                         }
@@ -757,7 +756,7 @@ export default {
                 {
                     name: 'mail',
                     fields: [],
-                    additional_fields: [],
+
 
                     label: this.$i18n.t('mail'),
                     categories: [
@@ -768,7 +767,7 @@ export default {
                             fields: [
                                 {name: 'internet_nl_mail_dashboard_ipv6'}
                             ],
-                            additional_fields: [],
+
 
                             categories: [
                                 {
@@ -779,7 +778,7 @@ export default {
                                         {name: 'internet_nl_mail_ipv6_ns_address'},
                                         {name: 'internet_nl_mail_ipv6_ns_reach'},
                                     ],
-                                    additional_fields: [],
+
                                 },
                                 {
                                     name: 'Mail server(s)',
@@ -789,9 +788,7 @@ export default {
                                         {name: 'internet_nl_mail_ipv6_mx_address'},
                                         {name: 'internet_nl_mail_ipv6_mx_reach'},
                                     ],
-                                    additional_fields: [
-                                        {name: 'internet_nl_mail_server_configured'},
-                                    ],
+
                                 }
                             ]
                         },
@@ -802,7 +799,7 @@ export default {
                             fields: [
                                 {name: 'internet_nl_mail_dashboard_dnssec',}
                             ],
-                            additional_fields: [],
+
                             categories: [
                                 {
                                     name: 'Email address domain',
@@ -812,7 +809,7 @@ export default {
                                         {name: 'internet_nl_mail_dnssec_mailto_exist'},
                                         {name: 'internet_nl_mail_dnssec_mailto_valid'},
                                     ],
-                                    additional_fields: [],
+
                                 },
                                 {
                                     name: 'Mail server domain(s)',
@@ -822,7 +819,6 @@ export default {
                                         {name: 'internet_nl_mail_dnssec_mx_exist'},
                                         {name: 'internet_nl_mail_dnssec_mx_valid'},
                                     ],
-                                    additional_fields: [],
                                 },
                             ]
                         },
@@ -833,7 +829,7 @@ export default {
                             fields: [
                                 {name: 'internet_nl_mail_dashboard_auth'}
                             ],
-                            additional_fields: [],
+
                             categories: [
                                 {
                                     name: 'DMARC',
@@ -843,7 +839,7 @@ export default {
                                         {name: 'internet_nl_mail_auth_dmarc_exist'},
                                         {name: 'internet_nl_mail_auth_dmarc_policy'},
                                     ],
-                                    additional_fields: [],
+
                                 },
                                 {
                                     name: 'DKIM',
@@ -852,7 +848,7 @@ export default {
                                     fields: [
                                         {name: 'internet_nl_mail_auth_dkim_exist'},
                                     ],
-                                    additional_fields: [],
+
                                 },
                                 {
                                     name: 'SPF',
@@ -862,7 +858,7 @@ export default {
                                         {name: 'internet_nl_mail_auth_spf_exist'},
                                         {name: 'internet_nl_mail_auth_spf_policy'},
                                     ],
-                                    additional_fields: [],
+
                                 },
                             ]
                         },
@@ -873,7 +869,7 @@ export default {
                             fields: [
                                 {name: 'internet_nl_mail_dashboard_tls'},
                             ],
-                            additional_fields: [],
+
                             categories: [
                                 {
                                     name: 'TLS',
@@ -891,7 +887,7 @@ export default {
                                         {name: 'internet_nl_mail_starttls_tls_clientreneg'},
                                         {name: 'internet_nl_mail_starttls_tls_0rtt'},
                                     ],
-                                    additional_fields: [],
+
                                 },
                                 {
                                     name: 'Certificate',
@@ -903,7 +899,7 @@ export default {
                                         {name: 'internet_nl_mail_starttls_cert_sig'},
                                         {name: 'internet_nl_mail_starttls_cert_domain'},
                                     ],
-                                    additional_fields: [],
+
                                 },
                                 {
                                     name: 'DANE',
@@ -914,10 +910,8 @@ export default {
                                         {name: 'internet_nl_mail_starttls_dane_valid'},
                                         {name: 'internet_nl_mail_starttls_dane_rollover'},
                                     ],
-                                    additional_fields: [
-                                        {name: 'internet_nl_mail_starttls_dane_ta'},
-                                        {name: 'internet_nl_mail_servers_testable'},
-                                    ],
+
+
                                 },
                             ]
                         },
@@ -930,7 +924,7 @@ export default {
                                     name: 'mail_legacy',
                                 },
                             ],
-                            additional_fields: [],
+
 
                             categories: [
                                 {
@@ -989,7 +983,7 @@ export default {
                                         },
 
                                     ],
-                                    additional_fields: [],
+
                                 },
 
                                 {
@@ -1022,7 +1016,7 @@ export default {
                                             explanation: 'fields.forum_standardistation.internet_nl_mail_legacy_mail_sending_domain_explanation'
                                         },
                                     ],
-                                    additional_fields: [],
+
                                 }
                             ]
                         }
@@ -1046,9 +1040,6 @@ export default {
                     subcategory.fields.forEach((field) => {
                         fields_mapping[field.name] = subcategory.name;
                     });
-                    subcategory.additional_fields.forEach((field) => {
-                        fields_mapping[field.name] = subcategory.name;
-                    });
                 });
             });
 
@@ -1056,9 +1047,6 @@ export default {
 
                 category.categories.forEach((subcategory) => {
                     subcategory.fields.forEach((field) => {
-                        fields_mapping[field.name] = subcategory.name;
-                    });
-                    subcategory.additional_fields.forEach((field) => {
                         fields_mapping[field.name] = subcategory.name;
                     });
                 });

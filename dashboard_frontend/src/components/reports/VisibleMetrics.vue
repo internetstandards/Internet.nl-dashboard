@@ -2,163 +2,72 @@
     <div>
         <p>{{ $t("intro") }}</p>
         <div v-for="scan_form in scan_methods" :key="scan_form.name">
-            <template v-if="scan_form.name === report_type && Object.keys(issue_filters).length > 0">
+            <b-tabs v-if="scan_form.name === report_type && Object.keys(issue_filters).length > 0">
+                <b-tab :title="$t('main_category')">
+                    <h4>{{ $t("main_category") }}</h4>
 
-                <tabs :options="{ useUrlFragment: false }">
-                    <tab :name="$t('main_category')">
-                        <h3>{{ $t("main_category") }}</h3>
-                        <br>
-                        <p>
-                            <label :for="scan_form.name + '_show_dynamic_average'">
-                                <input type="checkbox"
-                                       v-model="issue_filters[scan_form.name].show_dynamic_average"
-                                       :id="scan_form.name + '_show_dynamic_average'">
-                                {{ $t("show_dynamic_average") }}
-                            </label><br>
-                            <!-- disabled as per #107
-                            <label :for="scan_form.name + '_only_show_dynamic_average'">
-                                <input type="checkbox"
-                                       v-model="issue_filters[scan_form.name].only_show_dynamic_average"
-                                       :id="scan_form.name + '_only_show_dynamic_average'"
-                                        :disabled="!issue_filters[scan_form.name].show_dynamic_average">
-                                {{ $t("only_show_dynamic_average") }}
-                            </label>
-                            -->
+                    <b-form-checkbox v-model="issue_filters[scan_form.name].show_dynamic_average" switch>
+                        {{ $t("show_dynamic_average") }}
+                    </b-form-checkbox>
+                    <br><br>
+                </b-tab>
 
-                            <template v-if="scan_form.additional_fields.length">
-                                <div class="test-subsection">{{
-                                        $t("fields.additional_fields.label")
-                                    }}
-                                </div>
-                                <div v-for="field in scan_form.additional_fields"
-                                     class="testresult_without_icon" :key="field">
-                                    <label :for="field.name + '_visible'">
-                                        <input type="checkbox"
-                                               v-model="issue_filters[field.name].visible"
-                                               :id="field.name + '_visible'">
-                                        {{ $t(field.name) }}
-                                    </label>
-                                </div>
-                            </template>
-                        </p>
+                <b-tab v-for="category in scan_form.categories" :title="category.label" :key="category.label">
+                    <section class="test-header">
+                        <div class="test-title">
+                            <h4>{{ category.label }}</h4>
+                            <p>
 
-                        <div>
-                            <button @click="reset_issue_filters()">{{
-                                    $t("buttons.reset")
-                                }}<span class="visuallyhidden"></span></button>
-                            <button @click="save_visible_metrics()">{{ $t("buttons.save") }}<span
-                                class="visuallyhidden"></span></button>
-                            <br>
-                            <template
-                                v-if="issue_filters_response.success || issue_filters_response.error">
-                                <div :class="'server-response-' + issue_filters_response.state">
-                                                    <span>{{
-                                                            $t(issue_filters_response.message)
-                                                        }} on {{
-                                                            humanize_date(issue_filters_response.timestamp)
-                                                        }}.</span>
-                                </div>
-                            </template>
+                                <span v-for="field in category.fields" :key="field.id">
+                                    <b-form-checkbox v-model="issue_filters[field.name].show_dynamic_average"
+                                                     :onchange="visible_metrics_see_if_category_is_relevant(category)"
+                                                     switch>
+                                        {{ $t("show_dynamic_average") }}
+                                    </b-form-checkbox>
+                                    <br>
+                                </span>
+                            </p>
                         </div>
+                    </section>
+                    <section class="testresults">
+                        <span class="select-deselect-category">
+                            <a @click="check_fields(all_field_names_from_categories(category))"> {{ $t("check") }} </a>
+                            /
+                            <a @click="uncheck_fields(all_field_names_from_categories(category))">
+                                {{ $t("uncheck") }}
+                            </a>
+                        </span>
 
-                    </tab>
+                        <div v-for="category in category.categories" :key="category.name">
+                            <div class="test-subsection">{{ category.label }}<br></div>
+                            <div v-for="field in category.fields" :key="field.name" class="testresult_without_icon">
 
-                    <tab v-for="category in scan_form.categories" :name="category.label"
-                         :key="category.label">
-                        <section class="test-header">
-                            <div class="test-title">
-                                <h3>{{ category.label }}</h3>
-                                <br>
-                                <p>
-                                    <span v-for="field in category.fields" :key="field.id">
+                                <b-form-checkbox
+                                    v-model="issue_filters[field.name].visible" :id="field.name + '_visible'"
+                                    :onchange="visible_metrics_see_if_category_is_relevant(category)" switch>
+                                    {{ $t(field.name) }}
+                                </b-form-checkbox>
 
-                                        <label :for="field.name + '_show_dynamic_average'"
-                                               :key="field.name">
-                                            <input type="checkbox"
-                                                   v-model="issue_filters[field.name].show_dynamic_average"
-                                                   :onchange="visible_metrics_see_if_category_is_relevant(category)"
-                                                   :id="field.name + '_show_dynamic_average'">
-                                            {{ $t("show_dynamic_average") }}
-                                        </label><br>
-                                        <!-- Disabled as per #107
-                                        <label :for="field.name + '_only_show_dynamic_average'">
-                                            <input type="checkbox"
-                                                   v-model="issue_filters[field.name].only_show_dynamic_average"
-                                                   :id="field.name + '_only_show_dynamic_average'"
-                                                    :disabled="!issue_filters[field.name].show_dynamic_average">
-                                            {{ $t("only_show_dynamic_average") }}
-                                        </label>
-                                        -->
-                                    </span>
-                                </p>
-
-                            </div>
-                        </section>
-                        <section class="testresults">
-                            <span class="select-deselect-category"><a
-                                @click="check_fields(all_field_names_from_categories(category))">{{
-                                    $t("check")
-                                }}</a> / <a
-                                @click="uncheck_fields(all_field_names_from_categories(category))">{{
-                                    $t("uncheck")
-                                }}</a></span>
-
-                            <div v-for="category in category.categories" :key="category.name">
-                                <div class="test-subsection">{{ category.label }}<br></div>
-                                <div v-for="field in category.fields" :key="field.name"
-                                     class="testresult_without_icon">
-                                    <label :for="field.name + '_visible'" :key="field.name">
-                                        <input type="checkbox"
-                                               v-model="issue_filters[field.name].visible"
-                                               :id="field.name + '_visible'">
-                                        {{ $t(field.name) }}
-                                    </label>
-                                    <template v-if="field.explanation">
-                                        <p><i>{{ $t(field.name + "_explanation") }}</i></p>
-                                    </template>
-                                </div>
-
-                                <template v-if="category.additional_fields.length">
-                                    <div class="test-subsection">{{
-                                            $t("fields.additional_fields.label")
-                                        }}
-                                    </div>
-                                    <div v-for="field in category.additional_fields"
-                                         class="testresult_without_icon" :key="field.name">
-                                        <label :for="field.name + '_visible'" :key="field.name">
-                                            <input type="checkbox"
-                                                   v-model="issue_filters[field.name].visible"
-                                                   :id="field.name + '_visible'">
-                                            {{ $t(field.name) }}
-                                        </label>
-                                        <template v-if="field.explanation">
-                                            <p><i>{{ $t(field.name + "_explanation") }}</i></p>
-                                        </template>
-                                    </div>
+                                <template v-if="field.explanation">
+                                    <p><i>{{ $t(field.name + "_explanation") }}</i></p>
                                 </template>
-
                             </div>
-                        </section>
-
-                        <div>
-                            <button @click="reset_issue_filters()">{{ $t("buttons.reset") }}<span
-                                class="visuallyhidden"></span></button>
-                            <button @click="save_visible_metrics()">{{ $t("buttons.save") }}<span
-                                class="visuallyhidden"></span></button>
-                            <br>
-                            <template
-                                v-if="issue_filters_response.success || issue_filters_response.error">
-                                <div :class="'server-response-' + issue_filters_response.state">
-                                    <span>{{
-                                            $t(issue_filters_response.message)
-                                        }} on {{ humanize_date(issue_filters_response.timestamp) }}.</span>
-                                </div>
-                            </template>
                         </div>
-
-                    </tab>
-                </tabs>
-
+                    </section>
+                </b-tab>
+            </b-tabs>
+        </div>
+        <div>
+            <button @click="reset_issue_filters()">{{ $t("buttons.reset") }}</button>
+            <button @click="save_visible_metrics()">{{ $t("buttons.save") }}</button>
+            <br>
+            <template v-if="issue_filters_response.success || issue_filters_response.error">
+                <div :class="'server-response-' + issue_filters_response.state">
+                        <span>
+                            {{ $t(issue_filters_response.message) }}
+                            on {{ humanize_date(issue_filters_response.timestamp) }}.
+                        </span>
+                </div>
             </template>
         </div>
     </div>
@@ -205,18 +114,11 @@ export default {
 
         all_field_names_from_categories(categories) {
             let fields = [];
-
             categories.categories.forEach((category) => {
-
                 category.fields.forEach((field) => {
                     fields.push(field.name);
                 });
-                category.additional_fields.forEach((field) => {
-                    fields.push(field.name);
-                });
-
             });
-
             return fields;
         },
 
@@ -290,9 +192,7 @@ export default {
                     subcategory.fields.forEach((field) => {
                         fields.push(field.name);
                     });
-                    subcategory.additional_fields.forEach((field) => {
-                        fields.push(field.name);
-                    });
+
                 });
 
             });
@@ -310,7 +210,6 @@ export default {
 </script>
 
 <style>
-
 .select-deselect-category {
     font-size: 0.9em;
     display: block;
@@ -318,96 +217,6 @@ export default {
     text-align: right;
     padding-top: 5px;
     padding-bottom: 10px;
-}
-
-
-.tabs-component {
-    margin: 1em 0;
-}
-
-.tabs-component-tabs {
-    border: solid 1px #ddd;
-    border-radius: 6px;
-    margin-bottom: 5px;
-}
-
-@media (min-width: 700px) {
-    .tabs-component-tabs {
-        border: 0;
-        align-items: stretch;
-        display: flex;
-        justify-content: flex-start;
-        margin-bottom: -1px;
-    }
-}
-
-.tabs-component-tab {
-    color: #999;
-    font-size: 14px;
-    font-weight: 600;
-    margin-right: 0;
-    list-style: none;
-}
-
-.tabs-component-tab:not(:last-child) {
-    border-bottom: dotted 1px #ddd;
-}
-
-.tabs-component-tab:hover {
-    color: #666;
-}
-
-.tabs-component-tab.is-active {
-    color: #000;
-}
-
-.tabs-component-tab.is-disabled * {
-    color: #cdcdcd;
-    cursor: not-allowed !important;
-}
-
-@media (min-width: 700px) {
-    .tabs-component-tab {
-        background-color: #fff;
-        border: solid 1px #ddd;
-        border-radius: 3px 3px 0 0;
-        margin-right: .5em;
-        transform: translateY(2px);
-        transition: transform .3s ease;
-    }
-
-    .tabs-component-tab.is-active {
-        border-bottom: solid 1px #fff;
-        z-index: 2;
-        transform: translateY(0);
-    }
-}
-
-.tabs-component-tab-a {
-    align-items: center;
-    color: inherit;
-    display: flex;
-    padding: .75em 1em;
-    text-decoration: none;
-}
-
-.tabs-component-panels {
-    padding: 1em 0;
-    margin-top: -22px;
-}
-
-@media (min-width: 700px) {
-    .tabs-component-panels {
-        border-top-left-radius: 0;
-        background-color: #fff;
-        border: solid 1px #ddd;
-        border-radius: 0 6px 6px 6px;
-        box-shadow: 0 0 10px rgba(0, 0, 0, .05);
-        padding: 4em 2em;
-        padding-top: 2em;
-        padding-bottom: 2em;
-        margin-top: -22px;
-    }
 }
 </style>
 <i18n>
@@ -424,11 +233,13 @@ export default {
             "save": "Save",
             "save_label": "Save the changes made in this form."
         },
-        "restored_from_database": "Settings restored from database",
-        "updated": "Settings updated",
         "show_category": "Show this category",
         "show_dynamic_average": "Show the average of selected fields",
-        "only_show_dynamic_average": "Only show dynamic average"
+        "only_show_dynamic_average": "Only show dynamic average",
+        "settings": {
+            "restored_from_database": "Settings restored from database",
+            "updated": "Settings updated"
+        }
     },
     "nl": {
         "check": "Selecteer alle",
@@ -442,11 +253,13 @@ export default {
             "save": "Opslaan",
             "save_label": "Sla de wijzigingen in de zichtbare meetwaarden op."
         },
-        "restored_from_database": "Zichtbare meetwaarden zijn teruggezet naar de waardes in de database",
-        "updated": "Zichtbare meetwaarden opgeslagen",
         "show_category": "Toon deze categorie",
         "show_dynamic_average": "Toon het gemiddelde van de geselecteerde velden",
-        "only_show_dynamic_average": "Toon alleen het dynamisch berekende gemiddelde"
+        "only_show_dynamic_average": "Toon alleen het dynamisch berekende gemiddelde",
+        "settings": {
+            "restored_from_database": "Zichtbare meetwaarden zijn teruggezet naar de waardes in de database",
+            "updated": "Zichtbare meetwaarden opgeslagen"
+        }
     }
 }
 </i18n>

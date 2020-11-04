@@ -596,9 +596,7 @@ export default {
                         category.fields.forEach((field) => {
                             preferred_fields.push(field.name);
                         });
-                        category.additional_fields.forEach((field) => {
-                            preferred_fields.push(field.name);
-                        });
+
 
                     });
 
@@ -612,9 +610,7 @@ export default {
                                 subcategory.fields.forEach((field) => {
                                     preferred_fields.push(field.name);
                                 });
-                                subcategory.additional_fields.forEach((field) => {
-                                    preferred_fields.push(field.name);
-                                });
+
                             });
                         }
                     });

@@ -60,6 +60,20 @@
         </div>
 
 
+        <div class="block fullwidth do-not-print">
+            <h2>Tabs</h2>
+
+                <b-tabs>
+                    <b-tab title="Tab 1" active>
+                        <b-card-text>Tab contents 1</b-card-text>
+                    </b-tab>
+                    <b-tab title="Tab 2">
+                        Tab contents 2
+                    </b-tab>
+                </b-tabs>
+
+        </div>
+
     </div>
 </template>
 <script>
