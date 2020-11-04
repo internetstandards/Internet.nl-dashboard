@@ -320,6 +320,7 @@ export default {
             this.accordinate();
         });
     },
+
     // common issue that debounce does not work on a watch.
     // todo: there is probably a vue thing that is smaller than lodash that can debounce.
     // https://stackoverflow.com/questions/47172952/vuejs-2-debounce-not-working-on-a-watch-option

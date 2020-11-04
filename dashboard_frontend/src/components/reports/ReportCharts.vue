@@ -83,12 +83,9 @@
                                 <percentage-bar-chart
                                     :title="graph_bar_chart_title"
                                     :translation_key="'charts.adoption_bar_chart'"
-                                    :color_scheme="color_scheme"
                                     :chart_data="compare_charts"
                                     :accessibility_text="$t('charts.adoption_bar_chart.accessibility_text')"
                                     :show_dynamic_average="issue_filters[scan_form.name].show_dynamic_average"
-                                    :only_show_dynamic_average="false"
-                                    :trigger_rerender_when_this_changes="locale"
                                     :axis="visible_fields_from_scan_form(scan_form)">
                                 </percentage-bar-chart>
                             </div>
@@ -96,78 +93,54 @@
 
                         <div v-for="category in scan_form.categories" :key="category.key">
                             <template v-if="category_is_visible(category.key)">
-                                <div class="testresult" style="page-break-inside: avoid;"
+                                <div style="page-break-inside: avoid;"
                                      v-if="visible_fields_from_categories(category).length > 0">
-                                    <h3 class="panel-title">
-                                        <a href="" aria-expanded="false">
-                                            <span class="visuallyhidden">-:</span>
-                                            {{ category.label }}
-                                            <span class="pre-icon visuallyhidden"></span>
-                                            <span class="icon"><img
-                                                src="/static/images/vendor/internet_nl/push-open.png"
-                                                alt=""></span>
-                                        </a>
-                                    </h3>
-                                    <div class="panel-content">
-                                        <div style="overflow: auto; width: 100%">
-                                            <div class="chart-container"
-                                                 style="position: relative; height:500px; width:100%; min-width: 950px;">
-                                                <percentage-bar-chart
-                                                    :title="graph_bar_chart_title"
-                                                    :translation_key="'charts.adoption_bar_chart'"
-                                                    :color_scheme="color_scheme"
-                                                    :chart_data="compare_charts"
-                                                    :accessibility_text="$t('charts.adoption_bar_chart.accessibility_text')"
-                                                    :show_dynamic_average="issue_filters[category.key].show_dynamic_average"
-                                                    :only_show_dynamic_average="false"
-                                                    :field_name_to_category_names="field_name_to_category_names"
-                                                    :axis="visible_fields_from_categories(category)">
-                                                </percentage-bar-chart>
-                                            </div>
+
+                                    <chart_collapse_panel :title="category.label" :level="'h2'">
+                                        <div slot="content">
+                                            <percentage-bar-chart
+                                                style="height: 500px;"
+                                                :title="graph_bar_chart_title"
+                                                :translation_key="'charts.adoption_bar_chart'"
+                                                :chart_data="compare_charts"
+                                                :accessibility_text="$t('charts.adoption_bar_chart.accessibility_text')"
+                                                :show_dynamic_average="issue_filters[category.key].show_dynamic_average"
+                                                :field_name_to_category_names="field_name_to_category_names"
+                                                :axis="visible_fields_from_categories(category)">
+                                            </percentage-bar-chart>
                                         </div>
-                                    </div>
+                                    </chart_collapse_panel>
                                 </div>
 
                                 <div v-for="subcategory in category.categories" :key="subcategory.key">
                                     <!-- Visibility depends on parent category, the labels themselves cannot yet be filtered for visibility. -->
-                                    <div class="testresult" style="page-break-inside: avoid;"
+                                    <div style="page-break-inside: avoid;"
                                          v-if="fields_from_self(subcategory).length > 0">
-                                        <h4 class="panel-title">
-                                            <a href="" aria-expanded="false">
-                                                <span class="visuallyhidden">-:</span>
-                                                {{ subcategory.label }}
-                                                <span class="pre-icon visuallyhidden"></span>
-                                                <span class="icon"><img
-                                                    src="/static/images/vendor/internet_nl/push-open.png" alt=""></span>
-                                            </a>
-                                        </h4>
-                                        <div class="panel-content">
-                                            <div style="overflow: auto; width: 100%">
-                                                <div class="chart-container"
-                                                     style="position: relative; height:500px; width:100%; min-width: 950px;">
-                                                    <percentage-bar-chart
-                                                        :title="graph_bar_chart_title"
-                                                        :translation_key="'charts.adoption_bar_chart'"
-                                                        :color_scheme="color_scheme"
-                                                        :chart_data="compare_charts"
-                                                        :accessibility_text="$t('charts.adoption_bar_chart.accessibility_text')"
-                                                        :show_dynamic_average="issue_filters[category.key].show_dynamic_average"
-                                                        :only_show_dynamic_average="false"
-                                                        :field_name_to_category_names="field_name_to_category_names"
-                                                        :axis="fields_from_self(subcategory)">
-                                                    </percentage-bar-chart>
-                                                </div>
+
+                                        <chart_collapse_panel :title="subcategory.label" :level="'h3'">
+                                            <div slot="content">
+                                                <percentage-bar-chart
+                                                    style="height: 500px;"
+                                                    :title="graph_bar_chart_title"
+                                                    :translation_key="'charts.adoption_bar_chart'"
+                                                    :chart_data="compare_charts"
+                                                    :accessibility_text="$t('charts.adoption_bar_chart.accessibility_text')"
+                                                    :show_dynamic_average="issue_filters[category.key].show_dynamic_average"
+                                                    :field_name_to_category_names="field_name_to_category_names"
+                                                    :axis="fields_from_self(subcategory)">
+                                                </percentage-bar-chart>
                                             </div>
-                                            <!-- Special graph for Forum standardisation, that cannot have the items disabled -->
-                                            <div style="overflow: auto; width: 100%"
-                                                 v-if="['category_mail_forum_standardisation_magazine', 'category_web_forum_standardisation_magazine'].includes(subcategory.key)">
-                                                <p>{{ $t("chart_info.magazine.intro") }}</p>
-                                                <div class="chart-container"
-                                                     style="position: relative; height:500px; width:100%; min-width: 950px;">
+                                        </chart_collapse_panel>
+
+                                        <!-- Special graph for Forum standardisation, that cannot have the items disabled -->
+                                        <template
+                                            v-if="['category_mail_forum_standardisation_magazine', 'category_web_forum_standardisation_magazine'].includes(subcategory.key)">
+                                            <chart_collapse_panel :title="subcategory.label" :level="'h3'">
+                                                <div slot="content">
                                                     <percentage-bar-chart
+                                                        style="height: 500px;"
                                                         :title="graph_bar_chart_title"
                                                         :translation_key="'charts.adoption_bar_chart'"
-                                                        :color_scheme="color_scheme"
                                                         :chart_data="compare_charts"
                                                         :accessibility_text="$t('charts.adoption_bar_chart.accessibility_text')"
                                                         :show_dynamic_average="true"
@@ -176,14 +149,13 @@
                                                         :axis="fields_from_self_and_do_not_filter(subcategory)">
                                                     </percentage-bar-chart>
                                                 </div>
-                                            </div>
-                                        </div>
+                                            </chart_collapse_panel>
+                                        </template>
+
                                     </div>
                                 </div>
-
                             </template>
                         </div>
-
                     </template>
                 </div>
             </div>
@@ -204,13 +176,12 @@
                             <div class="chart-container"
                                  style="position: relative; height:500px; width:100%; min-width: 950px;">
                                 <cumulative-percentage-bar-chart
+                                    style="height: 500px"
                                     :title="graph_cumulative_bar_chart_title"
                                     :translation_key="'charts.adoption_bar_chart'"
-                                    :color_scheme="color_scheme"
                                     :chart_data="compare_charts"
                                     :accessibility_text="$t('charts.cumulative_adoption_bar_chart.accessibility_text')"
                                     :show_dynamic_average="issue_filters[scan_form.name].show_dynamic_average"
-                                    :only_show_dynamic_average="false"
                                     :axis="visible_fields_from_scan_form(scan_form)">
                                 </cumulative-percentage-bar-chart>
                             </div>
@@ -218,80 +189,60 @@
 
                         <div v-for="category in scan_form.categories" :key="category.key">
                             <template v-if="category_is_visible(category.key)">
-                                <div class="testresult" style="page-break-inside: avoid;"
+                                <div style="page-break-inside: avoid;"
                                      v-if="visible_fields_from_categories(category).length > 0">
-                                    <h3 class="panel-title">
-                                        <a href="" aria-expanded="false">
-                                            <span class="visuallyhidden">-:</span>
-                                            {{ category.label }}
-                                            <span class="pre-icon visuallyhidden"></span>
-                                            <span class="icon"><img
-                                                src="/static/images/vendor/internet_nl/push-open.png"
-                                                alt=""></span>
-                                        </a>
-                                    </h3>
-                                    <div class="panel-content">
-                                        <div style="overflow: auto; width: 100%">
-                                            <div class="chart-container"
-                                                 style="position: relative; height:500px; width:100%; min-width: 950px;">
-                                                <cumulative-percentage-bar-chart
-                                                    :title="graph_cumulative_bar_chart_title"
-                                                    :translation_key="'charts.adoption_bar_chart'"
-                                                    :color_scheme="color_scheme"
-                                                    :chart_data="compare_charts"
-                                                    :accessibility_text="$t('charts.cumulative_adoption_bar_chart.accessibility_text')"
-                                                    :show_dynamic_average="issue_filters[category.key].show_dynamic_average"
-                                                    :only_show_dynamic_average="false"
-                                                    :field_name_to_category_names="field_name_to_category_names"
-                                                    :axis="visible_fields_from_categories(category)">
-                                                </cumulative-percentage-bar-chart>
-                                            </div>
+
+
+                                    <chart_collapse_panel :title="category.label" :level="'h2'">
+                                        <div slot="content">
+                                            <cumulative-percentage-bar-chart
+                                                style="height: 500px"
+                                                :title="graph_cumulative_bar_chart_title"
+                                                :translation_key="'charts.adoption_bar_chart'"
+                                                :chart_data="compare_charts"
+                                                :accessibility_text="$t('charts.cumulative_adoption_bar_chart.accessibility_text')"
+                                                :show_dynamic_average="issue_filters[category.key].show_dynamic_average"
+                                                :field_name_to_category_names="field_name_to_category_names"
+                                                :axis="visible_fields_from_categories(category)">
+                                            </cumulative-percentage-bar-chart>
                                         </div>
-                                    </div>
+                                    </chart_collapse_panel>
+
                                 </div>
 
                                 <div v-for="subcategory in category.categories" :key="subcategory.label">
                                     <!-- Visibility depends on parent category, the labels themselves cannot yet be filtered for visibility. -->
-                                    <div class="testresult" style="page-break-inside: avoid;"
+                                    <div style="page-break-inside: avoid;"
                                          v-if="fields_from_self(subcategory).length > 0">
-                                        <h4 class="panel-title">
-                                            <a href="" aria-expanded="false">
-                                                <span class="visuallyhidden">-:</span>
-                                                {{ subcategory.label }}
-                                                <span class="pre-icon visuallyhidden"></span>
-                                                <span class="icon"><img
-                                                    src="/static/images/vendor/internet_nl/push-open.png" alt=""></span>
-                                            </a>
-                                        </h4>
-                                        <div class="panel-content">
-                                            <div style="overflow: auto; width: 100%">
-                                                <div class="chart-container"
-                                                     style="position: relative; height:500px; width:100%; min-width: 950px;">
-                                                    <cumulative-percentage-bar-chart
-                                                        :title="graph_cumulative_bar_chart_title"
-                                                        :translation_key="'charts.adoption_bar_chart'"
-                                                        :color_scheme="color_scheme"
-                                                        :chart_data="compare_charts"
-                                                        :accessibility_text="$t('charts.adoption_bar_chart.accessibility_text')"
-                                                        :show_dynamic_average="issue_filters[subcategory.key].show_dynamic_average"
-                                                        :only_show_dynamic_average="false"
-                                                        :field_name_to_category_names="field_name_to_category_names"
-                                                        :axis="fields_from_self(subcategory)">
-                                                    </cumulative-percentage-bar-chart>
-                                                </div>
+
+
+                                        <chart_collapse_panel :title="subcategory.label" :level="'h3'">
+                                            <div slot="content">
+                                                <cumulative-percentage-bar-chart
+                                                    style="height: 500px"
+                                                    :title="graph_cumulative_bar_chart_title"
+                                                    :translation_key="'charts.adoption_bar_chart'"
+                                                    :chart_data="compare_charts"
+                                                    :accessibility_text="$t('charts.adoption_bar_chart.accessibility_text')"
+                                                    :show_dynamic_average="issue_filters[subcategory.key].show_dynamic_average"
+                                                    :field_name_to_category_names="field_name_to_category_names"
+                                                    :axis="fields_from_self(subcategory)">
+                                                </cumulative-percentage-bar-chart>
                                             </div>
-                                            <!-- Special graph for Forum standardisation, that cannot have the items disabled -->
-                                            <div style="overflow: auto; width: 100%"
-                                                 v-if="['category_mail_forum_standardisation_magazine', 'category_web_forum_standardisation_magazine'].includes(subcategory.key)">
-                                                <p>This shows the average for Forum Standardisation, it is not possible
-                                                    to
-                                                    show the average or to select what fields should be visible.</p>
-                                                <div class="chart-container"
-                                                     style="position: relative; height:500px; width:100%; min-width: 950px;">
+                                        </chart_collapse_panel>
+
+
+                                        <!-- Special graph for Forum standardisation, that cannot have the items disabled -->
+                                        <template
+                                            v-if="['category_mail_forum_standardisation_magazine', 'category_web_forum_standardisation_magazine'].includes(subcategory.key)">
+                                            <chart_collapse_panel :title="'This shows the average for Forum Standardisation, it is not possible\n'+
+'                                                to\n'+
+'                                                show the average or to select what fields should be visible.'" :level="'h3'">
+                                                <div slot="content">
                                                     <cumulative-percentage-bar-chart
+                                                        style="height: 500px"
                                                         :title="graph_cumulative_bar_chart_title"
                                                         :translation_key="'charts.adoption_bar_chart'"
-                                                        :color_scheme="color_scheme"
                                                         :chart_data="compare_charts"
                                                         :accessibility_text="$t('charts.adoption_bar_chart.accessibility_text')"
                                                         :show_dynamic_average="true"
@@ -300,22 +251,19 @@
                                                         :axis="fields_from_self_and_do_not_filter(subcategory)">
                                                     </cumulative-percentage-bar-chart>
                                                 </div>
-                                            </div>
-                                        </div>
+                                            </chart_collapse_panel>
+                                        </template>
                                     </div>
                                 </div>
-
-
                             </template>
                         </div>
-
                     </template>
                 </div>
             </div>
         </div>
-
     </div>
 </template>
+
 <script>
 
 import pattern from 'patternomaly'
@@ -326,12 +274,14 @@ import field_translations from './../field_translations'
 import CumulativePercentageBarChart from './../charts/cumulative-percentage-bar-chart'
 import LineChart from './../charts/line-chart'
 import PercentageBarChart from './../charts/percentage-bar-chart'
+import chart_collapse_panel from './../chart_collapse_panel'
 
 export default {
     components: {
         'cumulative-percentage-bar-chart': CumulativePercentageBarChart,
         'line-chart': LineChart,
-        'percentage-bar-chart': PercentageBarChart
+        'percentage-bar-chart': PercentageBarChart,
+        'chart_collapse_panel': chart_collapse_panel,
     },
     i18n: {
         sharedMessages: field_translations,
@@ -451,8 +401,8 @@ export default {
             });
 
             let returned_fields = [];
-            for (let i = 0; i < fields.length; i++) {
 
+            for (let i = 0; i < fields.length; i++) {
                 if (this.issue_filters[fields[i]].visible)
                     returned_fields.push(fields[i])
             }

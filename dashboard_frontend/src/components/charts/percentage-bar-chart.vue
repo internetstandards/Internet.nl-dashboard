@@ -201,7 +201,6 @@ export default {
                         stack: this.chart_data[i].id,
                         data: chartdata,
                         backgroundColor: background_colors[shown_value],
-                        borderColor: this.color_scheme.incremental[i].border,
                         borderWidth: 0,
                         lineTension: 0,
                         hidden: shown_value === "pct_high",

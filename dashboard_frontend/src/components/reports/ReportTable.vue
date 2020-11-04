@@ -90,7 +90,7 @@
                 <thead class="sticky_labels">
 
                 <tr class="sticky_labels">
-                    <th style="width: 75px; min-width: 75px; border: 0; background-color: white;"
+                    <th style="width: 78px; min-width: 78px; border: 0; background-color: white;"
                         class="sticky-header">
                         <div class="rotate">
                                     <span @click="sortBy('score')" class="arrow"
@@ -203,7 +203,7 @@
                             </td>
                         </template>
                         <template v-else>
-                            <td style="width: 75px; min-width: 75px;">
+                            <td style="width: 78px; min-width: 78px;">
                                 <a class='direct_link_to_report'
                                    :href='url.endpoints[0].ratings_by_type.internet_nl_score.internet_nl_url'
                                    target="_blank">
