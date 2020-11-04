@@ -1,14 +1,17 @@
+// Note that there is a little hate going on with multiple vue instances.
+// See here: https://github.com/LinusBorg/portal-vue/issues/201#issuecomment-484452281
+// This explains why there are some extra definitions in the bundler thingies.
 import Vue from 'vue'
-import VueRouter from 'vue-router'
 import Vuex from 'vuex'
+import createPersistedState from "vuex-persistedstate";
+import VueRouter from 'vue-router'
 import VueI18n from 'vue-i18n'
 import vSelect from 'vue-select'
 import {Tabs, Tab} from 'vue-tabs-component';
-import createPersistedState from "vuex-persistedstate";
-import autorefresh from './components/autorefresh.vue'
-import loading from './components/loading.vue'
-import modal from './components/modal.vue'
-import server_response from './components/server-response.vue'
+import autorefresh from './components/autorefresh'
+import loading from './components/loading'
+import modal from './components/modal'
+import server_response from './components/server-response'
 import Login from './components/Login'
 import DomainListManager from './components/domains/DomainListManager'
 import SpreadsheetUpload from './components/domains/SpreadsheetUpload'
@@ -19,17 +22,22 @@ import InstantAddAccount from './components/admin/InstantAddAccount'
 import Account from './components/account/Account'
 import Demo from './components/Demo'
 import Unsubscribe from './components/mail/Unsubscribe'
-import App from './App.vue'
+import App from './App'
+import Beta from './components/beta'
 // https://stackoverflow.com/questions/50925793/proper-way-of-adding-css-file-in-vue-js-application
 import './assets/css/styles.scss';
+import PortalVue from 'portal-vue'
+import { BootstrapVue } from 'bootstrap-vue'
 
 Vue.component('v-select', vSelect);
 Vue.component('tabs', Tabs);
 Vue.component('tab', Tab);
+Vue.use(PortalVue)
 Vue.use(VueI18n)
 Vue.use(VueRouter)
 Vue.use(require('vue-moment'));
 Vue.use(Vuex);
+Vue.use(BootstrapVue)
 
 Vue.component('autorefresh', autorefresh)
 Vue.component('loading', loading)
@@ -155,6 +163,7 @@ const routes = [
     {path: '/unsubscribe', component: Unsubscribe, meta: {title: 'Internet.nl Dashboard / Unsubscribe'}},
     {path: '/profile', component: Account, meta: {title: 'Internet.nl Dashboard / Account'}},
     {path: '/account', component: Account, meta: {title: 'Internet.nl Dashboard / Account'}},
+    {path: '/beta', component: Beta, meta: {title: 'Internet.nl Dashboard / Beta'}},
 ];
 
 const router = new VueRouter({
