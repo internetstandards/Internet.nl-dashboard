@@ -35,7 +35,7 @@ p {
                 <span v-if="!message">{{ response.message }}</span>
                 <span v-if="message">{{ message }}</span>
             </p>
-            <span><small>{{ $t('at') }}{{ humanize_date(response.timestamp) }}.</small></span>
+            <span><small>{{ $t('at') }}{{ humanize_date(response.timestamp) }} ({{ time_ago }}).</small></span>
         </div>
         <div v-if="response.success" class="server-response-success hideMe">
             <h2>✅ {{ $t('success') }}</h2>
@@ -43,12 +43,35 @@ p {
                 <span v-if="!message">{{ response.message }}</span>
                 <span v-if="message">{{ message }}</span>
             </p>
-            <span><small>{{ $t('at') }} {{ humanize_date(response.timestamp) }}.</small></span>
+            <span><small>{{ $t('at') }} {{ humanize_date(response.timestamp) }} ({{ time_ago }}).</small></span>
         </div>
     </div>
 </template>
 <script>
 export default {
+    // make sure the 'humanize_relative_date' is somewhat accurate, when the screen is open for a long while
+    created: function () {
+        this.timer = setInterval(this.update, 10000)
+    },
+    mounted: function(){
+        this.update();
+    },
+    beforeDestroy () {
+        clearInterval(this.timer)
+    },
+    methods: {
+        update: function (){
+            if (this.response !== undefined) {
+                this.time_ago = this.humanize_relative_date(this.response.timestamp)
+            }
+        }
+    },
+    data:  function () {
+        return {
+            timer: '',
+            time_ago: '',
+        }
+    },
     props: {
         response: {
             type: Object,
