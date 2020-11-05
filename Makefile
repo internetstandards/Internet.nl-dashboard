@@ -168,15 +168,12 @@ test_deterministic: | ${VIRTUAL_ENV}
 pull_image:
 	# optimize build by caching previously build image
 	-docker pull ${docker_image_name}
-	$(MAKE) -C dashboard_frontend $@
 
 push_image:
 	docker push ${docker_image_name}
-	$(MAKE) -C dashboard_frontend $@
 
 image:  ## Create Docker images
 	docker build -t ${docker_image_name} .
-	$(MAKE) -C dashboard_frontend $@
 
 docsa: ## Generate documentation in various formats
 	# Remove existing documentation folder
