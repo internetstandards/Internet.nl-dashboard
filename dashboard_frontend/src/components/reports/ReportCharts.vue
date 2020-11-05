@@ -266,11 +266,7 @@
 </template>
 
 <script>
-
-import pattern from 'patternomaly'
-
 import field_translations from './../field_translations'
-
 
 import CumulativePercentageBarChart from './../charts/cumulative-percentage-bar-chart'
 import LineChart from './../charts/line-chart'
@@ -355,7 +351,8 @@ export default {
                 let my_color = this.possible_chart_colors.shift();
                 this.possible_chart_colors.push(my_color);
 
-                colors.push({background: pattern.draw(my_pattern, my_color), border: my_color})
+                // this might be needed in the future pattern.draw(my_pattern, my_color)
+                colors.push({background: my_color, border: my_color})
             }
 
             return colors;
