@@ -237,14 +237,17 @@ def get_scan_status_of_list(account: Account, list_id: int) -> Dict[str, Any]:
     if not urllist:
         return {}
 
-    data = {}
-    data['last_scan_id'] = None if not len(urllist.last_scan) else urllist.last_scan[0].scan.id
-    data['last_scan_state'] = None if not len(urllist.last_scan) else urllist.last_scan[0].state
-    data['last_scan_finished'] = None if not len(urllist.last_scan) else urllist.last_scan[0].state in [
-        "finished", "cancelled"]
-    data['last_report_id'] = None if not len(urllist.last_report) else urllist.last_report[0].id
-    data['last_report_date'] = None if not len(urllist.last_report) else urllist.last_report[0].at_when
-    data['scan_now_available'] = urllist.is_scan_now_available()
+    data = {'last_scan_id': None, 'last_scan_state': None, 'last_scan_finished': None, 'last_report_id': None,
+            'last_report_date': None, 'scan_now_available': urllist.is_scan_now_available()}
+
+    if len(urllist.last_scan):
+        data['last_scan_id'] = urllist.last_scan[0].scan.id
+        data['last_scan_state'] = urllist.last_scan[0].state
+        data['last_scan_finished'] = urllist.last_scan[0].state in ["finished", "cancelled"]
+
+    if len(urllist.last_report):
+        data['last_report_id'] = urllist.last_report[0].id
+        data['last_report_date'] = urllist.last_report[0].at_when
 
     return data
 
@@ -522,37 +525,40 @@ def get_urllist_content(account: Account, urllist_id: int) -> dict:
     return response
 
 
-def retrieve_possible_urls_from_unfiltered_input(garbage: str) -> List[str]:
+def retrieve_possible_urls_from_unfiltered_input(unfiltered_input: str) -> Tuple[List[str], int]:
     # Protocols are irrelevant:
-    garbage = garbage.replace("http://", "")
-    garbage = garbage.replace("https://", "")
+    unfiltered_input = unfiltered_input.replace("http://", "")
+    unfiltered_input = unfiltered_input.replace("https://", "")
 
     # Allow CSV, newlines, tabs and space-split input
-    garbage = garbage.replace(",", " ")
-    garbage = garbage.replace("\n", " ")
-    garbage = garbage.replace("\t", " ")
+    unfiltered_input = unfiltered_input.replace(",", " ")
+    unfiltered_input = unfiltered_input.replace("\n", " ")
+    unfiltered_input = unfiltered_input.replace("\t", " ")
 
     # Split also removes double spaces etc
-    garbage = garbage.split(" ")
+    unfiltered_input = unfiltered_input.split(" ")
 
     # now remove _all_ whitespace characters
-    garbage = [re.sub(r"\s+", " ", u) for u in garbage]
+    unfiltered_input = [re.sub(r"\s+", " ", u) for u in unfiltered_input]
 
     # remove port numbers and paths
-    garbage = [re.sub(r":[^\s]*", "", u) for u in garbage]
+    unfiltered_input = [re.sub(r":[^\s]*", "", u) for u in unfiltered_input]
 
     # remove paths, directories etc
-    garbage = [re.sub(r"/[^\s]*", "", u) for u in garbage]
-
-    # make list unique
-    garbage = list(set(garbage))
+    unfiltered_input = [re.sub(r"/[^\s]*", "", u) for u in unfiltered_input]
 
     # Remove empty values
-    while "" in garbage:
-        garbage.remove("")
+    while "" in unfiltered_input:
+        unfiltered_input.remove("")
+
+    # make list unique
+    total_non_unique_items = len(unfiltered_input)
+    unfiltered_input = list(set(unfiltered_input))
+    total_unique_items = len(unfiltered_input)
+    duplicates_removed = total_non_unique_items - total_unique_items
 
     # make sure the list is in alphabetical order, which is nice for testability.
-    return sorted(garbage)
+    return sorted(unfiltered_input), duplicates_removed
 
 
 def save_urllist_content(account: Account, user_input: Dict[str, Any]) -> Dict:
@@ -576,9 +582,9 @@ def save_urllist_content(account: Account, user_input: Dict[str, Any]) -> Dict:
     urllist = UrlList.objects.all().filter(account=account, id=list_id, is_deleted=False, ).first()
 
     if not urllist:
-        return operation_response(error=True, message="List does not exist")
+        return operation_response(error=True, message="add_domains_list_does_not_exist")
 
-    urls = retrieve_possible_urls_from_unfiltered_input(urls)
+    urls, duplicates_removed = retrieve_possible_urls_from_unfiltered_input(urls)
     cleaned_urls = clean_urls(urls)  # type: ignore
 
     if cleaned_urls['correct']:
@@ -586,11 +592,14 @@ def save_urllist_content(account: Account, user_input: Dict[str, Any]) -> Dict:
     else:
         counters = {'added_to_list': 0, 'already_in_list': 0}
 
-    result = {'incorrect_urls': cleaned_urls['incorrect'],
-              'added_to_list': counters['added_to_list'],
-              'already_in_list': counters['already_in_list']}
+    result = {
+        'incorrect_urls': cleaned_urls['incorrect'],
+        'added_to_list': counters['added_to_list'],
+        'already_in_list': counters['already_in_list'],
+        'duplicates_removed': duplicates_removed
+    }
 
-    return operation_response(success=True, message="Valid urls have been added", data=result)
+    return operation_response(success=True, message="add_domains_valid_urls_added", data=result)
 
 
 def save_urllist_content_by_name(account: Account, urllist_name: str, urls: List[str]) -> dict:

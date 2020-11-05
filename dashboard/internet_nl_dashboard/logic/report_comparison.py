@@ -362,7 +362,7 @@ def determine_changes_in_ratings(new_ratings_data, old_ratings_data):
         # 'internet_nl_mail_auth_dmarc_ext_destination',
     ]
     neutral_test_result_values = \
-        ["unknown", "not_applicable", "not_testable", 'no_mx', 'unreachable', 'error_in_test', 'error']
+        ["unknown", "not_applicable", "not_testable", 'no_mx', 'unreachable', 'error_in_test', 'error', 'not_tested']
 
     # prepare result
     changes = {

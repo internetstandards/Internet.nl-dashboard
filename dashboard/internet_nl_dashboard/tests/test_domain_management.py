@@ -13,9 +13,11 @@ from dashboard.internet_nl_dashboard.models import Account
 
 
 def test_retrieve_urls_from_unfiltered_input() -> None:
-    output = retrieve_possible_urls_from_unfiltered_input(
-        "https://www.apple.com:443/nl/iphone-11/, bing.com, http://nu.nl")
+    output, duplicates_removed = retrieve_possible_urls_from_unfiltered_input(
+        "https://www.apple.com:443/nl/iphone-11/, bing.com, http://nu.nl, nu.nl")
     assert output == ['bing.com', 'nu.nl', 'www.apple.com']
+    # one nu.nl removed
+    assert duplicates_removed == 1
 
     # input contains multiple lines, whitespaces before and after the domains and some tabs mixed in.
 
@@ -29,7 +31,7 @@ def test_retrieve_urls_from_unfiltered_input() -> None:
     eskillsplatform.nl  ,        
     """  # noqa violates python coding standard on points E101 and W191. Needed for this test :)
 
-    output = retrieve_possible_urls_from_unfiltered_input(unsanitized_input)
+    output, duplicates_removed = retrieve_possible_urls_from_unfiltered_input(unsanitized_input)
     # Zero width space is also seen as a string, and filtered out as a possible domain. See test_clean_urls.
     assert output == [' ', ' ⠀ ', 'eskillsplatform.nl', 'stichtingmediawijzer.nl', '\u200b ']
 

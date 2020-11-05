@@ -130,7 +130,6 @@ urllist_report_content = {
         'internet_nl_web_appsecpriv_referrer_policy',
         'internet_nl_web_appsecpriv_x_content_type_options',
         'internet_nl_web_appsecpriv_x_frame_options',
-        'internet_nl_web_appsecpriv_x_xss_protection',
 
         'internet_nl_web_overall_score',
 

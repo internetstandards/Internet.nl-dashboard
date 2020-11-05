@@ -32,8 +32,8 @@ app = ${bin}/${app_name}
 $(shell test -z "$$PS1" || echo -e \nRun `make help` for available commands or use tab-completion.\n)
 
 pysrcdirs = ${app_name}/
-pysrc = $(shell find ${pysrcdirs} -name *.py)
-shsrc = $(shell find * ! -path vendor\* -name *.sh)
+pysrc = $(shell find ${pysrcdirs} -name *.py 2>/dev/null)
+shsrc = $(shell find * ! -path vendor\* -name *.sh 2>/dev/null)
 
 .PHONY: test check setup run fix autofix clean mrproper test_integration requirements requirements-dev
 
@@ -129,6 +129,9 @@ run: ${app}  ## run complete application stack (frontend, worker, broker)
 run-frontend: ${app}  ## only run frontend component
 	DEBUG=1 NETWORK_SUPPORTS_IPV6=1 ${env} ${app} runserver
 
+run-gui-development build-gui-staging build-gui-production:
+	build-gui-production; $(MAKE) $@
+
 app: ${app}  ## perform arbitrary app commands
 	## For example: make app cmd=migrate
 	# make app cmd="loaddata development"
@@ -163,12 +166,13 @@ test_deterministic: | ${VIRTUAL_ENV}
 	${env} /bin/bash tools/compare_differences.sh HEAD HEAD tools/show_ratings.sh testdata
 
 pull_image:
-	docker pull ${docker_image_name}
+	# optimize build by caching previously build image
+	-docker pull ${docker_image_name}
 
 push_image:
 	docker push ${docker_image_name}
 
-image:  ## Create Docker image
+image:  ## Create Docker images
 	docker build -t ${docker_image_name} .
 
 docsa: ## Generate documentation in various formats

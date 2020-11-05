@@ -99,7 +99,6 @@ SANE_COLUMN_ORDER = {
 
             'internet_nl_web_appsecpriv_x_frame_options',
             'internet_nl_web_appsecpriv_x_content_type_options',
-            'internet_nl_web_appsecpriv_x_xss_protection',
             'internet_nl_web_appsecpriv_csp',
             'internet_nl_web_appsecpriv_referrer_policy',
         ],
