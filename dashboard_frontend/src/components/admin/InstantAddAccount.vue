@@ -5,15 +5,17 @@
         <p>{{ $t("intro") }}</p>
 
         <p>
+            <server-response :response="server_response"></server-response>
 
-        <server-response :response="server_response"></server-response>
+            {{ $t("username") }}:<br>
+            <b-form-input id="username" type="text" maxlength="120" v-model="username"
+                          :placeholder="$t('username')"></b-form-input>
 
-        {{ $t("username") }}:<br>
-        <input type="text" name="username" v-model="username">
-
-        {{ $t("password") }}:<br>
-        <input type="password" name="password" v-model="password">
-        <button type="button" class="save btn btn-lg btn-primary" @click="save_instant_account()">{{ $t("save") }}</button>
+            {{ $t("password") }}:<br>
+            <b-form-input id="password" type="password" maxlength="120" v-model="password"
+                          :placeholder="$t('password')"></b-form-input>
+            <br/><br/>
+            <button type="button" @click="save_instant_account()">{{ $t("save") }}</button>
         </p>
 
     </div>
@@ -33,8 +35,9 @@ export default {
 
             this.asynchronous_json_post(
                 `${this.$store.state.dashboard_endpoint}/data/powertools/save_instant_account/`, data, (server_response) => {
-                    if (server_response)
+                    if (server_response) {
                         this.server_response = server_response;
+                    }
                 }
             );
         },
