@@ -70,7 +70,7 @@ Vue Modal
     margin: 0 auto .5em;
     background: #fff;
     border: solid .3em #ffab4c;
-    font-family: 'robotobold', arial, sans-serif;
+    font-family: arial, sans-serif;
     font-weight: bold;
     font-size: 100%;
     border-radius: 18px;
@@ -94,7 +94,7 @@ Vue Modal
     margin: 0 auto .5em;
     background: #fff;
     border: solid .3em #878f96;
-    font-family: 'robotobold', arial, sans-serif;
+    font-family: arial, sans-serif;
     font-weight: bold;
     font-size: 100%;
     border-radius: 18px;
