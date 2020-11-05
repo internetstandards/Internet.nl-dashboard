@@ -28,10 +28,10 @@ p {
 }
 </style>
 <template>
-    <div role="alert">
+    <div>
         <div v-if="response.error" class="server-response-error">
             <h2>❌ {{ $t('error') }}</h2>
-            <p>
+            <p role="alert">
                 <span v-if="!message">{{ response.message }}</span>
                 <span v-if="message">{{ message }}</span>
             </p>
@@ -39,7 +39,7 @@ p {
         </div>
         <div v-if="response.success" class="server-response-success hideMe">
             <h2>✅ {{ $t('success') }}</h2>
-            <p>
+            <p role="alert">
                 <span v-if="!message">{{ response.message }}</span>
                 <span v-if="message">{{ message }}</span>
             </p>
@@ -50,8 +50,9 @@ p {
 <script>
 export default {
     // make sure the 'humanize_relative_date' is somewhat accurate, when the screen is open for a long while
+    // https://stackoverflow.com/questions/36572540/vue-js-auto-reload-refresh-data-with-timer
     created: function () {
-        this.timer = setInterval(this.update, 10000)
+        this.timer = setInterval(this.update, 30000)
     },
     mounted: function(){
         this.update();
