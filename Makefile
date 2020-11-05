@@ -133,9 +133,11 @@ run-gui-development:  ## only run the gui
 	# the extra -- is because of hell and fail. https://github.com/vuejs/vue-cli/issues/1528
 	cd dashboard_frontend; npm run serve -- --mode development
 
-build-gui:  ## only run the gui
-	# the extra -- is because of hell and fail. https://github.com/vuejs/vue-cli/issues/1528
-	cd dashboard_frontend; npm run build
+build-gui-staging:
+	cd dashboard_frontend; npm run build -- --mode staging
+
+build-gui-production:
+	cd dashboard_frontend; npm run build -- --mode production
 
 app: ${app}  ## perform arbitrary app commands
 	## For example: make app cmd=migrate
