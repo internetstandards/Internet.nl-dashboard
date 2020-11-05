@@ -24,47 +24,24 @@
 
             <template v-if="reports.length && !is_loading">
 
-                <div class="do-not-print testresult_without_icon" v-if="selected_report.length < 2">
-                    <h2 style="font-size: 1.0em;" class="panel-title">
-                        <a href="" aria-expanded="false">
-                            <span class="visuallyhidden">-:</span>
-                            {{ $t("download.title") }}
-                            <span class="pre-icon visuallyhidden"></span>
-                            <span class="icon"><img src="/static/images/vendor/internet_nl/push-open.png" alt=""></span>
-                        </a>
-                    </h2>
-                    <div class="panel-content">
+                <collapse-panel :title='$t("download.title") ' class="do-not-print" v-if="selected_report.length < 2">
+                    <div slot="content">
                         <p>{{ $t("download.intro") }}</p>
                         <ul style="list-style: disc !important; padding-left: 20px">
-                            <li><a :href="'/data/download-spreadsheet/' + reports[0].id + '/xlsx/'">{{
-                                    $t("download.xlsx")
-                                }}</a></li>
-                            <li><a :href="'/data/download-spreadsheet/' + reports[0].id + '/ods/'">{{
-                                    $t("download.ods")
-                                }}</a></li>
-                            <li><a :href="'/data/download-spreadsheet/' + reports[0].id + '/csv/'">{{
-                                    $t("download.csv")
-                                }}</a></li>
+                            <li><a :href="make_downloadlink(reports[0].id, 'xlsx')">{{ $t("download.xlsx") }}</a></li>
+                            <li><a :href="make_downloadlink(reports[0].id, 'ods')">{{ $t("download.ods") }}</a></li>
+                            <li><a :href="make_downloadlink(reports[0].id, 'csv')">{{ $t("download.csv") }}</a></li>
                         </ul>
                     </div>
-                </div>
+                </collapse-panel>
 
-                <div class="do-not-print testresult_without_icon">
-                    <h2 style="font-size: 1.0em;" class="panel-title">
-                        <a href="" aria-expanded="false">
-                            <span class="visuallyhidden">-:</span>
-                            {{ $t("settings.title") }}
-                            <span class="pre-icon visuallyhidden"></span>
-                            <span class="icon"><img src="/static/images/vendor/internet_nl/push-open.png" alt=""></span>
-                        </a>
-                    </h2>
-                    <div class="panel-content">
-                        <VisibleMetrics
-                            :scan_methods="scan_methods"
-                            :report_type="selected_report[0].type"
-                        ></VisibleMetrics>
+                <collapse-panel :title='$t("settings.title")' class="do-not-print">
+                    <div slot="content">
+                        <VisibleMetrics :scan_methods="scan_methods"
+                                        :report_type="selected_report[0].type"></VisibleMetrics>
                     </div>
-                </div>
+                </collapse-panel>
+
             </template>
 
         </div>
@@ -123,7 +100,8 @@
             </ReportCharts>
 
             <!-- The table is only displayed with up to two reports (the first as the source of the table, the second as a comparison). -->
-            <div v-if="original_urls !== undefined && selected_report.length < 3" class="block fullwidth" style="page-break-before: always;">
+            <div v-if="original_urls !== undefined && selected_report.length < 3" class="block fullwidth"
+                 style="page-break-before: always;">
 
                 <ReportTable
                     :differences_compared_to_current_list="differences_compared_to_current_list"
@@ -241,6 +219,7 @@ export default {
     mixins: [legacy_mixin],
     data: function () {
         return {
+
             is_loading: false,
 
             // Supporting multiple reports at the same time is hard to understand. Don't know how / if we can do
@@ -335,6 +314,11 @@ export default {
         }, 300)
     },
     methods: {
+
+        make_downloadlink: function (report_id, filetype) {
+            return `${this.$store.state.dashboard_endpoint}/data/download-spreadsheet/${report_id}/${filetype}/`
+        },
+
         load: function (report_id) {
             this.get_report_data(report_id);
         },

@@ -36,16 +36,8 @@
             </template>
         </p>
 
-        <div class="testresult_without_icon faq-report">
-            <h2 style="font-size: 1.0em;" class="panel-title">
-                <a href="" aria-expanded="false">
-                    <span class="visuallyhidden">-:</span>
-                    {{ $t("icon_legend.title") }}
-                    <span class="pre-icon visuallyhidden"></span>
-                    <span class="icon"><img src="/static/images/vendor/internet_nl/push-open.png" alt=""></span>
-                </a>
-            </h2>
-            <div class="panel-content">
+        <collapse-panel :title='$t("icon_legend.title")' class="do-not-print">
+            <div slot="content">
                 <h3>{{ $t("test_title") }}</h3>
                 <ul>
                     <li><span class="faq-test category_passed"><span
@@ -82,7 +74,7 @@
                         }}</span>{{ $t("icon_legend.subtest_error_in_test") }}</span></li>
                 </ul>
             </div>
-        </div>
+        </collapse-panel>
 
         <div class="sticky-table-container" style="position: relative; page-break-before: always;">
             <div id="horrible-chrome-td-sticky-white-background-fix"></div>
@@ -316,7 +308,7 @@ export default {
             // this.debounce(function() {this.methods.filter_urls(newValue);});
         },
     },
-    mounted: function(){
+    mounted: function () {
         // should be copied?
         this.filtered_urls = this.original_urls;
 
@@ -332,7 +324,7 @@ export default {
         },
         filter_urls(keyword) {
             // in case of filter reset, or initializiation of this value.
-            if (keyword === ""){
+            if (keyword === "") {
                 console.log("Removing filter");
                 this.filtered_urls = this.order_urls(this.original_urls)
                 return
@@ -1014,7 +1006,6 @@ div.rotate > span {
     "nl": {
         "score": "Score",
         "domain": "Domein",
-
         "report": {
             "title": "Rapport",
             "intro": "Deze tabel toont de details van het rapport. Het is mogelijk dit rapport te vergelijken met een vorig of ander rapport. Wanneer deze vergelijking wordt gemaakt, wordt bij de gegevens van het eerste rapport voortgangsindicatoren geplaats waar relevant. De domeinen van het tweede rapport worden alleen vergeleken, niet getoond.",

@@ -44,17 +44,9 @@ Fixed: when deleting a list, it is re-added to the list of lists when adding a n
                 <router-link tag="button" to="/domains/upload">📓 {{ $t("bulk_upload_link") }}</router-link>
             </p>
 
-            <div class="testresult_without_icon">
-                <h2 style="font-size: 1.0em;" class="panel-title">
-                    <a href="" aria-expanded="false">
-                        <span class="visuallyhidden">-:</span>
-                        {{ $t("icon_legend.title") }}
-                        <span class="pre-icon visuallyhidden"></span>
-                        <span class="icon"><img src="/static/images/vendor/internet_nl/push-open.png" alt=""></span>
-                    </a>
-                </h2>
-                <div class="panel-content">
-                    <p>{{ $t("icon_legend.intro") }}</p>
+            <collapse-panel :title='$t("icon_legend.title")'>
+                <div slot="content">
+                <p>{{ $t("icon_legend.intro") }}</p>
                     <ul>
                         <li>
                             <span role="img" :aria-label="$t('icons.can_connect')">🌍️</span>
@@ -69,7 +61,7 @@ Fixed: when deleting a list, it is re-added to the list of lists when adding a n
                         </li>
                     </ul>
                 </div>
-            </div>
+            </collapse-panel>
 
             <internet_nl_modal v-if="show_add_new" @close="stop_adding_new()">
                 <h3 slot="header">📚 {{ $t("new_list.add_new_list") }}</h3>

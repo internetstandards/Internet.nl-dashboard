@@ -22,6 +22,7 @@ import InstantAddAccount from './components/admin/InstantAddAccount'
 import Account from './components/account/Account'
 import Demo from './components/Demo'
 import Unsubscribe from './components/mail/Unsubscribe'
+import collapse_panel from './components/collapse_panel'
 import App from './App'
 import Beta from './components/beta'
 // https://stackoverflow.com/questions/50925793/proper-way-of-adding-css-file-in-vue-js-application
@@ -48,6 +49,7 @@ Vue.component('autorefresh', autorefresh)
 Vue.component('loading', loading)
 Vue.component('internet_nl_modal', internet_nl_modal)
 Vue.component('server-response', server_response)
+Vue.component('collapse-panel', collapse_panel)
 
 Vue.config.productionTip = false
 

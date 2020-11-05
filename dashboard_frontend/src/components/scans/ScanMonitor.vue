@@ -88,23 +88,9 @@ h4 {
                         }},<br>{{ humanize_relative_date(scan.started_on) }}</span><br>
                     <br>
 
-
-                    <div class="testresult" style="padding-left: 0px !important;">
-                        <h4 class="panel-title">
-                            <a href="" aria-expanded="false">
-                                <span class="visuallyhidden">-:</span>
-                                <span v-if="!['finished', 'cancelled'].includes(scan.state)">
-                                <img width="15" style="border-radius: 50%"
-                                     src="/static/images/vendor/internet_nl/probe-animation.gif">
-                                </span> &nbsp;
-                                {{ $t("scan history") }}
-                                <span class="pre-icon visuallyhidden"></span>
-                                <span class="icon">
-                                    <img src="/static/images/vendor/internet_nl/push-open.png" alt=""></span>
-                            </a>
-                        </h4>
-                        <div class="panel-content" style="font-size: 0.7em;">
-                            <ul>
+                    <collapse-panel :title='$t("scan history")'>
+                        <div slot="content">
+                            <ul style="font-size: 0.7em;">
                                 <li v-for="log_item in scan.log" :key="log_item.id">
                                     - {{ log_item.state }}, {{ humanize_relative_date(log_item.at_when) }}
                                 </li>
@@ -113,7 +99,8 @@ h4 {
                                 <button @click="start_stop_scan(scan)">{{ $t("stop_scan") }}</button>
                             </template>
                         </div>
-                    </div>
+                    </collapse-panel>
+
                     <br>
 
                     <template v-if="scan.status_url">
