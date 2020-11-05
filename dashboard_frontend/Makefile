@@ -1,5 +1,15 @@
 docker_image_name = internetstandards/dashboard-static
 
+all: lint test
+
+setup:
+
+lint:
+	# TODO
+
+test:
+	# TODO
+
 vue-cli=node_modules/.bin/vue-cli-service
 $(vue-cli):
 	npm install
