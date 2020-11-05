@@ -5,12 +5,12 @@ from django.http import JsonResponse
 from django.middleware.csrf import get_token
 
 from dashboard.internet_nl_dashboard.logic import operation_response
-from dashboard.internet_nl_dashboard.views import get_json_body, get_account, get_dashboarduser
+from dashboard.internet_nl_dashboard.views import get_json_body
 
 """
 Uses django sessions to keep users logged in, so no trickery with JWT is needed.
 This of course will _only_ work on the same machine. So you cannot access a remote installation by design.
-The login stuff will be as strong as django's stuff, which is acceptable. 
+The login stuff will be as strong as django's stuff, which is acceptable.
 """
 
 log = logging.getLogger(__package__)
@@ -104,4 +104,3 @@ def session_logout(request):
 
 def session_login(request):
     return JsonResponse(session_login_(request))
-

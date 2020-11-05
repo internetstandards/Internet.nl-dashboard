@@ -1,8 +1,10 @@
+import logging
+
 from django.contrib.auth.models import User
 from django.contrib.sessions.backends.file import SessionStore
 from django.http import HttpRequest, QueryDict
+
 from dashboard.internet_nl_dashboard.views.session import session_login_
-import logging
 
 log = logging.getLogger(__package__)
 
@@ -32,4 +34,3 @@ def test_session(db):
     response = session_login_(newrequest)
     log.debug(response)
     assert response['success'] is False
-

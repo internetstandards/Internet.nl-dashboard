@@ -1,9 +1,9 @@
 import os
 from collections import OrderedDict
 from datetime import timedelta
-from corsheaders.defaults import default_headers
 
 import sentry_sdk
+from corsheaders.defaults import default_headers
 from django.utils.translation import gettext_lazy as _
 from sentry_sdk.integrations.celery import CeleryIntegration
 from sentry_sdk.integrations.django import DjangoIntegration
@@ -496,12 +496,12 @@ CONSTANCE_CONFIG = {
         int
     ),
     'DASHBOARD_FRONTEND_URL': (
-      'https://dashboard.internet.nl',
-      'The frontend of the dashboard is split from the django application, as move to more easily develop the '
-      'frontend with modern techniques. Unfortunately autentication and second factor authentication are not '
-      'converted to a javascript only approach. A good second factor alternative has to be figured out before '
-      'we can move to a javascript-only frontend.',
-      str
+        'https://dashboard.internet.nl',
+        'The frontend of the dashboard is split from the django application, as move to more easily develop the '
+        'frontend with modern techniques. Unfortunately autentication and second factor authentication are not '
+        'converted to a javascript only approach. A good second factor alternative has to be figured out before '
+        'we can move to a javascript-only frontend.',
+        str
     ),
 
     'INTERNET_NL_API_USERNAME': (

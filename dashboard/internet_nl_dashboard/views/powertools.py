@@ -61,7 +61,7 @@ def set_account(request) -> HttpResponse:
         success=True,
         message=f"switched_account",
         data={'account_name': dashboard_user.account.name}
-        )
+    )
     )
 
 
