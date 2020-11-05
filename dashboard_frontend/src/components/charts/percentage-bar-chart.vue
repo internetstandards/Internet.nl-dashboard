@@ -69,7 +69,9 @@ export default {
 
                     },
                     responsive: true,
-                    maintainAspectRatio: false,
+                    // setting this to false will not show the charts in collapse panels. See
+                    // https://github.com/chartjs/Chart.js/issues/762
+                    maintainAspectRatio: true,
                     title: {
                         position: 'top',
                         display: true,

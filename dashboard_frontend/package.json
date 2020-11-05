@@ -17,7 +17,6 @@
     "chartjs-plugin-datalabels": "^0.7.0",
     "dropzone": "^5.7.2",
     "headroom.js": "^0.12.0",
-    "jquery": "^3.5.1",
     "matomo-tracker": "^2.2.4",
     "patternomaly": "^1.3.2",
     "portal-vue": "^2.1.7",

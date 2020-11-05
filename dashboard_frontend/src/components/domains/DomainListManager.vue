@@ -153,7 +153,6 @@ Fixed: when deleting a list, it is re-added to the list of lists when adding a n
 </template>
 
 <script>
-import legacy_mixin from '../legacy_mixin.vue'
 import managed_url_list from './managed-url-list.vue'
 import sharedMessages from './../translations/dashboard.js'
 
@@ -164,7 +163,6 @@ export default {
     i18n: {
         sharedMessages: sharedMessages,
     },
-    mixins: [legacy_mixin],
     data: function () {
         return {
             loading: false,
@@ -199,10 +197,6 @@ export default {
                 this.maximum_domains_per_list = data['maximum_domains_per_list'];
                 this.loading = false;
 
-                // this makes sure accordeons work while vue routing is in place:
-                this.$nextTick(() => {
-                    this.accordinate();
-                });
             }).catch((fail) => {
                 console.log('A loading error occurred: ' + fail);
             });

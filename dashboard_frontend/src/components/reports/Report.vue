@@ -2,7 +2,7 @@
 
 </style>
 
-<template type="x-template" id="report_template">
+<template>
     <div id="report-template">
         <div class="block fullwidth do-not-print">
             <h1>{{ $t("header.title") }}</h1>
@@ -129,7 +129,6 @@
 
 import _ from 'lodash'
 
-import legacy_mixin from './../legacy_mixin'
 import field_translations from './../field_translations'
 
 import ReportCharts from './ReportCharts'
@@ -215,8 +214,6 @@ export default {
         }
     },
     name: 'report',
-    template: 'report_template',
-    mixins: [legacy_mixin],
     data: function () {
         return {
 
@@ -299,9 +296,6 @@ export default {
                 this.selected_report = reports_to_select;
             }
         }, 1500)
-        this.$nextTick(() => {
-            this.accordinate();
-        });
     },
 
     // common issue that debounce does not work on a watch.
@@ -342,7 +336,6 @@ export default {
                 this.is_loading = false;
                 // new accordions are created, reduce their size.
                 this.$nextTick(() => {
-                    this.accordinate();
                     this.$forceUpdate()
                 });
             }).catch((fail) => {
@@ -392,7 +385,6 @@ export default {
                     // given the charts are on a fixed number in the array, vue doesn't pick up changes.
                     // and as the order matters, this is a solution that fixes that.
                     this.$nextTick(() => {
-                        this.accordinate();
                         this.$forceUpdate();
                     });
                 }

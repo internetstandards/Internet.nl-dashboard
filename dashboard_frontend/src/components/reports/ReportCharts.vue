@@ -97,8 +97,8 @@
                                 <div style="page-break-inside: avoid;"
                                      v-if="visible_fields_from_categories(category).length > 0">
 
-                                    <chart_collapse_panel :title="category.label" :level="'h2'">
-                                        <div slot="content">
+                                    <chart_collapse_panel :title="category.label" :level="'level_two'">
+                                        <div slot="chart_content">
                                             <percentage-bar-chart
                                                 style="height: 500px;"
                                                 :title="graph_bar_chart_title"
@@ -118,8 +118,8 @@
                                     <div style="page-break-inside: avoid;"
                                          v-if="fields_from_self(subcategory).length > 0">
 
-                                        <chart_collapse_panel :title="subcategory.label" :level="'h3'">
-                                            <div slot="content">
+                                        <chart_collapse_panel :title="subcategory.label" :level="'level_three'">
+                                            <div slot="chart_content">
                                                 <percentage-bar-chart
                                                     style="height: 500px;"
                                                     :title="graph_bar_chart_title"
@@ -136,8 +136,8 @@
                                         <!-- Special graph for Forum standardisation, that cannot have the items disabled -->
                                         <template
                                             v-if="['category_mail_forum_standardisation_magazine', 'category_web_forum_standardisation_magazine'].includes(subcategory.key)">
-                                            <chart_collapse_panel :title="subcategory.label" :level="'h3'">
-                                                <div slot="content">
+                                            <chart_collapse_panel :title="subcategory.label" :level="'level_three'">
+                                                <div slot="chart_content">
                                                     <percentage-bar-chart
                                                         style="height: 500px;"
                                                         :title="graph_bar_chart_title"
@@ -194,8 +194,8 @@
                                      v-if="visible_fields_from_categories(category).length > 0">
 
 
-                                    <chart_collapse_panel :title="category.label" :level="'h2'">
-                                        <div slot="content">
+                                    <chart_collapse_panel :title="category.label" :level="'level_two'">
+                                        <div slot="chart_content">
                                             <cumulative-percentage-bar-chart
                                                 style="height: 500px"
                                                 :title="graph_cumulative_bar_chart_title"
@@ -217,8 +217,8 @@
                                          v-if="fields_from_self(subcategory).length > 0">
 
 
-                                        <chart_collapse_panel :title="subcategory.label" :level="'h3'">
-                                            <div slot="content">
+                                        <chart_collapse_panel :title="subcategory.label" :level="'level_three'">
+                                            <div slot="chart_content">
                                                 <cumulative-percentage-bar-chart
                                                     style="height: 500px"
                                                     :title="graph_cumulative_bar_chart_title"
@@ -238,8 +238,8 @@
                                             v-if="['category_mail_forum_standardisation_magazine', 'category_web_forum_standardisation_magazine'].includes(subcategory.key)">
                                             <chart_collapse_panel :title="'This shows the average for Forum Standardisation, it is not possible\n'+
 '                                                to\n'+
-'                                                show the average or to select what fields should be visible.'" :level="'h3'">
-                                                <div slot="content">
+'                                                show the average or to select what fields should be visible.'" :level="'level_three'">
+                                                <div slot="chart_content">
                                                     <cumulative-percentage-bar-chart
                                                         style="height: 500px"
                                                         :title="graph_cumulative_bar_chart_title"

@@ -164,11 +164,8 @@ h4 {
 
 
 <script>
-import legacy_mixin from './../legacy_mixin.vue'
-
 export default {
     name: 'scan_monitor',
-    mixins: [legacy_mixin],
 
     data: function () {
         return {
@@ -191,9 +188,6 @@ export default {
             fetch(`${this.$store.state.dashboard_endpoint}/data/scan-monitor/`, {credentials: 'include'}).then(response => response.json()).then(data => {
                 this.scans = data;
                 this.$store.commit("update_scan_monitor_data", data);
-                this.$nextTick(() => {
-                    this.accordinate();
-                });
             }).catch((fail) => {
                 console.log('A loading error occurred: ' + fail);
             });
