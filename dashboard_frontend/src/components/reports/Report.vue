@@ -126,9 +126,6 @@
 // Done: store filter options for reports (as generic or per report? or as a re-applicable set?) Per user account.
 // Done: how to add a item for legacy views?
 // Done: how to translate graphs?
-
-import _ from 'lodash'
-
 import field_translations from './../field_translations'
 
 import ReportCharts from './ReportCharts'
@@ -233,9 +230,6 @@ export default {
             // settings
             report_category: '',
 
-            // such basic functionality missing in vue, it even got removed.
-            debounce_timer: 0,
-
             available_recent_reports: [],
 
             // the filtered set only shows the same type as the first scan shown. It's not possible to open
@@ -298,15 +292,6 @@ export default {
         }, 1500)
     },
 
-    // common issue that debounce does not work on a watch.
-    // todo: there is probably a vue thing that is smaller than lodash that can debounce.
-    // https://stackoverflow.com/questions/47172952/vuejs-2-debounce-not-working-on-a-watch-option
-    created() {
-        this.debounce = _.debounce((func) => {
-            // console.log('Debounced term: ' + func);
-            func.apply();
-        }, 300)
-    },
     methods: {
 
         make_downloadlink: function (report_id, filetype) {

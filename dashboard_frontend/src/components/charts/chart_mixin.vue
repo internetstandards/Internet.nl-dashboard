@@ -1,5 +1,5 @@
 <script>
-import _ from 'lodash'
+import { debounce } from "debounce";
 import field_translations from "@/components/field_translations";
 
 export default {
@@ -74,9 +74,9 @@ export default {
         // This also prevents some of the "me.getDatasetMeta(...).controller is null" errors in charts.js (nov 2019)
         // You cannot add a debounce on a watch:
         // https://stackoverflow.com/questions/47172952/vuejs-2-debounce-not-working-on-a-watch-option
-        this.unwatch = this.$watch('chart_data', _.debounce(() => {
+        this.unwatch = this.$watch('chart_data', debounce(() => {
             this.renderData();
-        }, 300), {
+        }, 500), {
             // Note that you don’t need to do so to listen for in-Array mutations as they won't happen and the
             // arrays are too complex and big.
             deep: false
