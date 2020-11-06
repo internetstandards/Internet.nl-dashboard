@@ -12,6 +12,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Change report is included in sent e-mail
 
 ### Changed
+- The UI and django services are now in separate repositories for quicker builds and faster development
 - Bugfix on crashing scans from the api.
 - Bugfixes on non-progressing scans.
 - Bugfixes on crashes with workers.
