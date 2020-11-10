@@ -300,7 +300,7 @@ def compare_report_in_detail(new_report, old_report) -> Dict[str, Any]:
                     'report': new_endpoint_data['ratings_by_type']['internet_nl_score']['internet_nl_url'],
                     'score': new_endpoint_data['ratings_by_type']['internet_nl_score']['internet_nl_score']
                 }
-            if old_endpoint_data.get('ratings_by_type', None):
+            if old_endpoint_data.get('ratings_by_type', {}).get('internet_nl_score', {}).get('internet_nl_url', {}):
                 data['old'] = {
                     'report': old_endpoint_data['ratings_by_type']['internet_nl_score']['internet_nl_url'],
                     'score': old_endpoint_data['ratings_by_type']['internet_nl_score']['internet_nl_score']
