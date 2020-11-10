@@ -34,8 +34,13 @@ def alter_url_in_urllist(account, data) -> Dict[str, Any]:
         return operation_response(error=True, message="The old url does not exist.")
 
     if old_url.url == data['new_url_string']:
-        # no changes
-        return operation_response(success=True, message="Saved.")
+        # no changes, for c
+        return operation_response(success=True, message="Saved.", data={
+            'created': {'id': old_url.id, 'url': old_url.url, 'created_on': old_url.created_on,
+                        'has_mail_endpoint': 'unknown',
+                        'has_web_endpoint': 'unknown', 'subdomain': old_url.computed_subdomain,
+                        'domain': old_url.computed_domain, 'suffix': old_url.computed_suffix},
+        })
 
     # is this really a list?
     urllist = UrlList.objects.all().filter(account=account, pk=data['list_id']).first()

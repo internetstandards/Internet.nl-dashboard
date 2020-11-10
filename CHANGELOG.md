@@ -21,7 +21,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Dependencies have been upgraded
 
 ### Removed
-Support for Python < 3.8
+- Support for Python < 3.8
+- All dependencies on jquery and lodash 
 
 ##API 2.0 Version - 2020-05-??
 
