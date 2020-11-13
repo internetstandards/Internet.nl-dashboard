@@ -3,6 +3,7 @@ import logging
 from django.contrib.auth import authenticate, login, logout
 from django.http import JsonResponse
 from django.middleware.csrf import get_token
+from django_otp.plugins.otp_totp.models import TOTPDevice
 
 from dashboard.internet_nl_dashboard.logic import operation_response
 from dashboard.internet_nl_dashboard.views import get_json_body
@@ -48,7 +49,10 @@ def session_login_(request):
     if not user.is_active:
         return operation_response(error=True, message=f"user_not_active")
 
-    # how will this work with second factor?
+    # todo: implement generate_challenge and verify_token, so we can do login from new site.
+    devices = TOTPDevice.objects.all().filter(user=user, confirmed=True)
+    if devices:
+        return operation_response(error=True, message=f"second_factor_login_required")
 
     login(request, user)
     return operation_response(success=True, message=f"logged_in")
