@@ -1,13 +1,11 @@
-from django.contrib.auth.decorators import login_required, user_passes_test
+from django.contrib.auth.decorators import user_passes_test
 from django.contrib.auth.models import User
 from django.http import HttpResponse, JsonResponse
-from django.shortcuts import render
 
 from dashboard.internet_nl_dashboard.logic import operation_response
 from dashboard.internet_nl_dashboard.models import (Account, AccountInternetNLScan, DashboardUser,
                                                     UrlList)
-from dashboard.internet_nl_dashboard.views import (get_account, get_json_body,
-                                                   inject_default_language_cookie)
+from dashboard.internet_nl_dashboard.views import get_account, get_json_body
 from dashboard.settings import LOGIN_URL
 
 
@@ -142,9 +140,3 @@ def save_instant_account(request) -> HttpResponse:
     dashboarduser.save()
 
     return JsonResponse(operation_response(success=True, message=f"Account and user with name '{username}' created!"))
-
-
-@login_required(login_url=LOGIN_URL)
-def spa(request) -> HttpResponse:
-    response = render(request, 'internet_nl_dashboard/templates/internet_nl_dashboard/spa.html')
-    return inject_default_language_cookie(request, response)
