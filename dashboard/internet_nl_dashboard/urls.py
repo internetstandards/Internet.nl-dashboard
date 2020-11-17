@@ -6,7 +6,7 @@ from django.urls import path, register_converter
 import dashboard.internet_nl_dashboard.signals  # noqa
 from dashboard.internet_nl_dashboard.views import (__init__, account, domains, download_spreadsheet,
                                                    mail, powertools, report, scan_monitor, session,
-                                                   spreadsheet, user)
+                                                   spreadsheet, usage, user)
 
 
 class SpreadsheetFileTypeConverter:
@@ -70,6 +70,8 @@ urlpatterns = [
     path('data/report/urllist_timeline_graph/<str:urllist_ids>/', report.get_urllist_report_graph_data_),
     path('data/download-spreadsheet/<int:report_id>/<spreadsheet_filetype:file_type>/',
          download_spreadsheet.download_spreadsheet),
+
+    path('data/usage/', usage.usage_),
 
     path('mail/unsubscribe/<str:feed>/<str:unsubscribe_code>/', mail.unsubscribe_),
 
