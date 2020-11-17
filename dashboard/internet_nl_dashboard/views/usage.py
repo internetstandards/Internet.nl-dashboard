@@ -1,10 +1,11 @@
-from django.contrib.auth.decorators import login_required
+from django.contrib.auth.decorators import user_passes_test
 from django.http import JsonResponse
 
 from dashboard.internet_nl_dashboard.logic.usage import usage_metrics
 from dashboard.internet_nl_dashboard.views import LOGIN_URL
+from dashboard.internet_nl_dashboard.views.powertools import is_powertool_user
 
 
-@login_required(login_url=LOGIN_URL)
+@user_passes_test(is_powertool_user, login_url=LOGIN_URL)
 def usage_(request) -> JsonResponse:
     return JsonResponse(usage_metrics())
