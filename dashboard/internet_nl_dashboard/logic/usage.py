@@ -54,6 +54,13 @@ def usage_metrics():
     return {
         'users': {
             'total': User.objects.all().count(),
+            'logged_in_the_past_1_days': user_logged_in_past_n_days(1),
+            'logged_in_the_past_2_days': user_logged_in_past_n_days(2),
+            'logged_in_the_past_3_days': user_logged_in_past_n_days(3),
+            'logged_in_the_past_5_days': user_logged_in_past_n_days(5),
+            'logged_in_the_past_7_days': user_logged_in_past_n_days(7),
+            'logged_in_the_past_14_days': user_logged_in_past_n_days(14),
+            'logged_in_the_past_21_days': user_logged_in_past_n_days(21),
             'logged_in_the_past_30_days': user_logged_in_past_n_days(30),
             'logged_in_the_past_60_days': user_logged_in_past_n_days(60),
             'logged_in_the_past_90_days': user_logged_in_past_n_days(90),
