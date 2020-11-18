@@ -192,6 +192,7 @@ def progress_running_scan(scan: AccountInternetNLScan) -> Task:
         "importing scan results": monitor_timeout,
         "creating report": monitor_timeout,
         "sending mail": monitor_timeout,
+        "server_error": monitor_timeout,
     }
 
     with transaction.atomic():
@@ -371,17 +372,20 @@ def monitor_timeout(scan):
     # todo: recover from websecmap errors, by trying to recover there and writing the status to the dashboard.
     recovering_strategies = {
         "discovering endpoints":
-            {"timeout in minutes": 24 * 60, "state after timeout": "requested"},
+            {"timeout in minutes": 6 * 60, "state after timeout": "requested"},
         "retrieving scannable urls":
-            {"timeout in minutes": 24 * 60, "state after timeout": "discovered endpoints"},
+            {"timeout in minutes": 6 * 60, "state after timeout": "discovered endpoints"},
         "registering scan at internet.nl":
-            {"timeout in minutes": 24 * 60, "state after timeout": "retrieved scannable urls"},
+            {"timeout in minutes": 6 * 60, "state after timeout": "retrieved scannable urls"},
         "importing scan results":
             {"timeout in minutes": 24 * 60, "state after timeout": "scan results stored"},
         "creating report":
             {"timeout in minutes": 24 * 60, "state after timeout": "imported scan results"},
         "sending mail":
-            {"timeout in minutes": 24 * 60, "state after timeout": "created report"},
+            {"timeout in minutes": 6 * 60, "state after timeout": "created report"},
+        # It's unclear where in the process we are... Just try again.
+        "server_error":
+            {"timeout in minutes": 60, "state after timeout": "requested"},
     }
 
     strategy = recovering_strategies.get(scan.state, {})
