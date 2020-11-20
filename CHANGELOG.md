@@ -5,26 +5,50 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
-## Version 3 - Email improvements
+## [Third Version] - 2020 Nov 20
 
 ### Added
-- Sends out templated e-mails when a report is finished
-- Change report is included in sent e-mail
+- Notification e-mails
+    - When a scan is finished, a mail is sent to your account (set up details under Account)
+    - A second scan on the same list will create a notification mail which includes a comprehensive change report
+    - Management of notification in Account settings, unsubscription via a direct link
+- Statistics on how the dashboard is used (for project managers only)
 
 ### Changed
-- The UI and django services are now in separate repositories for quicker builds and faster development
-- Bugfix on crashing scans from the api.
-- Bugfixes on non-progressing scans.
-- Bugfixes on crashes with workers.
-- Hamburger menu fixes
-- The project is now on Python 3.8
-- Dependencies have been upgraded
+- Small changes
+    - Domain-list manager will show how many duplicates have been removed when adding domains
+    - Scan monitor now has progress bars
+    - Report selection is more user friendly
+    - Report timeline now shows what report is being viewed (report number is on the timeline)
+    - Reports allow to compare scores
+    - Overall translations have been improved
+    - Overall notifications now come with an additional toast notification
+    - Overall notification now contain date and time information
+    - Overall nicer UI, better response times
+    - Admin features such as changing account and adding users have been slightly improved
+
+- Bugfixes
+    - Scans got stuck in a loop under rare situations, both the rare situation and the loop have been fixed
+    - Scans can now finish if the API returns no data for certain domain ({'example.com': 'error'})
+    - Overall accordions will not alter the navigation state (Command+R or CTRL-F5 now works after clicking them)
+    - Overall hamburger menu works on mobile
+    - Overall header of website will be hidden when scrolling
+    - Report table headers now render correctly in Safari
+    - Reports will now not contain the X-XSS-Protection field
+
+- Architecture
+    - Separation of the UI and the Django code, UI is now in a separate repository
+    - Split complex components in various sub-components for easier understanding, logic and development
+    - Application of BootstrapVue components, scoped styling (mostly)
+    - Application of NPM builds, BootstrapVue
+    - Removal of jQuery, lodash and moment.js (moment is still used by charts.js)
+    - Application of tree shaking syntax for BootstrapVue
+    - Application of vue-18n translations blocks, translations can be maintained with Babeledit
 
 ### Removed
 - Support for Python < 3.8
-- All dependencies on jquery and lodash 
 
-##API 2.0 Version - 2020-05-??
+##API 2.0 Version - 2020-05-20
 
 ### Added
 - Works with API 2.0, which has more direct results, as well as technical details and translation keys which allows new features in the future
@@ -70,5 +94,6 @@ This first version was built before issues where logged in GitHub. The first ver
 - Power tools for admins (quickly adding existing API accounts and impersonation)
 - Ability to use second factor authentication
 
+[Third Version]: https://github.com/internetstandards/Internet.nl-dashboard/milestone/4?closed=1
 [Second Version]: https://github.com/internetstandards/Internet.nl-dashboard/milestone/2?closed=1
 [First Version]: https://github.com/internetstandards/Internet.nl-dashboard/milestone/1?closed=1
