@@ -73,19 +73,19 @@ def test_urllists(db, redis_server) -> None:
     list_content = get_urllist_content(account=account, urllist_id=list_1.pk)
     assert len(list_content['urls']) == 3
 
+    # make sure the url gets deleted from the urllist and not from the database
+    urls_in_database = Url.objects.all().count()
+    assert urls_in_database == 3
+
     """ Delete a a urls from the list: """
-    items_deleted, item_details = delete_url_from_urllist(account, list_1.id,
-                                                          Url.objects.all().filter(url='test.nl').first().id)
-    # {'internet_nl_dashboard.UrlList_urls': 1, 'organizations.Url': 1,
-    # 'organizations.Url_organization': 0, 'pro.RescanRequest': 0, ...}
-    """ The testcase delivers 2 deleted items, including an organizations.Url, this is weird, since we're not doing
-    anything with the organization. """
-    assert items_deleted == 2
+    url_got_removed_from_list = delete_url_from_urllist(account, list_1.id,
+                                                        Url.objects.all().filter(url='test.nl').first().id)
+
+    assert urls_in_database == Url.objects.all().count()
+
+    assert url_got_removed_from_list is True
     list_content = get_urllist_content(account=account, urllist_id=list_1.pk)
     assert len(list_content['urls']) == 2
-
-    del item_details
-    del items_deleted
 
     """ Delete the entire list, we'll get nothing back, only an empty response. """
     operation_response = delete_list(account=account, user_input={'id': list_1.id})
@@ -129,3 +129,32 @@ def test_urllists(db, redis_server) -> None:
                                                                        "adlkwndlknawkdlnawldknawlkdnawklndklawnwkalnkn"
                                                                        "awdlknawlkdnawlkdnalwdnawlkdnawkldnalkwndaklwn")
     assert renamed is True
+
+
+def u(url: str) -> int:
+    return Url.objects.all().filter(url=url).first().id
+
+
+def test_delete_url_from_urllist(db):
+    a1, created = Account.objects.all().get_or_create(name="a1")
+    a2, created = Account.objects.all().get_or_create(name="a2")
+    l1 = get_or_create_list_by_name(a1, "l1")
+    l2 = get_or_create_list_by_name(a2, "l2")
+    save_urllist_content_by_name(a1, "l1", ['test.nl', 'internet.nl', 'internetcleanup.foundation'])
+    save_urllist_content_by_name(a2, "l2", ['nu.nl', 'nos.nl', 'tweakers.net'])
+
+    assert l1 != l2
+    assert a1 != a2
+
+    assert Url.objects.all().count() == 6
+
+    assert True is delete_url_from_urllist(a1, l1.id, u('test.nl'))
+    # double delete results into nothing
+    assert False is delete_url_from_urllist(a1, l1.id, u('test.nl'))
+    # a2 cannot delete something from the lists of a1, even if the url exist in the list from l1
+    assert False is delete_url_from_urllist(a2, l1.id, u('test.nl'))
+    # no crash on non-existing id's:
+    assert False is delete_url_from_urllist(a1, 990000, u('test.nl'))
+    assert False is delete_url_from_urllist(a1, l1.id, 9990000)
+
+    assert Url.objects.all().count() == 6

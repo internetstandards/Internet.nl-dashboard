@@ -702,7 +702,7 @@ def get_or_create_list_by_name(account, name: str) -> UrlList:
         return urllist
 
 
-def delete_url_from_urllist(account: Account, urllist_id: int, url_id: int) -> Tuple[int, Dict[str, int]]:
+def delete_url_from_urllist(account: Account, urllist_id: int, url_id: int) -> bool:
     """
     While we delete the url in the urllist, the actual url is not deleted. It might be used by others, and
     all the same it might be used in the future by someone else. This will retrain the historic data.
@@ -713,7 +713,17 @@ def delete_url_from_urllist(account: Account, urllist_id: int, url_id: int) -> T
     :return:
     """
 
-    return Url.objects.all().filter(
+    # make sure that the url is in this list and for the current account
+    # we don't want other users to be able to delete urls of other lists.
+    url_is_in_list = Url.objects.all().filter(
         urls_in_dashboard_list__account=account,
         urls_in_dashboard_list__id=urllist_id,
-        id=url_id).delete()
+        id=url_id).first()
+
+    if not url_is_in_list:
+        return False
+
+    urllist = UrlList.objects.all().get(id=urllist_id)
+    urllist.urls.remove(url_is_in_list)
+
+    return True

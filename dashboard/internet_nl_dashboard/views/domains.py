@@ -65,8 +65,8 @@ def add_urls_to_urllist(request):
 def delete_url_from_urllist_(request):
     account = get_account(request)
     request = get_json_body(request)
-    items_deleted, item_details = delete_url_from_urllist(account, request.get('list_id'), request.get('url_id'))
-    return JsonResponse({'items_deleted': items_deleted, 'success': items_deleted})
+    item_deleted = delete_url_from_urllist(account, request.get('list_id'), request.get('url_id'))
+    return JsonResponse({'items_deleted': None, 'success': item_deleted})
 
 
 @login_required(login_url=LOGIN_URL)
