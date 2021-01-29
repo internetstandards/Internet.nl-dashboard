@@ -116,6 +116,13 @@ To create your first user:
 dashboard createsuperuser
 ```
 
+Development:
+```
+dashboard migrate
+dashboard loaddata dashboard_development.json
+```
+
+
 
 #### Optional Steps
 
