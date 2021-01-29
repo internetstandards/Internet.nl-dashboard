@@ -135,7 +135,7 @@ def u(url: str) -> int:
     return Url.objects.all().filter(url=url).first().id
 
 
-def test_delete_url_from_urllist(db):
+def test_delete_url_from_urllist(db, redis_server):
     a1, created = Account.objects.all().get_or_create(name="a1")
     a2, created = Account.objects.all().get_or_create(name="a2")
     l1 = get_or_create_list_by_name(a1, "l1")
