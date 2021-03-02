@@ -4,130 +4,447 @@
 #
 #    pip-compile --output-file=requirements.txt requirements.in
 #
-amqp==2.6.1               # via kombu, websecmap
-asgiref==3.2.10           # via django, websecmap
-babel==2.8.0              # via django-phonenumber-field, websecmap
-billiard==3.6.3.0         # via celery, websecmap
-celery[gevent,redis]==4.4.7  # via django-celery-beat, flower, websecmap
-certifi==2020.6.20        # via requests, sentry-sdk, websecmap
-cffi==1.14.2              # via cryptography, websecmap
-chardet==3.0.4            # via requests, websecmap
-colorlog==4.2.1           # via websecmap
-colormath==3.0.0          # via spectra, websecmap
-cryptography==3.1         # via pyopenssl, social-auth-core, websecmap
-csscompressor==0.9.5      # via websecmap
-decorator==4.4.2          # via networkx, retry, validators, websecmap
-deepdiff==5.0.2           # via websecmap
-defusedxml==0.6.0         # via odfpy, python3-openid, social-auth-core, websecmap
-diff-match-patch==20200713  # via django-import-export, websecmap
-django-3-jet==1.0.8       # via websecmap
-django-activity-stream==0.9.0  # via -r requirements.in
-django-admin-sortable2==0.7.7  # via websecmap
-django-appconf==1.0.4     # via django-compressor, django-select2, websecmap
-django-autocomplete-light==3.5.1  # via websecmap
-django-celery-beat==2.0.0  # via websecmap
-django-colorful==1.3      # via websecmap
-django-compressor==2.4    # via websecmap
-django-constance[database]==2.7.0  # via websecmap
-django-cors-headers==3.5.0  # via -r requirements.in
-django-countries==6.1.3   # via websecmap
-django-crispy-forms==1.9.2  # via websecmap
-django-excel==0.0.10      # via websecmap
-django-formtools==2.2     # via django-two-factor-auth
-django-import-export==2.3.0  # via websecmap
-django-leaflet==0.27.1    # via websecmap
-django-mail-admin==0.2.1  # via -r requirements.in
-django-nested-admin==3.3.2  # via websecmap
-django-otp==0.9.3         # via -r requirements.in, django-two-factor-auth
-django-phonenumber-field==1.3.0  # via django-two-factor-auth
-django-picklefield==3.0.1  # via -r requirements.in, django-constance, websecmap
-django-proxy==1.2.1       # via websecmap
-django-select2==7.4.2     # via websecmap
-django-statsd-mozilla==0.4.0  # via websecmap
-django-timezone-field==4.0  # via django-celery-beat, websecmap
-django-two-factor-auth==1.12.1  # via -r requirements.in
-django-uwsgi==0.2.2       # via websecmap
-django==3.1.1             # via -r requirements.in, django-3-jet, django-admin-sortable2, django-appconf, django-celery-beat, django-colorful, django-cors-headers, django-excel, django-formtools, django-import-export, django-leaflet, django-otp, django-phonenumber-field, django-picklefield, django-select2, django-timezone-field, django-two-factor-auth, jsonfield, websecmap
-dnspython==1.16.0         # via websecmap
-et-xmlfile==1.0.1         # via openpyxl, websecmap
-flower==0.9.5             # via websecmap
-gevent==20.6.2            # via celery, websecmap
-googlemaps==4.4.2         # via websecmap
-greenlet==0.4.16          # via gevent, websecmap
-humanize==2.6.0           # via flower, websecmap
-idna==2.10                # via requests, tldextract, websecmap
-iso3166==1.0.1            # via websecmap
-jdcal==1.4.1              # via openpyxl, websecmap
-jsonfield==3.1.0          # via django-mail-admin, websecmap
-kombu==4.6.11             # via celery, websecmap
-lml==0.0.9                # via pyexcel, pyexcel-io, websecmap
-markdown==3.2.2           # via websecmap
-markuppy==1.14            # via tablib, websecmap
-mysqlclient==1.4.6        # via websecmap
-netaddr==0.8.0            # via websecmap
-networkx==2.5             # via colormath, websecmap
-numpy==1.19.1             # via colormath, rdp, websecmap
-oauthlib==3.1.0           # via requests-oauthlib, social-auth-core
-odfpy==1.4.1              # via pyexcel-ods, tablib, websecmap
-openpyxl==3.0.5           # via pyexcel-xlsx, tablib, websecmap
-ordered-set==4.0.2        # via deepdiff, websecmap
-phonenumberslite==8.12.2  # via django-phonenumber-field
-pillow==7.2.0             # via python-resize-image, websecmap
-polib==1.1.0              # via -r requirements.in
-prometheus-client==0.8.0  # via flower, websecmap
-psycopg2-binary==2.8.6    # via websecmap
-py==1.9.0                 # via retry, websecmap
-pycparser==2.20           # via cffi, websecmap
-pyexcel-io==0.5.20        # via pyexcel, pyexcel-ods, pyexcel-xls, pyexcel-xlsx, websecmap
-pyexcel-ods==0.5.6        # via websecmap
-pyexcel-text==0.2.7.1     # via websecmap
-pyexcel-webio==0.1.4      # via django-excel, websecmap
-pyexcel-xls==0.5.9        # via websecmap
-pyexcel-xlsx==0.5.8       # via websecmap
-pyexcel==0.6.4            # via django-excel, pyexcel-text, pyexcel-webio, websecmap
-pyjwt==1.7.1              # via social-auth-core
-pyopenssl==19.1.0         # via websecmap
-python-crontab==2.5.1     # via django-celery-beat, websecmap
-python-dateutil==2.8.1    # via python-crontab, websecmap
-python-magic==0.4.15      # via -r requirements.in
-python-monkey-business==1.0.0  # via django-nested-admin, websecmap
-python-resize-image==1.1.19  # via websecmap
-python3-openid==3.2.0     # via social-auth-core
-pytz==2020.1              # via -r requirements.in, babel, celery, django, django-timezone-field, flower, websecmap
-pyyaml==5.3.1             # via tablib, websecmap
-qrcode==6.1               # via django-two-factor-auth
-rcssmin==1.0.6            # via django-compressor, websecmap
-rdp==0.8                  # via websecmap
-redis==3.5.3              # via celery, websecmap
-requests-file==1.5.1      # via tldextract, websecmap
-requests-oauthlib==1.3.0  # via social-auth-core
-requests==2.24.0          # via django-proxy, googlemaps, python-resize-image, requests-file, requests-oauthlib, social-auth-core, tldextract, websecmap
-retry==0.9.2              # via websecmap
-rjsmin==1.1.0             # via django-compressor, websecmap
-sentry-sdk==0.17.3        # via websecmap
-simplejson==3.17.2        # via websecmap
-six==1.15.0               # via cryptography, django-3-jet, django-autocomplete-light, django-compressor, django-nested-admin, pyopenssl, python-dateutil, python-monkey-business, qrcode, requests-file, social-auth-app-django, social-auth-core, tenacity, validators, websecmap
-social-auth-app-django==4.0.0  # via django-mail-admin
-social-auth-core==3.3.3   # via social-auth-app-django
-spectra==0.0.11           # via websecmap
-sqlparse==0.3.1           # via django, websecmap
-statsd==3.3.0             # via django-statsd-mozilla, websecmap
-tablib[html,ods,xls,xlsx,yaml]==2.0.0  # via django-import-export, websecmap
-tabulate==0.8.7           # via pyexcel-text, websecmap
-tenacity==6.2.0           # via websecmap
-texttable==1.6.3          # via pyexcel, websecmap
-tldextract==2.2.3         # via websecmap
-tornado==6.0.4            # via flower, websecmap
-urllib3==1.25.10          # via requests, sentry-sdk, websecmap
-uwsgi==2.0.19.1           # via websecmap
-validators==0.18.1        # via -r requirements.in, websecmap
-vine==1.3.0               # via amqp, celery, websecmap
-git+https://gitlab.com/internet-cleanup-foundation/web-security-map@6176113cd38c14b88dd9a5e8569adf7f79b9bbe7#egg=websecmap  # via -r requirements.in
-wikidata==0.7.0           # via websecmap
-xlrd==1.2.0               # via pyexcel-xls, tablib, websecmap
-xlwt==1.3.0               # via pyexcel-xls, tablib, websecmap
-zope.event==4.4           # via gevent, websecmap
-zope.interface==5.1.0     # via gevent, websecmap
+amqp==2.6.1
+    # via
+    #   kombu
+    #   websecmap
+asgiref==3.3.1
+    # via
+    #   django
+    #   websecmap
+babel==2.9.0
+    # via
+    #   django-phonenumber-field
+    #   websecmap
+billiard==3.6.3.0
+    # via
+    #   celery
+    #   websecmap
+celery[gevent,redis]==4.4.7
+    # via
+    #   django-celery-beat
+    #   flower
+    #   websecmap
+certifi==2020.12.5
+    # via
+    #   requests
+    #   sentry-sdk
+    #   websecmap
+cffi==1.14.5
+    # via
+    #   cryptography
+    #   websecmap
+chardet==4.0.0
+    # via
+    #   requests
+    #   websecmap
+colorlog==4.7.2
+    # via websecmap
+colormath==3.0.0
+    # via
+    #   spectra
+    #   websecmap
+cryptography==3.4.6
+    # via
+    #   pyopenssl
+    #   social-auth-core
+    #   websecmap
+csscompressor==0.9.5
+    # via websecmap
+decorator==4.4.2
+    # via
+    #   networkx
+    #   retry
+    #   validators
+    #   websecmap
+deepdiff==5.2.3
+    # via websecmap
+defusedxml==0.6.0
+    # via
+    #   odfpy
+    #   python3-openid
+    #   social-auth-core
+    #   websecmap
+diff-match-patch==20200713
+    # via
+    #   django-import-export
+    #   websecmap
+django-3-jet==1.0.8
+    # via websecmap
+django-activity-stream==0.9.0
+    # via -r requirements.in
+django-admin-sortable2==0.7.8
+    # via websecmap
+django-appconf==1.0.4
+    # via
+    #   django-compressor
+    #   django-select2
+    #   websecmap
+django-autocomplete-light==3.8.1
+    # via websecmap
+django-celery-beat==2.2.0
+    # via websecmap
+django-colorful==1.3
+    # via websecmap
+django-compressor==2.4
+    # via websecmap
+django-constance[database]==2.8.0
+    # via websecmap
+django-cors-headers==3.5.0
+    # via -r requirements.in
+django-countries==7.0
+    # via websecmap
+django-crispy-forms==1.11.0
+    # via websecmap
+django-excel==0.0.10
+    # via websecmap
+django-formtools==2.2
+    # via django-two-factor-auth
+django-import-export==2.5.0
+    # via websecmap
+django-leaflet==0.27.1
+    # via websecmap
+django-mail-admin==0.2.1
+    # via -r requirements.in
+django-nested-admin==3.3.3
+    # via websecmap
+django-otp==0.9.3
+    # via
+    #   -r requirements.in
+    #   django-two-factor-auth
+django-phonenumber-field==1.3.0
+    # via django-two-factor-auth
+django-picklefield==3.0.1
+    # via
+    #   -r requirements.in
+    #   django-constance
+    #   websecmap
+django-proxy==1.2.1
+    # via websecmap
+django-select2==7.6.1
+    # via websecmap
+django-statsd-mozilla==0.4.0
+    # via websecmap
+django-timezone-field==4.1.1
+    # via
+    #   django-celery-beat
+    #   websecmap
+django-two-factor-auth==1.12.1
+    # via -r requirements.in
+django==3.1.6
+    # via
+    #   django-3-jet
+    #   django-admin-sortable2
+    #   django-appconf
+    #   django-celery-beat
+    #   django-colorful
+    #   django-cors-headers
+    #   django-excel
+    #   django-formtools
+    #   django-import-export
+    #   django-leaflet
+    #   django-otp
+    #   django-phonenumber-field
+    #   django-picklefield
+    #   django-select2
+    #   django-timezone-field
+    #   django-two-factor-auth
+    #   jsonfield
+    #   websecmap
+dnspython==2.1.0
+    # via websecmap
+et-xmlfile==1.0.1
+    # via
+    #   openpyxl
+    #   websecmap
+filelock==3.0.12
+    # via
+    #   tldextract
+    #   websecmap
+flower==0.9.7
+    # via websecmap
+gevent==21.1.2
+    # via
+    #   celery
+    #   websecmap
+googlemaps==4.4.2
+    # via websecmap
+greenlet==1.0.0
+    # via
+    #   gevent
+    #   websecmap
+humanize==3.2.0
+    # via
+    #   flower
+    #   websecmap
+idna==2.10
+    # via
+    #   requests
+    #   tldextract
+    #   websecmap
+iso3166==1.0.1
+    # via websecmap
+jdcal==1.4.1
+    # via
+    #   openpyxl
+    #   websecmap
+jsonfield==3.1.0
+    # via
+    #   django-mail-admin
+    #   websecmap
+kombu==4.6.11
+    # via
+    #   celery
+    #   websecmap
+lml==0.1.0
+    # via
+    #   pyexcel
+    #   pyexcel-io
+    #   websecmap
+markdown==3.3.3
+    # via websecmap
+markuppy==1.14
+    # via
+    #   tablib
+    #   websecmap
+mysqlclient==2.0.3
+    # via websecmap
+netaddr==0.8.0
+    # via websecmap
+networkx==2.5
+    # via
+    #   colormath
+    #   websecmap
+numpy==1.20.1
+    # via
+    #   colormath
+    #   rdp
+    #   websecmap
+oauthlib==3.1.0
+    # via
+    #   requests-oauthlib
+    #   social-auth-core
+odfpy==1.4.1
+    # via
+    #   pyexcel-ods
+    #   tablib
+    #   websecmap
+openpyxl==3.0.6
+    # via
+    #   pyexcel-xlsx
+    #   tablib
+    #   websecmap
+ordered-set==4.0.2
+    # via
+    #   deepdiff
+    #   websecmap
+phonenumberslite==8.12.2
+    # via django-phonenumber-field
+pillow==8.1.0
+    # via
+    #   python-resize-image
+    #   websecmap
+polib==1.1.0
+    # via -r requirements.in
+prometheus-client==0.8.0
+    # via
+    #   flower
+    #   websecmap
+psycopg2-binary==2.8.6
+    # via websecmap
+py==1.10.0
+    # via
+    #   retry
+    #   websecmap
+pycparser==2.20
+    # via
+    #   cffi
+    #   websecmap
+pyexcel-io==0.6.4
+    # via
+    #   pyexcel
+    #   pyexcel-ods
+    #   pyexcel-xls
+    #   pyexcel-xlsx
+    #   websecmap
+pyexcel-ods==0.6.0
+    # via websecmap
+pyexcel-text==0.2.7.1
+    # via websecmap
+pyexcel-webio==0.1.4
+    # via
+    #   django-excel
+    #   websecmap
+pyexcel-xls==0.6.2
+    # via websecmap
+pyexcel-xlsx==0.6.0
+    # via websecmap
+pyexcel==0.6.6
+    # via
+    #   django-excel
+    #   pyexcel-text
+    #   pyexcel-webio
+    #   websecmap
+pyjwt==1.7.1
+    # via social-auth-core
+pyopenssl==20.0.1
+    # via websecmap
+python-crontab==2.5.1
+    # via
+    #   django-celery-beat
+    #   websecmap
+python-dateutil==2.8.1
+    # via
+    #   python-crontab
+    #   websecmap
+python-magic==0.4.15
+    # via -r requirements.in
+python-monkey-business==1.0.0
+    # via
+    #   django-nested-admin
+    #   websecmap
+python-resize-image==1.1.19
+    # via websecmap
+python3-openid==3.2.0
+    # via social-auth-core
+pytz==2021.1
+    # via
+    #   -r requirements.in
+    #   babel
+    #   celery
+    #   django
+    #   django-timezone-field
+    #   flower
+    #   websecmap
+pyyaml==5.4.1
+    # via
+    #   tablib
+    #   websecmap
+qrcode==6.1
+    # via django-two-factor-auth
+rcssmin==1.0.6
+    # via
+    #   django-compressor
+    #   websecmap
+rdp==0.8
+    # via websecmap
+redis==3.5.3
+    # via
+    #   celery
+    #   websecmap
+requests-file==1.5.1
+    # via
+    #   tldextract
+    #   websecmap
+requests-oauthlib==1.3.0
+    # via social-auth-core
+requests==2.25.1
+    # via
+    #   django-proxy
+    #   googlemaps
+    #   python-resize-image
+    #   requests-file
+    #   requests-oauthlib
+    #   social-auth-core
+    #   tldextract
+    #   websecmap
+retry==0.9.2
+    # via websecmap
+rjsmin==1.1.0
+    # via
+    #   django-compressor
+    #   websecmap
+sentry-sdk==0.20.2
+    # via websecmap
+simplejson==3.17.2
+    # via websecmap
+six==1.15.0
+    # via
+    #   django-3-jet
+    #   django-autocomplete-light
+    #   django-compressor
+    #   django-nested-admin
+    #   pyopenssl
+    #   python-dateutil
+    #   python-monkey-business
+    #   qrcode
+    #   requests-file
+    #   social-auth-app-django
+    #   social-auth-core
+    #   tenacity
+    #   validators
+    #   websecmap
+social-auth-app-django==4.0.0
+    # via django-mail-admin
+social-auth-core==3.3.3
+    # via social-auth-app-django
+spectra==0.0.11
+    # via websecmap
+sqlparse==0.4.1
+    # via
+    #   django
+    #   websecmap
+statsd==3.3.0
+    # via
+    #   django-statsd-mozilla
+    #   websecmap
+tablib[html,ods,xls,xlsx,yaml]==3.0.0
+    # via
+    #   django-import-export
+    #   websecmap
+tabulate==0.8.7
+    # via
+    #   pyexcel-text
+    #   websecmap
+tenacity==6.3.1
+    # via websecmap
+texttable==1.6.3
+    # via
+    #   pyexcel
+    #   websecmap
+tldextract==3.1.0
+    # via websecmap
+tornado==6.1
+    # via
+    #   flower
+    #   websecmap
+urllib3==1.26.3
+    # via
+    #   requests
+    #   sentry-sdk
+    #   websecmap
+validators==0.18.2
+    # via
+    #   -r requirements.in
+    #   websecmap
+vine==1.3.0
+    # via
+    #   amqp
+    #   celery
+    #   flower
+    #   websecmap
+git+https://gitlab.com/internet-cleanup-foundation/web-security-map@c02c2ba880398e3f07b834eb60ab76f425167721#egg=websecmap
+    # via -r requirements.in
+wikidata==0.7.0
+    # via websecmap
+xlrd==1.2.0
+    # via
+    #   pyexcel-xls
+    #   tablib
+    #   websecmap
+xlwt==1.3.0
+    # via
+    #   pyexcel-xls
+    #   tablib
+    #   websecmap
+zope.event==4.5.0
+    # via
+    #   gevent
+    #   websecmap
+zope.interface==5.2.0
+    # via
+    #   gevent
+    #   websecmap
 
 # The following packages are considered to be unsafe in a requirements file:
 # setuptools
