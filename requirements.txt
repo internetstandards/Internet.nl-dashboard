@@ -131,6 +131,8 @@ django-timezone-field==4.1.1
     #   websecmap
 django-two-factor-auth==1.12.1
     # via -r requirements.in
+django-uwsgi==0.2.2; extra == "deploy"
+    # via websecmap
 django==3.1.6
     # via
     #   django-3-jet
@@ -413,6 +415,8 @@ urllib3==1.26.3
     #   requests
     #   sentry-sdk
     #   websecmap
+uwsgi==2.0.19.1; extra == "deploy"
+    # via websecmap
 validators==0.18.2
     # via
     #   -r requirements.in
@@ -423,7 +427,7 @@ vine==1.3.0
     #   celery
     #   flower
     #   websecmap
-git+https://gitlab.com/internet-cleanup-foundation/web-security-map@c02c2ba880398e3f07b834eb60ab76f425167721#egg=websecmap
+git+https://gitlab.com/internet-cleanup-foundation/web-security-map@f75060bbf157bbc68cf0e10aaae96412a8140f7b#egg=websecmap[deploy]
     # via -r requirements.in
 wikidata==0.7.0
     # via websecmap

@@ -26,10 +26,9 @@ def requirements(extra=None):
         filename = 'requirements.' + extra + '.txt'
     else:
         filename = 'requirements.txt'
-    requirements = [r.strip().split(' ', 1)[0].split('egg=', 1)[-1]
-                    for r in open(filename) if not r.startswith('#')]
+    requirements = [r.strip().split(' ', 1)[0].split(';', 1)[0].split('egg=', 1)[-1]
+                    for r in open(filename) if r.strip() and not r.strip().startswith('#')]
     return requirements
-
 
 setup(
     name='dashboard',
