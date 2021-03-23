@@ -136,7 +136,7 @@ make <tab><tab>
 
 ### Update dependencies/requirements
 
-Python dependencies are managed using [pip-tools](https://github.com/jazzband/pip-tools). See `requirements.in` and `requirements-dev.in`.
+Python dependencies are managed using [pip-tools](https://github.com/jazzband/pip-tools). See `requirements.in` and `requirements_dev.in`.
 
 For convenience the following command can be used to update all Python dependencies (within their version boundaries):
 
