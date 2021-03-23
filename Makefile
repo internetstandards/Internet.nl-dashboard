@@ -35,7 +35,7 @@ pysrcdirs = ${app_name}/
 pysrc = $(shell find ${pysrcdirs} -name *.py 2>/dev/null)
 shsrc = $(shell find * ! -path vendor\* -name *.sh 2>/dev/null)
 
-.PHONY: test check setup run fix autofix clean mrproper test_integration requirements requirements-dev
+.PHONY: test check setup run fix autofix clean mrproper test_integration requirements requirements_dev
 
 # default action to run
 all: check test setup
@@ -57,16 +57,17 @@ ${app}: ${VIRTUAL_ENV}/.requirements.installed | ${python}
 	${python} setup.py develop --no-deps
 	@touch $@
 
-${VIRTUAL_ENV}/.requirements.installed: requirements.txt requirements-dev.txt | ${pip-sync}
+${VIRTUAL_ENV}/.requirements.installed: requirements.txt requirements_dev.txt | ${pip-sync}
 	${pip-sync} $^
 	@touch $@
 
 # perform 'pip freeze' on first class requirements in .in files.
-requirements.txt requirements-dev.txt: %.txt: %.in | ${pip-compile}
-	${pip-compile} ${pip_compile_args} --verbose --output-file $@ $<
+requirements: requirements.txt requirements_dev.txt
+requirements.txt requirements_dev.txt: %.txt: %.in | ${pip-compile}
+	${pip-compile} ${pip_compile_args} --output-file $@ $<
 
 update_requirements: pip_compile_args=--upgrade
-update_requirements: _mark_outdated requirements.txt requirements-dev.txt _commit_update
+update_requirements: _mark_outdated requirements.txt requirements_dev.txt _commit_update
 
 _mark_outdated:
 	touch requirements*.in
@@ -206,7 +207,7 @@ mrproper: clean clean_virtualenv ## thorough cleanup, also removes virtualenv
 ## Base requirements
 
 ${pip-compile} ${pip-sync}: | ${pip}
-	${pip} install pip-tools
+	${pip} install "pip-tools>=5.5.0"
 
 python: ${python}
 ${python} ${pip}:

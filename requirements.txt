@@ -242,7 +242,7 @@ ordered-set==4.0.2
     #   websecmap
 phonenumberslite==8.12.2
     # via django-phonenumber-field
-pillow==8.1.0
+pillow==8.1.2
     # via
     #   python-resize-image
     #   websecmap
@@ -427,7 +427,7 @@ vine==1.3.0
     #   celery
     #   flower
     #   websecmap
-git+https://gitlab.com/internet-cleanup-foundation/web-security-map@f75060bbf157bbc68cf0e10aaae96412a8140f7b#egg=websecmap[deploy]
+git+https://gitlab.com/internet-cleanup-foundation/web-security-map@8c10371706c1f8ad2cdd64c8a0fa4d71e45398d4#egg=websecmap[deploy]
     # via -r requirements.in
 wikidata==0.7.0
     # via websecmap
