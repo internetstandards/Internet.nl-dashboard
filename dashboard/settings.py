@@ -469,6 +469,19 @@ COMPRESS_OFFLINE = not DEBUG
 # Constance settings:
 CONSTANCE_BACKEND = 'constance.backends.database.DatabaseBackend'
 
+CONSTANCE_ADDITIONAL_FIELDS = {
+    "yes_no_null_select": [
+        "django.forms.fields.ChoiceField",
+        {"widget": "django.forms.Select", "choices": ((None, "-----"), ("1", "Yes"), ("0", "No"))},
+    ],
+    # Todo: no validation options, that is offloaded to the widget?
+    "json": [
+        "django.forms.fields.CharField",
+        {"widget": "django.forms.Textarea"},
+    ],
+}
+
+
 CONSTANCE_CONFIG = {
     'SCAN_AT_ALL': (
         True,
@@ -547,20 +560,21 @@ CONSTANCE_CONFIG = {
     ),
 }
 
-CONSTANCE_CONFIG_FIELDSETS = OrderedDict([
-
-    ('DASHBOARD', ('DASHBOARD_FRONTEND_URL',
-                   'DASHBOARD_MAXIMUM_DOMAINS_PER_LIST',
-                   'DASHBOARD_MAXIMUM_DOMAINS_PER_SPREADSHEET',
-                   'DASHBOARD_MAXIMUM_LISTS_PER_SPREADSHEET')),
-    ('E-Mail', ('EMAIL_NOTIFICATION_SENDER',
-                'EMAIL_FALLBACK_LANGUAGE',
-                'EMAIL_TEST_RECIPIENT',
-                'EMAIL_DASHBOARD_ADDRESS')),
-    ('Internet.nl Scans', ('INTERNET_NL_API_USERNAME', 'INTERNET_NL_API_PASSWORD', 'INTERNET_NL_API_URL',
-                           'INTERNET_NL_MAXIMUM_URLS')),
-    ("Scanning preferences", ("SCANNER_NAMESERVERS",)),
-])
+CONSTANCE_CONFIG_FIELDSETS = OrderedDict(
+    [
+        ('DASHBOARD', ('DASHBOARD_FRONTEND_URL',
+                       'DASHBOARD_MAXIMUM_DOMAINS_PER_LIST',
+                       'DASHBOARD_MAXIMUM_DOMAINS_PER_SPREADSHEET',
+                       'DASHBOARD_MAXIMUM_LISTS_PER_SPREADSHEET')),
+        ('E-Mail', ('EMAIL_NOTIFICATION_SENDER',
+                    'EMAIL_FALLBACK_LANGUAGE',
+                    'EMAIL_TEST_RECIPIENT',
+                    'EMAIL_DASHBOARD_ADDRESS')),
+        ('Internet.nl Scans', ('INTERNET_NL_API_USERNAME', 'INTERNET_NL_API_PASSWORD', 'INTERNET_NL_API_URL',
+                               'INTERNET_NL_MAXIMUM_URLS')),
+        ("Scanning preferences", ("SCANNER_NAMESERVERS",)),
+    ]
+)
 
 # the try-except makes sure autofix doesn't move the import to the top of the file.
 # Loaded here, otherwise: django.core.exceptions.AppRegistryNotReady: Apps aren't loaded yet.
