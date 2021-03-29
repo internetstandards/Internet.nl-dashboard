@@ -538,6 +538,13 @@ CONSTANCE_CONFIG = {
         'The address of the dashboard, can be set to any url. Available in email template at {{dashboard_address}}',
         str
     ),
+    "SCANNER_NAMESERVERS": (
+        '["1.1.1.1", "8.8.8.8", "9.9.9.9", "208.67.222.222", "8.26.56.26"]',
+        "Nameservers used during scans (dns endpoints and subdomains). This string is loaded as JSON, but not validated"
+        "due to limitations of this settings library. Be careful when editing(!). This information is cached and loaded"
+        "only once every 10 minutes.",
+        "json",
+    ),
 }
 
 CONSTANCE_CONFIG_FIELDSETS = OrderedDict([
@@ -551,7 +558,8 @@ CONSTANCE_CONFIG_FIELDSETS = OrderedDict([
                 'EMAIL_TEST_RECIPIENT',
                 'EMAIL_DASHBOARD_ADDRESS')),
     ('Internet.nl Scans', ('INTERNET_NL_API_USERNAME', 'INTERNET_NL_API_PASSWORD', 'INTERNET_NL_API_URL',
-                           'INTERNET_NL_MAXIMUM_URLS'))
+                           'INTERNET_NL_MAXIMUM_URLS')),
+    ("Scanning preferences", ("SCANNER_NAMESERVERS",)),
 ])
 
 # the try-except makes sure autofix doesn't move the import to the top of the file.
