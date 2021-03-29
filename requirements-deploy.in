@@ -1,0 +1,6 @@
+# dependencies not required during development
+
+# make sure there are no version conflicts with requirements.txt
+-c requirements.txt
+
+git+https://gitlab.com/internet-cleanup-foundation/web-security-map@8c10371706c1f8ad2cdd64c8a0fa4d71e45398d4#egg=websecmap[deploy]

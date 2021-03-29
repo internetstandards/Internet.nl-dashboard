@@ -32,10 +32,10 @@ app = ${bin}/${app_name}
 $(shell test -z "$$PS1" || echo -e \nRun `make help` for available commands or use tab-completion.\n)
 
 pysrcdirs = ${app_name}/
-pysrc = $(shell find ${pysrcdirs} -name *.py 2>/dev/null)
-shsrc = $(shell find * ! -path vendor\* -name *.sh 2>/dev/null)
+pysrc = $(shell find ${pysrcdirs} -name \*.py 2>/dev/null)
+shsrc = $(shell find * ! -path vendor\* -name \*.sh 2>/dev/null)
 
-.PHONY: test check setup run fix autofix clean mrproper test_integration requirements requirements_dev
+.PHONY: test check setup run fix autofix clean mrproper test_integration requirements requirements-dev
 
 # default action to run
 all: check test setup
@@ -57,17 +57,18 @@ ${app}: ${VIRTUAL_ENV}/.requirements.installed | ${python}
 	${python} setup.py develop --no-deps
 	@touch $@
 
-${VIRTUAL_ENV}/.requirements.installed: requirements.txt requirements_dev.txt | ${pip-sync}
+${VIRTUAL_ENV}/.requirements.installed: requirements.txt requirements-dev.txt | ${pip-sync}
 	${pip-sync} $^
 	@touch $@
 
 # perform 'pip freeze' on first class requirements in .in files.
-requirements: requirements.txt requirements_dev.txt
-requirements.txt requirements_dev.txt: %.txt: %.in | ${pip-compile}
+requirements: requirements.txt requirements-dev.txt requirements-deploy.txt
+requirements-dev.txt requirements-deploy.txt: requirements.txt
+requirements.txt requirements-dev.txt requirements-deploy.txt: %.txt: %.in | ${pip-compile}
 	${pip-compile} ${pip_compile_args} --output-file $@ $<
 
 update_requirements: pip_compile_args=--upgrade
-update_requirements: _mark_outdated requirements.txt requirements_dev.txt _commit_update
+update_requirements: _mark_outdated requirements.txt requirements-dev.txt _commit_update
 
 _mark_outdated:
 	touch requirements*.in

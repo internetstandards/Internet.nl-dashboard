@@ -14,7 +14,7 @@ RUN pip install -r requirements.txt && rm -rf /root/.cache/pip /pyenv/src/dashbo
 
 COPY setup.py README.md /source/
 COPY dashboard/ /source/dashboard/
-RUN pip install --no-deps -e .
+RUN pip install --no-deps -e .[deploy]
 
 RUN ln -s /pyenv/bin/dashboard /usr/local/bin/
 
