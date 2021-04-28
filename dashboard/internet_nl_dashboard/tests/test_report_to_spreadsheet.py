@@ -29,3 +29,27 @@ def test_report_to_spreadsheet(db) -> None:
 
     # and there should be a file handle
     assert tmp_file_handle
+
+
+# def test_keyed_values_as_boolean():
+#    keyed_ratings = {'internet_nl_mail_auth_dkim_exist': {'comply_or_explain_explained_on': '',
+#                                      'comply_or_explain_explanation': '',
+#                                      'comply_or_explain_explanation_valid_until': '',
+#                                      'comply_or_explain_valid_at_time_of_report': False,
+#                                      'explanation': 'Test '
+#                                                     'internet_nl_mail_auth_dkim_exist '
+#                                                     'resulted in failed.',
+#                                      'high': 1,
+#                                      'is_explained': False,
+#                                      'last_scan': '2019-07-09T11:07:43.510452+00:00',
+#                                      'low': 0,
+#                                      'medium': 0,
+#                                      'not_applicable': False,
+#                                      'not_testable': False,
+#                                      'ok': 0,
+#                                      'scan': 43945,
+#                                      'scan_type': 'internet_nl_mail_auth_dkim_exist',
+#                                      'since': '2019-07-09T11:07:43.510175+00:00',
+#                                      'type': 'internet_nl_mail_auth_dkim_exist'}}
+#    rows = keyed_values_as_boolean(keyed_ratings)
+#    assert rows == {}

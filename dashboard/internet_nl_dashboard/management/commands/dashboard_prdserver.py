@@ -4,9 +4,9 @@ import subprocess
 import sys
 
 from django.core.management import call_command
-from django_uwsgi.management.commands.runuwsgi import Command as RunserverCommand
 
 from dashboard.security import confirm_keys_are_changed
+from django_uwsgi.management.commands.runuwsgi import Command as RunserverCommand
 
 log = logging.getLogger(__name__)
 

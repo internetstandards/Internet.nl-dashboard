@@ -18,7 +18,11 @@ $(info Virtualenv path: ${VIRTUAL_ENV})
 
 # variables for environment
 bin = ${VIRTUAL_ENV}/bin
+ifeq ($(shell uname -m),arm64)
+env = env PATH=${bin}:$$PATH /usr/bin/arch -x86_64
+else
 env = env PATH=${bin}:$$PATH
+endif
 
 # shortcuts for common used binaries
 python = ${bin}/python
@@ -156,7 +160,7 @@ test_integration: ${app}  ## perform integration test suite
 testcase: ${app}
 	# run specific testcase
 	# example: make test_testcase testargs=test_openstreetmaps
-	${env} DJANGO_SETTINGS_MODULE=${app_name}.settings DB_NAME=test.sqlite3 \
+	DJANGO_SETTINGS_MODULE=${app_name}.settings DB_NAME=test.sqlite3 \
 		${env} pytest -vvv -k ${case}
 
 test_datasets: ${app}
