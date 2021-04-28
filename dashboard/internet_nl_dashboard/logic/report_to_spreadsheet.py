@@ -516,7 +516,10 @@ def keyed_values_as_boolean(keyed_ratings: Dict[str, Any], protocol: str = 'dns_
                 # Handle the special case of the score column.
                 # explanation":"75 https://batch.internet.nl/mail/portaal.digimelding.nl/289480/",
                 # Not steadily convertable to a percentage, so printing it as an integer instead.
-                values.append(int(keyed_ratings[issue_name]['internet_nl_score']))
+                if keyed_ratings[issue_name]['internet_nl_score'] == "error":
+                    values.append(keyed_ratings[issue_name]['internet_nl_score'])
+                else:
+                    values.append(int(keyed_ratings[issue_name]['internet_nl_score']))
             elif issue_name == 'internet_nl_score_report':
                 # fake column to give the column a title per #205, also makes the report more explicit.
                 values.append(keyed_ratings['internet_nl_score']['internet_nl_url'])
