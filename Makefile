@@ -198,6 +198,9 @@ push_image:
 image:  ## Create Docker images
 	docker build -t ${docker_image_name} .
 
+test_image:  ## Test if docker image runs
+	docker run -ti --rm ${docker_image_name} -h
+
 docsa: ## Generate documentation in various formats
 	# Remove existing documentation folder
 	-rm -rf docs_html/*

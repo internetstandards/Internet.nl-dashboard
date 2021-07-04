@@ -9,16 +9,17 @@ ENV PATH=/pyenv/bin:$PATH
 RUN mkdir /source
 WORKDIR /source/
 
+RUN pip install pip-tools
+
 # Install environment dependencies
 RUN apt-get update && apt-get install -y \
     libmagic1 \
     && rm -rf /var/lib/apt/lists/*
 
 # Install Python dependencies
-COPY requirements-deploy.txt /source/
-RUN pip install -r requirements-deploy.txt && rm -rf /root/.cache/pip /pyenv/src/dashboard/.git
 COPY requirements.txt /source/
-RUN pip install -r requirements.txt && rm -rf /root/.cache/pip /pyenv/src/dashboard/.git
+COPY requirements-deploy.txt /source/
+RUN pip-sync requirements.txt requirements-deploy.txt
 
 # Install Application
 COPY setup.py README.md /source/
