@@ -62,7 +62,7 @@ ${app}: ${VIRTUAL_ENV}/.requirements.installed | ${python}
 	${python} setup.py develop --no-deps
 	@touch $@
 
-${VIRTUAL_ENV}/.requirements.installed: requirements.txt requirements-dev.txt | ${pip-sync}
+${VIRTUAL_ENV}/.requirements.installed: requirements.txt requirements-dev.txt | environment_dependencies ${pip-sync}
 	${pip-sync} $^
 	@touch $@
 
@@ -85,11 +85,25 @@ update_requirement_websecmap: _update_websecmap_sha requirements.txt _commit_upd
 _update_websecmap_sha:
 	sha=$(shell git ls-remote -q git@gitlab.com:internet-cleanup-foundation/web-security-map.git master|cut -f1); \
 	if grep $$sha requirements.in >/dev/null; then echo -e "\nNo update for you, current sha for websecmap in requirements.in is the same as master on Gitlab.\n"; exit 1;fi; \
-	sed -E -i '' "s/web-security-map@[a-zA-Z0-9]{40}/web-security-map@$$sha/" requirements.in
+	sed -E -i '' "s/web-security-map@[a-zA-Z0-9]{40}/web-security-map@$$sha/" requirements.in requirements-deploy.in
 
 _commit_update: requirements.txt
 	git add requirements*.txt requirements*.in
 	git commit -m "Updated requirements."
+
+## Environment requirements
+environment_dependencies: libmagic
+
+brew_prefix = $(shell brew --prefix)
+brew = ${brew_prefix}/bin/brew
+
+libmagic: ${brew_prefix}/Cellar/libmagic/
+${brew_prefix}/Cellar/libmagic/: | ${brew}
+	brew install libmagic
+
+${brew}:
+	@echo "Please install homebrew: https://brew.sh"
+	false
 
 ## QA
 test: .make.test	## run test suite
