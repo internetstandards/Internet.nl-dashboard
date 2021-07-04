@@ -102,7 +102,8 @@ test: .make.test	## run test suite
 	${env} coverage html
 	# ensure no model updates are commited without migrations
 	${env} ${app} makemigrations --check
-	@touch $@
+	# never touch this file, as this makefile never knows what exactly has changed (it might/should)
+	# @touch $@
 
 check: .make.check.py .make.check.sh  ## code quality checks
 .make.check.py: ${pysrc} ${app}
