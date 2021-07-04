@@ -37,6 +37,7 @@ $(shell test -z "$$PS1" || echo -e \nRun `make help` for available commands or u
 
 pysrcdirs = ${app_name}/
 pysrc = $(shell find ${pysrcdirs} -name \*.py 2>/dev/null)
+src = $(shell find ${pysrcdirs} -type f -print0 2>/dev/null)
 shsrc = $(shell find * ! -path vendor\* -name \*.sh 2>/dev/null)
 
 .PHONY: test check setup run fix autofix clean mrproper test_integration requirements requirements-dev
@@ -92,7 +93,7 @@ _commit_update: requirements.txt
 
 ## QA
 test: .make.test	## run test suite
-.make.test: ${pysrc} ${app}
+.make.test: ${src} ${app}
 	# run testsuite
 	DJANGO_SETTINGS_MODULE=${app_name}.settings ${env} coverage run --include '${app_name}/*' --omit '*migrations*' \
 		-m pytest -vv -k 'not integration and not system' ${testargs}
@@ -102,8 +103,7 @@ test: .make.test	## run test suite
 	${env} coverage html
 	# ensure no model updates are commited without migrations
 	${env} ${app} makemigrations --check
-	# never touch this file, as this makefile never knows what exactly has changed (it might/should)
-	# @touch $@
+	@touch $@
 
 check: .make.check.py .make.check.sh  ## code quality checks
 .make.check.py: ${pysrc} ${app}
