@@ -37,6 +37,7 @@ $(shell test -z "$$PS1" || echo -e \nRun `make help` for available commands or u
 
 pysrcdirs = ${app_name}/
 pysrc = $(shell find ${pysrcdirs} -name \*.py 2>/dev/null)
+src = $(shell find ${pysrcdirs} -type f -print0 2>/dev/null)
 shsrc = $(shell find * ! -path vendor\* -name \*.sh 2>/dev/null)
 
 .PHONY: test check setup run fix autofix clean mrproper test_integration requirements requirements-dev
@@ -61,7 +62,7 @@ ${app}: ${VIRTUAL_ENV}/.requirements.installed | ${python}
 	${python} setup.py develop --no-deps
 	@touch $@
 
-${VIRTUAL_ENV}/.requirements.installed: requirements.txt requirements-dev.txt | ${pip-sync}
+${VIRTUAL_ENV}/.requirements.installed: requirements.txt requirements-dev.txt | environment_dependencies ${pip-sync}
 	${pip-sync} $^
 	@touch $@
 
@@ -84,15 +85,35 @@ update_requirement_websecmap: _update_websecmap_sha requirements.txt _commit_upd
 _update_websecmap_sha:
 	sha=$(shell git ls-remote -q git@gitlab.com:internet-cleanup-foundation/web-security-map.git master|cut -f1); \
 	if grep $$sha requirements.in >/dev/null; then echo -e "\nNo update for you, current sha for websecmap in requirements.in is the same as master on Gitlab.\n"; exit 1;fi; \
-	sed -E -i '' "s/web-security-map@[a-zA-Z0-9]{40}/web-security-map@$$sha/" requirements.in
+	sed -E -i '' "s/web-security-map@[a-zA-Z0-9]{40}/web-security-map@$$sha/" requirements.in requirements-deploy.in
 
 _commit_update: requirements.txt
 	git add requirements*.txt requirements*.in
 	git commit -m "Updated requirements."
 
+## Environment requirements
+environment_dependencies: libmagic
+
+ifeq ($(shell uname -s),Darwin)
+brew_prefix = $(shell brew --prefix)
+brew = ${brew_prefix}/bin/brew
+
+libmagic: ${brew_prefix}/Cellar/libmagic/
+${brew_prefix}/Cellar/libmagic/: | ${brew}
+	brew install libmagic
+
+${brew}:
+	@echo "Please install homebrew: https://brew.sh"
+	false
+else
+libmagic: /usr/lib/x86_64-linux-gnu/libmagic.so.1
+/usr/lib/x86_64-linux-gnu/libmagic.so.1:
+	apt install -yqq libmagic1
+endif
+
 ## QA
 test: .make.test	## run test suite
-.make.test: ${pysrc} ${app}
+.make.test: ${src} ${app}
 	# run testsuite
 	DJANGO_SETTINGS_MODULE=${app_name}.settings ${env} coverage run --include '${app_name}/*' --omit '*migrations*' \
 		-m pytest -vv -k 'not integration and not system' ${testargs}
@@ -102,8 +123,7 @@ test: .make.test	## run test suite
 	${env} coverage html
 	# ensure no model updates are commited without migrations
 	${env} ${app} makemigrations --check
-	# never touch this file, as this makefile never knows what exactly has changed (it might/should)
-	# @touch $@
+	@touch $@
 
 check: .make.check.py .make.check.sh  ## code quality checks
 .make.check.py: ${pysrc} ${app}

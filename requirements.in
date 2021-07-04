@@ -9,7 +9,7 @@
 # - no version pinning, unless it is required and explained
 
 # to update websecmap, update the SHA hash and run: make update_requirement_websecmap
-git+https://gitlab.com/internet-cleanup-foundation/web-security-map@a978b247a8f9c72948a89b29948ddeb10e005eb2#egg=websecmap
+git+https://gitlab.com/internet-cleanup-foundation/web-security-map@002972a962cf5c9a78f29fea4c4103d34cab919d#egg=websecmap
 
 django-otp
 django-two-factor-auth
@@ -30,3 +30,6 @@ django_mail_admin
 
 # Allow CORS requests from client on the same server:
 django-cors-headers
+
+# prior releases don't have wheels for Apple Silicon
+numpy >= 1.21.0
