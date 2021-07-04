@@ -94,6 +94,7 @@ _commit_update: requirements.txt
 ## Environment requirements
 environment_dependencies: libmagic
 
+ifeq ($(shell uname -s),Darwin)
 brew_prefix = $(shell brew --prefix)
 brew = ${brew_prefix}/bin/brew
 
@@ -104,6 +105,11 @@ ${brew_prefix}/Cellar/libmagic/: | ${brew}
 ${brew}:
 	@echo "Please install homebrew: https://brew.sh"
 	false
+else
+libmagic: /usr/lib/x86_64-linux-gnu/libmagic.so.1
+/usr/lib/x86_64-linux-gnu/libmagic.so.1:
+	apt install -yqq libmagic1
+endif
 
 ## QA
 test: .make.test	## run test suite

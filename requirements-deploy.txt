@@ -23,9 +23,14 @@ billiard==3.6.3.0
     #   -c requirements.txt
     #   celery
     #   websecmap
+celery-statsd==1.0.0
+    # via
+    #   -c requirements.txt
+    #   websecmap
 celery[gevent,redis]==4.4.7
     # via
     #   -c requirements.txt
+    #   celery-statsd
     #   django-celery-beat
     #   flower
     #   websecmap
@@ -118,6 +123,10 @@ django-constance[database]==2.8.0
     # via
     #   -c requirements.txt
     #   websecmap
+django-cors-headers==3.7.0
+    # via
+    #   -c requirements.txt
+    #   websecmap
 django-countries==7.0
     # via
     #   -c requirements.txt
@@ -174,6 +183,7 @@ django==3.1.6
     #   django-appconf
     #   django-celery-beat
     #   django-colorful
+    #   django-cors-headers
     #   django-excel
     #   django-import-export
     #   django-leaflet
@@ -439,6 +449,7 @@ simplejson==3.17.2
 six==1.15.0
     # via
     #   -c requirements.txt
+    #   celery-statsd
     #   django-3-jet
     #   django-autocomplete-light
     #   django-compressor
@@ -462,7 +473,12 @@ sqlparse==0.4.1
 statsd==3.3.0
     # via
     #   -c requirements.txt
+    #   celery-statsd
     #   django-statsd-mozilla
+    #   websecmap
+statshog==1.0.6
+    # via
+    #   -c requirements.txt
     #   websecmap
 tablib[html,ods,xls,xlsx,yaml]==3.0.0
     # via
@@ -511,7 +527,7 @@ vine==1.3.0
     #   celery
     #   flower
     #   websecmap
-git+https://gitlab.com/internet-cleanup-foundation/web-security-map@a978b247a8f9c72948a89b29948ddeb10e005eb2#egg=websecmap[deploy]
+git+https://gitlab.com/internet-cleanup-foundation/web-security-map@002972a962cf5c9a78f29fea4c4103d34cab919d#egg=websecmap[deploy]
     # via
     #   -c requirements.txt
     #   -r requirements-deploy.in
