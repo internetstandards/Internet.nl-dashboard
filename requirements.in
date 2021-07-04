@@ -20,7 +20,7 @@ validators
 # by checking their headers according to a predefined list of file types. This functionality is exposed to the command
 # line by the Unix command file.
 # Used to determine mimetype in spreadsheet uploads.
-python-magic-bin
+python-magic
 pytz
 polib
 django-activity-stream
