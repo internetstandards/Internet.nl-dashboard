@@ -68,7 +68,7 @@ requirements-dev.txt requirements-deploy.txt: requirements.txt
 requirements.txt requirements-dev.txt requirements-deploy.txt: %.txt: %.in | ${pip-compile}
 	${pip-compile} ${pip_compile_args} --output-file $@ $<
 	# remove `extra` marker as there is no way to specify it during install
-	sed -E -i 'extra == "deploy"' $@
+	sed -E -i '' 's/.extra == "deploy"//' $@
 
 update_requirements: pip_compile_args=--upgrade
 update_requirements: _mark_outdated requirements.txt requirements-dev.txt _commit_update
@@ -199,9 +199,6 @@ push_image:
 
 image:  ## Create Docker images
 	docker build -t ${docker_image_name} .
-
-test_image:  ## Test if docker image runs
-	docker run -ti --rm ${docker_image_name} -h
 
 docsa: ## Generate documentation in various formats
 	# Remove existing documentation folder
