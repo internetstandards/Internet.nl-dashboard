@@ -67,6 +67,8 @@ requirements: requirements.txt requirements-dev.txt requirements-deploy.txt
 requirements-dev.txt requirements-deploy.txt: requirements.txt
 requirements.txt requirements-dev.txt requirements-deploy.txt: %.txt: %.in | ${pip-compile}
 	${pip-compile} ${pip_compile_args} --output-file $@ $<
+	# remove `extra` marker as there is no way to specify it during install
+	sed -E -i 'extra == "deploy"' $@
 
 update_requirements: pip_compile_args=--upgrade
 update_requirements: _mark_outdated requirements.txt requirements-dev.txt _commit_update
