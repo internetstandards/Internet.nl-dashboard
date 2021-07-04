@@ -1,4 +1,4 @@
-from websecmap.reporting.report import create_timeline, create_url_report
+from websecmap.reporting.report import create_timeline, create_url_reports
 
 from dashboard.internet_nl_dashboard.logic.domains import (_add_to_urls_to_urllist,
                                                            get_or_create_list_by_name)
@@ -14,7 +14,7 @@ def test_report_to_spreadsheet(db) -> None:
 
     urllist = get_or_create_list_by_name(account, "test list 1")
     _add_to_urls_to_urllist(account, urllist, [url])
-    create_url_report(create_timeline(url), url)
+    create_url_reports(create_timeline(url), url)
     create_scan_report(account, urllist)
 
     # make sure there is a urllistreport to get a spreadsheet from

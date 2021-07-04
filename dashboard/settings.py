@@ -80,7 +80,6 @@ INSTALLED_APPS = [
     'websecmap.scanners',  # Endpoint, EndpointGenericScan, UrlGenericScan
     'websecmap.reporting',  # Various reporting functions (might be not needed)
     'websecmap.map',  # because some scanners are intertwined with map configurations. That needs to go.
-    'websecmap.pro',  # some model inlines
 
     # Custom Apps
     # These apps overwrite whatever is declared above, for example the user information.
@@ -412,6 +411,7 @@ CELERY_BROKER_TRANSPORT_OPTIONS = {}
 # Settings for statsd metrics collection. Statsd defaults over UDP port 8125.
 # https://django-statsd.readthedocs.io/en/latest/#celery-signals-integration
 STATSD_HOST = os.environ.get('STATSD_HOST', '127.0.0.1')
+STATSD_PORT = os.environ.get("STATSD_PORT", "8125")
 STATSD_PREFIX = 'dashboard'
 # register hooks for selery tasks
 STATSD_CELERY_SIGNALS = True
