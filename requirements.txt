@@ -238,8 +238,6 @@ ordered-set==4.0.2
     # via
     #   deepdiff
     #   websecmap
-phonenumberslite==8.12.2
-    # via django-phonenumber-field
 pillow==8.1.2
     # via
     #   python-resize-image
@@ -297,7 +295,7 @@ python-dateutil==2.8.1
     # via
     #   python-crontab
     #   websecmap
-python-magic==0.4.15
+python-magic-bin==0.4.14
     # via -r requirements.in
 python-monkey-business==1.0.0
     # via

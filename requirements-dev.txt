@@ -147,9 +147,7 @@ pathtools==0.1.2
     #   sphinx-autobuild
     #   watchdog
 phonenumberslite==8.12.2
-    # via
-    #   -c requirements.txt
-    #   -r requirements-dev.in
+    # via -r requirements-dev.in
 pillow==8.1.2
     # via
     #   -c requirements.txt
