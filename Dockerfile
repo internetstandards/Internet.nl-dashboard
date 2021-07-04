@@ -10,6 +10,7 @@ RUN mkdir /source
 WORKDIR /source/
 
 COPY requirements.txt /source/
+COPY requirements-deploy.txt /source/
 RUN pip install -r requirements.txt && rm -rf /root/.cache/pip /pyenv/src/dashboard/.git
 
 COPY setup.py README.md /source/
