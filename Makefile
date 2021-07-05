@@ -92,6 +92,7 @@ _commit_update: requirements.txt
 ## Environment requirements
 environment_dependencies: libmagic
 
+# Note that there is no wheel for pillow on python3.8 on mac, wheels start at python 3.9. Use 3.9
 ifeq ($(shell uname -s),Darwin)
 brew_prefix = $(shell brew --prefix)
 brew = ${brew_prefix}/bin/brew
