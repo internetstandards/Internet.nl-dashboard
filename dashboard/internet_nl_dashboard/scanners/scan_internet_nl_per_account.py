@@ -52,7 +52,7 @@ def create_api_settings(v2_scan_id: InternetNLV2Scan):
     scan = InternetNLV2Scan.objects.all().filter(id=v2_scan_id).first()
     if not scan:
         log.error(f'Did not find an internetnLV2scan with id {v2_scan_id}')
-        return InternetNLApiSettings()
+        return InternetNLApiSettings().__dict__
 
     # figure out which AccountInternetNLScan object uses this scan. Retrieve the credentials from that account.
     account_scan = AccountInternetNLScan.objects.all().filter(scan=scan).first()
