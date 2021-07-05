@@ -55,6 +55,7 @@ SPREADSHEET_MIME_TYPES: List[str] = [
     # https://stackoverflow.com/questions/7076042/what-mime-type-should-i-use-for-csv
     'text/plain',
     'text/x-csv',
+    'text/csv',
 ]
 
 ALLOWED_SPREADSHEET_EXTENSIONS: List[str] = ['xlsx', 'xls', 'ods', 'csv']
@@ -83,7 +84,7 @@ def is_valid_mimetype(file: str) -> bool:
 
     if mimetype in SPREADSHEET_MIME_TYPES:
         return True
-    log.debug('Not a valid mime type.')
+    log.debug(f'{mimetype} is not a valid mime type.')
     return False
 
 

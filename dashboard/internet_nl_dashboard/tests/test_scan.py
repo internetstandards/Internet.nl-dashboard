@@ -18,7 +18,7 @@ def test_update_state(db):
     scan.account = account
     scan.save()
 
-    update_state("new", scan)
+    update_state("new", scan.id)
 
     # A situation has occurred where the log was already in the next step, but the scan state itself was
     # at the old step. This caused the scan to block: as the logic was that if the log is in the correct / new state
@@ -30,7 +30,7 @@ def test_update_state(db):
     scanlog.state = "out of sync"
     scanlog.save()
 
-    update_state("out of sync", scan)
+    update_state("out of sync", scan.id)
 
     my_scan = AccountInternetNLScan.objects.all().first()
     assert my_scan.state == "out of sync"
@@ -41,7 +41,7 @@ def test_update_state(db):
     assert AccountInternetNLScanLog.objects.all().count() == 3
 
     # make sure the amount of log info does not grow if things are the same
-    update_state("out of sync", my_scan)
-    update_state("out of sync", my_scan)
-    update_state("out of sync", my_scan)
+    update_state("out of sync", my_scan.id)
+    update_state("out of sync", my_scan.id)
+    update_state("out of sync", my_scan.id)
     assert AccountInternetNLScanLog.objects.all().count() == 3

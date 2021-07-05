@@ -335,9 +335,11 @@ LOGGING = {
 # even serialize dicts.
 # http://docs.celeryproject.org/en/latest/userguide/configuration.html
 # see: https://blog.nelhage.com/2011/03/exploiting-pickle/
-CELERY_ACCEPT_CONTENT = ['pickle']
-CELERY_TASK_SERIALIZER = 'pickle'
-CELERY_RESULT_SERIALIZER = 'pickle'
+CELERY_ACCEPT_CONTENT = ["json"]
+CELERY_SERIALIZER = "json"
+CELERY_TASK_SERIALIZER = "json"
+CELERY_RESULT_SERIALIZER = "json"
+CELERY_EVENT_SERIALIZER = "json"
 
 
 # Celery config
@@ -375,7 +377,7 @@ CELERY_WORKER_CONCURRENCY = 10
 # issues where tasks that don't finish or crash keep being executed:
 # thus for tasks that are not programmed perfectly it will raise a number
 # of repeated exceptions which will need to be debugged.
-CELERY_ACKS_LATE = True
+CELERY_TASK_ACKS_LATE = True
 
 """
 This number can be tweaked depending on the number of threads/green-threads (eventlet/gevent) using a connection.
@@ -396,6 +398,7 @@ CELERY_BROKER_TRANSPORT_OPTIONS = {}
 STATSD_HOST = os.environ.get('STATSD_HOST', '127.0.0.1')
 STATSD_PORT = os.environ.get("STATSD_PORT", "8125")
 STATSD_PREFIX = 'dashboard'
+STATSD_TELEGRAF = True
 # register hooks for selery tasks
 STATSD_CELERY_SIGNALS = True
 # send database query metric (in production, in development we have debug toolbar for this)

@@ -308,7 +308,7 @@ class AccountInternetNLScanAdmin(ImportExportModelAdmin, admin.ModelAdmin):
 
     def attempt_rollback(self, request, queryset):
         for scan in queryset:
-            recover_and_retry.apply_async([scan])
+            recover_and_retry.apply_async([scan.id])
         self.message_user(request, "Rolling back asynchronously. May take a while.")
     attempt_rollback.short_description = "Attempt rollback (async)"
     actions.append('attempt_rollback')
@@ -317,7 +317,7 @@ class AccountInternetNLScanAdmin(ImportExportModelAdmin, admin.ModelAdmin):
         log.debug("Attempting to progress scan.")
         for scan in queryset:
             log.debug(f"Progressing scan {scan}.")
-            tasks = progress_running_scan(scan)
+            tasks = progress_running_scan(scan.id)
             log.debug(f"Created task {tasks}.")
             tasks.apply_async()
         self.message_user(request, "Attempting to progress scans (async).")
@@ -329,7 +329,7 @@ class AccountInternetNLScanAdmin(ImportExportModelAdmin, admin.ModelAdmin):
         for scan in queryset:
             if scan.finished:
                 sent += 1
-                send_scan_finished_mails(scan)
+                send_scan_finished_mails(scan.id)
         self.message_user(request, f"A total of {sent} mails have been sent.")
     send_finish_mail.short_description = "Queue finished mail (finished only)"
     actions.append('send_finish_mail')
@@ -338,7 +338,7 @@ class AccountInternetNLScanAdmin(ImportExportModelAdmin, admin.ModelAdmin):
     def create_extra_report(self, request, queryset):
         tasks = []
         for scan in queryset:
-            tasks.append(creating_report(scan))
+            tasks.append(creating_report(scan.id))
         group(tasks).apply_async()
         self.message_user(request, f"Creating additional reports (async).")
 
