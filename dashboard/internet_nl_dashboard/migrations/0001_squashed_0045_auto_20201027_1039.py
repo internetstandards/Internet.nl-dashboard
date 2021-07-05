@@ -18,9 +18,7 @@ class Migration(migrations.Migration):
     initial = True
 
     dependencies = [
-        ('scanners', '0060_auto_20190116_0937'),
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
-        ('scanners', '0072_auto_20200506_1313'),
         ('organizations', '0053_url_do_not_find_subdomains'),
     ]
 

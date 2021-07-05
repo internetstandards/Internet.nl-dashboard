@@ -3,4 +3,4 @@
 # make sure there are no version conflicts with requirements.txt
 -c requirements.txt
 
-git+https://gitlab.com/internet-cleanup-foundation/web-security-map@002972a962cf5c9a78f29fea4c4103d34cab919d#egg=websecmap[deploy]
+git+https://gitlab.com/internet-cleanup-foundation/web-security-map@6e2f5c9a1a6e67843469988e49069e17c0b617ae#egg=websecmap[deploy]
