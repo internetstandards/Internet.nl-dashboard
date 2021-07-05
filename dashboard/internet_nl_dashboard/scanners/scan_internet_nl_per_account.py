@@ -47,7 +47,12 @@ from dashboard.internet_nl_dashboard.models import (AccountInternetNLScan, Accou
 log = logging.getLogger(__name__)
 
 
-def create_api_settings(scan: InternetNLV2Scan):
+def create_api_settings(v2_scan_id: InternetNLV2Scan):
+
+    scan = InternetNLV2Scan.objects.all().filter(id=v2_scan_id).first()
+    if not scan:
+        log.error(f'Did not find an internetnLV2scan with id {v2_scan_id}')
+        return InternetNLApiSettings()
 
     # figure out which AccountInternetNLScan object uses this scan. Retrieve the credentials from that account.
     account_scan = AccountInternetNLScan.objects.all().filter(scan=scan).first()
@@ -63,7 +68,7 @@ def create_api_settings(scan: InternetNLV2Scan):
 
     s.maximum_domains = config.INTERNET_NL_MAXIMUM_URLS
 
-    return s
+    return s.__dict__
 
 
 # overwrite the create API settings with one that handles credentials for every separate account. This is needed
@@ -72,13 +77,18 @@ internet_nl_v2_websecmap.create_api_settings = create_api_settings
 
 
 @app.task(queue='storage')
-def initialize_scan(urllist: UrlList, manual_or_scheduled: str = "scheduled"):
+def initialize_scan(urllist_id: UrlList, manual_or_scheduled: str = "scheduled") -> int:
+
+    urllist = UrlList.objects.all().filter(id=urllist_id).first()
+    if not urllist:
+        return None
+
     # We need to store the scan type in the InternetNLV2Scan at creation, because the type in the list might change:
     translated_scan_types = {'web': 'web', 'mail': 'mail_dashboard'}
     new_scan = InternetNLV2Scan()
     new_scan.type = translated_scan_types[urllist.scan_type]
     new_scan.save()
-    internet_nl_v2_websecmap.update_state(new_scan, "requested and empty",
+    internet_nl_v2_websecmap.update_state(new_scan.id, "requested and empty",
                                           "requested a scan to be performed on internet.nl api")
 
     accountinternetnlscan = AccountInternetNLScan()
@@ -90,12 +100,12 @@ def initialize_scan(urllist: UrlList, manual_or_scheduled: str = "scheduled"):
     accountinternetnlscan.save()
 
     # and start the process.
-    update_state("requested", accountinternetnlscan)
+    update_state("requested", accountinternetnlscan.id)
 
     # Sprinkling an activity stream action.
     action.send(urllist.account, verb=f'started {manual_or_scheduled} scan', target=accountinternetnlscan, public=False)
 
-    return accountinternetnlscan
+    return accountinternetnlscan.id
 
 
 @app.task(queue='storage')
@@ -115,12 +125,12 @@ def check_running_dashboard_scans(**kwargs) -> Task:
             | Q(state__startswith="cancelled"))
 
     log.debug(f"Checking the state of scan {scans}.")
-    tasks = [progress_running_scan(scan) for scan in scans]
+    tasks = [progress_running_scan(scan.id) for scan in scans]
 
     return group(tasks)
 
 
-def progress_running_scan(scan: AccountInternetNLScan) -> Task:
+def progress_running_scan(scan_id: int) -> Task:
     """
     This monitors the state of a dashboard scan. Depending on the state, it determines if an action is needed and
     gathers them. This will not handle errors.
@@ -151,6 +161,10 @@ def progress_running_scan(scan: AccountInternetNLScan) -> Task:
 
     :return:
     """
+
+    scan = AccountInternetNLScan.objects.all().filter(id=scan_id).first()
+    if not scan:
+        return group([])
 
     """
     It's not possible to safely create a scan automagically: this might be called a few times in a row, and then
@@ -200,12 +214,16 @@ def progress_running_scan(scan: AccountInternetNLScan) -> Task:
         # also run this in a transaction, so it's only possible to get a state and update it to an active state once.
         scan = AccountInternetNLScan.objects.get(id=scan.id)
         next_step = steps.get(scan.state, handle_unknown_state)
-        return next_step(scan)
+        return next_step(scan.id)
 
 
 @app.task(queue="storage")
-def recover_and_retry(scan: AccountInternetNLScan):
+def recover_and_retry(scan_id: int):
     # check the latest valid state from progress running scan, set the state to that state.
+
+    scan = AccountInternetNLScan.objects.all().filter(id=scan_id).first()
+    if not scan:
+        return
 
     valid_states = ['requested', 'discovered endpoints', 'retrieved scannable urls', 'registered scan at internet.nl',
                     'registered', "running scan", "scan results ready", "scan results stored", "created report",
@@ -221,89 +239,133 @@ def recover_and_retry(scan: AccountInternetNLScan):
     latest_valid = AccountInternetNLScanLog.objects.all().filter(
         scan=scan, state__in=valid_states).order_by('-id').first()
 
+    log.warning(f"No valid rollback state for scan {scan_id}.")
+
     log.debug(f"AccountInternetNLScan scan #{scan.id} is rolled back to retry from "
               f"'{scan.state}' to '{latest_valid.state}'.")
 
     if scan.state in error_states:
-        update_state(latest_valid.state, scan)
+        update_state(latest_valid.state, scan.id)
     else:
-        update_state(latest_valid.state, scan)
+        update_state(latest_valid.state, scan.id)
 
     # Also have to rollback the underlying scan, if there already is one.
     if scan.scan:
-        internet_nl_v2_websecmap.recover_and_retry(scan.scan)
+        internet_nl_v2_websecmap.recover_and_retry(scan.scan.id)
 
     return group([])
 
 
-def handle_unknown_state(scan):
+def handle_unknown_state(scan_id):
     # probably nothing to be done...
     return group([])
 
 
-def discovering_endpoints(scan: AccountInternetNLScan):
+def discovering_endpoints(scan_id: int):
+
+    scan = AccountInternetNLScan.objects.all().filter(id=scan_id).first()
+    if not scan:
+        return
+
     # Always immediately update the current state, so the amount of double calls is minimal:
     #  "discovered endpoints" to "discovering endpoints" and cause an infinte loop.
-    update_state("discovering endpoints", scan)
+    update_state("discovering endpoints", scan.id)
     return (
         dns_endpoints.compose_discover_task(**{
-            'urls_filter': {'urls_in_dashboard_list': scan.urllist, 'is_dead': False, 'not_resolvable': False}})
-        | update_state.si("discovered endpoints", scan)
+            'urls_filter': {'urls_in_dashboard_list__id': scan.urllist.id, 'is_dead': False, 'not_resolvable': False}})
+        | update_state.si("discovered endpoints", scan.id)
     )
 
 
-def retrieving_scannable_urls(scan: AccountInternetNLScan):
+def retrieving_scannable_urls(scan_id: int):
+
+    scan = AccountInternetNLScan.objects.all().filter(id=scan_id).first()
+    if not scan:
+        return
+
     # This step tries to prevent API calls with an empty list of urls.
-    update_state("retrieving scannable urls", scan)
+    update_state("retrieving scannable urls", scan.id)
 
     # mail was added here, due to a problem while registering scans. We always want dns_soa endpoints.
     relevant_scan_types = {"web": "dns_a_aaaa", "mail_dashboard": "dns_soa", "mail": "dns_soa"}
 
     return (
-        get_relevant_urls.si(scan.urllist, relevant_scan_types[scan.scan.type])
+        get_relevant_urls.si(scan.urllist.id, relevant_scan_types[scan.scan.type])
         | check_retrieved_scannable_urls.s()
-        | update_state.s(scan)
+        | update_state.s(scan.id)
     )
 
 
-def registering_scan_at_internet_nl(scan: AccountInternetNLScan):
-    update_state("registering scan at internet.nl", scan)
+def registering_scan_at_internet_nl(scan_id: int):
+
+    scan = AccountInternetNLScan.objects.all().filter(id=scan_id).first()
+    if not scan:
+        return
+
+    update_state("registering scan at internet.nl", scan.id)
 
     # mail = websecmap, mail_dashboard = internet.nl dashboard, web is the same on both. Mail here is a fallback
     # because the dashboard only understands dns_soa endpoints.
     relevant_endpoint_types = {"web": "dns_a_aaaa", "mail_dashboard": "dns_soa",  "mail": "dns_soa"}
 
     # auto saved.
-    scan.scan.subject_urls.set(get_relevant_urls(scan.urllist, relevant_endpoint_types[scan.scan.type]))
+    scan.scan.subject_urls.set(get_relevant_urls(scan.urllist.id, relevant_endpoint_types[scan.scan.type]))
 
     internet_nl_v2_websecmap.update_state(
-        scan.scan, "requested", "requested a scan to be performed on internet.nl api")
+        scan.scan.id, "requested", "requested a scan to be performed on internet.nl api")
 
-    return chain(internet_nl_v2_websecmap.progress_running_scan(scan.scan) | copy_state_from_websecmap_scan.si(scan))
-
-
-def running_scan(scan: AccountInternetNLScan):
-    update_state("running scan", scan)
-    return chain(internet_nl_v2_websecmap.progress_running_scan(scan.scan) | copy_state_from_websecmap_scan.si(scan))
+    return chain(internet_nl_v2_websecmap.progress_running_scan(scan.scan.id)
+                 | copy_state_from_websecmap_scan.si(scan.id))
 
 
-def continue_running_scan(scan: AccountInternetNLScan):
+def running_scan(scan_id: int):
+
+    scan = AccountInternetNLScan.objects.all().filter(id=scan_id).first()
+    if not scan:
+        return
+
+    update_state("running scan", scan.id)
+    return chain(internet_nl_v2_websecmap.progress_running_scan(scan.scan.id)
+                 | copy_state_from_websecmap_scan.si(scan.id))
+
+
+def continue_running_scan(scan_id: int):
     # Used to progress in error situations.
-    return chain(internet_nl_v2_websecmap.progress_running_scan(scan.scan) | copy_state_from_websecmap_scan.si(scan))
+    scan = AccountInternetNLScan.objects.all().filter(id=scan_id).first()
+    if not scan:
+        return
+
+    return chain(internet_nl_v2_websecmap.progress_running_scan(scan.scan.id)
+                 | copy_state_from_websecmap_scan.si(scan.id))
 
 
-def storing_scan_results(scan: AccountInternetNLScan):
-    update_state("storing scan results", scan)
-    return chain(internet_nl_v2_websecmap.progress_running_scan(scan.scan) | copy_state_from_websecmap_scan.si(scan))
+def storing_scan_results(scan_id: int):
+
+    scan = AccountInternetNLScan.objects.all().filter(id=scan_id).first()
+    if not scan:
+        return
+
+    update_state("storing scan results", scan.id)
+    return chain(internet_nl_v2_websecmap.progress_running_scan(scan.scan.id)
+                 | copy_state_from_websecmap_scan.si(scan.id))
 
 
-def processing_scan_results(scan: AccountInternetNLScan):
-    update_state("processing scan results", scan)
-    return chain(internet_nl_v2_websecmap.progress_running_scan(scan.scan) | copy_state_from_websecmap_scan.si(scan))
+def processing_scan_results(scan_id: int):
+    scan = AccountInternetNLScan.objects.all().filter(id=scan_id).first()
+    if not scan:
+        return
+
+    update_state("processing scan results", scan.id)
+    return chain(internet_nl_v2_websecmap.progress_running_scan(scan.scan.id)
+                 | copy_state_from_websecmap_scan.si(scan.id))
 
 
 @app.task(queue="storage")
-def copy_state_from_websecmap_scan(scan: AccountInternetNLScan):
+def copy_state_from_websecmap_scan(scan_id: int):
+
+    scan = AccountInternetNLScan.objects.all().filter(id=scan_id).first()
+    if not scan:
+        return
 
     up_to_date_scan_information = InternetNLV2Scan.objects.all().get(id=scan.scan.pk)
     current_state = up_to_date_scan_information.state
@@ -326,40 +388,55 @@ def copy_state_from_websecmap_scan(scan: AccountInternetNLScan):
     else:
         new_state = scan.scan.state
 
-    update_state(new_state, scan)
+    update_state(new_state, scan.id)
 
 
-def creating_report(scan: AccountInternetNLScan):
-    update_state("creating report", scan)
+def creating_report(scan_id: int):
+
+    scan = AccountInternetNLScan.objects.all().filter(id=scan_id).first()
+    if not scan:
+        return
+
+    update_state("creating report", scan.id)
 
     # Note that calling 'timezone.now()' at canvas creation time, means that you'll have a date in the past
     # at the moment the function is actually called. If you need accurate time in the function, make sure the
     # function calls 'timezone.now()' when the function is run.
-    return (recreate_url_reports.si(list(scan.urllist.urls.all()))
-            | create_dashboard_report.si(scan.urllist)
-            | connect_urllistreport_to_accountinternetnlscan.s(scan)
+    return (group(recreate_url_reports(list(scan.urllist.urls.all().values_list('id', flat=True))))
+            | create_dashboard_report.si(scan.urllist.id)
+            | connect_urllistreport_to_accountinternetnlscan.s(scan.id)
             | upgrade_report_with_statistics.s()
-            | upgrade_report_with_unscannable_urls.s(scan)
-            | update_state.si("created report", scan))
+            | upgrade_report_with_unscannable_urls.s(scan.id)
+            | update_state.si("created report", scan.id))
 
 
-def sending_mail(scan: AccountInternetNLScan):
-    update_state("sending mail", scan)
+def sending_mail(scan_id: int):
 
-    return (send_after_scan_mail.si(scan)
-            | update_state.s(scan))
+    scan = AccountInternetNLScan.objects.all().filter(id=scan_id).first()
+    if not scan:
+        return
+
+    update_state("sending mail", scan.id)
+
+    return (send_after_scan_mail.si(scan.id)
+            | update_state.s(scan.id))
 
 
-def finishing_scan(scan: AccountInternetNLScan):
+def finishing_scan(scan_id: int):
+
+    scan = AccountInternetNLScan.objects.all().filter(id=scan_id).first()
+    if not scan:
+        return
+
     # No further actions, so not setting "finishing scan" as a state, but set it to "scan finished" directly.
     scan.finished_on = datetime.now(pytz.utc)
     scan.save()
 
-    update_state("finished", scan)
+    update_state("finished", scan.id)
     return group([])
 
 
-def monitor_timeout(scan):
+def monitor_timeout(scan_id: int):
     """
     A timeout is set for a day. If the same state is static for 24 hours, the scan will be set to the previous state.
     Except when a scan is requested: the scan might be so large, and the time to process it might be so high,
@@ -368,6 +445,10 @@ def monitor_timeout(scan):
     :param scan:
     :return:
     """
+
+    scan = AccountInternetNLScan.objects.all().filter(id=scan_id).first()
+    if not scan:
+        return
 
     # todo: recover from websecmap errors, by trying to recover there and writing the status to the dashboard.
     recovering_strategies = {
@@ -405,15 +486,29 @@ def monitor_timeout(scan):
 
 
 @app.task(queue='storage')
-def connect_urllistreport_to_accountinternetnlscan(urllistreport: UrlListReport, scan: AccountInternetNLScan):
+def connect_urllistreport_to_accountinternetnlscan(urllistreport_id: int, scan_id: int):
+
+    scan = AccountInternetNLScan.objects.all().filter(id=scan_id).first()
+    if not scan:
+        return
+
+    urllistreport = UrlListReport.objects.all().filter(id=urllistreport_id).first()
+    if not urllistreport:
+        return
+
     scan.report = urllistreport
     scan.save()
 
-    return urllistreport
+    return urllistreport.id
 
 
 @app.task(queue='storage')
-def upgrade_report_with_statistics(urllistreport: UrlListReport):
+def upgrade_report_with_statistics(urllistreport_id: int) -> int:
+
+    urllistreport = UrlListReport.objects.all().filter(id=urllistreport_id).first()
+    if not urllistreport:
+        return
+
     log.debug(f"Creating statistics over urllistreport {urllistreport}.")
 
     # This saves a lot of data / weight.
@@ -435,11 +530,11 @@ def upgrade_report_with_statistics(urllistreport: UrlListReport):
 
     clean_up_not_required_data_to_speed_up_report_on_client(urllistreport)
 
-    return UrlListReport.objects.all().get(pk=urllistreport.pk)
+    return urllistreport.pk
 
 
 @app.task(queue='storage')
-def upgrade_report_with_unscannable_urls(urllistreport: UrlListReport, scan: AccountInternetNLScan):
+def upgrade_report_with_unscannable_urls(urllistreport_id: int, scan_id: int):
     """
     Urls that cannot be scanned using the internet.nl website are not allowed to be scanned. This is where endpoint
     detection comes into view. Only domains with valid endpoints are (should) be scanned. Other domains have to
@@ -465,6 +560,14 @@ def upgrade_report_with_unscannable_urls(urllistreport: UrlListReport, scan: Acc
     :param scan:
     :return:
     """
+
+    scan = AccountInternetNLScan.objects.all().filter(id=scan_id).first()
+    if not scan:
+        return
+
+    urllistreport = UrlListReport.objects.all().filter(id=urllistreport_id).first()
+    if not urllistreport:
+        return
 
     log.debug("Adding unscannable urls to report.")
 
@@ -514,11 +617,15 @@ def upgrade_report_with_unscannable_urls(urllistreport: UrlListReport, scan: Acc
     urllistreport.total_urls = len(urllistreport.calculation['urls'])
     urllistreport.save()
 
-    return urllistreport
+    return urllistreport.id
 
 
 @app.task(queue='storage')
-def send_after_scan_mail(scan: AccountInternetNLScan):
+def send_after_scan_mail(scan_id: int):
+
+    scan = AccountInternetNLScan.objects.all().filter(id=scan_id).first()
+    if not scan:
+        return
 
     # Do not try to send mail if no mailserver is configured
     if not email_configration_is_correct():
@@ -532,7 +639,7 @@ def send_after_scan_mail(scan: AccountInternetNLScan):
 
 
 @app.task(queue='storage')
-def check_retrieved_scannable_urls(urls: List):
+def check_retrieved_scannable_urls(urls: List[int]):
     """ Influences the process, see if we can continue. """
     if not urls:
         return "error retrieving scannable urls: " \
@@ -542,9 +649,13 @@ def check_retrieved_scannable_urls(urls: List):
 
 
 @app.task(queue='storage')
-def update_state(state: str, scan: AccountInternetNLScan) -> None:
+def update_state(state: str, scan_id: int) -> None:
     """Update the current scan state. Also write it to the scan log. From this log we should also be able to see
     retries... when celery retries on exceptions etc..."""
+
+    scan = AccountInternetNLScan.objects.all().filter(id=scan_id).first()
+    if not scan:
+        return
 
     # if the state is still the same, just update the last_check, don't append the log.
     # Don't get it from the scan object, that info might be obsolete.
@@ -574,7 +685,12 @@ def update_state(state: str, scan: AccountInternetNLScan) -> None:
 
 
 @app.task(queue='storage')
-def get_relevant_urls(urllist: UrlList, protocol: str) -> List:
+def get_relevant_urls(urllist_id: int, protocol: str) -> List[int]:
+
+    urllist = UrlList.objects.all().filter(id=urllist_id).first()
+    if not urllist:
+        return []
+
     urls = Url.objects.all().filter(urls_in_dashboard_list=urllist, is_dead=False, not_resolvable=False,
-                                    endpoint__protocol__in=[protocol])
+                                    endpoint__protocol__in=[protocol]).values_list('id', flat=True)
     return list(set(urls))

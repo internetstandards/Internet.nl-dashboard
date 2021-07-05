@@ -33,7 +33,7 @@ def start_scans_for_lists_who_are_up_for_scanning() -> Task:
             continue
 
         if urllist.is_due_for_scanning():
-            tasks.append(initialize_scan.si(urllist))
+            tasks.append(initialize_scan.si(urllist.id))
 
         # placed here, as otherwise the list is never due for scanning as the date might be updated to something
         # new in the future.

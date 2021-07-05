@@ -222,7 +222,7 @@ def test_report_upgrade(db, monkeypatch) -> None:
     # and make sure the report is complete: meaning that all urls requested are present, even though they
     # could not be scanned. So a top 100 stays a top 100.
     assert (len(fake_report.calculation['urls']) == 1)
-    upgrade_report_with_unscannable_urls(fake_report, scan)
+    upgrade_report_with_unscannable_urls(fake_report.id, scan.id)
     fake_report = UrlListReport.objects.all().first()
     assert(len(fake_report.calculation['urls']) == len(urls))
 

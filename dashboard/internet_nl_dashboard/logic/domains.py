@@ -111,7 +111,7 @@ def scan_now(account, user_input) -> Dict[str, Any]:
     # Make sure the fernet key is working fine, you are on the correct queue (-Q storage) and that the correct API
     # version is used.
     # Run this before updating the list, as this might go wrong for many reasons.
-    initialize_scan(urllist, manual_or_scheduled="manual")
+    initialize_scan(urllist.id, manual_or_scheduled="manual")
 
     # done: have to update the list info. On the other hand: there is no guarantee that this task already has started
     # ...to fix this issue, we'll use a 'last_manual_scan' field.
@@ -127,7 +127,7 @@ def scan_urllist_now_ignoring_business_rules(urllist: UrlList):
     if not urllist:
         return operation_response(error=True, message="List could not be found.")
 
-    initialize_scan(urllist)
+    initialize_scan(urllist.id)
 
     urllist.last_manual_scan = timezone.now()
     urllist.save()

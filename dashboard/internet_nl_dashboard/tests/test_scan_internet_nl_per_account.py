@@ -120,12 +120,12 @@ def test_creating_report(db, redis_server):
     internetnlv2scan.save()
 
     # import the scan results to the database. Vitesse.nl will be empty here...
-    tasks = processing_scan_results(accountinternetnlscan)
+    tasks = processing_scan_results(accountinternetnlscan.id)
     tasks.apply()
 
     # Create report with statistics, should not error. Perhaps vitesse.nl is missing here?
     accountinternetnlscan = AccountInternetNLScan.objects.all().first()
-    tasks = creating_report(accountinternetnlscan)
+    tasks = creating_report(accountinternetnlscan.id)
     tasks.apply()
 
     # vitesse was added, has a very old one and a new report with the error update.

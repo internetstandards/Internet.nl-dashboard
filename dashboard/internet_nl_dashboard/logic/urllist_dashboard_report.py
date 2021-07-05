@@ -182,7 +182,7 @@ def compose_task(**kwargs) -> Task:
 
 
 @app.task(queue='storage')
-def create_dashboard_report(urllist):
+def create_dashboard_report(urllist_id: int):
     """
     Simplified (and perhaps straightforward) version of rate_urllists_now, which returns a report id.
     Only call this after a scan is performed.
@@ -190,6 +190,10 @@ def create_dashboard_report(urllist):
     :param urllist:
     :return:
     """
+    urllist = UrlList.objects.all().filter(id=urllist_id).first()
+    if not urllist:
+        return []
+
     log.debug(f"Creating dashboard report for urllist {urllist}.")
 
     # the time when a urlreport is created is rounded up to the end of a minute. This means that you'll never get
@@ -221,13 +225,13 @@ def rate_urllists_now(urllists: List[UrlList], prevent_duplicates: bool = True):
 
 
 @app.task(queue='storage')
-def rate_urllist_on_moment(urllist: UrlList, when: datetime = None, prevent_duplicates: bool = True):
+def rate_urllist_on_moment(urllist: UrlList, when: datetime = None, prevent_duplicates: bool = True) -> int:
     """
     :param urllist:
     :param when: A moment in time of which data should be aggregated
     :param prevent_duplicates: If the last report had the same data, don't save a new report but return the last report
     instead.
-    :return: UrlListReport
+    :return: UrlListReport id
     """
     # If there is no time slicing, then it's today.
     if not when:
@@ -291,7 +295,7 @@ def rate_urllist_on_moment(urllist: UrlList, when: datetime = None, prevent_dupl
     report.average_internet_nl_score = sum_internet_nl_scores_over_rating(calculation)
     report.calculation = calculation
     report.save()
-    return report
+    return report.id
 
 
 def only_include_endpoint_protocols(calculation, only_include_endpoint_types: List[str]):
