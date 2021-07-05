@@ -527,7 +527,7 @@ vine==1.3.0
     #   celery
     #   flower
     #   websecmap
-git+https://gitlab.com/internet-cleanup-foundation/web-security-map@6e2f5c9a1a6e67843469988e49069e17c0b617ae#egg=websecmap[deploy]
+git+https://gitlab.com/internet-cleanup-foundation/web-security-map@748f0a2e39216ce63ec2dfb8f4266b68b1bc86f9#egg=websecmap[deploy]
     # via
     #   -c requirements.txt
     #   -r requirements-deploy.in
