@@ -42,7 +42,6 @@ if DEBUG:
 
 ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', 'localhost,127.0.0.1,::1').split(',')
 
-
 # Application definition
 
 INSTALLED_APPS = [
@@ -142,7 +141,6 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'dashboard.wsgi.application'
 
-
 # Database
 # https://docs.djangoproject.com/en/2.1/ref/settings/#databases
 
@@ -180,7 +178,6 @@ DATABASES_SETTINGS = {
 DATABASE = os.environ.get('DJANGO_DATABASE', 'dev')
 DATABASES = {'default': DATABASES_SETTINGS[DATABASE]}
 
-
 # Password validation
 # https://docs.djangoproject.com/en/2.1/ref/settings/#auth-password-validators
 
@@ -199,7 +196,6 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-
 # Internationalization
 # https://docs.djangoproject.com/en/2.1/topics/i18n/
 
@@ -217,7 +213,6 @@ LOCALE_PATHS = ['locale']
 
 LANGUAGE_COOKIE_NAME = 'dashboard_language'
 
-
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/2.1/howto/static-files/
 
@@ -229,10 +224,8 @@ if DEBUG:
 else:
     STATIC_ROOT = os.environ.get('STATIC_ROOT', '/srv/dashboard/static/')  # noqa
 
-
 MEDIA_ROOT = os.environ.get('MEDIA_ROOT', os.path.abspath(os.path.dirname(__file__)) + '/uploads/')
 UPLOAD_ROOT: str = os.environ.get('MEDIA_ROOT', os.path.abspath(os.path.dirname(__file__)) + '/uploads/')
-
 
 # Two factor auth
 LOGIN_URL = "two_factor:login"
@@ -242,7 +235,6 @@ TWO_FACTOR_QR_FACTORY = 'qrcode.image.pil.PilImage'
 # 6 supports google authenticator
 TWO_FACTOR_TOTP_DIGITS = 6
 TWO_FACTOR_PATCH_ADMIN = True
-
 
 # Encrypted fields
 # Note that this key is not stored in the database, that would be a security risk.
@@ -261,7 +253,6 @@ IMPORTED_FIELD_ENCRYPTION_KEY: str = os.environ.get('FIELD_ENCRYPTION_KEY',
 
 # The encryption key under ENV variables can only be stored as a string. This means we'll have to parse it to bytes.
 FIELD_ENCRYPTION_KEY: bytes = IMPORTED_FIELD_ENCRYPTION_KEY.encode()
-
 
 LOGGING = {
     'version': 1,
@@ -327,7 +318,6 @@ LOGGING = {
     },
 }
 
-
 # settings to get WebSecMap to work:
 # Celery 4.0 settings
 # Pickle can work, but you need to use certificates to communicate (to verify the right origin)
@@ -340,7 +330,6 @@ CELERY_SERIALIZER = "json"
 CELERY_TASK_SERIALIZER = "json"
 CELERY_RESULT_SERIALIZER = "json"
 CELERY_EVENT_SERIALIZER = "json"
-
 
 # Celery config
 CELERY_BROKER_URL = os.environ.get('BROKER', 'redis://localhost:6379/0')
@@ -405,7 +394,6 @@ STATSD_CELERY_SIGNALS = True
 if not DEBUG:
     STATSD_PATCHES = ['django_statsd.patches.db', ]
 
-
 TOOLS = {
     'organizations': {
         'import_data_dir': '',
@@ -418,7 +406,6 @@ VENDOR_DIR = os.environ.get('VENDOR_DIR', os.path.abspath(os.path.dirname(__file
 if DEBUG:
     # too many sql variables....
     DATA_UPLOAD_MAX_NUMBER_FIELDS = 10000
-
 
 # Constance settings:
 CONSTANCE_BACKEND = 'constance.backends.database.DatabaseBackend'
@@ -434,7 +421,6 @@ CONSTANCE_ADDITIONAL_FIELDS = {
         {"widget": "django.forms.Textarea"},
     ],
 }
-
 
 CONSTANCE_CONFIG = {
     'SCAN_AT_ALL': (
@@ -484,7 +470,7 @@ CONSTANCE_CONFIG = {
     'INTERNET_NL_API_URL': ('https://batch.internet.nl/api/batch/v2',
                             'The internet address for the Internet.nl API installation. Defaults to a version from '
                             '2020.', str),
-    'INTERNET_NL_MAXIMUM_URLS':  (1000, 'The maximum amount of domains per scan.', int),
+    'INTERNET_NL_MAXIMUM_URLS': (1000, 'The maximum amount of domains per scan.', int),
     'EMAIL_FALLBACK_LANGUAGE': (
         'en',
         'Default language used for templates. Template should end with _en in lowercase.',
@@ -512,6 +498,15 @@ CONSTANCE_CONFIG = {
         "only once every 10 minutes.",
         "json",
     ),
+    "SCAN_TIMEOUT_MINUTES_DISCOVERING_ENDPOINTS": (1440, 'timeout for phase DISCOVERING_ENDPOINTS', int),
+    "SCAN_TIMEOUT_MINUTES_RETRIEVING_SCANABLE_URLS": (1440, 'timeout for phase RETRIEVING_SCANABLE_URLS', int),
+    "SCAN_TIMEOUT_MINUTES_REGISTERING_SCAN_AT_INTERNET_NL": (
+        1440, 'timeout for phase REGISTERING_SCAN_AT_INTERNET_NL', int),
+    "SCAN_TIMEOUT_MINUTES_IMPORTING_SCAN_RESULTS": (1440, 'timeout for phase IMPORTING_SCAN_RESULTS', int),
+    "SCAN_TIMEOUT_MINUTES_CREATING_REPORT": (1440, 'timeout for phase CREATING_REPORT', int),
+    "SCAN_TIMEOUT_MINUTES_SENDING_MAIL": (1440, 'timeout for phase SENDING_MAIL', int),
+    "SCAN_TIMEOUT_MINUTES_SERVER_ERROR": (1440, 'timeout for phase SERVER_ERROR', int),
+
 }
 
 CONSTANCE_CONFIG_FIELDSETS = OrderedDict(
@@ -525,7 +520,11 @@ CONSTANCE_CONFIG_FIELDSETS = OrderedDict(
                     'EMAIL_TEST_RECIPIENT',
                     'EMAIL_DASHBOARD_ADDRESS')),
         ('Internet.nl Scans', ('INTERNET_NL_API_USERNAME', 'INTERNET_NL_API_PASSWORD', 'INTERNET_NL_API_URL',
-                               'INTERNET_NL_MAXIMUM_URLS')),
+                               'INTERNET_NL_MAXIMUM_URLS', 'SCAN_TIMEOUT_MINUTES_DISCOVERING_ENDPOINTS',
+                               'SCAN_TIMEOUT_MINUTES_RETRIEVING_SCANABLE_URLS',
+                               'SCAN_TIMEOUT_MINUTES_REGISTERING_SCAN_AT_INTERNET_NL',
+                               'SCAN_TIMEOUT_MINUTES_IMPORTING_SCAN_RESULTS', 'SCAN_TIMEOUT_MINUTES_CREATING_REPORT',
+                               'SCAN_TIMEOUT_MINUTES_SENDING_MAIL', 'SCAN_TIMEOUT_MINUTES_SERVER_ERROR')),
         ("Scanning preferences", ("SCANNER_NAMESERVERS",)),
     ]
 )
@@ -534,11 +533,11 @@ CONSTANCE_CONFIG_FIELDSETS = OrderedDict(
 # Loaded here, otherwise: django.core.exceptions.AppRegistryNotReady: Apps aren't loaded yet.
 try:
     from websecmap.scanners.constance import add_scanner_fields, add_scanner_fieldsets  # NOQA
+
     CONSTANCE_CONFIG = add_scanner_fields(CONSTANCE_CONFIG)
     CONSTANCE_CONFIG_FIELDSETS = add_scanner_fieldsets(CONSTANCE_CONFIG_FIELDSETS)
 except ImportError:
     pass
-
 
 JET_SIDE_MENU_ITEMS = [
 
@@ -619,7 +618,6 @@ SENTRY_ORGANIZATION = 'internet-cleanup-foundation'
 SENTRY_PROJECT = 'internet-nl-dashboard'
 SENTRY_PROJECT_URL = 'https://sentry.io/%s/%s' % (SENTRY_ORGANIZATION, SENTRY_PROJECT)
 
-
 # Copied from internet.nl
 
 # Supported languages.
@@ -629,7 +627,6 @@ LANGUAGES = sorted([
     ('nl', 'Dutch'),
     ('en', 'English'),
 ], key=lambda x: x[0])
-
 
 # email settings...
 # django_mail_admin.backends.OutboxEmailBackend = Store sent mails in outbox, so we know what has been sent.
@@ -653,11 +650,9 @@ else:
     EMAIL_USE_TLS = False
     EMAIL_USE_SSL = False
 
-
 if DEBUG:
     # 25 megs for importing reports from live situations
     DATA_UPLOAD_MAX_MEMORY_SIZE = 26214400
-
 
 """
 Django Jet 3:

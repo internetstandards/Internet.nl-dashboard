@@ -10,6 +10,7 @@ from constance import config
 from django.db import transaction
 from django.db.models import Q
 from django.utils import timezone
+from websecmap.app.constance import constance_cached_value
 from websecmap.organizations.models import Url
 from websecmap.reporting.report import recreate_url_reports
 from websecmap.scanners.models import InternetNLV2Scan
@@ -48,7 +49,6 @@ log = logging.getLogger(__name__)
 
 
 def create_api_settings(v2_scan_id: InternetNLV2Scan):
-
     scan = InternetNLV2Scan.objects.all().filter(id=v2_scan_id).first()
     if not scan:
         log.error(f'Did not find an internetnLV2scan with id {v2_scan_id}')
@@ -78,7 +78,6 @@ internet_nl_v2_websecmap.create_api_settings = create_api_settings
 
 @app.task(queue='storage')
 def initialize_scan(urllist_id: UrlList, manual_or_scheduled: str = "scheduled") -> int:
-
     urllist = UrlList.objects.all().filter(id=urllist_id).first()
     if not urllist:
         return None
@@ -198,7 +197,6 @@ def progress_running_scan(scan_id: int) -> Task:
         "configuration_error": continue_running_scan,
         "timeout": continue_running_scan,
 
-
         # monitors on active states:
         "discovering endpoints": monitor_timeout,
         "retrieving scannable urls": monitor_timeout,
@@ -262,7 +260,6 @@ def handle_unknown_state(scan_id):
 
 
 def discovering_endpoints(scan_id: int):
-
     scan = AccountInternetNLScan.objects.all().filter(id=scan_id).first()
     if not scan:
         return
@@ -272,13 +269,13 @@ def discovering_endpoints(scan_id: int):
     update_state("discovering endpoints", scan.id)
     return (
         dns_endpoints.compose_discover_task(**{
-            'urls_filter': {'urls_in_dashboard_list__id': scan.urllist.id, 'is_dead': False, 'not_resolvable': False}})
+            'urls_filter': {'urls_in_dashboard_list__id': scan.urllist.id, 'is_dead': False,
+                            'not_resolvable': False}})
         | update_state.si("discovered endpoints", scan.id)
     )
 
 
 def retrieving_scannable_urls(scan_id: int):
-
     scan = AccountInternetNLScan.objects.all().filter(id=scan_id).first()
     if not scan:
         return
@@ -297,7 +294,6 @@ def retrieving_scannable_urls(scan_id: int):
 
 
 def registering_scan_at_internet_nl(scan_id: int):
-
     scan = AccountInternetNLScan.objects.all().filter(id=scan_id).first()
     if not scan:
         return
@@ -306,7 +302,7 @@ def registering_scan_at_internet_nl(scan_id: int):
 
     # mail = websecmap, mail_dashboard = internet.nl dashboard, web is the same on both. Mail here is a fallback
     # because the dashboard only understands dns_soa endpoints.
-    relevant_endpoint_types = {"web": "dns_a_aaaa", "mail_dashboard": "dns_soa",  "mail": "dns_soa"}
+    relevant_endpoint_types = {"web": "dns_a_aaaa", "mail_dashboard": "dns_soa", "mail": "dns_soa"}
 
     # auto saved.
     scan.scan.subject_urls.set(get_relevant_urls(scan.urllist.id, relevant_endpoint_types[scan.scan.type]))
@@ -319,7 +315,6 @@ def registering_scan_at_internet_nl(scan_id: int):
 
 
 def running_scan(scan_id: int):
-
     scan = AccountInternetNLScan.objects.all().filter(id=scan_id).first()
     if not scan:
         return
@@ -340,7 +335,6 @@ def continue_running_scan(scan_id: int):
 
 
 def storing_scan_results(scan_id: int):
-
     scan = AccountInternetNLScan.objects.all().filter(id=scan_id).first()
     if not scan:
         return
@@ -362,7 +356,6 @@ def processing_scan_results(scan_id: int):
 
 @app.task(queue="storage")
 def copy_state_from_websecmap_scan(scan_id: int):
-
     scan = AccountInternetNLScan.objects.all().filter(id=scan_id).first()
     if not scan:
         return
@@ -392,7 +385,6 @@ def copy_state_from_websecmap_scan(scan_id: int):
 
 
 def creating_report(scan_id: int):
-
     scan = AccountInternetNLScan.objects.all().filter(id=scan_id).first()
     if not scan:
         return
@@ -411,7 +403,6 @@ def creating_report(scan_id: int):
 
 
 def sending_mail(scan_id: int):
-
     scan = AccountInternetNLScan.objects.all().filter(id=scan_id).first()
     if not scan:
         return
@@ -423,7 +414,6 @@ def sending_mail(scan_id: int):
 
 
 def finishing_scan(scan_id: int):
-
     scan = AccountInternetNLScan.objects.all().filter(id=scan_id).first()
     if not scan:
         return
@@ -450,23 +440,40 @@ def monitor_timeout(scan_id: int):
     if not scan:
         return
 
+    # Warning: timeouts are only useful when crashes happened, otherwise its just a capacity issue which timeouts
+    # will just increase as it creates more tasks to handle
+
     # todo: recover from websecmap errors, by trying to recover there and writing the status to the dashboard.
     recovering_strategies = {
-        "discovering endpoints":
-            {"timeout in minutes": 6 * 60, "state after timeout": "requested"},
-        "retrieving scannable urls":
-            {"timeout in minutes": 6 * 60, "state after timeout": "discovered endpoints"},
-        "registering scan at internet.nl":
-            {"timeout in minutes": 6 * 60, "state after timeout": "retrieved scannable urls"},
-        "importing scan results":
-            {"timeout in minutes": 24 * 60, "state after timeout": "scan results stored"},
-        "creating report":
-            {"timeout in minutes": 24 * 60, "state after timeout": "imported scan results"},
-        "sending mail":
-            {"timeout in minutes": 6 * 60, "state after timeout": "created report"},
+        "discovering endpoints": {
+            "timeout in minutes": constance_cached_value('SCAN_TIMEOUT_MINUTES_DISCOVERING_ENDPOINTS'),  # 6 * 60,
+            "state after timeout": "requested"
+        },
+        "retrieving scannable urls": {
+            "timeout in minutes": constance_cached_value('SCAN_TIMEOUT_MINUTES_RETRIEVING_SCANABLE_URLS'),  # 6
+            "state after timeout": "discovered endpoints"
+        },
+        "registering scan at internet.nl": {
+            "timeout in minutes": constance_cached_value('SCAN_TIMEOUT_MINUTES_REGISTERING_SCAN_AT_INTERNET_NL'),  # 6
+            "state after timeout": "retrieved scannable urls"
+        },
+        "importing scan results": {
+            "timeout in minutes": constance_cached_value('SCAN_TIMEOUT_MINUTES_IMPORTING_SCAN_RESULTS'),  # 24
+            "state after timeout": "scan results stored"
+        },
+        "creating report": {
+            "timeout in minutes": constance_cached_value('SCAN_TIMEOUT_MINUTES_CREATING_REPORT'),  # 24
+            "state after timeout": "imported scan results"
+        },
+        "sending mail": {
+            "timeout in minutes": constance_cached_value('SCAN_TIMEOUT_MINUTES_SENDING_MAIL'),  # 6
+            "state after timeout": "created report"
+        },
         # It's unclear where in the process we are... Just try again.
-        "server_error":
-            {"timeout in minutes": 60, "state after timeout": "requested"},
+        "server_error": {
+            "timeout in minutes": constance_cached_value('SCAN_TIMEOUT_MINUTES_SERVER_ERROR'),  # 1
+            "state after timeout": "requested"
+        },
     }
 
     strategy = recovering_strategies.get(scan.state, {})
@@ -478,8 +485,8 @@ def monitor_timeout(scan_id: int):
     scan_will_timeout_on = scan.state_changed_on + timedelta(minutes=strategy['timeout in minutes'])
     if timezone.now() > scan_will_timeout_on:
         update_state(f"timeout reached for: '{scan.state}', performing recovery to '{strategy['state after timeout']}'",
-                     scan)
-        update_state(strategy['state after timeout'], scan)
+                     scan.id)
+        update_state(strategy['state after timeout'], scan.id)
 
     # No further work to do...
     return group([])
@@ -487,7 +494,6 @@ def monitor_timeout(scan_id: int):
 
 @app.task(queue='storage')
 def connect_urllistreport_to_accountinternetnlscan(urllistreport_id: int, scan_id: int):
-
     scan = AccountInternetNLScan.objects.all().filter(id=scan_id).first()
     if not scan:
         return
@@ -504,7 +510,6 @@ def connect_urllistreport_to_accountinternetnlscan(urllistreport_id: int, scan_i
 
 @app.task(queue='storage')
 def upgrade_report_with_statistics(urllistreport_id: int) -> int:
-
     urllistreport = UrlListReport.objects.all().filter(id=urllistreport_id).first()
     if not urllistreport:
         return
@@ -622,7 +627,6 @@ def upgrade_report_with_unscannable_urls(urllistreport_id: int, scan_id: int):
 
 @app.task(queue='storage')
 def send_after_scan_mail(scan_id: int):
-
     scan = AccountInternetNLScan.objects.all().filter(id=scan_id).first()
     if not scan:
         return
@@ -686,7 +690,6 @@ def update_state(state: str, scan_id: int) -> None:
 
 @app.task(queue='storage')
 def get_relevant_urls(urllist_id: int, protocol: str) -> List[int]:
-
     urllist = UrlList.objects.all().filter(id=urllist_id).first()
     if not urllist:
         return []

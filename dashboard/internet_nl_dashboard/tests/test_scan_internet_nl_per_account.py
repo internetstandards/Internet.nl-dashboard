@@ -10,9 +10,27 @@ from websecmap.scanners.models import Endpoint, EndpointGenericScan, InternetNLV
 from dashboard.internet_nl_dashboard.models import (Account, AccountInternetNLScan, UrlList,
                                                     UrlListReport)
 from dashboard.internet_nl_dashboard.scanners.scan_internet_nl_per_account import (
-    creating_report, processing_scan_results)
+    creating_report, monitor_timeout, processing_scan_results)
 
 log = logging.getLogger(__package__)
+
+
+def test_monitor_timeout(db):
+    a = Account.objects.create()
+
+    recoverable_states = ['discovering endpoints', 'retrieving scannable urls', 'registering scan at internet.nl']
+    for rec_state in recoverable_states:
+        scan = AccountInternetNLScan.objects.create(
+            account=a,
+            scan=InternetNLV2Scan.objects.create(),
+            urllist=UrlList.objects.create(account=a),
+            state=rec_state,
+            state_changed_on=datetime(1996, 1, 1)
+        )
+        monitor_timeout(scan.id)
+        updated_scan = AccountInternetNLScan.objects.get(id=scan.id)
+        assert updated_scan.state_changed_on != datetime(1996, 1, 1)
+        assert updated_scan.state_changed_on.year == datetime.now().year
 
 
 def test_creating_report(db, redis_server):
