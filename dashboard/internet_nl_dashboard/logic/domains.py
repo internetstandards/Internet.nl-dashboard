@@ -424,61 +424,74 @@ def get_urllists_from_account(account: Account) -> Dict:
     included. Note that this does not return the entire set of urls, given that URLS may be in the thousands.
     A few times a thousand urls will load slowly, which is detrimental to the user experience.
 
+    Usually last_scan and last_report could be fetched with a prefetch, but slicing on prefetching is not possible,
+    so the entire set of scans and reports is selected which is much slower than having a nested query per result.
+
+    Prefetching could be limited with filters, but there is no filter that really limits the results down to a
+    few results. For example: only prefetch the reports from the last year etc will result in a no data at one point.
+
     :param account:
     :return:
     """
 
-    # this prefetch is pretty fast.
-    last_scan_prefetch = Prefetch(
-        'accountinternetnlscan_set',
-        queryset=AccountInternetNLScan.objects.order_by('-id').select_related('scan'),
-        to_attr='last_scan'
-    )
-
-    # Selecting the whole object is extremely slow as the reports are very large, therefore we use .only to limit
-    # the number of fields returned. Then the prefetch is pretty fast again.
-    last_report_prefetch = Prefetch(
-        'urllistreport_set',
-        # filter(pk=UrlListReport.objects.latest('id').pk).
-        queryset=UrlListReport.objects.order_by('-id').only('id', 'at_when'),
-        to_attr='last_report'
-    )
-
+    # Could that num_urls slows things down. Given that num_urls is overwritten when loading list data...
     urllists = UrlList.objects.all().filter(
         account=account,
         is_deleted=False
-    ).annotate(num_urls=Count('urls')).order_by('name').prefetch_related(last_scan_prefetch, last_report_prefetch)
-
-    # this will create a warning if the number of domains in the list > max_domains
-    # This is placed outside the loop to save a database query per time this is needed.
-    max_domains = config.DASHBOARD_MAXIMUM_DOMAINS_PER_LIST
+    ).annotate(num_urls=Count('urls')).order_by('name').only(
+        'id', 'name', 'enable_scans', 'scan_type', 'automated_scan_frequency', 'scheduled_next_scan'
+    )
 
     url_lists = []
+    max_domains = config.DASHBOARD_MAXIMUM_DOMAINS_PER_LIST
+
     # Not needed to check the contest of the list. If it's empty, then there is just an empty list returned.
     for urllist in urllists:
 
-        list_warnings = []
-        if urllist.num_urls > max_domains:
-            list_warnings.append('WARNING_DOMAINS_IN_LIST_EXCEED_MAXIMUM_ALLOWED')
-
-        url_lists.append({
+        data = {
             'id': urllist.id,
             'name': urllist.name,
-            'num_urls': urllist.num_urls,
             'enable_scans': urllist.enable_scans,
             'scan_type': urllist.scan_type,
             'automated_scan_frequency': urllist.automated_scan_frequency,
             'scheduled_next_scan': urllist.scheduled_next_scan,
-            'last_scan_id': None if not len(urllist.last_scan) else urllist.last_scan[0].scan.id,
-            'last_scan_state': None if not len(urllist.last_scan) else urllist.last_scan[0].state,
-            'last_scan': None if not len(urllist.last_scan) else urllist.last_scan[0].started_on.isoformat(),
-            'last_scan_finished': None if not len(urllist.last_scan) else urllist.last_scan[0] in [
-                "finished", "cancelled"],
             'scan_now_available': urllist.is_scan_now_available(),
-            'last_report_id': None if not len(urllist.last_report) else urllist.last_report[0].id,
-            'last_report_date': None if not len(urllist.last_report) else urllist.last_report[0].at_when,
-            'list_warnings': list_warnings
-        })
+
+            'last_scan_id': None,
+            'last_scan_state': None,
+            'last_scan': None,
+            'last_scan_finished': None,
+
+            'last_report_id': None,
+            'last_report_date': None,
+
+            'list_warnings': [],
+
+            'num_urls': urllist.num_urls,
+        }
+
+        # this will create a warning if the number of domains in the list > max_domains
+        # This is placed outside the loop to save a database query per time this is needed.
+        if urllist.num_urls > max_domains:
+            data['list_warnings'].append('WARNING_DOMAINS_IN_LIST_EXCEED_MAXIMUM_ALLOWED')
+
+        last_scan = AccountInternetNLScan.objects.all().filter(urllist=urllist).select_related('scan').only(
+            'scan__id', 'state', 'started_on'
+        ).last()
+        if last_scan:
+            data['last_scan_id'] = last_scan.scan.id
+            data['last_scan_state'] = last_scan.state
+            data['last_scan'] = last_scan.started_on.isoformat()
+            data['last_scan_finished'] = last_scan.state in ["finished", "cancelled"]
+
+        # Selecting the whole object is extremely slow as the reports are very large, therefore we use .only to limit
+        # the number of fields returned. Then the prefetch is pretty fast again.
+        last_report = UrlListReport.objects.all().filter(urllist=urllist).only('id', 'at_when').last()
+        if last_report:
+            data['last_report_id'] = last_report.id
+            data['last_report_date'] = last_report.at_when.isoformat()
+
+        url_lists.append(data)
 
     # Sprinkling an activity stream action.
     action.send(account, verb='retrieved domain lists', public=False)
