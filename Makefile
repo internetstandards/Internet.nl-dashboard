@@ -31,12 +31,12 @@ app = ${bin}/${app_name}
 
 $(shell test -z "$$PS1" || echo -e \nRun `make help` for available commands or use tab-completion.\n)
 
-pysrcdirs = ${app_name}/
+pysrcdirs = ${app_name}/ tests
 pysrc = $(shell find ${pysrcdirs} -name \*.py 2>/dev/null)
 src = $(shell find ${pysrcdirs} -type f -print0 2>/dev/null)
 shsrc = $(shell find * ! -path vendor\* -name \*.sh 2>/dev/null)
 
-.PHONY: test check setup run fix autofix clean mrproper test_integration requirements requirements-dev
+.PHONY: test check setup run fix autofix clean mrproper test_integration requirements requirements-dev docs
 
 # default action to run
 all: check test setup
@@ -201,14 +201,12 @@ push_image:
 image:  ## Create Docker images
 	docker build -t ${docker_image_name} .
 
-docsa: ## Generate documentation in various formats
+docs: ## Generate documentation in various formats
 	# Remove existing documentation folder
-	-rm -rf docs_html/*
-	-rm -rf docs_markdown/*
-	-rm -rf docs_pdf/*
-	-${bin}/python3 -m sphinx -b html docs docs_html
-	-${bin}/python3 -m sphinx -b markdown docs docs_markdown
-	-${bin}/python3 -m sphinx -b pdf docs docs_pdf
+	-rm -rf docs/render/*
+	-${bin}/python3 -m sphinx -b html docs/input docs/render/html
+	-${bin}/python3 -m sphinx -b markdown docs/input docs/render/markdown
+	-${bin}/python3 -m sphinx -b pdf docs/input docs/render/pdf
 
 ## Housekeeping
 clean:  ## cleanup build artifacts, caches, databases, etc.
@@ -244,6 +242,17 @@ ${python} ${pip}:
 	# ensure a recent version of pip is used to avoid errors with intalling
 	${VIRTUAL_ENV}/bin/pip install --upgrade pip==19.1.1
 
+mypy: ${app} ## Check for type issues with mypy
+	${bin}/python3 -m mypy --check ${pysrcdirs}
+
+vulture: ${app} ## Check for unused code
+	${bin}/python3 -m vulture ${pysrcdirs}
+
+bandit: ${app} ## Run basic security audit
+	${bin}/python3 -m bandit --configfile bandit.yaml -r ${pysrcdirs}
+
+pylint: ${app}
+	DJANGO_SETTINGS_MODULE=${app_name}.settings ${bin}/pylint --load-plugins pylint_django dashboard
 
 ## Utility
 help:           ## Show this help.

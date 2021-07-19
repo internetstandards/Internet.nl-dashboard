@@ -1,0 +1,511 @@
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="utf-8" />
+    <title>Email Templates &#8212; Internet.nl Dashboard  documentation</title>
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="_static/language_data.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="prev" title="internet.nl dashboard documentation" href="index.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <div class="section" id="email-templates">
+<h1>Email Templates<a class="headerlink" href="#email-templates" title="Permalink to this headline">¶</a></h1>
+<p>The dashboard can send out mail when scans are finished.
+An email is composed using a template. These templates are rich in functionality, and can
+be adjusted without the need of re-building and re-deploying this software.</p>
+<div class="section" id="general-information">
+<h2>General information<a class="headerlink" href="#general-information" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="where-can-i-find-templates">
+<h3>Where can i find templates<a class="headerlink" href="#where-can-i-find-templates" title="Permalink to this headline">¶</a></h3>
+<p>Templates are located at /admin/django_mail_admin/emailtemplate/ on your installation.
+They are part of the admin system and require the right permissions to be edited.
+An admin can edit them easily.</p>
+</div>
+<div class="section" id="what-templates-are-available">
+<h3>What templates are available<a class="headerlink" href="#what-templates-are-available" title="Permalink to this headline">¶</a></h3>
+<p>Currenty there is one feature that uses an e-mail template, which is <cite>scan_finished</cite>.
+When a scan is finished, this mail template is used to draft a mail.</p>
+<p>The scan finished template uses two sub-templates, which are:</p>
+<ul class="simple">
+<li><p>scan_finished</p></li>
+<li><ul>
+<li><p>detailed_comparison_regression</p></li>
+</ul>
+</li>
+<li><ul>
+<li><p>detailed_comparison_improvement</p></li>
+</ul>
+</li>
+</ul>
+<p>The sub templates are tables that list regressions and improvements.</p>
+</div>
+<div class="section" id="how-do-i-define-templates-in-multiple-languages">
+<h3>How do i define templates in multiple languages<a class="headerlink" href="#how-do-i-define-templates-in-multiple-languages" title="Permalink to this headline">¶</a></h3>
+<p>Templates are postfixed with a language identifier. The default is ‘_en’, for English.
+The dashboard currently supports two languages, Dutch and English: nl and en.</p>
+<p>If a template for _nl (or any other language) is missing, it will use _en.</p>
+<p>(Technically there are many solutions to make sure translations are multilingual, most of which
+require re-compilation or maintenance of external translation files that require a build. When
+there are many languages in use, there will be a need to switch.)</p>
+</div>
+<div class="section" id="what-template-system-is-used">
+<h3>What template system is used<a class="headerlink" href="#what-template-system-is-used" title="Permalink to this headline">¶</a></h3>
+<p>The Django template system is used, with one exception: all fields from the dashboard are strings.</p>
+<p>The Django template system is a mix of special tags and HTML, Javascript and CSS. It is also
+used in building front end systems which are rendered on the server side.</p>
+<p>The Django Template system is documented here:
+<a class="reference external" href="https://docs.djangoproject.com/en/3.1/ref/templates/language/">https://docs.djangoproject.com/en/3.1/ref/templates/language/</a></p>
+</div>
+<div class="section" id="what-do-i-need-to-watch-out-for">
+<h3>What do i need to watch out for<a class="headerlink" href="#what-do-i-need-to-watch-out-for" title="Permalink to this headline">¶</a></h3>
+<p>Syntax mistakes can prevent a mail from being composed or sent. In this case the software will crash.
+This is the largest drawback of the current approach. When editing a template, be careful.</p>
+</div>
+<div class="section" id="what-are-the-pros-and-cons-of-the-current-approach">
+<h3>What are the pros and cons of the current approach<a class="headerlink" href="#what-are-the-pros-and-cons-of-the-current-approach" title="Permalink to this headline">¶</a></h3>
+<p>Pros:</p>
+<ul class="simple">
+<li><p>No need to recompile / rebuild / deliver the software when templates change</p></li>
+<li><p>Multi language in a simple and straightforward way (allowing changes per language)</p></li>
+<li><p>Uses well documented systems of django, html, javascript and css.</p></li>
+</ul>
+<p>Cons:</p>
+<ul class="simple">
+<li><p>No syntax highlighting or checking of templates in the editor, use an external editor(!)</p></li>
+<li><p>A template per language is annoying when doing maintenance</p></li>
+</ul>
+</div>
+<div class="section" id="how-to-set-up-e-mail-sending">
+<h3>How to set up e-mail sending<a class="headerlink" href="#how-to-set-up-e-mail-sending" title="Permalink to this headline">¶</a></h3>
+<p>Email sending uses Django Mail Admin: <a class="reference external" href="https://github.com/Bearle/django_mail_admin/">https://github.com/Bearle/django_mail_admin/</a></p>
+<dl>
+<dt>You need to configure an outbox with proper values. You can test if this works via the command line</dt><dd><p>with the command:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">dashboard</span> <span class="n">send_testmail</span>
+</pre></div>
+</div>
+</dd>
+</dl>
+</div>
+</div>
+<div class="section" id="scan-finished-mail">
+<h2>Scan Finished mail<a class="headerlink" href="#scan-finished-mail" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="when-is-this-mail-sent">
+<h3>When is this mail sent<a class="headerlink" href="#when-is-this-mail-sent" title="Permalink to this headline">¶</a></h3>
+<p>This mail is only sent when the user has set that in their profile. You can review that for example here:
+/admin/auth/user/1/change/</p>
+<p>The fields that are used to send this mail are:</p>
+<ul class="simple">
+<li><p>Mail preferred mail address: an e-mail address</p></li>
+<li><p>Mail preferred language: a language from the list (only supporting NL or EN)</p></li>
+<li><p>Mail send mail after scan finished: a boolean value if the mail can be sent</p></li>
+<li><p>Mail after mail unsubscribe code: automatically generated</p></li>
+</ul>
+<p>If all preconditions are correct, a mail will be queued as part of the scanning process, just before the
+scan is finished.</p>
+</div>
+<div class="section" id="how-to-test-this-mail">
+<h3>How to test this mail<a class="headerlink" href="#how-to-test-this-mail" title="Permalink to this headline">¶</a></h3>
+<p>A test mail can be sent at will on the admin page of AccountInternetNLScan, here:
+/admin/internet_nl_dashboard/accountinternetnlscan/</p>
+<p>A mail can only be sent if a scan is finished and the mail preconditions and setup are correct.</p>
+<p>When this mail has been queued, either wait for the periodic task that sends mail is performed (once a minute),
+or perform this via the command line (during development):</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">dashboard</span> <span class="n">send_queued_mail</span> <span class="o">--</span><span class="n">processes</span><span class="o">=</span><span class="mi">1</span> <span class="o">--</span><span class="n">log</span><span class="o">-</span><span class="n">level</span><span class="o">=</span><span class="mi">2</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="scan-finished-tags">
+<h3>scan_finished tags<a class="headerlink" href="#scan-finished-tags" title="Permalink to this headline">¶</a></h3>
+<ul class="simple">
+<li><p>{{unsubscribe_code}}</p></li>
+</ul>
+<p>Allows an unsubscribe from a specific feed of mails. This code can be used without a login. The
+url this code is used for is for example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{{</span><span class="n">dashboard_address</span><span class="p">}}</span><span class="o">/</span><span class="n">spa</span><span class="o">/</span><span class="c1">#/unsubscribe?feed=scan_finished&amp;unsubscribe_code={{unsubscribe_code}}</span>
+</pre></div>
+</div>
+<ul class="simple">
+<li><p>{{recipient}}</p></li>
+</ul>
+<p>The recipient of the email, which is, in order of fallback A) the first name, B) the last name, C) the username.</p>
+<ul class="simple">
+<li><p>{{user_id}}</p></li>
+</ul>
+<p>The id of a user, which might be useful at some point.</p>
+<ul class="simple">
+<li><p>{{list_name}}</p></li>
+</ul>
+<p>The name of the domain list that is being scanned.</p>
+<ul class="simple">
+<li><p>{{report_id}}</p></li>
+</ul>
+<p>The mail is about a report. Using this number a link can be built to the report. For example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{{</span><span class="n">dashboard_address</span><span class="p">}}</span><span class="o">/</span><span class="n">spa</span><span class="o">/</span><span class="c1">#/report/{{report_id}}</span>
+</pre></div>
+</div>
+<ul class="simple">
+<li><p>{{report_average_internet_nl_score}}</p></li>
+</ul>
+<p>The average score in the report.</p>
+<ul class="simple">
+<li><p>{{report_number_of_urls}}</p></li>
+</ul>
+<p>The total number of urls in this report.</p>
+<ul class="simple">
+<li><p>{{scan_id}}</p></li>
+</ul>
+<p>The number of the scan performed, which might be useful for context and tracking purposes.</p>
+<ul class="simple">
+<li><p>{{scan_started_on}}</p></li>
+</ul>
+<p>The date and time when the scan started, in ISO format.</p>
+<ul class="simple">
+<li><p>{{scan_finished_on}}</p></li>
+</ul>
+<p>An approximation of when the scan is finished. This mail is sent as part of the scanning process, which
+is thus not yet finished. It might be off by a minute or two. This is also in ISO format.</p>
+<ul class="simple">
+<li><p>{{scan_duration}}</p></li>
+</ul>
+<p>Number of seconds it took to complete a scan. Also an approximation.</p>
+<ul class="simple">
+<li><p>{{scan_type}}</p></li>
+</ul>
+<p>Either web or mail. Can be used in sentences like:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">The</span> <span class="p">{{</span><span class="n">scan_type</span><span class="p">}}</span> <span class="n">scan</span> <span class="n">on</span> <span class="p">{{</span><span class="n">list_name</span><span class="p">}}</span> <span class="ow">is</span> <span class="n">finished</span><span class="o">.</span>
+</pre></div>
+</div>
+<ul class="simple">
+<li><p>{{previous_report_available}}</p></li>
+</ul>
+<p>If there is a previous report for this list. The value will be “True” if that is the case. Otherwise it will
+be “False”. Note that this is a string value, not a boolean value.</p>
+<ul class="simple">
+<li><p>{{previous_report_average_internet_nl_score}}</p></li>
+</ul>
+<p>The average score of the previous report. This is used for easy overall comparison.</p>
+<ul class="simple">
+<li><p>{{compared_report_id}}</p></li>
+</ul>
+<p>The id of the previous report, can be used to build a link with a comparison, such as:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{{</span><span class="n">dashboard_address</span><span class="p">}}</span><span class="o">/</span><span class="n">spa</span><span class="o">/</span><span class="c1">#/report/{{report_id}}/{{compared_report_id}}</span>
+</pre></div>
+</div>
+<ul class="simple">
+<li><p>{{comparison_is_empty}}</p></li>
+</ul>
+<p>A string boolean containing either “True” or “False”. The comparison is empty when all values
+compared to the previous and current report are the same. There has been no change, at all.</p>
+<p>If the comparison is empty, there is no need to show any details of course.</p>
+<ul class="simple">
+<li><p>{{improvement}}</p></li>
+</ul>
+<p>The number of improvements made in the current report, compared to the last report.</p>
+<ul class="simple">
+<li><p>{{regression}}</p></li>
+</ul>
+<p>The number of regressions in the current report, compared to the last report.</p>
+<ul class="simple">
+<li><p>{{neutral}}</p></li>
+</ul>
+<p>The number of neutral values in the current report, compared to the last report.
+Neutral is either unchanged, or a comparison against an error, not-testable or other hard to compare value.</p>
+<ul class="simple">
+<li><p>{{comparison_report_available}}</p></li>
+</ul>
+<p>A simple value to check if a comparison is available. Can be used to enable or disable sections of the email.</p>
+<ul class="simple">
+<li><p>{{comparison_report_contains_improvement}}</p></li>
+</ul>
+<p>Set to “True” if there are improvements in the comparsion. There might be only improvements and no regressions and
+vice versa.</p>
+<ul class="simple">
+<li><p>{{comparison_report_contains_regression}}</p></li>
+</ul>
+<p>Set to “True” if there are regressions available.</p>
+<ul class="simple">
+<li><p>{{days_between_current_and_previous_report}}</p></li>
+</ul>
+<p>The number of days between the current and previous report.</p>
+<ul class="simple">
+<li><p>{{comparison_table_improvement}}</p></li>
+</ul>
+<p>This is a rendered section of html, based on the detailed_comparison_improvement(_en) template. To
+use pre-rendered html, use the following in your e-mail, using the word “safe”:</p>
+<p>{{comparison_table_improvement|safe}}</p>
+<ul class="simple">
+<li><p>{{comparison_table_regression}}</p></li>
+</ul>
+<p>See comparison_table_improvement.</p>
+<ul class="simple">
+<li><p>{{domains_exclusive_in_current_report}}</p></li>
+</ul>
+<p>A comma separated string of domains that are available in the current report, but not in the previous report.
+These are new domains that have been added to the list, usually. There are also edge cases where the
+domain could not be scanned last time, but it could this time.</p>
+<ul class="simple">
+<li><p>{{domains_exclusive_in_other_report}}</p></li>
+</ul>
+<p>A comma separated string of domains that are only available in the previous report. Probably those domains
+have been deleted from the list of domains during the new scan.</p>
+<ul class="simple">
+<li><p>{{dashboard_address}}</p></li>
+</ul>
+<p>The web address of the dashboard. This is configured in the settings at: /admin/constance/config/</p>
+</div>
+<div class="section" id="example-template">
+<h3>Example template<a class="headerlink" href="#example-template" title="Permalink to this headline">¶</a></h3>
+<p>scan_finished_en takes into account a multitude of situations where there are no scan results.</p>
+<p>This template will probably be quickly outdated, but shows how to build a nice template with the fields above.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Hi</span> <span class="p">{{</span><span class="n">recipient</span><span class="p">}},</span><span class="o">&lt;</span><span class="n">br</span><span class="o">&gt;</span>
+<span class="o">&lt;</span><span class="n">br</span><span class="o">&gt;</span>
+<span class="n">The</span> <span class="p">{{</span><span class="n">scan_type</span><span class="p">}}</span> <span class="n">scan</span> <span class="n">on</span> <span class="s1">&#39;{{list_name}}&#39;</span> <span class="n">has</span> <span class="n">finished</span> <span class="ow">and</span> <span class="n">your</span> <span class="n">report</span> <span class="ow">is</span> <span class="n">ready</span><span class="o">.</span> <span class="n">The</span> <span class="n">average</span> <span class="n">internet</span><span class="o">.</span><span class="n">nl</span> <span class="n">score</span> <span class="ow">in</span> <span class="n">this</span> <span class="n">report</span> <span class="ow">is</span> <span class="p">{{</span><span class="n">report_average_internet_nl_score</span><span class="p">}}</span><span class="o">%.</span> <span class="o">&lt;</span><span class="n">br</span><span class="o">&gt;</span>
+<span class="o">&lt;</span><span class="n">br</span><span class="o">&gt;</span>
+<span class="n">View</span> <span class="n">the</span> <span class="n">report</span> <span class="n">at</span> <span class="n">this</span> <span class="n">link</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">br</span><span class="o">&gt;</span>
+<span class="o">&lt;</span><span class="n">a</span> <span class="n">href</span><span class="o">=</span><span class="s2">&quot;{{dashboard_address}}/spa/#/report/{{report_id}}&quot;</span><span class="o">&gt;</span>
+        <span class="p">{{</span><span class="n">dashboard_address</span><span class="p">}}</span><span class="o">/</span><span class="n">spa</span><span class="o">/</span><span class="c1">#/report/{{report_id}}/&lt;/a&gt;&lt;br&gt;</span>
+
+
+<span class="p">{</span><span class="o">%</span> <span class="k">if</span> <span class="n">previous_report_available</span> <span class="o">==</span> <span class="s2">&quot;False&quot;</span> <span class="o">%</span><span class="p">}</span>
+<span class="o">&lt;</span><span class="n">br</span><span class="o">&gt;</span>
+<span class="n">This</span> <span class="ow">is</span> <span class="n">the</span> <span class="n">first</span> <span class="n">report</span> <span class="k">for</span> <span class="s1">&#39;{{list_name}}&#39;</span><span class="o">.</span> <span class="n">The</span> <span class="nb">next</span> <span class="n">time</span> <span class="n">this</span> <span class="nb">list</span> <span class="ow">is</span> <span class="n">scanned</span><span class="p">,</span> <span class="n">a</span> <span class="n">comparison</span> <span class="n">report</span> <span class="n">will</span> <span class="n">be</span> <span class="n">included</span> <span class="ow">in</span> <span class="n">this</span> <span class="n">mail</span><span class="o">.</span>
+<span class="p">{</span><span class="o">%</span> <span class="n">endif</span> <span class="o">%</span><span class="p">}</span>
+
+<span class="p">{</span><span class="o">%</span> <span class="k">if</span> <span class="n">previous_report_available</span> <span class="o">==</span> <span class="s2">&quot;True&quot;</span> <span class="ow">and</span> <span class="n">comparison_is_empty</span> <span class="o">==</span> <span class="s2">&quot;True&quot;</span> <span class="o">%</span><span class="p">}</span>
+<span class="o">&lt;</span><span class="n">br</span><span class="o">&gt;</span>
+<span class="n">A</span> <span class="n">previous</span> <span class="n">report</span><span class="p">,</span> <span class="c1">#{{compared_report_id}}, is available but contains no changes compared to this report. Therefore no change summary was included.</span>
+<span class="p">{</span><span class="o">%</span> <span class="n">endif</span> <span class="o">%</span><span class="p">}</span>
+
+
+<span class="p">{</span><span class="o">%</span> <span class="k">if</span> <span class="n">previous_report_available</span> <span class="o">==</span> <span class="s2">&quot;True&quot;</span> <span class="ow">and</span> <span class="n">comparison_is_empty</span> <span class="o">==</span> <span class="s2">&quot;False&quot;</span> <span class="o">%</span><span class="p">}</span>
+<span class="o">&lt;</span><span class="n">br</span><span class="o">&gt;</span>
+<span class="o">&lt;</span><span class="n">h3</span><span class="o">&gt;</span><span class="n">Changes</span> <span class="n">compared</span> <span class="n">to</span> <span class="n">previous</span> <span class="n">report</span><span class="o">&lt;/</span><span class="n">h3</span><span class="o">&gt;</span>
+<span class="n">Below</span> <span class="n">a</span> <span class="n">summary</span> <span class="ow">is</span> <span class="n">given</span> <span class="n">compared</span> <span class="n">to</span> <span class="n">the</span> <span class="n">previous</span> <span class="n">report</span><span class="p">,</span> <span class="c1">#{{compared_report_id}}. The previous report was made {{days_between_current_and_previous_report}} days ago and had an average score of {{previous_report_average_internet_nl_score}}%.&lt;br&gt;</span>
+<span class="o">&lt;</span><span class="n">br</span><span class="o">&gt;</span>
+<span class="n">You</span> <span class="n">can</span> <span class="n">view</span> <span class="n">the</span> <span class="n">comparison</span> <span class="ow">in</span> <span class="n">detail</span> <span class="n">on</span> <span class="n">the</span> <span class="n">dashboard</span> <span class="n">at</span> <span class="o">&lt;</span><span class="n">a</span> <span class="n">href</span><span class="o">=</span><span class="s2">&quot;{{dashboard_address}}/spa/#/report/{{report_id}}/{{compared_report_id}}&quot;</span><span class="o">&gt;</span><span class="p">{{</span><span class="n">dashboard_address</span><span class="p">}}</span><span class="o">/</span><span class="n">spa</span><span class="o">/</span><span class="c1">#/report/{{report_id}}/{{compared_report_id}}&lt;/a&gt;&lt;br&gt;</span>
+<span class="o">&lt;</span><span class="n">br</span><span class="o">&gt;</span>
+<span class="o">&lt;</span><span class="n">h4</span><span class="o">&gt;</span><span class="n">Summary</span> <span class="n">of</span> <span class="n">changes</span><span class="p">:</span><span class="o">&lt;/</span><span class="n">h4</span><span class="o">&gt;</span>
+<span class="o">&lt;</span><span class="n">table</span><span class="o">&gt;</span>
+    <span class="o">&lt;</span><span class="n">tr</span> <span class="n">style</span><span class="o">=</span><span class="s1">&#39;font-weight: bold; text-align: center;&#39;</span><span class="o">&gt;</span>
+        <span class="o">&lt;</span><span class="n">td</span><span class="o">&gt;</span><span class="p">{{</span><span class="n">improvement</span><span class="p">}}</span><span class="o">&lt;/</span><span class="n">td</span><span class="o">&gt;&lt;</span><span class="n">td</span><span class="o">&gt;</span><span class="p">{{</span><span class="n">regression</span><span class="p">}}</span><span class="o">&lt;/</span><span class="n">td</span><span class="o">&gt;&lt;</span><span class="n">td</span><span class="o">&gt;</span><span class="p">{{</span><span class="n">neutral</span><span class="p">}}</span><span class="o">&lt;/</span><span class="n">td</span><span class="o">&gt;</span>
+    <span class="o">&lt;/</span><span class="n">tr</span><span class="o">&gt;</span>
+    <span class="o">&lt;</span><span class="n">tr</span><span class="o">&gt;</span>
+        <span class="o">&lt;</span><span class="n">td</span><span class="o">&gt;</span><span class="n">Improvements</span><span class="o">&lt;/</span><span class="n">td</span><span class="o">&gt;&lt;</span><span class="n">td</span><span class="o">&gt;</span><span class="n">Regressions</span><span class="o">&lt;/</span><span class="n">td</span><span class="o">&gt;&lt;</span><span class="n">td</span><span class="o">&gt;</span><span class="n">Neutral</span><span class="o">&lt;/</span><span class="n">td</span><span class="o">&gt;</span>
+    <span class="o">&lt;/</span><span class="n">tr</span><span class="o">&gt;</span>
+<span class="o">&lt;/</span><span class="n">table</span><span class="o">&gt;</span>
+<span class="p">{</span><span class="o">%</span> <span class="n">endif</span> <span class="o">%</span><span class="p">}</span>
+
+
+<span class="p">{</span><span class="o">%</span> <span class="k">if</span> <span class="n">previous_report_available</span> <span class="o">==</span> <span class="s2">&quot;True&quot;</span> <span class="ow">and</span> <span class="n">comparison_report_contains_improvement</span> <span class="o">!=</span> <span class="s2">&quot;True&quot;</span> <span class="ow">and</span> <span class="n">comparison_report_contains_regression</span> <span class="o">!=</span> <span class="s2">&quot;True&quot;</span> <span class="o">%</span><span class="p">}</span>
+<span class="o">&lt;</span><span class="n">br</span><span class="o">&gt;</span>
+<span class="n">Only</span> <span class="n">neutral</span> <span class="n">changes</span> <span class="n">have</span> <span class="n">been</span> <span class="n">observed</span><span class="p">,</span> <span class="n">therefore</span> <span class="n">no</span> <span class="n">detailed</span> <span class="n">overview</span> <span class="n">of</span> <span class="n">changes</span> <span class="ow">is</span> <span class="n">included</span> <span class="ow">in</span> <span class="n">this</span> <span class="n">e</span><span class="o">-</span><span class="n">mail</span><span class="o">.&lt;</span><span class="n">br</span><span class="o">&gt;</span>
+<span class="p">{</span><span class="o">%</span> <span class="n">endif</span> <span class="o">%</span><span class="p">}</span>
+
+<span class="p">{</span><span class="o">%</span> <span class="k">if</span> <span class="n">comparison_report_contains_improvement</span> <span class="o">==</span> <span class="s2">&quot;True&quot;</span> <span class="ow">or</span> <span class="n">comparison_report_contains_regression</span> <span class="o">==</span> <span class="s2">&quot;True&quot;</span> <span class="o">%</span><span class="p">}</span>
+<span class="p">{</span><span class="o">%</span> <span class="k">if</span> <span class="n">comparison_report_contains_improvement</span> <span class="o">==</span> <span class="s2">&quot;True&quot;</span> <span class="o">%</span><span class="p">}</span>
+<span class="o">&lt;</span><span class="n">br</span><span class="o">&gt;</span>
+<span class="o">&lt;</span><span class="n">h4</span><span class="o">&gt;</span><span class="n">Overview</span> <span class="n">of</span> <span class="n">improvements</span><span class="p">:</span><span class="o">&lt;/</span><span class="n">h4</span><span class="o">&gt;</span>
+<span class="o">&lt;</span><span class="n">table</span> <span class="n">style</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="o">&gt;</span>
+    <span class="o">&lt;</span><span class="n">tr</span><span class="o">&gt;</span>
+        <span class="o">&lt;</span><span class="n">th</span><span class="o">&gt;</span><span class="n">Domain</span><span class="o">&lt;/</span><span class="n">th</span><span class="o">&gt;</span>
+        <span class="o">&lt;</span><span class="n">th</span><span class="o">&gt;</span><span class="n">Score</span><span class="o">&lt;/</span><span class="n">th</span><span class="o">&gt;</span>
+        <span class="o">&lt;</span><span class="n">th</span><span class="o">&gt;</span><span class="n">Improvement</span><span class="p">(</span><span class="n">s</span><span class="p">)</span><span class="o">&lt;/</span><span class="n">th</span><span class="o">&gt;</span>
+        <span class="o">&lt;</span><span class="n">th</span><span class="o">&gt;</span><span class="n">Metrics</span> <span class="n">improved</span><span class="o">&lt;/</span><span class="n">th</span><span class="o">&gt;</span>
+    <span class="o">&lt;/</span><span class="n">tr</span><span class="o">&gt;</span>
+    <span class="p">{{</span><span class="n">comparison_table_improvement</span><span class="o">|</span><span class="n">safe</span><span class="p">}}</span>
+<span class="o">&lt;/</span><span class="n">table</span><span class="o">&gt;</span>
+<span class="p">{</span><span class="o">%</span> <span class="n">endif</span> <span class="o">%</span><span class="p">}</span>
+
+<span class="p">{</span><span class="o">%</span> <span class="k">if</span> <span class="n">comparison_report_contains_regression</span> <span class="o">==</span> <span class="s2">&quot;True&quot;</span> <span class="o">%</span><span class="p">}</span>
+<span class="o">&lt;</span><span class="n">br</span><span class="o">&gt;</span>
+<span class="o">&lt;</span><span class="n">h4</span><span class="o">&gt;</span><span class="n">Overview</span> <span class="n">of</span> <span class="n">regressions</span><span class="p">:</span><span class="o">&lt;/</span><span class="n">h4</span><span class="o">&gt;</span>
+<span class="o">&lt;</span><span class="n">table</span><span class="o">&gt;</span>
+    <span class="o">&lt;</span><span class="n">tr</span><span class="o">&gt;</span>
+        <span class="o">&lt;</span><span class="n">th</span><span class="o">&gt;</span><span class="n">Domain</span><span class="o">&lt;/</span><span class="n">th</span><span class="o">&gt;</span>
+        <span class="o">&lt;</span><span class="n">th</span><span class="o">&gt;</span><span class="n">Score</span><span class="o">&lt;/</span><span class="n">th</span><span class="o">&gt;</span>
+        <span class="o">&lt;</span><span class="n">th</span><span class="o">&gt;</span><span class="n">Regeression</span><span class="p">(</span><span class="n">s</span><span class="p">)</span><span class="o">&lt;/</span><span class="n">th</span><span class="o">&gt;</span>
+        <span class="o">&lt;</span><span class="n">th</span><span class="o">&gt;</span><span class="n">Metrics</span> <span class="n">regressed</span><span class="o">&lt;/</span><span class="n">th</span><span class="o">&gt;</span>
+    <span class="o">&lt;/</span><span class="n">tr</span><span class="o">&gt;</span>
+    <span class="p">{{</span><span class="n">comparison_table_regression</span><span class="o">|</span><span class="n">safe</span><span class="p">}}</span>
+<span class="o">&lt;/</span><span class="n">table</span><span class="o">&gt;</span>
+<span class="p">{</span><span class="o">%</span> <span class="n">endif</span> <span class="o">%</span><span class="p">}</span>
+
+<span class="p">{</span><span class="o">%</span> <span class="n">endif</span> <span class="o">%</span><span class="p">}</span>
+
+<span class="p">{</span><span class="o">%</span> <span class="k">if</span> <span class="n">domains_exclusive_in_current_report</span> <span class="o">!=</span> <span class="s2">&quot;&quot;</span> <span class="o">%</span><span class="p">}</span>
+<span class="o">&lt;</span><span class="n">br</span><span class="o">&gt;</span>
+<span class="n">This</span> <span class="n">report</span> <span class="n">includes</span> <span class="n">new</span> <span class="n">domains</span><span class="p">,</span> <span class="n">which</span> <span class="n">are</span> <span class="ow">not</span> <span class="n">included</span> <span class="n">because</span> <span class="n">they</span> <span class="n">could</span> <span class="ow">not</span> <span class="n">be</span> <span class="n">compared</span><span class="p">:</span> <span class="p">{{</span> <span class="n">domains_exclusive_in_current_report</span><span class="p">}}</span><span class="o">.</span>
+<span class="p">{</span><span class="o">%</span> <span class="n">endif</span> <span class="o">%</span><span class="p">}</span>
+
+<span class="p">{</span><span class="o">%</span> <span class="k">if</span> <span class="n">domains_exclusive_in_other_report</span> <span class="o">!=</span> <span class="s2">&quot;&quot;</span> <span class="o">%</span><span class="p">}</span>
+<span class="o">&lt;</span><span class="n">br</span><span class="o">&gt;</span>
+<span class="n">The</span> <span class="n">following</span> <span class="n">domains</span> <span class="n">have</span> <span class="n">disappeared</span> <span class="ow">in</span> <span class="n">the</span> <span class="n">new</span> <span class="n">report</span><span class="p">,</span> <span class="ow">and</span> <span class="n">are</span> <span class="n">thus</span> <span class="ow">not</span> <span class="n">included</span> <span class="n">above</span><span class="p">:</span> <span class="p">{{</span> <span class="n">domains_exclusive_in_other_report</span><span class="p">}}</span><span class="o">.</span>
+<span class="p">{</span><span class="o">%</span> <span class="n">endif</span> <span class="o">%</span><span class="p">}</span>
+
+<span class="o">&lt;</span><span class="n">br</span><span class="o">&gt;</span>
+<span class="n">Regards</span><span class="p">,</span><span class="o">&lt;</span><span class="n">br</span><span class="o">&gt;</span>
+<span class="n">The</span> <span class="n">internet</span><span class="o">.</span><span class="n">nl</span> <span class="n">dashboard</span><span class="o">&lt;</span><span class="n">br</span><span class="o">&gt;</span>
+<span class="o">&lt;</span><span class="n">br</span><span class="o">&gt;</span>
+<span class="p">[</span>
+<span class="o">&lt;</span><span class="n">a</span> <span class="n">href</span><span class="o">=</span><span class="s2">&quot;{{dashboard_address}}/spa/#/unsubscribe?feed=scan_finished&amp;unsubscribe_code={{unsubscribe_code}}&quot;</span><span class="o">&gt;</span><span class="n">unsubscribe</span><span class="o">&lt;/</span><span class="n">a</span><span class="o">&gt;</span>
+<span class="o">-</span>
+<span class="o">&lt;</span><span class="n">a</span> <span class="n">href</span><span class="o">=</span><span class="s2">&quot;{{dashboard_address}}/spa/#/account&quot;</span><span class="o">&gt;</span><span class="n">preferences</span><span class="o">&lt;/</span><span class="n">a</span><span class="o">&gt;</span>
+ <span class="p">]</span>
+
+<span class="o">&lt;</span><span class="n">style</span><span class="o">&gt;</span>
+<span class="n">table</span> <span class="n">th</span><span class="p">,</span> <span class="n">table</span> <span class="n">td</span><span class="p">{</span>
+        <span class="n">padding</span><span class="p">:</span> <span class="mi">5</span><span class="n">px</span><span class="p">;</span>
+<span class="p">}</span>
+<span class="o">&lt;/</span><span class="n">style</span><span class="o">&gt;</span>
+</pre></div>
+</div>
+<p>detailed_comparison_regression_en:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span><span class="o">%</span> <span class="k">for</span> <span class="n">record</span> <span class="ow">in</span> <span class="n">data</span> <span class="o">%</span><span class="p">}</span>
+<span class="o">&lt;</span><span class="n">tr</span> <span class="n">style</span><span class="o">=</span><span class="s1">&#39;background-color: {</span><span class="si">% c</span><span class="s1">ycle &#39;</span><span class="n">rgba</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mf">.05</span><span class="p">)</span><span class="s1">&#39; &#39;</span><span class="n">inherit</span><span class="s1">&#39; %};&#39;</span><span class="o">&gt;</span>
+    <span class="o">&lt;</span><span class="n">td</span> <span class="n">style</span><span class="o">=</span><span class="s2">&quot;vertical-align: baseline&quot;</span><span class="o">&gt;</span>
+        <span class="p">{{</span> <span class="n">record</span><span class="o">.</span><span class="n">url</span> <span class="p">}}</span>
+    <span class="o">&lt;/</span><span class="n">td</span><span class="o">&gt;</span>
+    <span class="o">&lt;</span><span class="n">td</span> <span class="n">style</span><span class="o">=</span><span class="s2">&quot;vertical-align: baseline&quot;</span><span class="o">&gt;</span>
+        <span class="o">&lt;</span><span class="n">a</span> <span class="n">href</span><span class="o">=</span><span class="s2">&quot;{{ record.new.report }}&quot;</span> <span class="n">target</span><span class="o">=</span><span class="s2">&quot;_blank&quot;</span><span class="o">&gt;</span>
+            <span class="o">&lt;</span><span class="n">img</span> <span class="n">src</span><span class="o">=</span><span class="s2">&quot;https://dashboard.internet.nl/static/images/vendor/internet_nl/favicon.png&quot;</span> <span class="n">style</span><span class="o">=</span><span class="s2">&quot;height: 16px;&quot;</span><span class="o">&gt;</span>
+            <span class="p">{{</span> <span class="n">record</span><span class="o">.</span><span class="n">new</span><span class="o">.</span><span class="n">score</span> <span class="p">}}</span><span class="o">%</span>
+        <span class="o">&lt;/</span><span class="n">a</span><span class="o">&gt;</span>
+    <span class="o">&lt;/</span><span class="n">td</span><span class="o">&gt;</span>
+    <span class="o">&lt;</span><span class="n">td</span> <span class="n">style</span><span class="o">=</span><span class="s2">&quot;vertical-align: baseline&quot;</span><span class="o">&gt;</span>
+        <span class="p">{{</span> <span class="n">record</span><span class="o">.</span><span class="n">changes</span><span class="o">.</span><span class="n">regression</span> <span class="p">}}</span>
+    <span class="o">&lt;/</span><span class="n">td</span><span class="o">&gt;</span>
+    <span class="o">&lt;</span><span class="n">td</span><span class="o">&gt;</span>
+        <span class="o">&lt;</span><span class="n">ul</span><span class="o">&gt;</span>
+        <span class="p">{</span><span class="o">%</span> <span class="k">for</span> <span class="n">metric</span> <span class="ow">in</span> <span class="n">record</span><span class="o">.</span><span class="n">changes</span><span class="o">.</span><span class="n">regressed_metrics</span> <span class="o">%</span><span class="p">}</span>
+            <span class="o">&lt;</span><span class="n">li</span><span class="o">&gt;</span><span class="p">{{</span> <span class="n">metric</span> <span class="p">}}</span><span class="o">&lt;/</span><span class="n">li</span><span class="o">&gt;</span>
+        <span class="p">{</span><span class="o">%</span> <span class="n">endfor</span> <span class="o">%</span><span class="p">}</span>
+        <span class="o">&lt;/</span><span class="n">ul</span><span class="o">&gt;</span>
+    <span class="o">&lt;/</span><span class="n">td</span><span class="o">&gt;</span>
+<span class="o">&lt;/</span><span class="n">tr</span><span class="o">&gt;</span>
+<span class="p">{</span><span class="o">%</span> <span class="n">endfor</span> <span class="o">%</span><span class="p">}</span>
+</pre></div>
+</div>
+<p>detailed_comparison_improvement_en:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span><span class="o">%</span> <span class="k">for</span> <span class="n">record</span> <span class="ow">in</span> <span class="n">data</span> <span class="o">%</span><span class="p">}</span>
+<span class="o">&lt;</span><span class="n">tr</span> <span class="n">style</span><span class="o">=</span><span class="s1">&#39;background-color: {</span><span class="si">% c</span><span class="s1">ycle &#39;</span><span class="n">rgba</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mf">.05</span><span class="p">)</span><span class="s1">&#39; &#39;</span><span class="n">inherit</span><span class="s1">&#39; %};&#39;</span><span class="o">&gt;</span>
+    <span class="o">&lt;</span><span class="n">td</span> <span class="n">style</span><span class="o">=</span><span class="s2">&quot;vertical-align: baseline&quot;</span><span class="o">&gt;</span><span class="p">{{</span> <span class="n">record</span><span class="o">.</span><span class="n">url</span> <span class="p">}}</span><span class="o">&lt;/</span><span class="n">td</span><span class="o">&gt;</span>
+    <span class="o">&lt;</span><span class="n">td</span> <span class="n">style</span><span class="o">=</span><span class="s2">&quot;vertical-align: baseline&quot;</span><span class="o">&gt;</span>
+        <span class="o">&lt;</span><span class="n">a</span> <span class="n">href</span><span class="o">=</span><span class="s2">&quot;{{ record.new.report }}&quot;</span> <span class="n">target</span><span class="o">=</span><span class="s2">&quot;_blank&quot;</span><span class="o">&gt;</span>
+            <span class="o">&lt;</span><span class="n">img</span> <span class="n">src</span><span class="o">=</span><span class="s2">&quot;https://dashboard.internet.nl/static/images/vendor/internet_nl/favicon.png&quot;</span> <span class="n">style</span><span class="o">=</span><span class="s2">&quot;height: 16px;&quot;</span><span class="o">&gt;</span>
+            <span class="p">{{</span> <span class="n">record</span><span class="o">.</span><span class="n">new</span><span class="o">.</span><span class="n">score</span> <span class="p">}}</span><span class="o">%</span>
+        <span class="o">&lt;/</span><span class="n">a</span><span class="o">&gt;</span>
+    <span class="o">&lt;/</span><span class="n">td</span><span class="o">&gt;</span>
+    <span class="o">&lt;</span><span class="n">td</span> <span class="n">style</span><span class="o">=</span><span class="s2">&quot;vertical-align: baseline&quot;</span><span class="o">&gt;</span>
+        <span class="p">{{</span> <span class="n">record</span><span class="o">.</span><span class="n">changes</span><span class="o">.</span><span class="n">improvement</span> <span class="p">}}</span>
+    <span class="o">&lt;/</span><span class="n">td</span><span class="o">&gt;</span>
+    <span class="o">&lt;</span><span class="n">td</span><span class="o">&gt;</span>
+        <span class="o">&lt;</span><span class="n">ul</span><span class="o">&gt;</span>
+        <span class="p">{</span><span class="o">%</span> <span class="k">for</span> <span class="n">metric</span> <span class="ow">in</span> <span class="n">record</span><span class="o">.</span><span class="n">changes</span><span class="o">.</span><span class="n">improved_metrics</span> <span class="o">%</span><span class="p">}</span>
+            <span class="o">&lt;</span><span class="n">li</span><span class="o">&gt;</span><span class="p">{{</span> <span class="n">metric</span> <span class="p">}}</span><span class="o">&lt;/</span><span class="n">li</span><span class="o">&gt;</span>
+        <span class="p">{</span><span class="o">%</span> <span class="n">endfor</span> <span class="o">%</span><span class="p">}</span>
+        <span class="o">&lt;/</span><span class="n">ul</span><span class="o">&gt;</span>
+    <span class="o">&lt;/</span><span class="n">td</span><span class="o">&gt;</span>
+<span class="o">&lt;/</span><span class="n">tr</span><span class="o">&gt;</span>
+<span class="p">{</span><span class="o">%</span> <span class="n">endfor</span> <span class="o">%</span><span class="p">}</span>
+</pre></div>
+</div>
+</div>
+</div>
+</div>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="index.html">Internet.nl Dashboard</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption"><span class="caption-text">Administration Manual</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Email Templates</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#general-information">General information</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#scan-finished-mail">Scan Finished mail</a></li>
+</ul>
+</li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="index.html" title="previous chapter">internet.nl dashboard documentation</a></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2020, ECP / Internet.nl.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.2.1</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="_sources/Email Templates.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>
