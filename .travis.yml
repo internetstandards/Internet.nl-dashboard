@@ -13,8 +13,8 @@ jobs:
     script:
       - make image
   - stage: build & push
-    # for master, build image and push artifact
-    if: branch = master AND type = push AND fork = false
+    # for main, build image and push artifact
+    if: branch = main AND type = push AND fork = false
     script:
       - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
       - make pull_image image push_image
