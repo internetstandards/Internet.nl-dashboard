@@ -400,7 +400,7 @@ The internet.nl dashboard<br>
 [
 <a href="{{dashboard_address}}/spa/#/unsubscribe?feed=scan_finished&unsubscribe_code={{unsubscribe_code}}">unsubscribe</a>
 -
-<a href="{{dashboard_address}}/spa/#/preferences">preferences</a>
+<a href="{{dashboard_address}}/spa/#/account">preferences</a>
  ]
 
 <style>

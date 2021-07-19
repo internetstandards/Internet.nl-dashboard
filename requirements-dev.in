@@ -37,3 +37,5 @@ moviepy
 
 # django phonenumber field (via otp) needs this, and cannot get it themselves:
 phonenumberslite>=7.0.2
+
+rst2pdf

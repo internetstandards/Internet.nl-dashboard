@@ -92,6 +92,7 @@ docopt==0.6.2
 docutils==0.15.2
     # via
     #   recommonmark
+    #   rst2pdf
     #   sphinx
 freezegun==0.3.12
     # via -r requirements-dev.in
@@ -109,10 +110,14 @@ imageio-ffmpeg==0.3.0
     # via moviepy
 imagesize==1.1.0
     # via sphinx
+importlib-metadata==4.6.1
+    # via rst2pdf
 isort==4.3.21
     # via -r requirements-dev.in
 jinja2==3.0.1
-    # via sphinx
+    # via
+    #   rst2pdf
+    #   sphinx
 jsonschema==3.2.0
     # via docker-compose
 livereload==2.6.1
@@ -133,6 +138,7 @@ numpy==1.21.0
 packaging==19.2
     # via
     #   pytest
+    #   rst2pdf
     #   sphinx
 paramiko==2.7.2
     # via docker
@@ -146,6 +152,7 @@ pillow==8.3.0
     # via
     #   -c requirements.txt
     #   imageio
+    #   reportlab
 pluggy==0.13.0
     # via pytest
 port_for==0.3.1
@@ -175,7 +182,9 @@ pyflakes==2.1.1
     #   autoflake
     #   pylama
 pygments==2.9.0
-    # via sphinx
+    # via
+    #   rst2pdf
+    #   sphinx
 pylama==7.7.1
     # via -r requirements-dev.in
 pynacl==1.4.0
@@ -226,6 +235,8 @@ pyyaml==5.4.1
     #   watchdog
 recommonmark==0.6.0
     # via -r requirements-dev.in
+reportlab==3.5.68
+    # via rst2pdf
 requests==2.25.1
     # via
     #   -c requirements.txt
@@ -237,6 +248,8 @@ requests==2.25.1
     #   sphinx
 responses==0.10.6
     # via pytest-responses
+rst2pdf==0.98
+    # via -r requirements-dev.in
 six==1.15.0
     # via
     #   -c requirements.txt
@@ -252,6 +265,8 @@ six==1.15.0
     #   python-dateutil
     #   responses
     #   websocket-client
+smartypants==2.0.1
+    # via rst2pdf
 snowballstemmer==2.0.0
     # via
     #   pydocstyle
@@ -313,6 +328,8 @@ websocket-client==0.57.0
     #   docker-compose
 yapf==0.30.0
     # via sphinx-markdown-builder
+zipp==3.5.0
+    # via importlib-metadata
 
 # The following packages are considered to be unsafe in a requirements file:
 # setuptools
