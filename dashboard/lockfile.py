@@ -12,8 +12,11 @@ def renew_lock(process_name: str) -> bool:
 
 
 def remove_lock(process_name: str) -> None:
-    lockfile = f"{settings.LOCKFILE_DIR}{process_name}.lock"
-    os.remove(lockfile)
+    try:
+        lockfile = f"{settings.LOCKFILE_DIR}{process_name}.lock"
+        os.remove(lockfile)
+    except FileNotFoundError:
+        pass
 
 
 def lock_exists(process_name: str) -> bool:
