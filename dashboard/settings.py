@@ -683,3 +683,5 @@ CORS_ALLOW_HEADERS = list(default_headers) + [
 
 # allow cookies to be sent as well, we have to, because there are logins and such.
 CORS_ALLOW_CREDENTIALS = True
+
+LOCKFILE_DIR = 'dashboard/lockfiles/'

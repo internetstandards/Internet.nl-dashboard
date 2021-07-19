@@ -27,7 +27,6 @@ from dashboard.internet_nl_dashboard.logic.report import (
 from dashboard.internet_nl_dashboard.logic.urllist_dashboard_report import create_dashboard_report
 from dashboard.internet_nl_dashboard.models import (AccountInternetNLScan, AccountInternetNLScanLog,
                                                     UrlList, UrlListReport)
-
 # done: create more flexible filters
 # done: map mail scans to an endpoint (changed the scanner for it)
 # done: make nice tracking name for internet nl that is echoed in the scan results.
@@ -44,6 +43,7 @@ from dashboard.internet_nl_dashboard.models import (AccountInternetNLScan, Accou
 # todo: probably the urllist will contain information if a scan will be done for web or mail. This cannot be managed
 #       yet, so this is not implemented yet.
 # Todo: add the scan ID to the report, so it's easier to find which scan is what. Is that possible?
+from dashboard.lockfile import remove_expired_lock, remove_lock, temporary_file_lock
 
 log = logging.getLogger(__name__)
 
@@ -112,21 +112,39 @@ def check_running_dashboard_scans(**kwargs) -> Task:
     """
     Gets status on all running scans from internet, per account.
 
+    This action is guarded by a pid file, only one of this process may be running at a time. Even if things are slow
+    as otherwise multiple times the same task might be performed. (in case of slow db access, high load etc).
+
+    Note that all state tasks have to be performed instantly, so not in a celery task.
+
     :return: None
     """
-    if kwargs:
-        scans = AccountInternetNLScan.objects.all()
-        scans = add_model_filter(scans, **kwargs)
-    else:
-        scans = AccountInternetNLScan.objects.all().exclude(
-            Q(state="finished")
-            | Q(state__startswith="error")
-            | Q(state__startswith="cancelled"))
 
-    log.debug(f"Checking the state of scan {scans}.")
-    tasks = [progress_running_scan(scan.id) for scan in scans]
+    lock_timeout = 300
+    lock_name = 'check_running_dashboard_scans'
 
-    return group(tasks)
+    # You now have five minutes to perform database operations, which should have happened in 1 second.
+    if temporary_file_lock(lock_name, timeout_in_seconds=lock_timeout):
+        if kwargs:
+            scans = AccountInternetNLScan.objects.all()
+            scans = add_model_filter(scans, **kwargs)
+        else:
+            scans = AccountInternetNLScan.objects.all().exclude(
+                Q(state="finished")
+                | Q(state__startswith="error")
+                | Q(state__startswith="cancelled")).only('id')
+
+        log.debug(f"Checking the state of scan {scans}.")
+        tasks = [progress_running_scan(scan.id) for scan in scans]
+
+        # All transactional state stuff is done now, so remove the lock
+        remove_lock(lock_name)
+        return group(tasks)
+
+    # In case of crashes and such, try again with a clean lock after expiration of course:
+    remove_expired_lock(lock_name, timeout_in_seconds=lock_timeout)
+
+    return group([])
 
 
 def progress_running_scan(scan_id: int) -> Task:
@@ -162,9 +180,6 @@ def progress_running_scan(scan_id: int) -> Task:
     """
 
     scan = AccountInternetNLScan.objects.all().filter(id=scan_id).first()
-    if not scan:
-        return group([])
-
     """
     It's not possible to safely create a scan automagically: this might be called a few times in a row, and then
     you'll end up with several new scans. Therefore, to initiate a scan, you need to call another method.
@@ -260,13 +275,14 @@ def handle_unknown_state(scan_id):
 
 
 def discovering_endpoints(scan_id: int):
+    # Always immediately update the current state, so the amount of double calls is minimal:
+    #  "discovered endpoints" to "discovering endpoints" and cause an infinte loop.
+    update_state("discovering endpoints", scan_id)
+
     scan = AccountInternetNLScan.objects.all().filter(id=scan_id).first()
     if not scan:
         return
 
-    # Always immediately update the current state, so the amount of double calls is minimal:
-    #  "discovered endpoints" to "discovering endpoints" and cause an infinte loop.
-    update_state("discovering endpoints", scan.id)
     return (
         dns_endpoints.compose_discover_task(**{
             'urls_filter': {'urls_in_dashboard_list__id': scan.urllist.id, 'is_dead': False,
@@ -294,11 +310,11 @@ def retrieving_scannable_urls(scan_id: int):
 
 
 def registering_scan_at_internet_nl(scan_id: int):
+    update_state("registering scan at internet.nl", scan_id)
+
     scan = AccountInternetNLScan.objects.all().filter(id=scan_id).first()
     if not scan:
         return
-
-    update_state("registering scan at internet.nl", scan.id)
 
     # mail = websecmap, mail_dashboard = internet.nl dashboard, web is the same on both. Mail here is a fallback
     # because the dashboard only understands dns_soa endpoints.
@@ -315,11 +331,12 @@ def registering_scan_at_internet_nl(scan_id: int):
 
 
 def running_scan(scan_id: int):
+    update_state("running scan", scan_id)
+
     scan = AccountInternetNLScan.objects.all().filter(id=scan_id).first()
     if not scan:
         return
 
-    update_state("running scan", scan.id)
     return chain(internet_nl_v2_websecmap.progress_running_scan(scan.scan.id)
                  | copy_state_from_websecmap_scan.si(scan.id))
 
@@ -335,21 +352,23 @@ def continue_running_scan(scan_id: int):
 
 
 def storing_scan_results(scan_id: int):
+    update_state("storing scan results", scan_id)
+
     scan = AccountInternetNLScan.objects.all().filter(id=scan_id).first()
     if not scan:
         return
 
-    update_state("storing scan results", scan.id)
     return chain(internet_nl_v2_websecmap.progress_running_scan(scan.scan.id)
                  | copy_state_from_websecmap_scan.si(scan.id))
 
 
 def processing_scan_results(scan_id: int):
+    update_state("processing scan results", scan_id)
+
     scan = AccountInternetNLScan.objects.all().filter(id=scan_id).first()
     if not scan:
         return
 
-    update_state("processing scan results", scan.id)
     return chain(internet_nl_v2_websecmap.progress_running_scan(scan.scan.id)
                  | copy_state_from_websecmap_scan.si(scan.id))
 
@@ -385,11 +404,11 @@ def copy_state_from_websecmap_scan(scan_id: int):
 
 
 def creating_report(scan_id: int):
+    update_state("creating report", scan_id)
+
     scan = AccountInternetNLScan.objects.all().filter(id=scan_id).first()
     if not scan:
         return
-
-    update_state("creating report", scan.id)
 
     # Note that calling 'timezone.now()' at canvas creation time, means that you'll have a date in the past
     # at the moment the function is actually called. If you need accurate time in the function, make sure the
@@ -403,11 +422,11 @@ def creating_report(scan_id: int):
 
 
 def sending_mail(scan_id: int):
+    update_state("sending mail", scan_id)
+
     scan = AccountInternetNLScan.objects.all().filter(id=scan_id).first()
     if not scan:
         return
-
-    update_state("sending mail", scan.id)
 
     return (send_after_scan_mail.si(scan.id)
             | update_state.s(scan.id))
@@ -657,13 +676,15 @@ def update_state(state: str, scan_id: int) -> None:
     """Update the current scan state. Also write it to the scan log. From this log we should also be able to see
     retries... when celery retries on exceptions etc..."""
 
-    scan = AccountInternetNLScan.objects.all().filter(id=scan_id).first()
+    scan = AccountInternetNLScan.objects.all().filter(id=scan_id).only('id', 'state').first()
     if not scan:
         return
 
     # if the state is still the same, just update the last_check, don't append the log.
     # Don't get it from the scan object, that info might be obsolete.
-    last_state_for_scan = AccountInternetNLScanLog.objects.all().filter(scan=scan).order_by("-at_when").first()
+    last_state_for_scan = AccountInternetNLScanLog.objects.all().filter(
+        scan=scan
+    ).order_by("-at_when").only('state').first()
 
     if last_state_for_scan:
         # see: test_update_state
