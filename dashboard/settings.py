@@ -300,20 +300,20 @@ LOGGING = {
 
         'celery.app.trace': {
             'handlers': ['console'],
-            'level': os.getenv('DJANGO_LOG_LEVEL', 'INFO'),
+            'level': os.getenv('CELERY_LOG_LEVEL', 'INFO'),
         },
         # logging defaults to INFO, DEBUG logging is enabled in development using .envrc
         'dashboard': {
             'handlers': ['console'],
-            'level': os.getenv('DJANGO_LOG_LEVEL', 'INFO'),
+            'level': os.getenv('APP_LOG_LEVEL', 'INFO'),
         },
         'websecmap': {
             'handlers': ['console'],
-            'level': os.getenv('DJANGO_LOG_LEVEL', 'INFO'),
+            'level': os.getenv('APP_LOG_LEVEL', 'INFO'),
         },
         'test': {
             'handlers': ['console'],
-            'level': os.getenv('DJANGO_LOG_LEVEL', 'INFO'),
+            'level': os.getenv('APP_LOG_LEVEL', 'INFO'),
         },
     },
 }
