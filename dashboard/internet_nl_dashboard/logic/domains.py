@@ -277,7 +277,7 @@ def cancel_scan(account, scan_id: int):
 
     scan.finished_on = timezone.now()
     scan.save()
-    update_state("cancelled", scan)
+    update_state("cancelled", scan.id)
 
     # Sprinkling an activity stream action.
     action.send(account, verb='cancelled scan', target=scan, public=False)
