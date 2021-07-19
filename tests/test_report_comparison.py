@@ -7,7 +7,7 @@ from dashboard.internet_nl_dashboard.logic.report_comparison import (compare_rep
                                                                      filter_comparison_report,
                                                                      key_calculation,
                                                                      render_comparison_view)
-from dashboard.internet_nl_dashboard.tests.common import get_json_file
+from tests.common import get_json_file
 
 
 def test_key_report(current_path):
