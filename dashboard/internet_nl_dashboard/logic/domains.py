@@ -122,15 +122,15 @@ def scan_now(account, user_input) -> Dict[str, Any]:
 
 
 def scan_urllist_now_ignoring_business_rules(urllist: UrlList):
-    urllist = UrlList.objects.all().filter(pk=urllist.id).first()
+    my_urllist = UrlList.objects.all().filter(pk=urllist.id).first()
 
-    if not urllist:
+    if not my_urllist:
         return operation_response(error=True, message="List could not be found.")
 
-    initialize_scan(urllist.id)
+    initialize_scan(my_urllist.id)
 
-    urllist.last_manual_scan = timezone.now()
-    urllist.save()
+    my_urllist.last_manual_scan = timezone.now()
+    my_urllist.save()
 
     return operation_response(success=True, message="Scan started")
 
@@ -257,7 +257,7 @@ def get_scan_status_of_list(account: Account, list_id: int) -> Dict[str, Any]:
     return data
 
 
-def cancel_scan(account, scan_id: int):
+def cancel_scan(account: Account, scan_id: int):
     """
     :param account: Account
     :param scan_id: AccountInternetNLScan ID

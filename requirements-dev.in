@@ -39,3 +39,19 @@ moviepy
 phonenumberslite>=7.0.2
 
 rst2pdf
+
+# QA tooling
+bandit
+mypy
+django-stubs
+vulture
+pylint
+pylint-django
+
+types-redis
+types-freezegun
+types-Markdown
+types-polib
+types-requests
+types-pytz
+types-setuptools

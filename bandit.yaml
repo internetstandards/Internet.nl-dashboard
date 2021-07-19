@@ -1,0 +1,1 @@
+exclude_dirs: ['.pytest_cache', 'tests']

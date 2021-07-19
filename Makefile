@@ -242,6 +242,17 @@ ${python} ${pip}:
 	# ensure a recent version of pip is used to avoid errors with intalling
 	${VIRTUAL_ENV}/bin/pip install --upgrade pip==19.1.1
 
+mypy: ${app} ## Check for type issues with mypy
+	${bin}/python3 -m mypy --check ${pysrcdirs}
+
+vulture: ${app} ## Check for unused code
+	${bin}/python3 -m vulture ${pysrcdirs}
+
+bandit: ${app} ## Run basic security audit
+	${bin}/python3 -m bandit --configfile bandit.yaml -r ${pysrcdirs}
+
+pylint: ${app}
+	DJANGO_SETTINGS_MODULE=${app_name}.settings ${bin}/pylint --load-plugins pylint_django dashboard
 
 ## Utility
 help:           ## Show this help.
