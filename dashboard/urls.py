@@ -24,7 +24,7 @@ admin.site.site_title = 'Dashboard Admin'
 
 def trigger_error(request):
     # See: https://docs.sentry.io/platforms/python/django/
-    division_by_zero = 1 / 0  # noqa
+    raise ZeroDivisionError("This is a test for celery.")
 
 
 admin_urls = [

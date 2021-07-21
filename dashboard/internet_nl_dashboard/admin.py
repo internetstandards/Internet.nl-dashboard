@@ -50,8 +50,7 @@ class MyPeriodicTaskForm(PeriodicTaskForm):
 
     def clean(self):
         print('cleaning')
-
-        cleaned_data = super(PeriodicTaskForm, self).clean()
+        cleaned_data = super().clean()
 
         # if not self.cleaned_data['last_run_at']:
         #     self.cleaned_data['last_run_at'] = datetime.now(pytz.utc)
@@ -90,32 +89,32 @@ class IEPeriodicTaskAdmin(PeriodicTaskAdmin, ImportExportModelAdmin):
     def due(obj):
         if obj.last_run_at:
             return obj.schedule.remaining_estimate(last_run_at=obj.last_run_at)
-        else:
-            # y in seconds
-            z, y = obj.schedule.is_due(last_run_at=datetime.now(pytz.utc))
-            date = datetime.now(pytz.utc) + timedelta(seconds=y)
 
-            return naturaltime(date)
+        # y in seconds
+        _, y_in_seconds = obj.schedule.is_due(last_run_at=datetime.now(pytz.utc))
+        date = datetime.now(pytz.utc) + timedelta(seconds=y_in_seconds)
+
+        return naturaltime(date)
 
     @staticmethod
     def precise(obj):
         if obj.last_run_at:
             return obj.schedule.remaining_estimate(last_run_at=obj.last_run_at)
-        else:
-            return obj.schedule.remaining_estimate(last_run_at=datetime.now(pytz.utc))
+
+        return obj.schedule.remaining_estimate(last_run_at=datetime.now(pytz.utc))
 
     @staticmethod
     def next(obj):
         if obj.last_run_at:
             return obj.schedule.remaining_estimate(last_run_at=obj.last_run_at)
-        else:
-            # y in seconds
-            z, y = obj.schedule.is_due(last_run_at=datetime.now(pytz.utc))
-            # somehow the cron jobs still give the correct countdown even last_run_at is not set.
 
-            date = datetime.now(pytz.utc) + timedelta(seconds=y)
+        # y in seconds
+        _, y_in_seconds = obj.schedule.is_due(last_run_at=datetime.now(pytz.utc))
+        # somehow the cron jobs still give the correct countdown even last_run_at is not set.
 
-            return date
+        date = datetime.now(pytz.utc) + timedelta(seconds=y_in_seconds)
+
+        return date
 
     class Meta:
         ordering = ["-name"]
@@ -220,8 +219,8 @@ class AccountAdmin(ImportExportModelAdmin, admin.ModelAdmin):
 
     @staticmethod
     def no_of_users(obj):
-        return mark_safe("<a href='/admin/auth/user/?q=%s#/tab/inline_0/'>🔎 %s" %
-                         (obj.name, DashboardUser.objects.all().filter(account=obj).count()))
+        return mark_safe(f"<a href='/admin/auth/user/?q={obj.name}#/tab/inline_0/'>"
+                         f"🔎 {DashboardUser.objects.all().filter(account=obj).count()}")
 
     def save_model(self, request, obj, form, change):
 

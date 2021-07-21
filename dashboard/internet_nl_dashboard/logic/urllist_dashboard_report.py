@@ -237,10 +237,10 @@ def rate_urllist_on_moment(urllist: UrlList, when: datetime = None, prevent_dupl
     if not when:
         when = datetime.now(pytz.utc)
 
-    log.info("Creating report for urllist %s on %s" % (urllist, when, ))
+    log.info(f"Creating report for urllist {urllist} on {when}")
 
     if UrlListReport.objects.all().filter(urllist=urllist, at_when=when).exists():
-        log.debug("UrllistReport already exists for %s on %s. Not overwriting." % (urllist, when))
+        log.debug(f"UrllistReport already exists for {urllist} on {when}. Not overwriting.")
         existing_report = UrlListReport.objects.all().filter(urllist=urllist, at_when=when).first()
         return existing_report
 
@@ -277,11 +277,10 @@ def rate_urllist_on_moment(urllist: UrlList, when: datetime = None, prevent_dupl
 
     if prevent_duplicates:
         if not DeepDiff(last.calculation, calculation, ignore_order=True, report_repetition=True):
-            log.warning("The report for %s on %s is the same as the report from %s. Not saving." % (
-                urllist, when, last.at_when))
+            log.info(f"The report for {urllist} on {when} is the same as the report from {last.at_when}. Not saving.")
             return last
 
-    log.info("The calculation for %s on %s has changed, so we're saving this rating." % (urllist, when))
+    log.info(f"The calculation for {urllist} on {when} has changed, so we're saving this rating.")
 
     # remove urls and name from scores object, so it can be used as initialization parameters (saves lines)
     # this is by reference, meaning that the calculation will be affected if we don't work on a clone.

@@ -16,7 +16,7 @@ class CustomAccountModelForm(forms.ModelForm):
     def save(self, commit=True):
         # new_password = self.cleaned_data.get('new_password', None)
         # self.cleaned_data['internet_nl_api_password'] = Account.encrypt_password(new_password)
-        return super(CustomAccountModelForm, self).save(commit=commit)
+        return super().save(commit=commit)
 
     class Meta:
         model = Account

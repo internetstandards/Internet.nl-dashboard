@@ -60,8 +60,8 @@ def upload_spreadsheet(request) -> HttpResponse:
 def save_file(myfile) -> str:
     # todo: filesystem might be full.
     # https://docs.djangoproject.com/en/2.1/ref/files/storage/
-    fs = FileSystemStorage(location=settings.MEDIA_ROOT)
-    filename = fs.save(myfile.name, myfile)
+    file_system_storage = FileSystemStorage(location=settings.MEDIA_ROOT)
+    filename = file_system_storage.save(myfile.name, myfile)
     file = settings.MEDIA_ROOT + '/' + filename
     return file
 

@@ -30,7 +30,7 @@ def session_login_(request):
     """
     # taken from: https://stackoverflow.com/questions/11891322/setting-up-a-user-login-in-python-django-using-json-and-
     if request.method != 'POST':
-        return operation_response(success=True, message=f"post_only")
+        return operation_response(success=True, message="post_only")
 
     # get the json data:
     parameters = get_json_body(request)
@@ -39,23 +39,23 @@ def session_login_(request):
     password = parameters.get('password', '').strip()
 
     if not username or not password:
-        return operation_response(error=True, message=f"no_credentials_supplied")
+        return operation_response(error=True, message="no_credentials_supplied")
 
     user = authenticate(username=username, password=password)
 
     if user is None:
-        return operation_response(error=True, message=f"invalid_credentials")
+        return operation_response(error=True, message="invalid_credentials")
 
     if not user.is_active:
-        return operation_response(error=True, message=f"user_not_active")
+        return operation_response(error=True, message="user_not_active")
 
     # todo: implement generate_challenge and verify_token, so we can do login from new site.
     devices = TOTPDevice.objects.all().filter(user=user, confirmed=True)
     if devices:
-        return operation_response(error=True, message=f"second_factor_login_required")
+        return operation_response(error=True, message="second_factor_login_required")
 
     login(request, user)
-    return operation_response(success=True, message=f"logged_in")
+    return operation_response(success=True, message="logged_in")
 
 
 def session_logout_(request):
@@ -64,10 +64,10 @@ def session_logout_(request):
     # https://docs.djangoproject.com/en/3.1/ref/contrib/auth/
     if not request.user.is_authenticated:
         log.debug('User is not authenticated...')
-        return operation_response(success=True, message=f"logged_out")
+        return operation_response(success=True, message="logged_out")
     else:
         logout(request)
-        return operation_response(success=True, message=f"logged_out")
+        return operation_response(success=True, message="logged_out")
 
 
 def session_status_(request):

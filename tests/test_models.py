@@ -5,7 +5,7 @@ import pytz
 from django.utils import timezone
 from freezegun import freeze_time
 
-from dashboard.internet_nl_dashboard.models import UrlList
+from dashboard.internet_nl_dashboard.models import determine_next_scan_moment
 
 
 def test_determine_next_scan_moment():
@@ -21,7 +21,7 @@ def test_determine_next_scan_moment():
 
     for test in tests:
         with freeze_time(test["input"]):
-            assert test["outcome"] == UrlList.determine_next_scan_moment(preference)
+            assert test["outcome"] == determine_next_scan_moment(preference)
 
     preference = "at the start of every quarter"
     tests = [
@@ -34,7 +34,7 @@ def test_determine_next_scan_moment():
 
     for test in tests:
         with freeze_time(test["input"]):
-            assert test["outcome"] == UrlList.determine_next_scan_moment(preference)
+            assert test["outcome"] == determine_next_scan_moment(preference)
 
     preference = "every 1st day of the month"
     tests = [
@@ -47,7 +47,7 @@ def test_determine_next_scan_moment():
 
     for test in tests:
         with freeze_time(test["input"]):
-            assert test["outcome"] == UrlList.determine_next_scan_moment(preference)
+            assert test["outcome"] == determine_next_scan_moment(preference)
 
     preference = "twice per month"
     tests = [
@@ -62,12 +62,12 @@ def test_determine_next_scan_moment():
 
     for test in tests:
         with freeze_time(test["input"]):
-            assert test["outcome"] == UrlList.determine_next_scan_moment(preference)
+            assert test["outcome"] == determine_next_scan_moment(preference)
 
     preference = "disabled"
     # dates, because there will be a difference in milliseconds as timezone.now is executed at different moments.
     # date comparing will fail when the exact moment is 00:00:00 because the date is different. Therefore the < is used.
-    assert (timezone.now() + timedelta(days=9000)) <= UrlList.determine_next_scan_moment(preference)
+    assert (timezone.now() + timedelta(days=9000)) <= determine_next_scan_moment(preference)
 
     with pytest.raises(ValueError):
-        UrlList.determine_next_scan_moment("NONSENSE")
+        determine_next_scan_moment("NONSENSE")

@@ -616,7 +616,7 @@ if SENTRY_DSN:
 
 SENTRY_ORGANIZATION = 'internet-cleanup-foundation'
 SENTRY_PROJECT = 'internet-nl-dashboard'
-SENTRY_PROJECT_URL = 'https://sentry.io/%s/%s' % (SENTRY_ORGANIZATION, SENTRY_PROJECT)
+SENTRY_PROJECT_URL = f'https://sentry.io/{SENTRY_ORGANIZATION}/{SENTRY_PROJECT}'
 
 # Copied from internet.nl
 

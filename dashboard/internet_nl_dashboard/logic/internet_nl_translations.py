@@ -61,7 +61,7 @@ def convert_internet_nl_content_to_vue():
 
         # support a per-language kind of file, in case we're going to do dynamic loading of languages.
         vue_i18n_content = convert_vue_i18n_format([{'locale': locale, 'content': structured_content}])
-        store_vue_i18n_file('internet_nl.%s' % locale, vue_i18n_content)
+        store_vue_i18n_file(f'internet_nl.{locale}', vue_i18n_content)
 
     # the locales are easiest stored together. This makes language switching a lot easier.
     vue_i18n_content = convert_vue_i18n_format(translated_locales)
@@ -83,7 +83,7 @@ def get_locale_content(locale: str) -> bytes:
     :return: str
     """
 
-    url = "https://raw.githubusercontent.com/NLnetLabs/Internet.nl/master/translations/%s/main.po" % locale
+    url = f"https://raw.githubusercontent.com/NLnetLabs/Internet.nl/master/translations/{locale}/main.po"
     response = requests.get(url)
     return response.content
 
@@ -99,8 +99,7 @@ def store_as_django_locale(locale, content):
     :param locale:
     :return:
     """
-
-    filepath = "%s%s" % (DJANGO_I18N_OUTPUT_PATH, f"%s/LC_MESSAGES/django.po" % locale)
+    filepath = f"{DJANGO_I18N_OUTPUT_PATH}{locale}/LC_MESSAGES/django.po"
 
     # If the language does not exist yet, make the folder supporting this language.
     os.makedirs(Path(filepath).parent, exist_ok=True)
@@ -165,8 +164,7 @@ def convert_vue_i18n_format(translated_locales: List[Dict[str, List[Any]]]) -> s
             if entry.msgid.endswith('content'):
                 continue
 
-            content += "            %s: '%s'," % (_js_safe_msgid(entry.msgid),
-                                                  _js_safe_msgstr(entry.msgstr)) + '\n'
+            content += f"            {_js_safe_msgid(entry.msgid)}: '{_js_safe_msgstr(entry.msgstr)}',\n"
         content += _vue_format_locale_end()
     content += _vue_format_end()
 
@@ -238,7 +236,7 @@ def _js_safe_msgstr(msgstr):
 
 def _strip_simple_item(text, html_tag):
 
-    if text.startswith("<%s>" % html_tag) and text.endswith("</%s>" % html_tag):
+    if text.startswith(f"<{html_tag}>") and text.endswith(f"</{html_tag}>"):
         # Opening: <> and closing: </>
         len_opening_tag = len(html_tag) + 2
         len_closing_tag = len_opening_tag + 1
@@ -257,11 +255,8 @@ def store_vue_i18n_file(filename: str, content: str) -> None:
     :param content:
     :return:
     """
-
-    filepath = "%s%s.js" % (VUE_I18N_OUTPUT_PATH, filename)
-
-    with open(filepath, 'w') as f:
-        f.write(content)
+    with open(f"{VUE_I18N_OUTPUT_PATH}{filename}.js", 'w') as file:
+        file.write(content)
 
 
 def translate_field(field_label, translation_dictionary: Dict[str, str]):

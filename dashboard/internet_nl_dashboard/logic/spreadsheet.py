@@ -238,8 +238,8 @@ def complete_import(user: DashboardUser, file: str):
     if not is_valid_extension(file):
         response['error'] = True
         response['status'] = 'error'
-        response['message'] = "File does not have a valid extension. Allowed extensions are: %s." % (
-            ' '.join(ALLOWED_SPREADSHEET_EXTENSIONS))
+        response['message'] = "File does not have a valid extension. " \
+                              f"Allowed extensions are: {','.join(ALLOWED_SPREADSHEET_EXTENSIONS)}."
         log_spreadsheet_upload(user=user, file=file, status=response['status'], message=response['message'])
         return response
 
@@ -269,16 +269,16 @@ def complete_import(user: DashboardUser, file: str):
     if number_of_lists > config.DASHBOARD_MAXIMUM_LISTS_PER_SPREADSHEET:
         response['error'] = True
         response['status'] = 'error'
-        response['message'] = "The maximum number of new lists is %s. The uploaded spreadsheet contains more than " \
-                              "this limit. Try again in smaller batches."
+        response['message'] = f"The maximum number of new lists is {config.DASHBOARD_MAXIMUM_LISTS_PER_SPREADSHEET}. " \
+                              "The uploaded spreadsheet contains more than this limit. Try again in smaller batches."
         log_spreadsheet_upload(user=user, file=file, status=response['status'], message=response['message'])
         return response
 
     if number_of_lists > config.DASHBOARD_MAXIMUM_DOMAINS_PER_SPREADSHEET:
         response['error'] = True
         response['status'] = 'error'
-        response['message'] = "The maximum number of new urls is %s. The uploaded spreadsheet contains more than " \
-                              "this limit. Try again in smaller batches."
+        response['message'] = f"The maximum number of new urls is {config.DASHBOARD_MAXIMUM_DOMAINS_PER_SPREADSHEET}." \
+                              "The uploaded spreadsheet contains more than this limit. Try again in smaller batches."
         log_spreadsheet_upload(user=user, file=file, status=response['status'], message=response['message'])
         return response
 
@@ -290,9 +290,8 @@ def complete_import(user: DashboardUser, file: str):
             response['error'] = True
             response['status'] = 'error'
             response['message'] = "This spreadsheet contains urls that are not in the correct format. Please correct " \
-                                  "them and try again. " \
-                                  "The fist list that contains an error is %s with the url(s) %s" % (
-                urllist, ', '.join(url_check['incorrect']))
+                                  "them and try again. The fist list that contains an error is " \
+                                  f"{urllist} with the url(s) {', '.join(url_check['incorrect'])}"
             log_spreadsheet_upload(user=user, file=file, status=response['status'], message=response['message'])
             return response
 
@@ -306,10 +305,10 @@ def complete_import(user: DashboardUser, file: str):
     # Make the details a little bit easier for humans to understand:
     details_str = ""
     for urllist in details.keys():
-        details_str += "%s: new: %s, existing: %s; " % (urllist, details[urllist]['added_to_list'],
-                                                        details[urllist]['already_in_list'])
+        details_str += f"{urllist}: new: {details[urllist]['added_to_list']}, " \
+                       f"existing: {details[urllist]['already_in_list']}; "
 
-    response['message'] = "Spreadsheet uploaded successfully. Added %s lists and %s urls. Details: %s" % (
-        number_of_lists, number_of_urls, details_str)
+    response['message'] = "Spreadsheet uploaded successfully. " \
+                          f"Added {number_of_lists} lists and {number_of_urls} urls. Details: {details_str}"
     log_spreadsheet_upload(user=user, file=file, status=response['status'], message=response['message'])
     return response

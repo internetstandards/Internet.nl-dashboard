@@ -2,7 +2,7 @@ import itertools
 import logging
 from string import ascii_uppercase
 from tempfile import NamedTemporaryFile
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Union
 
 import pyexcel as p
 from django.utils.text import slugify
@@ -228,8 +228,8 @@ SANE_COLUMN_ORDER = {
 def iter_all_strings():
     # https://stackoverflow.com/questions/29351492/how-to-make-a-continuous-alphabetic-list-python-from-a-z-then-from-aa-ab
     for size in itertools.count(1):
-        for s in itertools.product(ascii_uppercase, repeat=size):
-            yield "".join(s)
+        for product in itertools.product(ascii_uppercase, repeat=size):
+            yield "".join(product)
 
 
 def create_spreadsheet(account: Account, report_id: int):
@@ -261,8 +261,8 @@ def create_spreadsheet(account: Account, report_id: int):
     data += [headers(protocol)]
     data += urllistreport_to_spreadsheet_data(category_name=report.urllist.name, urls=urls, protocol=protocol)
 
-    filename = "internet nl dashboard report %s %s %s %s" % (
-        report.pk, report.urllist.name, report.urllist.scan_type, report.at_when.date())
+    filename = "internet nl dashboard report " \
+               f"{report.pk} {report.urllist.name} {report.urllist.scan_type} {report.at_when.date()}"
 
     # The sheet is created into memory and then passed to the caller. They may save it, or serve it, etc...
     # http://docs.pyexcel.org/en/latest/tutorial06.html?highlight=memory
@@ -280,29 +280,29 @@ def upgrade_excel_spreadsheet(spreadsheet_data):
         log.debug(f"Saving temp outout to {tmp.name}")
         spreadsheet_data.save_as(array=spreadsheet_data, filename=tmp.name)
 
-        wb = load_workbook(tmp.name)
-        ws = wb.active
+        workbook = load_workbook(tmp.name)
+        worksheet = workbook.active
 
         # nicer columns
-        ws.column_dimensions["A"].width = "30"
-        ws.column_dimensions["B"].width = "30"
+        worksheet.column_dimensions["A"].width = "30"
+        worksheet.column_dimensions["B"].width = "30"
 
         # Add statistic rows:
-        ws.insert_rows(0, amount=9)
+        worksheet.insert_rows(0, amount=9)
 
-        ws[f'B1'] = "Total"
-        ws[f'B2'] = "Passed"
-        ws[f'B3'] = "Info"
-        ws[f'B4'] = "Warning"
-        ws[f'B5'] = "Failed"
-        ws[f'B6'] = "Not tested"
-        ws[f'B7'] = "Error"
-        ws[f'B8'] = "Test not applicable (mail only)"
-        ws[f'B9'] = "Percentage passed"
+        worksheet['B1'] = "Total"
+        worksheet['B2'] = "Passed"
+        worksheet['B3'] = "Info"
+        worksheet['B4'] = "Warning"
+        worksheet['B5'] = "Failed"
+        worksheet['B6'] = "Not tested"
+        worksheet['B7'] = "Error"
+        worksheet['B8'] = "Test not applicable (mail only)"
+        worksheet['B9'] = "Percentage passed"
 
         # bold totals:
         for i in range(1, 10):
-            ws[f'B{i}'].font = Font(bold=True)
+            worksheet[f'B{i}'].font = Font(bold=True)
 
         data_columns = [
             'F', 'G', 'H', 'I', 'J', 'K', 'L', "M", "N", 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z',
@@ -314,117 +314,95 @@ def upgrade_excel_spreadsheet(spreadsheet_data):
         # add some statistics
         for cell in data_columns:
             # if header, then aggregate
-            if ws[f'{cell}12'].value:
+            if worksheet[f'{cell}12'].value:
                 # There is a max of 5000 domains per scan. So we set this to something lower.
                 # There is no good support of headers versus data, which makes working with excel a drama
                 # If you ever read this code, and want a good spreadsheet editor: try Apple Numbers. It's fantastic.
-                ws[f'{cell}1'] = f'=COUNTA({cell}13:{cell}5050)'
+                worksheet[f'{cell}1'] = f'=COUNTA({cell}13:{cell}5050)'
                 # todo: also support other values
-                ws[f'{cell}2'] = f'=COUNTIF({cell}13:{cell}5050, "passed")'
-                ws[f'{cell}3'] = f'=COUNTIF({cell}13:{cell}5050, "info")'
-                ws[f'{cell}4'] = f'=COUNTIF({cell}13:{cell}5050, "warning")'
-                ws[f'{cell}5'] = f'=COUNTIF({cell}13:{cell}5050, "failed")'
-                ws[f'{cell}6'] = f'=COUNTIF({cell}13:{cell}5050, "not_tested")'
-                ws[f'{cell}7'] = f'=' \
-                                 f'COUNTIF({cell}13:{cell}5050, "error")+' \
-                                 f'COUNTIF({cell}13:{cell}5050, "unreachable")+' \
-                                 f'COUNTIF({cell}13:{cell}5050, "untestable")+' \
-                                 f'COUNTIF({cell}13:{cell}5050, "not_testable")'
-                ws[f'{cell}8'] = f'=' \
-                                 f'COUNTIF({cell}13:{cell}5050, "no_mx")+' \
-                                 f'COUNTIF({cell}13:{cell}5050, "not_applicable")'
+                worksheet[f'{cell}2'] = f'=COUNTIF({cell}13:{cell}5050, "passed")'
+                worksheet[f'{cell}3'] = f'=COUNTIF({cell}13:{cell}5050, "info")'
+                worksheet[f'{cell}4'] = f'=COUNTIF({cell}13:{cell}5050, "warning")'
+                worksheet[f'{cell}5'] = f'=COUNTIF({cell}13:{cell}5050, "failed")'
+                worksheet[f'{cell}6'] = f'=COUNTIF({cell}13:{cell}5050, "not_tested")'
+                worksheet[f'{cell}7'] = f'=' \
+                    f'COUNTIF({cell}13:{cell}5050, "error")+' \
+                    f'COUNTIF({cell}13:{cell}5050, "unreachable")+' \
+                    f'COUNTIF({cell}13:{cell}5050, "untestable")+' \
+                    f'COUNTIF({cell}13:{cell}5050, "not_testable")'
+                worksheet[f'{cell}8'] = f'=' \
+                    f'COUNTIF({cell}13:{cell}5050, "no_mx")+' \
+                    f'COUNTIF({cell}13:{cell}5050, "not_applicable")'
                 # Not applicable and not testable are subtracted from the total.
                 # See https://github.com/internetstandards/Internet.nl-dashboard/issues/68
                 # Rounding's num digits is NOT the number of digits behind the comma, but the total number of digits.
                 # todo: we should use the calculations in report.py. And there include the "missing" / empty stuff IF
                 # that is missing.
                 #                   IF(     H1=0,0,ROUND(     H2÷     H1, 4))
-                ws[f'{cell}9'] = f'=IF({cell}1=0,0,ROUND({cell}2/{cell}1, 4))'
-                ws[f'{cell}9'].number_format = '0.00%'
+                worksheet[f'{cell}9'] = f'=IF({cell}1=0,0,ROUND({cell}2/{cell}1, 4))'
+                worksheet[f'{cell}9'].number_format = '0.00%'
 
         # make headers bold
-        ws[f'A12'].font = Font(bold=True)  # List
-        ws[f'B12'].font = Font(bold=True)  # Url
-        ws[f'C11'].font = Font(bold=True)  # overall
-        ws[f'C12'].font = Font(bold=True)  # % Score
-        ws[f'D12'].font = Font(bold=True)  # Report
+        worksheet['A12'].font = Font(bold=True)  # List
+        worksheet['B12'].font = Font(bold=True)  # Url
+        worksheet['C11'].font = Font(bold=True)  # overall
+        worksheet['C12'].font = Font(bold=True)  # % Score
+        worksheet['D12'].font = Font(bold=True)  # Report
         for cell in data_columns:
-            ws[f'{cell}11'].font = Font(bold=True)
-            ws[f'{cell}12'].font = Font(bold=True)
+            worksheet[f'{cell}11'].font = Font(bold=True)
+            worksheet[f'{cell}12'].font = Font(bold=True)
 
         # Freeze pane to make navigation easier.
-        ws.freeze_panes = ws['E13']
+        worksheet.freeze_panes = worksheet['E13']
 
         # there is probably a feature that puts this in a single conditional value.
-        greenFill = PatternFill(start_color='B7FFC8', end_color='B7FFC8', fill_type='solid')
-        redFill = PatternFill(start_color='FFB7B7', end_color='FFB7B7', fill_type='solid')
-        blueFill = PatternFill(start_color='B7E3FF', end_color='B7E3FF', fill_type='solid')
-        orangeFill = PatternFill(start_color='FFD9B7', end_color='FFD9B7', fill_type='solid')
-        grayFill = PatternFill(start_color='99FFFF', end_color='DBDBDB', fill_type='solid')
-        altgrayFill = PatternFill(start_color='99FFFF', end_color='C0C0C0', fill_type='solid')
+        conditional_rules = {
+            "passed": PatternFill(start_color='B7FFC8', end_color='B7FFC8', fill_type='solid'),
+            "failed": PatternFill(start_color='FFB7B7', end_color='FFB7B7', fill_type='solid'),
+            "warning": PatternFill(start_color='FFD9B7', end_color='FFD9B7', fill_type='solid'),
+            "info": PatternFill(start_color='B7E3FF', end_color='B7E3FF', fill_type='solid'),
+            "good_not_tested": PatternFill(start_color='99FFFF', end_color='C0C0C0', fill_type='solid'),
+            "not_tested": PatternFill(start_color='99FFFF', end_color='DBDBDB', fill_type='solid'),
+        }
+
         # Set the measurements to green/red depending on value using conditional formatting.
         # There is no true/false, but we can color based on value.
-        ws.conditional_formatting.add(
-            'F13:CD5050',
-            CellIsRule(operator='=', formula=['"passed"'], stopIfTrue=True, fill=greenFill)
-        )
+        for grade, pattern in conditional_rules.items():
+            worksheet.conditional_formatting.add(
+                'F13:CD5050',
+                CellIsRule(operator='=', formula=[f'"{grade}"'], stopIfTrue=True, fill=pattern)
+            )
 
-        ws.conditional_formatting.add(
-            'F13:CD5050',
-            CellIsRule(operator='=', formula=['"failed"'], stopIfTrue=True, fill=redFill)
-        )
-
-        ws.conditional_formatting.add(
-            'F13:CD5050',
-            CellIsRule(operator='=', formula=['"warning"'], stopIfTrue=True, fill=orangeFill)
-        )
-
-        ws.conditional_formatting.add(
-            'F13:CD5050',
-            CellIsRule(operator='=', formula=['"info"'], stopIfTrue=True, fill=blueFill)
-        )
-
-        ws.conditional_formatting.add(
-            'F13:CD5050',
-            CellIsRule(operator='=', formula=['"good_not_tested"'], stopIfTrue=True, fill=altgrayFill)
-        )
-
-        ws.conditional_formatting.add(
-            'F13:CD5050',
-            CellIsRule(operator='=', formula=['"not_tested"'], stopIfTrue=True, fill=grayFill)
-        )
-
-        log.debug(ws.title)
-        wb.save(tmp.name)
+        workbook.save(tmp.name)
 
         return tmp
 
 
 def category_headers(protocol: str = 'dns_soa'):
-    headers: List[str] = ['', '']
+    sheet_headers: List[str] = ['', '']
     for group in SANE_COLUMN_ORDER[protocol]:
-        headers += [translate_field(group, translation_dictionary=po_file_as_dictionary)]
+        sheet_headers += [translate_field(group, translation_dictionary=po_file_as_dictionary)]
 
-        for x in range(len(SANE_COLUMN_ORDER[protocol][group])-1):
-            headers += ['']
+        for _ in range(len(SANE_COLUMN_ORDER[protocol][group])-1):
+            sheet_headers += ['']
 
         # add empty thing after each group to make distinction per group clearer
-        headers += ['']
+        sheet_headers += ['']
 
-    return headers
+    return sheet_headers
 
 
 def headers(protocol: str = 'dns_soa'):
-    headers = ['List', 'Url']
+    sheet_headers = ['List', 'Url']
     for group in SANE_COLUMN_ORDER[protocol]:
-        headers += SANE_COLUMN_ORDER[protocol][group]
+        sheet_headers += SANE_COLUMN_ORDER[protocol][group]
         # add empty thing after each group to make distinction per group clearer
-        headers += ['']
+        sheet_headers += ['']
 
     # translate them:
-    headers = [translate_field(header, translation_dictionary=po_file_as_dictionary) for header in headers]
+    sheet_headers = [translate_field(header, translation_dictionary=po_file_as_dictionary) for header in sheet_headers]
 
-    return headers
+    return sheet_headers
 
 
 def formula_row(function: str, protocol: str = 'dns_soa'):
@@ -509,53 +487,12 @@ def keyed_values_as_boolean(keyed_ratings: Dict[str, Any], protocol: str = 'dns_
     values = []
 
     for group in SANE_COLUMN_ORDER[protocol]:
-
         for issue_name in SANE_COLUMN_ORDER[protocol][group]:
+            values.append(some_value(issue_name, keyed_ratings))
 
-            if issue_name == 'internet_nl_score':
-                # Handle the special case of the score column.
-                # explanation":"75 https://batch.internet.nl/mail/portaal.digimelding.nl/289480/",
-                # Not steadily convertable to a percentage, so printing it as an integer instead.
-                if keyed_ratings[issue_name]['internet_nl_score'] == "error":
-                    values.append(keyed_ratings[issue_name]['internet_nl_score'])
-                else:
-                    values.append(int(keyed_ratings[issue_name]['internet_nl_score']))
-            elif issue_name == 'internet_nl_score_report':
-                # fake column to give the column a title per #205, also makes the report more explicit.
-                values.append(keyed_ratings['internet_nl_score']['internet_nl_url'])
+            if issue_name == 'internet_nl_score_report':
                 # add empty column
                 values.append(" ")
-            else:
-                # the issue name might not exist, the 'ok' value might not exist. In those cases replace it with a ?
-                value = keyed_ratings.get(issue_name, {'ok': '?',
-                                                       'not_testable': False,
-                                                       'not_applicable': False, 'error_in_test': False})
-
-                # api v2, tls1.3 update
-                if value.get('test_result', False):
-                    test_value = value.get('test_result', '?')
-                    # per 205, translate not_testable to untestable. This is cosmetic as the 'not_testable' is
-                    # everywhere in the software and is just renamed, and will probably be renamed a few times
-                    # more in the future.
-                    if test_value == "not_testable":
-                        test_value = "untestable"
-                    values.append(test_value)
-
-                else:
-                    # unknown columns and data will be empty.
-                    if "simple_verdict" not in value:
-                        values.append('')
-                    else:
-                        # backward compatible with api v1 reportsunreachable
-                        if value['simple_verdict'] == "not_testable":
-                            values.append('untestable')
-                        elif value['simple_verdict'] == "not_applicable":
-                            values.append('not_applicable')
-                        elif value['simple_verdict'] == "error_in_test":
-                            values.append('error')
-                        else:
-                            # When the value doesn't exist at all, we'll get a questionmark.
-                            values.append(value.get('ok', '?'))
 
         # add empty thing after each group to make distinction per group clearer
         # overall group already adds an extra value (url), so we don't need this.
@@ -563,3 +500,47 @@ def keyed_values_as_boolean(keyed_ratings: Dict[str, Any], protocol: str = 'dns_
             values += ['']
 
     return values
+
+
+def some_value(issue_name, keyed_ratings) -> Union[str, int]:
+
+    if issue_name == 'internet_nl_score':
+        # Handle the special case of the score column.
+        # explanation":"75 https://batch.internet.nl/mail/portaal.digimelding.nl/289480/",
+        # Not steadily convertable to a percentage, so printing it as an integer instead.
+        score = keyed_ratings[issue_name]['internet_nl_score']
+        return score if score == "error" else int(score)
+
+    if issue_name == 'internet_nl_score_report':
+        # fake column to give the column a title per #205, also makes the report more explicit.
+        return keyed_ratings['internet_nl_score']['internet_nl_url']
+
+    # the issue name might not exist, the 'ok' value might not exist. In those cases replace it with a ?
+    fallback = {'ok': '?', 'not_testable': False, 'not_applicable': False, 'error_in_test': False}
+    value = keyed_ratings.get(issue_name, fallback)
+
+    # api v2, tls1.3 update
+    if value.get('test_result', False):
+        test_value = value.get('test_result', '?')
+        # per 205, translate not_testable to untestable. This is cosmetic as the 'not_testable' is
+        # everywhere in the software and is just renamed, and will probably be renamed a few times
+        # more in the future.
+        if test_value == "not_testable":
+            test_value = "untestable"
+        return test_value
+
+    # unknown columns and data will be empty.
+    if "simple_verdict" not in value:
+        return ''
+
+    # backward compatible with api v1 reportsunreachable
+    mapping = {
+        'not_testable': 'untestable',
+        'not_applicable': 'not_applicable',
+        'error_in_test': 'error'
+    }
+    if value['simple_verdict'] in mapping:
+        return mapping[value['simple_verdict']]
+
+    # When the value doesn't exist at all, we'll get a question mark.
+    return value.get('ok', '?')

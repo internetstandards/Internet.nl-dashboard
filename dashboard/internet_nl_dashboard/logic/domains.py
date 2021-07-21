@@ -13,7 +13,7 @@ from websecmap.scanners.scanner.dns_endpoints import compose_discover_task
 
 from dashboard.internet_nl_dashboard.logic import operation_response
 from dashboard.internet_nl_dashboard.models import (Account, AccountInternetNLScan, UrlList,
-                                                    UrlListReport)
+                                                    UrlListReport, determine_next_scan_moment)
 from dashboard.internet_nl_dashboard.scanners.scan_internet_nl_per_account import (initialize_scan,
                                                                                    update_state)
 
@@ -158,7 +158,7 @@ def create_list(account: Account, user_input: Dict) -> Dict[str, Any]:
         'enable_scans': bool(user_input['enable_scans']),
         'scan_type': validate_list_scan_type(user_input['scan_type']),
         'automated_scan_frequency': frequency,
-        'scheduled_next_scan': UrlList.determine_next_scan_moment(frequency),
+        'scheduled_next_scan': determine_next_scan_moment(frequency),
     }
 
     urllist = UrlList(**data)
@@ -342,7 +342,7 @@ def update_list_settings(account: Account, user_input: Dict) -> Dict[str, Any]:
         'enable_scans': bool(user_input['enable_scans']),
         'scan_type': validate_list_scan_type(user_input['scan_type']),
         'automated_scan_frequency': frequency,
-        'scheduled_next_scan': UrlList.determine_next_scan_moment(frequency),
+        'scheduled_next_scan': determine_next_scan_moment(frequency),
     }
 
     updated_urllist = UrlList(**data)

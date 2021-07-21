@@ -11,7 +11,11 @@ from dashboard.internet_nl_dashboard.views import LOGIN_URL, get_account
 
 @login_required(login_url=LOGIN_URL)
 def get_report_(request, report_id) -> HttpResponse:
-    return HttpResponse(get_report(get_account(request), report_id), content_type="application/json")
+    # Explicitly NOT use jsonresponse as this loads the json data into an encoder which is extremely slow on large files
+    return HttpResponse(  # pylint: disable=http-response-with-content-type-json
+        get_report(get_account(request), report_id),
+        content_type="application/json"
+    )
 
     # return JsonResponse(get_report(get_account(request), report_id), encoder=JSEncoder, safe=False)
 
