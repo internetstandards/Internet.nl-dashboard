@@ -8,6 +8,7 @@ jobs:
     script:
     # Only accept 100% well written code
     - make pylint
+    - make bandit
   - stage: test
     install: make setup
     script: make

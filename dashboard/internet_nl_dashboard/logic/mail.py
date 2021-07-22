@@ -200,7 +200,7 @@ def values_from_previous_report(report_id: int, previous_report: UrlListReport, 
 def generate_unsubscribe_code() -> str:
     # https://pynative.com/python-generate-random-string/
     # secure random is not needed, would be ridiculous. A sleep(1) is enough to deter any attack
-    return ''.join(choice(string.ascii_letters + string.digits) for i in range(128))
+    return ''.join(choice(string.ascii_letters + string.digits) for i in range(128))  # nosec
 
 
 def unsubscribe(feed: str = "scan_finished", unsubscribe_code: str = ""):

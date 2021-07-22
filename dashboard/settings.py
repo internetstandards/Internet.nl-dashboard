@@ -637,7 +637,7 @@ if DEBUG:
     EMAIL_HOST = ''
     EMAIL_PORT = ''
     EMAIL_HOST_USER = ''
-    EMAIL_HOST_PASSWORD = ''
+    EMAIL_HOST_PASSWORD = ''  # nosec
     EMAIL_USE_TLS = False
     EMAIL_USE_SSL = False
 else:
@@ -646,7 +646,7 @@ else:
     EMAIL_HOST = ''
     EMAIL_PORT = ''
     EMAIL_HOST_USER = ''
-    EMAIL_HOST_PASSWORD = ''
+    EMAIL_HOST_PASSWORD = ''  # nosec
     EMAIL_USE_TLS = False
     EMAIL_USE_SSL = False
 

@@ -1,6 +1,6 @@
 import logging
 import os
-import subprocess
+import subprocess  # nosec
 import sys
 
 from django.core.management import call_command
@@ -38,7 +38,10 @@ class Command(RunserverCommand):
         confirm_keys_are_changed()
 
         try:
-            subprocess.check_call('command -v uwsgi', shell=True, stdout=subprocess.DEVNULL)
+            # todo: fix Starting a process with a partial executable path
+            # todo: fix subprocess call with shell=True seems safe, but may be changed in the future, consider rewriting
+            #  without shell
+            subprocess.check_call('command -v uwsgi', shell=True, stdout=subprocess.DEVNULL)  # nosec
         except subprocess.CalledProcessError:
             print(UWSGI_INFO)
             sys.exit(1)

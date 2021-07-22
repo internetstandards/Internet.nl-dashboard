@@ -1,4 +1,5 @@
 import logging
+import re
 from datetime import datetime, timedelta
 
 import pytz
@@ -30,6 +31,10 @@ from dashboard.internet_nl_dashboard.scanners.scan_internet_nl_per_account impor
     creating_report, progress_running_scan, recover_and_retry)
 
 log = logging.getLogger(__package__)
+
+
+def only_alphanumeric(data: str) -> str:
+    return re.sub(r'[^A-Za-z0-9 ]+', '', data)
 
 
 class MyPeriodicTaskForm(PeriodicTaskForm):
@@ -74,7 +79,7 @@ class IEPeriodicTaskAdmin(PeriodicTaskAdmin, ImportExportModelAdmin):
 
     @staticmethod
     def name_safe(obj):
-        return mark_safe(obj.name)
+        return mark_safe(only_alphanumeric(obj.name))  # nosec
 
     @staticmethod
     def last_run(obj):
@@ -219,8 +224,8 @@ class AccountAdmin(ImportExportModelAdmin, admin.ModelAdmin):
 
     @staticmethod
     def no_of_users(obj):
-        return mark_safe(f"<a href='/admin/auth/user/?q={obj.name}#/tab/inline_0/'>"
-                         f"🔎 {DashboardUser.objects.all().filter(account=obj).count()}")
+        return mark_safe(f"<a href='/admin/auth/user/?q={only_alphanumeric(obj.name)}#/tab/inline_0/'>"  # nosec
+                         f"🔎 {only_alphanumeric(DashboardUser.objects.all().filter(account=obj).count())}")
 
     def save_model(self, request, obj, form, change):
 

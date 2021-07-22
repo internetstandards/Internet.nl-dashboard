@@ -17,7 +17,10 @@ def reusable_run_from_argv(argv):
     log.info(argv[1])
     log.info(argv[1:2] + appname_arguments + argv[2:])
 
-    os.execvp("celery", argv[1:2] + appname_arguments + argv[2:])
+    # todo: fix Starting a process without a shell.
+    # todo: fix Starting a process with a partial executable path
+    # Not fixed because if the binary can be replaced, this is the least of our problems
+    os.execvp("celery", argv[1:2] + appname_arguments + argv[2:])  # nosec
 
 
 class Command(BaseCommand):  # pylint: disable=abstract-method
