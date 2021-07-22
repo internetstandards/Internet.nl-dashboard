@@ -49,7 +49,7 @@ IP_VERSION_QUEUE = {
 }
 
 
-class DefaultTask(Task):  #  pylint: disable=abstract-method
+class DefaultTask(Task):  # pylint: disable=abstract-method
     """Default settings for all websecmap tasks."""
 
     priority = PRIO_NORMAL
