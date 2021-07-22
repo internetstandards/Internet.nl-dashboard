@@ -73,7 +73,7 @@ def get_users_to_send_mail_to(scan: AccountInternetNLScan):
     )
 
 
-def send_scan_finished_mails(scan: AccountInternetNLScan):
+def send_scan_finished_mails(scan: AccountInternetNLScan) -> int:
     """
     Sends mails, depending on user configuration, to all users associated with a scan.
 
@@ -82,6 +82,9 @@ def send_scan_finished_mails(scan: AccountInternetNLScan):
     :param scan:
     :return:
     """
+    if not scan.report:
+        log.error(f'Tried to send a finished mail for a report that was not finished. Scan: {scan}')
+        return 0
 
     users = get_users_to_send_mail_to(scan)
 
@@ -108,16 +111,24 @@ def send_scan_finished_mails(scan: AccountInternetNLScan):
             "report_number_of_urls": report.total_urls,
 
             "scan_id": scan.id,
-            "scan_started_on": scan.started_on.isoformat(),
+            "scan_started_on": None,
             # the scan is not yet completely finished, because this step (mailing) is still performed
             # so perform a guess, which might be a few minutes off...
             "scan_finished_on": timezone.now().isoformat(),
-            "scan_duration": (timezone.now() - scan.started_on).seconds,
+            "scan_duration": 0,
             # Don't use 'mail_dashboard', only mail.
-            "scan_type": scan.scan.type if scan.scan.type == "web" else "mail",
+            "scan_type": "",
 
             "dashboard_address": config.EMAIL_DASHBOARD_ADDRESS,
         }
+
+        # could be None, strictly speaking
+        if scan.scan:
+            placeholders['scan_type'] = scan.scan.type if scan.scan.type == "web" else "mail"
+
+        if scan.started_on:
+            placeholders['scan_started_on'] = scan.started_on.isoformat()
+            placeholders['scan_duration'] = (timezone.now() - scan.started_on).seconds
 
         previous = values_from_previous_report(
             report.id,

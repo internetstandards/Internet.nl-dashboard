@@ -380,7 +380,7 @@ occurs. So probably connection limits are the issue. Defaults to 10. So that mak
 CELERY_BROKER_POOL_LIMIT = 30
 
 # default is empty, we can set things like 'max_connections': 30.
-CELERY_BROKER_TRANSPORT_OPTIONS = {}
+CELERY_BROKER_TRANSPORT_OPTIONS = {}  # type: ignore
 
 # Settings for statsd metrics collection. Statsd defaults over UDP port 8125.
 # https://django-statsd.readthedocs.io/en/latest/#celery-signals-integration

@@ -245,14 +245,15 @@ def get_scan_status_of_list(account: Account, list_id: int) -> Dict[str, Any]:
     data = {'last_scan_id': None, 'last_scan_state': None, 'last_scan_finished': None, 'last_report_id': None,
             'last_report_date': None, 'scan_now_available': urllist.is_scan_now_available()}
 
-    if len(urllist.last_scan):
-        data['last_scan_id'] = urllist.last_scan[0].scan.id
-        data['last_scan_state'] = urllist.last_scan[0].state
-        data['last_scan_finished'] = urllist.last_scan[0].state in ["finished", "cancelled"]
+    if len(urllist.last_scan):  # type: ignore
+        # Mypy does not understand to_attr. "UrlList" has no attribute "last_scan"
+        data['last_scan_id'] = urllist.last_scan[0].scan.id  # type: ignore
+        data['last_scan_state'] = urllist.last_scan[0].state  # type: ignore
+        data['last_scan_finished'] = urllist.last_scan[0].state in ["finished", "cancelled"]  # type: ignore
 
-    if len(urllist.last_report):
-        data['last_report_id'] = urllist.last_report[0].id
-        data['last_report_date'] = urllist.last_report[0].at_when
+    if len(urllist.last_report):  # type: ignore
+        data['last_report_id'] = urllist.last_report[0].id  # type: ignore
+        data['last_report_date'] = urllist.last_report[0].at_when  # type: ignore
 
     return data
 
@@ -488,7 +489,7 @@ def get_urllists_from_account(account: Account) -> Dict:
         last_scan = AccountInternetNLScan.objects.all().filter(urllist=urllist).select_related('scan').only(
             'scan__id', 'state', 'started_on'
         ).last()
-        if last_scan:
+        if last_scan and last_scan.scan and last_scan.started_on:
             data['last_scan_id'] = last_scan.scan.id
             data['last_scan_state'] = last_scan.state
             data['last_scan'] = last_scan.started_on.isoformat()
@@ -564,29 +565,29 @@ def retrieve_possible_urls_from_unfiltered_input(unfiltered_input: str) -> Tuple
     unfiltered_input = unfiltered_input.replace("\t", " ")
 
     # Split also removes double spaces etc
-    unfiltered_input = unfiltered_input.split(" ")
+    unfiltered_input_list: List[str] = unfiltered_input.split(" ")
 
     # now remove _all_ whitespace characters
-    unfiltered_input = [re.sub(r"\s+", " ", u) for u in unfiltered_input]
+    unfiltered_input_list = [re.sub(r"\s+", " ", u) for u in unfiltered_input_list]
 
     # remove port numbers and paths
-    unfiltered_input = [re.sub(r":[^\s]*", "", u) for u in unfiltered_input]
+    unfiltered_input_list = [re.sub(r":[^\s]*", "", u) for u in unfiltered_input_list]
 
     # remove paths, directories etc
-    unfiltered_input = [re.sub(r"/[^\s]*", "", u) for u in unfiltered_input]
+    unfiltered_input_list = [re.sub(r"/[^\s]*", "", u) for u in unfiltered_input_list]
 
     # Remove empty values
-    while "" in unfiltered_input:
-        unfiltered_input.remove("")
+    while "" in unfiltered_input_list:
+        unfiltered_input_list.remove("")
 
     # make list unique
-    total_non_unique_items = len(unfiltered_input)
-    unfiltered_input = list(set(unfiltered_input))
-    total_unique_items = len(unfiltered_input)
+    total_non_unique_items = len(unfiltered_input_list)
+    unfiltered_input_list = list(set(unfiltered_input_list))
+    total_unique_items = len(unfiltered_input_list)
     duplicates_removed = total_non_unique_items - total_unique_items
 
     # make sure the list is in alphabetical order, which is nice for testability.
-    return sorted(unfiltered_input), duplicates_removed
+    return sorted(unfiltered_input_list), duplicates_removed
 
 
 def save_urllist_content(account: Account, user_input: Dict[str, Any]) -> Dict:
@@ -604,15 +605,15 @@ def save_urllist_content(account: Account, user_input: Dict[str, Any]) -> Dict:
     """
 
     # how could we validate user_input a better way? Using a validator object?
-    list_id = user_input.get('list_id')
-    urls = user_input.get('urls')
+    list_id: int = int(user_input.get('list_id', -1))
+    unfiltered_urls: str = user_input.get('urls', [])
 
-    urllist = UrlList.objects.all().filter(account=account, id=list_id, is_deleted=False, ).first()
+    urllist = UrlList.objects.all().filter(account=account, id=list_id, is_deleted=False).first()
 
     if not urllist:
         return operation_response(error=True, message="add_domains_list_does_not_exist")
 
-    urls, duplicates_removed = retrieve_possible_urls_from_unfiltered_input(urls)
+    urls, duplicates_removed = retrieve_possible_urls_from_unfiltered_input(unfiltered_urls)
     cleaned_urls = clean_urls(urls)  # type: ignore
 
     if cleaned_urls['correct']:

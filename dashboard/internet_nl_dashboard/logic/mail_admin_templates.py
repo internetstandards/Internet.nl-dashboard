@@ -27,9 +27,10 @@ def xget_template(template_name: str = "scan_finished", preferred_language: str 
                       f"the fallback language {config.EMAIL_FALLBACK_LANGUAGE}.")
 
 
-def xget_template_as_string(template_name: str = "scan_finished", preferred_language: Any = None) -> str:
+def xget_template_as_string(template_name: str = "scan_finished", preferred_language: str = 'en') -> str:
     template = xget_template(template_name, preferred_language)
-    return template.email_html_text
+    # django_mail_admin does not use types, so everything is any
+    return template.email_html_text  # type: ignore
 
 
 def store_template(template_name, template_content):

@@ -23,6 +23,7 @@ Details obv action metingen gestart eind januari 2020 (er mist bijna een maand d
 """
 from collections import defaultdict
 from datetime import datetime, timedelta
+from typing import Dict, Any
 
 import pytz
 from actstream.models import Action
@@ -118,7 +119,7 @@ def abstract_per_year(query, datetime_field):
 
 
 def abstract_per_month(query, datetime_field):
-    stats = defaultdict(dict)
+    stats: Dict[Any, Any] = defaultdict(dict)
     for year in dashboard_years():
         for month in dashboard_months(year):
             kwargs = {
@@ -131,7 +132,7 @@ def abstract_per_month(query, datetime_field):
 
 def abstract_action_total():
     verbs = list(set(Action.objects.all().values_list('verb', flat=True).order_by('verb')))
-    stats = defaultdict(dict)
+    stats: Dict[Any, Any] = defaultdict(dict)
     for verb in verbs:
         stats[verb] = {
             'total': Action.objects.all().filter(verb=verb).count(),

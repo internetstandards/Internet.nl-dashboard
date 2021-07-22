@@ -309,7 +309,7 @@ def urllistreport_to_spreadsheet_data(category_name: str, urls: List[Any], proto
     return data
 
 
-def keyed_values_as_boolean(keyed_ratings: Dict[str, Any], protocol: str = 'dns_soa'):
+def keyed_values_as_boolean(keyed_ratings: Dict[str, Dict[str, Union[str, int]]], protocol: str = 'dns_soa'):
     """
     Keyed rating:
     {'internet_nl_mail_auth_dkim_exist': {'comply_or_explain_explained_on': '',
@@ -355,7 +355,7 @@ def keyed_values_as_boolean(keyed_ratings: Dict[str, Any], protocol: str = 'dns_
     return values
 
 
-def some_value(issue_name, keyed_ratings) -> Union[str, int]:
+def some_value(issue_name: str, keyed_ratings: Dict[str, Dict[str, Union[str, int]]]) -> Union[str, int]:
 
     if issue_name == 'internet_nl_score':
         # Handle the special case of the score column.
@@ -369,8 +369,9 @@ def some_value(issue_name, keyed_ratings) -> Union[str, int]:
         return keyed_ratings['internet_nl_score']['internet_nl_url']
 
     # the issue name might not exist, the 'ok' value might not exist. In those cases replace it with a ?
-    fallback = {'ok': '?', 'not_testable': False, 'not_applicable': False, 'error_in_test': False}
-    value = keyed_ratings.get(issue_name, fallback)
+    value = keyed_ratings.get(issue_name, None)
+    if not value:
+        return "?"
 
     # api v2, tls1.3 update
     if value.get('test_result', False):
@@ -386,14 +387,10 @@ def some_value(issue_name, keyed_ratings) -> Union[str, int]:
     if "simple_verdict" not in value:
         return ''
 
-    # backward compatible with api v1 reportsunreachable
-    mapping = {
+    # backward compatible with api v1 reports unreachable
+    mapping: Dict[str, str] = {
         'not_testable': 'untestable',
         'not_applicable': 'not_applicable',
         'error_in_test': 'error'
     }
-    if value['simple_verdict'] in mapping:
-        return mapping[value['simple_verdict']]
-
-    # When the value doesn't exist at all, we'll get a question mark.
-    return value.get('ok', '?')
+    return mapping.get(str(value['simple_verdict']), "?")

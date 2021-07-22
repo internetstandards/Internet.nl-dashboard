@@ -243,7 +243,7 @@ ${python} ${pip}:
 	${VIRTUAL_ENV}/bin/pip install --upgrade pip==19.1.1
 
 mypy: ${app} ## Check for type issues with mypy
-	${bin}/python3 -m mypy --check ${pysrcdirs}
+	${bin}/python3 -m mypy --check dashboard
 
 vulture: ${app} ## Check for unused code
 	${bin}/python3 -m vulture ${pysrcdirs}
@@ -253,6 +253,10 @@ bandit: ${app} ## Run basic security audit
 
 pylint: ${app}
 	DJANGO_SETTINGS_MODULE=${app_name}.settings ${bin}/pylint --load-plugins pylint_django dashboard
+
+.QA: qa
+qa: pylint bandit
+
 
 ## Utility
 help:           ## Show this help.

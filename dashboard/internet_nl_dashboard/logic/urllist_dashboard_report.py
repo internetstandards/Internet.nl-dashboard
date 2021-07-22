@@ -125,7 +125,7 @@ def rate_urllist_on_moment(urllist: UrlList, when: datetime = None, prevent_dupl
     if UrlListReport.objects.all().filter(urllist=urllist, at_when=when).exists():
         log.debug(f"UrllistReport already exists for {urllist} on {when}. Not overwriting.")
         existing_report = UrlListReport.objects.all().filter(urllist=urllist, at_when=when).first()
-        return existing_report
+        return int(existing_report.id)
 
     urls = relevant_urls_at_timepoint_urllist(urllist=urllist, when=when)
     log.debug(f'Found {len(urls)} to be relevant at this moment.')
@@ -161,7 +161,7 @@ def rate_urllist_on_moment(urllist: UrlList, when: datetime = None, prevent_dupl
     if prevent_duplicates:
         if not DeepDiff(last.calculation, calculation, ignore_order=True, report_repetition=True):
             log.info(f"The report for {urllist} on {when} is the same as the report from {last.at_when}. Not saving.")
-            return last
+            return int(last.id)
 
     log.info(f"The calculation for {urllist} on {when} has changed, so we're saving this rating.")
 
@@ -177,7 +177,7 @@ def rate_urllist_on_moment(urllist: UrlList, when: datetime = None, prevent_dupl
     report.average_internet_nl_score = sum_internet_nl_scores_over_rating(calculation)
     report.calculation = calculation
     report.save()
-    return report.id
+    return int(report.id)
 
 
 def only_include_endpoint_protocols(calculation, only_include_endpoint_types: List[str]):

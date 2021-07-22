@@ -225,7 +225,7 @@ class AccountAdmin(ImportExportModelAdmin, admin.ModelAdmin):
     @staticmethod
     def no_of_users(obj):
         return mark_safe(f"<a href='/admin/auth/user/?q={only_alphanumeric(obj.name)}#/tab/inline_0/'>"  # nosec
-                         f"🔎 {only_alphanumeric(DashboardUser.objects.all().filter(account=obj).count())}")
+                         f"🔎 {DashboardUser.objects.all().filter(account=obj).count()}")
 
     def save_model(self, request, obj, form, change):
 
@@ -316,7 +316,7 @@ class AccountInternetNLScanAdmin(ImportExportModelAdmin, admin.ModelAdmin):
         for scan in queryset:
             recover_and_retry.apply_async([scan.id])
         self.message_user(request, "Rolling back asynchronously. May take a while.")
-    attempt_rollback.short_description = "Attempt rollback (async)"
+    attempt_rollback.short_description = "Attempt rollback (async)"   # type: ignore
     actions.append('attempt_rollback')
 
     def progress_scan(self, request, queryset):
@@ -327,7 +327,7 @@ class AccountInternetNLScanAdmin(ImportExportModelAdmin, admin.ModelAdmin):
             log.debug(f"Created task {tasks}.")
             tasks.apply_async()
         self.message_user(request, "Attempting to progress scans (async).")
-    progress_scan.short_description = "Progress scan (async)"
+    progress_scan.short_description = "Progress scan (async)"   # type: ignore
     actions.append('progress_scan')
 
     def send_finish_mail(self, request, queryset):
@@ -337,7 +337,7 @@ class AccountInternetNLScanAdmin(ImportExportModelAdmin, admin.ModelAdmin):
                 sent += 1
                 send_scan_finished_mails(scan.id)
         self.message_user(request, f"A total of {sent} mails have been sent.")
-    send_finish_mail.short_description = "Queue finished mail (finished only)"
+    send_finish_mail.short_description = "Queue finished mail (finished only)"   # type: ignore
     actions.append('send_finish_mail')
 
     # This is used to create ad-hoc reports for testing the send_finish_mail function.
@@ -348,7 +348,7 @@ class AccountInternetNLScanAdmin(ImportExportModelAdmin, admin.ModelAdmin):
         group(tasks).apply_async()
         self.message_user(request, "Creating additional reports (async).")
 
-    create_extra_report.short_description = "Create additional report (async) (finished only)"
+    create_extra_report.short_description = "Create additional report (async) (finished only)"   # type: ignore
     actions.append('create_extra_report')
 
 

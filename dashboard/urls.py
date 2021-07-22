@@ -45,4 +45,4 @@ frontend_urls = [
 ]
 
 urlpatterns = frontend_urls.copy()
-urlpatterns += admin_urls
+urlpatterns += admin_urls  # type: ignore

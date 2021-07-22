@@ -1,7 +1,7 @@
 import logging
 from copy import deepcopy
 from datetime import datetime
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Union
 
 from django.template import Context, Template
 from django.utils import translation
@@ -119,7 +119,7 @@ def render_comparison_view(comparison_report: Dict[str, Any], impact: str = "imp
     template_string = xget_template_as_string(f"detailed_comparison_{impact}", language)
     with translation.override(language.lower()):
         template = Template(template_string)
-        return template.render(context=Context({"data": data}))
+        return template.render(context=Context({"data": data}))  # type: ignore
 
 
 # https://github.com/internetstandards/Internet.nl-dashboard/issues/201
@@ -202,7 +202,7 @@ def compare_report_in_detail(new_report, old_report) -> Dict[str, Any]:
     :return:
     """
 
-    comparison_report = {
+    comparison_report: Dict[str, Union[Dict[str, Any], Any]] = {
         'urls_exclusive_in_new_report': list(
             set(new_report['calculation']['urls_by_url'].keys())
             - set(old_report['calculation']['urls_by_url'].keys())
@@ -313,22 +313,21 @@ def compare_report_in_detail(new_report, old_report) -> Dict[str, Any]:
 
         comparison_report['comparison'][url_key] = data
 
-        # add the summary to the report, which is just a simple loop with counters
-        # this fits in one line and thus is easier to read:
-        improvement, neutral, regression = 0, 0, 0
-        for comparison_url_key in comparison_report['comparison']:
-            improvement += comparison_report['comparison'][comparison_url_key]['changes']['improvement']
-            regression += comparison_report['comparison'][comparison_url_key]['changes']['regression']
-            neutral += comparison_report['comparison'][comparison_url_key]['changes']['neutral']
+    # add the summary to the report, which is just a simple loop with counters
+    improvement, neutral, regression = 0, 0, 0
+    for _, report_per_url in comparison_report['comparison'].items():
+        improvement += report_per_url['changes']['improvement']
+        regression += report_per_url['changes']['regression']
+        neutral += report_per_url['changes']['neutral']
 
-        comparison_report['summary']['improvement'] = improvement
-        comparison_report['summary']['regression'] = regression
-        comparison_report['summary']['neutral'] = neutral
+    comparison_report['summary']['improvement'] = improvement
+    comparison_report['summary']['regression'] = regression
+    comparison_report['summary']['neutral'] = neutral
 
     return comparison_report
 
 
-def determine_changes_in_ratings(new_ratings_data, old_ratings_data) -> Dict[str, Any]:
+def determine_changes_in_ratings(new_ratings_data, old_ratings_data) -> Dict[str, Union[int, List[str]]]:
     # a separate routine makes this more testable
 
     # we don't want to have statistics over these fields, they are processed elsewhere.
@@ -365,10 +364,13 @@ def determine_changes_in_ratings(new_ratings_data, old_ratings_data) -> Dict[str
         ["unknown", "not_applicable", "not_testable", 'no_mx', 'unreachable', 'error_in_test', 'error', 'not_tested']
 
     # prepare result
-    changes = {
+    changes: Dict[str, int] = {
         'improvement': 0,
         'regression': 0,
         'neutral': 0,
+    }
+
+    changed_metrics: Dict[str, List[str]] = {
         'improved_metrics': [],
         'regressed_metrics': [],
         'neutral_metrics': [],
@@ -392,7 +394,7 @@ def determine_changes_in_ratings(new_ratings_data, old_ratings_data) -> Dict[str
         # uncomparable includes all situations where the old_data was not present.
         if new_test_result in neutral_test_result_values or old_test_result in neutral_test_result_values:
             changes['neutral'] += 1
-            changes['neutral_metrics'].append(rating_key)
+            changed_metrics['neutral_metrics'].append(rating_key)
             continue
 
         # in other cases there will be simple progression
@@ -401,15 +403,15 @@ def determine_changes_in_ratings(new_ratings_data, old_ratings_data) -> Dict[str
 
         if new_simple_progression == old_simple_progression:
             changes['neutral'] += 1
-            changes['neutral_metrics'].append(rating_key)
+            changed_metrics['neutral_metrics'].append(rating_key)
         elif new_simple_progression > old_simple_progression:
             changes['improvement'] += 1
-            changes['improved_metrics'].append(rating_key)
+            changed_metrics['improved_metrics'].append(rating_key)
         else:
             changes['regression'] += 1
-            changes['regressed_metrics'].append(rating_key)
+            changed_metrics['regressed_metrics'].append(rating_key)
 
-    return changes
+    return {**changes, **changed_metrics}
 
 
 def key_calculation(report_data):

@@ -33,7 +33,7 @@ def download_spreadsheet(request, report_id, file_type) -> HttpResponse:
         return response
 
     if file_type == "ods":
-        output = excel.make_response(spreadsheet, file_type)
+        output: HttpResponse = excel.make_response(spreadsheet, file_type)
         output["Content-Disposition"] = f"attachment; filename={slugify(filename)}.ods"
         output["Content-type"] = "application/vnd.oasis.opendocument.spreadsheet"
         return output

@@ -2,7 +2,7 @@ import logging
 import os
 import tempfile
 from pathlib import Path
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Union
 
 import markdown
 import polib
@@ -10,7 +10,7 @@ import requests
 from django.utils.text import slugify
 
 # Todo: refactor this to languages from settings.py
-SUPPORTED_LOCALES = ['nl', 'en']
+SUPPORTED_LOCALES: List[str] = ['nl', 'en']
 
 log = logging.getLogger(__package__)
 
@@ -46,26 +46,27 @@ def convert_internet_nl_content_to_vue():
           Up until 1 MB of languages is probably fine.
     done: Remove some of the larger variables we're not going to use anyway (we can just point to internet.nl for that
           content). This saves about 50 kilobyte per language. Each language is now about 100kb with relevant content.
-    todo: how to load languages dynamically in vue i18s? Could there be a callback or something?
+    done: how to load languages dynamically in vue i18s? Could there be a callback or something?
 
     :return: None
     """
 
-    translated_locales: List[Dict[str, List[Any]]] = []
+    translated_locales: List[Dict[str, Union[str, List[Any]]]] = []
+    combined_vue_i18n_content = ""
 
     for locale in SUPPORTED_LOCALES:
-        raw_content = get_locale_content(locale)
+        raw_content: bytes = get_locale_content(locale)
         store_as_django_locale(locale, raw_content)
         structured_content = load_as_po_file(raw_content)
         translated_locales.append({'locale': locale, 'content': structured_content})
 
         # support a per-language kind of file, in case we're going to do dynamic loading of languages.
-        vue_i18n_content = convert_vue_i18n_format([{'locale': locale, 'content': structured_content}])
+        vue_i18n_content: str = convert_vue_i18n_format(locale, structured_content)
+        combined_vue_i18n_content += vue_i18n_content
         store_vue_i18n_file(f'internet_nl.{locale}', vue_i18n_content)
 
     # the locales are easiest stored together. This makes language switching a lot easier.
-    vue_i18n_content = convert_vue_i18n_format(translated_locales)
-    store_vue_i18n_file('internet_nl', vue_i18n_content)
+    store_vue_i18n_file('internet_nl', combined_vue_i18n_content)
 
 
 def get_locale_content(locale: str) -> bytes:
@@ -125,7 +126,7 @@ def load_as_po_file(raw_content: bytes) -> List[Any]:
         return polib.pofile(file.name)
 
 
-def convert_vue_i18n_format(translated_locales: List[Dict[str, List[Any]]]) -> str:
+def convert_vue_i18n_format(locale: str, po_content: Any) -> str:
     """
     done: will markdown be parsed to html in this method? Or should we do that on the fly, everywhere...
           It seems the logical place will be to parse it here. Otherwise the rest of the application becomes more
@@ -150,22 +151,21 @@ def convert_vue_i18n_format(translated_locales: List[Dict[str, List[Any]]]) -> s
 
     There is a slight challenge that translations in vue are based on javascript properties, meaning, no quotes.
 
-    :param translated_locales: List that holds a dict with the locale name, and the associated content.
     :return:
     """
 
-    content = _vue_format_start()
-    for item in translated_locales:
-        content += _vue_format_locale_start(item['locale'])
+    content: str = _vue_format_start()
 
-        for entry in item['content']:
-            # to save a boatload of data, we're not storing the 'content' from the pages of internet.nl
-            # we'll just have to point to this content.
-            if entry.msgid.endswith('content'):
-                continue
+    content += _vue_format_locale_start(locale)
 
-            content += f"            {_js_safe_msgid(entry.msgid)}: '{_js_safe_msgstr(entry.msgstr)}',\n"
-        content += _vue_format_locale_end()
+    for entry in po_content:
+        # to save a boatload of data, we're not storing the 'content' from the pages of internet.nl
+        # we'll just have to point to this content.
+        if entry.msgid.endswith('content'):
+            continue
+
+        content += f"            {_js_safe_msgid(entry.msgid)}: '{_js_safe_msgstr(entry.msgstr)}',\n"
+    content += _vue_format_locale_end()
     content += _vue_format_end()
 
     return content
@@ -195,24 +195,24 @@ def get_po_as_dictionary_v2(language='en'):
                           f"The exception that is given: {error}. Is this language available?") from error
 
 
-def _vue_format_start():
+def _vue_format_start() -> str:
     return """const internet_nl_messages = {
 """
 
 
-def _vue_format_locale_start(locale):
+def _vue_format_locale_start(locale) -> str:
     return """    %s: {
         internet_nl: {
 """ % locale
 
 
-def _vue_format_locale_end():
+def _vue_format_locale_end() -> str:
     return """        },
     },
 """
 
 
-def _vue_format_end():
+def _vue_format_end() -> str:
     return """};"""
 
 
