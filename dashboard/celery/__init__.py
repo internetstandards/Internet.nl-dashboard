@@ -65,7 +65,7 @@ class ParentFailed(Exception):
         """Allow to set parent exception as cause."""
         if cause:
             self.__cause__ = cause
-        super(ParentFailed, self).__init__(message, *args)
+        super().__init__(message, *args)
 
 
 def status():
@@ -101,7 +101,7 @@ def status():
         # https://github.com/mher/flower/blob/master/flower/utils/broker.py
         # 'solves': RuntimeError: There is no current event loop in thread 'Thread-3'.
         try:
-            import asyncio
+            import asyncio  # pylint: disable=import-outside-toplevel
             asyncio.set_event_loop(asyncio.new_event_loop())
         except BaseException:
             # an eventloop already exists.
@@ -112,9 +112,9 @@ def status():
         try:
             broker = flower.utils.broker.Broker(app.conf.broker_url, broker_options=app.conf.broker_transport_options)
             queue_stats = broker.queues(queue_names).result()
-        except RuntimeError as e:
+        except RuntimeError as runtime_error:
             log.error("Could not connect to flower to retrieve queue stats.")
-            log.exception(e)
+            log.exception(runtime_error)
 
         queues = [{'name': x['name'], 'tasks_pending': x['messages']} for x in queue_stats]
     else:

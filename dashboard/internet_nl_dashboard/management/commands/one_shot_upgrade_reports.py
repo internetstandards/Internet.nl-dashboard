@@ -12,9 +12,6 @@ log = logging.getLogger(__package__)
 class Command(BaseCommand):
     help = 'Upgrades reports to early 2020 style, which is faster and more complete.'
 
-    def add_arguments(self, parser):
-        super().add_arguments(parser)
-
     def handle(self, *args, **options):
 
         reports = UrlListReport.objects.all()

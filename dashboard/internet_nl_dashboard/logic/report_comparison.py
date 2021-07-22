@@ -316,7 +316,7 @@ def compare_report_in_detail(new_report, old_report) -> Dict[str, Any]:
         # add the summary to the report, which is just a simple loop with counters
         # this fits in one line and thus is easier to read:
         improvement, neutral, regression = 0, 0, 0
-        for comparison_url_key in comparison_report['comparison'].keys():
+        for comparison_url_key in comparison_report['comparison']:
             improvement += comparison_report['comparison'][comparison_url_key]['changes']['improvement']
             regression += comparison_report['comparison'][comparison_url_key]['changes']['regression']
             neutral += comparison_report['comparison'][comparison_url_key]['changes']['neutral']
@@ -328,7 +328,7 @@ def compare_report_in_detail(new_report, old_report) -> Dict[str, Any]:
     return comparison_report
 
 
-def determine_changes_in_ratings(new_ratings_data, old_ratings_data):
+def determine_changes_in_ratings(new_ratings_data, old_ratings_data) -> Dict[str, Any]:
     # a separate routine makes this more testable
 
     # we don't want to have statistics over these fields, they are processed elsewhere.
@@ -450,9 +450,9 @@ def key_calculation(report_data):
     for url in report_data['calculation']['urls']:
         urls_by_key[url['url']] = url
 
-    for url in urls_by_key.keys():
+    for url, url_by_key in urls_by_key.items():
         endpoints_by_key = {}
-        for endpoint in urls_by_key[url]['endpoints']:
+        for endpoint in url_by_key['endpoints']:
             endpoints_by_key[endpoint['concat']] = endpoint
         urls_by_key[url]['endpoints_by_key'] = endpoints_by_key
 

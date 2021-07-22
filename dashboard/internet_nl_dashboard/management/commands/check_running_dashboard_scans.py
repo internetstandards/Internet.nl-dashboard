@@ -22,11 +22,12 @@ class Command(TaskCommand):
             return super().handle(self, *args, **options)
         except KeyboardInterrupt:
             log.info("Received keyboard interrupt. Stopped.")
+            return "{}"
 
     def compose(self, *args, **options):
-        filter = {}
+        model_filter = {}
 
         if options['reimport']:
-            filter = {'accountinternetnlscan_filter': {'scan__finished': False}}
+            model_filter = {'accountinternetnlscan_filter': {'scan__finished': False}}
 
-        return check_running_dashboard_scans(**filter)
+        return check_running_dashboard_scans(**model_filter)

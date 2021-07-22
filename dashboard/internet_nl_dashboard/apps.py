@@ -6,7 +6,9 @@ class DashboardConfig(AppConfig):
 
     # See: https://django-activity-stream.readthedocs.io/en/latest/configuration.html
     def ready(self):
-        from actstream import registry
+        # Loading actstream is not possible yet, as the apps aren't loaded. Django will crash.
+        from actstream import registry  # pylint: disable=import-outside-toplevel
+
         registry.register(self.get_model('UrlList'))
         registry.register(self.get_model('AccountInternetNLScan'))
         registry.register(self.get_model('UrlListReport'))

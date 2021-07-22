@@ -10,6 +10,19 @@ from openpyxl import load_workbook
 from openpyxl.formatting.rule import CellIsRule
 from openpyxl.styles import Font, PatternFill
 
+from dashboard.internet_nl_dashboard.logic import (MAIL_AUTH_CATEGORY, MAIL_AUTH_FIELDS,
+                                                   MAIL_DNSSEC_CATEGORY, MAIL_DNSSEC_FIELDS,
+                                                   MAIL_IPV6_CATEGORY, MAIL_IPV6_FIELDS,
+                                                   MAIL_LEGACY_FIELDS, MAIL_OVERALL_FIELDS,
+                                                   MAIL_TLS_CATEGORY, MAIL_TLS_CERTIFICATE_FIELDS,
+                                                   MAIL_TLS_DANE_FIELDS, MAIL_TLS_TLS_FIELDS,
+                                                   WEB_APPSECPRIV_CATEGORY, WEB_APPSECPRIV_FIELDS,
+                                                   WEB_DNSSEC_CATEGORY, WEB_DNSSEC_FIELDS,
+                                                   WEB_IPV6_CATEGORY, WEB_IPV6_FIELDS,
+                                                   WEB_LEGACY_FIELDS, WEB_OVERALL_FIELDS,
+                                                   WEB_TLS_CATEGORY, WEB_TLS_CERTIFICATE_FIELDS,
+                                                   WEB_TLS_DANE_FIELDS, WEB_TLS_HTTP_FIELDS,
+                                                   WEB_TLS_TLS_FIELDS)
 from dashboard.internet_nl_dashboard.logic.internet_nl_translations import (get_po_as_dictionary_v2,
                                                                             translate_field)
 from dashboard.internet_nl_dashboard.models import Account, UrlListReport
@@ -34,193 +47,33 @@ Done: write some tests for these methods, once they are more table.
 SANE_COLUMN_ORDER = {
     # scanner
     'dns_a_aaaa': {
-        'overall': [
-            'internet_nl_score',
-            'internet_nl_score_report',
-        ],
+        'overall': WEB_OVERALL_FIELDS,
 
-        'ipv6': [
-            # Category
-            'internet_nl_web_ipv6',
+        'ipv6': WEB_IPV6_CATEGORY + WEB_IPV6_FIELDS,
 
-            'internet_nl_web_ipv6_ns_address',
-            'internet_nl_web_ipv6_ns_reach',
+        'dnssec': WEB_DNSSEC_CATEGORY + WEB_DNSSEC_FIELDS,
 
-            'internet_nl_web_ipv6_ws_address',
-            'internet_nl_web_ipv6_ws_reach',
-            'internet_nl_web_ipv6_ws_similar',
-        ],
-
-        'dnssec': [
-            # Category
-            'internet_nl_web_dnssec',
-
-            'internet_nl_web_dnssec_exist',
-            'internet_nl_web_dnssec_valid',
-        ],
-
-        'tls': [
-            # Category
-            'internet_nl_web_tls',
-
-            # HTTP
-            'internet_nl_web_https_http_available',
-            'internet_nl_web_https_http_redirect',
-            'internet_nl_web_https_http_compress',
-            'internet_nl_web_https_http_hsts',
-
-            # TLS
-            'internet_nl_web_https_tls_version',
-            'internet_nl_web_https_tls_ciphers',
-            'internet_nl_web_https_tls_cipherorder',
-            'internet_nl_web_https_tls_keyexchange',
-            'internet_nl_web_https_tls_keyexchangehash',
-            'internet_nl_web_https_tls_compress',
-            'internet_nl_web_https_tls_secreneg',
-            'internet_nl_web_https_tls_clientreneg',
-            'internet_nl_web_https_tls_0rtt',
-            'internet_nl_web_https_tls_ocsp',
-
-            # Certificate
-            'internet_nl_web_https_cert_chain',
-            'internet_nl_web_https_cert_pubkey',
-            'internet_nl_web_https_cert_sig',
-            'internet_nl_web_https_cert_domain',
-
-            # DANE
-            'internet_nl_web_https_dane_exist',
-            'internet_nl_web_https_dane_valid',
-        ],
+        'tls': WEB_TLS_CATEGORY + WEB_TLS_HTTP_FIELDS + WEB_TLS_TLS_FIELDS + WEB_TLS_CERTIFICATE_FIELDS +
+        WEB_TLS_DANE_FIELDS,
 
         # Added 24th of May 2019
-        'appsecpriv': [
-            # Category
-            'internet_nl_web_appsecpriv',
+        'appsecpriv': WEB_APPSECPRIV_CATEGORY + WEB_APPSECPRIV_FIELDS,
 
-            'internet_nl_web_appsecpriv_x_frame_options',
-            'internet_nl_web_appsecpriv_x_content_type_options',
-            'internet_nl_web_appsecpriv_csp',
-            'internet_nl_web_appsecpriv_referrer_policy',
-        ],
-
-        'legacy': [
-            'internet_nl_web_legacy_dnssec',
-            'internet_nl_web_legacy_tls_available',
-            'internet_nl_web_legacy_tls_ncsc_web',
-            'internet_nl_web_legacy_https_enforced',
-            'internet_nl_web_legacy_hsts',
-            'internet_nl_web_legacy_category_ipv6',
-            'internet_nl_web_legacy_ipv6_nameserver',
-            'internet_nl_web_legacy_ipv6_webserver',
-            # Deleted on request
-            # 'internet_nl_web_legacy_dane',
-
-            # added may 2020, api v2
-            'internet_nl_web_legacy_tls_1_3',
-        ]
+        'legacy': WEB_LEGACY_FIELDS
     },
     'dns_soa': {
         # any grouping, every group has a empty column between them. The label is not used.
-        'overall': [
-            'internet_nl_score',
-            'internet_nl_score_report',
-        ],
-        'ipv6': [
-            # Category
-            'internet_nl_mail_dashboard_ipv6',
+        'overall': MAIL_OVERALL_FIELDS,
+        'ipv6': MAIL_IPV6_CATEGORY + MAIL_IPV6_FIELDS,
 
-            # name servers
-            'internet_nl_mail_ipv6_ns_address',
-            'internet_nl_mail_ipv6_ns_reach',
+        'dnssec': MAIL_DNSSEC_CATEGORY + MAIL_DNSSEC_FIELDS,
 
-            # mail server(s)
-            'internet_nl_mail_ipv6_mx_address',
-            'internet_nl_mail_ipv6_mx_reach',
-        ],
-
-        'dnssec': [
-            # Category
-            'internet_nl_mail_dashboard_dnssec',
-
-            # email address domain
-            'internet_nl_mail_dnssec_mailto_exist',
-            'internet_nl_mail_dnssec_mailto_valid',
-
-            # mail server domain(s)
-            'internet_nl_mail_dnssec_mx_exist',
-            'internet_nl_mail_dnssec_mx_valid',
-        ],
-
-        'auth': [
-            # Category
-            'internet_nl_mail_dashboard_auth',
-
-            # DMARC
-            'internet_nl_mail_auth_dmarc_exist',
-            'internet_nl_mail_auth_dmarc_policy',
-            # 'internet_nl_mail_auth_dmarc_policy_only',  # Added 24th of May 2019
-            # 'internet_nl_mail_auth_dmarc_ext_destination',  # Added 24th of May 2019
-
-            # DKIM
-            'internet_nl_mail_auth_dkim_exist',
-
-            # SPF
-            'internet_nl_mail_auth_spf_exist',
-            'internet_nl_mail_auth_spf_policy',
-        ],
+        'auth': MAIL_AUTH_CATEGORY + MAIL_AUTH_FIELDS,
 
         # perhaps split these into multiple groups.
-        'tls': [
-            'internet_nl_mail_dashboard_tls',
+        'tls': MAIL_TLS_CATEGORY + MAIL_TLS_TLS_FIELDS + MAIL_TLS_CERTIFICATE_FIELDS + MAIL_TLS_DANE_FIELDS,
 
-            # TLS
-            'internet_nl_mail_starttls_tls_available',
-            'internet_nl_mail_starttls_tls_version',
-            'internet_nl_mail_starttls_tls_ciphers',
-            'internet_nl_mail_starttls_tls_cipherorder',
-            'internet_nl_mail_starttls_tls_keyexchange',
-            'internet_nl_mail_starttls_tls_keyexchangehash',
-            'internet_nl_mail_starttls_tls_compress',
-            'internet_nl_mail_starttls_tls_secreneg',
-            'internet_nl_mail_starttls_tls_clientreneg',
-            'internet_nl_mail_starttls_tls_0rtt',
-
-            # Certificate
-            'internet_nl_mail_starttls_cert_chain',
-            'internet_nl_mail_starttls_cert_pubkey',
-            'internet_nl_mail_starttls_cert_sig',
-            'internet_nl_mail_starttls_cert_domain',
-
-            # DANE
-            'internet_nl_mail_starttls_dane_exist',
-            'internet_nl_mail_starttls_dane_valid',
-            'internet_nl_mail_starttls_dane_rollover',
-        ],
-
-        'legacy': [
-            'internet_nl_mail_legacy_dmarc',
-            'internet_nl_mail_legacy_dkim',
-            'internet_nl_mail_legacy_spf',
-            'internet_nl_mail_legacy_dmarc_policy',
-            'internet_nl_mail_legacy_spf_policy',
-            'internet_nl_mail_legacy_start_tls',
-            'internet_nl_mail_legacy_start_tls_ncsc',
-            'internet_nl_mail_legacy_dnssec_email_domain',
-            'internet_nl_mail_legacy_dnssec_mx',
-            'internet_nl_mail_legacy_dane',
-            'internet_nl_mail_legacy_category_ipv6',
-            'internet_nl_mail_legacy_ipv6_nameserver',
-            'internet_nl_mail_legacy_ipv6_mailserver',
-
-            # Added may 2020 internet.nl api v2
-            'internet_nl_mail_legacy_mail_non_sending_domain',
-            'internet_nl_mail_legacy_mail_sending_domain',
-            'internet_nl_mail_legacy_mail_server_testable',
-            'internet_nl_mail_legacy_mail_server_reachable',
-            'internet_nl_mail_legacy_domain_has_mx',
-            'internet_nl_mail_legacy_tls_1_3',
-
-        ]
+        'legacy': MAIL_LEGACY_FIELDS
     },
 }
 

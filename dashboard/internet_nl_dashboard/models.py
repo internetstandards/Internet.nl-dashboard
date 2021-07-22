@@ -329,9 +329,9 @@ def determine_next_scan_moment(preference: str) -> datetime:
         # note: range is not used because range is _to_ a certain moment.
         if now.day in [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14]:
             return returned.replace(year=now.year, month=now.month, day=15)
-        else:
-            # otherwise exactly the same as the 1st day of every month
-            return returned.replace(year=now.year + 1) if now.month == 12 else returned.replace(month=now.month + 1)
+
+        # otherwise exactly the same as the 1st day of every month
+        return returned.replace(year=now.year + 1) if now.month == 12 else returned.replace(month=now.month + 1)
 
     raise ValueError(f'String {preference} could not be translated to a scan moment.')
 

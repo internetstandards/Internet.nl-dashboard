@@ -70,7 +70,7 @@ def get_urllist_timeline_graph(account: Account, urllist_ids: str):
     original_order = copy(list_split)
 
     # aside from casting, remove double lists. this orders the list.
-    list_split = list(set([int(id) for id in list_split]))
+    list_split = list({int(list_id) for list_id in list_split})
 
     statistics_over_last_years_reports = Prefetch(
         'urllistreport_set',
@@ -226,7 +226,7 @@ def get_report_differences_compared_to_current_list(account: Account, report_id:
     urls_in_urllist_but_not_in_report = list(set(urls_in_urllist) - set(urls_in_report))
     urls_in_report_but_not_in_urllist = list(set(urls_in_report) - set(urls_in_urllist))
 
-    both_are_equal = False if urls_in_urllist_but_not_in_report or urls_in_report_but_not_in_urllist else True
+    both_are_equal = not any([urls_in_urllist_but_not_in_report, urls_in_report_but_not_in_urllist])
 
     content_comparison = {
         "number_of_urls_in_urllist": len(urls_in_urllist),
@@ -511,13 +511,13 @@ def add_statistics_over_ratings(report: UrlListReport):
 
 def add_percentages_to_statistics(report: UrlListReport):
 
-    for key, value in report.calculation['statistics_per_issue_type'].items():
+    for key, _ in report.calculation['statistics_per_issue_type'].items():
         issue = report.calculation['statistics_per_issue_type'][key]
 
         # may 2020: we want to see the other issues in the graphs as being gray.
         graphs_all = sum([issue['ok'], issue['high'], issue['medium'], issue['low'],
                           issue['not_testable'], issue['not_applicable'], issue['error_in_test']])
-        if all == 0:
+        if graphs_all == 0:
             # This happens when everything tested is not applicable or not testable: thus no stats:
             report.calculation['statistics_per_issue_type'][key]['pct_high'] = 0
             report.calculation['statistics_per_issue_type'][key]['pct_medium'] = 0

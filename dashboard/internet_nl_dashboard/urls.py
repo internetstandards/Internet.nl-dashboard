@@ -3,7 +3,7 @@ from django.shortcuts import redirect
 from django.urls import path, register_converter
 
 # We have to import the signals somewhere..?!
-import dashboard.internet_nl_dashboard.signals  # noqa
+import dashboard.internet_nl_dashboard.signals  # noqa  # pylint: disable=unused-import
 from dashboard.internet_nl_dashboard.views import (__init__, account, domains, download_spreadsheet,
                                                    mail, powertools, report, scan_monitor, session,
                                                    spreadsheet, usage, user)
@@ -13,10 +13,12 @@ class SpreadsheetFileTypeConverter:
     # Supports {"key": "value", "key2": "value2"} syntax.
     regex = '(xlsx|ods|csv)'
 
-    def to_python(self, value):
+    @staticmethod
+    def to_python(value):
         return str(value)
 
-    def to_url(self, value):
+    @staticmethod
+    def to_url(value):
         return f'{value}'
 
 

@@ -116,7 +116,7 @@ class IEPeriodicTaskAdmin(PeriodicTaskAdmin, ImportExportModelAdmin):
 
         return date
 
-    class Meta:
+    class Meta:  # pylint: disable=too-few-public-methods
         ordering = ["-name"]
 
 
@@ -139,13 +139,13 @@ class DashboardUserInline(CompactInline):
 # Thank you:
 # https://stackoverflow.com/questions/47941038/how-should-i-add-django-import-export-on-the-user-model?rq=1
 class UserResource(resources.ModelResource):
-    class Meta:
+    class Meta:  # pylint: disable=too-few-public-methods
         model = User
         # fields = ('first_name', 'last_name', 'email')
 
 
 class GroupResource(resources.ModelResource):
-    class Meta:
+    class Meta:  # pylint: disable=too-few-public-methods
         model = Group
 
 
@@ -184,7 +184,7 @@ admin.site.register(Group, GroupAdmin)
 # Overwrite the ugly Constance forms with something nicer
 class CustomConfigForm(ConstanceForm):
     def __init__(self, *args, **kwargs):
-        super(CustomConfigForm, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         # ... do stuff to make your settings form nice ...
 
 
@@ -262,10 +262,12 @@ class UrlListAdmin(ImportExportModelAdmin, admin.ModelAdmin):
     fields = ('name', 'account', 'scan_type', 'enable_scans', 'automated_scan_frequency', 'scheduled_next_scan',
               'last_manual_scan', 'is_deleted', 'deleted_on')
 
-    def no_of_urls(self, obj):
+    @staticmethod
+    def no_of_urls(obj):
         return Url.objects.all().filter(urls_in_dashboard_list=obj, is_dead=False, not_resolvable=False).count()
 
-    def no_of_endpoints(self, obj):
+    @staticmethod
+    def no_of_endpoints(obj):
         return Endpoint.objects.all().filter(url__urls_in_dashboard_list=obj, is_dead=False,
                                              url__is_dead=False, url__not_resolvable=False).count()
 
@@ -339,7 +341,7 @@ class AccountInternetNLScanAdmin(ImportExportModelAdmin, admin.ModelAdmin):
         for scan in queryset:
             tasks.append(creating_report(scan.id))
         group(tasks).apply_async()
-        self.message_user(request, f"Creating additional reports (async).")
+        self.message_user(request, "Creating additional reports (async).")
 
     create_extra_report.short_description = "Create additional report (async) (finished only)"
     actions.append('create_extra_report')
@@ -365,14 +367,16 @@ class UploadLogAdmin(ImportExportModelAdmin, admin.ModelAdmin):
 
 @admin.register(models.UrlListReport)
 class UrlListReportAdmin(ImportExportModelAdmin, admin.ModelAdmin):
-    def inspect_list(self, obj):
+
+    @staticmethod
+    def inspect_list(obj):
         return format_html('<a href="../../internet_nl_dashboard/urllist/{id}/change">inspect</a>',
                            id=format(obj.id))
 
     # do NOT load the calculation field, as that will be slow.
     # https://stackoverflow.com/questions/34774028/how-to-ignore-loading-huge-fields-in-django-admin-list-display
     def get_queryset(self, request):
-        qs = super(UrlListReportAdmin, self).get_queryset(request)
+        qs = super().get_queryset(request)
 
         # tell Django to not retrieve mpoly field from DB
         qs = qs.defer("calculation")

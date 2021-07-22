@@ -104,8 +104,8 @@ def store_as_django_locale(locale, content):
     # If the language does not exist yet, make the folder supporting this language.
     os.makedirs(Path(filepath).parent, exist_ok=True)
 
-    with open(filepath, 'w') as f:
-        f.write(content.decode('UTF-8'))
+    with open(filepath, 'w') as file:
+        file.write(content.decode('UTF-8'))
 
 
 def load_as_po_file(raw_content: bytes) -> List[Any]:
@@ -119,10 +119,10 @@ def load_as_po_file(raw_content: bytes) -> List[Any]:
     :param raw_content: string that contains the contents of a .po file.
     :return:
     """
-    with tempfile.NamedTemporaryFile() as f:
-        f.write(raw_content)
-        f.flush()
-        return polib.pofile(f.name)
+    with tempfile.NamedTemporaryFile() as file:
+        file.write(raw_content)
+        file.flush()
+        return polib.pofile(file.name)
 
 
 def convert_vue_i18n_format(translated_locales: List[Dict[str, List[Any]]]) -> str:
@@ -189,10 +189,10 @@ def get_po_as_dictionary_v2(language='en'):
     try:
         log.debug(f"Loading locale file: {po_file_location}")
         return get_po_as_dictionary(po_file_location)
-    except OSError as e:
+    except OSError as error:
         raise SystemError(f"Missing PO file 'django.po' at {po_file_location}. Note that an exception about "
                           f"incorrect syntax may be misleading. This is also given when there is no file. "
-                          f"The exception that is given: {e}. Is this language available?")
+                          f"The exception that is given: {error}. Is this language available?") from error
 
 
 def _vue_format_start():

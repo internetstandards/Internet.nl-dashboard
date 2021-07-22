@@ -33,7 +33,7 @@ def xget_template_as_string(template_name: str = "scan_finished", preferred_lang
 
 
 def store_template(template_name, template_content):
-    e = EmailTemplate()
-    e.name = template_name
-    e.email_html_text = template_content
-    e.save()
+    email_template = EmailTemplate()
+    email_template.name = template_name
+    email_template.email_html_text = template_content
+    email_template.save()

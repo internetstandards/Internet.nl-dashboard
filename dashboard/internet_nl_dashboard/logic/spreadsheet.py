@@ -21,7 +21,7 @@ import logging
 import os
 import re
 from datetime import datetime
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Optional
 
 import magic
 import pyexcel as p
@@ -35,7 +35,6 @@ from dashboard.internet_nl_dashboard.logic.domains import clean_urls, save_urlli
 from dashboard.internet_nl_dashboard.models import Account, DashboardUser, UploadLog
 
 log = logging.getLogger(__package__)
-
 
 SPREADSHEET_MIME_TYPES: List[str] = [
     # XLSX
@@ -102,7 +101,7 @@ def is_valid_extension(file: str) -> bool:
     return False
 
 
-def get_data(file: str) -> dict:
+def get_data(file: str) -> Dict[str, set]:
     """
     Will return a simple set of data, without too much validation. Deduplicates data per unique category.
 
@@ -157,7 +156,6 @@ def get_data(file: str) -> dict:
 
 
 def get_upload_history(account: Account) -> List:
-
     uploads = UploadLog.objects.all().filter(user__account=account).order_by('-pk')
     data = []
 
@@ -204,7 +202,7 @@ def log_spreadsheet_upload(user: DashboardUser, file: str, status: str = "", mes
     uploadlog.save()
 
     # Sprinkling an activity stream action.
-    action.send(user, verb=f'uploaded spreadsheet', target=uploadlog, public=False)
+    action.send(user, verb='uploaded spreadsheet', target=uploadlog, public=False)
 
     return upload
 
@@ -213,7 +211,6 @@ def log_spreadsheet_upload(user: DashboardUser, file: str, status: str = "", mes
 # Depending on the speed this needs to become a task, as the wait will be too long.
 @transaction.atomic
 def save_data(account: Account, data: dict):
-
     results = {}
     for urllist in data.keys():
         results[urllist] = save_urllist_content_by_name(account, urllist, data[urllist])
@@ -221,94 +218,77 @@ def save_data(account: Account, data: dict):
     return results
 
 
-def complete_import(user: DashboardUser, file: str):
+def upload_error(message, user, file) -> Dict[str, Any]:
+    response: Dict[str, Any] = {'error': True, 'success': False, 'message': message, 'details': {}, 'status': 'error'}
+    log_spreadsheet_upload(user=user, file=file, status=response['status'], message=response['message'])
+    return response
 
-    response: Dict[str, Any] = {'error': False, 'success': False, 'message': '', 'details': {}}
 
+def inspect_upload_file(user: DashboardUser, file: str) -> Optional[Dict[str, Any]]:
     # use more verbose validation, to give better feedback.
     if not is_file(file):
-        response['error'] = True
-        response['status'] = 'error'
-        response['message'] = "Uploaded file was not found. I might be not stored due to a full disk or or has been " \
-                              "stored in the wrong location, or has been deleted automatically by a background " \
-                              "process like a virus scanner."
-        log_spreadsheet_upload(user=user, file=file, status=response['status'], message=response['message'])
-        return response
+        return upload_error("Uploaded file was not found. I might be not stored due to a full disk or or has been "
+                            "stored in the wrong location, or has been deleted automatically by a background "
+                            "process like a virus scanner.", user, file)
 
     if not is_valid_extension(file):
-        response['error'] = True
-        response['status'] = 'error'
-        response['message'] = "File does not have a valid extension. " \
-                              f"Allowed extensions are: {','.join(ALLOWED_SPREADSHEET_EXTENSIONS)}."
-        log_spreadsheet_upload(user=user, file=file, status=response['status'], message=response['message'])
-        return response
+        return upload_error("File does not have a valid extension. "
+                            f"Allowed extensions are: {','.join(ALLOWED_SPREADSHEET_EXTENSIONS)}.", user, file)
 
     if not is_valid_mimetype(file):
-        response['error'] = True
-        response['status'] = 'error'
-        response['message'] = "The content of the file could not be established. It might not be a spreadsheet file."
-        log_spreadsheet_upload(user=user, file=file, status=response['status'], message=response['message'])
-        return response
+        return upload_error("The content of the file could not be established. It might not be a spreadsheet file.",
+                            user, file)
 
+
+def complete_import(user: DashboardUser, file: str) -> Dict[str, Any]:
+
+    has_errors = inspect_upload_file(user, file)
+    if has_errors:
+        return has_errors
+
+    # urllist: urls
     data = get_data(file)
     if not data:
-        response['error'] = True
-        response['status'] = 'error'
-        response['message'] = "The uploaded file contained no data. This might happen when the file is not in the " \
-                              "correct format. Are you sure it is a correct spreadsheet file?"
-        log_spreadsheet_upload(user=user, file=file, status=response['status'], message=response['message'])
-        return response
+        return upload_error("The uploaded file contained no data. This might happen when the file is not in the "
+                            "correct format. Are you sure it is a correct spreadsheet file?", user, file)
 
     # sanity check on data length and number of lists (this does not prevent anyone from trying to upload the same
     # file over and over again), it's just a usability feature against mistakes.
-    number_of_lists = len(data.keys())
+    number_of_lists = len(data)
     number_of_urls = 0
-    for urllist in data.keys():
-        number_of_urls += len(data[urllist])
+    for _, urls in data.items():
+        number_of_urls += len(urls)
 
     if number_of_lists > config.DASHBOARD_MAXIMUM_LISTS_PER_SPREADSHEET:
-        response['error'] = True
-        response['status'] = 'error'
-        response['message'] = f"The maximum number of new lists is {config.DASHBOARD_MAXIMUM_LISTS_PER_SPREADSHEET}. " \
-                              "The uploaded spreadsheet contains more than this limit. Try again in smaller batches."
-        log_spreadsheet_upload(user=user, file=file, status=response['status'], message=response['message'])
-        return response
+        return upload_error(f"The maximum number of new lists is {config.DASHBOARD_MAXIMUM_LISTS_PER_SPREADSHEET}. "
+                            "The uploaded spreadsheet contains more than this limit. Try again in smaller batches.",
+                            user, file)
 
     if number_of_lists > config.DASHBOARD_MAXIMUM_DOMAINS_PER_SPREADSHEET:
-        response['error'] = True
-        response['status'] = 'error'
-        response['message'] = f"The maximum number of new urls is {config.DASHBOARD_MAXIMUM_DOMAINS_PER_SPREADSHEET}." \
-                              "The uploaded spreadsheet contains more than this limit. Try again in smaller batches."
-        log_spreadsheet_upload(user=user, file=file, status=response['status'], message=response['message'])
-        return response
+        return upload_error(f"The maximum number of new urls is {config.DASHBOARD_MAXIMUM_DOMAINS_PER_SPREADSHEET}."
+                            "The uploaded spreadsheet contains more than this limit. Try again in smaller batches.",
+                            user, file)
 
     # Here is your standard XSS issue :)
-    for urllist in data.keys():
-        url_check = clean_urls(list(data[urllist]))
+    for urllist, urls in data.items():
+        url_check = clean_urls(list(urls))
 
         if url_check['incorrect']:
-            response['error'] = True
-            response['status'] = 'error'
-            response['message'] = "This spreadsheet contains urls that are not in the correct format. Please correct " \
-                                  "them and try again. The fist list that contains an error is " \
-                                  f"{urllist} with the url(s) {', '.join(url_check['incorrect'])}"
-            log_spreadsheet_upload(user=user, file=file, status=response['status'], message=response['message'])
-            return response
+            return upload_error("This spreadsheet contains urls that are not in the correct format. Please correct "
+                                "them and try again. The fist list that contains an error is "
+                                f"{urllist} with the url(s) {', '.join(url_check['incorrect'])}",
+                                user, file)
 
     # File system full, database full.
     details = save_data(user.account, data)
 
-    response['success'] = True
-    response['status'] = 'success'
-    response['details'] = details
-
     # Make the details a little bit easier for humans to understand:
     details_str = ""
-    for urllist in details.keys():
-        details_str += f"{urllist}: new: {details[urllist]['added_to_list']}, " \
-                       f"existing: {details[urllist]['already_in_list']}; "
+    for urllist, detail in details.items():
+        details_str += f"{urllist}: new: {detail['added_to_list']}, existing: {detail['already_in_list']}; "
 
-    response['message'] = "Spreadsheet uploaded successfully. " \
-                          f"Added {number_of_lists} lists and {number_of_urls} urls. Details: {details_str}"
-    log_spreadsheet_upload(user=user, file=file, status=response['status'], message=response['message'])
+    message = "Spreadsheet uploaded successfully. " \
+              f"Added {number_of_lists} lists and {number_of_urls} urls. Details: {details_str}"
+    response = {'error': False, 'success': True, 'message': message, 'details': details, 'status': 'success'}
+    log_spreadsheet_upload(user=user, file=file, status='success', message=message)
     return response

@@ -65,9 +65,9 @@ def session_logout_(request):
     if not request.user.is_authenticated:
         log.debug('User is not authenticated...')
         return operation_response(success=True, message="logged_out")
-    else:
-        logout(request)
-        return operation_response(success=True, message="logged_out")
+
+    logout(request)
+    return operation_response(success=True, message="logged_out")
 
 
 def session_status_(request):
