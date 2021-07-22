@@ -49,7 +49,7 @@ IP_VERSION_QUEUE = {
 }
 
 
-class DefaultTask(Task):
+class DefaultTask(Task):  #  pylint: disable=abstract-method
     """Default settings for all websecmap tasks."""
 
     priority = PRIO_NORMAL
@@ -103,7 +103,7 @@ def status():
         try:
             import asyncio  # pylint: disable=import-outside-toplevel
             asyncio.set_event_loop(asyncio.new_event_loop())
-        except BaseException:
+        except BaseException:  # pylint: disable=broad-except
             # an eventloop already exists.
             pass
 
@@ -111,7 +111,8 @@ def status():
         queue_stats = []
         try:
             broker = flower.utils.broker.Broker(app.conf.broker_url, broker_options=app.conf.broker_transport_options)
-            queue_stats = broker.queues(queue_names).result()
+            # todo: Instance of 'Broker' has no 'queues' member (no-member)
+            queue_stats = broker.queues(queue_names).result()  # pylint: disable=no-member
         except RuntimeError as runtime_error:
             log.error("Could not connect to flower to retrieve queue stats.")
             log.exception(runtime_error)

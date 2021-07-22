@@ -239,6 +239,8 @@ def inspect_upload_file(user: DashboardUser, file: str) -> Optional[Dict[str, An
         return upload_error("The content of the file could not be established. It might not be a spreadsheet file.",
                             user, file)
 
+    return None
+
 
 def complete_import(user: DashboardUser, file: str) -> Dict[str, Any]:
 

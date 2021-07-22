@@ -7,7 +7,7 @@ from dashboard.internet_nl_dashboard.management.commands.dashboard_celery import
     reusable_run_from_argv
 
 
-class Command(BaseCommand):
+class Command(BaseCommand):  # pylint: disable=abstract-method
     """Celery command wrapper."""
 
     help = __doc__

@@ -20,7 +20,7 @@ def reusable_run_from_argv(argv):
     os.execvp("celery", argv[1:2] + appname_arguments + argv[2:])
 
 
-class Command(BaseCommand):
+class Command(BaseCommand):  # pylint: disable=abstract-method
     """Celery command wrapper."""
     help = __doc__
 
