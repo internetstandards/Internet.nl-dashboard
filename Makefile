@@ -255,7 +255,7 @@ pylint: ${app}
 	DJANGO_SETTINGS_MODULE=${app_name}.settings ${bin}/pylint --load-plugins pylint_django dashboard
 
 .QA: qa
-qa: pylint bandit mypy vulture check
+qa: pylint bandit mypy vulture check test
 
 
 ## Utility

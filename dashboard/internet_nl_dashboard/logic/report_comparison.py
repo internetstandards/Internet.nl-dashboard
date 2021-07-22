@@ -314,15 +314,10 @@ def compare_report_in_detail(new_report, old_report) -> Dict[str, Any]:
         comparison_report['comparison'][url_key] = data
 
     # add the summary to the report, which is just a simple loop with counters
-    improvement, neutral, regression = 0, 0, 0
     for _, report_per_url in comparison_report['comparison'].items():
-        improvement += report_per_url['changes']['improvement']
-        regression += report_per_url['changes']['regression']
-        neutral += report_per_url['changes']['neutral']
-
-    comparison_report['summary']['improvement'] = improvement
-    comparison_report['summary']['regression'] = regression
-    comparison_report['summary']['neutral'] = neutral
+        comparison_report['summary']['improvement'] += report_per_url['changes']['improvement']
+        comparison_report['summary']['regression'] += report_per_url['changes']['regression']
+        comparison_report['summary']['neutral'] += report_per_url['changes']['neutral']
 
     return comparison_report
 
