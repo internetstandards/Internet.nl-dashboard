@@ -9,8 +9,7 @@ from django.shortcuts import render
 from websecmap.app.common import JSEncoder
 
 from dashboard.internet_nl_dashboard.logic.spreadsheet import complete_import, get_upload_history
-from dashboard.internet_nl_dashboard.views.__init__ import (LOGIN_URL, get_account,
-                                                            get_dashboarduser)
+from dashboard.internet_nl_dashboard.views.__init__ import LOGIN_URL, get_account, get_dashboarduser
 
 log = logging.getLogger(__package__)
 

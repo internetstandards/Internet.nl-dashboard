@@ -1,4 +1,3 @@
-from typing import Any
 
 from constance import config
 from django_mail_admin.models import EmailTemplate

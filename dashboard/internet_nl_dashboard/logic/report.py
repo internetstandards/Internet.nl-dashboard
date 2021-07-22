@@ -2,7 +2,7 @@ import json
 import logging
 import re
 from copy import copy
-from typing import List, Any, Dict, Union
+from typing import Any, Dict, List, Union
 
 from actstream import action
 from django.db.models import Prefetch

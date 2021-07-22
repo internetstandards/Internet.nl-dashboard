@@ -23,7 +23,7 @@ Details obv action metingen gestart eind januari 2020 (er mist bijna een maand d
 """
 from collections import defaultdict
 from datetime import datetime, timedelta
-from typing import Dict, Any
+from typing import Any, Dict
 
 import pytz
 from actstream.models import Action

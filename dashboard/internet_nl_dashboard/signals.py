@@ -4,13 +4,13 @@ from django.dispatch import receiver
 
 
 @receiver(user_logged_in)
-def stream_login(sender, **kwargs):  # pylint: disable=unused-argument
+def stream_login(**kwargs):
     # sender = user
     action.send(kwargs['user'], verb='logged in', public=False)
 
 
 @receiver(user_logged_out)
-def stream_logout(sender, **kwargs):  # pylint: disable=unused-argument
+def stream_logout(**kwargs):
     # sender = user
     # logging out via json requests went wrong somehow.
     if kwargs.get('user', None):

@@ -9,6 +9,9 @@ jobs:
     # Only accept 100% well written code
     - make pylint
     - make bandit
+    - make mypy
+    - make vulture
+    - make check
   - stage: test
     install: make setup
     script: make

@@ -293,10 +293,10 @@ def discovering_endpoints(scan_id: int):
         return group([])
 
     return (
-            dns_endpoints.compose_discover_task(**{
-                'urls_filter': {'urls_in_dashboard_list__id': scan.urllist.id, 'is_dead': False,
-                                'not_resolvable': False}})
-            | update_state.si("discovered endpoints", scan.id)
+        dns_endpoints.compose_discover_task(**{
+            'urls_filter': {'urls_in_dashboard_list__id': scan.urllist.id, 'is_dead': False,
+                            'not_resolvable': False}})
+        | update_state.si("discovered endpoints", scan.id)
     )
 
 
@@ -313,9 +313,9 @@ def retrieving_scannable_urls(scan_id: int):
     relevant_scan_types = {"web": "dns_a_aaaa", "mail_dashboard": "dns_soa", "mail": "dns_soa"}
 
     return (
-            get_relevant_urls.si(scan.urllist.id, relevant_scan_types[scan.scan.type])
-            | check_retrieved_scannable_urls.s()
-            | update_state.s(scan.id)
+        get_relevant_urls.si(scan.urllist.id, relevant_scan_types[scan.scan.type])
+        | check_retrieved_scannable_urls.s()
+        | update_state.s(scan.id)
     )
 
 

@@ -1,5 +1,4 @@
-from datetime import timedelta
-from typing import List, Union, Dict
+from typing import Dict, List, Union
 
 from constance import config
 from django.utils import timezone
