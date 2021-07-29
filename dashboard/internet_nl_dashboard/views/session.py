@@ -2,7 +2,6 @@ import logging
 
 from django.contrib.auth import authenticate, login, logout
 from django.http import JsonResponse
-from django.middleware.csrf import get_token
 from django_otp.plugins.otp_totp.models import TOTPDevice
 
 from dashboard.internet_nl_dashboard.logic import operation_response
@@ -81,21 +80,15 @@ def session_status_(request):
         return {
             'is_authenticated': False,
             'is_superuser': False,
-            'second_factor_enabled': False
+            'second_factor_enabled': False,
+            'account_name': '',
         }
 
     return {
         'is_authenticated': request.user.is_authenticated,
-        'is_superuser': request.user.is_superuser
+        'is_superuser': request.user.is_superuser,
+        'account_name': request.user.dashboarduser.account.name,
     }
-
-
-def get_csrf_(request):
-    return get_token(request)
-
-
-def session_csrf(request):
-    return JsonResponse({'token': get_csrf_(request)})
 
 
 def session_status(request):

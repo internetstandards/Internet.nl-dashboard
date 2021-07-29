@@ -86,7 +86,6 @@ urlpatterns = [
     path('session/login/', session.session_login),
     path('session/logout/', session.session_logout),
     path('session/status/', session.session_status),
-    path('session/csrf/', session.session_csrf),
     # Would you enable the below login form, you will bypass all second factor authentication. Therefore do not enable
     # this url (!)
     # url(r'^login/$', auth_views.LoginView.as_view(template_name='internet_nl_dashboard/registration/login.html'),
