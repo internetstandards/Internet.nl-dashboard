@@ -131,6 +131,25 @@ def get_report(account: Account, report_id: int):
     return f"[{dump_report_to_text_resembling_json(report)}]"
 
 
+def get_shared_report(report_code: str, share_code: str):
+
+    # Check if report_code exists. If so see if a share code is required.
+    report = UrlListReport.objects.all().filter(
+        # A deleted list means that the report cannot be seen anymore
+        urllist__is_deleted=False,
+
+        # All other public sharing filters
+        public_report_code=report_code,
+        public_share_code=share_code,
+        is_publicly_shared=True
+    ).values('id', 'urllist_id', 'calculation', 'average_internet_nl_score', 'total_urls', 'at_when').first()
+
+    if not report:
+        return []
+
+    return f"[{dump_report_to_text_resembling_json(report)}]"
+
+
 def dump_report_to_text_resembling_json(report):
     """
     Does _not_ create a python object of a report, because that's slow. Instead it relies on the capanility

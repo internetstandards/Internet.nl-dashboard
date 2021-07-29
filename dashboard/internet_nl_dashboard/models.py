@@ -69,6 +69,7 @@ class Account(models.Model):
     These password methods allow you to interact with encryption as if it were just storing and retrieving strings.
     See test_password_storage for example usage.
     """
+
     @staticmethod
     def encrypt_password(password):
         fernet = Fernet(settings.FIELD_ENCRYPTION_KEY)
@@ -260,7 +261,7 @@ class UrlList(models.Model):
         # manual scans have their own 'is available flag', as the 'create_dashboard_scan_tasks()' does not guarantee
         # a new scan is created instantly. The flag needs to be set otherwise a user can initiate tons of scans.
         # if self.last_manual_scan and self.last_manual_scan > yesterday:
-            # log.debug("Scan now NOT available: Last manual scan was in the last 24 hours for list %s" % self)
+        # log.debug("Scan now NOT available: Last manual scan was in the last 24 hours for list %s" % self)
         #   return False
         # End deprecation
 
@@ -417,6 +418,30 @@ class UrlListReport(SeriesOfUrlsReportMixin):  # pylint: disable=too-many-ancest
                   "subject to change over time. Therefore it is impossible to re-calculate that score here."
                   "Instead the score is stored as a given.",
         default=0,
+    )
+
+    # the urllist might change type of scan, or perform both web and mail scan. So store the type of report here.
+    # This is web or mail. todo: persist through the application, change responses.
+    report_type = models.CharField(default='web', max_length=10)
+
+    is_publicly_shared = models.BooleanField(
+        help_text="Sharing can be disabled and re-enabled where the report code and the share code (password) "
+                  "stay the same.",
+        default=False
+    )
+    public_report_code = models.CharField(
+        max_length=64,
+        help_text="a unique code that used to identify this report",
+        # not unique in database, but enforced in software. Codes of deleted reports might be reused.
+        unique=False,
+        blank=True,
+        default=""
+    )
+    public_share_code = models.CharField(
+        max_length=64,
+        help_text="An unencrypted share code that can be seen by all users in an account. Can be modified by all.",
+        blank=True,
+        default=""
     )
 
     class Meta:

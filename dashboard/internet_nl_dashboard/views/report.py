@@ -5,7 +5,7 @@ from websecmap.app.common import JSEncoder
 
 from dashboard.internet_nl_dashboard.logic.report import (
     get_previous_report, get_recent_reports, get_report,
-    get_report_differences_compared_to_current_list, get_urllist_timeline_graph)
+    get_report_differences_compared_to_current_list, get_shared_report, get_urllist_timeline_graph)
 from dashboard.internet_nl_dashboard.views import LOGIN_URL, get_account
 
 
@@ -39,3 +39,11 @@ def get_recent_reports_(request) -> JsonResponse:
 @login_required(login_url=LOGIN_URL)
 def get_urllist_report_graph_data_(request, urllist_ids) -> JsonResponse:
     return JsonResponse(get_urllist_timeline_graph(get_account(request), urllist_ids), encoder=JSEncoder, safe=False)
+
+
+def get_shared_report_(request, report_code: str, share_code: str = "") -> HttpResponse:
+    # Explicitly NOT use jsonresponse as this loads the json data into an encoder which is extremely slow on large files
+    return HttpResponse(  # pylint: disable=http-response-with-content-type-json
+        get_shared_report(report_code, share_code),
+        content_type="application/json"
+    )
