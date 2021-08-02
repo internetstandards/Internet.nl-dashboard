@@ -64,6 +64,15 @@ urlpatterns = [
     path('data/scan/cancel/', domains.cancel_scan_),
 
     path('data/report/get/<int:report_id>/', report.get_report_),
+    path('data/report/shared/<str:report_code>/', report.get_shared_report_),
+    path('data/report/shared/<str:report_code>/<str:share_code>/', report.get_shared_report_),
+
+    path('data/report/share/share/', report._share),
+    path('data/report/share/unshare/', report._unshare),
+    path('data/report/share/update_share_code/', report._update_share_code),
+    path('data/report/share/update_report_code/', report._update_report_code),
+
+
     path('data/report/differences_compared_to_current_list/<int:report_id>/',
          report.get_report_differences_compared_to_current_list_),
     path('data/report/get_previous/<int:urllist_id>/<str:at_when>/', report.get_previous_report_),

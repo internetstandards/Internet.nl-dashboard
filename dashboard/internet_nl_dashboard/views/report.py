@@ -5,8 +5,9 @@ from websecmap.app.common import JSEncoder
 
 from dashboard.internet_nl_dashboard.logic.report import (
     get_previous_report, get_recent_reports, get_report,
-    get_report_differences_compared_to_current_list, get_shared_report, get_urllist_timeline_graph)
-from dashboard.internet_nl_dashboard.views import LOGIN_URL, get_account
+    get_report_differences_compared_to_current_list, get_shared_report, get_urllist_timeline_graph,
+    share, unshare, update_report_code, update_share_code)
+from dashboard.internet_nl_dashboard.views import LOGIN_URL, get_account, get_json_body
 
 
 @login_required(login_url=LOGIN_URL)
@@ -47,3 +48,28 @@ def get_shared_report_(request, report_code: str, share_code: str = "") -> HttpR
         get_shared_report(report_code, share_code),
         content_type="application/json"
     )
+
+
+def _share(request):
+    data = get_json_body(request)
+    account = get_account(request)
+    return JsonResponse(share(account, data.get('report_id', -1), data.get('public_share_code', '')), safe=False)
+
+
+def _unshare(request):
+    data = get_json_body(request)
+    account = get_account(request)
+    return JsonResponse(unshare(account, data.get('report_id', -1)), safe=False)
+
+
+def _update_share_code(request):
+    data = get_json_body(request)
+    account = get_account(request)
+    return JsonResponse(update_share_code(account, data.get('report_id', -1), data.get('public_share_code', '')),
+                        safe=False)
+
+
+def _update_report_code(request):
+    data = get_json_body(request)
+    account = get_account(request)
+    return JsonResponse(update_report_code(account, data.get('report_id', -1)), safe=False)

@@ -2,11 +2,14 @@ import json
 import logging
 import re
 from copy import copy
-from typing import Any, Dict, List, Union
+from time import sleep
+from typing import Any, Dict, List, Optional, Union
+from uuid import uuid4
 
 from actstream import action
 from django.db.models import Prefetch
 
+from dashboard.internet_nl_dashboard.logic import operation_response
 from dashboard.internet_nl_dashboard.models import Account, UrlList, UrlListReport
 
 log = logging.getLogger(__name__)
@@ -115,7 +118,11 @@ def get_report(account: Account, report_id: int):
         urllist__account=account,
         urllist__is_deleted=False,
         pk=report_id
-    ).values('id', 'urllist_id', 'calculation', 'average_internet_nl_score', 'total_urls', 'at_when').first()
+    ).values('id', 'urllist_id', 'calculation', 'average_internet_nl_score', 'total_urls', 'at_when', 'report_type',
+             'urllist__name', 'is_publicly_shared', 'public_report_code', 'public_share_code'
+             ).first()
+
+    # todo: add report metadata...
 
     if not report:
         return []
@@ -142,9 +149,13 @@ def get_shared_report(report_code: str, share_code: str):
         public_report_code=report_code,
         public_share_code=share_code,
         is_publicly_shared=True
-    ).values('id', 'urllist_id', 'calculation', 'average_internet_nl_score', 'total_urls', 'at_when').first()
+    ).values('id', 'urllist_id', 'calculation', 'average_internet_nl_score', 'total_urls', 'at_when', 'report_type',
+             'urllist__name', 'is_publicly_shared', 'public_report_code', 'public_share_code'
+             ).first()
 
     if not report:
+        # deter brute forcing
+        sleep(5)
         return []
 
     return f"[{dump_report_to_text_resembling_json(report)}]"
@@ -163,10 +174,15 @@ def dump_report_to_text_resembling_json(report):
     return '{' \
            f'"id": {report["id"]}, ' \
            f'"urllist_id": {report["urllist_id"]}, ' \
+           f'"urllist_name": "{report["urllist__name"]}", ' \
            f'"average_internet_nl_score": {report["average_internet_nl_score"]}, ' \
            f'"total_urls": {report["total_urls"]}, ' \
+           f'"is_publicly_shared": {"true" if report["is_publicly_shared"] else "false"}, ' \
            f'"at_when": "{report["at_when"]}", ' \
-           f'"calculation": {json.dumps(report["calculation"])}' \
+           f'"calculation": {json.dumps(report["calculation"])}, ' \
+           f'"report_type": "{report["report_type"]}", ' \
+           f'"public_report_code": "{report["public_report_code"]}", ' \
+           f'"public_share_code": "{report["public_share_code"]}" ' \
            '}'
 
 
@@ -553,3 +569,67 @@ def add_percentages_to_statistics(report: UrlListReport):
         tcskp['pct_not_ok'] = round((issue['not_ok'] / graphs_all) * 100, 2)
 
     report.save()
+
+
+def share(account, report_id, share_code):
+    report = get_report_for_sharing(account, report_id, False)
+
+    if not report:
+        return operation_response(error=True, message="response_no_report_found")
+
+    report.is_publicly_shared = True
+    report.public_share_code = share_code
+    report.public_report_code = uuid4()
+    report.save()
+
+    return operation_response(success=True, message="response_shared", data=report_sharing_data(report))
+
+
+def unshare(account, report_id):
+    report = get_report_for_sharing(account, report_id, True)
+
+    if not report:
+        return operation_response(error=True, message="response_no_report_found")
+
+    report.is_publicly_shared = False
+    report.save()
+
+    return operation_response(success=True, message="response_unshared", data=report_sharing_data(report))
+
+
+def update_share_code(account, report_id, share_code):
+    report = get_report_for_sharing(account, report_id, True)
+
+    if not report:
+        return operation_response(error=True, message="response_no_report_found")
+
+    report.public_share_code = share_code
+    report.save()
+
+    return operation_response(success=True, message="response_updated_share_code", data=report_sharing_data(report))
+
+
+def update_report_code(account, report_id):
+    report = get_report_for_sharing(account, report_id, True)
+
+    if not report:
+        return operation_response(error=True, message="response_no_report_found")
+
+    report.public_report_code = uuid4()
+    report.save()
+
+    return operation_response(success=True, message="response_updated_report_code", data=report_sharing_data(report))
+
+
+def get_report_for_sharing(account: Account, report_id: int, is_publicly_shared: bool) -> Optional[UrlListReport]:
+    return UrlListReport.objects.all().filter(
+        urllist__account=account, urllist__is_deleted=False, id=report_id, is_publicly_shared=is_publicly_shared
+    ).defer('calculation').first()
+
+
+def report_sharing_data(report: UrlListReport) -> Dict[str, Any]:
+    return {
+        'public_report_code': report.public_report_code,
+        'public_share_code': report.public_share_code,
+        'is_publicly_shared': report.is_publicly_shared
+    }
