@@ -66,10 +66,10 @@ urlpatterns = [
     path('data/report/get/<int:report_id>/', report.get_report_),
     path('data/report/shared/<str:report_code>/', report.get_shared_report_),
 
-    path('data/report/share/share/', report._share),
-    path('data/report/share/unshare/', report._unshare),
-    path('data/report/share/update_share_code/', report._update_share_code),
-    path('data/report/share/update_report_code/', report._update_report_code),
+    path('data/report/share/share/', report.x_share),
+    path('data/report/share/unshare/', report.x_unshare),
+    path('data/report/share/update_share_code/', report.x_update_share_code),
+    path('data/report/share/update_report_code/', report.x_update_report_code),
 
 
     path('data/report/differences_compared_to_current_list/<int:report_id>/',

@@ -3,7 +3,7 @@ import logging
 import re
 from copy import copy
 from time import sleep
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Dict, List, Union
 from uuid import uuid4
 
 from actstream import action
@@ -159,10 +159,10 @@ def get_shared_report(report_code: str, share_code: str = ""):
 
     if report['public_share_code'] == share_code:
         return f"{dump_report_to_text_resembling_json(report)}"
-    else:
-        # todo: should be a normal REST response
-        return f'{{"authentication_required": true, "public_report_code": "{report_code}", "id": "{report["id"]}", ' \
-               f'"urllist_name": "{report["urllist__name"]}", "at_when": "{report["at_when"]}"}}'
+
+    # todo: should be a normal REST response
+    return f'{{"authentication_required": true, "public_report_code": "{report_code}", "id": "{report["id"]}", ' \
+           f'"urllist_name": "{report["urllist__name"]}", "at_when": "{report["at_when"]}"}}'
 
 
 def dump_report_to_text_resembling_json(report):
@@ -586,7 +586,7 @@ def share(account, report_id, share_code):
 
     # Keep the report link the same when disabling and re-enabling sharing.
     if not report.public_report_code:
-        report.public_report_code = uuid4()
+        report.public_report_code = str(uuid4())
     report.save()
 
     return operation_response(success=True, message="response_shared", data=report_sharing_data(report))
@@ -622,13 +622,13 @@ def update_report_code(account, report_id):
     if not report:
         return operation_response(error=True, message="response_no_report_found")
 
-    report.public_report_code = uuid4()
+    report.public_report_code = str(uuid4())
     report.save()
 
     return operation_response(success=True, message="response_updated_report_code", data=report_sharing_data(report))
 
 
-def get_report_for_sharing(account: Account, report_id: int, is_publicly_shared: bool) -> Optional[UrlListReport]:
+def get_report_for_sharing(account: Account, report_id: int, is_publicly_shared: bool) -> Any:
     return UrlListReport.objects.all().filter(
         urllist__account=account, urllist__is_deleted=False, id=report_id, is_publicly_shared=is_publicly_shared
     ).defer('calculation').first()

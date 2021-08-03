@@ -43,7 +43,7 @@ def get_urllist_report_graph_data_(request, urllist_ids) -> JsonResponse:
 
 
 # No login required: reports via this method are public
-def get_shared_report_(request, report_code: str, share_code: str = "") -> HttpResponse:
+def get_shared_report_(request, report_code: str) -> HttpResponse:
     # Explicitly NOT use jsonresponse as this loads the json data into an encoder which is extremely slow on large files
 
     data = get_json_body(request)
@@ -55,28 +55,29 @@ def get_shared_report_(request, report_code: str, share_code: str = "") -> HttpR
 
 
 @login_required(login_url=LOGIN_URL)
-def _share(request):
+def x_share(request):
     data = get_json_body(request)
     account = get_account(request)
     return JsonResponse(share(account, data.get('report_id', -1), data.get('public_share_code', '')), safe=False)
 
 
 @login_required(login_url=LOGIN_URL)
-def _unshare(request):
+def x_unshare(request):
     data = get_json_body(request)
     account = get_account(request)
     return JsonResponse(unshare(account, data.get('report_id', -1)), safe=False)
 
 
 @login_required(login_url=LOGIN_URL)
-def _update_share_code(request):
+def x_update_share_code(request):
     data = get_json_body(request)
     account = get_account(request)
     return JsonResponse(update_share_code(account, data.get('report_id', -1), data.get('public_share_code', '')),
                         safe=False)
 
+
 @login_required(login_url=LOGIN_URL)
-def _update_report_code(request):
+def x_update_report_code(request):
     data = get_json_body(request)
     account = get_account(request)
     return JsonResponse(update_report_code(account, data.get('report_id', -1)), safe=False)
