@@ -65,7 +65,6 @@ urlpatterns = [
 
     path('data/report/get/<int:report_id>/', report.get_report_),
     path('data/report/shared/<str:report_code>/', report.get_shared_report_),
-    path('data/report/shared/<str:report_code>/<str:share_code>/', report.get_shared_report_),
 
     path('data/report/share/share/', report._share),
     path('data/report/share/unshare/', report._unshare),

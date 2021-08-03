@@ -135,10 +135,10 @@ def get_report(account: Account, report_id: int):
     ).only('id').first()
     action.send(account, verb='viewed report', target=log_report, public=False)
 
-    return f"[{dump_report_to_text_resembling_json(report)}]"
+    return f"{dump_report_to_text_resembling_json(report)}"
 
 
-def get_shared_report(report_code: str, share_code: str):
+def get_shared_report(report_code: str, share_code: str = ""):
 
     # Check if report_code exists. If so see if a share code is required.
     report = UrlListReport.objects.all().filter(
@@ -147,7 +147,6 @@ def get_shared_report(report_code: str, share_code: str):
 
         # All other public sharing filters
         public_report_code=report_code,
-        public_share_code=share_code,
         is_publicly_shared=True
     ).values('id', 'urllist_id', 'calculation', 'average_internet_nl_score', 'total_urls', 'at_when', 'report_type',
              'urllist__name', 'is_publicly_shared', 'public_report_code', 'public_share_code'
@@ -155,10 +154,15 @@ def get_shared_report(report_code: str, share_code: str):
 
     if not report:
         # deter brute forcing
-        sleep(5)
+        sleep(3)
         return []
 
-    return f"[{dump_report_to_text_resembling_json(report)}]"
+    if report['public_share_code'] == share_code:
+        return f"{dump_report_to_text_resembling_json(report)}"
+    else:
+        # todo: should be a normal REST response
+        return f'{{"authentication_required": true, "public_report_code": "{report_code}", "id": "{report["id"]}", ' \
+               f'"urllist_name": "{report["urllist__name"]}", "at_when": "{report["at_when"]}"}}'
 
 
 def dump_report_to_text_resembling_json(report):
@@ -579,7 +583,10 @@ def share(account, report_id, share_code):
 
     report.is_publicly_shared = True
     report.public_share_code = share_code
-    report.public_report_code = uuid4()
+
+    # Keep the report link the same when disabling and re-enabling sharing.
+    if not report.public_report_code:
+        report.public_report_code = uuid4()
     report.save()
 
     return operation_response(success=True, message="response_shared", data=report_sharing_data(report))
