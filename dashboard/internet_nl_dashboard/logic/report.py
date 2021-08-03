@@ -29,7 +29,7 @@ def create_report_response(reports) -> List[Dict[str, Any]]:
         'id': report.id,
         'report': report.id,
         # mask that there is a mail_dashboard variant.
-        'type': report.urllist.scan_type,
+        'type': report.report_type,
         'number_of_urls': report.total_urls,
         'list_name': report.urllist.name,
         'at_when': report.at_when.isoformat(),
