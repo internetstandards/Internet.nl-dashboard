@@ -26,21 +26,21 @@ def download_spreadsheet(request, report_id, file_type) -> HttpResponse:
         # todo: requesting infinite files will flood the system as temp files are saved. Probably load file into
         #   memory and then remove the original file. With the current group of users the risk is minimal, so no bother
         tmp_file_handle = upgrade_excel_spreadsheet(spreadsheet)
-        with open(tmp_file_handle.name, 'rb') as fh:
-            response = HttpResponse(fh.read(),
+        with open(tmp_file_handle.name, 'rb') as file_handle:
+            response = HttpResponse(file_handle.read(),
                                     content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
-            response["Content-Disposition"] = "attachment; filename=%s.xlsx" % slugify(filename)
+            response["Content-Disposition"] = f"attachment; filename={slugify(filename)}.xlsx"
         return response
 
     if file_type == "ods":
-        output = excel.make_response(spreadsheet, file_type)
-        output["Content-Disposition"] = "attachment; filename=%s.ods" % slugify(filename)
+        output: HttpResponse = excel.make_response(spreadsheet, file_type)
+        output["Content-Disposition"] = f"attachment; filename={slugify(filename)}.ods"
         output["Content-type"] = "application/vnd.oasis.opendocument.spreadsheet"
         return output
 
     if file_type == "csv":
         output = excel.make_response(spreadsheet, file_type)
-        output["Content-Disposition"] = "attachment; filename=%s.csv" % slugify(filename)
+        output["Content-Disposition"] = f"attachment; filename={slugify(filename)}.csv"
         output["Content-type"] = "text/csv"
         return output
 

@@ -62,7 +62,7 @@ def dedupe_urls():
                 if created:
                     log.info(f'A similar endpoint has been created at the target url. {duplicate_endpoint}')
                 else:
-                    log.info(f'A similar endpoint already exists in the target url.')
+                    log.info('A similar endpoint already exists in the target url.')
 
                 # duplicate scans in a day is not a problem, those are filtered out and only the latest one is used
                 # so the data is consistent.

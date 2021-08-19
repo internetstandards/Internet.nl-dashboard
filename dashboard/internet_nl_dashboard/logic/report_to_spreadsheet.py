@@ -2,7 +2,7 @@ import itertools
 import logging
 from string import ascii_uppercase
 from tempfile import NamedTemporaryFile
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Union
 
 import pyexcel as p
 from django.utils.text import slugify
@@ -10,6 +10,19 @@ from openpyxl import load_workbook
 from openpyxl.formatting.rule import CellIsRule
 from openpyxl.styles import Font, PatternFill
 
+from dashboard.internet_nl_dashboard.logic import (MAIL_AUTH_CATEGORY, MAIL_AUTH_FIELDS,
+                                                   MAIL_DNSSEC_CATEGORY, MAIL_DNSSEC_FIELDS,
+                                                   MAIL_IPV6_CATEGORY, MAIL_IPV6_FIELDS,
+                                                   MAIL_LEGACY_FIELDS, MAIL_OVERALL_FIELDS,
+                                                   MAIL_TLS_CATEGORY, MAIL_TLS_CERTIFICATE_FIELDS,
+                                                   MAIL_TLS_DANE_FIELDS, MAIL_TLS_TLS_FIELDS,
+                                                   WEB_APPSECPRIV_CATEGORY, WEB_APPSECPRIV_FIELDS,
+                                                   WEB_DNSSEC_CATEGORY, WEB_DNSSEC_FIELDS,
+                                                   WEB_IPV6_CATEGORY, WEB_IPV6_FIELDS,
+                                                   WEB_LEGACY_FIELDS, WEB_OVERALL_FIELDS,
+                                                   WEB_TLS_CATEGORY, WEB_TLS_CERTIFICATE_FIELDS,
+                                                   WEB_TLS_DANE_FIELDS, WEB_TLS_HTTP_FIELDS,
+                                                   WEB_TLS_TLS_FIELDS)
 from dashboard.internet_nl_dashboard.logic.internet_nl_translations import (get_po_as_dictionary_v2,
                                                                             translate_field)
 from dashboard.internet_nl_dashboard.models import Account, UrlListReport
@@ -34,193 +47,33 @@ Done: write some tests for these methods, once they are more table.
 SANE_COLUMN_ORDER = {
     # scanner
     'dns_a_aaaa': {
-        'overall': [
-            'internet_nl_score',
-            'internet_nl_score_report',
-        ],
+        'overall': WEB_OVERALL_FIELDS,
 
-        'ipv6': [
-            # Category
-            'internet_nl_web_ipv6',
+        'ipv6': WEB_IPV6_CATEGORY + WEB_IPV6_FIELDS,
 
-            'internet_nl_web_ipv6_ns_address',
-            'internet_nl_web_ipv6_ns_reach',
+        'dnssec': WEB_DNSSEC_CATEGORY + WEB_DNSSEC_FIELDS,
 
-            'internet_nl_web_ipv6_ws_address',
-            'internet_nl_web_ipv6_ws_reach',
-            'internet_nl_web_ipv6_ws_similar',
-        ],
-
-        'dnssec': [
-            # Category
-            'internet_nl_web_dnssec',
-
-            'internet_nl_web_dnssec_exist',
-            'internet_nl_web_dnssec_valid',
-        ],
-
-        'tls': [
-            # Category
-            'internet_nl_web_tls',
-
-            # HTTP
-            'internet_nl_web_https_http_available',
-            'internet_nl_web_https_http_redirect',
-            'internet_nl_web_https_http_compress',
-            'internet_nl_web_https_http_hsts',
-
-            # TLS
-            'internet_nl_web_https_tls_version',
-            'internet_nl_web_https_tls_ciphers',
-            'internet_nl_web_https_tls_cipherorder',
-            'internet_nl_web_https_tls_keyexchange',
-            'internet_nl_web_https_tls_keyexchangehash',
-            'internet_nl_web_https_tls_compress',
-            'internet_nl_web_https_tls_secreneg',
-            'internet_nl_web_https_tls_clientreneg',
-            'internet_nl_web_https_tls_0rtt',
-            'internet_nl_web_https_tls_ocsp',
-
-            # Certificate
-            'internet_nl_web_https_cert_chain',
-            'internet_nl_web_https_cert_pubkey',
-            'internet_nl_web_https_cert_sig',
-            'internet_nl_web_https_cert_domain',
-
-            # DANE
-            'internet_nl_web_https_dane_exist',
-            'internet_nl_web_https_dane_valid',
-        ],
+        'tls': WEB_TLS_CATEGORY + WEB_TLS_HTTP_FIELDS + WEB_TLS_TLS_FIELDS + WEB_TLS_CERTIFICATE_FIELDS +
+        WEB_TLS_DANE_FIELDS,
 
         # Added 24th of May 2019
-        'appsecpriv': [
-            # Category
-            'internet_nl_web_appsecpriv',
+        'appsecpriv': WEB_APPSECPRIV_CATEGORY + WEB_APPSECPRIV_FIELDS,
 
-            'internet_nl_web_appsecpriv_x_frame_options',
-            'internet_nl_web_appsecpriv_x_content_type_options',
-            'internet_nl_web_appsecpriv_csp',
-            'internet_nl_web_appsecpriv_referrer_policy',
-        ],
-
-        'legacy': [
-            'internet_nl_web_legacy_dnssec',
-            'internet_nl_web_legacy_tls_available',
-            'internet_nl_web_legacy_tls_ncsc_web',
-            'internet_nl_web_legacy_https_enforced',
-            'internet_nl_web_legacy_hsts',
-            'internet_nl_web_legacy_category_ipv6',
-            'internet_nl_web_legacy_ipv6_nameserver',
-            'internet_nl_web_legacy_ipv6_webserver',
-            # Deleted on request
-            # 'internet_nl_web_legacy_dane',
-
-            # added may 2020, api v2
-            'internet_nl_web_legacy_tls_1_3',
-        ]
+        'legacy': WEB_LEGACY_FIELDS
     },
     'dns_soa': {
         # any grouping, every group has a empty column between them. The label is not used.
-        'overall': [
-            'internet_nl_score',
-            'internet_nl_score_report',
-        ],
-        'ipv6': [
-            # Category
-            'internet_nl_mail_dashboard_ipv6',
+        'overall': MAIL_OVERALL_FIELDS,
+        'ipv6': MAIL_IPV6_CATEGORY + MAIL_IPV6_FIELDS,
 
-            # name servers
-            'internet_nl_mail_ipv6_ns_address',
-            'internet_nl_mail_ipv6_ns_reach',
+        'dnssec': MAIL_DNSSEC_CATEGORY + MAIL_DNSSEC_FIELDS,
 
-            # mail server(s)
-            'internet_nl_mail_ipv6_mx_address',
-            'internet_nl_mail_ipv6_mx_reach',
-        ],
-
-        'dnssec': [
-            # Category
-            'internet_nl_mail_dashboard_dnssec',
-
-            # email address domain
-            'internet_nl_mail_dnssec_mailto_exist',
-            'internet_nl_mail_dnssec_mailto_valid',
-
-            # mail server domain(s)
-            'internet_nl_mail_dnssec_mx_exist',
-            'internet_nl_mail_dnssec_mx_valid',
-        ],
-
-        'auth': [
-            # Category
-            'internet_nl_mail_dashboard_auth',
-
-            # DMARC
-            'internet_nl_mail_auth_dmarc_exist',
-            'internet_nl_mail_auth_dmarc_policy',
-            # 'internet_nl_mail_auth_dmarc_policy_only',  # Added 24th of May 2019
-            # 'internet_nl_mail_auth_dmarc_ext_destination',  # Added 24th of May 2019
-
-            # DKIM
-            'internet_nl_mail_auth_dkim_exist',
-
-            # SPF
-            'internet_nl_mail_auth_spf_exist',
-            'internet_nl_mail_auth_spf_policy',
-        ],
+        'auth': MAIL_AUTH_CATEGORY + MAIL_AUTH_FIELDS,
 
         # perhaps split these into multiple groups.
-        'tls': [
-            'internet_nl_mail_dashboard_tls',
+        'tls': MAIL_TLS_CATEGORY + MAIL_TLS_TLS_FIELDS + MAIL_TLS_CERTIFICATE_FIELDS + MAIL_TLS_DANE_FIELDS,
 
-            # TLS
-            'internet_nl_mail_starttls_tls_available',
-            'internet_nl_mail_starttls_tls_version',
-            'internet_nl_mail_starttls_tls_ciphers',
-            'internet_nl_mail_starttls_tls_cipherorder',
-            'internet_nl_mail_starttls_tls_keyexchange',
-            'internet_nl_mail_starttls_tls_keyexchangehash',
-            'internet_nl_mail_starttls_tls_compress',
-            'internet_nl_mail_starttls_tls_secreneg',
-            'internet_nl_mail_starttls_tls_clientreneg',
-            'internet_nl_mail_starttls_tls_0rtt',
-
-            # Certificate
-            'internet_nl_mail_starttls_cert_chain',
-            'internet_nl_mail_starttls_cert_pubkey',
-            'internet_nl_mail_starttls_cert_sig',
-            'internet_nl_mail_starttls_cert_domain',
-
-            # DANE
-            'internet_nl_mail_starttls_dane_exist',
-            'internet_nl_mail_starttls_dane_valid',
-            'internet_nl_mail_starttls_dane_rollover',
-        ],
-
-        'legacy': [
-            'internet_nl_mail_legacy_dmarc',
-            'internet_nl_mail_legacy_dkim',
-            'internet_nl_mail_legacy_spf',
-            'internet_nl_mail_legacy_dmarc_policy',
-            'internet_nl_mail_legacy_spf_policy',
-            'internet_nl_mail_legacy_start_tls',
-            'internet_nl_mail_legacy_start_tls_ncsc',
-            'internet_nl_mail_legacy_dnssec_email_domain',
-            'internet_nl_mail_legacy_dnssec_mx',
-            'internet_nl_mail_legacy_dane',
-            'internet_nl_mail_legacy_category_ipv6',
-            'internet_nl_mail_legacy_ipv6_nameserver',
-            'internet_nl_mail_legacy_ipv6_mailserver',
-
-            # Added may 2020 internet.nl api v2
-            'internet_nl_mail_legacy_mail_non_sending_domain',
-            'internet_nl_mail_legacy_mail_sending_domain',
-            'internet_nl_mail_legacy_mail_server_testable',
-            'internet_nl_mail_legacy_mail_server_reachable',
-            'internet_nl_mail_legacy_domain_has_mx',
-            'internet_nl_mail_legacy_tls_1_3',
-
-        ]
+        'legacy': MAIL_LEGACY_FIELDS
     },
 }
 
@@ -228,8 +81,8 @@ SANE_COLUMN_ORDER = {
 def iter_all_strings():
     # https://stackoverflow.com/questions/29351492/how-to-make-a-continuous-alphabetic-list-python-from-a-z-then-from-aa-ab
     for size in itertools.count(1):
-        for s in itertools.product(ascii_uppercase, repeat=size):
-            yield "".join(s)
+        for product in itertools.product(ascii_uppercase, repeat=size):
+            yield "".join(product)
 
 
 def create_spreadsheet(account: Account, report_id: int):
@@ -261,8 +114,8 @@ def create_spreadsheet(account: Account, report_id: int):
     data += [headers(protocol)]
     data += urllistreport_to_spreadsheet_data(category_name=report.urllist.name, urls=urls, protocol=protocol)
 
-    filename = "internet nl dashboard report %s %s %s %s" % (
-        report.pk, report.urllist.name, report.urllist.scan_type, report.at_when.date())
+    filename = "internet nl dashboard report " \
+               f"{report.pk} {report.urllist.name} {report.urllist.scan_type} {report.at_when.date()}"
 
     # The sheet is created into memory and then passed to the caller. They may save it, or serve it, etc...
     # http://docs.pyexcel.org/en/latest/tutorial06.html?highlight=memory
@@ -280,29 +133,29 @@ def upgrade_excel_spreadsheet(spreadsheet_data):
         log.debug(f"Saving temp outout to {tmp.name}")
         spreadsheet_data.save_as(array=spreadsheet_data, filename=tmp.name)
 
-        wb = load_workbook(tmp.name)
-        ws = wb.active
+        workbook = load_workbook(tmp.name)
+        worksheet = workbook.active
 
         # nicer columns
-        ws.column_dimensions["A"].width = "30"
-        ws.column_dimensions["B"].width = "30"
+        worksheet.column_dimensions["A"].width = "30"
+        worksheet.column_dimensions["B"].width = "30"
 
         # Add statistic rows:
-        ws.insert_rows(0, amount=9)
+        worksheet.insert_rows(0, amount=9)
 
-        ws[f'B1'] = "Total"
-        ws[f'B2'] = "Passed"
-        ws[f'B3'] = "Info"
-        ws[f'B4'] = "Warning"
-        ws[f'B5'] = "Failed"
-        ws[f'B6'] = "Not tested"
-        ws[f'B7'] = "Error"
-        ws[f'B8'] = "Test not applicable (mail only)"
-        ws[f'B9'] = "Percentage passed"
+        worksheet['B1'] = "Total"
+        worksheet['B2'] = "Passed"
+        worksheet['B3'] = "Info"
+        worksheet['B4'] = "Warning"
+        worksheet['B5'] = "Failed"
+        worksheet['B6'] = "Not tested"
+        worksheet['B7'] = "Error"
+        worksheet['B8'] = "Test not applicable (mail only)"
+        worksheet['B9'] = "Percentage passed"
 
         # bold totals:
         for i in range(1, 10):
-            ws[f'B{i}'].font = Font(bold=True)
+            worksheet[f'B{i}'].font = Font(bold=True)
 
         data_columns = [
             'F', 'G', 'H', 'I', 'J', 'K', 'L', "M", "N", 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z',
@@ -314,117 +167,95 @@ def upgrade_excel_spreadsheet(spreadsheet_data):
         # add some statistics
         for cell in data_columns:
             # if header, then aggregate
-            if ws[f'{cell}12'].value:
+            if worksheet[f'{cell}12'].value:
                 # There is a max of 5000 domains per scan. So we set this to something lower.
                 # There is no good support of headers versus data, which makes working with excel a drama
                 # If you ever read this code, and want a good spreadsheet editor: try Apple Numbers. It's fantastic.
-                ws[f'{cell}1'] = f'=COUNTA({cell}13:{cell}5050)'
+                worksheet[f'{cell}1'] = f'=COUNTA({cell}13:{cell}5050)'
                 # todo: also support other values
-                ws[f'{cell}2'] = f'=COUNTIF({cell}13:{cell}5050, "passed")'
-                ws[f'{cell}3'] = f'=COUNTIF({cell}13:{cell}5050, "info")'
-                ws[f'{cell}4'] = f'=COUNTIF({cell}13:{cell}5050, "warning")'
-                ws[f'{cell}5'] = f'=COUNTIF({cell}13:{cell}5050, "failed")'
-                ws[f'{cell}6'] = f'=COUNTIF({cell}13:{cell}5050, "not_tested")'
-                ws[f'{cell}7'] = f'=' \
-                                 f'COUNTIF({cell}13:{cell}5050, "error")+' \
-                                 f'COUNTIF({cell}13:{cell}5050, "unreachable")+' \
-                                 f'COUNTIF({cell}13:{cell}5050, "untestable")+' \
-                                 f'COUNTIF({cell}13:{cell}5050, "not_testable")'
-                ws[f'{cell}8'] = f'=' \
-                                 f'COUNTIF({cell}13:{cell}5050, "no_mx")+' \
-                                 f'COUNTIF({cell}13:{cell}5050, "not_applicable")'
+                worksheet[f'{cell}2'] = f'=COUNTIF({cell}13:{cell}5050, "passed")'
+                worksheet[f'{cell}3'] = f'=COUNTIF({cell}13:{cell}5050, "info")'
+                worksheet[f'{cell}4'] = f'=COUNTIF({cell}13:{cell}5050, "warning")'
+                worksheet[f'{cell}5'] = f'=COUNTIF({cell}13:{cell}5050, "failed")'
+                worksheet[f'{cell}6'] = f'=COUNTIF({cell}13:{cell}5050, "not_tested")'
+                worksheet[f'{cell}7'] = f'=' \
+                    f'COUNTIF({cell}13:{cell}5050, "error")+' \
+                    f'COUNTIF({cell}13:{cell}5050, "unreachable")+' \
+                    f'COUNTIF({cell}13:{cell}5050, "untestable")+' \
+                    f'COUNTIF({cell}13:{cell}5050, "not_testable")'
+                worksheet[f'{cell}8'] = f'=' \
+                    f'COUNTIF({cell}13:{cell}5050, "no_mx")+' \
+                    f'COUNTIF({cell}13:{cell}5050, "not_applicable")'
                 # Not applicable and not testable are subtracted from the total.
                 # See https://github.com/internetstandards/Internet.nl-dashboard/issues/68
                 # Rounding's num digits is NOT the number of digits behind the comma, but the total number of digits.
                 # todo: we should use the calculations in report.py. And there include the "missing" / empty stuff IF
                 # that is missing.
                 #                   IF(     H1=0,0,ROUND(     H2÷     H1, 4))
-                ws[f'{cell}9'] = f'=IF({cell}1=0,0,ROUND({cell}2/{cell}1, 4))'
-                ws[f'{cell}9'].number_format = '0.00%'
+                worksheet[f'{cell}9'] = f'=IF({cell}1=0,0,ROUND({cell}2/{cell}1, 4))'
+                worksheet[f'{cell}9'].number_format = '0.00%'
 
         # make headers bold
-        ws[f'A12'].font = Font(bold=True)  # List
-        ws[f'B12'].font = Font(bold=True)  # Url
-        ws[f'C11'].font = Font(bold=True)  # overall
-        ws[f'C12'].font = Font(bold=True)  # % Score
-        ws[f'D12'].font = Font(bold=True)  # Report
+        worksheet['A12'].font = Font(bold=True)  # List
+        worksheet['B12'].font = Font(bold=True)  # Url
+        worksheet['C11'].font = Font(bold=True)  # overall
+        worksheet['C12'].font = Font(bold=True)  # % Score
+        worksheet['D12'].font = Font(bold=True)  # Report
         for cell in data_columns:
-            ws[f'{cell}11'].font = Font(bold=True)
-            ws[f'{cell}12'].font = Font(bold=True)
+            worksheet[f'{cell}11'].font = Font(bold=True)
+            worksheet[f'{cell}12'].font = Font(bold=True)
 
         # Freeze pane to make navigation easier.
-        ws.freeze_panes = ws['E13']
+        worksheet.freeze_panes = worksheet['E13']
 
         # there is probably a feature that puts this in a single conditional value.
-        greenFill = PatternFill(start_color='B7FFC8', end_color='B7FFC8', fill_type='solid')
-        redFill = PatternFill(start_color='FFB7B7', end_color='FFB7B7', fill_type='solid')
-        blueFill = PatternFill(start_color='B7E3FF', end_color='B7E3FF', fill_type='solid')
-        orangeFill = PatternFill(start_color='FFD9B7', end_color='FFD9B7', fill_type='solid')
-        grayFill = PatternFill(start_color='99FFFF', end_color='DBDBDB', fill_type='solid')
-        altgrayFill = PatternFill(start_color='99FFFF', end_color='C0C0C0', fill_type='solid')
+        conditional_rules = {
+            "passed": PatternFill(start_color='B7FFC8', end_color='B7FFC8', fill_type='solid'),
+            "failed": PatternFill(start_color='FFB7B7', end_color='FFB7B7', fill_type='solid'),
+            "warning": PatternFill(start_color='FFD9B7', end_color='FFD9B7', fill_type='solid'),
+            "info": PatternFill(start_color='B7E3FF', end_color='B7E3FF', fill_type='solid'),
+            "good_not_tested": PatternFill(start_color='99FFFF', end_color='C0C0C0', fill_type='solid'),
+            "not_tested": PatternFill(start_color='99FFFF', end_color='DBDBDB', fill_type='solid'),
+        }
+
         # Set the measurements to green/red depending on value using conditional formatting.
         # There is no true/false, but we can color based on value.
-        ws.conditional_formatting.add(
-            'F13:CD5050',
-            CellIsRule(operator='=', formula=['"passed"'], stopIfTrue=True, fill=greenFill)
-        )
+        for grade, pattern in conditional_rules.items():
+            worksheet.conditional_formatting.add(
+                'F13:CD5050',
+                CellIsRule(operator='=', formula=[f'"{grade}"'], stopIfTrue=True, fill=pattern)
+            )
 
-        ws.conditional_formatting.add(
-            'F13:CD5050',
-            CellIsRule(operator='=', formula=['"failed"'], stopIfTrue=True, fill=redFill)
-        )
-
-        ws.conditional_formatting.add(
-            'F13:CD5050',
-            CellIsRule(operator='=', formula=['"warning"'], stopIfTrue=True, fill=orangeFill)
-        )
-
-        ws.conditional_formatting.add(
-            'F13:CD5050',
-            CellIsRule(operator='=', formula=['"info"'], stopIfTrue=True, fill=blueFill)
-        )
-
-        ws.conditional_formatting.add(
-            'F13:CD5050',
-            CellIsRule(operator='=', formula=['"good_not_tested"'], stopIfTrue=True, fill=altgrayFill)
-        )
-
-        ws.conditional_formatting.add(
-            'F13:CD5050',
-            CellIsRule(operator='=', formula=['"not_tested"'], stopIfTrue=True, fill=grayFill)
-        )
-
-        log.debug(ws.title)
-        wb.save(tmp.name)
+        workbook.save(tmp.name)
 
         return tmp
 
 
 def category_headers(protocol: str = 'dns_soa'):
-    headers: List[str] = ['', '']
+    sheet_headers: List[str] = ['', '']
     for group in SANE_COLUMN_ORDER[protocol]:
-        headers += [translate_field(group, translation_dictionary=po_file_as_dictionary)]
+        sheet_headers += [translate_field(group, translation_dictionary=po_file_as_dictionary)]
 
-        for x in range(len(SANE_COLUMN_ORDER[protocol][group])-1):
-            headers += ['']
+        for _ in range(len(SANE_COLUMN_ORDER[protocol][group])-1):
+            sheet_headers += ['']
 
         # add empty thing after each group to make distinction per group clearer
-        headers += ['']
+        sheet_headers += ['']
 
-    return headers
+    return sheet_headers
 
 
 def headers(protocol: str = 'dns_soa'):
-    headers = ['List', 'Url']
+    sheet_headers = ['List', 'Url']
     for group in SANE_COLUMN_ORDER[protocol]:
-        headers += SANE_COLUMN_ORDER[protocol][group]
+        sheet_headers += SANE_COLUMN_ORDER[protocol][group]
         # add empty thing after each group to make distinction per group clearer
-        headers += ['']
+        sheet_headers += ['']
 
     # translate them:
-    headers = [translate_field(header, translation_dictionary=po_file_as_dictionary) for header in headers]
+    sheet_headers = [translate_field(header, translation_dictionary=po_file_as_dictionary) for header in sheet_headers]
 
-    return headers
+    return sheet_headers
 
 
 def formula_row(function: str, protocol: str = 'dns_soa'):
@@ -478,7 +309,7 @@ def urllistreport_to_spreadsheet_data(category_name: str, urls: List[Any], proto
     return data
 
 
-def keyed_values_as_boolean(keyed_ratings: Dict[str, Any], protocol: str = 'dns_soa'):
+def keyed_values_as_boolean(keyed_ratings: Dict[str, Dict[str, Union[str, int]]], protocol: str = 'dns_soa'):
     """
     Keyed rating:
     {'internet_nl_mail_auth_dkim_exist': {'comply_or_explain_explained_on': '',
@@ -509,53 +340,12 @@ def keyed_values_as_boolean(keyed_ratings: Dict[str, Any], protocol: str = 'dns_
     values = []
 
     for group in SANE_COLUMN_ORDER[protocol]:
-
         for issue_name in SANE_COLUMN_ORDER[protocol][group]:
+            values.append(some_value(issue_name, keyed_ratings))
 
-            if issue_name == 'internet_nl_score':
-                # Handle the special case of the score column.
-                # explanation":"75 https://batch.internet.nl/mail/portaal.digimelding.nl/289480/",
-                # Not steadily convertable to a percentage, so printing it as an integer instead.
-                if keyed_ratings[issue_name]['internet_nl_score'] == "error":
-                    values.append(keyed_ratings[issue_name]['internet_nl_score'])
-                else:
-                    values.append(int(keyed_ratings[issue_name]['internet_nl_score']))
-            elif issue_name == 'internet_nl_score_report':
-                # fake column to give the column a title per #205, also makes the report more explicit.
-                values.append(keyed_ratings['internet_nl_score']['internet_nl_url'])
+            if issue_name == 'internet_nl_score_report':
                 # add empty column
                 values.append(" ")
-            else:
-                # the issue name might not exist, the 'ok' value might not exist. In those cases replace it with a ?
-                value = keyed_ratings.get(issue_name, {'ok': '?',
-                                                       'not_testable': False,
-                                                       'not_applicable': False, 'error_in_test': False})
-
-                # api v2, tls1.3 update
-                if value.get('test_result', False):
-                    test_value = value.get('test_result', '?')
-                    # per 205, translate not_testable to untestable. This is cosmetic as the 'not_testable' is
-                    # everywhere in the software and is just renamed, and will probably be renamed a few times
-                    # more in the future.
-                    if test_value == "not_testable":
-                        test_value = "untestable"
-                    values.append(test_value)
-
-                else:
-                    # unknown columns and data will be empty.
-                    if "simple_verdict" not in value:
-                        values.append('')
-                    else:
-                        # backward compatible with api v1 reportsunreachable
-                        if value['simple_verdict'] == "not_testable":
-                            values.append('untestable')
-                        elif value['simple_verdict'] == "not_applicable":
-                            values.append('not_applicable')
-                        elif value['simple_verdict'] == "error_in_test":
-                            values.append('error')
-                        else:
-                            # When the value doesn't exist at all, we'll get a questionmark.
-                            values.append(value.get('ok', '?'))
 
         # add empty thing after each group to make distinction per group clearer
         # overall group already adds an extra value (url), so we don't need this.
@@ -563,3 +353,44 @@ def keyed_values_as_boolean(keyed_ratings: Dict[str, Any], protocol: str = 'dns_
             values += ['']
 
     return values
+
+
+def some_value(issue_name: str, keyed_ratings: Dict[str, Dict[str, Union[str, int]]]) -> Union[str, int]:
+
+    if issue_name == 'internet_nl_score':
+        # Handle the special case of the score column.
+        # explanation":"75 https://batch.internet.nl/mail/portaal.digimelding.nl/289480/",
+        # Not steadily convertable to a percentage, so printing it as an integer instead.
+        score = keyed_ratings[issue_name]['internet_nl_score']
+        return score if score == "error" else int(score)
+
+    if issue_name == 'internet_nl_score_report':
+        # fake column to give the column a title per #205, also makes the report more explicit.
+        return keyed_ratings['internet_nl_score']['internet_nl_url']
+
+    # the issue name might not exist, the 'ok' value might not exist. In those cases replace it with a ?
+    value = keyed_ratings.get(issue_name, None)
+    if not value:
+        return "?"
+
+    # api v2, tls1.3 update
+    if value.get('test_result', False):
+        test_value = value.get('test_result', '?')
+        # per 205, translate not_testable to untestable. This is cosmetic as the 'not_testable' is
+        # everywhere in the software and is just renamed, and will probably be renamed a few times
+        # more in the future.
+        if test_value == "not_testable":
+            test_value = "untestable"
+        return test_value
+
+    # unknown columns and data will be empty.
+    if "simple_verdict" not in value:
+        return ''
+
+    # backward compatible with api v1 reports unreachable
+    mapping: Dict[str, str] = {
+        'not_testable': 'untestable',
+        'not_applicable': 'not_applicable',
+        'error_in_test': 'error'
+    }
+    return mapping.get(str(value['simple_verdict']), "?")

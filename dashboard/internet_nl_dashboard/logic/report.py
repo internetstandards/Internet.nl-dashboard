@@ -2,18 +2,20 @@ import json
 import logging
 import re
 from copy import copy
-from typing import List
+from time import sleep
+from typing import Any, Dict, List, Union
+from uuid import uuid4
 
 from actstream import action
 from django.db.models import Prefetch
 
+from dashboard.internet_nl_dashboard.logic import operation_response
 from dashboard.internet_nl_dashboard.models import Account, UrlList, UrlListReport
 
 log = logging.getLogger(__name__)
 
 
-def get_recent_reports(account: Account) -> List:
-
+def get_recent_reports(account: Account) -> List[Dict[str, Any]]:
     # loading the calculation takes some time. In this case we don't need the calculation and as such we defer it.
     reports = UrlListReport.objects.all().filter(
         urllist__account=account, urllist__is_deleted=False).order_by('-pk').select_related(
@@ -22,23 +24,18 @@ def get_recent_reports(account: Account) -> List:
     return create_report_response(reports)
 
 
-def create_report_response(reports):
-    response = []
-    for report in reports:
-
-        response.append({
-            'id': report.id,
-            'report': report.id,
-            # mask that there is a mail_dashboard variant.
-            'type': report.urllist.scan_type,
-            'number_of_urls': report.total_urls,
-            'list_name': report.urllist.name,
-            'at_when': report.at_when.isoformat(),
-            'urllist_id': report.urllist.id,
-            'urllist_scan_type': report.urllist.scan_type,
-        })
-
-    return response
+def create_report_response(reports) -> List[Dict[str, Any]]:
+    return [{
+        'id': report.id,
+        'report': report.id,
+        # mask that there is a mail_dashboard variant.
+        'type': report.report_type,
+        'number_of_urls': report.total_urls,
+        'list_name': report.urllist.name,
+        'at_when': report.at_when.isoformat(),
+        'urllist_id': report.urllist.id,
+        'urllist_scan_type': report.urllist.scan_type,
+    } for report in reports]
 
 
 def get_urllist_timeline_graph(account: Account, urllist_ids: str):
@@ -62,7 +59,7 @@ def get_urllist_timeline_graph(account: Account, urllist_ids: str):
     """
 
     csv = re.sub(r"[^,0-9]*", "", urllist_ids)
-    list_split = csv.split(",")
+    list_split: List[str] = csv.split(",")
 
     while "" in list_split:
         list_split.remove("")
@@ -70,7 +67,7 @@ def get_urllist_timeline_graph(account: Account, urllist_ids: str):
     original_order = copy(list_split)
 
     # aside from casting, remove double lists. this orders the list.
-    list_split = list(set([int(id) for id in list_split]))
+    casted_list_split = list({int(list_id) for list_id in list_split})
 
     statistics_over_last_years_reports = Prefetch(
         'urllistreport_set',
@@ -81,7 +78,7 @@ def get_urllist_timeline_graph(account: Account, urllist_ids: str):
     # The actual query, note that the ordering is asc on ID, whatever order you specify...
     urllists = UrlList.objects.all().filter(
         account=account,
-        pk__in=list_split,
+        pk__in=casted_list_split,
         is_deleted=False
     ).only('id', 'name').prefetch_related(statistics_over_last_years_reports)
 
@@ -92,20 +89,17 @@ def get_urllist_timeline_graph(account: Account, urllist_ids: str):
     stats = {}
 
     for urllist in urllists:
-
         stats[urllist.id] = {
             "id": urllist.id,
             "name": urllist.name,
-            "data": []
-        }
-
-        for per_report_statistics in urllist.reports_from_the_last_year:
-            stats[urllist.id]['data'].append({
+            "data": [{
                 'date': per_report_statistics.at_when.date().isoformat(),
                 'urls': per_report_statistics.total_urls,
                 'average_internet_nl_score': per_report_statistics.average_internet_nl_score,
                 'report': per_report_statistics.id
-            })
+                # mypy does not understand to_attr
+            } for per_report_statistics in urllist.reports_from_the_last_year]  # type: ignore
+        }
 
     # echo the results in the order you got them:
     handled = []
@@ -120,12 +114,15 @@ def get_urllist_timeline_graph(account: Account, urllist_ids: str):
 
 
 def get_report(account: Account, report_id: int):
-
     report = UrlListReport.objects.all().filter(
         urllist__account=account,
         urllist__is_deleted=False,
         pk=report_id
-    ).values('id', 'urllist_id', 'calculation', 'average_internet_nl_score', 'total_urls', 'at_when').first()
+    ).values('id', 'urllist_id', 'calculation', 'average_internet_nl_score', 'total_urls', 'at_when', 'report_type',
+             'urllist__name', 'is_publicly_shared', 'public_report_code', 'public_share_code'
+             ).first()
+
+    # todo: add report metadata...
 
     if not report:
         return []
@@ -138,7 +135,34 @@ def get_report(account: Account, report_id: int):
     ).only('id').first()
     action.send(account, verb='viewed report', target=log_report, public=False)
 
-    return f"[{dump_report_to_text_resembling_json(report)}]"
+    return f"{dump_report_to_text_resembling_json(report)}"
+
+
+def get_shared_report(report_code: str, share_code: str = ""):
+
+    # Check if report_code exists. If so see if a share code is required.
+    report = UrlListReport.objects.all().filter(
+        # A deleted list means that the report cannot be seen anymore
+        urllist__is_deleted=False,
+
+        # All other public sharing filters
+        public_report_code=report_code,
+        is_publicly_shared=True
+    ).values('id', 'urllist_id', 'calculation', 'average_internet_nl_score', 'total_urls', 'at_when', 'report_type',
+             'urllist__name', 'is_publicly_shared', 'public_report_code', 'public_share_code'
+             ).first()
+
+    if not report:
+        # deter brute forcing
+        sleep(3)
+        return []
+
+    if report['public_share_code'] == share_code:
+        return f"{dump_report_to_text_resembling_json(report)}"
+
+    # todo: should be a normal REST response
+    return f'{{"authentication_required": true, "public_report_code": "{report_code}", "id": "{report["id"]}", ' \
+           f'"urllist_name": "{report["urllist__name"]}", "at_when": "{report["at_when"]}"}}'
 
 
 def dump_report_to_text_resembling_json(report):
@@ -154,10 +178,15 @@ def dump_report_to_text_resembling_json(report):
     return '{' \
            f'"id": {report["id"]}, ' \
            f'"urllist_id": {report["urllist_id"]}, ' \
+           f'"urllist_name": "{report["urllist__name"]}", ' \
            f'"average_internet_nl_score": {report["average_internet_nl_score"]}, ' \
            f'"total_urls": {report["total_urls"]}, ' \
+           f'"is_publicly_shared": {"true" if report["is_publicly_shared"] else "false"}, ' \
            f'"at_when": "{report["at_when"]}", ' \
-           f'"calculation": {json.dumps(report["calculation"])}' \
+           f'"calculation": {json.dumps(report["calculation"])}, ' \
+           f'"report_type": "{report["report_type"]}", ' \
+           f'"public_report_code": "{report["public_report_code"]}", ' \
+           f'"public_share_code": "{report["public_share_code"]}" ' \
            '}'
 
 
@@ -220,13 +249,15 @@ def get_report_differences_compared_to_current_list(account: Account, report_id:
     urls_in_report: List[str] = [url['url'] for url in calculation['urls']]
 
     urllist = UrlList.objects.all().filter(id=report['urllist_id']).first()
-    urls_in_list_queryset = urllist.urls.all()
+    # todo: "ManyToManyField[Sequence[Any], RelatedManager[Any]]" of "Union[ManyToManyField[Sequence[Any],
+    #  RelatedManager[Any]], Any]" has no attribute "all"
+    urls_in_list_queryset = urllist.urls.all()  # type: ignore
     urls_in_urllist = [url.url for url in urls_in_list_queryset]
 
     urls_in_urllist_but_not_in_report = list(set(urls_in_urllist) - set(urls_in_report))
     urls_in_report_but_not_in_urllist = list(set(urls_in_report) - set(urls_in_urllist))
 
-    both_are_equal = False if urls_in_urllist_but_not_in_report or urls_in_report_but_not_in_urllist else True
+    both_are_equal = not any([urls_in_urllist_but_not_in_report, urls_in_report_but_not_in_urllist])
 
     content_comparison = {
         "number_of_urls_in_urllist": len(urls_in_urllist),
@@ -417,7 +448,7 @@ def split_score_and_url(report: UrlListReport):
     """
     for url in report.calculation['urls']:
         for endpoint in url['endpoints']:
-            score = 0
+            score: Union[int, str] = 0
             url = ""
             scan = 0
             since = ""
@@ -425,7 +456,7 @@ def split_score_and_url(report: UrlListReport):
             for rating in endpoint['ratings']:
                 if rating['type'] in ["internet_nl_web_overall_score", "internet_nl_mail_dashboard_overall_score"]:
                     # explanation	"78 https://batch.interne…zuiderzeeland.nl/886818/"
-                    explanation = rating['explanation'].split(" ")
+                    explanation = rating['explanation'].split(" ")  # type: ignore
                     if explanation[0] == "error":
                         rating['internet_nl_score'] = score = "error"
                     else:
@@ -475,7 +506,7 @@ def add_statistics_over_ratings(report: UrlListReport):
     for url in report.calculation['urls']:
         for endpoint in url['endpoints']:
             possible_issues += endpoint['ratings_by_type'].keys()
-    possible_issues = set(possible_issues)
+    possible_issues = list(set(possible_issues))
 
     # prepare the stats dict to have less expensive operations in the 3x nested loop
     for issue in possible_issues:
@@ -510,14 +541,13 @@ def add_statistics_over_ratings(report: UrlListReport):
 
 
 def add_percentages_to_statistics(report: UrlListReport):
-
-    for key, value in report.calculation['statistics_per_issue_type'].items():
+    for key, _ in report.calculation['statistics_per_issue_type'].items():
         issue = report.calculation['statistics_per_issue_type'][key]
 
         # may 2020: we want to see the other issues in the graphs as being gray.
         graphs_all = sum([issue['ok'], issue['high'], issue['medium'], issue['low'],
                           issue['not_testable'], issue['not_applicable'], issue['error_in_test']])
-        if all == 0:
+        if graphs_all == 0:
             # This happens when everything tested is not applicable or not testable: thus no stats:
             report.calculation['statistics_per_issue_type'][key]['pct_high'] = 0
             report.calculation['statistics_per_issue_type'][key]['pct_medium'] = 0
@@ -543,3 +573,70 @@ def add_percentages_to_statistics(report: UrlListReport):
         tcskp['pct_not_ok'] = round((issue['not_ok'] / graphs_all) * 100, 2)
 
     report.save()
+
+
+def share(account, report_id, share_code):
+    report = get_report_for_sharing(account, report_id, False)
+
+    if not report:
+        return operation_response(error=True, message="response_no_report_found")
+
+    report.is_publicly_shared = True
+    report.public_share_code = share_code
+
+    # Keep the report link the same when disabling and re-enabling sharing.
+    if not report.public_report_code:
+        report.public_report_code = str(uuid4())
+    report.save()
+
+    return operation_response(success=True, message="response_shared", data=report_sharing_data(report))
+
+
+def unshare(account, report_id):
+    report = get_report_for_sharing(account, report_id, True)
+
+    if not report:
+        return operation_response(error=True, message="response_no_report_found")
+
+    report.is_publicly_shared = False
+    report.save()
+
+    return operation_response(success=True, message="response_unshared", data=report_sharing_data(report))
+
+
+def update_share_code(account, report_id, share_code):
+    report = get_report_for_sharing(account, report_id, True)
+
+    if not report:
+        return operation_response(error=True, message="response_no_report_found")
+
+    report.public_share_code = share_code
+    report.save()
+
+    return operation_response(success=True, message="response_updated_share_code", data=report_sharing_data(report))
+
+
+def update_report_code(account, report_id):
+    report = get_report_for_sharing(account, report_id, True)
+
+    if not report:
+        return operation_response(error=True, message="response_no_report_found")
+
+    report.public_report_code = str(uuid4())
+    report.save()
+
+    return operation_response(success=True, message="response_updated_report_code", data=report_sharing_data(report))
+
+
+def get_report_for_sharing(account: Account, report_id: int, is_publicly_shared: bool) -> Any:
+    return UrlListReport.objects.all().filter(
+        urllist__account=account, urllist__is_deleted=False, id=report_id, is_publicly_shared=is_publicly_shared
+    ).defer('calculation').first()
+
+
+def report_sharing_data(report: UrlListReport) -> Dict[str, Any]:
+    return {
+        'public_report_code': report.public_report_code,
+        'public_share_code': report.public_share_code,
+        'is_publicly_shared': report.is_publicly_shared
+    }

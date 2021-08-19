@@ -47,7 +47,7 @@ def test_urllists(db, tmpdir) -> None:
     list_po_content = load_as_po_file(content)
     assert len(list_po_content) > 10
 
-    formatted = convert_vue_i18n_format([{'locale': 'nl', 'content': list_po_content}])
+    formatted = convert_vue_i18n_format('nl', list_po_content)
     assert len(formatted) > 1000
 
     # create the expected directory structure

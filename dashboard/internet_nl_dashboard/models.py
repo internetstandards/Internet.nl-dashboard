@@ -69,10 +69,11 @@ class Account(models.Model):
     These password methods allow you to interact with encryption as if it were just storing and retrieving strings.
     See test_password_storage for example usage.
     """
+
     @staticmethod
     def encrypt_password(password):
-        f = Fernet(settings.FIELD_ENCRYPTION_KEY)
-        return str(f.encrypt(password.encode()))
+        fernet = Fernet(settings.FIELD_ENCRYPTION_KEY)
+        return str(fernet.encrypt(password.encode()))
 
     @staticmethod
     def connect_to_internet_nl_api(username: str, password: str):
@@ -98,13 +99,13 @@ class Account(models.Model):
         if not self.internet_nl_api_password:
             raise ValueError('Password was not set.')
 
-        f = Fernet(settings.FIELD_ENCRYPTION_KEY)
+        fernet = Fernet(settings.FIELD_ENCRYPTION_KEY)
         # Convert the string back to bytes again is not beautiful. But it's a bit more reliable than
         # storing the encrypted password in 'bytes', which somewhere goes wrong.
-        return f.decrypt(bytes(self.internet_nl_api_password[2:-1], encoding='UTF-8')).decode('utf-8')
+        return fernet.decrypt(bytes(self.internet_nl_api_password[2:-1], encoding='UTF-8')).decode('utf-8')
 
     def __str__(self):
-        return "%s" % self.name
+        return f"{self.name}"
 
 
 class DashboardUser(models.Model):
@@ -151,7 +152,7 @@ class DashboardUser(models.Model):
     )
 
     def __str__(self):
-        return "%s/%s" % (self.account, self.user)
+        return f"{self.account}/{self.user}"
 
 
 class UrlList(models.Model):
@@ -235,64 +236,8 @@ class UrlList(models.Model):
         return timezone.now() > self.scheduled_next_scan
 
     def renew_scan_moment(self) -> None:
-        self.scheduled_next_scan = self.determine_next_scan_moment(self.automated_scan_frequency)
+        self.scheduled_next_scan = determine_next_scan_moment(self.automated_scan_frequency)
         self.save(update_fields=['scheduled_next_scan'])
-
-    # todo: write test
-    @staticmethod
-    def determine_next_scan_moment(preference: str):
-        """
-        Converts one of the (many) string options to the next sensible date/time combination in the future.
-
-        disabled: yesterday.
-        every half year: first upcoming 1 july or 1 january
-        at the start of every quarter: 1 january, 1 april, 1 juli, 1 october
-        every 1st day of the month: 1 january, 1 february, etc.
-        twice per month: 1 january, 1 january + 2 weeks, 1 february, 1 february + 2 weeks, etc
-
-        :param preference:
-        :return:
-        """
-        now = timezone.now()
-
-        if preference == 'disabled':
-            # far, far in the future, so it will not be scanned and probably will be re-calculated. 24 years...
-            return now + timedelta(days=9000)
-
-        # months are base 1: january = 1 etc.
-        if preference == 'every half year':
-            if now.month in [1, 2, 3, 4, 5, 6]:
-                return datetime(year=now.year, month=7, day=1, hour=0, minute=0, second=0, tzinfo=pytz.utc)
-            return datetime(year=now.year + 1, month=1, day=1, hour=0, minute=0, second=0, tzinfo=pytz.utc)
-
-        if preference == 'at the start of every quarter':
-
-            if now.month in [1, 2, 3]:
-                return datetime(year=now.year, month=4, day=1, hour=0, minute=0, second=0, tzinfo=pytz.utc)
-            if now.month in [4, 5, 6]:
-                return datetime(year=now.year, month=7, day=1, hour=0, minute=0, second=0, tzinfo=pytz.utc)
-            if now.month in [7, 8, 9]:
-                return datetime(year=now.year, month=10, day=1, hour=0, minute=0, second=0, tzinfo=pytz.utc)
-            if now.month in [10, 11, 12]:
-                return datetime(year=now.year + 1, month=1, day=1, hour=0, minute=0, second=0, tzinfo=pytz.utc)
-
-        if preference == 'every 1st day of the month':
-            if now.month == 12:
-                return datetime(year=now.year + 1, month=1, day=1, hour=0, minute=0, second=0, tzinfo=pytz.utc)
-            return datetime(year=now.year, month=now.month + 1, day=1, hour=0, minute=0, second=0, tzinfo=pytz.utc)
-
-        if preference == 'twice per month':
-            # since the 14'th day never causes a month or year rollover, we can simply schedule for the 15th day.
-            # note: range is not used because range is _to_ a certain moment.
-            if now.day in [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14]:
-                return datetime(year=now.year, month=now.month, day=15, hour=0, minute=0, second=0, tzinfo=pytz.utc)
-
-            # otherwise exactly the same as the 1st day of every month
-            if now.month == 12:
-                return datetime(year=now.year + 1, month=1, day=1, hour=0, minute=0, second=0, tzinfo=pytz.utc)
-            return datetime(year=now.year, month=now.month + 1, day=1, hour=0, minute=0, second=0, tzinfo=pytz.utc)
-
-        raise ValueError('String %s could not be translated to a scan moment.' % preference)
 
     # @pysnooper.snoop()
     def is_scan_now_available(self) -> bool:
@@ -316,7 +261,7 @@ class UrlList(models.Model):
         # manual scans have their own 'is available flag', as the 'create_dashboard_scan_tasks()' does not guarantee
         # a new scan is created instantly. The flag needs to be set otherwise a user can initiate tons of scans.
         # if self.last_manual_scan and self.last_manual_scan > yesterday:
-            # log.debug("Scan now NOT available: Last manual scan was in the last 24 hours for list %s" % self)
+        # log.debug("Scan now NOT available: Last manual scan was in the last 24 hours for list %s" % self)
         #   return False
         # End deprecation
 
@@ -336,6 +281,60 @@ class UrlList(models.Model):
 
         # log.debug("Scan now NOT available: Last scan might be in the last 24 hours. %s" % self)
         return False
+
+
+def determine_next_scan_moment(preference: str) -> datetime:
+    """
+    Converts one of the (many) string options to the next sensible date/time combination in the future.
+
+    :param preference:
+    :return:
+    """
+    now = timezone.now()
+    returned = datetime(year=now.year, month=1, day=1, tzinfo=pytz.utc)
+
+    if preference == 'disabled':
+        # far, far in the future, so it will not be scanned and probably will be re-calculated. 24 years...
+        return now + timedelta(days=9000)
+
+    # months are base 1: january = 1 etc.
+    if preference == 'every half year':
+        # every half year: first upcoming 1 july or 1 january
+        return returned.replace(month=7) if now.month in [1, 2, 3, 4, 5, 6] else returned.replace(year=now.year + 1)
+
+    if preference == 'at the start of every quarter':
+        # at the start of every quarter: 1 january, 1 april, 1 juli, 1 october
+        pick = {
+            1: {'year': now.year, 'month': 4},
+            2: {'year': now.year, 'month': 4},
+            3: {'year': now.year, 'month': 4},
+            4: {'year': now.year, 'month': 7},
+            5: {'year': now.year, 'month': 7},
+            6: {'year': now.year, 'month': 7},
+            7: {'year': now.year, 'month': 10},
+            8: {'year': now.year, 'month': 10},
+            9: {'year': now.year, 'month': 10},
+            10: {'year': now.year + 1, 'month': 1},
+            11: {'year': now.year + 1, 'month': 1},
+            12: {'year': now.year + 1, 'month': 1},
+        }
+        return returned.replace(year=pick[now.month]['year'], month=pick[now.month]['month'])
+
+    if preference == 'every 1st day of the month':
+        # every 1st day of the month: 1 january, 1 february, etc.
+        return returned.replace(year=now.year + 1) if now.month == 12 else returned.replace(month=now.month + 1)
+
+    if preference == 'twice per month':
+        # twice per month: 1 january, 1 january + 2 weeks, 1 february, 1 february + 2 weeks, etc
+        # since the 14'th day never causes a month or year rollover, we can simply schedule for the 15th day.
+        # note: range is not used because range is _to_ a certain moment.
+        if now.day in [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14]:
+            return returned.replace(year=now.year, month=now.month, day=15)
+
+        # otherwise exactly the same as the 1st day of every month
+        return returned.replace(year=now.year + 1) if now.month == 12 else returned.replace(month=now.month + 1)
+
+    raise ValueError(f'String {preference} could not be translated to a scan moment.')
 
 
 class UploadLog(models.Model):
@@ -390,7 +389,7 @@ class UploadLog(models.Model):
     )
 
 
-class UrlListReport(SeriesOfUrlsReportMixin):
+class UrlListReport(SeriesOfUrlsReportMixin):  # pylint: disable=too-many-ancestors
     """
     This is basically an aggregation of UrlRating
 
@@ -419,6 +418,30 @@ class UrlListReport(SeriesOfUrlsReportMixin):
                   "subject to change over time. Therefore it is impossible to re-calculate that score here."
                   "Instead the score is stored as a given.",
         default=0,
+    )
+
+    # the urllist might change type of scan, or perform both web and mail scan. So store the type of report here.
+    # This is web or mail. todo: persist through the application, change responses.
+    report_type = models.CharField(default='web', max_length=10)
+
+    is_publicly_shared = models.BooleanField(
+        help_text="Sharing can be disabled and re-enabled where the report code and the share code (password) "
+                  "stay the same.",
+        default=False
+    )
+    public_report_code = models.CharField(
+        max_length=64,
+        help_text="a unique code that used to identify this report",
+        # not unique in database, but enforced in software. Codes of deleted reports might be reused.
+        unique=False,
+        blank=True,
+        default=""
+    )
+    public_share_code = models.CharField(
+        max_length=64,
+        help_text="An unencrypted share code that can be seen by all users in an account. Can be modified by all.",
+        blank=True,
+        default=""
     )
 
     class Meta:

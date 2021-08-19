@@ -3,7 +3,7 @@ from django.shortcuts import redirect
 from django.urls import path, register_converter
 
 # We have to import the signals somewhere..?!
-import dashboard.internet_nl_dashboard.signals  # noqa
+import dashboard.internet_nl_dashboard.signals  # noqa  # pylint: disable=unused-import
 from dashboard.internet_nl_dashboard.views import (__init__, account, domains, download_spreadsheet,
                                                    mail, powertools, report, scan_monitor, session,
                                                    spreadsheet, usage, user)
@@ -13,11 +13,13 @@ class SpreadsheetFileTypeConverter:
     # Supports {"key": "value", "key2": "value2"} syntax.
     regex = '(xlsx|ods|csv)'
 
-    def to_python(self, value):
+    @staticmethod
+    def to_python(value):
         return str(value)
 
-    def to_url(self, value):
-        return '%s' % value
+    @staticmethod
+    def to_url(value):
+        return f'{value}'
 
 
 register_converter(SpreadsheetFileTypeConverter, 'spreadsheet_filetype')
@@ -62,6 +64,14 @@ urlpatterns = [
     path('data/scan/cancel/', domains.cancel_scan_),
 
     path('data/report/get/<int:report_id>/', report.get_report_),
+    path('data/report/shared/<str:report_code>/', report.get_shared_report_),
+
+    path('data/report/share/share/', report.x_share),
+    path('data/report/share/unshare/', report.x_unshare),
+    path('data/report/share/update_share_code/', report.x_update_share_code),
+    path('data/report/share/update_report_code/', report.x_update_report_code),
+
+
     path('data/report/differences_compared_to_current_list/<int:report_id>/',
          report.get_report_differences_compared_to_current_list_),
     path('data/report/get_previous/<int:urllist_id>/<str:at_when>/', report.get_previous_report_),
@@ -84,7 +94,6 @@ urlpatterns = [
     path('session/login/', session.session_login),
     path('session/logout/', session.session_logout),
     path('session/status/', session.session_status),
-    path('session/csrf/', session.session_csrf),
     # Would you enable the below login form, you will bypass all second factor authentication. Therefore do not enable
     # this url (!)
     # url(r'^login/$', auth_views.LoginView.as_view(template_name='internet_nl_dashboard/registration/login.html'),

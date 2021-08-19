@@ -7,9 +7,21 @@ from websecmap.organizations.models import Url
 
 from dashboard.internet_nl_dashboard.logic.domains import (
     delete_list, delete_url_from_urllist, get_or_create_list_by_name, get_urllist_content,
-    get_urllists_from_account, rename_list, retrieve_possible_urls_from_unfiltered_input,
-    save_urllist_content_by_name)
+    get_urllists_from_account, keys_are_present_in_object, rename_list,
+    retrieve_possible_urls_from_unfiltered_input, save_urllist_content_by_name)
 from dashboard.internet_nl_dashboard.models import Account
+
+
+def test_keys_match():
+    # a, b, c in any object
+    assert keys_are_present_in_object(expected_keys=['a', 'b', 'c'], any_object={
+                                      'a': 1, 'b': 2, 'c': 3, 'd': 4}) is True
+
+    # Missing b
+    assert keys_are_present_in_object(expected_keys=['a', 'b', 'c'], any_object={'a': 1, 'c': 3, 'd': 4}) is False
+
+    # No expectation should always match
+    assert keys_are_present_in_object(expected_keys=[], any_object={'a': 1, 'b': 2, 'c': 3, 'd': 4}) is True
 
 
 def test_retrieve_urls_from_unfiltered_input() -> None:

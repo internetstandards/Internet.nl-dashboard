@@ -13,7 +13,7 @@ from websecmap.scanners.scanner.dns_endpoints import compose_discover_task
 
 from dashboard.internet_nl_dashboard.logic import operation_response
 from dashboard.internet_nl_dashboard.models import (Account, AccountInternetNLScan, UrlList,
-                                                    UrlListReport)
+                                                    UrlListReport, determine_next_scan_moment)
 from dashboard.internet_nl_dashboard.scanners.scan_internet_nl_per_account import (initialize_scan,
                                                                                    update_state)
 
@@ -25,7 +25,7 @@ def alter_url_in_urllist(account, data) -> Dict[str, Any]:
     # data = {'list_id': list.id, 'url_id': url.id, 'new_url_string': url.url}
 
     expected_keys = ['list_id', 'url_id', 'new_url_string']
-    if check_keys(expected_keys, data):
+    if not keys_are_present_in_object(expected_keys, data):
         return operation_response(error=True, message="Missing keys in data.")
 
     # what was the old id we're changing?
@@ -106,7 +106,7 @@ def scan_now(account, user_input) -> Dict[str, Any]:
         return operation_response(error=True, message=f"Cannot scan: Amount of urls exceeds the maximum of {max_urls}.")
 
     if not account.connect_to_internet_nl_api(account.internet_nl_api_username, account.decrypt_password()):
-        return operation_response(error=True, message=f"Credentials for the internet.nl API are not valid.")
+        return operation_response(error=True, message="Credentials for the internet.nl API are not valid.")
 
     # Make sure the fernet key is working fine, you are on the correct queue (-Q storage) and that the correct API
     # version is used.
@@ -158,7 +158,7 @@ def create_list(account: Account, user_input: Dict) -> Dict[str, Any]:
         'enable_scans': bool(user_input['enable_scans']),
         'scan_type': validate_list_scan_type(user_input['scan_type']),
         'automated_scan_frequency': frequency,
-        'scheduled_next_scan': UrlList.determine_next_scan_moment(frequency),
+        'scheduled_next_scan': determine_next_scan_moment(frequency),
     }
 
     urllist = UrlList(**data)
@@ -245,14 +245,15 @@ def get_scan_status_of_list(account: Account, list_id: int) -> Dict[str, Any]:
     data = {'last_scan_id': None, 'last_scan_state': None, 'last_scan_finished': None, 'last_report_id': None,
             'last_report_date': None, 'scan_now_available': urllist.is_scan_now_available()}
 
-    if len(urllist.last_scan):
-        data['last_scan_id'] = urllist.last_scan[0].scan.id
-        data['last_scan_state'] = urllist.last_scan[0].state
-        data['last_scan_finished'] = urllist.last_scan[0].state in ["finished", "cancelled"]
+    if len(urllist.last_scan):  # type: ignore
+        # Mypy does not understand to_attr. "UrlList" has no attribute "last_scan"
+        data['last_scan_id'] = urllist.last_scan[0].scan.id  # type: ignore
+        data['last_scan_state'] = urllist.last_scan[0].state  # type: ignore
+        data['last_scan_finished'] = urllist.last_scan[0].state in ["finished", "cancelled"]  # type: ignore
 
-    if len(urllist.last_report):
-        data['last_report_id'] = urllist.last_report[0].id
-        data['last_report_date'] = urllist.last_report[0].at_when
+    if len(urllist.last_report):  # type: ignore
+        data['last_report_id'] = urllist.last_report[0].id  # type: ignore
+        data['last_report_date'] = urllist.last_report[0].at_when  # type: ignore
 
     return data
 
@@ -306,7 +307,7 @@ def update_list_settings(account: Account, user_input: Dict) -> Dict[str, Any]:
     """
 
     expected_keys = ['id', 'name', 'enable_scans', 'scan_type', 'automated_scan_frequency', 'scheduled_next_scan']
-    if check_keys(expected_keys, user_input):
+    if not keys_are_present_in_object(expected_keys, user_input):
         return operation_response(error=True, message="Missing settings.")
 
     prefetch_last_scan = Prefetch(
@@ -342,25 +343,31 @@ def update_list_settings(account: Account, user_input: Dict) -> Dict[str, Any]:
         'enable_scans': bool(user_input['enable_scans']),
         'scan_type': validate_list_scan_type(user_input['scan_type']),
         'automated_scan_frequency': frequency,
-        'scheduled_next_scan': UrlList.determine_next_scan_moment(frequency),
+        'scheduled_next_scan': determine_next_scan_moment(frequency),
     }
 
     updated_urllist = UrlList(**data)
     updated_urllist.save()
 
-    # make sure the account is serializable.
+    # make sure the account is serializable, inject other data.
     data['account'] = account.id
     data['num_urls'] = urllist.num_urls
+    data['last_scan_id'] = None
+    data['last_scan_state'] = None
+    data['last_scan'] = None
+    data['last_scan_finished'] = None
+    data['last_report_id'] = None
+    data['last_report_date'] = None
 
-    # inject the last scan information.
-    data['last_scan_id'] = None if not len(urllist.last_scan) else urllist.last_scan[0].scan.id
-    data['last_scan_state'] = None if not len(urllist.last_scan) else urllist.last_scan[0].state
+    if urllist.last_scan:
+        data['last_scan_id'] = urllist.last_scan[0].scan.id
+        data['last_scan_state'] = urllist.last_scan[0].state
+        data['last_scan'] = urllist.last_scan[0].started_on.isoformat()
+        data['last_scan_finished'] = urllist.last_scan[0].state in ["finished", "cancelled"]
 
-    data['last_scan'] = None if not len(urllist.last_scan) else urllist.last_scan[0].started_on.isoformat()
-    data['last_scan_finished'] = None if not len(urllist.last_scan) else urllist.last_scan[0].state in [
-        "finished", "cancelled"]
-    data['last_report_id'] = None if not len(urllist.last_report) else urllist.last_report[0].id
-    data['last_report_date'] = None if not len(urllist.last_report) else urllist.last_report[0].at_when
+    if urllist.last_report:
+        data['last_report_id'] = urllist.last_report[0].id
+        data['last_report_date'] = urllist.last_report[0].at_when
 
     data['scan_now_available'] = updated_urllist.is_scan_now_available()
 
@@ -378,9 +385,13 @@ def update_list_settings(account: Account, user_input: Dict) -> Dict[str, Any]:
     return operation_response(success=True, message="Updated list settings", data=data)
 
 
-def check_keys(expected_keys, object):
-    if sorted(object.keys()) != sorted(expected_keys):
-        return False
+def keys_are_present_in_object(expected_keys: List[str], any_object: Dict[str, Any]):
+    # It's okay if more keys are present
+    keys_in_object = any_object.keys()
+    for key in expected_keys:
+        if key not in keys_in_object:
+            return False
+    return True
 
 
 def validate_list_name(list_name):
@@ -478,7 +489,7 @@ def get_urllists_from_account(account: Account) -> Dict:
         last_scan = AccountInternetNLScan.objects.all().filter(urllist=urllist).select_related('scan').only(
             'scan__id', 'state', 'started_on'
         ).last()
-        if last_scan:
+        if last_scan and last_scan.scan and last_scan.started_on:
             data['last_scan_id'] = last_scan.scan.id
             data['last_scan_state'] = last_scan.state
             data['last_scan'] = last_scan.started_on.isoformat()
@@ -554,29 +565,29 @@ def retrieve_possible_urls_from_unfiltered_input(unfiltered_input: str) -> Tuple
     unfiltered_input = unfiltered_input.replace("\t", " ")
 
     # Split also removes double spaces etc
-    unfiltered_input = unfiltered_input.split(" ")
+    unfiltered_input_list: List[str] = unfiltered_input.split(" ")
 
     # now remove _all_ whitespace characters
-    unfiltered_input = [re.sub(r"\s+", " ", u) for u in unfiltered_input]
+    unfiltered_input_list = [re.sub(r"\s+", " ", u) for u in unfiltered_input_list]
 
     # remove port numbers and paths
-    unfiltered_input = [re.sub(r":[^\s]*", "", u) for u in unfiltered_input]
+    unfiltered_input_list = [re.sub(r":[^\s]*", "", u) for u in unfiltered_input_list]
 
     # remove paths, directories etc
-    unfiltered_input = [re.sub(r"/[^\s]*", "", u) for u in unfiltered_input]
+    unfiltered_input_list = [re.sub(r"/[^\s]*", "", u) for u in unfiltered_input_list]
 
     # Remove empty values
-    while "" in unfiltered_input:
-        unfiltered_input.remove("")
+    while "" in unfiltered_input_list:
+        unfiltered_input_list.remove("")
 
     # make list unique
-    total_non_unique_items = len(unfiltered_input)
-    unfiltered_input = list(set(unfiltered_input))
-    total_unique_items = len(unfiltered_input)
+    total_non_unique_items = len(unfiltered_input_list)
+    unfiltered_input_list = list(set(unfiltered_input_list))
+    total_unique_items = len(unfiltered_input_list)
     duplicates_removed = total_non_unique_items - total_unique_items
 
     # make sure the list is in alphabetical order, which is nice for testability.
-    return sorted(unfiltered_input), duplicates_removed
+    return sorted(unfiltered_input_list), duplicates_removed
 
 
 def save_urllist_content(account: Account, user_input: Dict[str, Any]) -> Dict:
@@ -594,15 +605,15 @@ def save_urllist_content(account: Account, user_input: Dict[str, Any]) -> Dict:
     """
 
     # how could we validate user_input a better way? Using a validator object?
-    list_id = user_input.get('list_id')
-    urls = user_input.get('urls')
+    list_id: int = int(user_input.get('list_id', -1))
+    unfiltered_urls: str = user_input.get('urls', [])
 
-    urllist = UrlList.objects.all().filter(account=account, id=list_id, is_deleted=False, ).first()
+    urllist = UrlList.objects.all().filter(account=account, id=list_id, is_deleted=False).first()
 
     if not urllist:
         return operation_response(error=True, message="add_domains_list_does_not_exist")
 
-    urls, duplicates_removed = retrieve_possible_urls_from_unfiltered_input(urls)
+    urls, duplicates_removed = retrieve_possible_urls_from_unfiltered_input(unfiltered_urls)
     cleaned_urls = clean_urls(urls)  # type: ignore
 
     if cleaned_urls['correct']:
@@ -709,10 +720,10 @@ def get_or_create_list_by_name(account, name: str) -> UrlList:
 
     if existing_list:
         return existing_list
-    else:
-        urllist = UrlList(**{'name': name, 'account': account})
-        urllist.save()
-        return urllist
+
+    urllist = UrlList(**{'name': name, 'account': account})
+    urllist.save()
+    return urllist
 
 
 def delete_url_from_urllist(account: Account, urllist_id: int, url_id: int) -> bool:

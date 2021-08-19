@@ -28,10 +28,14 @@ class Command(BaseCommand):
         scan = AccountInternetNLScan.objects.all().filter(scan=options['scan']).first()
 
         if not scan:
-            raise ValueError("Scan does not exist")
+            raise ValueError(f"Scan {options['scan']} does not exist")
+
+        if not scan.report:
+            raise ValueError(f"Scan {options['scan']} does not have a report attached")
 
         if not scan.report.at_when:
-            raise ValueError("No report created yet, will not create a new report when the process is running.")
+            raise ValueError(f"No report created for scan {options['scan']}, "
+                             "will not create a new report when the process is running.")
 
         old_report_moment = scan.report.at_when
 

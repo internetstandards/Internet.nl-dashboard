@@ -73,7 +73,7 @@ def get_users_to_send_mail_to(scan: AccountInternetNLScan):
     )
 
 
-def send_scan_finished_mails(scan: AccountInternetNLScan):
+def send_scan_finished_mails(scan: AccountInternetNLScan) -> int:
     """
     Sends mails, depending on user configuration, to all users associated with a scan.
 
@@ -82,51 +82,14 @@ def send_scan_finished_mails(scan: AccountInternetNLScan):
     :param scan:
     :return:
     """
+    if not scan.report:
+        log.error(f'Tried to send a finished mail for a report that was not finished. Scan: {scan}')
+        return 0
 
     users = get_users_to_send_mail_to(scan)
 
     # remove calculation because textfields are slow while filtering. Have to retrieve the textfield later
     report = UrlListReport.objects.all().filter(id=scan.report.id).order_by("-id").defer('calculation').first()
-    previous_report = report.get_previous_report_from_this_list()
-
-    if previous_report:
-        # Django retrieves fields that are deferred automatically when explicitly requested.
-        # This is a direct select query, and thus faster than adding the textfield in the search query.
-        comparison = compare_report_in_detail(
-            key_calculation(get_report_directly(report.id)),
-            key_calculation(get_report_directly(previous_report.id))
-        )
-        comparison_neutral = comparison['summary']['neutral']
-        comparison_improvement = comparison['summary']['improvement']
-        comparison_regression = comparison['summary']['regression']
-        comparison_report_available = True
-        comparison_report_contains_improvement = comparison['summary']['improvement'] > 0
-        comparison_report_contains_regression = comparison['summary']['regression'] > 0
-        previous_report_id = previous_report.id
-        difference = timezone.now() - previous_report.at_when
-        days_between_current_and_previous_report = difference.days
-        urls_exclusive_in_new_report = ",".join(sorted(comparison['urls_exclusive_in_new_report']))
-        urls_exclusive_in_old_report = ",".join(sorted(comparison['urls_exclusive_in_old_report']))
-        # used for the message, the previous report was {id} but no changes have been registered.
-        previous_report_available = True
-        comparison_is_empty = comparison_neutral + comparison_improvement + comparison_regression < 1
-        previous_report_average_internet_nl_score = comparison['old']['average_internet_nl_score']
-    else:
-        comparison = {}
-        comparison_neutral = 0
-        comparison_improvement = 0
-        comparison_regression = 0
-        comparison_report_available = False
-        comparison_report_contains_improvement = False
-        comparison_report_contains_regression = False
-        previous_report_id = 0
-        days_between_current_and_previous_report = 0
-        urls_exclusive_in_new_report = ""
-        urls_exclusive_in_old_report = ""
-        # used for the message: this is the first report of this list.
-        previous_report_available = False
-        comparison_is_empty = True  # no previous report
-        previous_report_average_internet_nl_score = 0
 
     for user in users:
 
@@ -148,44 +111,31 @@ def send_scan_finished_mails(scan: AccountInternetNLScan):
             "report_number_of_urls": report.total_urls,
 
             "scan_id": scan.id,
-            "scan_started_on": scan.started_on.isoformat(),
+            "scan_started_on": None,
             # the scan is not yet completely finished, because this step (mailing) is still performed
             # so perform a guess, which might be a few minutes off...
             "scan_finished_on": timezone.now().isoformat(),
-            "scan_duration": (timezone.now() - scan.started_on).seconds,
+            "scan_duration": 0,
             # Don't use 'mail_dashboard', only mail.
-            "scan_type": scan.scan.type if scan.scan.type == "web" else "mail",
-
-            # comparison reports:
-            # The template system only knows strings, so the boolean is coded as string here
-            "previous_report_available": str(previous_report_available),
-            "previous_report_average_internet_nl_score": previous_report_average_internet_nl_score,
-            "compared_report_id": previous_report_id,
-
-            "comparison_is_empty": str(comparison_is_empty),
-            "improvement": comparison_improvement,
-            "regression": comparison_regression,
-            "neutral": comparison_neutral,
-            "comparison_report_available": str(comparison_report_available),
-            "comparison_report_contains_improvement": str(comparison_report_contains_improvement),
-            "comparison_report_contains_regression": str(comparison_report_contains_regression),
-
-            "days_between_current_and_previous_report": days_between_current_and_previous_report,
-            "comparison_table_improvement": render_comparison_view(
-                comparison,
-                impact="improvement",
-                language=user.dashboarduser.mail_preferred_language.code.lower()
-            ),
-            "comparison_table_regression": render_comparison_view(
-                comparison,
-                impact="regression",
-                language=user.dashboarduser.mail_preferred_language.code.lower()
-            ),
-            "domains_exclusive_in_current_report": urls_exclusive_in_new_report,
-            "domains_exclusive_in_other_report": urls_exclusive_in_old_report,
+            "scan_type": "",
 
             "dashboard_address": config.EMAIL_DASHBOARD_ADDRESS,
         }
+
+        # could be None, strictly speaking
+        if scan.scan:
+            placeholders['scan_type'] = scan.scan.type if scan.scan.type == "web" else "mail"
+
+        if scan.started_on:
+            placeholders['scan_started_on'] = scan.started_on.isoformat()
+            placeholders['scan_duration'] = (timezone.now() - scan.started_on).seconds
+
+        previous = values_from_previous_report(
+            report.id,
+            report.get_previous_report_from_this_list(),
+            user.dashboarduser.mail_preferred_language.code.lower()
+        )
+        placeholders = {**placeholders, **previous}
 
         mail.send(
             sender=config.EMAIL_NOTIFICATION_SENDER,
@@ -201,10 +151,67 @@ def send_scan_finished_mails(scan: AccountInternetNLScan):
     return len(users)
 
 
+def values_from_previous_report(report_id: int, previous_report: UrlListReport, mail_language: str):
+
+    if not previous_report:
+        return {
+            "previous_report_available": str(False),
+            "previous_report_average_internet_nl_score": 0,
+            "compared_report_id": 0,
+            "comparison_is_empty": str(True),
+            "improvement": 0,
+            "regression": 0,
+            "neutral": 0,
+            "comparison_report_available": str(False),
+            "comparison_report_contains_improvement": str(False),
+            "comparison_report_contains_regression": str(False),
+            "days_between_current_and_previous_report": 0,
+            "comparison_table_improvement": render_comparison_view({}, impact="improvement", language=mail_language),
+            "comparison_table_regression": render_comparison_view({}, impact="regression", language=mail_language),
+            "domains_exclusive_in_current_report": "",
+            "domains_exclusive_in_other_report": "",
+        }
+
+    # Django retrieves fields that are deferred automatically when explicitly requested.
+    # This is a direct select query, and thus faster than adding the textfield in the search query.
+    comp = compare_report_in_detail(
+        key_calculation(get_report_directly(report_id)),
+        key_calculation(get_report_directly(previous_report.id))
+    )
+
+    difference = timezone.now() - previous_report.at_when
+    days_between_current_and_previous_report = difference.days
+
+    summary = comp['summary']
+    comparison_is_empty = summary['neutral'] + summary['improvement'] + summary['regression'] < 1
+
+    return {
+        # comparison reports:
+        # The template system only knows strings, so the boolean is coded as string here
+        "previous_report_available": str(True),
+        "previous_report_average_internet_nl_score": comp['old']['average_internet_nl_score'],
+        "compared_report_id": previous_report.id,
+
+        "comparison_is_empty": str(comparison_is_empty),
+        "improvement": comp['summary']['improvement'],
+        "regression": comp['summary']['regression'],
+        "neutral": comp['summary']['neutral'],
+        "comparison_report_available": str(True),
+        "comparison_report_contains_improvement": str(comp['summary']['improvement'] > 0),
+        "comparison_report_contains_regression": str(comp['summary']['regression'] > 0),
+
+        "days_between_current_and_previous_report": days_between_current_and_previous_report,
+        "comparison_table_improvement": render_comparison_view(comp, impact="improvement", language=mail_language),
+        "comparison_table_regression": render_comparison_view(comp, impact="regression", language=mail_language),
+        "domains_exclusive_in_current_report": ",".join(sorted(comp['urls_exclusive_in_new_report'])),
+        "domains_exclusive_in_other_report": ",".join(sorted(comp['urls_exclusive_in_old_report'])),
+    }
+
+
 def generate_unsubscribe_code() -> str:
     # https://pynative.com/python-generate-random-string/
     # secure random is not needed, would be ridiculous. A sleep(1) is enough to deter any attack
-    return ''.join(choice(string.ascii_letters + string.digits) for i in range(128))
+    return ''.join(choice(string.ascii_letters + string.digits) for i in range(128))  # nosec
 
 
 def unsubscribe(feed: str = "scan_finished", unsubscribe_code: str = ""):

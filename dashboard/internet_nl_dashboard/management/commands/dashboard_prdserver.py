@@ -1,12 +1,13 @@
 import logging
 import os
-import subprocess
+import subprocess  # nosec
 import sys
 
 from django.core.management import call_command
 
 from dashboard.security import confirm_keys_are_changed
-from django_uwsgi.management.commands.runuwsgi import Command as RunserverCommand
+# django_uwsgi is only in the deployement depencies as it has issues on M1 macs.
+from django_uwsgi.management.commands.runuwsgi import Command as RunserverCommand  # pylint: disable=import-error
 
 log = logging.getLogger(__name__)
 
@@ -37,7 +38,10 @@ class Command(RunserverCommand):
         confirm_keys_are_changed()
 
         try:
-            subprocess.check_call('command -v uwsgi', shell=True, stdout=subprocess.DEVNULL)
+            # todo: fix Starting a process with a partial executable path
+            # todo: fix subprocess call with shell=True seems safe, but may be changed in the future, consider rewriting
+            #  without shell
+            subprocess.check_call('command -v uwsgi', shell=True, stdout=subprocess.DEVNULL)  # nosec
         except subprocess.CalledProcessError:
             print(UWSGI_INFO)
             sys.exit(1)

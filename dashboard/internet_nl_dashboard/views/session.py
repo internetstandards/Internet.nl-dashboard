@@ -2,7 +2,6 @@ import logging
 
 from django.contrib.auth import authenticate, login, logout
 from django.http import JsonResponse
-from django.middleware.csrf import get_token
 from django_otp.plugins.otp_totp.models import TOTPDevice
 
 from dashboard.internet_nl_dashboard.logic import operation_response
@@ -30,7 +29,7 @@ def session_login_(request):
     """
     # taken from: https://stackoverflow.com/questions/11891322/setting-up-a-user-login-in-python-django-using-json-and-
     if request.method != 'POST':
-        return operation_response(success=True, message=f"post_only")
+        return operation_response(success=True, message="post_only")
 
     # get the json data:
     parameters = get_json_body(request)
@@ -39,23 +38,23 @@ def session_login_(request):
     password = parameters.get('password', '').strip()
 
     if not username or not password:
-        return operation_response(error=True, message=f"no_credentials_supplied")
+        return operation_response(error=True, message="no_credentials_supplied")
 
     user = authenticate(username=username, password=password)
 
     if user is None:
-        return operation_response(error=True, message=f"invalid_credentials")
+        return operation_response(error=True, message="invalid_credentials")
 
     if not user.is_active:
-        return operation_response(error=True, message=f"user_not_active")
+        return operation_response(error=True, message="user_not_active")
 
     # todo: implement generate_challenge and verify_token, so we can do login from new site.
     devices = TOTPDevice.objects.all().filter(user=user, confirmed=True)
     if devices:
-        return operation_response(error=True, message=f"second_factor_login_required")
+        return operation_response(error=True, message="second_factor_login_required")
 
     login(request, user)
-    return operation_response(success=True, message=f"logged_in")
+    return operation_response(success=True, message="logged_in")
 
 
 def session_logout_(request):
@@ -64,10 +63,10 @@ def session_logout_(request):
     # https://docs.djangoproject.com/en/3.1/ref/contrib/auth/
     if not request.user.is_authenticated:
         log.debug('User is not authenticated...')
-        return operation_response(success=True, message=f"logged_out")
-    else:
-        logout(request)
-        return operation_response(success=True, message=f"logged_out")
+        return operation_response(success=True, message="logged_out")
+
+    logout(request)
+    return operation_response(success=True, message="logged_out")
 
 
 def session_status_(request):
@@ -81,21 +80,15 @@ def session_status_(request):
         return {
             'is_authenticated': False,
             'is_superuser': False,
-            'second_factor_enabled': False
+            'second_factor_enabled': False,
+            'account_name': '',
         }
 
     return {
         'is_authenticated': request.user.is_authenticated,
-        'is_superuser': request.user.is_superuser
+        'is_superuser': request.user.is_superuser,
+        'account_name': request.user.dashboarduser.account.name,
     }
-
-
-def get_csrf_(request):
-    return get_token(request)
-
-
-def session_csrf(request):
-    return JsonResponse({'token': get_csrf_(request)})
 
 
 def session_status(request):

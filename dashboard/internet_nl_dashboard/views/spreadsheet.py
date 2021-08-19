@@ -9,9 +9,7 @@ from django.shortcuts import render
 from websecmap.app.common import JSEncoder
 
 from dashboard.internet_nl_dashboard.logic.spreadsheet import complete_import, get_upload_history
-from dashboard.internet_nl_dashboard.views.__init__ import (LOGIN_URL, get_account,
-                                                            get_dashboarduser,
-                                                            inject_default_language_cookie)
+from dashboard.internet_nl_dashboard.views.__init__ import LOGIN_URL, get_account, get_dashboarduser
 
 log = logging.getLogger(__package__)
 
@@ -19,13 +17,13 @@ log = logging.getLogger(__package__)
 @login_required(login_url=LOGIN_URL)
 def upload(request) -> HttpResponse:
 
-    response = render(request, 'internet_nl_dashboard/templates/internet_nl_dashboard/upload.html', {
+    response: HttpResponse = render(request, 'internet_nl_dashboard/templates/internet_nl_dashboard/upload.html', {
         'menu_item_addressmanager': "current",
         'max_lists': int(config.DASHBOARD_MAXIMUM_LISTS_PER_SPREADSHEET),
         'max_urls':  int(config.DASHBOARD_MAXIMUM_DOMAINS_PER_SPREADSHEET)
     })
 
-    return inject_default_language_cookie(request, response)
+    return response
 
 
 @login_required(login_url=LOGIN_URL)
@@ -60,8 +58,8 @@ def upload_spreadsheet(request) -> HttpResponse:
 def save_file(myfile) -> str:
     # todo: filesystem might be full.
     # https://docs.djangoproject.com/en/2.1/ref/files/storage/
-    fs = FileSystemStorage(location=settings.MEDIA_ROOT)
-    filename = fs.save(myfile.name, myfile)
+    file_system_storage = FileSystemStorage(location=settings.MEDIA_ROOT)
+    filename = file_system_storage.save(myfile.name, myfile)
     file = settings.MEDIA_ROOT + '/' + filename
     return file
 

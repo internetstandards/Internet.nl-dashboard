@@ -1,4 +1,5 @@
 import logging
+import re
 from datetime import datetime, timedelta
 
 import pytz
@@ -32,6 +33,10 @@ from dashboard.internet_nl_dashboard.scanners.scan_internet_nl_per_account impor
 log = logging.getLogger(__package__)
 
 
+def only_alphanumeric(data: str) -> str:
+    return re.sub(r'[^A-Za-z0-9 ]+', '', data)
+
+
 class MyPeriodicTaskForm(PeriodicTaskForm):
 
     fieldsets = PeriodicTaskAdmin.fieldsets
@@ -50,8 +55,7 @@ class MyPeriodicTaskForm(PeriodicTaskForm):
 
     def clean(self):
         print('cleaning')
-
-        cleaned_data = super(PeriodicTaskForm, self).clean()
+        cleaned_data = super().clean()
 
         # if not self.cleaned_data['last_run_at']:
         #     self.cleaned_data['last_run_at'] = datetime.now(pytz.utc)
@@ -75,7 +79,7 @@ class IEPeriodicTaskAdmin(PeriodicTaskAdmin, ImportExportModelAdmin):
 
     @staticmethod
     def name_safe(obj):
-        return mark_safe(obj.name)
+        return mark_safe(only_alphanumeric(obj.name))  # nosec
 
     @staticmethod
     def last_run(obj):
@@ -90,34 +94,34 @@ class IEPeriodicTaskAdmin(PeriodicTaskAdmin, ImportExportModelAdmin):
     def due(obj):
         if obj.last_run_at:
             return obj.schedule.remaining_estimate(last_run_at=obj.last_run_at)
-        else:
-            # y in seconds
-            z, y = obj.schedule.is_due(last_run_at=datetime.now(pytz.utc))
-            date = datetime.now(pytz.utc) + timedelta(seconds=y)
 
-            return naturaltime(date)
+        # y in seconds
+        _, y_in_seconds = obj.schedule.is_due(last_run_at=datetime.now(pytz.utc))
+        date = datetime.now(pytz.utc) + timedelta(seconds=y_in_seconds)
+
+        return naturaltime(date)
 
     @staticmethod
     def precise(obj):
         if obj.last_run_at:
             return obj.schedule.remaining_estimate(last_run_at=obj.last_run_at)
-        else:
-            return obj.schedule.remaining_estimate(last_run_at=datetime.now(pytz.utc))
+
+        return obj.schedule.remaining_estimate(last_run_at=datetime.now(pytz.utc))
 
     @staticmethod
     def next(obj):
         if obj.last_run_at:
             return obj.schedule.remaining_estimate(last_run_at=obj.last_run_at)
-        else:
-            # y in seconds
-            z, y = obj.schedule.is_due(last_run_at=datetime.now(pytz.utc))
-            # somehow the cron jobs still give the correct countdown even last_run_at is not set.
 
-            date = datetime.now(pytz.utc) + timedelta(seconds=y)
+        # y in seconds
+        _, y_in_seconds = obj.schedule.is_due(last_run_at=datetime.now(pytz.utc))
+        # somehow the cron jobs still give the correct countdown even last_run_at is not set.
 
-            return date
+        date = datetime.now(pytz.utc) + timedelta(seconds=y_in_seconds)
 
-    class Meta:
+        return date
+
+    class Meta:  # pylint: disable=too-few-public-methods
         ordering = ["-name"]
 
 
@@ -140,13 +144,13 @@ class DashboardUserInline(CompactInline):
 # Thank you:
 # https://stackoverflow.com/questions/47941038/how-should-i-add-django-import-export-on-the-user-model?rq=1
 class UserResource(resources.ModelResource):
-    class Meta:
+    class Meta:  # pylint: disable=too-few-public-methods
         model = User
         # fields = ('first_name', 'last_name', 'email')
 
 
 class GroupResource(resources.ModelResource):
-    class Meta:
+    class Meta:  # pylint: disable=too-few-public-methods
         model = Group
 
 
@@ -185,7 +189,7 @@ admin.site.register(Group, GroupAdmin)
 # Overwrite the ugly Constance forms with something nicer
 class CustomConfigForm(ConstanceForm):
     def __init__(self, *args, **kwargs):
-        super(CustomConfigForm, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         # ... do stuff to make your settings form nice ...
 
 
@@ -220,8 +224,8 @@ class AccountAdmin(ImportExportModelAdmin, admin.ModelAdmin):
 
     @staticmethod
     def no_of_users(obj):
-        return mark_safe("<a href='/admin/auth/user/?q=%s#/tab/inline_0/'>🔎 %s" %
-                         (obj.name, DashboardUser.objects.all().filter(account=obj).count()))
+        return mark_safe(f"<a href='/admin/auth/user/?q={only_alphanumeric(obj.name)}#/tab/inline_0/'>"  # nosec
+                         f"🔎 {DashboardUser.objects.all().filter(account=obj).count()}")
 
     def save_model(self, request, obj, form, change):
 
@@ -263,10 +267,12 @@ class UrlListAdmin(ImportExportModelAdmin, admin.ModelAdmin):
     fields = ('name', 'account', 'scan_type', 'enable_scans', 'automated_scan_frequency', 'scheduled_next_scan',
               'last_manual_scan', 'is_deleted', 'deleted_on')
 
-    def no_of_urls(self, obj):
+    @staticmethod
+    def no_of_urls(obj):
         return Url.objects.all().filter(urls_in_dashboard_list=obj, is_dead=False, not_resolvable=False).count()
 
-    def no_of_endpoints(self, obj):
+    @staticmethod
+    def no_of_endpoints(obj):
         return Endpoint.objects.all().filter(url__urls_in_dashboard_list=obj, is_dead=False,
                                              url__is_dead=False, url__not_resolvable=False).count()
 
@@ -310,7 +316,7 @@ class AccountInternetNLScanAdmin(ImportExportModelAdmin, admin.ModelAdmin):
         for scan in queryset:
             recover_and_retry.apply_async([scan.id])
         self.message_user(request, "Rolling back asynchronously. May take a while.")
-    attempt_rollback.short_description = "Attempt rollback (async)"
+    attempt_rollback.short_description = "Attempt rollback (async)"   # type: ignore
     actions.append('attempt_rollback')
 
     def progress_scan(self, request, queryset):
@@ -321,7 +327,7 @@ class AccountInternetNLScanAdmin(ImportExportModelAdmin, admin.ModelAdmin):
             log.debug(f"Created task {tasks}.")
             tasks.apply_async()
         self.message_user(request, "Attempting to progress scans (async).")
-    progress_scan.short_description = "Progress scan (async)"
+    progress_scan.short_description = "Progress scan (async)"   # type: ignore
     actions.append('progress_scan')
 
     def send_finish_mail(self, request, queryset):
@@ -331,7 +337,7 @@ class AccountInternetNLScanAdmin(ImportExportModelAdmin, admin.ModelAdmin):
                 sent += 1
                 send_scan_finished_mails(scan.id)
         self.message_user(request, f"A total of {sent} mails have been sent.")
-    send_finish_mail.short_description = "Queue finished mail (finished only)"
+    send_finish_mail.short_description = "Queue finished mail (finished only)"   # type: ignore
     actions.append('send_finish_mail')
 
     # This is used to create ad-hoc reports for testing the send_finish_mail function.
@@ -340,9 +346,9 @@ class AccountInternetNLScanAdmin(ImportExportModelAdmin, admin.ModelAdmin):
         for scan in queryset:
             tasks.append(creating_report(scan.id))
         group(tasks).apply_async()
-        self.message_user(request, f"Creating additional reports (async).")
+        self.message_user(request, "Creating additional reports (async).")
 
-    create_extra_report.short_description = "Create additional report (async) (finished only)"
+    create_extra_report.short_description = "Create additional report (async) (finished only)"   # type: ignore
     actions.append('create_extra_report')
 
 
@@ -366,24 +372,32 @@ class UploadLogAdmin(ImportExportModelAdmin, admin.ModelAdmin):
 
 @admin.register(models.UrlListReport)
 class UrlListReportAdmin(ImportExportModelAdmin, admin.ModelAdmin):
-    def inspect_list(self, obj):
+
+    @staticmethod
+    def inspect_list(obj):
         return format_html('<a href="../../internet_nl_dashboard/urllist/{id}/change">inspect</a>',
                            id=format(obj.id))
 
     # do NOT load the calculation field, as that will be slow.
     # https://stackoverflow.com/questions/34774028/how-to-ignore-loading-huge-fields-in-django-admin-list-display
     def get_queryset(self, request):
-        qs = super(UrlListReportAdmin, self).get_queryset(request)
+        qs = super().get_queryset(request)
 
         # tell Django to not retrieve mpoly field from DB
         qs = qs.defer("calculation")
         return qs
 
     list_display = ('urllist', 'average_internet_nl_score', 'high', 'medium', 'low', 'ok', 'total_endpoints',
-                    'ok_endpoints', 'at_when', 'inspect_list')
+                    'ok_endpoints', 'is_publicly_shared', 'at_when', 'inspect_list')
     search_fields = (['at_when'])
-    list_filter = ['urllist', 'at_when'][::-1]
+    list_filter = ['urllist', 'at_when', 'is_publicly_shared'][::-1]
     fields = ('urllist',
+
+              'report_type',
+              'is_publicly_shared',
+              'public_report_code',
+              'public_share_code',
+
               'at_when',
               'calculation',
               'average_internet_nl_score',

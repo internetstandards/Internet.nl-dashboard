@@ -5,7 +5,7 @@ from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
 
 from dashboard.internet_nl_dashboard.logic import operation_response
-from dashboard.internet_nl_dashboard.logic.domains import check_keys
+from dashboard.internet_nl_dashboard.logic.domains import keys_are_present_in_object
 from dashboard.settings import LANGUAGES
 
 log = logging.getLogger(__package__)
@@ -52,7 +52,7 @@ def save_user_settings(dashboarduser_id, data):
 
     expected_keys = ['first_name', 'last_name', 'mail_preferred_mail_address', 'mail_preferred_language',
                      'mail_send_mail_after_scan_finished']
-    if check_keys(expected_keys, data):
+    if not keys_are_present_in_object(expected_keys, data):
         return operation_response(error=True, message="save_user_settings_error_incomplete_data")
 
     # validate data. Even if it's correct for the model (like any language), that's not what we'd accept.
@@ -64,9 +64,9 @@ def save_user_settings(dashboarduser_id, data):
 
     # email is allowed to be empty:
     if data['mail_preferred_mail_address']:
-        f = forms.EmailField()
+        email_field = forms.EmailField()
         try:
-            f.clean(data['mail_preferred_mail_address'])
+            email_field.clean(data['mail_preferred_mail_address'])
         except ValidationError:
             return operation_response(error=True, message="save_user_settings_error_form_incorrect_mail_address")
 

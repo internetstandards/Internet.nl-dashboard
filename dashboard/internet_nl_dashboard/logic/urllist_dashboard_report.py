@@ -13,146 +13,29 @@ from websecmap.reporting.report import (add_statistics_to_calculation, aggegrate
                                         remove_issues_from_calculation,
                                         statistics_over_url_calculation)
 
+from dashboard.internet_nl_dashboard.logic import (MAIL_AUTH_FIELDS, MAIL_CATEGORIES,
+                                                   MAIL_DNSSEC_FIELDS, MAIL_IPV6_FIELDS,
+                                                   MAIL_LEGACY_FIELDS, MAIL_TLS_CERTIFICATE_FIELDS,
+                                                   MAIL_TLS_DANE_FIELDS, MAIL_TLS_TLS_FIELDS,
+                                                   WEB_APPSECPRIV_CATEGORY, WEB_APPSECPRIV_FIELDS,
+                                                   WEB_DNSSEC_CATEGORY, WEB_DNSSEC_FIELDS,
+                                                   WEB_IPV6_CATEGORY, WEB_IPV6_FIELDS,
+                                                   WEB_LEGACY_FIELDS, WEB_TLS_CATEGORY,
+                                                   WEB_TLS_CERTIFICATE_FIELDS, WEB_TLS_DANE_FIELDS,
+                                                   WEB_TLS_HTTP_FIELDS, WEB_TLS_TLS_FIELDS)
 from dashboard.internet_nl_dashboard.models import UrlList, UrlListReport
 
 log = logging.getLogger(__package__)
 
-
 urllist_report_content = {
+    'mail': ['internet_nl_mail_dashboard_overall_score'] +
+    MAIL_CATEGORIES + MAIL_IPV6_FIELDS + MAIL_DNSSEC_FIELDS + MAIL_TLS_CERTIFICATE_FIELDS +
+    MAIL_TLS_TLS_FIELDS + MAIL_TLS_DANE_FIELDS + MAIL_AUTH_FIELDS + MAIL_LEGACY_FIELDS,
 
-    'mail': [
-        'internet_nl_mail_starttls_tls_available',
-        'internet_nl_mail_auth_spf_exist',
-        'internet_nl_mail_auth_dkim_exist',
-        'internet_nl_mail_auth_dmarc_exist',
-
-        # dashboard fields:
-        'internet_nl_mail_non_sending_domain',  # Added 24th of May 2019
-        'internet_nl_mail_server_configured',  # Added 24th of May 2019
-        'internet_nl_mail_servers_testable',   # Added 24th of May 2019
-        'internet_nl_mail_starttls_dane_ta',  # Added 24th of May 2019
-        'internet_nl_mail_ipv6_mx_reach',
-        'internet_nl_mail_ipv6_ns_reach',
-        'internet_nl_mail_ipv6_ns_address',
-        'internet_nl_mail_ipv6_mx_address',
-        'internet_nl_mail_dnssec_mx_exist',
-        'internet_nl_mail_dnssec_mx_valid',
-        'internet_nl_mail_dnssec_mailto_valid',
-        'internet_nl_mail_dnssec_mailto_exist',
-        'internet_nl_mail_auth_spf_policy',
-        'internet_nl_mail_auth_dmarc_policy',
-        'internet_nl_mail_auth_dmarc_policy_only',  # Added 24th of May 2019
-        'internet_nl_mail_auth_dmarc_ext_destination',  # Added 24th of May 2019
-        'internet_nl_mail_starttls_tls_keyexchange',
-        'internet_nl_mail_starttls_tls_compress',
-        'internet_nl_mail_starttls_cert_sig',
-        'internet_nl_mail_starttls_cert_pubkey',
-        'internet_nl_mail_starttls_dane_rollover',
-        'internet_nl_mail_starttls_tls_secreneg',
-        'internet_nl_mail_starttls_dane_exist',
-        'internet_nl_mail_starttls_dane_valid',
-        'internet_nl_mail_starttls_tls_ciphers',
-        'internet_nl_mail_starttls_tls_clientreneg',
-        'internet_nl_mail_starttls_cert_chain',
-        'internet_nl_mail_starttls_tls_version',
-        'internet_nl_mail_starttls_cert_domain',
-        'internet_nl_mail_dashboard_tls',
-        'internet_nl_mail_dashboard_auth',
-        'internet_nl_mail_dashboard_dnssec',
-        'internet_nl_mail_dashboard_ipv6',
-        'internet_nl_mail_dashboard_overall_score',
-
-        # Legacy fields used in dashboard:
-        'internet_nl_mail_legacy_dmarc',
-        'internet_nl_mail_legacy_dkim',
-        'internet_nl_mail_legacy_spf',
-        'internet_nl_mail_legacy_dmarc_policy',
-        'internet_nl_mail_legacy_spf_policy',
-        'internet_nl_mail_legacy_start_tls',
-        'internet_nl_mail_legacy_start_tls_ncsc',
-        'internet_nl_mail_legacy_dnssec_email_domain',
-        'internet_nl_mail_legacy_dnssec_mx',
-        'internet_nl_mail_legacy_dane',
-        'internet_nl_mail_legacy_ipv6_nameserver',
-        'internet_nl_mail_legacy_ipv6_mailserver',
-
-        # api 2.0 tls 1.3 fields, may 2020
-        'internet_nl_mail_starttls_tls_cipherorder',
-        'internet_nl_mail_starttls_tls_keyexchangehash',
-        'internet_nl_mail_starttls_tls_0rtt',
-
-        # api 2.0 extra fields
-        'internet_nl_mail_legacy_mail_non_sending_domain',
-        'internet_nl_mail_legacy_mail_sending_domain',
-        'internet_nl_mail_legacy_mail_server_testable',
-        'internet_nl_mail_legacy_mail_server_reachable',
-        'internet_nl_mail_legacy_domain_has_mx',
-        'internet_nl_mail_legacy_tls_1_3',
-        'internet_nl_mail_legacy_category_ipv6',
-
-    ],
-
-    'web': [
-        'internet_nl_web_ipv6_ws_similar',
-
-        # used in dashboard SHould it be Web Dashboard IPv6?
-        'internet_nl_web_ipv6',
-        'internet_nl_web_ipv6_ws_address',
-        'internet_nl_web_ipv6_ns_reach',
-        'internet_nl_web_ipv6_ws_reach',
-        'internet_nl_web_ipv6_ns_address',
-
-        'internet_nl_web_dnssec',
-        'internet_nl_web_dnssec_valid',
-        'internet_nl_web_dnssec_exist',
-
-        'internet_nl_web_tls',
-        'internet_nl_web_https_tls_keyexchange',
-        'internet_nl_web_https_tls_compress',
-        'internet_nl_web_https_cert_sig',
-        'internet_nl_web_https_cert_pubkey',
-        'internet_nl_web_https_dane_valid',
-        'internet_nl_web_https_tls_secreneg',
-        'internet_nl_web_https_http_hsts',
-        'internet_nl_web_https_http_compress',
-        'internet_nl_web_https_dane_exist',
-        'internet_nl_web_https_http_available',
-        'internet_nl_web_https_tls_ciphers',
-        'internet_nl_web_https_tls_clientreneg',
-        'internet_nl_web_https_tls_version',
-        'internet_nl_web_https_cert_chain',
-        'internet_nl_web_https_http_redirect',
-        'internet_nl_web_https_cert_domain',
-
-        # Added 24 May 2019
-        'internet_nl_web_appsecpriv',
-        'internet_nl_web_appsecpriv_csp',
-        'internet_nl_web_appsecpriv_referrer_policy',
-        'internet_nl_web_appsecpriv_x_content_type_options',
-        'internet_nl_web_appsecpriv_x_frame_options',
-
-        'internet_nl_web_overall_score',
-
-        # Legacy fields, used in dashboard:
-        'internet_nl_web_legacy_dnssec',
-        'internet_nl_web_legacy_tls_available',
-        'internet_nl_web_legacy_tls_ncsc_web',
-        'internet_nl_web_legacy_https_enforced',
-        'internet_nl_web_legacy_hsts',
-        'internet_nl_web_legacy_ipv6_nameserver',
-        'internet_nl_web_legacy_ipv6_webserver',
-        'internet_nl_web_legacy_dane',
-
-        # api 2.0 tls 1.3 fields, may 2020
-        'internet_nl_web_https_tls_cipherorder',
-        'internet_nl_web_https_tls_0rtt',
-        'internet_nl_web_https_tls_ocsp',
-        'internet_nl_web_https_tls_keyexchangehash',
-
-        # api 2.0 extra fields
-        'internet_nl_web_legacy_tls_1_3',
-        'internet_nl_web_legacy_category_ipv6',
-    ]
+    'web': ['internet_nl_web_overall_score'] + WEB_IPV6_CATEGORY + WEB_IPV6_FIELDS + WEB_DNSSEC_CATEGORY +
+    WEB_DNSSEC_FIELDS + WEB_TLS_CATEGORY + WEB_TLS_HTTP_FIELDS + WEB_TLS_TLS_FIELDS +
+    WEB_TLS_CERTIFICATE_FIELDS + WEB_TLS_DANE_FIELDS + WEB_APPSECPRIV_CATEGORY + WEB_APPSECPRIV_FIELDS +
+    WEB_LEGACY_FIELDS
 }
 
 
@@ -237,12 +120,12 @@ def rate_urllist_on_moment(urllist: UrlList, when: datetime = None, prevent_dupl
     if not when:
         when = datetime.now(pytz.utc)
 
-    log.info("Creating report for urllist %s on %s" % (urllist, when, ))
+    log.info(f"Creating report for urllist {urllist} on {when}")
 
     if UrlListReport.objects.all().filter(urllist=urllist, at_when=when).exists():
-        log.debug("UrllistReport already exists for %s on %s. Not overwriting." % (urllist, when))
+        log.debug(f"UrllistReport already exists for {urllist} on {when}. Not overwriting.")
         existing_report = UrlListReport.objects.all().filter(urllist=urllist, at_when=when).first()
-        return existing_report
+        return int(existing_report.id)
 
     urls = relevant_urls_at_timepoint_urllist(urllist=urllist, when=when)
     log.debug(f'Found {len(urls)} to be relevant at this moment.')
@@ -277,17 +160,16 @@ def rate_urllist_on_moment(urllist: UrlList, when: datetime = None, prevent_dupl
 
     if prevent_duplicates:
         if not DeepDiff(last.calculation, calculation, ignore_order=True, report_repetition=True):
-            log.warning("The report for %s on %s is the same as the report from %s. Not saving." % (
-                urllist, when, last.at_when))
-            return last
+            log.info(f"The report for {urllist} on {when} is the same as the report from {last.at_when}. Not saving.")
+            return int(last.id)
 
-    log.info("The calculation for %s on %s has changed, so we're saving this rating." % (urllist, when))
+    log.info(f"The calculation for {urllist} on {when} has changed, so we're saving this rating.")
 
     # remove urls and name from scores object, so it can be used as initialization parameters (saves lines)
     # this is by reference, meaning that the calculation will be affected if we don't work on a clone.
     init_scores = deepcopy(calculation)
-    del(init_scores['name'])
-    del(init_scores['urls'])
+    del init_scores['name']
+    del init_scores['urls']
 
     report = UrlListReport(**init_scores)
     report.urllist = urllist
@@ -295,7 +177,7 @@ def rate_urllist_on_moment(urllist: UrlList, when: datetime = None, prevent_dupl
     report.average_internet_nl_score = sum_internet_nl_scores_over_rating(calculation)
     report.calculation = calculation
     report.save()
-    return report.id
+    return int(report.id)
 
 
 def only_include_endpoint_protocols(calculation, only_include_endpoint_types: List[str]):

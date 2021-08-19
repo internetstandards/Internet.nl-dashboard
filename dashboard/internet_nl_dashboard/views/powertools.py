@@ -23,16 +23,10 @@ def is_powertool_user(user):
     if not isinstance(user, User):
         return False
 
-    if not user.is_authenticated:
+    if not user.is_authenticated or not user.is_active:
         return False
 
-    if not user.is_active:
-        return False
-
-    if user.is_superuser:
-        return True
-
-    if user.is_staff:
+    if user.is_superuser or user.is_staff:
         return True
 
     return False
@@ -44,7 +38,7 @@ def set_account(request) -> HttpResponse:
     selected_account_id: int = request_data['id']
 
     if not selected_account_id:
-        return JsonResponse(operation_response(error=True, message=f"No account supplied."))
+        return JsonResponse(operation_response(error=True, message="No account supplied."))
 
     dashboard_user = DashboardUser.objects.all().filter(user=request.user).first()
 
@@ -57,7 +51,7 @@ def set_account(request) -> HttpResponse:
 
     return JsonResponse(operation_response(
         success=True,
-        message=f"switched_account",
+        message="switched_account",
         data={'account_name': dashboard_user.account.name}
     )
     )
@@ -120,7 +114,7 @@ def save_instant_account(request) -> HttpResponse:
 
     # Extremely arbitrary password requirements. Just to make sure a password has been filled in.
     if len(password) < 5:
-        return JsonResponse(operation_response(error=True, message=f"Password not filled in or not long enough."))
+        return JsonResponse(operation_response(error=True, message="Password not filled in or not long enough."))
 
     # all seems fine, let's add the user
     user = User(**{'username': username})

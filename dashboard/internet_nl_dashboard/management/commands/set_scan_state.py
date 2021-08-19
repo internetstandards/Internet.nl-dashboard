@@ -32,7 +32,8 @@ class Command(BaseCommand):
         scan = AccountInternetNLScan.objects.all().filter(id=options['id']).first()
         if not scan:
             log.error("Scan does not exist.")
+            return
 
         scan.state = options['state']
-        update_state(options['state'], scan)
+        update_state(options['state'], scan.id)
         log.info(f"Scan {scan} is set to {options['state']}.")

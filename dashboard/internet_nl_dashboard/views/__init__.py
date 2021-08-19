@@ -17,18 +17,6 @@ Todo: csrf via API calls...
 """
 
 
-def inject_default_language_cookie(request, response) -> HttpResponse:
-    # If you visit any of the main pages, this is set to the desired language your browser emits.
-    # This synchronizes the language between javascript (OS language) and browser (Accept Language).
-    if 'dashboard_language' not in request.COOKIES:
-        # Get the accept language,
-        # Add the cookie to render.
-        accept_language = request.LANGUAGE_CODE
-        response.set_cookie(key='dashboard_language', value=accept_language)
-
-    return response
-
-
 def logout_view(request) -> HttpResponse:
     logout(request)
     return redirect('/')

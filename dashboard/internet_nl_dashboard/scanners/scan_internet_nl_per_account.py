@@ -1,7 +1,7 @@
 import logging
 from copy import copy
 from datetime import datetime, timedelta
-from typing import List
+from typing import Dict, List, Union
 
 import pytz
 from actstream import action
@@ -48,27 +48,30 @@ from dashboard.lockfile import remove_expired_lock, remove_lock, temporary_file_
 log = logging.getLogger(__name__)
 
 
-def create_api_settings(v2_scan_id: InternetNLV2Scan):
+def create_api_settings(v2_scan_id: InternetNLV2Scan) -> Dict[str, Union[str, int]]:
     scan = InternetNLV2Scan.objects.all().filter(id=v2_scan_id).first()
     if not scan:
         log.error(f'Did not find an internetnLV2scan with id {v2_scan_id}')
-        return InternetNLApiSettings().__dict__
+        return InternetNLApiSettings().__dict__  # type: ignore
 
     # figure out which AccountInternetNLScan object uses this scan. Retrieve the credentials from that account.
     account_scan = AccountInternetNLScan.objects.all().filter(scan=scan).first()
+    if not account_scan:
+        log.error(f'Could not find accountscan from scan {scan}')
+        return InternetNLApiSettings().__dict__  # type: ignore
 
-    s = InternetNLApiSettings()
+    apisettings = InternetNLApiSettings()
 
-    s.username = account_scan.account.internet_nl_api_username
-    s.password = account_scan.account.decrypt_password()
+    apisettings.username = account_scan.account.internet_nl_api_username
+    apisettings.password = account_scan.account.decrypt_password()
 
-    s.url = config.INTERNET_NL_API_URL
+    apisettings.url = config.INTERNET_NL_API_URL
     # for convenience, remove trailing slashes from the url, this will be entered incorrectly.
-    s.url = s.url.rstrip("/")
+    apisettings.url = apisettings.url.rstrip("/")
 
-    s.maximum_domains = config.INTERNET_NL_MAXIMUM_URLS
+    apisettings.maximum_domains = config.INTERNET_NL_MAXIMUM_URLS
 
-    return s.__dict__
+    return apisettings.__dict__  # type: ignore
 
 
 # overwrite the create API settings with one that handles credentials for every separate account. This is needed
@@ -77,10 +80,10 @@ internet_nl_v2_websecmap.create_api_settings = create_api_settings
 
 
 @app.task(queue='storage')
-def initialize_scan(urllist_id: UrlList, manual_or_scheduled: str = "scheduled") -> int:
+def initialize_scan(urllist_id: int, manual_or_scheduled: str = "scheduled") -> int:
     urllist = UrlList.objects.all().filter(id=urllist_id).first()
     if not urllist:
-        return None
+        return -1
 
     # We need to store the scan type in the InternetNLV2Scan at creation, because the type in the list might change:
     translated_scan_types = {'web': 'web', 'mail': 'mail_dashboard'}
@@ -236,7 +239,8 @@ def recover_and_retry(scan_id: int):
 
     scan = AccountInternetNLScan.objects.all().filter(id=scan_id).first()
     if not scan:
-        return
+        log.warning(f'Trying to recover_and_retry with unknown scan: {scan_id}.')
+        return group([])
 
     valid_states = ['requested', 'discovered endpoints', 'retrieved scannable urls', 'registered scan at internet.nl',
                     'registered', "running scan", "scan results ready", "scan results stored", "created report",
@@ -251,6 +255,9 @@ def recover_and_retry(scan_id: int):
     # get the latest valid state from the scan log:
     latest_valid = AccountInternetNLScanLog.objects.all().filter(
         scan=scan, state__in=valid_states).order_by('-id').first()
+    if not latest_valid:
+        log.error('Trying to recover from a scan that has no log history.')
+        return group([])
 
     log.warning(f"No valid rollback state for scan {scan_id}.")
 
@@ -271,6 +278,7 @@ def recover_and_retry(scan_id: int):
 
 def handle_unknown_state(scan_id):
     # probably nothing to be done...
+    log.warning(f'Scan {scan_id} is in unknown state. It will not progress.')
     return group([])
 
 
@@ -281,7 +289,8 @@ def discovering_endpoints(scan_id: int):
 
     scan = AccountInternetNLScan.objects.all().filter(id=scan_id).first()
     if not scan:
-        return
+        log.warning(f'Trying to discovering_endpoints with unknown scan: {scan_id}.')
+        return group([])
 
     return (
         dns_endpoints.compose_discover_task(**{
@@ -293,8 +302,9 @@ def discovering_endpoints(scan_id: int):
 
 def retrieving_scannable_urls(scan_id: int):
     scan = AccountInternetNLScan.objects.all().filter(id=scan_id).first()
-    if not scan:
-        return
+    if not scan or not scan.scan:
+        log.warning(f'Trying to retrieving_scannable_urls with unknown scan: {scan_id}.')
+        return group([])
 
     # This step tries to prevent API calls with an empty list of urls.
     update_state("retrieving scannable urls", scan.id)
@@ -313,8 +323,9 @@ def registering_scan_at_internet_nl(scan_id: int):
     update_state("registering scan at internet.nl", scan_id)
 
     scan = AccountInternetNLScan.objects.all().filter(id=scan_id).first()
-    if not scan:
-        return
+    if not scan or not scan.scan:
+        log.warning(f'Trying to registering_scan_at_internet_nl with unknown scan: {scan_id}.')
+        return group([])
 
     # mail = websecmap, mail_dashboard = internet.nl dashboard, web is the same on both. Mail here is a fallback
     # because the dashboard only understands dns_soa endpoints.
@@ -334,8 +345,9 @@ def running_scan(scan_id: int):
     update_state("running scan", scan_id)
 
     scan = AccountInternetNLScan.objects.all().filter(id=scan_id).first()
-    if not scan:
-        return
+    if not scan or not scan.scan:
+        log.warning(f'Trying to running_scan with unknown scan: {scan_id}.')
+        return group([])
 
     return chain(internet_nl_v2_websecmap.progress_running_scan(scan.scan.id)
                  | copy_state_from_websecmap_scan.si(scan.id))
@@ -344,8 +356,9 @@ def running_scan(scan_id: int):
 def continue_running_scan(scan_id: int):
     # Used to progress in error situations.
     scan = AccountInternetNLScan.objects.all().filter(id=scan_id).first()
-    if not scan:
-        return
+    if not scan or not scan.scan:
+        log.warning(f'Trying to continue_running_scan with unknown scan: {scan_id}.')
+        return group([])
 
     return chain(internet_nl_v2_websecmap.progress_running_scan(scan.scan.id)
                  | copy_state_from_websecmap_scan.si(scan.id))
@@ -355,8 +368,9 @@ def storing_scan_results(scan_id: int):
     update_state("storing scan results", scan_id)
 
     scan = AccountInternetNLScan.objects.all().filter(id=scan_id).first()
-    if not scan:
-        return
+    if not scan or not scan.scan:
+        log.warning(f'Trying to storing_scan_results with unknown scan: {scan_id}.')
+        return group([])
 
     return chain(internet_nl_v2_websecmap.progress_running_scan(scan.scan.id)
                  | copy_state_from_websecmap_scan.si(scan.id))
@@ -366,8 +380,9 @@ def processing_scan_results(scan_id: int):
     update_state("processing scan results", scan_id)
 
     scan = AccountInternetNLScan.objects.all().filter(id=scan_id).first()
-    if not scan:
-        return
+    if not scan or not scan.scan:
+        log.warning(f'Trying to processing_scan_results with unknown scan: {scan_id}.')
+        return group([])
 
     return chain(internet_nl_v2_websecmap.progress_running_scan(scan.scan.id)
                  | copy_state_from_websecmap_scan.si(scan.id))
@@ -376,7 +391,7 @@ def processing_scan_results(scan_id: int):
 @app.task(queue="storage")
 def copy_state_from_websecmap_scan(scan_id: int):
     scan = AccountInternetNLScan.objects.all().filter(id=scan_id).first()
-    if not scan:
+    if not scan or not scan.scan:
         return
 
     up_to_date_scan_information = InternetNLV2Scan.objects.all().get(id=scan.scan.pk)
@@ -408,7 +423,8 @@ def creating_report(scan_id: int):
 
     scan = AccountInternetNLScan.objects.all().filter(id=scan_id).first()
     if not scan:
-        return
+        log.warning(f'Trying to creating_report with unknown scan: {scan_id}.')
+        return group([])
 
     # Note that calling 'timezone.now()' at canvas creation time, means that you'll have a date in the past
     # at the moment the function is actually called. If you need accurate time in the function, make sure the
@@ -426,7 +442,8 @@ def sending_mail(scan_id: int):
 
     scan = AccountInternetNLScan.objects.all().filter(id=scan_id).first()
     if not scan:
-        return
+        log.warning(f'Trying to sending_mail with unknown scan: {scan_id}.')
+        return group([])
 
     return (send_after_scan_mail.si(scan.id)
             | update_state.s(scan.id))
@@ -435,7 +452,8 @@ def sending_mail(scan_id: int):
 def finishing_scan(scan_id: int):
     scan = AccountInternetNLScan.objects.all().filter(id=scan_id).first()
     if not scan:
-        return
+        log.warning(f'Trying to finishing_scan with unknown scan: {scan_id}.')
+        return group([])
 
     # No further actions, so not setting "finishing scan" as a state, but set it to "scan finished" directly.
     scan.finished_on = datetime.now(pytz.utc)
@@ -457,7 +475,8 @@ def monitor_timeout(scan_id: int):
 
     scan = AccountInternetNLScan.objects.all().filter(id=scan_id).first()
     if not scan:
-        return
+        log.warning(f'Trying to monitor_timeout with unknown scan: {scan_id}.')
+        return group([])
 
     # Warning: timeouts are only useful when crashes happened, otherwise its just a capacity issue which timeouts
     # will just increase as it creates more tasks to handle
@@ -501,37 +520,38 @@ def monitor_timeout(scan_id: int):
         raise ValueError(f"Scan is at {scan.state} for which no recovery is defined.")
 
     # determine if there is an actual timeout.
-    scan_will_timeout_on = scan.state_changed_on + timedelta(minutes=strategy['timeout in minutes'])
-    if timezone.now() > scan_will_timeout_on:
-        update_state(f"timeout reached for: '{scan.state}', performing recovery to '{strategy['state after timeout']}'",
-                     scan.id)
-        update_state(strategy['state after timeout'], scan.id)
+    if scan.state_changed_on:
+        scan_will_timeout_on = scan.state_changed_on + timedelta(minutes=strategy['timeout in minutes'])
+        if timezone.now() > scan_will_timeout_on:
+            update_state(f"timeout reached for: '{scan.state}', "
+                         f"performing recovery to '{strategy['state after timeout']}'", scan.id)
+            update_state(strategy['state after timeout'], scan.id)
 
     # No further work to do...
     return group([])
 
 
 @app.task(queue='storage')
-def connect_urllistreport_to_accountinternetnlscan(urllistreport_id: int, scan_id: int):
+def connect_urllistreport_to_accountinternetnlscan(urllistreport_id: int, scan_id: int) -> int:
     scan = AccountInternetNLScan.objects.all().filter(id=scan_id).first()
     if not scan:
-        return
+        return -1
 
     urllistreport = UrlListReport.objects.all().filter(id=urllistreport_id).first()
     if not urllistreport:
-        return
+        return -1
 
     scan.report = urllistreport
     scan.save()
 
-    return urllistreport.id
+    return int(urllistreport.id)
 
 
 @app.task(queue='storage')
 def upgrade_report_with_statistics(urllistreport_id: int) -> int:
     urllistreport = UrlListReport.objects.all().filter(id=urllistreport_id).first()
     if not urllistreport:
-        return
+        return -1
 
     log.debug(f"Creating statistics over urllistreport {urllistreport}.")
 
@@ -554,7 +574,7 @@ def upgrade_report_with_statistics(urllistreport_id: int) -> int:
 
     clean_up_not_required_data_to_speed_up_report_on_client(urllistreport)
 
-    return urllistreport.pk
+    return int(urllistreport.pk)
 
 
 @app.task(queue='storage')
@@ -641,14 +661,14 @@ def upgrade_report_with_unscannable_urls(urllistreport_id: int, scan_id: int):
     urllistreport.total_urls = len(urllistreport.calculation['urls'])
     urllistreport.save()
 
-    return urllistreport.id
+    return
 
 
 @app.task(queue='storage')
-def send_after_scan_mail(scan_id: int):
+def send_after_scan_mail(scan_id: int) -> str:
     scan = AccountInternetNLScan.objects.all().filter(id=scan_id).first()
     if not scan:
-        return
+        return ""
 
     # Do not try to send mail if no mailserver is configured
     if not email_configration_is_correct():
