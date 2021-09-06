@@ -506,7 +506,18 @@ CONSTANCE_CONFIG = {
     "SCAN_TIMEOUT_MINUTES_CREATING_REPORT": (1440, 'timeout for phase CREATING_REPORT', int),
     "SCAN_TIMEOUT_MINUTES_SENDING_MAIL": (1440, 'timeout for phase SENDING_MAIL', int),
     "SCAN_TIMEOUT_MINUTES_SERVER_ERROR": (1440, 'timeout for phase SERVER_ERROR', int),
-
+    "CONNECTIVITY_TEST_DOMAIN": (
+        "internet.nl",
+        "A server that is reachable over IPv4. This is used by a worker to determine what kind of scans it can do. "
+        "Enter an address that you own or manage.",
+        str,
+    ),
+    "IPV6_TEST_DOMAIN": (
+        "internet.nl",
+        "A server that is reachable over IPv6. This is used by a worker to determine "
+        "what kind of scans it can do. Enter an address that you own or manage.",
+        str,
+    ),
 }
 
 CONSTANCE_CONFIG_FIELDSETS = OrderedDict(
@@ -526,6 +537,13 @@ CONSTANCE_CONFIG_FIELDSETS = OrderedDict(
                                'SCAN_TIMEOUT_MINUTES_IMPORTING_SCAN_RESULTS', 'SCAN_TIMEOUT_MINUTES_CREATING_REPORT',
                                'SCAN_TIMEOUT_MINUTES_SENDING_MAIL', 'SCAN_TIMEOUT_MINUTES_SERVER_ERROR')),
         ("Scanning preferences", ("SCANNER_NAMESERVERS",)),
+        (
+            "Developer configuration. For debugging and verification",
+            (
+                "IPV6_TEST_DOMAIN",
+                "CONNECTIVITY_TEST_DOMAIN"
+            ),
+        ),
     ]
 )
 
