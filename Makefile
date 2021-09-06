@@ -148,9 +148,9 @@ autofix fix: .make.fix  ## automatic fix of trivial code quality issues
 	@touch $@
 
 ## Running
-run: ${app}  ## run complete application stack (frontend, worker, broker)
-	# start server (this can take a while)
-	DEBUG=1 NETWORK_SUPPORTS_IPV6=1 ${env} ${app} devserver
+# run: ${app}  ## run complete application stack (frontend, worker, broker)
+# 	# start server (this can take a while)
+# 	DEBUG=1 NETWORK_SUPPORTS_IPV6=1 ${env} ${app} devserver
 
 run-frontend: ${app}  ## only run frontend component
 	DEBUG=1 NETWORK_SUPPORTS_IPV6=1 ${env} ${app} runserver
