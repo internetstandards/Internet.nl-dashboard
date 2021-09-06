@@ -157,6 +157,10 @@ django-timezone-field==4.1.1
 django-two-factor-auth==1.12.1
     # via -r requirements.in
 dnspython==2.1.0
+    # via
+    #   dnsrecon
+    #   websecmap
+dnsrecon==0.10.1
     # via websecmap
 et-xmlfile==1.0.1
     # via
@@ -206,6 +210,10 @@ lml==0.1.0
     #   pyexcel
     #   pyexcel-io
     #   websecmap
+lxml==4.6.3
+    # via
+    #   dnsrecon
+    #   websecmap
 markdown==3.3.3
     # via websecmap
 markuppy==1.14
@@ -215,7 +223,9 @@ markuppy==1.14
 mysqlclient==2.0.3
     # via websecmap
 netaddr==0.8.0
-    # via websecmap
+    # via
+    #   dnsrecon
+    #   websecmap
 networkx==2.5
     # via
     #   colormath
@@ -431,7 +441,7 @@ vine==1.3.0
     #   celery
     #   flower
     #   websecmap
-git+https://gitlab.com/internet-cleanup-foundation/web-security-map@748f0a2e39216ce63ec2dfb8f4266b68b1bc86f9#egg=websecmap
+git+https://gitlab.com/internet-cleanup-foundation/web-security-map@067b263c4b48c8bad92d1ae8953c809dee0d2c03#egg=websecmap
     # via -r requirements.in
 wikidata==0.7.0
     # via websecmap
