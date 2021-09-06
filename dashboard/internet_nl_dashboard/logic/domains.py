@@ -722,13 +722,13 @@ def clean_urls(urls: List[str]) -> Dict[str, List]:
     return result
 
 
-def get_or_create_list_by_name(account, name: str) -> UrlList:
+def get_or_create_list_by_name(account, name: str, scan_type: str = "web") -> UrlList:
     existing_list = UrlList.objects.all().filter(account=account, name=name, is_deleted=False, ).first()
 
     if existing_list:
         return existing_list
 
-    urllist = UrlList(**{'name': name, 'account': account})
+    urllist = UrlList(**{'name': name, 'account': account, 'scan_type': scan_type})
     urllist.save()
     return urllist
 

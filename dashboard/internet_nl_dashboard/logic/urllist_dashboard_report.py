@@ -173,6 +173,7 @@ def rate_urllist_on_moment(urllist: UrlList, when: datetime = None, prevent_dupl
 
     report = UrlListReport(**init_scores)
     report.urllist = urllist
+    report.report_type = urllist.scan_type
     report.at_when = when
     report.average_internet_nl_score = sum_internet_nl_scores_over_rating(calculation)
     report.calculation = calculation
