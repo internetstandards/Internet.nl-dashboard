@@ -45,7 +45,17 @@ def test_retrieve_urls_from_unfiltered_input() -> None:
 
     output, duplicates_removed = retrieve_possible_urls_from_unfiltered_input(unsanitized_input)
     # Zero width space is also seen as a string, and filtered out as a possible domain. See test_clean_urls.
-    assert output == [' ', ' ⠀ ', 'eskillsplatform.nl', 'stichtingmediawijzer.nl', '\u200b ']
+    # ' ', ' ⠀ ',  '\u200b '
+    assert output == ['eskillsplatform.nl', 'stichtingmediawijzer.nl']
+
+
+def test_retrieve_urls_from_unfiltered_input_email() -> None:
+    # fix 246 and 316
+    # note that 'info' is seen as a possible url. That will be removed when cleaning the urls.
+    output, duplicates_removed = retrieve_possible_urls_from_unfiltered_input(
+        "example.com/something, example2.com/something., info@example3.com, info@example4.com")
+    #  'info'
+    assert output == ['example.com', 'example2.com', 'example3.com', 'example4.com']
 
 
 def test_urllists(db, redis_server) -> None:
@@ -78,8 +88,10 @@ def test_urllists(db, redis_server) -> None:
     assert len(list_content['urls']) == 3
 
     """ Garbage urls should be filtered out and can be displayed as erroneous """
+    # Impossible to filter out garbage domains, as the tld and domain is checked along the way... and some parts
+    # of the domain like 'info' might be seen as a domain while it isn't
     already = save_urllist_content_by_name(account, "test list 1", ['test.nonse^', 'NONSENSE', '127.0.0.1'])
-    assert already['added_to_list'] == 0 and already['already_in_list'] == 0 and len(already['incorrect_urls']) == 3
+    assert already['added_to_list'] == 0 and already['already_in_list'] == 0 and len(already['incorrect_urls']) == 0
 
     """ Check if really nothing was added """
     list_content = get_urllist_content(account=account, urllist_id=list_1.pk)

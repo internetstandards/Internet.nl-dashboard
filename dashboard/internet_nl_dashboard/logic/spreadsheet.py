@@ -31,7 +31,8 @@ from constance import config
 from django.db import transaction
 from xlrd import XLRDError
 
-from dashboard.internet_nl_dashboard.logic.domains import clean_urls, save_urllist_content_by_name
+from dashboard.internet_nl_dashboard.logic.domains import (
+    clean_urls, retrieve_possible_urls_from_unfiltered_input, save_urllist_content_by_name)
 from dashboard.internet_nl_dashboard.models import Account, DashboardUser, UploadLog
 
 log = logging.getLogger(__package__)
@@ -249,40 +250,39 @@ def complete_import(user: DashboardUser, file: str) -> Dict[str, Any]:
         return has_errors
 
     # urllist: urls
-    data = get_data(file)
-    if not data:
+    domain_lists = get_data(file)
+    if not domain_lists:
         return upload_error("The uploaded file contained no data. This might happen when the file is not in the "
                             "correct format. Are you sure it is a correct spreadsheet file?", user, file)
 
     # sanity check on data length and number of lists (this does not prevent anyone from trying to upload the same
     # file over and over again), it's just a usability feature against mistakes.
-    number_of_lists = len(data)
     number_of_urls = 0
-    for _, urls in data.items():
+    for _, urls in domain_lists.items():
         number_of_urls += len(urls)
 
-    if number_of_lists > config.DASHBOARD_MAXIMUM_LISTS_PER_SPREADSHEET:
+    if len(domain_lists) > config.DASHBOARD_MAXIMUM_LISTS_PER_SPREADSHEET:
         return upload_error(f"The maximum number of new lists is {config.DASHBOARD_MAXIMUM_LISTS_PER_SPREADSHEET}. "
                             "The uploaded spreadsheet contains more than this limit. Try again in smaller batches.",
                             user, file)
 
-    if number_of_lists > config.DASHBOARD_MAXIMUM_DOMAINS_PER_SPREADSHEET:
+    if number_of_urls > config.DASHBOARD_MAXIMUM_DOMAINS_PER_SPREADSHEET:
         return upload_error(f"The maximum number of new urls is {config.DASHBOARD_MAXIMUM_DOMAINS_PER_SPREADSHEET}."
                             "The uploaded spreadsheet contains more than this limit. Try again in smaller batches.",
                             user, file)
 
-    # Here is your standard XSS issue :)
-    for urllist, urls in data.items():
-        url_check = clean_urls(list(urls))
+    for urllist, urls in domain_lists.items():
+        possible_urls, _ = retrieve_possible_urls_from_unfiltered_input(", ".join(urls))
+        url_check = clean_urls(possible_urls)
 
         if url_check['incorrect']:
             return upload_error("This spreadsheet contains urls that are not in the correct format. Please correct "
-                                "them and try again. The fist list that contains an error is "
+                                "them and try again. The first list that contains an error is "
                                 f"{urllist} with the url(s) {', '.join(url_check['incorrect'])}",
                                 user, file)
 
     # File system full, database full.
-    details = save_data(user.account, data)
+    details = save_data(user.account, domain_lists)
 
     # Make the details a little bit easier for humans to understand:
     details_str = ""
@@ -290,7 +290,7 @@ def complete_import(user: DashboardUser, file: str) -> Dict[str, Any]:
         details_str += f"{urllist}: new: {detail['added_to_list']}, existing: {detail['already_in_list']}; "
 
     message = "Spreadsheet uploaded successfully. " \
-              f"Added {number_of_lists} lists and {number_of_urls} urls. Details: {details_str}"
+              f"Added {len(domain_lists)} lists and {number_of_urls} urls. Details: {details_str}"
     response = {'error': False, 'success': True, 'message': message, 'details': details, 'status': 'success'}
     log_spreadsheet_upload(user=user, file=file, status='success', message=message)
     return response

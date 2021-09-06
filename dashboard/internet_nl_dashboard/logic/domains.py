@@ -136,7 +136,6 @@ def scan_urllist_now_ignoring_business_rules(urllist: UrlList):
 
 
 def get_url(new_url_string: str):
-
     # first check if one exists, if not, create it.
     url = Url.objects.all().filter(url=new_url_string).first()
     if url:
@@ -564,6 +563,9 @@ def retrieve_possible_urls_from_unfiltered_input(unfiltered_input: str) -> Tuple
     unfiltered_input = unfiltered_input.replace("\n", " ")
     unfiltered_input = unfiltered_input.replace("\t", " ")
 
+    # split email addresses from their domain
+    unfiltered_input = unfiltered_input.replace("@", " ")
+
     # Split also removes double spaces etc
     unfiltered_input_list: List[str] = unfiltered_input.split(" ")
 
@@ -586,8 +588,13 @@ def retrieve_possible_urls_from_unfiltered_input(unfiltered_input: str) -> Tuple
     total_unique_items = len(unfiltered_input_list)
     duplicates_removed = total_non_unique_items - total_unique_items
 
+    # domains can still be wrong, such as "info" (or other tld like museum).
+    # Check for all domains that it has a valid tld:
+    has_tld = [domain for domain in unfiltered_input_list
+               if tldextract.extract(domain).suffix and tldextract.extract(domain).domain]
+
     # make sure the list is in alphabetical order, which is nice for testability.
-    return sorted(unfiltered_input_list), duplicates_removed
+    return sorted(has_tld), duplicates_removed
 
 
 def save_urllist_content(account: Account, user_input: Dict[str, Any]) -> Dict:
@@ -645,7 +652,9 @@ def save_urllist_content_by_name(account: Account, urllist_name: str, urls: List
     Urls are just strings, which is enough to determine if it should be added.
     """
 
-    cleaned_urls = clean_urls(urls)
+    extracted_urls, _ = retrieve_possible_urls_from_unfiltered_input(", ".join(urls))
+
+    cleaned_urls = clean_urls(extracted_urls)
 
     if cleaned_urls['correct']:
         urllist = get_or_create_list_by_name(account=account, name=urllist_name)
@@ -661,7 +670,6 @@ def save_urllist_content_by_name(account: Account, urllist_name: str, urls: List
 
 
 def _add_to_urls_to_urllist(account: Account, current_list: UrlList, urls: List[str]) -> Dict[str, Any]:
-
     counters: Dict[str, int] = {'added_to_list': 0, 'already_in_list': 0}
 
     for url in urls:
@@ -714,14 +722,13 @@ def clean_urls(urls: List[str]) -> Dict[str, List]:
     return result
 
 
-def get_or_create_list_by_name(account, name: str) -> UrlList:
-
-    existing_list = UrlList.objects.all().filter(account=account, name=name, is_deleted=False,).first()
+def get_or_create_list_by_name(account, name: str, scan_type: str = "web") -> UrlList:
+    existing_list = UrlList.objects.all().filter(account=account, name=name, is_deleted=False, ).first()
 
     if existing_list:
         return existing_list
 
-    urllist = UrlList(**{'name': name, 'account': account})
+    urllist = UrlList(**{'name': name, 'account': account, 'scan_type': scan_type})
     urllist.save()
     return urllist
 

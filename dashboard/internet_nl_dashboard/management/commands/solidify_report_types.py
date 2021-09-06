@@ -6,8 +6,9 @@ from dashboard.internet_nl_dashboard.models import UrlListReport
 class Command(BaseCommand):
     def handle(self, *args, **options):
 
-        for report in UrlListReport.objects.all():
+        for report in UrlListReport.objects.all().defer('calculation'):
+            print(report)
             report.report_type = report.urllist.scan_type
             report.save()
 
-    print("Updated")
+        print("Updated")
