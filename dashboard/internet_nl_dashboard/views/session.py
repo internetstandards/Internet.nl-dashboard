@@ -1,4 +1,5 @@
 import logging
+from time import sleep
 
 from django.contrib.auth import authenticate, login, logout
 from django.http import JsonResponse
@@ -29,7 +30,8 @@ def session_login_(request):
     """
     # taken from: https://stackoverflow.com/questions/11891322/setting-up-a-user-login-in-python-django-using-json-and-
     if request.method != 'POST':
-        return operation_response(success=True, message="post_only")
+        sleep(2)
+        return operation_response(error=True, message="post_only")
 
     # get the json data:
     parameters = get_json_body(request)
@@ -38,19 +40,23 @@ def session_login_(request):
     password = parameters.get('password', '').strip()
 
     if not username or not password:
+        sleep(2)
         return operation_response(error=True, message="no_credentials_supplied")
 
     user = authenticate(username=username, password=password)
 
     if user is None:
+        sleep(2)
         return operation_response(error=True, message="invalid_credentials")
 
     if not user.is_active:
+        sleep(2)
         return operation_response(error=True, message="user_not_active")
 
     # todo: implement generate_challenge and verify_token, so we can do login from new site.
     devices = TOTPDevice.objects.all().filter(user=user, confirmed=True)
     if devices:
+        sleep(2)
         return operation_response(error=True, message="second_factor_login_required")
 
     login(request, user)
