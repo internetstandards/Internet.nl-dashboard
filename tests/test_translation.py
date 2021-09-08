@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: Apache-2.0
 """
 Run these tests with tox -e test -- -k test_translation
 """

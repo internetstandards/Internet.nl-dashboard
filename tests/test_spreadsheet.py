@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: Apache-2.0
 # To run these specific tests: tox -e test -- -k test_spreadsheet
 from pathlib import Path
 

@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: Apache-2.0
 
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse, JsonResponse

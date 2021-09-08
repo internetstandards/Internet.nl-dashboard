@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: Apache-2.0
 
 from constance import config
 from django_mail_admin.models import EmailTemplate

@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: Apache-2.0
 from datetime import datetime, timedelta
 
 from django.contrib.auth.models import User

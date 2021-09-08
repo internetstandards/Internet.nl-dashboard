@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: Apache-2.0
 import logging
 from copy import copy
 from datetime import datetime, timedelta

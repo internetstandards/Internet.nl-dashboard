@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: Apache-2.0
 # example: dashboard dashboard_celery worker -Q storage -l debug
 from __future__ import absolute_import, unicode_literals
 

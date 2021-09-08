@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: Apache-2.0
 from websecmap.reporting.report import create_url_reports
 
 from dashboard.internet_nl_dashboard.logic.domains import (_add_to_urls_to_urllist,

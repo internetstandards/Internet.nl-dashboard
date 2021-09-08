@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: Apache-2.0
 from django.utils import timezone
 
 from dashboard.internet_nl_dashboard.models import (Account, AccountInternetNLScan,

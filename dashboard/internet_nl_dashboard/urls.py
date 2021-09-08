@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: Apache-2.0
 from constance import config
 from django.shortcuts import redirect
 from django.urls import path, register_converter

@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: Apache-2.0
 """
 Creates a number of usage metrics for the dashboard. These metrics are visible on the dashboard and create
 transparency on the usage of the dashboard.

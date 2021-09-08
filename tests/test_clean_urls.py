@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: Apache-2.0
 """
 These testcases help to validate the working of the listmanagement API.
 
