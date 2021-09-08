@@ -9,7 +9,7 @@
 # - no version pinning, unless it is required and explained
 
 # to update websecmap, update the SHA hash and run: make update_requirement_websecmap
-git+https://gitlab.com/internet-cleanup-foundation/web-security-map@067b263c4b48c8bad92d1ae8953c809dee0d2c03#egg=websecmap
+git+https://gitlab.com/internet-cleanup-foundation/web-security-map@752c43ae0b3650012d124f56a3810c45fe7453a3#egg=websecmap
 
 django-otp
 django-two-factor-auth
@@ -33,3 +33,6 @@ django-cors-headers
 
 # prior releases don't have wheels for Apple Silicon
 numpy >= 1.21.0
+
+# include (security) version constraints for non primary dependencies
+-c security-constraints.in

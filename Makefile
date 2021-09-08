@@ -65,6 +65,7 @@ ${VIRTUAL_ENV}/.requirements.installed: requirements.txt requirements-dev.txt | 
 # perform 'pip freeze' on first class requirements in .in files.
 requirements: requirements.txt requirements-dev.txt requirements-deploy.txt
 requirements-dev.txt requirements-deploy.txt: requirements.txt
+requirements.txt: security-constraints.in
 requirements.txt requirements-dev.txt requirements-deploy.txt: %.txt: %.in | ${pip-compile}
 	${pip-compile} ${pip_compile_args} --output-file $@ $<
 	# remove `extra` marker as there is no way to specify it during install
