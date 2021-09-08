@@ -14,7 +14,7 @@ from websecmap.scanners.scanner.dns_endpoints import compose_discover_task
 
 from dashboard.internet_nl_dashboard.logic import operation_response
 from dashboard.internet_nl_dashboard.models import (Account, AccountInternetNLScan, UrlList,
-                                                    UrlListReport, determine_next_scan_moment)
+                                                    UrlListReport, determine_next_scan_moment, TaggedUrlInUrllist)
 from dashboard.internet_nl_dashboard.scanners.scan_internet_nl_per_account import (initialize_scan,
                                                                                    update_state)
 
@@ -526,8 +526,8 @@ def get_urllist_content(account: Account, urllist_id: int) -> dict:
 
     # This ordering makes sure all subdomains are near the domains with the right extension.
     urls = Url.objects.all().filter(
-        urls_in_dashboard_list__account=account,
-        urls_in_dashboard_list__id=urllist_id
+        urls_in_dashboard_list_2__account=account,
+        urls_in_dashboard_list_2__id=urllist_id
     ).order_by('computed_domain', 'computed_suffix', 'computed_subdomain').prefetch_related(prefetch).all()
 
     """ It's very possible that the urrlist_id is not matching with the account. The query will just return
@@ -548,7 +548,8 @@ def get_urllist_content(account: Account, urllist_id: int) -> dict:
             'created_on': url.created_on,
             'resolves': not url.not_resolvable,
             'has_mail_endpoint': has_mail_endpoint,
-            'has_web_endpoint': has_web_endpoint
+            'has_web_endpoint': has_web_endpoint,
+            'tags': [o.name for o in TaggedUrlInUrllist.objects.all().filter(url=url, urllist=urllist_id).first().tags.all()]
         })
 
     return response
@@ -748,8 +749,8 @@ def delete_url_from_urllist(account: Account, urllist_id: int, url_id: int) -> b
     # make sure that the url is in this list and for the current account
     # we don't want other users to be able to delete urls of other lists.
     url_is_in_list = Url.objects.all().filter(
-        urls_in_dashboard_list__account=account,
-        urls_in_dashboard_list__id=urllist_id,
+        urls_in_dashboard_list_2__account=account,
+        urls_in_dashboard_list_2__id=urllist_id,
         id=url_id).first()
 
     if not url_is_in_list:

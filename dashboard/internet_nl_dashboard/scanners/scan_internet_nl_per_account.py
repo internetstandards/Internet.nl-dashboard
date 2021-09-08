@@ -295,7 +295,7 @@ def discovering_endpoints(scan_id: int):
 
     return (
         dns_endpoints.compose_discover_task(**{
-            'urls_filter': {'urls_in_dashboard_list__id': scan.urllist.id, 'is_dead': False,
+            'urls_filter': {'urls_in_dashboard_list_2__id': scan.urllist.id, 'is_dead': False,
                             'not_resolvable': False}})
         | update_state.si("discovered endpoints", scan.id)
     )
@@ -736,6 +736,6 @@ def get_relevant_urls(urllist_id: int, protocol: str) -> List[int]:
     if not urllist:
         return []
 
-    urls = Url.objects.all().filter(urls_in_dashboard_list=urllist, is_dead=False, not_resolvable=False,
+    urls = Url.objects.all().filter(urls_in_dashboard_list_2=urllist, is_dead=False, not_resolvable=False,
                                     endpoint__protocol__in=[protocol]).values_list('id', flat=True)
     return list(set(urls))

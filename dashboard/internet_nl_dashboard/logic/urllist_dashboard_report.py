@@ -190,7 +190,7 @@ def only_include_endpoint_protocols(calculation, only_include_endpoint_types: Li
 
 
 def relevant_urls_at_timepoint_urllist(urllist: UrlList, when: datetime):
-    queryset = Url.objects.filter(urls_in_dashboard_list=urllist)
+    queryset = Url.objects.filter(urls_in_dashboard_list_2=urllist)
 
     return relevant_urls_at_timepoint(queryset=queryset, when=when)
 
