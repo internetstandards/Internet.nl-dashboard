@@ -39,7 +39,7 @@ shsrc = $(shell find * ! -path vendor\* -name \*.sh 2>/dev/null)
 .PHONY: test check setup run fix autofix clean mrproper test_integration requirements requirements-dev docs
 
 # default action to run
-all: check test setup
+all: check test setup requirements
 
 ## Setup
 # setup entire dev environment
@@ -65,8 +65,7 @@ ${VIRTUAL_ENV}/.requirements.installed: requirements.txt requirements-dev.txt | 
 # perform 'pip freeze' on first class requirements in .in files.
 requirements: requirements.txt requirements-dev.txt requirements-deploy.txt
 requirements-dev.txt requirements-deploy.txt: requirements.txt
-requirements.txt: security-constraints.in
-requirements.txt requirements-dev.txt requirements-deploy.txt: %.txt: %.in | ${pip-compile}
+requirements.txt requirements-dev.txt requirements-deploy.txt: %.txt: %.in security-constraints.in | ${pip-compile}
 	${pip-compile} ${pip_compile_args} --output-file $@ $<
 	# remove `extra` marker as there is no way to specify it during install
 	sed -E -i '' 's/extra == "deploy"//' $@
