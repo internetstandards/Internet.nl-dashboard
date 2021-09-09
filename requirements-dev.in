@@ -55,3 +55,6 @@ types-polib
 types-requests
 types-pytz
 types-setuptools
+
+# include (security) version constraints for non primary dependencies
+-c security-constraints.in

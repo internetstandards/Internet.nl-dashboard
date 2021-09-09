@@ -1,0 +1,5 @@
+# this file contains packages that are not primary dependencies but need a
+# minimum version contraint for things like security vulnerabilities
+
+# CVE-2021-23437
+Pillow>=8.3.2
