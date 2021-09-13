@@ -12,10 +12,10 @@ from django.utils import timezone
 from django_countries.fields import CountryField
 from jsonfield import JSONField
 from requests.auth import HTTPBasicAuth
+from taggit.managers import TaggableManager
 from websecmap.organizations.models import Url
 from websecmap.reporting.models import SeriesOfUrlsReportMixin
 from websecmap.scanners.models import InternetNLV2Scan
-from taggit.managers import TaggableManager
 
 log = logging.getLogger(__package__)
 

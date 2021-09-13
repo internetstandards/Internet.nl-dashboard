@@ -27,7 +27,7 @@ from dashboard.internet_nl_dashboard.logic.domains import scan_urllist_now_ignor
 from dashboard.internet_nl_dashboard.logic.mail import send_scan_finished_mails
 from dashboard.internet_nl_dashboard.models import (Account, AccountInternetNLScan,
                                                     AccountInternetNLScanLog, DashboardUser,
-                                                    UploadLog, UrlList, TaggedUrlInUrllist)
+                                                    TaggedUrlInUrllist, UploadLog, UrlList)
 from dashboard.internet_nl_dashboard.scanners.scan_internet_nl_per_account import (
     creating_report, progress_running_scan, recover_and_retry)
 

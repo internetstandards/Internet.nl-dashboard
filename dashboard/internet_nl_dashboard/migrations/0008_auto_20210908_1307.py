@@ -14,6 +14,7 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='urllist',
             name='urls',
-            field=models.ManyToManyField(related_name='urls_in_dashboard_list_2', through='internet_nl_dashboard.TaggedUrlInUrllist', to='organizations.Url'),
+            field=models.ManyToManyField(related_name='urls_in_dashboard_list_2',
+                                         through='internet_nl_dashboard.TaggedUrlInUrllist', to='organizations.Url'),
         ),
     ]

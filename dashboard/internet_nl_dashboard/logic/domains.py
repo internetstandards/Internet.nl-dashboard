@@ -13,8 +13,9 @@ from websecmap.scanners.models import Endpoint
 from websecmap.scanners.scanner.dns_endpoints import compose_discover_task
 
 from dashboard.internet_nl_dashboard.logic import operation_response
-from dashboard.internet_nl_dashboard.models import (Account, AccountInternetNLScan, UrlList,
-                                                    UrlListReport, determine_next_scan_moment, TaggedUrlInUrllist)
+from dashboard.internet_nl_dashboard.models import (Account, AccountInternetNLScan,
+                                                    TaggedUrlInUrllist, UrlList, UrlListReport,
+                                                    determine_next_scan_moment)
 from dashboard.internet_nl_dashboard.scanners.scan_internet_nl_per_account import (initialize_scan,
                                                                                    update_state)
 
@@ -539,6 +540,9 @@ def get_urllist_content(account: Account, urllist_id: int) -> dict:
         has_mail_endpoint = len([x for x in url.relevant_endpoints if x.protocol == 'dns_soa']) > 0
         has_web_endpoint = len([x for x in url.relevant_endpoints if x.protocol == 'dns_a_aaaa']) > 0
 
+        has_tags = TaggedUrlInUrllist.objects.all().filter(url=url, urllist=urllist_id).only('id').first()
+        tags = list(has_tags.tags.names()) if has_tags else []
+
         response['urls'].append({
             'id': url.id,
             'url': url.url,
@@ -549,7 +553,7 @@ def get_urllist_content(account: Account, urllist_id: int) -> dict:
             'resolves': not url.not_resolvable,
             'has_mail_endpoint': has_mail_endpoint,
             'has_web_endpoint': has_web_endpoint,
-            'tags': [o.name for o in TaggedUrlInUrllist.objects.all().filter(url=url, urllist=urllist_id).first().tags.all()]
+            'tags': tags
         })
 
     return response
