@@ -21,10 +21,7 @@ from websecmap.scanners.scanner.internet_nl_v2 import InternetNLApiSettings
 from dashboard.celery import app
 from dashboard.internet_nl_dashboard.logic.mail import (email_configration_is_correct,
                                                         send_scan_finished_mails)
-from dashboard.internet_nl_dashboard.logic.report import (
-    add_keyed_ratings, add_percentages_to_statistics, add_simple_verdicts,
-    add_statistics_over_ratings, clean_up_not_required_data_to_speed_up_report_on_client,
-    remove_comply_or_explain, split_score_and_url)
+from dashboard.internet_nl_dashboard.logic.report import optimize_calculation_and_add_statistics
 from dashboard.internet_nl_dashboard.logic.urllist_dashboard_report import create_dashboard_report
 from dashboard.internet_nl_dashboard.models import (AccountInternetNLScan, AccountInternetNLScanLog,
                                                     UrlList, UrlListReport)
@@ -556,24 +553,8 @@ def upgrade_report_with_statistics(urllistreport_id: int) -> int:
 
     log.debug(f"Creating statistics over urllistreport {urllistreport}.")
 
-    # This saves a lot of data / weight.
-    remove_comply_or_explain(urllistreport)
-
-    # This makes comparisons easy and fast in table layouts
-    add_simple_verdicts(urllistreport)
-
-    # This makes sorting on score easy.
-    split_score_and_url(urllistreport)
-
-    # this makes all scores directly accessible, for easy display
-    # It will also remove the ratings as a list, as that contains a lot of data too (which takes costly parse time)
-    add_keyed_ratings(urllistreport)
-
-    # This adds some calculations over ratings
-    add_statistics_over_ratings(urllistreport)
-    add_percentages_to_statistics(urllistreport)
-
-    clean_up_not_required_data_to_speed_up_report_on_client(urllistreport)
+    urllistreport.calculation = optimize_calculation_and_add_statistics(urllistreport.calculation)
+    urllistreport.save()
 
     return int(urllistreport.pk)
 

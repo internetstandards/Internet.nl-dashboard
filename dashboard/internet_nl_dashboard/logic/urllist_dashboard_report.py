@@ -130,27 +130,8 @@ def rate_urllist_on_moment(urllist: UrlList, when: datetime = None, prevent_dupl
 
     urls = relevant_urls_at_timepoint_urllist(urllist=urllist, when=when)
     log.debug(f'Found {len(urls)} to be relevant at this moment.')
-    all_url_ratings = get_latest_urlratings_fast(urls, when)
 
-    # Clean the url_ratings to only include the content we need, only the content (being removed)
-    # and only the endpoint types
-    for urlrating in all_url_ratings:
-        calculation = remove_issues_from_calculation(urlrating.calculation, urllist_report_content[urllist.scan_type])
-
-        # Some endpoint types use the same ratings, such as dns_soa and dns_mx... This means that not
-        # all endpoints will be removed for internet.nl. We need the following endpoints per scan:
-        # -> note: urllist stores web/mail, they mean: web and mail_dashboard.
-        endpoint_types_per_scan = {"web": "dns_a_aaaa", "mail": "dns_soa"}
-        calculation = only_include_endpoint_protocols(calculation, [endpoint_types_per_scan[urllist.scan_type]])
-
-        # This already overrides endpoint statistics, use the calculation you get from this.
-        calculation, amount_of_issues = statistics_over_url_calculation(calculation)
-        # overwrite the rest of the statistics.
-        calculation = add_statistics_to_calculation(calculation, amount_of_issues)
-
-        urlrating.calculation = calculation
-
-    calculation = aggegrate_url_rating_scores(all_url_ratings)
+    calculation = create_calculation_on_urls(urls, when, scan_type=urllist.scan_type)
 
     try:
         last = UrlListReport.objects.filter(urllist=urllist, at_when__lte=when).latest('at_when')
@@ -180,6 +161,32 @@ def rate_urllist_on_moment(urllist: UrlList, when: datetime = None, prevent_dupl
     report.calculation = calculation
     report.save()
     return int(report.id)
+
+
+def create_calculation_on_urls(urls: List[Url], when: datetime, scan_type: str) -> Dict[str, Any]:
+    all_url_ratings = get_latest_urlratings_fast(urls, when)
+
+    # Clean the url_ratings to only include the content we need, only the content (being removed)
+    # and only the endpoint types
+    for urlrating in all_url_ratings:
+        calculation: Dict[str, Any] = remove_issues_from_calculation(
+            urlrating.calculation, urllist_report_content[scan_type])
+
+        # Some endpoint types use the same ratings, such as dns_soa and dns_mx... This means that not
+        # all endpoints will be removed for internet.nl. We need the following endpoints per scan:
+        # -> note: urllist stores web/mail, they mean: web and mail_dashboard.
+        endpoint_types_per_scan = {"web": "dns_a_aaaa", "mail": "dns_soa"}
+        calculation = only_include_endpoint_protocols(calculation, [endpoint_types_per_scan[scan_type]])
+
+        # This already overrides endpoint statistics, use the calculation you get from this.
+        calculation, amount_of_issues = statistics_over_url_calculation(calculation)
+        # overwrite the rest of the statistics.
+        calculation = add_statistics_to_calculation(calculation, amount_of_issues)
+
+        urlrating.calculation = calculation
+
+    calculation = aggegrate_url_rating_scores(all_url_ratings)
+    return calculation
 
 
 def only_include_endpoint_protocols(calculation, only_include_endpoint_types: List[str]):

@@ -9,8 +9,12 @@ from uuid import uuid4
 
 from actstream import action
 from django.db.models import Prefetch
+from websecmap.organizations.models import Url
+from websecmap.reporting.report import relevant_urls_at_timepoint
 
 from dashboard.internet_nl_dashboard.logic import operation_response
+from dashboard.internet_nl_dashboard.logic.urllist_dashboard_report import (
+    create_calculation_on_urls, sum_internet_nl_scores_over_rating)
 from dashboard.internet_nl_dashboard.models import Account, UrlList, UrlListReport
 
 log = logging.getLogger(__name__)
@@ -37,6 +41,54 @@ def create_report_response(reports) -> List[Dict[str, Any]]:
         'urllist_id': report.urllist.id,
         'urllist_scan_type': report.urllist.scan_type,
     } for report in reports]
+
+
+def ad_hoc_tagged_report(account: Account, report_id: int, tags: List[str]):
+    # Get a list of urls based on tags, the simplest way: require all tags to be present.
+    # Url Reports don't have to be re-created because you're piggy-backing on a specific, larger, report.
+    # We're not opening that report and then filter in it, that will complicate the report: we'll just
+    # make a new report. and at most store it in a cache. In the end we might even save it.
+
+    # report_id is used to get a time-point for an ad-hoc report.
+    # account is used to connect a session to the current report: so the correct user opens the report
+    # tags is a list of tags that must all be present in the list of urls
+
+    report = UrlListReport.objects.all().filter(
+        urllist__account=account, urllist__is_deleted=False, id=report_id).first()
+    if not report:
+        return {}
+
+    # This is an "AND" construction, each tag should be present:
+    urls = Url.objects.all().filter(taggedurlinurllist__urllist=report.urllist)
+    for tag in tags:
+        urls = urls.filter(taggedurlinurllist__tags__name__icontains=tag)
+
+    log.debug(f"Creating ad-hoc report with tags: {tags}, yielding in {len(urls)} urls.")
+
+    # Get all relevant urls at this moment from the report... how do you know when the list changes?
+    urls = relevant_urls_at_timepoint(urls, report.at_when)
+
+    # todo: probably add relevant endpoints at time point, otherwise very old stuff or new stuff will be added.
+    calculation = create_calculation_on_urls(urls, when=report.at_when, scan_type=report.report_type)
+    average_score = sum_internet_nl_scores_over_rating(calculation)
+    optimize_calculation_and_add_statistics(calculation)
+
+    # Do NOT save the calculation to the report(!) because it is not complete anymore:
+    report.calculation = calculation
+
+    return '{' \
+           f'"id": {report.id}, ' \
+           f'"urllist_id": {report.urllist.id}, ' \
+           f'"urllist_name": "{report.urllist.name}", ' \
+           f'"average_internet_nl_score": {average_score}, ' \
+           f'"total_urls": {report.total_urls}, ' \
+           f'"is_publicly_shared": {"true" if report.is_publicly_shared else "false"}, ' \
+           f'"at_when": "{report.at_when}", ' \
+           f'"calculation": {json.dumps(calculation)}, ' \
+           f'"report_type": "{report.report_type}", ' \
+           f'"public_report_code": "{report.public_report_code}", ' \
+           f'"public_share_code": "{report.public_share_code}" ' \
+           '}'
 
 
 def get_urllist_timeline_graph(account: Account, urllist_ids: str):
@@ -283,10 +335,34 @@ def get_previous_report(account: Account, urllist_id, at_when):
     return get_report(account, report['pk'])[0]
 
 
-def remove_comply_or_explain(report: UrlListReport):
+def optimize_calculation_and_add_statistics(calculation: Dict[str, Any]):
+
+    # This saves a lot of data / weight.
+    remove_comply_or_explain(calculation)
+
+    # This makes comparisons easy and fast in table layouts
+    add_simple_verdicts(calculation)
+
+    # This makes sorting on score easy.
+    split_score_and_url(calculation)
+
+    # this makes all scores directly accessible, for easy display
+    # It will also remove the ratings as a list, as that contains a lot of data too (which takes costly parse time)
+    add_keyed_ratings(calculation)
+
+    # This adds some calculations over ratings
+    add_statistics_over_ratings(calculation)
+    add_percentages_to_statistics(calculation)
+
+    clean_up_not_required_data_to_speed_up_report_on_client(calculation)
+
+    return calculation
+
+
+def remove_comply_or_explain(calculation: Dict[str, Any]):
     # Also remove all comply or explain information as it costs a lot of data/memory on the client
 
-    for url in report.calculation['urls']:
+    for url in calculation['urls']:
 
         if "explained_total_issues" not in url:
             # explanations have already been removed.
@@ -320,32 +396,31 @@ def remove_comply_or_explain(report: UrlListReport):
                 del rating['comply_or_explain_explanation_valid_until']
                 del rating['comply_or_explain_valid_at_time_of_report']
 
-    if "explained_high" not in report.calculation:
-        report.save()
-        return
+    if "explained_high" not in calculation:
+        return calculation
 
-    del report.calculation["explained_high"]
-    del report.calculation["explained_medium"]
-    del report.calculation["explained_low"]
-    del report.calculation["explained_high_endpoints"]
-    del report.calculation["explained_medium_endpoints"]
-    del report.calculation["explained_low_endpoints"]
-    del report.calculation["explained_high_urls"]
-    del report.calculation["explained_medium_urls"]
-    del report.calculation["explained_low_urls"]
-    del report.calculation["explained_total_url_issues"]
-    del report.calculation["explained_url_issues_high"]
-    del report.calculation["explained_url_issues_medium"]
-    del report.calculation["explained_url_issues_low"]
-    del report.calculation["explained_total_endpoint_issues"]
-    del report.calculation["explained_endpoint_issues_high"]
-    del report.calculation["explained_endpoint_issues_medium"]
-    del report.calculation["explained_endpoint_issues_low"]
+    del calculation["explained_high"]
+    del calculation["explained_medium"]
+    del calculation["explained_low"]
+    del calculation["explained_high_endpoints"]
+    del calculation["explained_medium_endpoints"]
+    del calculation["explained_low_endpoints"]
+    del calculation["explained_high_urls"]
+    del calculation["explained_medium_urls"]
+    del calculation["explained_low_urls"]
+    del calculation["explained_total_url_issues"]
+    del calculation["explained_url_issues_high"]
+    del calculation["explained_url_issues_medium"]
+    del calculation["explained_url_issues_low"]
+    del calculation["explained_total_endpoint_issues"]
+    del calculation["explained_endpoint_issues_high"]
+    del calculation["explained_endpoint_issues_medium"]
+    del calculation["explained_endpoint_issues_low"]
 
-    report.save()
+    return calculation
 
 
-def add_keyed_ratings(report: UrlListReport):
+def add_keyed_ratings(calculation: Dict[str, Any]):
     """
     This creates issues that are directly accessible by keyword, instead of iterating over a list and finding them.
     This is much faster when showing a report of course. Issues are never duplicated anyway, so not doing this was
@@ -355,16 +430,14 @@ def add_keyed_ratings(report: UrlListReport):
     :return:
     """
 
-    for url in report.calculation['urls']:
+    for url in calculation['urls']:
         for endpoint in url['endpoints']:
             endpoint['ratings_by_type'] = {}
             for rating in endpoint['ratings']:
                 endpoint['ratings_by_type'][rating['type']] = rating
 
-    report.save()
 
-
-def clean_up_not_required_data_to_speed_up_report_on_client(report: UrlListReport):
+def clean_up_not_required_data_to_speed_up_report_on_client(calculation: Dict[str, Any]):
     """
     Loading in JSON objects in the client takes (a lot of) time. The larger the object, the more time.
     Especially with 500+ urls, shaving off data increases parse speed with over 50%. So this is a must
@@ -373,7 +446,7 @@ def clean_up_not_required_data_to_speed_up_report_on_client(report: UrlListRepor
     :return:
     """
 
-    for url in report.calculation['urls']:
+    for url in calculation['urls']:
         for endpoint in url['endpoints']:
             for rating_key in endpoint['ratings_by_type']:
                 # clean up fields we don't need, to make the report show even quicker
@@ -399,10 +472,8 @@ def clean_up_not_required_data_to_speed_up_report_on_client(report: UrlListRepor
             # with significantly == Vue will parse it, and for a 500 url list this will take 5 seconds.
             endpoint['ratings'] = []
 
-    report.save()
 
-
-def add_simple_verdicts(report: UrlListReport):
+def add_simple_verdicts(calculation: Dict[str, Any]):
     """
     # Todo: this value is already available, and more accurately, from the API. So use the value that got returned
     # from the API instead.
@@ -432,22 +503,20 @@ def add_simple_verdicts(report: UrlListReport):
         'passed': 400,
     }
 
-    for url in report.calculation['urls']:
+    for url in calculation['urls']:
         for endpoint in url['endpoints']:
             for rating in endpoint['ratings']:
                 rating['simple_progression'] = progression_table.get(rating.get('test_result', ''), 0)
 
-    report.save()
 
-
-def split_score_and_url(report: UrlListReport):
+def split_score_and_url(calculation: Dict[str, Any]):
     """
     Split the internet.nl score and the url to be instantly accessible.
 
     :param report:
     :return:
     """
-    for url in report.calculation['urls']:
+    for url in calculation['urls']:
         for endpoint in url['endpoints']:
             score: Union[int, str] = 0
             url = ""
@@ -493,18 +562,16 @@ def split_score_and_url(report: UrlListReport):
                 }
             )
 
-    report.save()
 
-
-def add_statistics_over_ratings(report: UrlListReport):
+def add_statistics_over_ratings(calculation: Dict[str, Any]):
     # works only after ratings by type.
     # todo: in report section, move statistics_per_issue_type to calculation
 
-    report.calculation['statistics_per_issue_type'] = {}
+    calculation['statistics_per_issue_type'] = {}
 
     possible_issues = []
 
-    for url in report.calculation['urls']:
+    for url in calculation['urls']:
         for endpoint in url['endpoints']:
             possible_issues += endpoint['ratings_by_type'].keys()
     possible_issues = list(set(possible_issues))
@@ -512,52 +579,50 @@ def add_statistics_over_ratings(report: UrlListReport):
     # prepare the stats dict to have less expensive operations in the 3x nested loop
     for issue in possible_issues:
         # todo: could be a defaultdict. although explicit initialization is somewhat useful.
-        report.calculation['statistics_per_issue_type'][issue] = {
+        calculation['statistics_per_issue_type'][issue] = {
             'high': 0, 'medium': 0, 'low': 0, 'ok': 0, 'not_ok': 0, 'not_testable': 0, 'not_applicable': 0,
             'error_in_test': 0}
 
     # count the numbers, can we do this with some map/add function that is way faster?
     for issue in possible_issues:
-        for url in report.calculation['urls']:
+        for url in calculation['urls']:
             for endpoint in url['endpoints']:
                 rating = endpoint['ratings_by_type'].get(issue, None)
                 if not rating:
                     continue
-                report.calculation['statistics_per_issue_type'][issue]['high'] += rating['high']
-                report.calculation['statistics_per_issue_type'][issue]['medium'] += rating['medium']
-                report.calculation['statistics_per_issue_type'][issue]['low'] += rating['low']
-                report.calculation['statistics_per_issue_type'][issue]['not_testable'] += rating['not_testable']
-                report.calculation['statistics_per_issue_type'][issue]['not_applicable'] += rating['not_applicable']
-                report.calculation['statistics_per_issue_type'][issue]['error_in_test'] += rating['error_in_test']
+                calculation['statistics_per_issue_type'][issue]['high'] += rating['high']
+                calculation['statistics_per_issue_type'][issue]['medium'] += rating['medium']
+                calculation['statistics_per_issue_type'][issue]['low'] += rating['low']
+                calculation['statistics_per_issue_type'][issue]['not_testable'] += rating['not_testable']
+                calculation['statistics_per_issue_type'][issue]['not_applicable'] += rating['not_applicable']
+                calculation['statistics_per_issue_type'][issue]['error_in_test'] += rating['error_in_test']
 
                 # things that are not_testable or not_applicable do not have impact on thigns being OK
                 # see: https://github.com/internetstandards/Internet.nl-dashboard/issues/68
                 if not any([rating['not_testable'], rating['not_applicable'], rating['error_in_test']]):
-                    report.calculation['statistics_per_issue_type'][issue]['ok'] += rating['ok']
+                    calculation['statistics_per_issue_type'][issue]['ok'] += rating['ok']
                     # these can be summed because only one of high, med, low is 1
-                    report.calculation['statistics_per_issue_type'][issue]['not_ok'] += \
+                    calculation['statistics_per_issue_type'][issue]['not_ok'] += \
                         rating['high'] + rating['medium'] + rating['low']
 
-    report.save()
 
-
-def add_percentages_to_statistics(report: UrlListReport):
-    for key, _ in report.calculation['statistics_per_issue_type'].items():
-        issue = report.calculation['statistics_per_issue_type'][key]
+def add_percentages_to_statistics(calculation: Dict[str, Any]):
+    for key, _ in calculation['statistics_per_issue_type'].items():
+        issue = calculation['statistics_per_issue_type'][key]
 
         # may 2020: we want to see the other issues in the graphs as being gray.
         graphs_all = sum([issue['ok'], issue['high'], issue['medium'], issue['low'],
                           issue['not_testable'], issue['not_applicable'], issue['error_in_test']])
         if graphs_all == 0:
             # This happens when everything tested is not applicable or not testable: thus no stats:
-            report.calculation['statistics_per_issue_type'][key]['pct_high'] = 0
-            report.calculation['statistics_per_issue_type'][key]['pct_medium'] = 0
-            report.calculation['statistics_per_issue_type'][key]['pct_low'] = 0
-            report.calculation['statistics_per_issue_type'][key]['pct_ok'] = 0
-            report.calculation['statistics_per_issue_type'][key]['pct_not_ok'] = 0
+            calculation['statistics_per_issue_type'][key]['pct_high'] = 0
+            calculation['statistics_per_issue_type'][key]['pct_medium'] = 0
+            calculation['statistics_per_issue_type'][key]['pct_low'] = 0
+            calculation['statistics_per_issue_type'][key]['pct_ok'] = 0
+            calculation['statistics_per_issue_type'][key]['pct_not_ok'] = 0
             continue
 
-        tcskp = report.calculation['statistics_per_issue_type'][key]
+        tcskp = calculation['statistics_per_issue_type'][key]
         tcskp['pct_high'] = round((issue['high'] / graphs_all) * 100, 2)
         tcskp['pct_medium'] = round((issue['medium'] / graphs_all) * 100, 2)
         tcskp['pct_low'] = round((issue['low'] / graphs_all) * 100, 2)
@@ -572,8 +637,6 @@ def add_percentages_to_statistics(report: UrlListReport):
         # instead of including medium and low as ok.
         tcskp['pct_ok'] = round(((issue['ok']) / graphs_all) * 100, 2)
         tcskp['pct_not_ok'] = round((issue['not_ok'] / graphs_all) * 100, 2)
-
-    report.save()
 
 
 def share(account, report_id, share_code):

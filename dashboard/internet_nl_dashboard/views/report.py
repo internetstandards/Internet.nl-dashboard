@@ -5,7 +5,7 @@ from django.http import HttpResponse, JsonResponse
 from websecmap.app.common import JSEncoder
 
 from dashboard.internet_nl_dashboard.logic.report import (
-    get_previous_report, get_recent_reports, get_report,
+    ad_hoc_tagged_report, get_previous_report, get_recent_reports, get_report,
     get_report_differences_compared_to_current_list, get_shared_report, get_urllist_timeline_graph,
     share, unshare, update_report_code, update_share_code)
 from dashboard.internet_nl_dashboard.views import LOGIN_URL, get_account, get_json_body
@@ -31,6 +31,16 @@ def get_report_differences_compared_to_current_list_(request, report_id):
 @login_required(login_url=LOGIN_URL)
 def get_previous_report_(request, urllist_id, at_when):
     return JsonResponse(get_previous_report(get_account(request), urllist_id, at_when), encoder=JSEncoder, safe=False)
+
+
+@login_required(login_url=LOGIN_URL)
+def get_ad_hoc_tagged_report_(request, report_id: int):
+    data = get_json_body(request)
+
+    return HttpResponse(  # pylint: disable=http-response-with-content-type-json
+        ad_hoc_tagged_report(get_account(request), report_id, data.get('tags', [])),
+        content_type="application/json"
+    )
 
 
 @login_required(login_url=LOGIN_URL)

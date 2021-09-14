@@ -197,32 +197,29 @@ def test_report_upgrade(db, monkeypatch) -> None:
     fake_report.save()
 
     # First check if we are removing the comply_or_explain keys, mainly to save data:
-    remove_comply_or_explain(fake_report)
-    fake_report = UrlListReport.objects.all().first()
-    assert "explained_endpoint_issues_high" not in fake_report.calculation['urls'][0]
-    assert "comply_or_explain_explanation" not in fake_report.calculation['urls'][0]['endpoints'][0]["ratings"][0]
+    remove_comply_or_explain(fake_calculation)
+    assert "explained_endpoint_issues_high" not in fake_calculation['urls'][0]
+    assert "comply_or_explain_explanation" not in fake_calculation['urls'][0]['endpoints'][0]["ratings"][0]
 
     # Now add ratings based on keys, which makes direct access possible:
-    add_keyed_ratings(fake_report)
-    fake_report = UrlListReport.objects.all().first()
-    assert "ratings_by_type" in fake_report.calculation['urls'][0]['endpoints'][0]
-    assert "internet_nl_web_ipv6_ws_address" in fake_report.calculation['urls'][0]['endpoints'][0]['ratings_by_type']
+    add_keyed_ratings(fake_calculation)
+    assert "ratings_by_type" in fake_calculation['urls'][0]['endpoints'][0]
+    assert "internet_nl_web_ipv6_ws_address" in fake_calculation['urls'][0]['endpoints'][0]['ratings_by_type']
 
     # Add graph statistics, so the graphs can be instantly created based on report data
-    add_statistics_over_ratings(fake_report)
-    fake_report = UrlListReport.objects.all().first()
-    assert "statistics_per_issue_type" in fake_report.calculation
-    assert "internet_nl_web_ipv6_ws_address" in fake_report.calculation["statistics_per_issue_type"]
+    add_statistics_over_ratings(fake_calculation)
+    assert "statistics_per_issue_type" in fake_calculation
+    assert "internet_nl_web_ipv6_ws_address" in fake_calculation["statistics_per_issue_type"]
     # todo: we can add some tests here to see if the aggregation is correct
 
     # add some statistics over all these metrics
-    add_percentages_to_statistics(fake_report)
-    fake_report = UrlListReport.objects.all().first()
-    assert "pct_ok" in fake_report.calculation["statistics_per_issue_type"]["internet_nl_web_ipv6_ws_address"]
+    add_percentages_to_statistics(fake_calculation)
+
+    assert "pct_ok" in fake_calculation["statistics_per_issue_type"]["internet_nl_web_ipv6_ws_address"]
 
     # and make sure the report is complete: meaning that all urls requested are present, even though they
     # could not be scanned. So a top 100 stays a top 100.
-    assert (len(fake_report.calculation['urls']) == 1)
+    assert (len(fake_calculation['urls']) == 1)
     upgrade_report_with_unscannable_urls(fake_report.id, scan.id)
     fake_report = UrlListReport.objects.all().first()
     assert(len(fake_report.calculation['urls']) == len(urls))
