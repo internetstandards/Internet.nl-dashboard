@@ -81,7 +81,7 @@ def ad_hoc_tagged_report(account: Account, report_id: int, tags: List[str]):
            f'"urllist_id": {report.urllist.id}, ' \
            f'"urllist_name": "{report.urllist.name}", ' \
            f'"average_internet_nl_score": {average_score}, ' \
-           f'"total_urls": {report.total_urls}, ' \
+           f'"total_urls": {len(urls)}, ' \
            f'"is_publicly_shared": {"true" if report.is_publicly_shared else "false"}, ' \
            f'"at_when": "{report.at_when}", ' \
            f'"calculation": {json.dumps(calculation)}, ' \
