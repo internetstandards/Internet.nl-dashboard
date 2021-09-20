@@ -3,8 +3,9 @@ import json
 import logging
 import re
 from copy import copy
+from datetime import datetime
 from time import sleep
-from typing import Any, Dict, List, Union
+from typing import Any, Dict, List, Optional, Union
 from uuid import uuid4
 
 from actstream import action
@@ -43,7 +44,7 @@ def create_report_response(reports) -> List[Dict[str, Any]]:
     } for report in reports]
 
 
-def ad_hoc_tagged_report(account: Account, report_id: int, tags: List[str]):
+def ad_hoc_report_create(account: Account, report_id: int, tags: List[str], at_when: Optional[datetime]):
     # Get a list of urls based on tags, the simplest way: require all tags to be present.
     # Url Reports don't have to be re-created because you're piggy-backing on a specific, larger, report.
     # We're not opening that report and then filter in it, that will complicate the report: we'll just
@@ -63,6 +64,9 @@ def ad_hoc_tagged_report(account: Account, report_id: int, tags: List[str]):
     for tag in tags:
         urls = urls.filter(taggedurlinurllist__tags__name__icontains=tag)
 
+    if at_when:
+        report.at_when = at_when
+
     log.debug(f"Creating ad-hoc report with tags: {tags}, yielding in {len(urls)} urls.")
 
     # Get all relevant urls at this moment from the report... how do you know when the list changes?
@@ -70,21 +74,36 @@ def ad_hoc_tagged_report(account: Account, report_id: int, tags: List[str]):
 
     # todo: probably add relevant endpoints at time point, otherwise very old stuff or new stuff will be added.
     calculation = create_calculation_on_urls(urls, when=report.at_when, scan_type=report.report_type)
-    average_score = sum_internet_nl_scores_over_rating(calculation)
+    report.average_internet_nl_score = sum_internet_nl_scores_over_rating(calculation)
     optimize_calculation_and_add_statistics(calculation)
 
     # Do NOT save the calculation to the report(!) because it is not complete anymore:
     report.calculation = calculation
 
+    return report
+
+
+def save_ad_hoc_tagged_report(account: Account, report_id: int, tags: List[str], at_when: Optional[datetime]):
+    report = ad_hoc_report_create(account, report_id, tags, at_when)
+    # A new ID saves as a new record
+    report.id = None
+    report.save()
+    return operation_response(success=True)
+
+
+def ad_hoc_tagged_report(account: Account, report_id: int, tags: List[str], at_when: Optional[datetime]):
+
+    report = ad_hoc_report_create(account, report_id, tags, at_when)
+
     return '{' \
            f'"id": {report.id}, ' \
            f'"urllist_id": {report.urllist.id}, ' \
            f'"urllist_name": "{report.urllist.name}", ' \
-           f'"average_internet_nl_score": {average_score}, ' \
-           f'"total_urls": {len(urls)}, ' \
+           f'"average_internet_nl_score": {report.average_internet_nl_score}, ' \
+           f'"total_urls": {len(report.calculation["urls"])}, ' \
            f'"is_publicly_shared": {"true" if report.is_publicly_shared else "false"}, ' \
            f'"at_when": "{report.at_when}", ' \
-           f'"calculation": {json.dumps(calculation)}, ' \
+           f'"calculation": {json.dumps(report.calculation)}, ' \
            f'"report_type": "{report.report_type}", ' \
            f'"public_report_code": "{report.public_report_code}", ' \
            f'"public_share_code": "{report.public_share_code}" ' \
@@ -461,8 +480,11 @@ def clean_up_not_required_data_to_speed_up_report_on_client(calculation: Dict[st
                 del endpoint['ratings_by_type'][rating_key]['not_testable']  # only 'ok' is used in spreadsheet export.
                 del endpoint['ratings_by_type'][rating_key]['not_applicable']  # only 'ok' is used in spreadsheet export
                 del endpoint['ratings_by_type'][rating_key]['error_in_test']  # only 'ok' is used in spreadsheet export
-                del endpoint['ratings_by_type'][rating_key]['since']
-                del endpoint['ratings_by_type'][rating_key]['last_scan']
+
+                # Because of the 'ad hoc' reports, it's valuable to show when a measurement was performed
+                # as a report can contain metrics from various moments in time (due to re-scans on measurement errors)
+                # del endpoint['ratings_by_type'][rating_key]['since']
+                # del endpoint['ratings_by_type'][rating_key]['last_scan']
                 del endpoint['ratings_by_type'][rating_key]['explanation']
 
                 del endpoint['ratings_by_type'][rating_key]['type']  # is already in the key

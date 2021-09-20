@@ -72,6 +72,7 @@ urlpatterns = [
     path('data/report/shared/<str:report_code>/', report.get_shared_report_),
 
     path('data/report/ad_hoc/<int:report_id>/', report.get_ad_hoc_tagged_report_),
+    path('data/report/ad_hoc_save/<int:report_id>/', report.save_ad_hoc_tagged_report_),
 
     path('data/report/share/share/', report.x_share),
     path('data/report/share/unshare/', report.x_unshare),
