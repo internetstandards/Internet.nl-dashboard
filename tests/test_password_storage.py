@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: Apache-2.0
 """
 Checks that the password in the Account can be stored and retrieved, and results into the same value.
 

@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: Apache-2.0
 from dashboard.internet_nl_dashboard.logic.account import get_report_settings, save_report_settings
 from dashboard.internet_nl_dashboard.models import Account
 

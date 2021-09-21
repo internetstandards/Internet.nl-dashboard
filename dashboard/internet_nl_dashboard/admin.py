@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: Apache-2.0
 import logging
 import re
 from datetime import datetime, timedelta
@@ -26,7 +27,7 @@ from dashboard.internet_nl_dashboard.logic.domains import scan_urllist_now_ignor
 from dashboard.internet_nl_dashboard.logic.mail import send_scan_finished_mails
 from dashboard.internet_nl_dashboard.models import (Account, AccountInternetNLScan,
                                                     AccountInternetNLScanLog, DashboardUser,
-                                                    UploadLog, UrlList)
+                                                    TaggedUrlInUrllist, UploadLog, UrlList)
 from dashboard.internet_nl_dashboard.scanners.scan_internet_nl_per_account import (
     creating_report, progress_running_scan, recover_and_retry)
 
@@ -269,11 +270,11 @@ class UrlListAdmin(ImportExportModelAdmin, admin.ModelAdmin):
 
     @staticmethod
     def no_of_urls(obj):
-        return Url.objects.all().filter(urls_in_dashboard_list=obj, is_dead=False, not_resolvable=False).count()
+        return Url.objects.all().filter(urls_in_dashboard_list_2=obj, is_dead=False, not_resolvable=False).count()
 
     @staticmethod
     def no_of_endpoints(obj):
-        return Endpoint.objects.all().filter(url__urls_in_dashboard_list=obj, is_dead=False,
+        return Endpoint.objects.all().filter(url__urls_in_dashboard_list_2=obj, is_dead=False,
                                              url__is_dead=False, url__not_resolvable=False).count()
 
     actions = []
@@ -289,6 +290,13 @@ class UrlListAdmin(ImportExportModelAdmin, admin.ModelAdmin):
     # This comes from the manual... so, well.
     scan_urllist_now.short_description = "Scan now (bypassing quota and business rules)"   # type: ignore
     actions.append('scan_urllist_now')
+
+
+@admin.register(TaggedUrlInUrllist)
+class TaggedUrlInUrllistAdmin(ImportExportModelAdmin, admin.ModelAdmin):
+
+    list_display = ('url', 'urllist')
+    fields = ('url', 'urllist', 'tags')
 
 
 @admin.register(AccountInternetNLScan)

@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: Apache-2.0
 """
 These testcases make sure we can create scans.
 

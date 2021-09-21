@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: Apache-2.0
 import logging
 from datetime import datetime, timedelta
 
@@ -11,6 +12,7 @@ from django.utils import timezone
 from django_countries.fields import CountryField
 from jsonfield import JSONField
 from requests.auth import HTTPBasicAuth
+from taggit.managers import TaggableManager
 from websecmap.organizations.models import Url
 from websecmap.reporting.models import SeriesOfUrlsReportMixin
 from websecmap.scanners.models import InternetNLV2Scan
@@ -173,9 +175,9 @@ class UrlList(models.Model):
     )
 
     urls = models.ManyToManyField(
-        Url,
-        blank=True,
-        related_name='urls_in_dashboard_list'
+        through="TaggedUrlInUrllist",
+        to=Url,
+        related_name='urls_in_dashboard_list_2'
     )
 
     enable_scans = models.BooleanField(
@@ -276,11 +278,23 @@ class UrlList(models.Model):
         #     if last_scan.scan.finished_on else timezone.now() - timedelta(days=30)
         # and finished_on < yesterday
         if last_scan.state in ['finished', 'cancelled']:
-            # log.debug("Scan now available: last scan finished over 24 hours ago on list %s" % self)
+            # log.debug("Sc an now available: last scan finished over 24 hours ago on list %s" % self)
             return True
 
         # log.debug("Scan now NOT available: Last scan might be in the last 24 hours. %s" % self)
         return False
+
+
+class TaggedUrlInUrllist(models.Model):
+    urllist = models.ForeignKey(UrlList, on_delete=models.CASCADE)
+    url = models.ForeignKey(Url, on_delete=models.CASCADE)
+    tags = TaggableManager()
+
+    class Meta:
+        db_table = "internet_nl_dashboard_urllist_x_tagged_url"
+        unique_together = [
+            ['urllist', 'url']
+        ]
 
 
 def determine_next_scan_moment(preference: str) -> datetime:

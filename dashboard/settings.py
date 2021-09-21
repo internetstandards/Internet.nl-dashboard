@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: Apache-2.0
 import os
 from collections import OrderedDict
 from datetime import timedelta
@@ -53,6 +54,8 @@ INSTALLED_APPS = [
     'jet.dashboard',
     'jet',
     'nested_admin',
+
+    "taggit",
 
     # Import Export
     'import_export',
@@ -568,6 +571,7 @@ JET_SIDE_MENU_ITEMS = [
     {'label': _('📘 Dashboard'), 'items': [
         {'name': 'constance.config', 'label': '🎛️ Config'},
         {'name': 'internet_nl_dashboard.urllist', 'label': "Domain lists"},
+        {'name': 'internet_nl_dashboard.taggedurlinurllist', 'label': 'Tagged Url'},
         {'name': 'internet_nl_dashboard.uploadlog', 'label': 'Uploads'},
     ]},
 
@@ -703,3 +707,5 @@ CORS_ALLOW_HEADERS = list(default_headers) + [
 CORS_ALLOW_CREDENTIALS = True
 
 LOCKFILE_DIR = os.environ.get('LOCKFILE_DIR', os.path.abspath(os.path.dirname(__file__)) + '/lockfiles/')
+
+TAGGIT_CASE_INSENSITIVE = True

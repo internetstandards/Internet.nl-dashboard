@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: Apache-2.0
 from django.core.management import BaseCommand
 
 from dashboard.internet_nl_dashboard.logic.internet_nl_translations import \

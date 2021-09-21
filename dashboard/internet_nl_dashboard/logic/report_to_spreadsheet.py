@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: Apache-2.0
 import itertools
 import logging
 from string import ascii_uppercase
@@ -97,7 +98,7 @@ def create_spreadsheet(account: Account, report_id: int):
     calculation = report.calculation
     urls = calculation["urls"]
 
-    protocol = 'dns_soa' if report.urllist.scan_type == 'mail' else 'dns_a_aaaa'
+    protocol = 'dns_soa' if report.report_type == 'mail' else 'dns_a_aaaa'
 
     # results is a matrix / 2-d array / array with arrays.
     data: List[List[Any]] = []

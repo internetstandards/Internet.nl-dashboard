@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: Apache-2.0
 from dashboard.internet_nl_dashboard.logic.urllist_dashboard_report import \
     sum_internet_nl_scores_over_rating
 

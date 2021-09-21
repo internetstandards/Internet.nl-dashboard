@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: Apache-2.0
 from django.contrib.auth.decorators import user_passes_test
 from django.contrib.auth.models import User
 from django.http import HttpResponse, JsonResponse

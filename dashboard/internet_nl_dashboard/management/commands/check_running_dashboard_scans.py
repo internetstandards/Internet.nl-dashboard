@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: Apache-2.0
 import logging
 
 from websecmap.app.management.commands._private import TaskCommand

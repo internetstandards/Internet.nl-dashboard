@@ -34,5 +34,9 @@ django-cors-headers
 # prior releases don't have wheels for Apple Silicon
 numpy >= 1.21.0
 
+
 # include (security) version constraints for non primary dependencies
 -c security-constraints.in
+
+# tags on urls in relationships
+django-taggit
