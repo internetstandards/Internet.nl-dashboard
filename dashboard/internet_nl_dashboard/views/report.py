@@ -68,8 +68,9 @@ def get_recent_reports_(request) -> JsonResponse:
 
 
 @login_required(login_url=LOGIN_URL)
-def get_urllist_report_graph_data_(request, urllist_ids) -> JsonResponse:
-    return JsonResponse(get_urllist_timeline_graph(get_account(request), urllist_ids), encoder=JSEncoder, safe=False)
+def get_urllist_report_graph_data_(request, urllist_ids, report_type: str = "web") -> JsonResponse:
+    return JsonResponse(get_urllist_timeline_graph(get_account(request), urllist_ids, report_type),
+                        encoder=JSEncoder, safe=False)
 
 
 # No login required: reports via this method are public

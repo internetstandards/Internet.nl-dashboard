@@ -110,7 +110,7 @@ def ad_hoc_tagged_report(account: Account, report_id: int, tags: List[str], at_w
            '}'
 
 
-def get_urllist_timeline_graph(account: Account, urllist_ids: str):
+def get_urllist_timeline_graph(account: Account, urllist_ids: str, report_type: str = "web"):
     """
     This is the data for a line / bar chart that shows information on the average internet.nl score.
     There can be multiple reports selected,
@@ -136,6 +136,9 @@ def get_urllist_timeline_graph(account: Account, urllist_ids: str):
     while "" in list_split:
         list_split.remove("")
 
+    if report_type not in ["web", "mail"]:
+        report_type = "web"
+
     original_order = copy(list_split)
 
     # aside from casting, remove double lists. this orders the list.
@@ -143,7 +146,7 @@ def get_urllist_timeline_graph(account: Account, urllist_ids: str):
 
     statistics_over_last_years_reports = Prefetch(
         'urllistreport_set',
-        queryset=UrlListReport.objects.filter().order_by('at_when').only(
+        queryset=UrlListReport.objects.filter(report_type=report_type).order_by('at_when').only(
             'at_when', 'average_internet_nl_score', 'total_urls'),
         to_attr='reports_from_the_last_year')
 

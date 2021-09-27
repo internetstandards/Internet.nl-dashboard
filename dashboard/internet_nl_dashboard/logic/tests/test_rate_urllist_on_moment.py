@@ -15,7 +15,7 @@ def test_rate_urllists_now(db) -> None:  # pylint: disable=invalid-name, unused-
 
     # first rate the urls.
     create_url_reports(url)
-    rate_urllists_now([my_list])
+    rate_urllists_now([my_list], True, my_list.scan_type)
 
     # We now should have 1 UrlListReport
     assert UrlListReport.objects.all().count() == 1

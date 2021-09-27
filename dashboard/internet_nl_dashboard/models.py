@@ -184,12 +184,12 @@ class UrlList(models.Model):
         default=True,
     )
 
-    # todo: should we support both? How does that impact reporting?
     scan_type = models.CharField(
         max_length=4,
         choices=(
             ('web', 'web'),
             ('mail', 'mail'),
+            ('all', 'all'),
         ),
         default='web',
     )

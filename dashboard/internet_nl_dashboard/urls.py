@@ -85,7 +85,8 @@ urlpatterns = [
     path('data/report/get_previous/<int:urllist_id>/<str:at_when>/', report.get_previous_report_),
 
     path('data/report/recent/', report.get_recent_reports_),
-    path('data/report/urllist_timeline_graph/<str:urllist_ids>/', report.get_urllist_report_graph_data_),
+    path('data/report/urllist_timeline_graph/<str:urllist_ids>/<str:report_type>/',
+         report.get_urllist_report_graph_data_),
     path('data/download-spreadsheet/<int:report_id>/<spreadsheet_filetype:file_type>/',
          download_spreadsheet.download_spreadsheet),
 

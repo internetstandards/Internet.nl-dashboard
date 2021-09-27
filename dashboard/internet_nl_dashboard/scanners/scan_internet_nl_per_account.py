@@ -83,14 +83,25 @@ def initialize_scan(urllist_id: int, manual_or_scheduled: str = "scheduled") -> 
     if not urllist:
         return -1
 
-    # We need to store the scan type in the InternetNLV2Scan at creation, because the type in the list might change:
-    translated_scan_types = {'web': 'web', 'mail': 'mail_dashboard'}
+    if urllist.scan_type == "all":
+        create_scan("mail_dashboard", urllist, manual_or_scheduled)
+        return create_scan("web", urllist, manual_or_scheduled)
+    if urllist.scan_type == "mail":
+        return create_scan("mail_dashboard", urllist, manual_or_scheduled)
+    if urllist.scan_type == "web":
+        return create_scan("web", urllist, manual_or_scheduled)
+
+    return -1
+
+
+def create_scan(internal_scan_type: str, urllist: UrlList, manual_or_scheduled: str = "scheduled") -> int:
     new_scan = InternetNLV2Scan()
-    new_scan.type = translated_scan_types[urllist.scan_type]
+    new_scan.type = internal_scan_type
     new_scan.save()
     internet_nl_v2_websecmap.update_state(new_scan.id, "requested and empty",
                                           "requested a scan to be performed on internet.nl api")
 
+    # We need to store the scan type in the InternetNLV2Scan at creation, because the type in the list might change:
     accountinternetnlscan = AccountInternetNLScan()
     accountinternetnlscan.account = urllist.account
     accountinternetnlscan.urllist = urllist
@@ -428,7 +439,7 @@ def creating_report(scan_id: int):
     # at the moment the function is actually called. If you need accurate time in the function, make sure the
     # function calls 'timezone.now()' when the function is run.
     return (group(recreate_url_reports(list(scan.urllist.urls.all().values_list('id', flat=True))))
-            | create_dashboard_report.si(scan.urllist.id)
+            | create_dashboard_report.si(scan.id)
             | connect_urllistreport_to_accountinternetnlscan.s(scan.id)
             | upgrade_report_with_statistics.s()
             | upgrade_report_with_unscannable_urls.s(scan.id)

@@ -125,7 +125,8 @@ def send_scan_finished_mails(scan: AccountInternetNLScan) -> int:
 
         # could be None, strictly speaking
         if scan.scan:
-            placeholders['scan_type'] = scan.scan.type if scan.scan.type == "web" else "mail"
+            placeholders['scan_type'] = scan.scan.type \
+                if scan.scan.type == "web" else "all" if scan.scan.type == "all" else "mail"
 
         if scan.started_on:
             placeholders['scan_started_on'] = scan.started_on.isoformat()
