@@ -297,6 +297,32 @@ class TaggedUrlInUrllist(models.Model):
         ]
 
 
+class SubdomainDiscoveryScan(models.Model):
+    """
+    Automatically tries to find "www" subdomains of all top level domains. Saves some typing.
+    Adds the subdomains with the tag of the domain, extension and the subdomain. And the tag subdomain.
+
+    Only one can be active at a time on an urllist. In the future it might try to find more subdomains.
+    It will not remove subdomains if they don't exist: those will simply not be scanned.
+
+    Flow: requested -> scanning -> finished|error|cancelled
+    """
+    urllist = models.ForeignKey(UrlList, on_delete=models.CASCADE)
+    state = models.CharField(
+        max_length=20,
+        default="requested",
+        help_text="Name of the UrlList, for example name of the organization in it."
+    )
+    state_changed_on = models.DateTimeField(
+        blank=True,
+        null=True
+    )
+    state_message = models.CharField(max_length=200, blank=True)
+    # Archive what subdomains have been discovered and have been added to the list. This can be an enormous
+    # list. It's handy for inspection purposes.
+    domains_discovered = models.TextField()
+
+
 def determine_next_scan_moment(preference: str) -> datetime:
     """
     Converts one of the (many) string options to the next sensible date/time combination in the future.

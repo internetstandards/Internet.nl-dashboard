@@ -7,7 +7,7 @@ from django.urls import path, register_converter
 import dashboard.internet_nl_dashboard.signals  # noqa  # pylint: disable=unused-import
 from dashboard.internet_nl_dashboard.views import (__init__, account, domains, download_spreadsheet,
                                                    mail, powertools, report, scan_monitor, session,
-                                                   spreadsheet, tags, usage, user)
+                                                   spreadsheet, subdomains, tags, usage, user)
 
 
 class SpreadsheetFileTypeConverter:
@@ -44,6 +44,8 @@ urlpatterns = [
     path('data/urllist/create_list/', domains.create_list_),
     path('data/urllist/delete/', domains.delete_list_),
     path('data/urllist/scan_now/', domains.scan_now_),
+    path('data/urllist/discover-subdomains/<int:urllist_id>/', subdomains.request_subdomain_discovery_scan_),
+    path('data/urllist/discover-subdomains-status/<int:urllist_id>/', subdomains.subdomain_discovery_scan_status_),
     path('data/urllist/url/save/', domains.alter_url_in_urllist_),
     path('data/urllist/url/add/', domains.add_urls_to_urllist),
     path('data/urllist/url/delete/', domains.delete_url_from_urllist_),

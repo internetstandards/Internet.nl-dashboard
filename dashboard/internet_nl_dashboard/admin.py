@@ -378,6 +378,13 @@ class UploadLogAdmin(ImportExportModelAdmin, admin.ModelAdmin):
     fields = ('original_filename', 'internal_filename', 'status', 'message', 'user', 'upload_date', 'filesize')
 
 
+@admin.register(models.SubdomainDiscoveryScan)
+class SubdomainDiscoveryScanAdmin(ImportExportModelAdmin, admin.ModelAdmin):
+    list_display = ('urllist', 'state', 'state_changed_on', 'state_message')
+    fields = ("urllist", "state", "state_changed_on", "state_message", "domains_discovered")
+    list_filter = ('state', 'state_changed_on', "state_message")
+
+
 @admin.register(models.UrlListReport)
 class UrlListReportAdmin(ImportExportModelAdmin, admin.ModelAdmin):
 
