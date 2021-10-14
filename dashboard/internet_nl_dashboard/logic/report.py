@@ -213,6 +213,14 @@ def get_report(account: Account, report_id: int):
     return f"{dump_report_to_text_resembling_json(report)}"
 
 
+def get_public_reports():
+    return list(UrlListReport.objects.all().filter(
+        is_publicly_shared=True, is_shared_on_homepage=True
+    ).values(
+        'at_when', 'average_internet_nl_score', 'report_type', 'urllist__name', 'total_urls', 'public_report_code'
+    ).order_by('-at_when'))
+
+
 def get_shared_report(report_code: str, share_code: str = ""):
 
     # Check if report_code exists. If so see if a share code is required.

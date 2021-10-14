@@ -403,13 +403,14 @@ class UrlListReportAdmin(ImportExportModelAdmin, admin.ModelAdmin):
         return qs
 
     list_display = ('urllist', 'average_internet_nl_score', 'high', 'medium', 'low', 'ok', 'total_endpoints',
-                    'ok_endpoints', 'is_publicly_shared', 'at_when', 'inspect_list')
+                    'ok_endpoints', 'is_publicly_shared', 'is_shared_on_homepage', 'at_when', 'inspect_list')
     search_fields = (['at_when'])
     list_filter = ['urllist', 'at_when', 'is_publicly_shared'][::-1]
     fields = ('urllist',
 
               'report_type',
               'is_publicly_shared',
+              'is_shared_on_homepage',
               'public_report_code',
               'public_share_code',
 

@@ -484,6 +484,12 @@ class UrlListReport(SeriesOfUrlsReportMixin):  # pylint: disable=too-many-ancest
         default=""
     )
 
+    is_shared_on_homepage = models.BooleanField(
+        help_text="A public report can also be shared on the homepage with a link. Can only be shared on the homepage "
+                  "if the report is publicly shared. This is currently admin only.",
+        default=False
+    )
+
     class Meta:
         get_latest_by = "at_when"
         index_together = [

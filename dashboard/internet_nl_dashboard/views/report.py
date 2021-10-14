@@ -7,7 +7,7 @@ from django.http import HttpResponse, JsonResponse
 from websecmap.app.common import JSEncoder
 
 from dashboard.internet_nl_dashboard.logic.report import (
-    ad_hoc_tagged_report, get_previous_report, get_recent_reports, get_report,
+    ad_hoc_tagged_report, get_previous_report, get_public_reports, get_recent_reports, get_report,
     get_report_differences_compared_to_current_list, get_shared_report, get_urllist_timeline_graph,
     save_ad_hoc_tagged_report, share, unshare, update_report_code, update_share_code)
 from dashboard.internet_nl_dashboard.views import LOGIN_URL, get_account, get_json_body
@@ -83,6 +83,10 @@ def get_shared_report_(request, report_code: str) -> HttpResponse:
         get_shared_report(report_code, data.get('share_code', '')),
         content_type="application/json"
     )
+
+
+def get_public_reports_(request) -> JsonResponse:
+    return JsonResponse(get_public_reports(), encoder=JSEncoder, safe=False)
 
 
 @login_required(login_url=LOGIN_URL)
