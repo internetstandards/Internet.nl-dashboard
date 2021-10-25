@@ -254,7 +254,7 @@ python-crontab==2.5.1
     # via django-celery-beat
 python-dateutil==2.8.1
     # via python-crontab
-python-magic==0.4.24
+python-magic-bin==0.4.14
     # via -r requirements.in
 python-monkey-business==1.0.0
     # via django-nested-admin
@@ -361,7 +361,7 @@ vine==1.3.0
     #   amqp
     #   celery
     #   flower
-git+https://gitlab.com/internet-cleanup-foundation/web-security-map@752c43ae0b3650012d124f56a3810c45fe7453a3#egg=websecmap
+websecmap @ git+https://gitlab.com/internet-cleanup-foundation/web-security-map@eace78c3fb14a440cb71f307b321bbbc354f7a9d
     # via -r requirements.in
 wikidata==0.7.0
     # via websecmap

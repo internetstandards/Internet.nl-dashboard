@@ -9,7 +9,7 @@
 # - no version pinning, unless it is required and explained
 
 # to update websecmap, update the SHA hash and run: make update_requirement_websecmap
-git+https://gitlab.com/internet-cleanup-foundation/web-security-map@752c43ae0b3650012d124f56a3810c45fe7453a3#egg=websecmap
+git+https://gitlab.com/internet-cleanup-foundation/web-security-map@eace78c3fb14a440cb71f307b321bbbc354f7a9d#egg=websecmap
 
 django-otp
 django-two-factor-auth
@@ -20,7 +20,7 @@ validators
 # by checking their headers according to a predefined list of file types. This functionality is exposed to the command
 # line by the Unix command file.
 # Used to determine mimetype in spreadsheet uploads.
-python-magic
+python-magic-bin
 pytz
 polib
 django-activity-stream

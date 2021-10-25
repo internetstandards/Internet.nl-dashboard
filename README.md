@@ -170,3 +170,12 @@ https://download.docker.com/mac/stable/Docker.dmg
 
 You can also visit the docker website and get the link using the time tested Oracle(tm) download strategy, here:
 https://hub.docker.com/editions/community/docker-ce-desktop-mac
+
+
+### Missing zstd or other stuff from LD
+
+`brew install zstd`
+`which zstd`
+`set -x LDFLAGS -L/opt/homebrew/bin/zstd`
+`set -x LDFLAGS -L/opt/homebrew/lib/ -L/opt/homebrew/openssl/lib`
+
