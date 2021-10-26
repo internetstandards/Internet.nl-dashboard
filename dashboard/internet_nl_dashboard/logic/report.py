@@ -72,6 +72,8 @@ def ad_hoc_report_create(account: Account, report_id: int, tags: List[str], at_w
     # Get all relevant urls at this moment from the report... how do you know when the list changes?
     urls = relevant_urls_at_timepoint(urls, report.at_when)
 
+    log.debug(f"At thiis moment in time: {report.at_when}, there are {len(urls)} urls.")
+
     # todo: probably add relevant endpoints at time point, otherwise very old stuff or new stuff will be added.
     calculation = create_calculation_on_urls(urls, when=report.at_when, scan_type=report.report_type)
     report.average_internet_nl_score = sum_internet_nl_scores_over_rating(calculation)
