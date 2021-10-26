@@ -28,6 +28,8 @@ const messages = {
             },
         },
 
+        internet_nl_mail_legacy_category: "Extra Fields",
+        internet_nl_web_legacy_category: "Extra Fields",
         internet_nl_mail_legacy_dmarc: 'DMARC',
         internet_nl_mail_legacy_dmarc_explanation: 'Calculated by using the value from: mail_auth_dkim_exist.',
         internet_nl_mail_legacy_dkim: 'DKIM',
@@ -191,6 +193,8 @@ const messages = {
             }
         },
 
+        internet_nl_mail_legacy_category: "Extra Velden",
+        internet_nl_web_legacy_category: "Extra Velden",
         internet_nl_mail_legacy_dmarc: 'DMARC',
         internet_nl_mail_legacy_dmarc_explanation: 'Berekend door de waarde van het volgende veld te gebruiken: mail_auth_dkim_exist.',
         internet_nl_mail_legacy_dkim: 'DKIM',

@@ -23,7 +23,7 @@ from dashboard.internet_nl_dashboard.logic import (MAIL_AUTH_FIELDS, MAIL_CATEGO
                                                    WEB_IPV6_CATEGORY, WEB_IPV6_FIELDS,
                                                    WEB_LEGACY_FIELDS, WEB_TLS_CATEGORY,
                                                    WEB_TLS_CERTIFICATE_FIELDS, WEB_TLS_DANE_FIELDS,
-                                                   WEB_TLS_HTTP_FIELDS, WEB_TLS_TLS_FIELDS)
+                                                   WEB_TLS_HTTP_FIELDS, WEB_TLS_TLS_FIELDS, WEB_LEGACY_CATEGORY)
 from dashboard.internet_nl_dashboard.models import AccountInternetNLScan, UrlList, UrlListReport
 
 log = logging.getLogger(__package__)
@@ -40,7 +40,7 @@ urllist_report_content = {
     'web': ['internet_nl_web_overall_score'] + WEB_IPV6_CATEGORY + WEB_IPV6_FIELDS + WEB_DNSSEC_CATEGORY +
     WEB_DNSSEC_FIELDS + WEB_TLS_CATEGORY + WEB_TLS_HTTP_FIELDS + WEB_TLS_TLS_FIELDS +
     WEB_TLS_CERTIFICATE_FIELDS + WEB_TLS_DANE_FIELDS + WEB_APPSECPRIV_CATEGORY + WEB_APPSECPRIV_FIELDS +
-    WEB_LEGACY_FIELDS
+    WEB_LEGACY_FIELDS + WEB_LEGACY_CATEGORY
 }
 
 
