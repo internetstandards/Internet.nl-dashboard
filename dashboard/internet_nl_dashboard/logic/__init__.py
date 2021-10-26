@@ -204,7 +204,8 @@ MAIL_LEGACY_FIELDS = [
     'internet_nl_mail_legacy_ipv6_mailserver',
 
     # Added may 2020 internet.nl api v2
-    'internet_nl_mail_legacy_mail_non_sending_domain',
+    # 'internet_nl_mail_legacy_mail_non_sending_domain',
+    # non mail sending domain has been replaced with sending domain, to prevent double negatives.
     'internet_nl_mail_legacy_mail_sending_domain',
     'internet_nl_mail_legacy_mail_server_testable',
     'internet_nl_mail_legacy_mail_server_reachable',

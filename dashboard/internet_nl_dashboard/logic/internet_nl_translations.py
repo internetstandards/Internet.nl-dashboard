@@ -374,7 +374,6 @@ def translate_field(field_label, translation_dictionary: Dict[str, str]):
         # 'internet_nl_web_legacy_dane': 'DANE',
 
         'internet_nl_web_legacy_tls_1_3': 'TLS 1.3 Support',
-        'internet_nl_mail_legacy_mail_non_sending_domain': 'Non e-mail sending domain',
         'internet_nl_mail_legacy_mail_sending_domain': 'E-mail sending domain',
         'internet_nl_mail_legacy_mail_server_testable': 'Mail server testable',
         'internet_nl_mail_legacy_mail_server_reachable': 'Mail server reachable',
