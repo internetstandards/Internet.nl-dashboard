@@ -302,8 +302,8 @@ class TaggedUrlInUrllistAdmin(ImportExportModelAdmin, admin.ModelAdmin):
 @admin.register(AccountInternetNLScan)
 class AccountInternetNLScanAdmin(ImportExportModelAdmin, admin.ModelAdmin):
 
-    list_display = ('account', 'account__name', 'state', 'internetnl_scan',
-                    'urllist', 'started_on', 'finished_on')
+    list_display = ('id', 'account', 'account__name', 'state', 'internetnl_scan',
+                    'urllist', 'domains', 'started_on', 'finished_on')
 
     list_filter = ['account', 'urllist', 'state', 'started_on', 'finished_on'][::-1]
     search_fields = ('urllist__name', 'account__name')
@@ -317,6 +317,10 @@ class AccountInternetNLScanAdmin(ImportExportModelAdmin, admin.ModelAdmin):
     @staticmethod
     def internetnl_scan(obj):
         return obj.scan.id
+
+    @staticmethod
+    def domains(obj):
+        return obj.scan.subject_urls.count()
 
     actions = []
 
