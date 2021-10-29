@@ -179,3 +179,33 @@ https://hub.docker.com/editions/community/docker-ce-desktop-mac
 `set -x LDFLAGS -L/opt/homebrew/bin/zstd`
 `set -x LDFLAGS -L/opt/homebrew/lib/ -L/opt/homebrew/openssl/lib`
 
+### Missing lib magic on mac:
+`brew install libmagic`
+
+Is installed to: `/opt/homebrew/Cellar/libmagic/`
+
+Is expected at: `/usr/local/lib/`, see `https://github.com/ahupp/python-magic/blob/master/magic/loader.py`
+
+So: `cd /usr/local/lib/` and then `ln -s /opt/homebrew/Cellar/libmagic/5.41/lib/libmagic.dylib libmagic.dylib`
+
+Because libmagic supresses loading errors, you'll only find out that the wrong binary is
+getting loaded when adding print statements there. If the library doesn't load it's probably because:
+
+```shell
+/opt/local/lib/libmagic.dylib
+dlopen(/opt/local/lib/libmagic.dylib, 6): image not found
+/usr/local/lib/libmagic.dylib
+dlopen(/usr/local/lib/libmagic.dylib, 6): image not found
+/opt/homebrew/lib/libmagic.dylib
+dlopen(/opt/homebrew/lib/libmagic.dylib, 6): no suitable image found.  Did find:
+	/opt/homebrew/lib/libmagic.dylib: mach-o, but wrong architecture
+	/opt/homebrew/Cellar/libmagic/5.41/lib/libmagic.1.dylib: mach-o, but wrong architecture
+```
+
+So you should install the Intel binary for this version.
+
+You can use the alternative brew installation in /usr/local/bin
+and run: `arch -x86_64 sh`, `cd /usr/local/bin`, `/brew install --build-from-source libmagic`
+
+and run: `arch -x86_64 brew install libmagic`
+You'll get an error but at least there is now an x64/intel file at: `/usr/local/lib/libmagic.dylib`
