@@ -7,7 +7,7 @@ from django.urls import path, register_converter
 import dashboard.internet_nl_dashboard.signals  # noqa  # pylint: disable=unused-import
 from dashboard.internet_nl_dashboard.views import (__init__, account, domains, download_spreadsheet,
                                                    mail, powertools, report, scan_monitor, session,
-                                                   spreadsheet, tags, usage, user)
+                                                   spreadsheet, subdomains, tags, usage, user)
 
 
 class SpreadsheetFileTypeConverter:
@@ -44,6 +44,8 @@ urlpatterns = [
     path('data/urllist/create_list/', domains.create_list_),
     path('data/urllist/delete/', domains.delete_list_),
     path('data/urllist/scan_now/', domains.scan_now_),
+    path('data/urllist/discover-subdomains/<int:urllist_id>/', subdomains.request_subdomain_discovery_scan_),
+    path('data/urllist/discover-subdomains-status/<int:urllist_id>/', subdomains.subdomain_discovery_scan_status_),
     path('data/urllist/url/save/', domains.alter_url_in_urllist_),
     path('data/urllist/url/add/', domains.add_urls_to_urllist),
     path('data/urllist/url/delete/', domains.delete_url_from_urllist_),
@@ -70,6 +72,7 @@ urlpatterns = [
 
     path('data/report/get/<int:report_id>/', report.get_report_),
     path('data/report/shared/<str:report_code>/', report.get_shared_report_),
+    path('data/report/public/', report.get_public_reports_),
 
     path('data/report/ad_hoc/<int:report_id>/', report.get_ad_hoc_tagged_report_),
     path('data/report/ad_hoc_save/<int:report_id>/', report.save_ad_hoc_tagged_report_),
@@ -85,7 +88,8 @@ urlpatterns = [
     path('data/report/get_previous/<int:urllist_id>/<str:at_when>/', report.get_previous_report_),
 
     path('data/report/recent/', report.get_recent_reports_),
-    path('data/report/urllist_timeline_graph/<str:urllist_ids>/', report.get_urllist_report_graph_data_),
+    path('data/report/urllist_timeline_graph/<str:urllist_ids>/<str:report_type>/',
+         report.get_urllist_report_graph_data_),
     path('data/download-spreadsheet/<int:report_id>/<spreadsheet_filetype:file_type>/',
          download_spreadsheet.download_spreadsheet),
 

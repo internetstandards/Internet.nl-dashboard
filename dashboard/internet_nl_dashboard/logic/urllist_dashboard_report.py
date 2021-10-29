@@ -14,6 +14,8 @@ from websecmap.reporting.report import (add_statistics_to_calculation, aggegrate
                                         remove_issues_from_calculation,
                                         statistics_over_url_calculation)
 
+from dashboard.internet_nl_dashboard.logic import \
+    WEB_TLS_TLS_FIELDS  # pylint: disable=duplicate-code
 from dashboard.internet_nl_dashboard.logic import (MAIL_AUTH_FIELDS, MAIL_CATEGORIES,
                                                    MAIL_DNSSEC_FIELDS, MAIL_IPV6_FIELDS,
                                                    MAIL_LEGACY_FIELDS, MAIL_TLS_CERTIFICATE_FIELDS,
@@ -21,10 +23,10 @@ from dashboard.internet_nl_dashboard.logic import (MAIL_AUTH_FIELDS, MAIL_CATEGO
                                                    WEB_APPSECPRIV_CATEGORY, WEB_APPSECPRIV_FIELDS,
                                                    WEB_DNSSEC_CATEGORY, WEB_DNSSEC_FIELDS,
                                                    WEB_IPV6_CATEGORY, WEB_IPV6_FIELDS,
-                                                   WEB_LEGACY_FIELDS, WEB_TLS_CATEGORY,
-                                                   WEB_TLS_CERTIFICATE_FIELDS, WEB_TLS_DANE_FIELDS,
-                                                   WEB_TLS_HTTP_FIELDS, WEB_TLS_TLS_FIELDS)
-from dashboard.internet_nl_dashboard.models import UrlList, UrlListReport
+                                                   WEB_LEGACY_CATEGORY, WEB_LEGACY_FIELDS,
+                                                   WEB_TLS_CATEGORY, WEB_TLS_CERTIFICATE_FIELDS,
+                                                   WEB_TLS_DANE_FIELDS, WEB_TLS_HTTP_FIELDS)
+from dashboard.internet_nl_dashboard.models import AccountInternetNLScan, UrlList, UrlListReport
 
 log = logging.getLogger(__package__)
 
@@ -33,10 +35,14 @@ urllist_report_content = {
     MAIL_CATEGORIES + MAIL_IPV6_FIELDS + MAIL_DNSSEC_FIELDS + MAIL_TLS_CERTIFICATE_FIELDS +
     MAIL_TLS_TLS_FIELDS + MAIL_TLS_DANE_FIELDS + MAIL_AUTH_FIELDS + MAIL_LEGACY_FIELDS,
 
+    'mail_dashboard': ['internet_nl_mail_dashboard_overall_score'] +
+    MAIL_CATEGORIES + MAIL_IPV6_FIELDS + MAIL_DNSSEC_FIELDS + MAIL_TLS_CERTIFICATE_FIELDS +
+    MAIL_TLS_TLS_FIELDS + MAIL_TLS_DANE_FIELDS + MAIL_AUTH_FIELDS + MAIL_LEGACY_FIELDS,
+
     'web': ['internet_nl_web_overall_score'] + WEB_IPV6_CATEGORY + WEB_IPV6_FIELDS + WEB_DNSSEC_CATEGORY +
     WEB_DNSSEC_FIELDS + WEB_TLS_CATEGORY + WEB_TLS_HTTP_FIELDS + WEB_TLS_TLS_FIELDS +
     WEB_TLS_CERTIFICATE_FIELDS + WEB_TLS_DANE_FIELDS + WEB_APPSECPRIV_CATEGORY + WEB_APPSECPRIV_FIELDS +
-    WEB_LEGACY_FIELDS
+    WEB_LEGACY_FIELDS + WEB_LEGACY_CATEGORY
 }
 
 
@@ -61,35 +67,44 @@ def compose_task(**kwargs) -> Task:
     :return:
     """
     urllists = UrlList.objects.filter(is_deleted=False)
-    tasks = [rate_urllists_now.si([urllist]) for urllist in urllists]
+    tasks = [rate_urllists_now.si([urllist, True, urllist.scan_type]) for urllist in urllists]
     return group(tasks)
 
 
 @app.task(queue='storage')
-def create_dashboard_report(urllist_id: int):
+def create_dashboard_report(scan_id: int):
     """
     Simplified (and perhaps straightforward) version of rate_urllists_now, which returns a report id.
     Only call this after a scan is performed.
 
-    :param urllist:
+    :param scan_id:
     :return:
     """
-    urllist = UrlList.objects.all().filter(id=urllist_id).first()
-    if not urllist:
+
+    scan = AccountInternetNLScan.objects.all().filter(id=scan_id).first()
+    if not scan:
+        log.warning(f'Trying to creating_report with unknown scan: {scan_id}.')
         return []
 
-    log.debug(f"Creating dashboard report for urllist {urllist}.")
+    log.debug(f"Creating dashboard report for urllist {scan.urllist}.")
 
     # the time when a urlreport is created is rounded up to the end of a minute. This means that you'll never get
     # the latest results. It should not happen with scans that happened today, but it does. Therefore, we move
     # the report creation process one minute forward
     # todo: this should be fixed to be more accurate.
     now = datetime.now(pytz.utc) + timedelta(minutes=1)
-    return rate_urllist_on_moment(urllist, when=now, prevent_duplicates=False)
+
+    # The model is not complete: it can be optional but at this point it will not ever will be empty(!)
+    if scan.scan is None:
+        scan_type = "web"
+    else:
+        scan_type = scan.scan.type
+
+    return rate_urllist_on_moment(scan.urllist, when=now, prevent_duplicates=False, scan_type=scan_type)
 
 
 @app.task(queue='storage')
-def create_dashboard_report_at(urllist, at_when):
+def create_dashboard_report_at(urllist: UrlList, at_when: datetime, scan_type: str = "web"):
     """
     Simplified (and perhaps straightforward) version of rate_urllists_now, which returns a report id.
     Only call this after a scan is performed and a report was already created.
@@ -98,18 +113,19 @@ def create_dashboard_report_at(urllist, at_when):
     :return:
     """
 
-    return rate_urllist_on_moment(urllist, when=at_when, prevent_duplicates=False)
+    return rate_urllist_on_moment(urllist, when=at_when, prevent_duplicates=False, scan_type=scan_type)
 
 
 @app.task(queue='storage')
-def rate_urllists_now(urllists: List[UrlList], prevent_duplicates: bool = True):
+def rate_urllists_now(urllists: List[UrlList], prevent_duplicates: bool = True, scan_type: str = "web"):
     for urllist in urllists:
         now = datetime.now(pytz.utc)
-        rate_urllist_on_moment(urllist, now, prevent_duplicates)
+        rate_urllist_on_moment(urllist, now, prevent_duplicates, scan_type)
 
 
 @app.task(queue='storage')
-def rate_urllist_on_moment(urllist: UrlList, when: datetime = None, prevent_duplicates: bool = True) -> int:
+def rate_urllist_on_moment(
+        urllist: UrlList, when: datetime = None, prevent_duplicates: bool = True, scan_type: str = "web") -> int:
     """
     :param urllist:
     :param when: A moment in time of which data should be aggregated
@@ -131,7 +147,7 @@ def rate_urllist_on_moment(urllist: UrlList, when: datetime = None, prevent_dupl
     urls = relevant_urls_at_timepoint_urllist(urllist=urllist, when=when)
     log.debug(f'Found {len(urls)} to be relevant at this moment.')
 
-    calculation = create_calculation_on_urls(urls, when, scan_type=urllist.scan_type)
+    calculation = create_calculation_on_urls(urls, when, scan_type=scan_type)
 
     try:
         last = UrlListReport.objects.filter(urllist=urllist, at_when__lte=when).latest('at_when')
@@ -153,9 +169,10 @@ def rate_urllist_on_moment(urllist: UrlList, when: datetime = None, prevent_dupl
     del init_scores['name']
     del init_scores['urls']
 
+    external_scan_type = {"web": "web", "mail": "mail", "mail_dashboard": "mail"}
     report = UrlListReport(**init_scores)
     report.urllist = urllist
-    report.report_type = urllist.scan_type
+    report.report_type = external_scan_type[scan_type]
     report.at_when = when
     report.average_internet_nl_score = sum_internet_nl_scores_over_rating(calculation)
     report.calculation = calculation
@@ -175,7 +192,7 @@ def create_calculation_on_urls(urls: List[Url], when: datetime, scan_type: str) 
         # Some endpoint types use the same ratings, such as dns_soa and dns_mx... This means that not
         # all endpoints will be removed for internet.nl. We need the following endpoints per scan:
         # -> note: urllist stores web/mail, they mean: web and mail_dashboard.
-        endpoint_types_per_scan = {"web": "dns_a_aaaa", "mail": "dns_soa"}
+        endpoint_types_per_scan = {"web": "dns_a_aaaa", "mail": "dns_soa", "mail_dashboard": "dns_soa"}
         calculation = only_include_endpoint_protocols(calculation, [endpoint_types_per_scan[scan_type]])
 
         # This already overrides endpoint statistics, use the calculation you get from this.

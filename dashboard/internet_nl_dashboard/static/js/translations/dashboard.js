@@ -28,6 +28,8 @@ const messages = {
             },
         },
 
+        internet_nl_mail_legacy_category: "Extra Fields",
+        internet_nl_web_legacy_category: "Extra Fields",
         internet_nl_mail_legacy_dmarc: 'DMARC',
         internet_nl_mail_legacy_dmarc_explanation: 'Calculated by using the value from: mail_auth_dkim_exist.',
         internet_nl_mail_legacy_dkim: 'DKIM',
@@ -78,16 +80,12 @@ const messages = {
 
         // New extra fields in API 2.0
         internet_nl_web_legacy_tls_1_3: 'TLS 1.3 Support',
-        internet_nl_mail_legacy_mail_non_sending_domain: 'Non e-mail sending domain',
         internet_nl_mail_legacy_mail_sending_domain: 'E-mail sending domain',
         internet_nl_mail_legacy_mail_server_testable: 'Mail server testable',
         internet_nl_mail_legacy_mail_server_reachable: 'Mail server reachable',
         internet_nl_mail_legacy_domain_has_mx: 'Mail server has MX record',
         internet_nl_mail_legacy_tls_1_3: 'TLS 1.3 Support',
         internet_nl_web_legacy_tls_1_3_explanation: 'Derives TLS1.3 support through the 0-RTT test. Explicitly testing for TLS1.3 support is not part of the compliance tool. However, TLS1.3 support could be derived from the 0-RTT test as the function is only available starting from TLS1.3. As there is no explicit TLS1.3 connection during testing, the test assumes that the server chose TLS1.3 when given the opportunity to do so.',
-        internet_nl_mail_legacy_mail_non_sending_domain_explanation: 'Checks if the domain is configured for _not_ sending email. For this test this is translated as:\n' +
-            '    SPF record with v=spf1 -all, and\n' +
-            '    DMARC record with v=DMARC1;p=reject;.\n',
         internet_nl_mail_legacy_mail_sending_domain_explanation: 'Checks if the domain is configured for sending email. For this test this is translated as being the anything else than:\n' +
             '    SPF record with v=spf1 -all, and\n' +
             '    DMARC record with v=DMARC1;p=reject;.\n',
@@ -191,6 +189,8 @@ const messages = {
             }
         },
 
+        internet_nl_mail_legacy_category: "Extra Velden",
+        internet_nl_web_legacy_category: "Extra Velden",
         internet_nl_mail_legacy_dmarc: 'DMARC',
         internet_nl_mail_legacy_dmarc_explanation: 'Berekend door de waarde van het volgende veld te gebruiken: mail_auth_dkim_exist.',
         internet_nl_mail_legacy_dkim: 'DKIM',

@@ -11,19 +11,14 @@ from openpyxl import load_workbook
 from openpyxl.formatting.rule import CellIsRule
 from openpyxl.styles import Font, PatternFill
 
-from dashboard.internet_nl_dashboard.logic import (MAIL_AUTH_CATEGORY, MAIL_AUTH_FIELDS,
-                                                   MAIL_DNSSEC_CATEGORY, MAIL_DNSSEC_FIELDS,
-                                                   MAIL_IPV6_CATEGORY, MAIL_IPV6_FIELDS,
-                                                   MAIL_LEGACY_FIELDS, MAIL_OVERALL_FIELDS,
-                                                   MAIL_TLS_CATEGORY, MAIL_TLS_CERTIFICATE_FIELDS,
-                                                   MAIL_TLS_DANE_FIELDS, MAIL_TLS_TLS_FIELDS,
-                                                   WEB_APPSECPRIV_CATEGORY, WEB_APPSECPRIV_FIELDS,
-                                                   WEB_DNSSEC_CATEGORY, WEB_DNSSEC_FIELDS,
-                                                   WEB_IPV6_CATEGORY, WEB_IPV6_FIELDS,
-                                                   WEB_LEGACY_FIELDS, WEB_OVERALL_FIELDS,
-                                                   WEB_TLS_CATEGORY, WEB_TLS_CERTIFICATE_FIELDS,
-                                                   WEB_TLS_DANE_FIELDS, WEB_TLS_HTTP_FIELDS,
-                                                   WEB_TLS_TLS_FIELDS)
+from dashboard.internet_nl_dashboard.logic import (  # pylint: disable=duplicate-code
+    MAIL_AUTH_CATEGORY, MAIL_AUTH_FIELDS, MAIL_DNSSEC_CATEGORY, MAIL_DNSSEC_FIELDS,
+    MAIL_IPV6_CATEGORY, MAIL_IPV6_FIELDS, MAIL_LEGACY_CATEGORY, MAIL_LEGACY_FIELDS,
+    MAIL_OVERALL_FIELDS, MAIL_TLS_CATEGORY, MAIL_TLS_CERTIFICATE_FIELDS, MAIL_TLS_DANE_FIELDS,
+    MAIL_TLS_TLS_FIELDS, WEB_APPSECPRIV_CATEGORY, WEB_APPSECPRIV_FIELDS, WEB_DNSSEC_CATEGORY,
+    WEB_DNSSEC_FIELDS, WEB_IPV6_CATEGORY, WEB_IPV6_FIELDS, WEB_LEGACY_CATEGORY, WEB_LEGACY_FIELDS,
+    WEB_OVERALL_FIELDS, WEB_TLS_CATEGORY, WEB_TLS_CERTIFICATE_FIELDS, WEB_TLS_DANE_FIELDS,
+    WEB_TLS_HTTP_FIELDS, WEB_TLS_TLS_FIELDS)
 from dashboard.internet_nl_dashboard.logic.internet_nl_translations import (get_po_as_dictionary_v2,
                                                                             translate_field)
 from dashboard.internet_nl_dashboard.models import Account, UrlListReport
@@ -60,7 +55,7 @@ SANE_COLUMN_ORDER = {
         # Added 24th of May 2019
         'appsecpriv': WEB_APPSECPRIV_CATEGORY + WEB_APPSECPRIV_FIELDS,
 
-        'legacy': WEB_LEGACY_FIELDS
+        'legacy': WEB_LEGACY_CATEGORY + WEB_LEGACY_FIELDS
     },
     'dns_soa': {
         # any grouping, every group has a empty column between them. The label is not used.
@@ -74,7 +69,7 @@ SANE_COLUMN_ORDER = {
         # perhaps split these into multiple groups.
         'tls': MAIL_TLS_CATEGORY + MAIL_TLS_TLS_FIELDS + MAIL_TLS_CERTIFICATE_FIELDS + MAIL_TLS_DANE_FIELDS,
 
-        'legacy': MAIL_LEGACY_FIELDS
+        'legacy': MAIL_LEGACY_CATEGORY + MAIL_LEGACY_FIELDS
     },
 }
 

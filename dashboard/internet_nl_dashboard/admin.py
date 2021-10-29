@@ -302,8 +302,8 @@ class TaggedUrlInUrllistAdmin(ImportExportModelAdmin, admin.ModelAdmin):
 @admin.register(AccountInternetNLScan)
 class AccountInternetNLScanAdmin(ImportExportModelAdmin, admin.ModelAdmin):
 
-    list_display = ('account', 'account__name', 'state', 'internetnl_scan',
-                    'urllist', 'started_on', 'finished_on')
+    list_display = ('id', 'account', 'account__name', 'state', 'internetnl_scan',
+                    'urllist', 'domains', 'started_on', 'finished_on')
 
     list_filter = ['account', 'urllist', 'state', 'started_on', 'finished_on'][::-1]
     search_fields = ('urllist__name', 'account__name')
@@ -317,6 +317,10 @@ class AccountInternetNLScanAdmin(ImportExportModelAdmin, admin.ModelAdmin):
     @staticmethod
     def internetnl_scan(obj):
         return obj.scan.id
+
+    @staticmethod
+    def domains(obj):
+        return obj.scan.subject_urls.count()
 
     actions = []
 
@@ -378,6 +382,13 @@ class UploadLogAdmin(ImportExportModelAdmin, admin.ModelAdmin):
     fields = ('original_filename', 'internal_filename', 'status', 'message', 'user', 'upload_date', 'filesize')
 
 
+@admin.register(models.SubdomainDiscoveryScan)
+class SubdomainDiscoveryScanAdmin(ImportExportModelAdmin, admin.ModelAdmin):
+    list_display = ('urllist', 'state', 'state_changed_on', 'state_message')
+    fields = ("urllist", "state", "state_changed_on", "state_message", "domains_discovered")
+    list_filter = ('state', 'state_changed_on', "state_message")
+
+
 @admin.register(models.UrlListReport)
 class UrlListReportAdmin(ImportExportModelAdmin, admin.ModelAdmin):
 
@@ -396,13 +407,14 @@ class UrlListReportAdmin(ImportExportModelAdmin, admin.ModelAdmin):
         return qs
 
     list_display = ('urllist', 'average_internet_nl_score', 'high', 'medium', 'low', 'ok', 'total_endpoints',
-                    'ok_endpoints', 'is_publicly_shared', 'at_when', 'inspect_list')
+                    'ok_endpoints', 'is_publicly_shared', 'is_shared_on_homepage', 'at_when', 'inspect_list')
     search_fields = (['at_when'])
     list_filter = ['urllist', 'at_when', 'is_publicly_shared'][::-1]
     fields = ('urllist',
 
               'report_type',
               'is_publicly_shared',
+              'is_shared_on_homepage',
               'public_report_code',
               'public_share_code',
 

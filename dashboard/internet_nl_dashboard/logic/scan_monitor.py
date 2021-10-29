@@ -75,7 +75,7 @@ def get_scan_monitor_data(account: Account) -> List[Dict[str, Union[str, int, bo
 
         if scan.scan:
             # mask that there is a mail_dashboard variant.
-            data['type'] = "web" if scan.scan.type == "web" else "mail"
+            data['type'] = "web" if scan.scan.type == "web" else "all" if scan.scan.type == "all" else "mail"
             data['last_check'] = scan.scan.last_state_check
             data['status_url'] = f"{config.INTERNET_NL_API_URL}/requests/{scan.scan.scan_id}"
 

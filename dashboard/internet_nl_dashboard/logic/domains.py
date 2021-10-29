@@ -704,6 +704,38 @@ def _add_to_urls_to_urllist(account: Account, current_list: UrlList, urls: List[
     return counters
 
 
+def _add_to_urls_to_urllist_nicer(account: Account, current_list: UrlList, urls: List[str]) -> Dict[str, List[str]]:
+    counters: Dict[str, List[str]] = {'added_to_list': [], 'already_in_list': [], 'added_to_list_already_in_db': [],
+                                      'added_to_list_new_in_db': []}
+
+    for url in urls:
+
+        # if already in list, don't need to save it again
+        already_in_list = UrlList.objects.all().filter(
+            account=account, id=current_list.id, urls__url__iexact=url).exists()
+        if already_in_list:
+            counters['already_in_list'].append(url)
+            continue
+
+        # if url already in database, we only need to add it to the list:
+        existing_url = Url.objects.all().filter(url=url).first()
+        if existing_url:
+            current_list.urls.add(existing_url)
+            counters['added_to_list'].append(url)
+            counters['added_to_list_already_in_db'].append(url)
+        else:
+            new_url = Url.add(url)
+
+            # always try to find a few dns endpoints...
+            compose_discover_task(urls_filter={'pk': new_url.id}).apply_async()
+
+            current_list.urls.add(new_url)
+            counters['added_to_list'].append(url)
+            counters['added_to_list_new_in_db'].append(url)
+
+    return counters
+
+
 def clean_urls(urls: List[str]) -> Dict[str, List]:
     """
     Incorrect urls are urls that are not following the uri scheme standard and don't have a recognizable suffix. They

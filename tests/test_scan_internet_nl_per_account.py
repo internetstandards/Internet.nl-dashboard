@@ -151,7 +151,7 @@ def test_creating_report(db, redis_server):
     # dierenscheboys also has a report. fcwaalwijk has nothing.
     assert UrlReport.objects.all().count() == 3
     first_urlreport = UrlReport.objects.all().filter(url__url='dierenscheboys.nl').first()
-    assert first_urlreport.high == 10
+    assert first_urlreport.high == 11
     assert first_urlreport.medium == 7
     assert first_urlreport.low == 4
     assert first_urlreport.ok == 22
@@ -165,7 +165,7 @@ def test_creating_report(db, redis_server):
     first_urllistreport = UrlListReport.objects.all().filter().first()
     # association was made during creating_report
     assert first_urllistreport.urllist == urllist
-    assert first_urllistreport.high == 10
+    assert first_urllistreport.high == 11
     assert first_urllistreport.average_internet_nl_score == 76
     # stats per issue types have been added
 

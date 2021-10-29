@@ -90,6 +90,8 @@ WEB_APPSECPRIV_FIELDS = [
     'internet_nl_web_appsecpriv_referrer_policy',
 ]
 
+WEB_LEGACY_CATEGORY = ["internet_nl_web_legacy_category"]
+
 WEB_LEGACY_FIELDS = [
     'internet_nl_web_legacy_dnssec',
     'internet_nl_web_legacy_tls_available',
@@ -184,6 +186,8 @@ MAIL_TLS_DANE_FIELDS = [
     'internet_nl_mail_starttls_dane_rollover',
 ]
 
+MAIL_LEGACY_CATEGORY = ["internet_nl_mail_legacy_category"]
+
 MAIL_LEGACY_FIELDS = [
     'internet_nl_mail_legacy_dmarc',
     'internet_nl_mail_legacy_dkim',
@@ -200,7 +204,8 @@ MAIL_LEGACY_FIELDS = [
     'internet_nl_mail_legacy_ipv6_mailserver',
 
     # Added may 2020 internet.nl api v2
-    'internet_nl_mail_legacy_mail_non_sending_domain',
+    # 'internet_nl_mail_legacy_mail_non_sending_domain',
+    # non mail sending domain has been replaced with sending domain, to prevent double negatives.
     'internet_nl_mail_legacy_mail_sending_domain',
     'internet_nl_mail_legacy_mail_server_testable',
     'internet_nl_mail_legacy_mail_server_reachable',
@@ -216,4 +221,5 @@ MAIL_LEGACY_FIELDS = [
 # 'internet_nl_mail_auth_dmarc_policy_only',  # Added 24th of May 2019
 # 'internet_nl_mail_auth_dmarc_ext_destination',  # Added 24th of May 2019
 
-MAIL_CATEGORIES = MAIL_IPV6_CATEGORY + MAIL_DNSSEC_CATEGORY + MAIL_AUTH_CATEGORY + MAIL_TLS_CATEGORY
+MAIL_CATEGORIES = MAIL_IPV6_CATEGORY + MAIL_DNSSEC_CATEGORY + MAIL_AUTH_CATEGORY + MAIL_TLS_CATEGORY + \
+    MAIL_LEGACY_CATEGORY

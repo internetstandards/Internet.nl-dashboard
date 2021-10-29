@@ -469,5 +469,30 @@
       "date_changed": "2019-01-24T05:02:10Z",
       "description": ""
     }
+  },
+    {
+    "model": "django_celery_beat.periodictask",
+    "pk": 106,
+    "fields": {
+      "name": "&#x1F501; Check running dashboard scans",
+      "task": "websecmap.app.models.create_function_job",
+      "interval": null,
+      "crontab": 33,
+      "solar": null,
+      "args": "[\"dashboard.internet_nl_dashboard.scanners.subdomains.progress_subdomain_discovery_scans\"]",
+      "kwargs": "{}",
+      "queue": "storage",
+      "exchange": null,
+      "routing_key": null,
+      "priority": null,
+      "expires": null,
+      "one_off": false,
+      "start_time": null,
+      "enabled": false,
+      "last_run_at": "2019-01-24T05:00:00Z",
+      "total_run_count": 0,
+      "date_changed": "2019-01-24T05:02:10Z",
+      "description": ""
+    }
   }
 ]
