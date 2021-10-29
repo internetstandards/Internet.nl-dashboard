@@ -4,6 +4,47 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Fourth Version] - 2021 Oct 29
+
+### Added
+- Home: New homepage with a public report list
+- Tour: Updated tour screenshots, added lightbox and translated it to Dutch
+- Domains: Tag / label support for domains in a list: allows filtering reports on (multiple) tags
+- Domains: A tool to automatically discover and add www subdomains to a domain list
+- Domains: Filtering on the domain list
+- Domains: Start a web and mail scan from the same list: no need to keep two separate lists
+
+- Reports: Report sharing: share a report under a public url, with optional password  
+- Reports: Expert feature: allow report times to be shifted to include newer (rescanned) metrics
+- Reports: Doughnut charts with a percentage in the middle
+  
+- Profile: A new profile page with notification settings and metric settings
+
+### Changed
+- Small changes
+  - The menu has been re-written to reduce code complexity
+  - Icons have been added everywhere
+  - The UI has been streamlined in many areas: less clutter, less lines
+  - The scan monitor looks nicer, with color inidication when scans are finished
+  - Username is now visible in the menu for admins / impersonating users
+  - Add SPDX licence info
+  - Extra fields now have a calculated category conclusion
+  - Option to use EU resolvers for prechecks (#250)
+  - Updated javascript + python dependencies
+  
+- Bugfixes
+  - Speed up domain list and scan monitor queries
+  - Fix possible CSRF issue, using axios
+  - Add stricter QA for python, squashing a few potential bugs
+  - Textual issues
+  - Bulk uploads in excel with https:// or pages in an url now work
+  - Correct graph average when extra fields are disabled
+  - Lists that are not planned to scan now don't show a date far in the future
+  - Update TLS ciphers on the server
+  - Update CSP header
+  - E-mail sending domain is now in the excel export, non-sending domain has been removed
+  - Report page does not reload every 5 minutes anymore
+
 
 ## [Third Version] - 2020 Nov 20
 
