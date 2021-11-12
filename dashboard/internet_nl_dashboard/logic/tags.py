@@ -16,6 +16,11 @@ def normalize_tag(tag: str):
 
 
 def add_tag(account: Account, url_ids: List[int], urllist_id: int, tag: str) -> None:
+
+    # Do not add empty tags
+    if not tag:
+        return
+
     taggables = TaggedUrlInUrllist.objects.all().filter(url__in=url_ids, urllist=urllist_id, urllist__account=account)
     for taggable in taggables:
         taggable.tags.add(normalize_tag(tag))
