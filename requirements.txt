@@ -361,7 +361,7 @@ vine==1.3.0
     #   amqp
     #   celery
     #   flower
-websecmap @ git+https://gitlab.com/internet-cleanup-foundation/web-security-map@eace78c3fb14a440cb71f307b321bbbc354f7a9d
+websecmap @ git+https://gitlab.com/internet-cleanup-foundation/web-security-map@dba7a67d7d2403005ccc4386151e984413d8d83b
     # via -r requirements.in
 wikidata==0.7.0
     # via websecmap

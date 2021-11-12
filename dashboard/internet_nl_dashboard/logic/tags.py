@@ -5,13 +5,32 @@ from taggit.models import Tag
 from dashboard.internet_nl_dashboard.models import Account, TaggedUrlInUrllist
 
 
+def normalize_tag(tag: str):
+    # None, etc
+    if not tag:
+        return ""
+
+    tag = tag.lower()
+    tag = tag[0:40]
+    return tag
+
+
 def add_tag(account: Account, url_ids: List[int], urllist_id: int, tag: str) -> None:
+
+    tag = normalize_tag(tag)
+
+    # Do not add empty tags
+    if not tag:
+        return
+
     taggables = TaggedUrlInUrllist.objects.all().filter(url__in=url_ids, urllist=urllist_id, urllist__account=account)
     for taggable in taggables:
-        taggable.tags.add(tag[0:40])
+        taggable.tags.add(tag)
 
 
 def remove_tag(account: Account, url_ids: List[int], urllist_id: int, tag: str) -> None:
+    tag = normalize_tag(tag)
+
     taggables = TaggedUrlInUrllist.objects.all().filter(url__in=url_ids, urllist=urllist_id, urllist__account=account)
     for taggable in taggables:
         taggable.tags.remove(tag)
