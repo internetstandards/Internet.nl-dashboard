@@ -3,7 +3,7 @@
 # make sure there are no version conflicts with requirements.txt
 -c requirements.txt
 
-git+https://gitlab.com/internet-cleanup-foundation/web-security-map@eace78c3fb14a440cb71f307b321bbbc354f7a9d#egg=websecmap[deploy]
+git+https://gitlab.com/internet-cleanup-foundation/web-security-map@dba7a67d7d2403005ccc4386151e984413d8d83b#egg=websecmap[deploy]
 
 # include (security) version constraints for non primary dependencies
 -c security-constraints.in
