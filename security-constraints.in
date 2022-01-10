@@ -1,5 +1,17 @@
 # this file contains packages that are not primary dependencies but need a
-# minimum version contraint for things like security vulnerabilities
+# minimum version contraint for things like security vulnerabilities.
+
+# How this works:
+# Add the minimum version from the dependabot alert in this requirement file and run `make`.
+# Commit the result and after build deploy it.
+# For exceptional cases you need to update the major version of the requirement, which can mean more work than the
+# Above two step procedure.
 
 # CVE-2021-23437
 Pillow>=8.3.2
+
+# CVE-2021-42771
+babel>=2.9.1
+
+# GHSL-2021-1037 and GHSL-2021-1038
+lxml>=4.6.5
