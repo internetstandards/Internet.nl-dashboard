@@ -18,3 +18,6 @@ lxml>=4.6.5
 
 # CVE-2021-44420
 Django>=3.1.14
+
+# GHSA-p5w8-wqhj-9hhf
+sqlparse>=0.4.2
