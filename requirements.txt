@@ -333,8 +333,10 @@ social-auth-core==3.3.3
     # via social-auth-app-django
 spectra==0.0.11
     # via websecmap
-sqlparse==0.4.1
-    # via django
+sqlparse==0.4.2
+    # via
+    #   -c security-constraints.in
+    #   django
 statsd==3.3.0
     # via
     #   celery-statsd
