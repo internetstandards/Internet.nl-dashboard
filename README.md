@@ -180,13 +180,8 @@ https://hub.docker.com/editions/community/docker-ce-desktop-mac
 `set -x LDFLAGS -L/opt/homebrew/lib/ -L/opt/homebrew/openssl/lib`
 
 ### Missing lib magic on mac:
-`brew install libmagic`
-
-Is installed to: `/opt/homebrew/Cellar/libmagic/`
-
-Is expected at: `/usr/local/lib/`, see `https://github.com/ahupp/python-magic/blob/master/magic/loader.py`
-
-So: `cd /usr/local/lib/` and then `ln -s /opt/homebrew/Cellar/libmagic/5.41/lib/libmagic.dylib libmagic.dylib`
+Where you need the x86 version, because this library is x86 only due cffi not supporting m1:
+`arch -x86_64 /usr/local/bin/brew install libmagic`
 
 Because libmagic supresses loading errors, you'll only find out that the wrong binary is
 getting loaded when adding print statements there. If the library doesn't load it's probably because:
