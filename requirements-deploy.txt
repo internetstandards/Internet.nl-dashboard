@@ -80,9 +80,10 @@ diff-match-patch==20200713
     # via
     #   -c requirements.txt
     #   django-import-export
-django==3.1.13
+django==3.1.14
     # via
     #   -c requirements.txt
+    #   -c security-constraints.in
     #   django-3-jet
     #   django-admin-sortable2
     #   django-appconf

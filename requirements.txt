@@ -56,8 +56,9 @@ defusedxml==0.6.0
     #   social-auth-core
 diff-match-patch==20200713
     # via django-import-export
-django==3.1.13
+django==3.1.14
     # via
+    #   -c security-constraints.in
     #   django-3-jet
     #   django-admin-sortable2
     #   django-appconf
