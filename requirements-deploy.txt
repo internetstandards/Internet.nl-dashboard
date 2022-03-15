@@ -290,7 +290,7 @@ ordered-set==4.0.2
     # via
     #   -c requirements.txt
     #   deepdiff
-pillow==8.3.2
+pillow==9.0.1
     # via
     #   -c requirements.txt
     #   -c security-constraints.in

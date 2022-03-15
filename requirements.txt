@@ -216,7 +216,7 @@ ordered-set==4.0.2
     # via deepdiff
 phonenumberslite==8.12.40
     # via django-phonenumber-field
-pillow==8.3.2
+pillow==9.0.1
     # via
     #   -c security-constraints.in
     #   python-resize-image

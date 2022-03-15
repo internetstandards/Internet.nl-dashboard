@@ -180,7 +180,7 @@ phonenumberslite==8.12.40
     # via
     #   -c requirements.txt
     #   -r requirements-dev.in
-pillow==8.3.2
+pillow==9.0.1
     # via
     #   -c requirements.txt
     #   -c security-constraints.in
