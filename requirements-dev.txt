@@ -168,7 +168,7 @@ packaging==19.2
     #   pytest
     #   rst2pdf
     #   sphinx
-paramiko==2.7.2
+paramiko==2.10.1
     # via docker
 pathtools==0.1.2
     # via
@@ -188,7 +188,7 @@ pillow==9.0.1
     #   reportlab
 pluggy==0.13.0
     # via pytest
-port_for==0.3.1
+port-for==0.3.1
     # via sphinx-autobuild
 proglog==0.1.9
     # via moviepy
@@ -305,6 +305,7 @@ six==1.15.0
     #   jsonschema
     #   livereload
     #   packaging
+    #   paramiko
     #   pynacl
     #   python-dateutil
     #   responses
