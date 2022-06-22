@@ -158,7 +158,7 @@ mypy==0.910
     #   django-stubs
 mypy-extensions==0.4.3
     # via mypy
-numpy==1.21.0
+numpy==1.22.0
     # via
     #   -c requirements.txt
     #   imageio
@@ -188,7 +188,7 @@ pillow==9.0.1
     #   reportlab
 pluggy==0.13.0
     # via pytest
-port_for==0.3.1
+port-for==0.3.1
     # via sphinx-autobuild
 proglog==0.1.9
     # via moviepy

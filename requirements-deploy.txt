@@ -270,7 +270,7 @@ networkx==2.5
     # via
     #   -c requirements.txt
     #   colormath
-numpy==1.21.0
+numpy==1.22.0
     # via
     #   -c requirements.txt
     #   colormath
@@ -512,11 +512,11 @@ xlwt==1.3.0
     #   -c requirements.txt
     #   pyexcel-xls
     #   tablib
-zope.event==4.5.0
+zope-event==4.5.0
     # via
     #   -c requirements.txt
     #   gevent
-zope.interface==5.2.0
+zope-interface==5.2.0
     # via
     #   -c requirements.txt
     #   gevent
