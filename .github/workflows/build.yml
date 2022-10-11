@@ -21,8 +21,9 @@ jobs:
         make vulture
         make check
     - name: test
-      install: make setup
-      run: make
+      run: |
+        make setup
+        make
     - name: just build
       # for pull requests only test building image
       if: type = pull_request
