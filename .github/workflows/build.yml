@@ -26,7 +26,7 @@ jobs:
         make
     - name: just build
       # for pull requests only test building image
-      if: type = pull_request
+      if: github.event_name = "pull_request"
       run: |
         make image
     - name: build & push
