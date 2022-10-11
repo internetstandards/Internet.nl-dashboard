@@ -1,10 +1,17 @@
 name: QA and image building
 on: [ push, pull_request ]
-python-version: '3.8'
 
 jobs:
   build:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        # Support Matrix from python.org/downloads:
+        # 3.7, 2023-06-27
+        # 3.8, 2024-10
+        # 3.9, 2025-10
+        # 3.10 2026-10
+        python-version: [ "3.8" ]
     steps:
     - name: qa
       run: |
