@@ -15,7 +15,7 @@ jobs:
     steps:
       - name: test username
         env:
-          MY_KEY: ${{ secrets.DOCKERHUB_USERNAME }}
+          MY_KEY: ${{ secrets.GITHUB_TOKEN }}
         run: echo "$MY_KEY"
       - name: debug
         run: |
