@@ -1,0 +1,51 @@
+name: QA and image building
+on: [ push, pull_request ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        # Support Matrix from python.org/downloads:
+        # 3.7, 2023-06-27
+        # 3.8, 2024-10
+        # 3.9, 2025-10
+        # 3.10 2026-10
+        python-version: [ "3.8" ]
+    steps:
+    - uses: actions/checkout@v2
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v2
+      with:
+        python-version: ${{ matrix.python-version }}
+    - name: qa
+      run: |
+        make pylint
+        make bandit
+        make mypy
+        make vulture
+        make check
+    - name: test
+      run: |
+        make setup
+        make
+    - name: just build
+      # for pull requests only test building image
+      if: github.event_name == 'pull_request'
+      run: |
+        make image
+    # https://stackoverflow.com/questions/58033366/how-to-get-the-current-branch-within-github-actions
+    - name: Extract branch name
+      shell: bash
+      run: echo "##[set-output name=branch;]$(echo ${GITHUB_REF#refs/heads/})"
+      id: extract_branch
+    - name: build & push
+      # for main, build image and push artifact
+      # AND fork = false -> how to do this in github actions?
+      if: steps.extract_branch.outputs.branch == 'main' && github.event_name == 'push'
+      run: |
+        echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
+        make pull_image image push_image
+      env:
+        DOCKER_USERNAME: internetstandards
+        secure: U7kSLhWutEWne8w0zMUN3XzWWWHnK0NKuDxrKQBtYpH5VA+ROd0js7y9uFYflqdJO/doiXE4updVM8D1aGrxfJ8Wp2Ywp5vC/6Ua+Wn+pdIi2WNBqOgCeq3+2NUMND7DpChFIA9dBiEOCnnOlRKYaz5bBhOR7trruV2E+QSCG+Scxejg+pToF/cRsQDI9zTktAr9rfWDfOjz0jfxC2NixOP8THFZhDW/vXlRWWGtmwvnawwXMdyhRYnIV/fvb2RnHeVlDXckMm+GTEcRwKZTp1Cy/lCuk8zEzxPkSvrYnAeC8Dto/KPFo9XnRNKNPygf4t7YlJ8eGvw7sp5QKH327D8+1kjspq20Aqq7IoHSHnhmYGrJSsgmoWsod6Be8PaFV/FjjfDbMvcpNspVxSPQu/h0P0POdK3+0HJBQ0j1qaYlOwlKGFyoNEN+hPOg7A/RWeV+P5wn5SxZCepL4T95uS4JIsb7SMmD1GxRTr+6ygRrKOnduBtBXFV48LALxvAwvBTka9muo924HDNsRQiI0r5gizoNPPTw+T8tzynoc7QRalih03UnEVvRxuPPz+kF+GyXQYLjVRIuPlrubnprOuW31VYEgwzAv32Ec3OZoUvx6MQvSvsignklSJgg9pucMu6apQPNkyt8GPRgUKUqQscPY1mSMhblWnaPAu7my9w=

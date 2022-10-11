@@ -240,7 +240,7 @@ ${python} ${pip}:
 	# create virtualenv
 	python3 -mvenv ${VIRTUAL_ENV}
 	# ensure a recent version of pip is used to avoid errors with intalling
-	${VIRTUAL_ENV}/bin/pip install --upgrade pip==19.1.1
+	${VIRTUAL_ENV}/bin/pip install --upgrade pip>=19.1.1
 
 mypy: ${app} ## Check for type issues with mypy
 	${bin}/python3 -m mypy --check dashboard
