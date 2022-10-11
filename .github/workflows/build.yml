@@ -39,7 +39,7 @@ jobs:
       shell: bash
       run: echo "##[set-output name=branch;]$(echo ${GITHUB_REF#refs/heads/})"
       id: extract_branch
-    - name: build & push
+    - name: Login to docker hub
       # for main, build image and push artifact
       # AND fork = false -> how to do this in github actions?
       if: steps.extract_branch.outputs.branch == 'main' && github.event_name == 'push'
@@ -47,6 +47,8 @@ jobs:
       with:
         username: ${{ secrets.DOCKERHUB_USERNAME }}
         password: ${{ secrets.DOCKERHUB_TOKEN }}
+    - name: Push image to docker hub
+      if: steps.extract_branch.outputs.branch == 'main' && github.event_name == 'push'
       run: |
         make pull_image image push_image
       env:
