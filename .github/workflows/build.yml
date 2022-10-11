@@ -16,8 +16,7 @@ jobs:
       - name: test username
         env:
           MY_KEY: ${{ secrets.DOCKERHUB_USERNAME }}
-        if: "${{ env.MY_KEY != '' }}"
-        run: echo "Dockerhub username is not configured."
+        run: echo "$MY_KEY"
       - name: debug
         run: |
           echo "test"
