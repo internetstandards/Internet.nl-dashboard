@@ -26,7 +26,7 @@ jobs:
         make
     - name: just build
       # for pull requests only test building image
-      if: github.event_name == "pull_request"
+      if: github.event_name == pull_request
       run: |
         make image
     # https://stackoverflow.com/questions/58033366/how-to-get-the-current-branch-within-github-actions
@@ -37,7 +37,7 @@ jobs:
     - name: build & push
       # for main, build image and push artifact
       # AND fork = false -> how to do this in github actions?
-      if: steps.extract_branch.outputs.branch == "main" AND github.event_name == "push"
+      if: steps.extract_branch.outputs.branch == main AND github.event_name == push
       run: |
         echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
         make pull_image image push_image
