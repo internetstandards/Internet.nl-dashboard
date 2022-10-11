@@ -3,6 +3,7 @@ on: [ push, pull_request ]
 
 jobs:
   build:
+    environment: Default
     runs-on: ubuntu-latest
     strategy:
       matrix:
