@@ -15,7 +15,7 @@ jobs:
         make check
     - name: test
       install: make setup
-      script: make
+      run: make
     - name: just build
       # for pull requests only test building image
       if: type = pull_request
