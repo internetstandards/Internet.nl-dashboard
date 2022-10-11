@@ -15,7 +15,9 @@ jobs:
     steps:
       - name: debug
         run: |
+          echo "test"
           echo ${{ secrets.DOCKERHUB_USERNAME }}
+          echo github.event_name
       - name: Login to docker hub
         # for main, build image and push artifact
         # AND fork = false -> how to do this in github actions?
