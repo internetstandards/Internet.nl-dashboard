@@ -13,18 +13,8 @@ jobs:
         # 3.10 2026-10
         python-version: [ "3.8" ]
     steps:
-      - name: test username
-        env:
-          MY_KEY: ${{ secrets.GITHUB_TOKEN }}
-        run: echo "$MY_KEY"
-      - name: debug
-        run: |
-          echo "test"
-          echo ${{ secrets.DOCKERHUB_USERNAME }}
-          echo github.event_name
-      - name: Login to docker hub
-        # for main, build image and push artifact
-        # AND fork = false -> how to do this in github actions?
+      -
+        name: Login to Docker Hub
         uses: docker/login-action@v2
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
