@@ -82,7 +82,7 @@ django-3-jet==1.0.8
     # via websecmap
 django-activity-stream==0.9.0
     # via -r requirements.in
-django-admin-sortable2==0.7.8
+django-admin-sortable2==1.0.4
     # via websecmap
 django-appconf==1.0.4
     # via
