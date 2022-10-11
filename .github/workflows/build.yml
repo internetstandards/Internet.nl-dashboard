@@ -14,8 +14,8 @@ jobs:
         python-version: [ "3.8" ]
     steps:
       - name: debug
-          - run: |
-              - echo ${{ secrets.DOCKERHUB_USERNAME }}
+        run: |
+          echo ${{ secrets.DOCKERHUB_USERNAME }}
       - name: Login to docker hub
         # for main, build image and push artifact
         # AND fork = false -> how to do this in github actions?
