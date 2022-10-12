@@ -521,6 +521,9 @@ CONSTANCE_CONFIG = {
         "what kind of scans it can do. Enter an address that you own or manage.",
         str,
     ),
+    "SECURITY_TXT_IS_REDIRECTED": (False, "When a redirect is used, it will not show the content anymore.", bool),
+    "SECURITY_TXT_REDIRECT_URL": ("", "The url where security.txt resides", str),
+    "SECURITY_TXT_CONTENT": ("", "The content of the security.txt file, located at .well-known/security.txt", str),
 }
 
 CONSTANCE_CONFIG_FIELDSETS = OrderedDict(
@@ -547,6 +550,7 @@ CONSTANCE_CONFIG_FIELDSETS = OrderedDict(
                 "CONNECTIVITY_TEST_DOMAIN"
             ),
         ),
+        ("security.txt", ("SECURITY_TXT_IS_REDIRECTED", "SECURITY_TXT_REDIRECT_URL", "SECURITY_TXT_CONTENT")),
     ]
 )
 

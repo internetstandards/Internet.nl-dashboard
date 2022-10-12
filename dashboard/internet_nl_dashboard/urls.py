@@ -8,6 +8,7 @@ import dashboard.internet_nl_dashboard.signals  # noqa  # pylint: disable=unused
 from dashboard.internet_nl_dashboard.views import (__init__, account, domains, download_spreadsheet,
                                                    mail, powertools, report, scan_monitor, session,
                                                    spreadsheet, subdomains, tags, usage, user)
+from websecmap.map.views import security_txt
 
 
 class SpreadsheetFileTypeConverter:
@@ -110,4 +111,7 @@ urlpatterns = [
     # this url (!)
     # url(r'^login/$', auth_views.LoginView.as_view(template_name='internet_nl_dashboard/registration/login.html'),
     # name='login'),
+
+    path("security.txt", security_txt, name="security_txt"),
+    path(".well-known/security.txt", security_txt, name="well_known_security_txt"),
 ]

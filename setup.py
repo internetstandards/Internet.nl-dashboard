@@ -29,8 +29,10 @@ def requirements(extra=None):
     requirements = [r.strip().split(';',1)[0].split(' ', 1)[0].split('egg=', 1)[-1]
                     for r in open(filename) if r.strip() and not r.strip().startswith('#')]
     return requirements
+
 for x in requirements(extra='deploy'):
     print(x)
+
 setup(
     name='dashboard',
     version=get_version(),
