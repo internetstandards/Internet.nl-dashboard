@@ -369,7 +369,7 @@ vine==1.3.0
     #   amqp
     #   celery
     #   flower
-websecmap @ git+https://gitlab.com/internet-cleanup-foundation/web-security-map@1398a0204bd87945104e18bd3163a254bfd9787d
+websecmap @ git+https://gitlab.com/internet-cleanup-foundation/web-security-map@0dd62f45e2995f703a3cae925393434aeffb6139
     # via -r requirements.in
 wikidata==0.7.0
     # via websecmap
@@ -381,9 +381,9 @@ xlwt==1.3.0
     # via
     #   pyexcel-xls
     #   tablib
-zope.event==4.5.0
+zope-event==4.5.0
     # via gevent
-zope.interface==5.2.0
+zope-interface==5.2.0
     # via gevent
 
 # The following packages are considered to be unsafe in a requirements file:
