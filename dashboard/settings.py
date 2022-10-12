@@ -714,3 +714,8 @@ CORS_ALLOW_CREDENTIALS = True
 LOCKFILE_DIR = os.environ.get('LOCKFILE_DIR', os.path.abspath(os.path.dirname(__file__)) + '/lockfiles/')
 
 TAGGIT_CASE_INSENSITIVE = True
+
+
+
+# Django 3.2
+DEFAULT_AUTO_FIELD = "django.db.models.AutoField"

@@ -379,8 +379,9 @@ types-requests==2.25.0
     # via -r requirements-dev.in
 types-setuptools==57.0.0
     # via -r requirements-dev.in
-typing-extensions==3.10.0.0
+typing-extensions==4.4.0
     # via
+    #   -c requirements.txt
     #   django-stubs
     #   mypy
 unify==0.5
