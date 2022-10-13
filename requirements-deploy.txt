@@ -232,10 +232,6 @@ iso3166==1.0.1
     # via
     #   -c requirements.txt
     #   websecmap
-jdcal==1.4.1
-    # via
-    #   -c requirements.txt
-    #   openpyxl
 jsonfield==3.1.0
     # via
     #   -c requirements.txt
@@ -346,7 +342,7 @@ pyexcel-webio==0.1.4
     # via
     #   -c requirements.txt
     #   django-excel
-pyexcel-xls==0.6.2
+pyexcel-xls==0.7.0
     # via
     #   -c requirements.txt
     #   websecmap
@@ -478,7 +474,9 @@ tornado==6.1
     #   -c requirements.txt
     #   flower
 typing-extensions==4.4.0
-    # via django-countries
+    # via
+    #   -c requirements.txt
+    #   django-countries
 urllib3==1.26.6
     # via
     #   -c requirements.txt
@@ -497,7 +495,7 @@ vine==1.3.0
     #   amqp
     #   celery
     #   flower
-websecmap @ git+https://gitlab.com/internet-cleanup-foundation/web-security-map@be81f8f86fcbdb08b4420e191ced062be7967b8a
+websecmap @ git+https://gitlab.com/internet-cleanup-foundation/web-security-map@f4d004087e5be1e755301da877e21431425ef76f
     # via
     #   -c requirements.txt
     #   -r requirements-deploy.in
@@ -515,11 +513,11 @@ xlwt==1.3.0
     #   -c requirements.txt
     #   pyexcel-xls
     #   tablib
-zope-event==4.5.0
+zope.event==4.5.0
     # via
     #   -c requirements.txt
     #   gevent
-zope-interface==5.2.0
+zope.interface==5.2.0
     # via
     #   -c requirements.txt
     #   gevent

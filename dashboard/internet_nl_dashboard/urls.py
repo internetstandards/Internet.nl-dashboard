@@ -2,13 +2,13 @@
 from constance import config
 from django.shortcuts import redirect
 from django.urls import path, register_converter
+from websecmap.map.views import security_txt
 
 # We have to import the signals somewhere..?!
 import dashboard.internet_nl_dashboard.signals  # noqa  # pylint: disable=unused-import
 from dashboard.internet_nl_dashboard.views import (__init__, account, domains, download_spreadsheet,
                                                    mail, powertools, report, scan_monitor, session,
                                                    spreadsheet, subdomains, tags, usage, user)
-from websecmap.map.views import security_txt
 
 
 class SpreadsheetFileTypeConverter:

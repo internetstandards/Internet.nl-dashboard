@@ -78,10 +78,12 @@ INSTALLED_APPS = [
     # Web Security Map (todo: minimize the subset)
     # The reason (model) why it's included is in the comments.
     'websecmap.app',  # Job
+    'websecmap.api',
     'websecmap.organizations',  # Url
     'websecmap.scanners',  # Endpoint, EndpointGenericScan, UrlGenericScan
     'websecmap.reporting',  # Various reporting functions (might be not needed)
     'websecmap.map',  # because some scanners are intertwined with map configurations. That needs to go.
+
 
     # Custom Apps
     # These apps overwrite whatever is declared above, for example the user information.
@@ -714,7 +716,6 @@ CORS_ALLOW_CREDENTIALS = True
 LOCKFILE_DIR = os.environ.get('LOCKFILE_DIR', os.path.abspath(os.path.dirname(__file__)) + '/lockfiles/')
 
 TAGGIT_CASE_INSENSITIVE = True
-
 
 
 # Django 3.2
