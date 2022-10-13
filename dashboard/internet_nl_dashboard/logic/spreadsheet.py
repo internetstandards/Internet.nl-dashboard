@@ -21,6 +21,7 @@ DONE: supply example download files.
 import logging
 import os
 import re
+import zipfile
 from datetime import datetime
 from typing import Any, Dict, List, Optional
 
@@ -122,6 +123,12 @@ def get_data(file: str) -> Dict[str, set]:
         sheet = p.get_sheet(file_name=file, name_columns_by_row=0)
     except XLRDError:
         # xlrd.biffh.XLRDError: Unsupported format, or corrupt file: Expected BOF record; found b'thisfile'
+        return data
+    except zipfile.BadZipFile:
+        # the corrupted file in the unit tests
+        return data
+    except Exception as exc:  # pylint: disable=broad-except
+        log.exception(exc)
         return data
 
     # Skips the first entry

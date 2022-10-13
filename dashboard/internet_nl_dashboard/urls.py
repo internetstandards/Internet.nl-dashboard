@@ -2,6 +2,7 @@
 from constance import config
 from django.shortcuts import redirect
 from django.urls import path, register_converter
+from websecmap.map.views import security_txt
 
 # We have to import the signals somewhere..?!
 import dashboard.internet_nl_dashboard.signals  # noqa  # pylint: disable=unused-import
@@ -110,4 +111,7 @@ urlpatterns = [
     # this url (!)
     # url(r'^login/$', auth_views.LoginView.as_view(template_name='internet_nl_dashboard/registration/login.html'),
     # name='login'),
+
+    path("security.txt", security_txt, name="security_txt"),
+    path(".well-known/security.txt", security_txt, name="well_known_security_txt"),
 ]

@@ -78,10 +78,12 @@ INSTALLED_APPS = [
     # Web Security Map (todo: minimize the subset)
     # The reason (model) why it's included is in the comments.
     'websecmap.app',  # Job
+    'websecmap.api',
     'websecmap.organizations',  # Url
     'websecmap.scanners',  # Endpoint, EndpointGenericScan, UrlGenericScan
     'websecmap.reporting',  # Various reporting functions (might be not needed)
     'websecmap.map',  # because some scanners are intertwined with map configurations. That needs to go.
+
 
     # Custom Apps
     # These apps overwrite whatever is declared above, for example the user information.
@@ -521,6 +523,9 @@ CONSTANCE_CONFIG = {
         "what kind of scans it can do. Enter an address that you own or manage.",
         str,
     ),
+    "SECURITY_TXT_IS_REDIRECTED": (False, "When a redirect is used, it will not show the content anymore.", bool),
+    "SECURITY_TXT_REDIRECT_URL": ("", "The url where security.txt resides", str),
+    "SECURITY_TXT_CONTENT": ("", "The content of the security.txt file, located at .well-known/security.txt", str),
 }
 
 CONSTANCE_CONFIG_FIELDSETS = OrderedDict(
@@ -547,6 +552,7 @@ CONSTANCE_CONFIG_FIELDSETS = OrderedDict(
                 "CONNECTIVITY_TEST_DOMAIN"
             ),
         ),
+        ("security.txt", ("SECURITY_TXT_IS_REDIRECTED", "SECURITY_TXT_REDIRECT_URL", "SECURITY_TXT_CONTENT")),
     ]
 )
 
@@ -710,3 +716,7 @@ CORS_ALLOW_CREDENTIALS = True
 LOCKFILE_DIR = os.environ.get('LOCKFILE_DIR', os.path.abspath(os.path.dirname(__file__)) + '/lockfiles/')
 
 TAGGIT_CASE_INSENSITIVE = True
+
+
+# Django 3.2
+DEFAULT_AUTO_FIELD = "django.db.models.AutoField"
