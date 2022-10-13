@@ -125,9 +125,9 @@ def get_data(file: str) -> Dict[str, set]:
         # xlrd.biffh.XLRDError: Unsupported format, or corrupt file: Expected BOF record; found b'thisfile'
         return data
     except zipfile.BadZipFile:
-        # the corrupted file
+        # the corrupted file in the unit tests
         return data
-    except Exception as exc:
+    except Exception as exc:  # pylint disable=broad-except
         log.exception(exc)
         return data
 
