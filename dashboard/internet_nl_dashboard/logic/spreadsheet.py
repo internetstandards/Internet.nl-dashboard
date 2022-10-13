@@ -127,7 +127,7 @@ def get_data(file: str) -> Dict[str, set]:
     except zipfile.BadZipFile:
         # the corrupted file in the unit tests
         return data
-    except Exception as exc:  # pylint disable=broad-except
+    except Exception as exc:  # pylint: disable=broad-except
         log.exception(exc)
         return data
 
