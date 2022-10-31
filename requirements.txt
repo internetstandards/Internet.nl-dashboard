@@ -258,6 +258,8 @@ pyjwt==1.7.1
     # via social-auth-core
 pyopenssl==20.0.1
     # via websecmap
+pytest-is-running==1.3.0
+    # via websecmap
 python-crontab==2.5.1
     # via django-celery-beat
 python-dateutil==2.8.1
@@ -369,7 +371,7 @@ vine==1.3.0
     #   amqp
     #   celery
     #   flower
-websecmap @ git+https://gitlab.com/internet-cleanup-foundation/web-security-map@89fe92cb81a85096f914d85c5032d73a68a37cf6
+websecmap @ git+https://gitlab.com/internet-cleanup-foundation/web-security-map@71ed71452d04baab66ccfcaec881db812ea9cfa6
     # via -r requirements.in
 wikidata==0.7.0
     # via websecmap
