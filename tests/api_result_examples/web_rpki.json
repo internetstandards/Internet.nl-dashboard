@@ -1,0 +1,184 @@
+{
+  "internet.nl": {
+    "status": "ok",
+    "report": {
+      "url": "https://dev.batch.internet.nl/site/internet.nl/90499/"
+    },
+    "scoring": {
+      "percentage": 100
+    },
+    "results": {
+      "categories": {
+        "web_ipv6": {
+          "verdict": "passed",
+          "status": "passed"
+        },
+        "web_dnssec": {
+          "verdict": "passed",
+          "status": "passed"
+        },
+        "web_https": {
+          "verdict": "passed",
+          "status": "passed"
+        },
+        "web_appsecpriv": {
+          "verdict": "passed",
+          "status": "passed"
+        },
+        "web_rpki": {
+          "verdict": "passed",
+          "status": "passed"
+        }
+      },
+      "tests": {
+        "web_ipv6_ns_address": {
+          "status": "passed",
+          "verdict": "good"
+        },
+        "web_ipv6_ns_reach": {
+          "status": "passed",
+          "verdict": "good"
+        },
+        "web_ipv6_ws_address": {
+          "status": "passed",
+          "verdict": "good"
+        },
+        "web_ipv6_ws_reach": {
+          "status": "passed",
+          "verdict": "good"
+        },
+        "web_ipv6_ws_similar": {
+          "status": "passed",
+          "verdict": "good"
+        },
+        "web_dnssec_exist": {
+          "status": "passed",
+          "verdict": "good"
+        },
+        "web_dnssec_valid": {
+          "status": "passed",
+          "verdict": "good"
+        },
+        "web_https_http_available": {
+          "status": "passed",
+          "verdict": "good"
+        },
+        "web_https_http_redirect": {
+          "status": "passed",
+          "verdict": "good"
+        },
+        "web_https_http_hsts": {
+          "status": "passed",
+          "verdict": "good"
+        },
+        "web_https_http_compress": {
+          "status": "passed",
+          "verdict": "good"
+        },
+        "web_https_tls_keyexchange": {
+          "status": "passed",
+          "verdict": "good"
+        },
+        "web_https_tls_ciphers": {
+          "status": "passed",
+          "verdict": "good"
+        },
+        "web_https_tls_cipherorder": {
+          "status": "passed",
+          "verdict": "good"
+        },
+        "web_https_tls_version": {
+          "status": "passed",
+          "verdict": "good"
+        },
+        "web_https_tls_compress": {
+          "status": "passed",
+          "verdict": "good"
+        },
+        "web_https_tls_secreneg": {
+          "status": "passed",
+          "verdict": "good"
+        },
+        "web_https_tls_clientreneg": {
+          "status": "passed",
+          "verdict": "good"
+        },
+        "web_https_cert_chain": {
+          "status": "passed",
+          "verdict": "good"
+        },
+        "web_https_cert_pubkey": {
+          "status": "passed",
+          "verdict": "good"
+        },
+        "web_https_cert_sig": {
+          "status": "passed",
+          "verdict": "good"
+        },
+        "web_https_cert_domain": {
+          "status": "passed",
+          "verdict": "good"
+        },
+        "web_https_dane_exist": {
+          "status": "passed",
+          "verdict": "good"
+        },
+        "web_https_dane_valid": {
+          "status": "passed",
+          "verdict": "good"
+        },
+        "web_https_tls_0rtt": {
+          "status": "passed",
+          "verdict": "good"
+        },
+        "web_https_tls_ocsp": {
+          "status": "passed",
+          "verdict": "good"
+        },
+        "web_https_tls_keyexchangehash": {
+          "status": "passed",
+          "verdict": "good"
+        },
+        "web_appsecpriv_x_frame_options": {
+          "status": "passed",
+          "verdict": "good"
+        },
+        "web_appsecpriv_referrer_policy": {
+          "status": "passed",
+          "verdict": "good"
+        },
+        "web_appsecpriv_csp": {
+          "status": "passed",
+          "verdict": "good"
+        },
+        "web_appsecpriv_x_content_type_options": {
+          "status": "passed",
+          "verdict": "good"
+        },
+        "web_appsecpriv_securitytxt": {
+          "status": "passed",
+          "verdict": "good"
+        },
+        "web_rpki_exists": {
+          "status": "passed",
+          "verdict": "good"
+        },
+        "web_rpki_valid": {
+          "status": "passed",
+          "verdict": "good"
+        },
+        "web_ns_rpki_exists": {
+          "status": "passed",
+          "verdict": "good"
+        },
+        "web_ns_rpki_valid": {
+          "status": "passed",
+          "verdict": "good"
+        }
+      },
+      "custom": {
+        "tls_1_3_support": "yes"
+      }
+    }
+  }
+}
