@@ -342,10 +342,12 @@ def determine_changes_in_ratings(new_ratings_data, old_ratings_data) -> Dict[str
         'internet_nl_web_ipv6',
         'internet_nl_web_appsecpriv',
         'internet_nl_web_dnssec',
+        'internet_nl_web_rpki',
         'internet_nl_mail_dashboard_tls',
         'internet_nl_mail_dashboard_auth',
         'internet_nl_mail_dashboard_dnssec',
         'internet_nl_mail_dashboard_ipv6',
+        'internet_nl_mail_dashboard_rpki',
 
         # Some fields that are status indications, old scans and old reports.
         # They are ignored because they dont have a test_result field.

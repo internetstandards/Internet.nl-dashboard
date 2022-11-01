@@ -301,6 +301,12 @@ def translate_field(field_label, translation_dictionary: Dict[str, str]):
         'internet_nl_mail_starttls_tls_cipherorder': 'detail_mail_tls_cipher_order_label',
         'internet_nl_mail_starttls_tls_keyexchangehash': 'detail_mail_tls_kex_hash_func_label',
         'internet_nl_mail_starttls_tls_0rtt': 'detail_mail_tls_zero_rtt_label',
+        'internet_nl_mail_rpki_exists': 'detail_mail_rpki_exists_label',
+        'internet_nl_mail_rpki_valid': 'detail_mail_rpki_valid_label',
+        'internet_nl_mail_ns_rpki_exists': 'detail_web_mail_rpki_ns_valid_label',
+        'internet_nl_mail_ns_rpki_valid': 'detail_web_mail_rpki_ns_valid_label',
+        'internet_nl_mail_mx_ns_rpki_exists': 'detail_mail_rpki_mx_ns_exists_label',
+        'internet_nl_mail_mx_ns_rpki_valid': 'detail_mail_rpki_mx_ns_valid_label',
 
 
         # web fields, see dashboard.js
@@ -309,6 +315,7 @@ def translate_field(field_label, translation_dictionary: Dict[str, str]):
         'internet_nl_web_appsecpriv_referrer_policy': 'detail_web_appsecpriv_http_referrer_policy_label',
         'internet_nl_web_appsecpriv_x_content_type_options': 'detail_web_appsecpriv_http_x_content_type_label',
         'internet_nl_web_appsecpriv_x_frame_options': 'detail_web_appsecpriv_http_x_frame_label',
+        'internet_nl_web_appsecpriv_securitytxt': 'detail_web_appsecpriv_http_securitytxt_label',
         'internet_nl_web_https_cert_domain': 'detail_web_tls_cert_hostmatch_label',
         'internet_nl_web_https_http_redirect': 'detail_web_tls_https_forced_label',
         'internet_nl_web_https_cert_chain': 'detail_web_tls_cert_trust_label',
@@ -336,14 +343,22 @@ def translate_field(field_label, translation_dictionary: Dict[str, str]):
         'internet_nl_web_https_tls_0rtt': 'detail_web_tls_zero_rtt_label',
         'internet_nl_web_https_tls_ocsp': 'detail_web_tls_ocsp_stapling_label',
         'internet_nl_web_https_tls_keyexchangehash': 'detail_web_tls_kex_hash_func_label',
+        'internet_nl_web_rpki_exists': 'detail_web_rpki_exists_label',
+        'internet_nl_web_rpki_valid': 'detail_web_rpki_valid_label',
+        'internet_nl_web_ns_rpki_exists': 'detail_web_mail_rpki_ns_valid_label',
+        'internet_nl_web_ns_rpki_valid': 'detail_web_mail_rpki_ns_valid_label',
 
+        'internet_nl_web_rpki': 'test_siterpki_label',
         'internet_nl_web_tls': 'test_sitetls_label',
         'internet_nl_web_dnssec': 'test_sitednssec_label',
         'internet_nl_web_ipv6': 'test_siteipv6_label',
+
         'internet_nl_mail_dashboard_tls': 'test_mailtls_label',
         'internet_nl_mail_dashboard_auth': 'test_mailauth_label',
         'internet_nl_mail_dashboard_dnssec': 'test_maildnssec_label',
         'internet_nl_mail_dashboard_ipv6': 'test_mailipv6_label',
+        'internet_nl_mail_dashboard_rpki': 'test_mailrpki_label',
+
         'internet_nl_score': '% Score',
         'internet_nl_score_report': 'Report',
 

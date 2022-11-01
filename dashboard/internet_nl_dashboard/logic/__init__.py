@@ -88,7 +88,18 @@ WEB_APPSECPRIV_FIELDS = [
     'internet_nl_web_appsecpriv_x_content_type_options',
     'internet_nl_web_appsecpriv_csp',
     'internet_nl_web_appsecpriv_referrer_policy',
+    'internet_nl_web_appsecpriv_securitytxt',
 ]
+
+WEB_RPKI_CATEGORY = ['internet_nl_web_rpki']
+
+WEB_RPKI_FIELDS = [
+    'internet_nl_web_rpki_exists',
+    'internet_nl_web_rpki_valid',
+    'internet_nl_web_ns_rpki_exists',
+    'internet_nl_web_ns_rpki_valid',
+]
+
 
 WEB_LEGACY_CATEGORY = ["internet_nl_web_legacy_category"]
 
@@ -186,6 +197,18 @@ MAIL_TLS_DANE_FIELDS = [
     'internet_nl_mail_starttls_dane_rollover',
 ]
 
+MAIL_RPKI_CATEGORY = ['internet_nl_mail_dashboard_rpki']
+
+MAIL_RPKI_FIELDS = [
+    'internet_nl_mail_rpki_exists',
+    'internet_nl_mail_rpki_valid',
+    'internet_nl_mail_ns_rpki_exists',
+    'internet_nl_mail_ns_rpki_valid',
+    'internet_nl_mail_mx_ns_rpki_exists',
+    'internet_nl_mail_mx_ns_rpki_valid',
+]
+
+
 MAIL_LEGACY_CATEGORY = ["internet_nl_mail_legacy_category"]
 
 MAIL_LEGACY_FIELDS = [
@@ -222,4 +245,4 @@ MAIL_LEGACY_FIELDS = [
 # 'internet_nl_mail_auth_dmarc_ext_destination',  # Added 24th of May 2019
 
 MAIL_CATEGORIES = MAIL_IPV6_CATEGORY + MAIL_DNSSEC_CATEGORY + MAIL_AUTH_CATEGORY + MAIL_TLS_CATEGORY + \
-    MAIL_LEGACY_CATEGORY
+    MAIL_RPKI_CATEGORY + MAIL_LEGACY_CATEGORY

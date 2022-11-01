@@ -1,0 +1,186 @@
+{
+  "internet.nl": {
+    "status": "ok",
+    "report": {
+      "url": "https://dev.batch.internet.nl/mail/internet.nl/84789/"
+    },
+    "scoring": {
+      "percentage": 100
+    },
+    "results": {
+      "categories": {
+        "mail_ipv6": {
+          "verdict": "passed",
+          "status": "passed"
+        },
+        "mail_dnssec": {
+          "verdict": "passed",
+          "status": "passed"
+        },
+        "mail_auth": {
+          "verdict": "passed",
+          "status": "passed"
+        },
+        "mail_starttls": {
+          "verdict": "passed",
+          "status": "passed"
+        },
+        "mail_rpki": {
+          "verdict": "passed",
+          "status": "passed"
+        }
+      },
+      "tests": {
+        "mail_ipv6_ns_address": {
+          "status": "passed",
+          "verdict": "good"
+        },
+        "mail_ipv6_ns_reach": {
+          "status": "passed",
+          "verdict": "good"
+        },
+        "mail_ipv6_mx_address": {
+          "status": "passed",
+          "verdict": "good"
+        },
+        "mail_ipv6_mx_reach": {
+          "status": "passed",
+          "verdict": "good"
+        },
+        "mail_dnssec_mailto_exist": {
+          "status": "passed",
+          "verdict": "good"
+        },
+        "mail_dnssec_mailto_valid": {
+          "status": "passed",
+          "verdict": "good"
+        },
+        "mail_dnssec_mx_exist": {
+          "status": "passed",
+          "verdict": "good"
+        },
+        "mail_dnssec_mx_valid": {
+          "status": "passed",
+          "verdict": "good"
+        },
+        "mail_auth_dmarc_exist": {
+          "status": "passed",
+          "verdict": "good"
+        },
+        "mail_auth_dmarc_policy": {
+          "status": "passed",
+          "verdict": "good"
+        },
+        "mail_auth_dkim_exist": {
+          "status": "passed",
+          "verdict": "good"
+        },
+        "mail_auth_spf_exist": {
+          "status": "passed",
+          "verdict": "good"
+        },
+        "mail_auth_spf_policy": {
+          "status": "passed",
+          "verdict": "good"
+        },
+        "mail_starttls_tls_available": {
+          "status": "passed",
+          "verdict": "good"
+        },
+        "mail_starttls_tls_keyexchange": {
+          "status": "passed",
+          "verdict": "good"
+        },
+        "mail_starttls_tls_ciphers": {
+          "status": "warning",
+          "verdict": "phase-out"
+        },
+        "mail_starttls_tls_cipherorder": {
+          "status": "passed",
+          "verdict": "good"
+        },
+        "mail_starttls_tls_version": {
+          "status": "passed",
+          "verdict": "good"
+        },
+        "mail_starttls_tls_compress": {
+          "status": "passed",
+          "verdict": "good"
+        },
+        "mail_starttls_tls_secreneg": {
+          "status": "passed",
+          "verdict": "good"
+        },
+        "mail_starttls_tls_clientreneg": {
+          "status": "passed",
+          "verdict": "good"
+        },
+        "mail_starttls_cert_chain": {
+          "status": "passed",
+          "verdict": "good"
+        },
+        "mail_starttls_cert_pubkey": {
+          "status": "passed",
+          "verdict": "good"
+        },
+        "mail_starttls_cert_sig": {
+          "status": "passed",
+          "verdict": "good"
+        },
+        "mail_starttls_cert_domain": {
+          "status": "passed",
+          "verdict": "good"
+        },
+        "mail_starttls_dane_exist": {
+          "status": "passed",
+          "verdict": "good"
+        },
+        "mail_starttls_dane_valid": {
+          "status": "passed",
+          "verdict": "good"
+        },
+        "mail_starttls_dane_rollover": {
+          "status": "passed",
+          "verdict": "good"
+        },
+        "mail_starttls_tls_0rtt": {
+          "status": "passed",
+          "verdict": "na"
+        },
+        "mail_starttls_tls_keyexchangehash": {
+          "status": "passed",
+          "verdict": "good"
+        },
+        "mail_rpki_exists": {
+          "status": "passed",
+          "verdict": "good"
+        },
+        "mail_rpki_valid": {
+          "status": "passed",
+          "verdict": "good"
+        },
+        "mail_ns_rpki_exists": {
+          "status": "passed",
+          "verdict": "good"
+        },
+        "mail_ns_rpki_valid": {
+          "status": "passed",
+          "verdict": "good"
+        },
+        "mail_mx_ns_rpki_exists": {
+          "status": "passed",
+          "verdict": "good"
+        },
+        "mail_mx_ns_rpki_valid": {
+          "status": "passed",
+          "verdict": "good"
+        }
+      },
+      "custom": {
+        "mail_non_sending_domain": false,
+        "mail_servers_testable_status": "ok",
+        "tls_1_3_support": "no"
+      }
+    }
+  }
+}
