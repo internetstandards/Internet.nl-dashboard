@@ -197,7 +197,7 @@ MAIL_TLS_DANE_FIELDS = [
     'internet_nl_mail_starttls_dane_rollover',
 ]
 
-MAIL_RPKI_CATEGORY = ['internet_nl_mail_rpki']
+MAIL_RPKI_CATEGORY = ['internet_nl_mail_dashboard_rpki']
 
 MAIL_RPKI_FIELDS = [
     'internet_nl_mail_rpki_exists',

@@ -358,7 +358,6 @@ def translate_field(field_label, translation_dictionary: Dict[str, str]):
         'internet_nl_mail_dashboard_dnssec': 'test_maildnssec_label',
         'internet_nl_mail_dashboard_ipv6': 'test_mailipv6_label',
         'internet_nl_mail_dashboard_rpki': 'test_mailrpki_label',
-        'internet_nl_mail_rpki': 'test_mailrpki_label',
 
         'internet_nl_score': '% Score',
         'internet_nl_score_report': 'Report',
