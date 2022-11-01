@@ -254,7 +254,7 @@ pyexcel-xls==0.7.0
     # via websecmap
 pyexcel-xlsx==0.6.0
     # via websecmap
-pyjwt==1.7.1
+pyjwt==2.4.0
     # via social-auth-core
 pyopenssl==20.0.1
     # via websecmap
@@ -383,9 +383,9 @@ xlwt==1.3.0
     # via
     #   pyexcel-xls
     #   tablib
-zope.event==4.5.0
+zope-event==4.5.0
     # via gevent
-zope.interface==5.2.0
+zope-interface==5.2.0
     # via gevent
 
 # The following packages are considered to be unsafe in a requirements file:
