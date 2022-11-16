@@ -34,7 +34,7 @@ def test_monitor_timeout(db):
         assert updated_scan.state_changed_on.year == datetime.now().year
 
 
-def test_creating_report(db, redis_server, default_policy):
+def test_creating_report(db, redis_server, default_policy, default_scan_metadata):
     """
     We're entering the reporting phase, all data has been downloaded in the accountinternetnl scan, and
     a report will be generated. This includes statistics and such.
