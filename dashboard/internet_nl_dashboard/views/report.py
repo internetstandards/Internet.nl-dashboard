@@ -4,6 +4,7 @@ from typing import Optional
 
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse, JsonResponse
+from django.views.decorators.csrf import csrf_exempt
 from websecmap.app.common import JSEncoder
 
 from dashboard.internet_nl_dashboard.logic.report import (
@@ -74,6 +75,7 @@ def get_urllist_report_graph_data_(request, urllist_ids, report_type: str = "web
 
 
 # No login required: reports via this method are public
+@csrf_exempt
 def get_shared_report_(request, report_code: str) -> HttpResponse:
     # Explicitly NOT use jsonresponse as this loads the json data into an encoder which is extremely slow on large files
 
@@ -85,6 +87,7 @@ def get_shared_report_(request, report_code: str) -> HttpResponse:
     )
 
 
+@csrf_exempt
 def get_public_reports_(request) -> JsonResponse:
     return JsonResponse(get_public_reports(), encoder=JSEncoder, safe=False)
 
