@@ -303,7 +303,7 @@ def translate_field(field_label, translation_dictionary: Dict[str, str]):
         'internet_nl_mail_starttls_tls_0rtt': 'detail_mail_tls_zero_rtt_label',
         'internet_nl_mail_rpki_exists': 'detail_mail_rpki_exists_label',
         'internet_nl_mail_rpki_valid': 'detail_mail_rpki_valid_label',
-        'internet_nl_mail_ns_rpki_exists': 'detail_web_mail_rpki_ns_valid_label',
+        'internet_nl_mail_ns_rpki_exists': 'detail_web_mail_rpki_ns_exists_label',
         'internet_nl_mail_ns_rpki_valid': 'detail_web_mail_rpki_ns_valid_label',
         'internet_nl_mail_mx_ns_rpki_exists': 'detail_mail_rpki_mx_ns_exists_label',
         'internet_nl_mail_mx_ns_rpki_valid': 'detail_mail_rpki_mx_ns_valid_label',
