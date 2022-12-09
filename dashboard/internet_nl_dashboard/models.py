@@ -4,6 +4,7 @@ from datetime import datetime, timedelta
 
 import pytz
 import requests
+from constance import config
 from cryptography.fernet import Fernet
 from django.conf import settings
 from django.contrib.auth.models import User
@@ -18,8 +19,6 @@ from websecmap.reporting.models import SeriesOfUrlsReportMixin
 from websecmap.scanners.models import InternetNLV2Scan
 
 log = logging.getLogger(__package__)
-
-CREDENTIAL_CHECK_URL = "https://batch.internet.nl/api/"
 
 
 class Account(models.Model):
@@ -82,7 +81,7 @@ class Account(models.Model):
         # This makes a connection to the internet.nl dashboard using .htaccess authentication.
         try:
             response = requests.get(
-                CREDENTIAL_CHECK_URL,
+                config.CREDENTIAL_CHECK_URL,
                 auth=HTTPBasicAuth(username, password),
                 # a massive timeout for a large file.
                 timeout=(5, 5)
