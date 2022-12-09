@@ -74,7 +74,8 @@ SANE_COLUMN_ORDER = {
 
         'rpki': MAIL_RPKI_CATEGORY + MAIL_RPKI_FIELDS,
 
-        'legacy': MAIL_LEGACY_CATEGORY + MAIL_LEGACY_FIELDS
+        # #358 MAIL_LEGACY_CATEGORY is useless
+        'legacy': MAIL_LEGACY_FIELDS
     },
 }
 
