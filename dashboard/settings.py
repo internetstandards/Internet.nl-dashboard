@@ -526,6 +526,8 @@ CONSTANCE_CONFIG = {
     "SECURITY_TXT_IS_REDIRECTED": (False, "When a redirect is used, it will not show the content anymore.", bool),
     "SECURITY_TXT_REDIRECT_URL": ("", "The url where security.txt resides", str),
     "SECURITY_TXT_CONTENT": ("", "The content of the security.txt file, located at .well-known/security.txt", str),
+    "CREDENTIAL_CHECK_URL": ("https://batch.internet.nl/api/", "The url where internet.nl api credentials are checked. "
+                                                               "This is usually the api endpoint.", str)
 }
 
 CONSTANCE_CONFIG_FIELDSETS = OrderedDict(
@@ -540,7 +542,9 @@ CONSTANCE_CONFIG_FIELDSETS = OrderedDict(
                     'EMAIL_DASHBOARD_ADDRESS')),
         ('Internet.nl Scans', ('SCAN_AT_ALL', 'INTERNET_NL_API_USERNAME', 'INTERNET_NL_API_PASSWORD',
                                'INTERNET_NL_API_URL',
-                               'INTERNET_NL_MAXIMUM_URLS', 'SCAN_TIMEOUT_MINUTES_DISCOVERING_ENDPOINTS',
+                               'INTERNET_NL_MAXIMUM_URLS',
+                               "CREDENTIAL_CHECK_URL",
+                               'SCAN_TIMEOUT_MINUTES_DISCOVERING_ENDPOINTS',
                                'SCAN_TIMEOUT_MINUTES_RETRIEVING_SCANABLE_URLS',
                                'SCAN_TIMEOUT_MINUTES_REGISTERING_SCAN_AT_INTERNET_NL',
                                'SCAN_TIMEOUT_MINUTES_IMPORTING_SCAN_RESULTS', 'SCAN_TIMEOUT_MINUTES_CREATING_REPORT',
@@ -640,8 +644,8 @@ if not DEBUG:
 SENTRY_DSN = os.environ.get('SENTRY_DSN')
 if SENTRY_DSN:
     # new sentry_sdk implementation, with hopes to also get exceptions from workers.
-    sentry_sdk.init(dsn=SENTRY_DSN, integrations=[CeleryIntegration(), DjangoIntegration(),
-                                                  RedisIntegration()],
+    sentry_sdk.init(dsn=SENTRY_DSN,  # pylint: disable=abstract-class-instantiated  # (following the documentation)
+                    integrations=[CeleryIntegration(), DjangoIntegration(), RedisIntegration()],
                     release=__version__, send_default_pii=False)
 
 SENTRY_ORGANIZATION = 'internet-cleanup-foundation'

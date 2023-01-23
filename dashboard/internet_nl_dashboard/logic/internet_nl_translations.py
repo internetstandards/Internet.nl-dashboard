@@ -345,7 +345,7 @@ def translate_field(field_label, translation_dictionary: Dict[str, str]):
         'internet_nl_web_https_tls_keyexchangehash': 'detail_web_tls_kex_hash_func_label',
         'internet_nl_web_rpki_exists': 'detail_web_rpki_exists_label',
         'internet_nl_web_rpki_valid': 'detail_web_rpki_valid_label',
-        'internet_nl_web_ns_rpki_exists': 'detail_web_mail_rpki_ns_valid_label',
+        'internet_nl_web_ns_rpki_exists': 'detail_web_mail_rpki_ns_exists_label',
         'internet_nl_web_ns_rpki_valid': 'detail_web_mail_rpki_ns_valid_label',
 
         'internet_nl_web_rpki': 'test_siterpki_label',
