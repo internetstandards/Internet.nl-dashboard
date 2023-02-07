@@ -4,6 +4,27 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+
+## V4.1.0 - 7 February 2023
+
+### Added
+- RPKI and Security.txt metrics
+
+### Changed
+- Small Changes
+ - Added github action for building and testing, removing travis
+ - Upgraded dependencies
+ - Added tag normalization
+
+
+- Bugfixes
+ - The credential check url of the internet.nl api instance can now be configured (#396)
+ - Some labels have been corrected
+ - Removed CSRF from public reports
+ - Previous report now always selects the same report type
+
+
+
 ## [Fourth Version] - 2021 Oct 29
 
 ### Added
