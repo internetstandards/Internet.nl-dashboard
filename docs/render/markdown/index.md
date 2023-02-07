@@ -1,5 +1,7 @@
 # internet.nl dashboard documentation
 
+# Administration Manual
+
 
 * Email Templates
 
