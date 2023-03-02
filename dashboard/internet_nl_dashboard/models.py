@@ -226,6 +226,32 @@ class UrlList(models.Model):
         blank=True
     )
 
+    enable_report_sharing_page = models.BooleanField(
+        default=False,
+        help_text="When true there will be page under the list-id that shows all reports that are shared publicly."
+    )
+
+    # will be available under: /public/account-id/list-id/latest
+    # will be available under: /public/account-id/list-id/list (for a list of public reports for this list)
+    #   and                    /public/account-id/list-id/report-id
+    #   and                    /public/account-id/list-name-slug/latest
+    #   and                    /public/account-id/list-name-slug/report-id
+    automatically_share_new_reports = models.BooleanField(
+        help_text="Sharing can be disabled and re-enabled where the report code and the share code (password) "
+                  "stay the same. Sharing means that all new reports will be made public under a set of standard urls.",
+        default=False
+    )
+
+    default_public_share_code_for_new_reports = models.CharField(
+        max_length=64,
+        help_text="An unencrypted share code that can be seen by all users in an account. Can be modified by all. "
+                  "New reports get this code set automatically. You can change this per report. An empty field "
+                  "means no share code and the report is accessible publicly.",
+        blank=True,
+        default=""
+    )
+
+
     def __str__(self):
         return "%s/%s" % (self.account, self.name)
 

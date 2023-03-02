@@ -7,6 +7,7 @@ import tldextract
 from actstream import action
 from constance import config
 from django.db.models import Count, Prefetch
+from django.http import JsonResponse
 from django.utils import timezone
 from websecmap.organizations.models import Url
 from websecmap.scanners.models import Endpoint
@@ -18,6 +19,9 @@ from dashboard.internet_nl_dashboard.models import (Account, AccountInternetNLSc
                                                     determine_next_scan_moment)
 from dashboard.internet_nl_dashboard.scanners.scan_internet_nl_per_account import (initialize_scan,
                                                                                    update_state)
+import pyexcel as p
+
+from dashboard.internet_nl_dashboard.views.download_spreadsheet import create_spreadsheet_download
 
 log = logging.getLogger(__package__)
 
@@ -796,3 +800,25 @@ def delete_url_from_urllist(account: Account, urllist_id: int, url_id: int) -> b
     urllist.urls.remove(url_is_in_list)
 
     return True
+
+
+def download_as_spreadsheet(account: Account, urllist_id: int, file_type: str = "xlsx") -> Any:
+
+    urls = TaggedUrlInUrllist.objects.all().filter(
+        urllist__account=account,
+        urllist__pk=urllist_id
+    )
+
+    if not urls:
+        return JsonResponse({})
+
+    # results is a matrix / 2-d array / array with arrays.
+    data: List[List[Any]] = []
+    data += [["List(s)", "Domain(s)", "Tags"]]
+
+    for url in urls.all():
+        data += [[url.urllist.name, url.url.url, ", ".join(url.tags.values_list('name', flat=True))]]
+
+    book = p.get_book(bookdict={"Domains": data})
+
+    return create_spreadsheet_download("internet dashboard list", book, file_type)
