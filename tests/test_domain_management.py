@@ -78,11 +78,13 @@ def test_urllists(db, redis_server) -> None:
 
     """ Should be no problem to add the same urls, it just has not so much effect. """
     added = save_urllist_content_by_name(
-        account, "test list 1", ['test.nl', 'internet.nl', 'internetcleanup.foundation'])
+        account, "test list 1", {
+            'test.nl': {'tags': set()}, 'internet.nl': {'tags': set()}, 'internetcleanup.foundation': {'tags': set()}})
     assert added['added_to_list'] == 3 and added['already_in_list'] == 0 and len(added['incorrect_urls']) == 0
 
     already = save_urllist_content_by_name(
-        account, "test list 1", ['test.nl', 'internet.nl', 'internetcleanup.foundation'])
+        account, "test list 1", {
+            'test.nl': {'tags': set()}, 'internet.nl': {'tags': set()}, 'internetcleanup.foundation': {'tags': set()}})
     assert already['added_to_list'] == 0 and already['already_in_list'] == 3 and len(already['incorrect_urls']) == 0
 
     list_content = get_urllist_content(account=account, urllist_id=list_1.pk)
@@ -91,7 +93,8 @@ def test_urllists(db, redis_server) -> None:
     """ Garbage urls should be filtered out and can be displayed as erroneous """
     # Impossible to filter out garbage domains, as the tld and domain is checked along the way... and some parts
     # of the domain like 'info' might be seen as a domain while it isn't
-    already = save_urllist_content_by_name(account, "test list 1", ['test.nonse^', 'NONSENSE', '127.0.0.1'])
+    already = save_urllist_content_by_name(account, "test list 1", {
+        'test.nonse^': {'tags': set()}, 'NONSENSE': {'tags': set()}, '127.0.0.1': {'tags': set()}})
     assert already['added_to_list'] == 0 and already['already_in_list'] == 0 and len(already['incorrect_urls']) == 0
 
     """ Check if really nothing was added """
@@ -165,8 +168,10 @@ def test_delete_url_from_urllist(db, redis_server):
     a2, created = Account.objects.all().get_or_create(name="a2")
     l1 = get_or_create_list_by_name(a1, "l1")
     l2 = get_or_create_list_by_name(a2, "l2")
-    save_urllist_content_by_name(a1, "l1", ['test.nl', 'internet.nl', 'internetcleanup.foundation'])
-    save_urllist_content_by_name(a2, "l2", ['nu.nl', 'nos.nl', 'tweakers.net'])
+    save_urllist_content_by_name(a1, "l1", {
+        'test.nl': {'tags': set()}, 'internet.nl': {'tags': set()}, 'internetcleanup.foundation': {'tags': set()}})
+    save_urllist_content_by_name(a2, "l2", {
+        'nu.nl': {'tags': set()}, 'nos.nl': {'tags': set()}, 'tweakers.net': {'tags': set()}})
 
     assert l1 != l2
     assert a1 != a2

@@ -13,7 +13,8 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='urllist',
             name='automatically_share_new_reports',
-            field=models.BooleanField(default=False, help_text='Sharing can be disabled and re-enabled where the report code and the share code (password) stay the same. Sharing means that all new reports will be made public under a set of standard urls.'),
+            field=models.BooleanField(
+                default=False, help_text='Sharing can be disabled and re-enabled where the report code and the share code (password) stay the same. Sharing means that all new reports will be made public under a set of standard urls.'),
         ),
         migrations.AddField(
             model_name='urllist',
@@ -23,6 +24,7 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='urllist',
             name='enable_report_sharing_page',
-            field=models.BooleanField(default=False, help_text='When true there will be page under the list-id that shows all reports that are shared publicly.'),
+            field=models.BooleanField(
+                default=False, help_text='When true there will be page under the list-id that shows all reports that are shared publicly.'),
         ),
     ]

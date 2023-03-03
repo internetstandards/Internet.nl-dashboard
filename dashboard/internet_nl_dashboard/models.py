@@ -251,7 +251,6 @@ class UrlList(models.Model):
         default=""
     )
 
-
     def __str__(self):
         return "%s/%s" % (self.account, self.name)
 

@@ -8,7 +8,7 @@ from dashboard.internet_nl_dashboard.logic.spreadsheet import (get_data, get_upl
                                                                is_file, is_valid_extension,
                                                                is_valid_mimetype,
                                                                log_spreadsheet_upload, save_data)
-from dashboard.internet_nl_dashboard.models import Account, DashboardUser
+from dashboard.internet_nl_dashboard.models import Account, DashboardUser, TaggedUrlInUrllist
 
 # the 5000 urls has been skipped, it adds nothing to the test cases, only to the load for the UI. Use it for UI
 # testing... can the UI really handle thousands of urls efficiently?
@@ -42,7 +42,9 @@ def test_spreadsheet(db, redis_server) -> None:
         assert len(data) == 2
 
         # testsite contains these three
-        assert data['testsites'] == {'hdsr.nl', 'zuiderzeeland.nl', 'aaenmaas.nl'}
+        assert data['testsites'] == {'aaenmaas.nl': {'tags': {'test'}},
+                                     'hdsr.nl': {'tags': {' waterschap', ' extra', 'test'}},
+                                     'zuiderzeeland.nl': {'tags': {'extra'}}}
 
         # waterschappen should contain 24 items (including two compound items(!))
         assert len(data['waterschappen']) == 24
@@ -50,6 +52,9 @@ def test_spreadsheet(db, redis_server) -> None:
         saved = save_data(account, data)
         # the test is run multiple times with data, so after the first time, already_in_list is set.
         assert saved['testsites']['added_to_list'] == 3 or saved['testsites']['already_in_list'] == 3
+
+        # Tags have also been added
+        assert TaggedUrlInUrllist.objects.all().count() == 27
 
         data = log_spreadsheet_upload(account.dashboarduser_set.first(), file=file, status='test', message="Test")
         assert len(data['original_filename']) > 5
