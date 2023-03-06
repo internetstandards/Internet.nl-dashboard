@@ -3,6 +3,15 @@
 # Administration Manual
 
 
+* Dashboard User Management
+
+
+    * Overview
+
+
+    * Management
+
+
 * Email Templates
 
 
