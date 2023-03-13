@@ -31,7 +31,7 @@ app = ${bin}/${app_name}
 
 $(shell test -z "$$PS1" || echo -e \nRun `make help` for available commands or use tab-completion.\n)
 
-pysrcdirs = ${app_name}/ tests
+pysrcdirs = ${app_name}/
 pysrc = $(shell find ${pysrcdirs} -name \*.py 2>/dev/null)
 src = $(shell find ${pysrcdirs} -type f -print0 2>/dev/null)
 shsrc = $(shell find * ! -path vendor\* -name \*.sh 2>/dev/null)

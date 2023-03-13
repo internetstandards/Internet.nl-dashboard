@@ -5,7 +5,7 @@ from dashboard.internet_nl_dashboard.logic.domains import (_add_to_urls_to_urlli
                                                            get_or_create_list_by_name)
 from dashboard.internet_nl_dashboard.logic.urllist_dashboard_report import rate_urllists_now
 from dashboard.internet_nl_dashboard.models import UrlListReport
-from tests import make_url_with_endpoint_and_scan
+from dashboard.internet_nl_dashboard.tests import make_url_with_endpoint_and_scan
 
 
 def test_rate_urllists_now(db) -> None:  # pylint: disable=invalid-name, unused-argument

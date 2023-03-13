@@ -266,7 +266,8 @@ class UrlListAdmin(ImportExportModelAdmin, admin.ModelAdmin):
 
     # we don't add the urls as that might cause a deletion by mistake
     fields = ('name', 'account', 'scan_type', 'enable_scans', 'automated_scan_frequency', 'scheduled_next_scan',
-              'last_manual_scan', 'is_deleted', 'deleted_on')
+              'last_manual_scan', 'is_deleted', 'deleted_on', 'enable_report_sharing_page',
+              'automatically_share_new_reports', 'default_public_share_code_for_new_reports')
 
     @staticmethod
     def no_of_urls(obj):

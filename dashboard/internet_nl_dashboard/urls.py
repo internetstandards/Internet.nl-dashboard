@@ -85,6 +85,10 @@ urlpatterns = [
     path('data/report/share/update_share_code/', report.x_update_share_code),
     path('data/report/share/update_report_code/', report.x_update_report_code),
 
+    path('data/report/public/lists/all/account/<int:account_id>/', report.get_publicly_shared_lists_per_account_),
+    path('data/report/public/lists/<int:urllist_id>/account/<int:account_id>/',
+         report.get_publicly_shared_lists_per_account_and_list_id_),
+
 
     path('data/report/differences_compared_to_current_list/<int:report_id>/',
          report.get_report_differences_compared_to_current_list_),
