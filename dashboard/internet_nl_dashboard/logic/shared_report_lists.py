@@ -35,8 +35,17 @@ def get_publicly_shared_lists_per_account(account_id, urllist_id: int = None) ->
 
     return [
         {
-            'list_id': my_list.id,
-            'list_name': my_list.name,
+            'list': {
+                'id': my_list.id,
+                'name': my_list.name,
+                'scan_type': my_list.scan_type,
+                'automatically_share_new_reports': my_list.automatically_share_new_reports,
+                'automated_scan_frequency': my_list.automated_scan_frequency
+            },
+            # for future use
+            'account': {
+                'public_name': '',
+            },
             'number_of_reports': len(my_list.reports),
             'reports': [
                 {

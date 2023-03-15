@@ -1,6 +1,7 @@
 # SPDX-License-Identifier: Apache-2.0
 import logging
 from datetime import datetime, timedelta
+from uuid import uuid4
 
 import pytz
 import requests
@@ -519,6 +520,11 @@ class UrlListReport(SeriesOfUrlsReportMixin):  # pylint: disable=too-many-ancest
         index_together = [
             ["at_when", "id"],
         ]
+
+    def save(self, *args, **kwargs):
+        # the public share code is a random string string that should be unique and non-guessable
+        self.public_report_code = str(uuid4())
+        super(UrlListReport, self).save(*args, **kwargs)
 
     def get_previous_report_from_this_list(self):
         """

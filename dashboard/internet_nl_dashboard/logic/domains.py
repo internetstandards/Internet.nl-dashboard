@@ -151,7 +151,9 @@ def get_url(new_url_string: str):
 
 
 def create_list(account: Account, user_input: Dict) -> Dict[str, Any]:
-    expected_keys = ['id', 'name', 'enable_scans', 'scan_type', 'automated_scan_frequency', 'scheduled_next_scan']
+    expected_keys = ['id', 'name', 'enable_scans', 'scan_type', 'automated_scan_frequency', 'scheduled_next_scan',
+                     'automatically_share_new_reports', 'default_public_share_code_for_new_reports',
+                     'enable_report_sharing_page']
     if sorted(user_input.keys()) != sorted(expected_keys):
         return operation_response(error=True, message="Missing settings.")
 
@@ -163,6 +165,9 @@ def create_list(account: Account, user_input: Dict) -> Dict[str, Any]:
         'scan_type': validate_list_scan_type(user_input['scan_type']),
         'automated_scan_frequency': frequency,
         'scheduled_next_scan': determine_next_scan_moment(frequency),
+        'enable_report_sharing_page': bool(user_input.get('enable_report_sharing_page', '')),
+        'automatically_share_new_reports': bool(user_input.get('automatically_share_new_reports', '')),
+        'default_public_share_code_for_new_reports': user_input.get('default_public_share_code_for_new_reports', '')
     }
 
     urllist = UrlList(**data)
@@ -348,6 +353,9 @@ def update_list_settings(account: Account, user_input: Dict) -> Dict[str, Any]:
         'scan_type': validate_list_scan_type(user_input['scan_type']),
         'automated_scan_frequency': frequency,
         'scheduled_next_scan': determine_next_scan_moment(frequency),
+        'enable_report_sharing_page': bool(user_input.get('enable_report_sharing_page', '')),
+        'automatically_share_new_reports': bool(user_input.get('automatically_share_new_reports', '')),
+        'default_public_share_code_for_new_reports': user_input.get('default_public_share_code_for_new_reports', '')
     }
 
     updated_urllist = UrlList(**data)
@@ -380,8 +388,6 @@ def update_list_settings(account: Account, user_input: Dict) -> Dict[str, Any]:
     if urllist.num_urls > config.DASHBOARD_MAXIMUM_DOMAINS_PER_LIST:
         list_warnings.append('WARNING_DOMAINS_IN_LIST_EXCEED_MAXIMUM_ALLOWED')
     data['list_warnings'] = []
-
-    log.debug(data)
 
     # Sprinkling an activity stream action.
     action.send(account, verb='updated list', target=updated_urllist, public=False)
@@ -471,6 +477,9 @@ def get_urllists_from_account(account: Account) -> Dict:
             'automated_scan_frequency': urllist.automated_scan_frequency,
             'scheduled_next_scan': urllist.scheduled_next_scan,
             'scan_now_available': urllist.is_scan_now_available(),
+            'enable_report_sharing_page': urllist.enable_report_sharing_page,
+            'automatically_share_new_reports': urllist.automatically_share_new_reports,
+            'default_public_share_code_for_new_reports': urllist.default_public_share_code_for_new_reports,
 
             'last_scan_id': None,
             'last_scan_state': None,
