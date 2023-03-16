@@ -1,8 +1,23 @@
-from typing import List
+from typing import List, Dict
 
 from dashboard.internet_nl_dashboard import log
 from dashboard.internet_nl_dashboard.models import UrlList, UrlListReport
 from django.db.models import Prefetch
+
+
+def get_latest_report_id_from_list_and_type(urllist_id: int, report_type: str = '') -> Dict[str, int]:
+    report = UrlListReport.objects.filter(urllist=urllist_id, is_publicly_shared=True)
+
+    if report_type in {"web", "mail"}:
+        report = report.filter(report_type=report_type)
+
+    found_report = report.first()
+
+    return (
+        {'latest_report_public_report_code': found_report.public_report_code}
+        if found_report
+        else {'latest_report_public_report_code': None}
+    )
 
 
 def get_publicly_shared_lists_per_account_and_list_id(account_id: int, urllist_id: int) -> List[dict]:

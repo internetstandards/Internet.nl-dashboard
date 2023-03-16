@@ -12,7 +12,7 @@ from dashboard.internet_nl_dashboard.logic.report import (
     get_report_differences_compared_to_current_list, get_shared_report, get_urllist_timeline_graph,
     save_ad_hoc_tagged_report, share, unshare, update_report_code, update_share_code)
 from dashboard.internet_nl_dashboard.logic.shared_report_lists import get_publicly_shared_lists_per_account, \
-    get_publicly_shared_lists_per_account_and_list_id
+    get_publicly_shared_lists_per_account_and_list_id, get_latest_report_id_from_list_and_type
 from dashboard.internet_nl_dashboard.views import LOGIN_URL, get_account, get_json_body
 
 
@@ -129,3 +129,11 @@ def get_publicly_shared_lists_per_account_(request, account_id) -> JsonResponse:
 
 def get_publicly_shared_lists_per_account_and_list_id_(request, account_id, urllist_id) -> JsonResponse:
     return JsonResponse(get_publicly_shared_lists_per_account_and_list_id(account_id, urllist_id), safe=False)
+
+
+def get_latest_report_id_from_list(request, urllist_id) -> JsonResponse:
+    return JsonResponse(get_latest_report_id_from_list_and_type(urllist_id, ''), safe=False)
+
+
+def get_latest_report_id_from_list_and_type_(request, urllist_id, report_type) -> JsonResponse:
+    return JsonResponse(get_latest_report_id_from_list_and_type(urllist_id, report_type), safe=False)
