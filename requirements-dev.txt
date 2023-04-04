@@ -159,7 +159,7 @@ mypy==0.910
     #   django-stubs
 mypy-extensions==0.4.3
     # via mypy
-numpy==1.21.0
+numpy==1.23.5
     # via
     #   -c requirements.txt
     #   imageio

@@ -194,7 +194,7 @@ netaddr==0.8.0
     #   websecmap
 networkx==2.5
     # via colormath
-numpy==1.21.0
+numpy==1.23.5
     # via
     #   -r requirements.in
     #   colormath
@@ -227,7 +227,7 @@ polib==1.1.0
     # via -r requirements.in
 prometheus-client==0.8.0
     # via flower
-psycopg2-binary==2.8.6
+psycopg2-binary==2.9.5
     # via websecmap
 py==1.10.0
     # via retry

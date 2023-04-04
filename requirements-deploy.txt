@@ -271,7 +271,7 @@ networkx==2.5
     # via
     #   -c requirements.txt
     #   colormath
-numpy==1.21.0
+numpy==1.23.5
     # via
     #   -c requirements.txt
     #   colormath
@@ -305,7 +305,7 @@ prometheus-client==0.8.0
     # via
     #   -c requirements.txt
     #   flower
-psycopg2-binary==2.8.6
+psycopg2-binary==2.9.5
     # via
     #   -c requirements.txt
     #   websecmap
