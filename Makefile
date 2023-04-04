@@ -18,7 +18,7 @@ $(info Virtualenv path: ${VIRTUAL_ENV})
 
 # variables for environment
 bin = ${VIRTUAL_ENV}/bin
-env = env PATH=${bin}:$$PATH
+env = PATH=${bin}:$$PATH
 
 # shortcuts for common used binaries
 python = ${bin}/python
@@ -64,17 +64,20 @@ ${VIRTUAL_ENV}/.requirements.installed: requirements.txt requirements-dev.txt | 
 
 # perform 'pip freeze' on first class requirements in .in files.
 requirements: requirements.txt requirements-dev.txt requirements-deploy.txt
-requirements-dev.txt requirements-deploy.txt: requirements.txt
-requirements.txt requirements-dev.txt requirements-deploy.txt: %.txt: %.in security-constraints.in | ${pip-compile}
+# perform 'pip freeze' on first class requirements in .in files.
+requirements.txt: requirements.in | ${pip-compile}
 	${pip-compile} ${pip_compile_args} --output-file $@ $<
-	# remove `extra` marker as there is no way to specify it during install
-	sed -E -i '' 's/extra == "deploy"//' $@
+
+requirements-dev.txt: requirements-dev.in requirements.in | ${pip-compile}
+	${pip-compile} ${pip_compile_args} --output-file $@ $<
+
+requirements-deploy.txt: requirements-deploy.in requirements.in | ${pip-compile}
+	${pip-compile} ${pip_compile_args} --output-file $@ $<
 
 update_requirements: pip_compile_args=--upgrade
 update_requirements: _mark_outdated requirements.txt requirements-dev.txt _commit_update
 
 _mark_outdated:
-	touch requirements*.in
 	touch requirements*.in
 
 # get latest sha for gitlab.com:icf/websecmap@master and update requirements
@@ -223,7 +226,7 @@ clean:  ## cleanup build artifacts, caches, databases, etc.
 
 clean_virtualenv:  ## cleanup virtualenv and installed app/dependencies
 	# remove virtualenv
-	-rm -fr ${VIRTUAL_ENV}/
+	-rm -fr ${VIRTUAL_ENV}
 
 mrproper: clean clean_virtualenv ## thorough cleanup, also removes virtualenv
 
@@ -240,7 +243,7 @@ ${python} ${pip}:
 	# create virtualenv
 	python3 -mvenv ${VIRTUAL_ENV}
 	# ensure a recent version of pip is used to avoid errors with intalling
-	${VIRTUAL_ENV}/bin/pip install --upgrade pip>=19.1.1
+	${VIRTUAL_ENV}/bin/pip install --upgrade "pip>=19.1.1"
 
 mypy: ${app} ## Check for type issues with mypy
 	${bin}/python3 -m mypy --check dashboard

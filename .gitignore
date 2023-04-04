@@ -37,3 +37,7 @@ pip-wheel-metadata/
 
 # make state files
 .make.*
+
+# devenv
+.devenv
+.devenv.flake.nix
