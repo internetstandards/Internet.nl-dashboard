@@ -1,7 +1,7 @@
 { pkgs, ... }:
 
 let
-  python = pkgs.python38;
+  python = pkgs.python310;
 in
 {
   packages = [
