@@ -242,7 +242,7 @@ def _strip_simple_item(text, html_tag):
         len_opening_tag = len(html_tag) + 2
         len_closing_tag = len_opening_tag + 1
 
-        return text[len_opening_tag:len(text)-len_closing_tag]
+        return text[len_opening_tag:len(text) - len_closing_tag]
 
     return text
 

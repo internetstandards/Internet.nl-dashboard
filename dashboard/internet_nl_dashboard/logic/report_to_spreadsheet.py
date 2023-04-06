@@ -237,7 +237,7 @@ def category_headers(protocol: str = 'dns_soa'):
     for group in SANE_COLUMN_ORDER[protocol]:
         sheet_headers += [translate_field(group, translation_dictionary=po_file_as_dictionary)]
 
-        for _ in range(len(SANE_COLUMN_ORDER[protocol][group])-1):
+        for _ in range(len(SANE_COLUMN_ORDER[protocol][group]) - 1):
             sheet_headers += ['']
 
         # add empty thing after each group to make distinction per group clearer

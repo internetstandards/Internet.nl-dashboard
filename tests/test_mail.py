@@ -60,7 +60,7 @@ def test_send_scan_finished_mails(db) -> None:
     # default address
     assert sent_mail.from_email == "noreply@dashboard.internet.nl"
     assert sent_mail.to == ["info@example.com"]
-    assert sent_mail.template == EmailTemplate.objects.get(name=f"scan_finished_en")
+    assert sent_mail.template == EmailTemplate.objects.get(name="scan_finished_en")
 
     # values are saved as TemplateVariable
     templatevariable = TemplateVariable.objects.all().filter(name='report_average_internet_nl_score').first()

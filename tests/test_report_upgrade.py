@@ -222,7 +222,7 @@ def test_report_upgrade(db, monkeypatch) -> None:
     assert (len(fake_calculation['urls']) == 1)
     upgrade_report_with_unscannable_urls(fake_report.id, scan.id)
     fake_report = UrlListReport.objects.all().first()
-    assert(len(fake_report.calculation['urls']) == len(urls))
+    assert (len(fake_report.calculation['urls']) == len(urls))
 
     # the first url should still be by apple:
     assert fake_report.calculation['urls'][0]['url'] == "apple.com"

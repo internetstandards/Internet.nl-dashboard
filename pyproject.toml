@@ -5,3 +5,25 @@ min_confidence = 100
 paths = ["dashboard"]
 sort_by_size = true
 verbose = false
+
+[tool.black]
+line-length = 120
+
+[tool.isort]
+line_length = 100
+
+[tool.pep8]
+max-line-length = 120
+
+[tool.pylama]
+# temporary ignore these errors/warnings since pylama update (10-04-2018)
+# until autopep8 is able to fix these automatically
+# https://github.com/hhatto/autopep8/commit/eeb0ec07c274db82a19fc2f95f5053407f2ad47d
+# https://github.com/hhatto/autopep8/issues/372
+ignore="E252,W605"
+skip = "dashboard/*/migrations/*.py"
+linters = "pycodestyle,pyflakes"
+
+[tool.pylama.linter.pycodestyle]
+max_line_length = 120
+

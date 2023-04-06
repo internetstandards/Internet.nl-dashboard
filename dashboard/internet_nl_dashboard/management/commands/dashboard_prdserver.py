@@ -5,10 +5,11 @@ import subprocess  # nosec
 import sys
 
 from django.core.management import call_command
+# django_uwsgi is only in the deployement depencies as it has issues on M1 macs.
+from django_uwsgi.management.commands.runuwsgi import \
+    Command as RunserverCommand  # pylint: disable=import-error
 
 from dashboard.security import confirm_keys_are_changed
-# django_uwsgi is only in the deployement depencies as it has issues on M1 macs.
-from django_uwsgi.management.commands.runuwsgi import Command as RunserverCommand  # pylint: disable=import-error
 
 log = logging.getLogger(__name__)
 
