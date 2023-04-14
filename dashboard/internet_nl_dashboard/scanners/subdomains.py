@@ -1,7 +1,7 @@
 import json
+from datetime import timezone, datetime
 
 from celery import group
-from django.utils import timezone
 from websecmap.scanners.scanner.dns_endpoints import has_a_or_aaaa, has_soa
 
 from dashboard.celery import app
@@ -74,7 +74,7 @@ def update_state(scan_id: int, new_state: str, message: str = ""):
     scan.state = new_state
     if message:
         scan.state_message = message
-    scan.state_changed_on = timezone.now()
+    scan.state_changed_on = datetime.now(timezone.utc)
     scan.save()
 
 

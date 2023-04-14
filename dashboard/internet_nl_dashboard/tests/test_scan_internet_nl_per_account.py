@@ -1,9 +1,9 @@
 # SPDX-License-Identifier: Apache-2.0
 import logging
-from datetime import datetime
+from datetime import datetime, timezone
 
 from django.contrib.auth.models import User
-from django.utils import timezone
+
 from websecmap.organizations.models import Url
 from websecmap.reporting.models import UrlReport
 from websecmap.scanners.models import Endpoint, EndpointGenericScan, InternetNLV2Scan
@@ -66,7 +66,7 @@ def test_creating_report(db, redis_server, default_policy, default_scan_metadata
         internetnlv2scan.subject_urls.add()
 
     accountinternetnlscan, c = AccountInternetNLScan.objects.all().get_or_create(
-        account=account, scan=internetnlv2scan, urllist=urllist, started_on=timezone.now(),
+        account=account, scan=internetnlv2scan, urllist=urllist, started_on=datetime.now(timezone.utc),
         report=None, finished_on=None, state='scan results ready')
 
     # Add a separate endpoint to verify that error scores do not hinder creating reports or statistics:

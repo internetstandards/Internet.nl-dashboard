@@ -1,10 +1,9 @@
 # SPDX-License-Identifier: Apache-2.0
 import logging
 from copy import deepcopy
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from typing import Any, Dict, List
 
-import pytz
 from celery import group
 from deepdiff import DeepDiff
 from websecmap.celery import Task, app
@@ -87,7 +86,7 @@ def create_dashboard_report(scan_id: int):
     # the latest results. It should not happen with scans that happened today, but it does. Therefore, we move
     # the report creation process one minute forward
     # todo: this should be fixed to be more accurate.
-    now = datetime.now(pytz.utc) + timedelta(minutes=1)
+    now = datetime.now(timezone.utc) + timedelta(minutes=1)
 
     # The model is not complete: it can be optional but at this point it will not ever will be empty(!)
     if scan.scan is None:
@@ -114,7 +113,7 @@ def create_dashboard_report_at(urllist: UrlList, at_when: datetime, scan_type: s
 @app.task(queue='storage')
 def rate_urllists_now(urllists: List[UrlList], prevent_duplicates: bool = True, scan_type: str = "web"):
     for urllist in urllists:
-        now = datetime.now(pytz.utc)
+        now = datetime.now(timezone.utc)
         rate_urllist_on_moment(urllist, now, prevent_duplicates, scan_type)
 
 
@@ -130,7 +129,7 @@ def rate_urllist_on_moment(
     """
     # If there is no time slicing, then it's today.
     if not when:
-        when = datetime.now(pytz.utc)
+        when = datetime.now(timezone.utc)
 
     log.info(f"Creating report for urllist {urllist} on {when}")
 

@@ -204,9 +204,9 @@ image:  ## Create Docker images
 docs: ## Generate documentation in various formats
 	# Remove existing documentation folder
 	-rm -rf docs/render/*
-	-${bin}/python3 -m sphinx -b html docs/input docs/render/html
-	-${bin}/python3 -m sphinx -b markdown docs/input docs/render/markdown
-	-${bin}/python3 -m sphinx -b pdf docs/input docs/render/pdf
+	-${bin}/python3.10 -m sphinx -b html docs/input docs/render/html
+	-${bin}/python3.10 -m sphinx -b markdown docs/input docs/render/markdown
+	-${bin}/python3.10 -m sphinx -b pdf docs/input docs/render/pdf
 
 ## Housekeeping
 clean:  ## cleanup build artifacts, caches, databases, etc.
@@ -234,22 +234,22 @@ ${pip-compile} ${pip-sync}: | ${pip}
 
 python: ${python}
 ${python} ${pip}:
-	@if ! command -v python3 &>/dev/null;then \
+	@if ! command -v python3.10 &>/dev/null;then \
 		echo "Python 3 is not available. Please refer to installation instructions in README.md"; \
 	fi
 	# create virtualenv
-	python3 -mvenv ${VIRTUAL_ENV}
+	python3.10 -mvenv ${VIRTUAL_ENV}
 	# ensure a recent version of pip is used to avoid errors with intalling
 	${VIRTUAL_ENV}/bin/pip install --upgrade pip>=19.1.1
 
 mypy: ${app} ## Check for type issues with mypy
-	${bin}/python3 -m mypy --check dashboard
+	${bin}/python3.10 -m mypy --check dashboard
 
 vulture: ${app} ## Check for unused code
-	${bin}/python3 -m vulture ${pysrcdirs}
+	${bin}/python3.10 -m vulture ${pysrcdirs}
 
 bandit: ${app} ## Run basic security audit
-	${bin}/python3 -m bandit --configfile bandit.yaml -r ${pysrcdirs}
+	${bin}/python3.10 -m bandit --configfile bandit.yaml -r ${pysrcdirs}
 
 pylint: ${app}
 	DJANGO_SETTINGS_MODULE=${app_name}.settings ${bin}/pylint --load-plugins pylint_django dashboard

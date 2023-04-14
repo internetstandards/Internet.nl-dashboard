@@ -18,7 +18,7 @@ django-extensions
 django-debug-toolbar
 django-debug-toolbar-request-history
 pytest-mock
-git+https://gitlab.com/internet-cleanup-foundation/web-security-map@a583ac24ee73ec32807d243980fb21d81948f464#egg=websecmap
+git+https://gitlab.com/internet-cleanup-foundation/web-security-map@888b243bf037e9661f4f7027e96b19d1436b867d#egg=websecmap
 # use the version with relaxed attr requirements
 git+https://github.com/avast/pytest-docker@519b155009b6f3570c01f1f56e7c4e6ce3c5c760
 
@@ -32,7 +32,6 @@ sphinx-markdown-builder
 httmock
 freezegun
 colorama
-pydotplus  # generating graphs with the docs command...
 
 django-cprofile-middleware
 
@@ -54,7 +53,6 @@ types-freezegun
 types-Markdown
 types-polib
 types-requests
-types-pytz
 types-setuptools
 
 # include (security) version constraints for non primary dependencies

@@ -83,6 +83,7 @@ INSTALLED_APPS = [
     'websecmap.scanners',  # Endpoint, EndpointGenericScan, UrlGenericScan
     'websecmap.reporting',  # Various reporting functions (might be not needed)
     'websecmap.map',  # because some scanners are intertwined with map configurations. That needs to go.
+    'websecmap.game',
 
 
     # Custom Apps
@@ -466,7 +467,6 @@ CONSTANCE_CONFIG = {
         'Comma separated list of email addresses to notify about new users.',
         str
     ),
-
     'INTERNET_NL_API_USERNAME': (
         'dummy',
         'Username for the internet.nl API. You can request one via the contact '
@@ -532,7 +532,29 @@ CONSTANCE_CONFIG = {
     "SECURITY_TXT_REDIRECT_URL": ("", "The url where security.txt resides", str),
     "SECURITY_TXT_CONTENT": ("", "The content of the security.txt file, located at .well-known/security.txt", str),
     "CREDENTIAL_CHECK_URL": ("https://batch.internet.nl/api/", "The url where internet.nl api credentials are checked. "
-                                                               "This is usually the api endpoint.", str)
+                                                               "This is usually the api endpoint.", str),
+
+    # enable all by default, easier for tests
+    "INTERNET_NL_ADD_CALCULATED_RESULTS_WEBSECMAP": (
+        True,
+        "Add calculated results for web security map.",
+        bool,
+    ),
+    "INTERNET_NL_ADD_CALCULATED_RESULTS_FORUM_STANDAARDISATIE": (
+        True,
+        "Add calculated results for forum standaardisatie, the internet.nl dashboard.",
+        bool,
+    ),
+    "INTERNET_NL_ADD_CALCULATED_RESULTS_VNG_V6": (
+        False,
+        "Add calculated results for VNG, obsoleted IPv6 derived conclusions.",
+        bool,
+    ),
+    "INTERNET_NL_WEB_ONLY_TOP_LEVEL": (
+        False,
+        "Do not send in subdomains. To reduce the number of tests while still getting an impression on a broader scope",
+        bool,
+    ),
 }
 
 CONSTANCE_CONFIG_FIELDSETS = OrderedDict(
@@ -554,7 +576,12 @@ CONSTANCE_CONFIG_FIELDSETS = OrderedDict(
                                'SCAN_TIMEOUT_MINUTES_RETRIEVING_SCANABLE_URLS',
                                'SCAN_TIMEOUT_MINUTES_REGISTERING_SCAN_AT_INTERNET_NL',
                                'SCAN_TIMEOUT_MINUTES_IMPORTING_SCAN_RESULTS', 'SCAN_TIMEOUT_MINUTES_CREATING_REPORT',
-                               'SCAN_TIMEOUT_MINUTES_SENDING_MAIL', 'SCAN_TIMEOUT_MINUTES_SERVER_ERROR')),
+                               'SCAN_TIMEOUT_MINUTES_SENDING_MAIL', 'SCAN_TIMEOUT_MINUTES_SERVER_ERROR',
+                               "INTERNET_NL_ADD_CALCULATED_RESULTS_WEBSECMAP",
+                               "INTERNET_NL_ADD_CALCULATED_RESULTS_FORUM_STANDAARDISATIE",
+                               "INTERNET_NL_ADD_CALCULATED_RESULTS_VNG_V6",
+                               "INTERNET_NL_WEB_ONLY_TOP_LEVEL",
+                               )),
         ("Scanning preferences", ("SCANNER_NAMESERVERS",)),
         (
             "Developer configuration. For debugging and verification",
@@ -731,3 +758,17 @@ TAGGIT_CASE_INSENSITIVE = True
 
 # Django 3.2
 DEFAULT_AUTO_FIELD = "django.db.models.AutoField"
+
+
+# New in django 4.2:
+STORAGES = {
+    "default": {
+        "BACKEND": "django.core.files.storage.FileSystemStorage",
+    },
+    "staticfiles": {
+        "BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage",
+    },
+}
+
+# required from django 4.0
+CSRF_TRUSTED_ORIGINS = ["http://localhost", "https://internet.nl", "https://*.internet.nl"]

@@ -1,7 +1,5 @@
-from datetime import datetime
+from datetime import datetime, timezone
 
-import pytz
-from django.utils import timezone
 from websecmap.organizations.models import Url
 from websecmap.scanners.models import Endpoint, EndpointGenericScan, InternetNLV2Scan
 
@@ -12,8 +10,8 @@ from dashboard.internet_nl_dashboard.models import Account, AccountInternetNLSca
 def make_url_with_endpoint_and_scan():
     # Todo: should this just be a fixture?
 
-    day_0 = datetime(day=1, month=1, year=2000, tzinfo=pytz.utc)
-    day_1 = datetime(day=2, month=1, year=2000, tzinfo=pytz.utc)
+    day_0 = datetime(day=1, month=1, year=2000, tzinfo=timezone.utc)
+    day_1 = datetime(day=2, month=1, year=2000, tzinfo=timezone.utc)
 
     account, created = Account.objects.all().get_or_create(name="test")
 
@@ -41,7 +39,7 @@ def create_scan_report(account: Account, urllist: UrlList):
     ainls.urllist = urllist
     ainls.scan = scan
     scan.finished = True
-    scan.finished_on = timezone.now()
+    scan.finished_on = datetime.now(timezone.utc)
     ainls.save()
 
     rate_urllists_now.si(urllist, prevent_duplicates=False)

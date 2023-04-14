@@ -21,7 +21,6 @@ validators
 # line by the Unix command file.
 # Used to determine mimetype in spreadsheet uploads.
 python-magic
-pytz
 polib
 django-activity-stream
 
