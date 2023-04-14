@@ -1,8 +1,8 @@
 # SPDX-License-Identifier: Apache-2.0
+from datetime import timezone, datetime
 from typing import Dict, List, Union
 
 from constance import config
-from django.utils import timezone
 
 from dashboard.internet_nl_dashboard.models import (Account, AccountInternetNLScan,
                                                     AccountInternetNLScanLog)
@@ -39,7 +39,7 @@ def get_scan_monitor_data(account: Account) -> List[Dict[str, Union[str, int, bo
         if scan.state == "finished" and scan.finished_on:
             moment = scan.finished_on
         else:
-            moment = timezone.now()
+            moment = datetime.now(timezone.utc)
 
         runtime_seconds = 0
         if scan.started_on:

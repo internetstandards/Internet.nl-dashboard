@@ -1,8 +1,7 @@
 # SPDX-License-Identifier: Apache-2.0
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 
 from django.contrib.auth.models import User
-from django.utils import timezone
 from django_mail_admin.models import EmailTemplate, Log, Outbox, OutgoingEmail, TemplateVariable
 from websecmap.scanners.models import InternetNLV2Scan
 
@@ -28,15 +27,16 @@ def setup_test():
     urllist = UrlList(**{'name': '', 'account': account})
     urllist.save()
 
-    urllistreport = UrlListReport(**{'urllist': urllist, 'average_internet_nl_score': 42.42, 'at_when': timezone.now()})
+    urllistreport = UrlListReport(**{'urllist': urllist, 'average_internet_nl_score': 42.42,
+                                     'at_when': datetime.now(timezone.utc)})
     urllistreport.save()
 
     internetnlv2scan = InternetNLV2Scan(**{'type': 'web', 'scan_id': '123', 'state': 'finished'})
     internetnlv2scan.save()
 
     accountinternetnlscan = AccountInternetNLScan(
-        **{'account': account, 'scan': internetnlv2scan, 'urllist': urllist, 'started_on': timezone.now(),
-           'report': urllistreport, 'finished_on': timezone.now() + timedelta(hours=2)})
+        **{'account': account, 'scan': internetnlv2scan, 'urllist': urllist, 'started_on': datetime.now(timezone.utc),
+           'report': urllistreport, 'finished_on': datetime.now(timezone.utc) + timedelta(hours=2)})
     accountinternetnlscan.save()
 
     # first template:

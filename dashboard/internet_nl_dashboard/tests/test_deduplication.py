@@ -5,8 +5,8 @@ These testcases make sure we can create scans.
 Run these tests with make testcase case=test_deduplication
 """
 import logging
+from datetime import datetime, timezone
 
-from django.utils import timezone
 from websecmap.organizations.models import Url
 from websecmap.scanners.models import Endpoint, EndpointGenericScan
 
@@ -47,30 +47,30 @@ def test_per_acount_scanner(db) -> None:
 
     # and duplicate scan results
     egs1, created = EndpointGenericScan.objects.get_or_create(endpoint=ep1, type='testscan 1', rating='1',
-                                                              rating_determined_on=timezone.now())
+                                                              rating_determined_on=datetime.now(timezone.utc))
     egs2, created = EndpointGenericScan.objects.get_or_create(endpoint=ep1, type='testscan 2', rating='2',
-                                                              rating_determined_on=timezone.now())
+                                                              rating_determined_on=datetime.now(timezone.utc))
     egs3, created = EndpointGenericScan.objects.get_or_create(endpoint=ep1, type='testscan 3', rating='3',
-                                                              rating_determined_on=timezone.now())
+                                                              rating_determined_on=datetime.now(timezone.utc))
 
     egs4, created = EndpointGenericScan.objects.get_or_create(endpoint=ep2, type='testscan 4', rating='4',
-                                                              rating_determined_on=timezone.now())
+                                                              rating_determined_on=datetime.now(timezone.utc))
     egs5, created = EndpointGenericScan.objects.get_or_create(endpoint=ep2, type='testscan 5', rating='5',
-                                                              rating_determined_on=timezone.now())
+                                                              rating_determined_on=datetime.now(timezone.utc))
 
     egs6, created = EndpointGenericScan.objects.get_or_create(endpoint=ep3, type='testscan 6', rating='6',
-                                                              rating_determined_on=timezone.now())
+                                                              rating_determined_on=datetime.now(timezone.utc))
 
     # some with the same data:
     egs7, created = EndpointGenericScan.objects.get_or_create(endpoint=ep4, type='testscan 1', rating='1',
-                                                              rating_determined_on=timezone.now())
+                                                              rating_determined_on=datetime.now(timezone.utc))
     egs8, created = EndpointGenericScan.objects.get_or_create(endpoint=ep4, type='testscan 2', rating='2',
-                                                              rating_determined_on=timezone.now())
+                                                              rating_determined_on=datetime.now(timezone.utc))
     egs9, created = EndpointGenericScan.objects.get_or_create(endpoint=ep4, type='testscan 3', rating='3',
-                                                              rating_determined_on=timezone.now())
+                                                              rating_determined_on=datetime.now(timezone.utc))
 
     egs10, created = EndpointGenericScan.objects.get_or_create(endpoint=ep6, type='unaffected', rating='3',
-                                                               rating_determined_on=timezone.now())
+                                                               rating_determined_on=datetime.now(timezone.utc))
 
     assert EndpointGenericScan.objects.all().count() == 10
 

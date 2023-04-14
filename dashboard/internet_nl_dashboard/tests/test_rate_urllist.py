@@ -8,7 +8,7 @@ Run these tests with tox -e test -- -k test_urllist_management
 Disabled test because of refactoring, some methods have been removed.
 
 import websecmap
-from django.utils import timezone
+
 from websecmap.reporting.models import UrlReport
 from websecmap.reporting.report import create_timeline, create_url_report
 from websecmap.scanners import ALL_SCAN_TYPES
@@ -80,7 +80,7 @@ def test_rate_urllists(db, monkeypatch) -> None:
     create_reports_on_finished_scans(list)
     assert UrlListReport.objects.all().count() == 0
 
-    scan.finished_on = timezone.now()
+    scan.finished_on = datetime.now(timezone.utc)
     scan.save()
 
     # finished on is set, so we can make a report now...

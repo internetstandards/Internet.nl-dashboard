@@ -37,3 +37,4 @@ pip-wheel-metadata/
 
 # make state files
 .make.*
+_db.sqlite3_

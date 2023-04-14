@@ -14,7 +14,7 @@ class Command(BaseCommand):  # pylint: disable=abstract-method
     help = __doc__
 
     # disable (MySQL) check on startup
-    requires_system_checks = False
+    requires_system_checks = []
 
     def run_from_argv(self, argv):
         reusable_run_from_argv(argv)

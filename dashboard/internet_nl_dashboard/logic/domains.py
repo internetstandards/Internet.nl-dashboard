@@ -2,6 +2,7 @@
 import logging
 import re
 from typing import Any, Dict, List, Tuple
+from datetime import datetime, timezone
 
 import pyexcel as p
 import tldextract
@@ -9,7 +10,6 @@ from actstream import action
 from constance import config
 from django.db.models import Count, Prefetch
 from django.http import JsonResponse
-from django.utils import timezone
 from websecmap.organizations.models import Url
 from websecmap.scanners.models import Endpoint
 from websecmap.scanners.scanner.dns_endpoints import compose_discover_task
@@ -120,7 +120,7 @@ def scan_now(account, user_input) -> Dict[str, Any]:
 
     # done: have to update the list info. On the other hand: there is no guarantee that this task already has started
     # ...to fix this issue, we'll use a 'last_manual_scan' field.
-    urllist.last_manual_scan = timezone.now()
+    urllist.last_manual_scan = datetime.now(timezone.utc)
     urllist.save()
 
     return operation_response(success=True, message="Scan started")
@@ -134,7 +134,7 @@ def scan_urllist_now_ignoring_business_rules(urllist: UrlList):
 
     initialize_scan(my_urllist.id)
 
-    my_urllist.last_manual_scan = timezone.now()
+    my_urllist.last_manual_scan = datetime.now(timezone.utc)
     my_urllist.save()
 
     return operation_response(success=True, message="Scan started")
@@ -209,7 +209,7 @@ def delete_list(account: Account, user_input: dict):
 
     urllist.is_deleted = True
     urllist.enable_scans = False
-    urllist.deleted_on = timezone.now()
+    urllist.deleted_on = datetime.now(timezone.utc)
     urllist.save()
 
     # Sprinkling an activity stream action.
@@ -285,7 +285,7 @@ def cancel_scan(account: Account, scan_id: int):
     if scan.state == 'cancelled':
         return operation_response(success=True, message="scan already cancelled")
 
-    scan.finished_on = timezone.now()
+    scan.finished_on = datetime.now(timezone.utc)
     scan.save()
     update_state("cancelled", scan.id)
 
@@ -460,7 +460,8 @@ def get_urllists_from_account(account: Account) -> Dict:
         account=account,
         is_deleted=False
     ).annotate(num_urls=Count('urls')).order_by('name').only(
-        'id', 'name', 'enable_scans', 'scan_type', 'automated_scan_frequency', 'scheduled_next_scan'
+        'id', 'name', 'enable_scans', 'scan_type', 'automated_scan_frequency', 'scheduled_next_scan',
+        'enable_report_sharing_page', 'default_public_share_code_for_new_reports', 'automatically_share_new_reports',
     )
 
     url_lists = []

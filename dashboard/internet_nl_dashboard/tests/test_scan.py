@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: Apache-2.0
-from django.utils import timezone
+from datetime import timezone, datetime
 
 from dashboard.internet_nl_dashboard.models import (Account, AccountInternetNLScan,
                                                     AccountInternetNLScanLog, UrlList)
@@ -27,7 +27,7 @@ def test_update_state(db):
 
     scanlog = AccountInternetNLScanLog()
     scanlog.scan = scan
-    scanlog.at_when = timezone.now()
+    scanlog.at_when = datetime.now(timezone.utc)
     scanlog.state = "out of sync"
     scanlog.save()
 

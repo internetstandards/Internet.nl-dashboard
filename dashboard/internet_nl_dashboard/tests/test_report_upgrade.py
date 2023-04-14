@@ -4,7 +4,8 @@ Validate that a report is correctly upgraded
 
 Run these tests with make testcase case=test_reoprt_upgrade
 """
-from django.utils import timezone
+from datetime import timezone, datetime
+
 from websecmap.organizations.models import Url
 
 from dashboard.internet_nl_dashboard.logic.report import (add_keyed_ratings,
@@ -193,7 +194,7 @@ def test_report_upgrade(db, monkeypatch) -> None:
     fake_report = UrlListReport()
     fake_report.calculation = fake_calculation
     fake_report.urllist = urllist
-    fake_report.at_when = timezone.now()
+    fake_report.at_when = datetime.now(timezone.utc)
     fake_report.save()
 
     # First check if we are removing the comply_or_explain keys, mainly to save data:

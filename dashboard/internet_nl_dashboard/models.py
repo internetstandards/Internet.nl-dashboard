@@ -1,16 +1,14 @@
 # SPDX-License-Identifier: Apache-2.0
 import logging
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from uuid import uuid4
 
-import pytz
 import requests
 from constance import config
 from cryptography.fernet import Fernet
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.db import models
-from django.utils import timezone
 from django_countries.fields import CountryField
 from jsonfield import JSONField
 from requests.auth import HTTPBasicAuth
@@ -210,7 +208,7 @@ class UrlList(models.Model):
     scheduled_next_scan = models.DateTimeField(
         help_text="An indication at what moment the scan will be started. The scan can take a while, thus this does "
                   "not tell you when a scan will be finished. All dates in the past will be scanned and updated.",
-        default=datetime(2030, 1, 1, 1, 1, 1, 601526, tzinfo=pytz.utc)
+        default=datetime(2030, 1, 1, 1, 1, 1, 601526, tzinfo=timezone.utc)
     )
 
     is_deleted = models.BooleanField(
@@ -260,7 +258,7 @@ class UrlList(models.Model):
         if self.automated_scan_frequency == 'disabled':
             return False
 
-        return timezone.now() > self.scheduled_next_scan
+        return datetime.now(timezone.utc) > self.scheduled_next_scan
 
     def renew_scan_moment(self) -> None:
         self.scheduled_next_scan = determine_next_scan_moment(self.automated_scan_frequency)
@@ -284,7 +282,7 @@ class UrlList(models.Model):
             return False
 
         # Deprecated: At least N hours should have passed since the last manual scan.
-        # yesterday = timezone.now() - timedelta(hours=1)
+        # yesterday = datetime.now(timezone.utc) - timedelta(hours=1)
         # manual scans have their own 'is available flag', as the 'create_dashboard_scan_tasks()' does not guarantee
         # a new scan is created instantly. The flag needs to be set otherwise a user can initiate tons of scans.
         # if self.last_manual_scan and self.last_manual_scan > yesterday:
@@ -300,7 +298,7 @@ class UrlList(models.Model):
 
         # no get method on scan object... 30 is an arbitrary number that is long enough to again allow scans.
         # finished_on = last_scan.scan.finished_on \
-        #     if last_scan.scan.finished_on else timezone.now() - timedelta(days=30)
+        #     if last_scan.scan.finished_on else datetime.now(timezone.utc) - timedelta(days=30)
         # and finished_on < yesterday
         if last_scan.state in ['finished', 'cancelled']:
             # log.debug("Sc an now available: last scan finished over 24 hours ago on list %s" % self)
@@ -355,8 +353,8 @@ def determine_next_scan_moment(preference: str) -> datetime:
     :param preference:
     :return:
     """
-    now = timezone.now()
-    returned = datetime(year=now.year, month=1, day=1, tzinfo=pytz.utc)
+    now = datetime.now(timezone.utc)
+    returned = datetime(year=now.year, month=1, day=1, tzinfo=timezone.utc)
 
     if preference == 'disabled':
         # far, far in the future, so it will not be scanned and probably will be re-calculated. 24 years...

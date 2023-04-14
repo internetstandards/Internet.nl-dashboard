@@ -1,9 +1,8 @@
 # SPDX-License-Identifier: Apache-2.0
 import logging
 import re
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 
-import pytz
 from celery import group
 from constance.admin import Config, ConstanceAdmin, ConstanceForm
 from django.contrib import admin
@@ -59,7 +58,7 @@ class MyPeriodicTaskForm(PeriodicTaskForm):
         cleaned_data = super().clean()
 
         # if not self.cleaned_data['last_run_at']:
-        #     self.cleaned_data['last_run_at'] = datetime.now(pytz.utc)
+        #     self.cleaned_data['last_run_at'] = datetime.now(timezone.utc)
 
         return cleaned_data
 
@@ -97,8 +96,8 @@ class IEPeriodicTaskAdmin(PeriodicTaskAdmin, ImportExportModelAdmin):
             return obj.schedule.remaining_estimate(last_run_at=obj.last_run_at)
 
         # y in seconds
-        _, y_in_seconds = obj.schedule.is_due(last_run_at=datetime.now(pytz.utc))
-        date = datetime.now(pytz.utc) + timedelta(seconds=y_in_seconds)
+        _, y_in_seconds = obj.schedule.is_due(last_run_at=datetime.now(timezone.utc))
+        date = datetime.now(timezone.utc) + timedelta(seconds=y_in_seconds)
 
         return naturaltime(date)
 
@@ -107,7 +106,7 @@ class IEPeriodicTaskAdmin(PeriodicTaskAdmin, ImportExportModelAdmin):
         if obj.last_run_at:
             return obj.schedule.remaining_estimate(last_run_at=obj.last_run_at)
 
-        return obj.schedule.remaining_estimate(last_run_at=datetime.now(pytz.utc))
+        return obj.schedule.remaining_estimate(last_run_at=datetime.now(timezone.utc))
 
     @staticmethod
     def next(obj):
@@ -115,10 +114,10 @@ class IEPeriodicTaskAdmin(PeriodicTaskAdmin, ImportExportModelAdmin):
             return obj.schedule.remaining_estimate(last_run_at=obj.last_run_at)
 
         # y in seconds
-        _, y_in_seconds = obj.schedule.is_due(last_run_at=datetime.now(pytz.utc))
+        _, y_in_seconds = obj.schedule.is_due(last_run_at=datetime.now(timezone.utc))
         # somehow the cron jobs still give the correct countdown even last_run_at is not set.
 
-        date = datetime.now(pytz.utc) + timedelta(seconds=y_in_seconds)
+        date = datetime.now(timezone.utc) + timedelta(seconds=y_in_seconds)
 
         return date
 

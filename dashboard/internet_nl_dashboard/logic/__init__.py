@@ -1,7 +1,6 @@
 # SPDX-License-Identifier: Apache-2.0
+from datetime import timezone, datetime
 from typing import Any, Dict
-
-from django.utils import timezone
 
 
 def operation_response(
@@ -12,7 +11,7 @@ def operation_response(
             'message': message,
             'state': "error" if error else "success",
             'data': data,
-            'timestamp': timezone.now()
+            'timestamp': datetime.now(timezone.utc)
             }
 
 

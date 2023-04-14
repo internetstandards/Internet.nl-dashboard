@@ -2,12 +2,12 @@
 import logging
 import string
 import time
+from datetime import timezone, datetime
 from random import choice
 
 from constance import config
 from django.contrib.auth.models import User
 from django.core.management import call_command
-from django.utils import timezone
 from django_mail_admin import mail
 from django_mail_admin.models import Outbox
 
@@ -115,7 +115,7 @@ def send_scan_finished_mails(scan: AccountInternetNLScan) -> int:
             "scan_started_on": None,
             # the scan is not yet completely finished, because this step (mailing) is still performed
             # so perform a guess, which might be a few minutes off...
-            "scan_finished_on": timezone.now().isoformat(),
+            "scan_finished_on": datetime.now(timezone.utc).isoformat(),
             "scan_duration": 0,
             # Don't use 'mail_dashboard', only mail.
             "scan_type": "",
@@ -130,7 +130,7 @@ def send_scan_finished_mails(scan: AccountInternetNLScan) -> int:
 
         if scan.started_on:
             placeholders['scan_started_on'] = scan.started_on.isoformat()
-            placeholders['scan_duration'] = (timezone.now() - scan.started_on).seconds
+            placeholders['scan_duration'] = (datetime.now(timezone.utc) - scan.started_on).seconds
 
         previous = values_from_previous_report(
             report.id,
@@ -181,7 +181,7 @@ def values_from_previous_report(report_id: int, previous_report: UrlListReport, 
         key_calculation(get_report_directly(previous_report.id))
     )
 
-    difference = timezone.now() - previous_report.at_when
+    difference = datetime.now(timezone.utc) - previous_report.at_when
     days_between_current_and_previous_report = difference.days
 
     summary = comp['summary']
