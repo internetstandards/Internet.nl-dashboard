@@ -18,7 +18,9 @@ django-extensions
 django-debug-toolbar
 django-debug-toolbar-request-history
 pytest-mock
-pytest-docker
+git+https://gitlab.com/internet-cleanup-foundation/web-security-map@a583ac24ee73ec32807d243980fb21d81948f464#egg=websecmap
+# use the version with relaxed attr requirements
+git+https://github.com/avast/pytest-docker@519b155009b6f3570c01f1f56e7c4e6ce3c5c760
 
 # docs / readthedocs.io
 sphinx
@@ -33,7 +35,6 @@ colorama
 pydotplus  # generating graphs with the docs command...
 
 django-cprofile-middleware
-moviepy
 
 # django phonenumber field (via otp) needs this, and cannot get it themselves:
 phonenumberslite>=7.0.2
