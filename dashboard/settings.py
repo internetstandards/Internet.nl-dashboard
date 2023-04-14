@@ -461,6 +461,11 @@ CONSTANCE_CONFIG = {
         'we can move to a javascript-only frontend.',
         str
     ),
+    'DASHBOARD_SIGNUP_NOTIFICATION_EMAIL_ADRESSES': (
+        'vraag@internet.nl',
+        'Comma separated list of email addresses to notify about new users.',
+        str
+    ),
 
     'INTERNET_NL_API_USERNAME': (
         'dummy',
@@ -535,11 +540,12 @@ CONSTANCE_CONFIG_FIELDSETS = OrderedDict(
         ('DASHBOARD', ('DASHBOARD_FRONTEND_URL',
                        'DASHBOARD_MAXIMUM_DOMAINS_PER_LIST',
                        'DASHBOARD_MAXIMUM_DOMAINS_PER_SPREADSHEET',
-                       'DASHBOARD_MAXIMUM_LISTS_PER_SPREADSHEET')),
+                       'DASHBOARD_MAXIMUM_LISTS_PER_SPREADSHEET',
+                       'DASHBOARD_SIGNUP_NOTIFICATION_EMAIL_ADRESSES')),
         ('E-Mail', ('EMAIL_NOTIFICATION_SENDER',
                     'EMAIL_FALLBACK_LANGUAGE',
                     'EMAIL_TEST_RECIPIENT',
-                    'EMAIL_DASHBOARD_ADDRESS')),
+                    'EMAIL_DASHBOARD_ADDRESS',)),
         ('Internet.nl Scans', ('SCAN_AT_ALL', 'INTERNET_NL_API_USERNAME', 'INTERNET_NL_API_PASSWORD',
                                'INTERNET_NL_API_URL',
                                'INTERNET_NL_MAXIMUM_URLS',

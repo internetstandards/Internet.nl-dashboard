@@ -1,8 +1,9 @@
-from typing import List, Dict
+from typing import Dict, List
+
+from django.db.models import Prefetch
 
 from dashboard.internet_nl_dashboard import log
 from dashboard.internet_nl_dashboard.models import UrlList, UrlListReport
-from django.db.models import Prefetch
 
 
 def get_latest_report_id_from_list_and_type(urllist_id: int, report_type: str = '') -> Dict[str, int]:

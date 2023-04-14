@@ -8,7 +8,8 @@ from websecmap.map.views import security_txt
 import dashboard.internet_nl_dashboard.signals  # noqa  # pylint: disable=unused-import
 from dashboard.internet_nl_dashboard.views import (__init__, account, domains, download_spreadsheet,
                                                    mail, powertools, report, scan_monitor, session,
-                                                   spreadsheet, subdomains, tags, usage, user)
+                                                   signup, spreadsheet, subdomains, tags, usage,
+                                                   user)
 
 
 class SpreadsheetFileTypeConverter:
@@ -107,6 +108,8 @@ urlpatterns = [
     path('data/usage/', usage.usage_),
 
     path('mail/unsubscribe/<str:feed>/<str:unsubscribe_code>/', mail.unsubscribe_),
+
+    path('data/signup/', signup.process_application),
 
     # session management
     # logging in via javascript is not possible, because the CSRF is tied to the session cookie.
