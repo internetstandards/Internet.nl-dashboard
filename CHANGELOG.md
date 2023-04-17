@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Tag/label support in spreadsheet uploads and downloads
 - Be able to automatically share the latest report of a list
 - Signup form for easier onboarding
+- Support for automatically sharing of sharing specific reports on the front page
 
 ### Changed
 - www subdomain discovery has been replaced with crt.sh subdomain discovery
