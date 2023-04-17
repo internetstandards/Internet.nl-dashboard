@@ -1,13 +1,10 @@
 # SPDX-License-Identifier: Apache-2.0
 from websecmap.reporting.report import create_url_reports
 
-from dashboard.internet_nl_dashboard.logic.domains import (_add_to_urls_to_urllist,
-                                                           get_or_create_list_by_name)
-from dashboard.internet_nl_dashboard.logic.report_to_spreadsheet import (create_spreadsheet,
-                                                                         upgrade_excel_spreadsheet)
+from dashboard.internet_nl_dashboard.logic.domains import _add_to_urls_to_urllist, get_or_create_list_by_name
+from dashboard.internet_nl_dashboard.logic.report_to_spreadsheet import create_spreadsheet, upgrade_excel_spreadsheet
 from dashboard.internet_nl_dashboard.models import UrlListReport
-from dashboard.internet_nl_dashboard.tests import (create_scan_report,
-                                                   make_url_with_endpoint_and_scan)
+from dashboard.internet_nl_dashboard.tests import create_scan_report, make_url_with_endpoint_and_scan
 
 
 def test_report_to_spreadsheet(db) -> None:

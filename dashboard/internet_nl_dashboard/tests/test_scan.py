@@ -1,8 +1,7 @@
 # SPDX-License-Identifier: Apache-2.0
-from datetime import timezone, datetime
+from datetime import datetime, timezone
 
-from dashboard.internet_nl_dashboard.models import (Account, AccountInternetNLScan,
-                                                    AccountInternetNLScanLog, UrlList)
+from dashboard.internet_nl_dashboard.models import Account, AccountInternetNLScan, AccountInternetNLScanLog, UrlList
 from dashboard.internet_nl_dashboard.scanners.scan_internet_nl_per_account import update_state
 
 

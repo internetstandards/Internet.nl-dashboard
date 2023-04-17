@@ -6,10 +6,9 @@ from websecmap.map.views import security_txt
 
 # We have to import the signals somewhere..?!
 import dashboard.internet_nl_dashboard.signals  # noqa  # pylint: disable=unused-import
-from dashboard.internet_nl_dashboard.views import (__init__, account, domains, download_spreadsheet,
-                                                   mail, powertools, report, scan_monitor, session,
-                                                   signup, spreadsheet, subdomains, tags, usage,
-                                                   user)
+from dashboard.internet_nl_dashboard.views import (account, domains, download_spreadsheet, logout_view, mail,
+                                                   powertools, report, scan_monitor, session, signup, spreadsheet,
+                                                   subdomains, tags, usage, user)
 
 
 class SpreadsheetFileTypeConverter:
@@ -35,7 +34,7 @@ urlpatterns = [
     path('data/powertools/get_accounts/', powertools.get_accounts),
     path('data/powertools/set_account/', powertools.set_account),
     path('data/powertools/save_instant_account/', powertools.save_instant_account),
-    path('logout/', __init__.logout_view),
+    path('logout/', logout_view),
 
     # domain management
     path('data/urllists/get/', domains.get_lists),

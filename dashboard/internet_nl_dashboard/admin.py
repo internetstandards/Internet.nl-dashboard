@@ -24,11 +24,11 @@ from dashboard.internet_nl_dashboard import models
 from dashboard.internet_nl_dashboard.forms import CustomAccountModelForm
 from dashboard.internet_nl_dashboard.logic.domains import scan_urllist_now_ignoring_business_rules
 from dashboard.internet_nl_dashboard.logic.mail import send_scan_finished_mails
-from dashboard.internet_nl_dashboard.models import (Account, AccountInternetNLScan,
-                                                    AccountInternetNLScanLog, DashboardUser,
-                                                    TaggedUrlInUrllist, UploadLog, UrlList)
-from dashboard.internet_nl_dashboard.scanners.scan_internet_nl_per_account import (
-    creating_report, progress_running_scan, recover_and_retry)
+from dashboard.internet_nl_dashboard.models import (Account, AccountInternetNLScan, AccountInternetNLScanLog,
+                                                    DashboardUser, TaggedUrlInUrllist, UploadLog, UrlList)
+from dashboard.internet_nl_dashboard.scanners.scan_internet_nl_per_account import (creating_report,
+                                                                                   progress_running_scan,
+                                                                                   recover_and_retry)
 
 log = logging.getLogger(__package__)
 
@@ -412,7 +412,7 @@ class UrlListReportAdmin(ImportExportModelAdmin, admin.ModelAdmin):
 
     list_display = ('urllist', 'average_internet_nl_score', 'high', 'medium', 'low', 'ok', 'total_endpoints',
                     'ok_endpoints', 'is_publicly_shared', 'is_shared_on_homepage', 'at_when', 'inspect_list')
-    search_fields = (['at_when'])
+    search_fields = ['at_when']
     list_filter = ['urllist', 'at_when', 'is_publicly_shared'][::-1]
     fields = ('urllist',
 

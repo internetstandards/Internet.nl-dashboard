@@ -4,8 +4,7 @@ from __future__ import absolute_import, unicode_literals
 
 from django.core.management.base import BaseCommand
 
-from dashboard.internet_nl_dashboard.management.commands.dashboard_celery import \
-    reusable_run_from_argv
+from dashboard.internet_nl_dashboard.management.commands.dashboard_celery import reusable_run_from_argv
 
 
 class Command(BaseCommand):  # pylint: disable=abstract-method

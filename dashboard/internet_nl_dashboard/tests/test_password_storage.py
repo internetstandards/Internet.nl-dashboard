@@ -9,11 +9,11 @@ import pytest
 from dashboard.internet_nl_dashboard.models import Account
 
 
-def test_password_storage(db) -> None:
+def test_password_storage(db) -> None:  # pylint: disable=invalid-name,unused-argument
 
     # normal usage
     secret_password = 'My voice is my password.'
-    account, created = Account.objects.all().get_or_create(name="test")
+    account, _ = Account.objects.all().get_or_create(name="test")
     account.internet_nl_api_password = account.encrypt_password(secret_password)
     account.save()
     # this does not perform a retrieval, so of course it's the same.
@@ -21,7 +21,7 @@ def test_password_storage(db) -> None:
 
     # no password set, should throw a valueError
     with pytest.raises(ValueError, match=r'.*not set.*'):
-        account, created = Account.objects.all().get_or_create(name="value error")
+        account, _ = Account.objects.all().get_or_create(name="value error")
         account.decrypt_password()
 
     # can create at once:

@@ -86,7 +86,7 @@ def get_locale_content(locale: str) -> bytes:
     """
 
     url = f"https://raw.githubusercontent.com/NLnetLabs/Internet.nl/master/translations/{locale}/main.po"
-    response = requests.get(url)
+    response = requests.get(url, timeout=30)
     return response.content
 
 
@@ -106,7 +106,7 @@ def store_as_django_locale(locale, content):
     # If the language does not exist yet, make the folder supporting this language.
     os.makedirs(Path(filepath).parent, exist_ok=True)
 
-    with open(filepath, 'w') as file:
+    with open(filepath, 'w', encoding="UTF-8") as file:
         file.write(content.decode('UTF-8'))
 
 
@@ -202,9 +202,9 @@ def _vue_format_start() -> str:
 
 
 def _vue_format_locale_start(locale) -> str:
-    return """    %s: {
-        internet_nl: {
-""" % locale
+    return f"""    {locale}: {{
+        internet_nl: {{
+"""
 
 
 def _vue_format_locale_end() -> str:
@@ -242,7 +242,7 @@ def _strip_simple_item(text, html_tag):
         len_opening_tag = len(html_tag) + 2
         len_closing_tag = len_opening_tag + 1
 
-        return text[len_opening_tag:len(text)-len_closing_tag]
+        return text[len_opening_tag:len(text) - len_closing_tag]
 
     return text
 
@@ -256,7 +256,7 @@ def store_vue_i18n_file(filename: str, content: str) -> None:
     :param content:
     :return:
     """
-    with open(f"{VUE_I18N_OUTPUT_PATH}{filename}.js", 'w') as file:
+    with open(f"{VUE_I18N_OUTPUT_PATH}{filename}.js", 'w', encoding="UTF-8") as file:
         file.write(content)
 
 

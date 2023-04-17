@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: Apache-2.0
-from datetime import timezone, datetime
+from datetime import datetime, timezone
 from typing import Any, Dict
 
 

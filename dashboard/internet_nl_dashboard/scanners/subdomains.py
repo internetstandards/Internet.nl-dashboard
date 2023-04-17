@@ -1,5 +1,5 @@
 import json
-from datetime import timezone, datetime
+from datetime import datetime, timezone
 
 from celery import group
 from websecmap.scanners.scanner.dns_endpoints import has_a_or_aaaa, has_soa
@@ -118,4 +118,4 @@ def perform_subdomain_scan(scan_id: int) -> None:
         # This is run in a task where there is only exception info in sentry or the task itself.
         update_state(scan, "error", str(my_exception))
         # Still send it to sentry and crash
-        raise Exception from my_exception
+        raise Exception from my_exception  # pylint: disable=broad-exception-raised

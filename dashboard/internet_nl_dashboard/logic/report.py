@@ -14,8 +14,8 @@ from websecmap.organizations.models import Url
 from websecmap.reporting.report import relevant_urls_at_timepoint
 
 from dashboard.internet_nl_dashboard.logic import operation_response
-from dashboard.internet_nl_dashboard.logic.urllist_dashboard_report import (
-    create_calculation_on_urls, sum_internet_nl_scores_over_rating)
+from dashboard.internet_nl_dashboard.logic.urllist_dashboard_report import (create_calculation_on_urls,
+                                                                            sum_internet_nl_scores_over_rating)
 from dashboard.internet_nl_dashboard.models import Account, UrlList, UrlListReport
 
 log = logging.getLogger(__name__)

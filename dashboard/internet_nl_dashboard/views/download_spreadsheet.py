@@ -7,8 +7,7 @@ from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse, JsonResponse
 from django.utils.text import slugify
 
-from dashboard.internet_nl_dashboard.logic.report_to_spreadsheet import (create_spreadsheet,
-                                                                         upgrade_excel_spreadsheet)
+from dashboard.internet_nl_dashboard.logic.report_to_spreadsheet import create_spreadsheet, upgrade_excel_spreadsheet
 from dashboard.internet_nl_dashboard.views.__init__ import LOGIN_URL, get_account
 
 log = logging.getLogger(__package__)

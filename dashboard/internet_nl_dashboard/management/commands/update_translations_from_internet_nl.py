@@ -1,8 +1,7 @@
 # SPDX-License-Identifier: Apache-2.0
 from django.core.management import BaseCommand
 
-from dashboard.internet_nl_dashboard.logic.internet_nl_translations import \
-    convert_internet_nl_content_to_vue
+from dashboard.internet_nl_dashboard.logic.internet_nl_translations import convert_internet_nl_content_to_vue
 
 
 class Command(BaseCommand):

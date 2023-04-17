@@ -1,11 +1,10 @@
 # SPDX-License-Identifier: Apache-2.0
-from datetime import timezone, datetime
+from datetime import datetime, timezone
 from typing import Dict, List, Union
 
 from constance import config
 
-from dashboard.internet_nl_dashboard.models import (Account, AccountInternetNLScan,
-                                                    AccountInternetNLScanLog)
+from dashboard.internet_nl_dashboard.models import Account, AccountInternetNLScan, AccountInternetNLScanLog
 
 
 def get_scan_monitor_data(account: Account) -> List[Dict[str, Union[str, int, bool, None]]]:

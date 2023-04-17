@@ -1,7 +1,6 @@
 from typing import List
 
-from dashboard.internet_nl_dashboard.logic.domains import (_add_to_urls_to_urllist,
-                                                           get_or_create_list_by_name)
+from dashboard.internet_nl_dashboard.logic.domains import _add_to_urls_to_urllist, get_or_create_list_by_name
 from dashboard.internet_nl_dashboard.logic.tags import add_tag, remove_tag, tags_in_urllist
 from dashboard.internet_nl_dashboard.models import TaggedUrlInUrllist
 from dashboard.internet_nl_dashboard.tests import make_url_with_endpoint_and_scan

@@ -4,8 +4,8 @@ import logging
 from django.core.management.base import BaseCommand
 
 from dashboard.internet_nl_dashboard.models import AccountInternetNLScan, UrlListReport
-from dashboard.internet_nl_dashboard.scanners.scan_internet_nl_per_account import (
-    upgrade_report_with_statistics, upgrade_report_with_unscannable_urls)
+from dashboard.internet_nl_dashboard.scanners.scan_internet_nl_per_account import (upgrade_report_with_statistics,
+                                                                                   upgrade_report_with_unscannable_urls)
 
 log = logging.getLogger(__package__)
 

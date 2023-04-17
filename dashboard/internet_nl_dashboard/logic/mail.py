@@ -2,7 +2,7 @@
 import logging
 import string
 import time
-from datetime import timezone, datetime
+from datetime import datetime, timezone
 from random import choice
 
 from constance import config
@@ -14,11 +14,9 @@ from django_mail_admin.models import Outbox
 from dashboard.celery import app
 from dashboard.internet_nl_dashboard.logic.mail_admin_templates import xget_template
 from dashboard.internet_nl_dashboard.logic.report import get_report_directly
-from dashboard.internet_nl_dashboard.logic.report_comparison import (compare_report_in_detail,
-                                                                     key_calculation,
+from dashboard.internet_nl_dashboard.logic.report_comparison import (compare_report_in_detail, key_calculation,
                                                                      render_comparison_view)
-from dashboard.internet_nl_dashboard.models import (AccountInternetNLScan, DashboardUser,
-                                                    UrlListReport)
+from dashboard.internet_nl_dashboard.models import AccountInternetNLScan, DashboardUser, UrlListReport
 
 log = logging.getLogger(__package__)
 

@@ -8,8 +8,7 @@ from django.shortcuts import render
 from django.views.decorators.http import require_http_methods
 from websecmap.app.common import JSEncoder
 
-from dashboard.internet_nl_dashboard.logic.spreadsheet import (complete_import, get_upload_history,
-                                                               save_file,
+from dashboard.internet_nl_dashboard.logic.spreadsheet import (complete_import, get_upload_history, save_file,
                                                                upload_domain_spreadsheet_to_list)
 from dashboard.internet_nl_dashboard.views.__init__ import LOGIN_URL, get_account, get_dashboarduser
 
