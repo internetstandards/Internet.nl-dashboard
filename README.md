@@ -179,6 +179,16 @@ https://hub.docker.com/editions/community/docker-ce-desktop-mac
 `set -x LDFLAGS -L/opt/homebrew/bin/zstd`
 `set -x LDFLAGS -L/opt/homebrew/lib/ -L/opt/homebrew/openssl/lib`
 
+
+### Cannot compile psycopg2 on m1 mac:
+https://stackoverflow.com/questions/66888087/cannot-install-psycopg2-with-pip3-on-m1-mac
+TLDR, run below commands and try again:
+```json
+export LDFLAGS="-L/opt/homebrew/opt/openssl@1.1/lib -L/opt/homebrew/opt/libpq/lib"
+export CPPFLAGS="-I/opt/homebrew/opt/openssl@1.1/include -I/opt/homebrew/opt/libpq/include"
+```
+
+
 ### Missing lib magic on mac:
 Where you need the x86 version, because this library is x86 only due cffi not supporting m1:
 `arch -x86_64 /usr/local/bin/brew install libmagic`
