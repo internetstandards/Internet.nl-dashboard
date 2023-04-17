@@ -1,10 +1,13 @@
 import json
 from datetime import datetime, timezone
+from typing import List
 
 from celery import group
 from websecmap.scanners.scanner.dns_endpoints import has_a_or_aaaa, has_soa
+from websecmap.scanners.scanner.subdomains import certificate_transparency_scan
 
 from dashboard.celery import app
+from dashboard.internet_nl_dashboard import log
 from dashboard.internet_nl_dashboard.logic import operation_response
 from dashboard.internet_nl_dashboard.logic.domains import _add_to_urls_to_urllist_nicer
 from dashboard.internet_nl_dashboard.models import Account, SubdomainDiscoveryScan, UrlList
@@ -95,27 +98,39 @@ def perform_subdomain_scan(scan_id: int) -> None:
 
     try:
         toplevel_domains = urllist.urls.filter(computed_subdomain="")
-        domains_to_check = [f"www.{url.url}" for url in toplevel_domains]
+        # domains_to_check = [f"www.{url.url}" for url in toplevel_domains]
+        # add_discovered_subdomains(scan, urllist, domains_to_check)
 
-        urls_to_add = []
-        # This can take a while because it's synchronous. Done that way to see what urls have been added.
-        for domain in domains_to_check:
-            # don't know which one is saved here, so just testing for both mail and mail_dashboard
-            if urllist.scan_type in ["mail", "mail_dashboard", "all"]:
-                if has_soa(domain):
-                    urls_to_add.append(domain)
+        domains_to_check = []
+        for tld in toplevel_domains:
+            if subdomains := certificate_transparency_scan(tld.url):
+                domains_to_check.extend([f"{sub}.{tld}" for sub in subdomains])
 
-            if urllist.scan_type in ["web", "all"]:
-                if has_a_or_aaaa(domain):
-                    urls_to_add.append(domain)
+        log.debug("Found subdomains:")
+        log.debug(domains_to_check)
 
-        # could have been both mail or web in case of all...
-        urls_to_add = list(set(urls_to_add))
-        counters = _add_to_urls_to_urllist_nicer(account=urllist.account, current_list=urllist, urls=urls_to_add)
-        scan.domains_discovered = json.dumps(counters)
-        scan.save()
+        add_discovered_subdomains(scan, urllist, domains_to_check)
+
     except Exception as my_exception:  # pylint: disable=broad-except
         # This is run in a task where there is only exception info in sentry or the task itself.
-        update_state(scan, "error", str(my_exception))
+        update_state(scan.id, "error", str(my_exception))
         # Still send it to sentry and crash
         raise Exception from my_exception  # pylint: disable=broad-exception-raised
+
+
+def add_discovered_subdomains(scan, urllist, domains_to_check: List[str]):
+    urls_to_add = []
+    # This can take a while because it's synchronous. Done that way to see what urls have been added.
+    for domain in domains_to_check:
+        # don't know which one is saved here, so just testing for both mail and mail_dashboard
+        if urllist.scan_type in ["mail", "mail_dashboard", "all"] and has_soa(domain):
+            urls_to_add.append(domain)
+
+        if urllist.scan_type in ["web", "all"] and has_a_or_aaaa(domain):
+            urls_to_add.append(domain)
+
+    # could have been both mail or web in case of all...
+    urls_to_add = list(set(urls_to_add))
+    counters = _add_to_urls_to_urllist_nicer(account=urllist.account, current_list=urllist, urls=urls_to_add)
+    scan.domains_discovered = json.dumps(counters)
+    scan.save()

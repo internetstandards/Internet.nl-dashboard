@@ -13,7 +13,7 @@ def test_get_publicly_shared_lists_per_account(db):
 
         # todo: perhaps mandate that a list-id is given, and perhaps that the list id has to be a guid.
         # no content no crash
-        response = c.get('/data/report/public/lists/all/account/1/')
+        response = c.get('/data/report/public/account/1/lists/all/')
         assert response.content == b'[]'
 
         # create a list with some reports
@@ -25,8 +25,14 @@ def test_get_publicly_shared_lists_per_account(db):
 
         expected_response = [
             {
-                'list_id': urllist.id,
-                'list_name': urllist.name,
+                'account': {'public_name': ''},
+                'list': {
+                    'id': urllist.id,
+                    'name': urllist.name,
+                    'scan_type': 'web',
+                    'automatically_share_new_reports': False,
+                    'automated_scan_frequency': 'disabled'
+                },
                 'number_of_reports': 1,
                 'reports': [
                     {
@@ -43,18 +49,24 @@ def test_get_publicly_shared_lists_per_account(db):
             }
         ]
 
-        response = c.get(f'/data/report/public/lists/all/account/{account.id}/')
+        response = c.get(f'/data/report/public/account/{account.id}/lists/all/')
+
+        # remove randomness:
         assert response.status_code == 200
-        assert response.json() == expected_response
+        json_data = response.json()
+        json_data[0]['reports'][0]['public_report_code'] = ""
+        assert json_data == expected_response
 
         # non existing list:
-        response = c.get(f'/data/report/public/lists/781263187/account/{account.id}/')
+        response = c.get(f'/data/report/public/account/{account.id}/lists/781263187/')
         assert response.content == b'[]'
 
         # non existing account:
-        response = c.get(f'/data/report/public/lists/{urllist.id}/account/781263187/')
+        response = c.get(f'/data/report/public/account/781263187/lists/{urllist.id}/')
         assert response.content == b'[]'
 
-        response = c.get(f'/data/report/public/lists/{urllist.id}/account/{account.id}/')
+        response = c.get(f'/data/report/public/account/{account.id}/lists/{urllist.id}/')
+        json_data = response.json()
+        json_data[0]['reports'][0]['public_report_code'] = ""
+        assert json_data == expected_response
         assert response.status_code == 200
-        assert response.json() == expected_response

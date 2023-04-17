@@ -33,7 +33,7 @@ def get_publicly_shared_lists_per_account(account_id, urllist_id: int = None) ->
         'urllistreport_set',
         queryset=UrlListReport.objects.filter(is_publicly_shared=True).order_by('-id').only(
             'id', 'at_when', 'report_type', 'public_share_code', 'average_internet_nl_score', 'public_report_code',
-            'total_urls'
+            'total_urls', 'urllist_id'
         ),
         to_attr='reports'
     )
@@ -47,7 +47,7 @@ def get_publicly_shared_lists_per_account(account_id, urllist_id: int = None) ->
     if urllist_id:
         urllists = urllists.filter(id=urllist_id)
 
-    log.debug(f"urllists: {urllists}")
+    # log.debug(f"urllists: {urllists}")
 
     return [
         {
