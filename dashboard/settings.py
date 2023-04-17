@@ -467,6 +467,12 @@ CONSTANCE_CONFIG = {
         'Comma separated list of email addresses to notify about new users.',
         str
     ),
+    'DASHBOARD_FRONT_PAGE_URL_LISTS': (
+        '',
+        'Comma separated list of urllists of which all reports will be shared on the front page',
+        str
+    ),
+
     'INTERNET_NL_API_USERNAME': (
         'dummy',
         'Username for the internet.nl API. You can request one via the contact '
@@ -563,7 +569,8 @@ CONSTANCE_CONFIG_FIELDSETS = OrderedDict(
                        'DASHBOARD_MAXIMUM_DOMAINS_PER_LIST',
                        'DASHBOARD_MAXIMUM_DOMAINS_PER_SPREADSHEET',
                        'DASHBOARD_MAXIMUM_LISTS_PER_SPREADSHEET',
-                       'DASHBOARD_SIGNUP_NOTIFICATION_EMAIL_ADRESSES')),
+                       'DASHBOARD_SIGNUP_NOTIFICATION_EMAIL_ADRESSES',
+                       'DASHBOARD_FRONT_PAGE_URL_LISTS')),
         ('E-Mail', ('EMAIL_NOTIFICATION_SENDER',
                     'EMAIL_FALLBACK_LANGUAGE',
                     'EMAIL_TEST_RECIPIENT',
@@ -736,7 +743,8 @@ CORS_ALLOWED_ORIGINS = [
     "https://acc.dashboard.internet.nl",
     "https://dashboard.internet.nl",
     "http://localhost:8080",
-    "http://127.0.0.1:8080"
+    "http://127.0.0.1:8080",
+    "http://127.0.0.1:8081"
 ]
 
 # as soon as this is set, the vue post stuff doesn't work anymore.
@@ -771,4 +779,6 @@ STORAGES = {
 }
 
 # required from django 4.0
-CSRF_TRUSTED_ORIGINS = ["http://localhost", "https://internet.nl", "https://*.internet.nl"]
+CSRF_TRUSTED_ORIGINS = ["http://localhost", "https://internet.nl", "https://*.internet.nl",
+                        "http://localhost", "http://127.0.0.1", "http://::1", "http://localhost:8080",
+                        "http://localhost:8081"]
