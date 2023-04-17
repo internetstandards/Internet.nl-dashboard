@@ -125,7 +125,7 @@ test: .make.test	## run test suite
 	# and pretty html
 	${env} coverage html
 	# ensure no model updates are commited without migrations
-	${env} ${app} makemigrations --check
+	${env} ${app} makemigrations -v3 --check
 	@touch $@
 
 check: .make.check.py .make.check.sh  ## code quality checks
