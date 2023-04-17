@@ -2,7 +2,7 @@
 import logging
 import re
 from datetime import datetime, timezone
-from typing import Any, Dict, List, Tuple
+from typing import Any, Dict, List, Tuple, Union
 
 import pyexcel as p
 import tldextract
@@ -330,7 +330,7 @@ def update_list_settings(account: Account, user_input: Dict) -> Dict[str, Any]:
         to_attr='last_report'
     )
 
-    urllist = UrlList.objects.all().filter(
+    urllist: UrlList = UrlList.objects.all().filter(
         account=account,
         id=user_input['id'],
         is_deleted=False
@@ -762,7 +762,7 @@ def _add_to_urls_to_urllist_nicer(account: Account, current_list: UrlList, urls:
     return counters
 
 
-def clean_urls(urls: List[str]) -> Dict[str, List]:
+def clean_urls(urls: List[str]) -> Dict[str, List[Union[str, int]]]:
     """
     Incorrect urls are urls that are not following the uri scheme standard and don't have a recognizable suffix. They
     are returned for informational purposes and can contain utter garbage. The editor of the urls can then easily see
@@ -772,7 +772,7 @@ def clean_urls(urls: List[str]) -> Dict[str, List]:
     :return:
     """
 
-    result: Dict[str, List] = {'incorrect': [], 'correct': []}
+    result: Dict[str, List[Union[str, int]]] = {'incorrect': [], 'correct': []}
 
     for url in urls:
         # all urls in the system must be lowercase (if applicable to used character)
