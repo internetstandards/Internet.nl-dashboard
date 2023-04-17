@@ -17,12 +17,11 @@ from websecmap.scanners.scanner import add_model_filter, dns_endpoints, internet
 from websecmap.scanners.scanner.internet_nl_v2 import InternetNLApiSettings
 
 from dashboard.celery import app
-from dashboard.internet_nl_dashboard.logic.mail import (email_configration_is_correct,
-                                                        send_scan_finished_mails)
+from dashboard.internet_nl_dashboard.logic.mail import email_configration_is_correct, send_scan_finished_mails
 from dashboard.internet_nl_dashboard.logic.report import optimize_calculation_and_add_statistics
 from dashboard.internet_nl_dashboard.logic.urllist_dashboard_report import create_dashboard_report
-from dashboard.internet_nl_dashboard.models import (AccountInternetNLScan, AccountInternetNLScanLog,
-                                                    UrlList, UrlListReport)
+from dashboard.internet_nl_dashboard.models import (AccountInternetNLScan, AccountInternetNLScanLog, UrlList,
+                                                    UrlListReport)
 # done: create more flexible filters
 # done: map mail scans to an endpoint (changed the scanner for it)
 # done: make nice tracking name for internet nl that is echoed in the scan results.

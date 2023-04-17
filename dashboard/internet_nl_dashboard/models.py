@@ -251,7 +251,7 @@ class UrlList(models.Model):
     )
 
     def __str__(self):
-        return "%s/%s" % (self.account, self.name)
+        return f"{self.account}/{self.name}"
 
     def is_due_for_scanning(self) -> bool:
         # when disabled, will not be scanned automatically anymore.
@@ -522,7 +522,7 @@ class UrlListReport(SeriesOfUrlsReportMixin):  # pylint: disable=too-many-ancest
     def save(self, *args, **kwargs):
         # the public share code is a random string string that should be unique and non-guessable
         self.public_report_code = str(uuid4())
-        super(UrlListReport, self).save(*args, **kwargs)
+        super().save(*args, **kwargs)
 
     def get_previous_report_from_this_list(self):
         """

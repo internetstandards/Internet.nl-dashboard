@@ -18,7 +18,7 @@ $(info Virtualenv path: ${VIRTUAL_ENV})
 
 # variables for environment
 bin = ${VIRTUAL_ENV}/bin
-env = env PATH=${bin}:$$PATH
+env = PATH=${bin}:$$PATH
 
 # shortcuts for common used binaries
 python = ${bin}/python
@@ -64,17 +64,20 @@ ${VIRTUAL_ENV}/.requirements.installed: requirements.txt requirements-dev.txt | 
 
 # perform 'pip freeze' on first class requirements in .in files.
 requirements: requirements.txt requirements-dev.txt requirements-deploy.txt
-requirements-dev.txt requirements-deploy.txt: requirements.txt
-requirements.txt requirements-dev.txt requirements-deploy.txt: %.txt: %.in security-constraints.in | ${pip-compile}
+# perform 'pip freeze' on first class requirements in .in files.
+requirements.txt: requirements.in | ${pip-compile}
 	${pip-compile} ${pip_compile_args} --output-file $@ $<
-	# remove `extra` marker as there is no way to specify it during install
-	sed -E -i '' 's/extra == "deploy"//' $@
+
+requirements-dev.txt: requirements-dev.in requirements.in | ${pip-compile}
+	${pip-compile} ${pip_compile_args} --output-file $@ $<
+
+requirements-deploy.txt: requirements-deploy.in requirements.in | ${pip-compile}
+	${pip-compile} ${pip_compile_args} --output-file $@ $<
 
 update_requirements: pip_compile_args=--upgrade
 update_requirements: _mark_outdated requirements.txt requirements-dev.txt _commit_update
 
 _mark_outdated:
-	touch requirements*.in
 	touch requirements*.in
 
 # get latest sha for gitlab.com:icf/websecmap@master and update requirements
@@ -204,9 +207,9 @@ image:  ## Create Docker images
 docs: ## Generate documentation in various formats
 	# Remove existing documentation folder
 	-rm -rf docs/render/*
-	-${bin}/python3.10 -m sphinx -b html docs/input docs/render/html
-	-${bin}/python3.10 -m sphinx -b markdown docs/input docs/render/markdown
-	-${bin}/python3.10 -m sphinx -b pdf docs/input docs/render/pdf
+	-${bin}/python3 -m sphinx -b html docs/input docs/render/html
+	-${bin}/python3 -m sphinx -b markdown docs/input docs/render/markdown
+	-${bin}/python3 -m sphinx -b pdf docs/input docs/render/pdf
 
 ## Housekeeping
 clean:  ## cleanup build artifacts, caches, databases, etc.
@@ -223,7 +226,7 @@ clean:  ## cleanup build artifacts, caches, databases, etc.
 
 clean_virtualenv:  ## cleanup virtualenv and installed app/dependencies
 	# remove virtualenv
-	-rm -fr ${VIRTUAL_ENV}/
+	-rm -fr ${VIRTUAL_ENV}
 
 mrproper: clean clean_virtualenv ## thorough cleanup, also removes virtualenv
 
@@ -234,28 +237,31 @@ ${pip-compile} ${pip-sync}: | ${pip}
 
 python: ${python}
 ${python} ${pip}:
-	@if ! command -v python3.10 &>/dev/null;then \
+	@if ! command -v python3 &>/dev/null;then \
 		echo "Python 3 is not available. Please refer to installation instructions in README.md"; \
 	fi
 	# create virtualenv
-	python3.10 -mvenv ${VIRTUAL_ENV}
+	python3 -mvenv ${VIRTUAL_ENV}
 	# ensure a recent version of pip is used to avoid errors with intalling
-	${VIRTUAL_ENV}/bin/pip install --upgrade pip>=19.1.1
+	${VIRTUAL_ENV}/bin/pip install --upgrade "pip>=19.1.1"
 
 mypy: ${app} ## Check for type issues with mypy
-	${bin}/python3.10 -m mypy --check dashboard
+	${bin}/python3 -m mypy --check dashboard
 
 vulture: ${app} ## Check for unused code
-	${bin}/python3.10 -m vulture ${pysrcdirs}
+	${bin}/python3 -m vulture ${pysrcdirs}
+
+ruff: ${app} ## Faster than black, might autoformat some things
+	${bin}/python3 -m ruff ${pysrcdirs}
 
 bandit: ${app} ## Run basic security audit
-	${bin}/python3.10 -m bandit --configfile bandit.yaml -r ${pysrcdirs}
+	${bin}/python3 -m bandit --configfile bandit.yaml -r ${pysrcdirs}
 
 pylint: ${app}
 	DJANGO_SETTINGS_MODULE=${app_name}.settings ${bin}/pylint --load-plugins pylint_django dashboard
 
 .QA: qa
-qa: fix pylint bandit mypy vulture check test
+qa: fix pylint bandit mypy vulture check test ruff
 
 
 ## Utility

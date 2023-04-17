@@ -47,6 +47,7 @@ django-stubs
 vulture
 pylint
 pylint-django
+ruff
 
 types-redis
 types-freezegun
@@ -54,6 +55,8 @@ types-Markdown
 types-polib
 types-requests
 types-setuptools
+
+packaging>=23.1
 
 # include (security) version constraints for non primary dependencies
 -c security-constraints.in

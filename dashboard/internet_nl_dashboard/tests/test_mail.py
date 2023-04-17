@@ -5,12 +5,10 @@ from django.contrib.auth.models import User
 from django_mail_admin.models import EmailTemplate, Log, Outbox, OutgoingEmail, TemplateVariable
 from websecmap.scanners.models import InternetNLV2Scan
 
-from dashboard.internet_nl_dashboard.logic.mail import (email_configration_is_correct,
-                                                        generate_unsubscribe_code,
-                                                        get_users_to_send_mail_to,
-                                                        send_scan_finished_mails, unsubscribe)
-from dashboard.internet_nl_dashboard.models import (Account, AccountInternetNLScan, DashboardUser,
-                                                    UrlList, UrlListReport)
+from dashboard.internet_nl_dashboard.logic.mail import (email_configration_is_correct, generate_unsubscribe_code,
+                                                        get_users_to_send_mail_to, send_scan_finished_mails,
+                                                        unsubscribe)
+from dashboard.internet_nl_dashboard.models import Account, AccountInternetNLScan, DashboardUser, UrlList, UrlListReport
 
 
 def setup_test():
@@ -60,7 +58,7 @@ def test_send_scan_finished_mails(db) -> None:
     # default address
     assert sent_mail.from_email == "noreply@dashboard.internet.nl"
     assert sent_mail.to == ["info@example.com"]
-    assert sent_mail.template == EmailTemplate.objects.get(name=f"scan_finished_en")
+    assert sent_mail.template == EmailTemplate.objects.get(name="scan_finished_en")
 
     # values are saved as TemplateVariable
     templatevariable = TemplateVariable.objects.all().filter(name='report_average_internet_nl_score').first()

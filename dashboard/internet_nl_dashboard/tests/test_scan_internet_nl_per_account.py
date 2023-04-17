@@ -3,15 +3,13 @@ import logging
 from datetime import datetime, timezone
 
 from django.contrib.auth.models import User
-
 from websecmap.organizations.models import Url
 from websecmap.reporting.models import UrlReport
 from websecmap.scanners.models import Endpoint, EndpointGenericScan, InternetNLV2Scan
 
-from dashboard.internet_nl_dashboard.models import (Account, AccountInternetNLScan, UrlList,
-                                                    UrlListReport)
-from dashboard.internet_nl_dashboard.scanners.scan_internet_nl_per_account import (
-    creating_report, monitor_timeout, processing_scan_results)
+from dashboard.internet_nl_dashboard.models import Account, AccountInternetNLScan, UrlList, UrlListReport
+from dashboard.internet_nl_dashboard.scanners.scan_internet_nl_per_account import (creating_report, monitor_timeout,
+                                                                                   processing_scan_results)
 
 log = logging.getLogger(__package__)
 

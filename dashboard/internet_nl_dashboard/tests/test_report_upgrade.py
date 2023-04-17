@@ -4,18 +4,14 @@ Validate that a report is correctly upgraded
 
 Run these tests with make testcase case=test_reoprt_upgrade
 """
-from datetime import timezone, datetime
+from datetime import datetime, timezone
 
 from websecmap.organizations.models import Url
 
-from dashboard.internet_nl_dashboard.logic.report import (add_keyed_ratings,
-                                                          add_percentages_to_statistics,
-                                                          add_statistics_over_ratings,
-                                                          remove_comply_or_explain)
-from dashboard.internet_nl_dashboard.models import (Account, AccountInternetNLScan, UrlList,
-                                                    UrlListReport)
-from dashboard.internet_nl_dashboard.scanners.scan_internet_nl_per_account import \
-    upgrade_report_with_unscannable_urls
+from dashboard.internet_nl_dashboard.logic.report import (add_keyed_ratings, add_percentages_to_statistics,
+                                                          add_statistics_over_ratings, remove_comply_or_explain)
+from dashboard.internet_nl_dashboard.models import Account, AccountInternetNLScan, UrlList, UrlListReport
+from dashboard.internet_nl_dashboard.scanners.scan_internet_nl_per_account import upgrade_report_with_unscannable_urls
 
 
 def test_report_upgrade(db, monkeypatch) -> None:
@@ -223,7 +219,7 @@ def test_report_upgrade(db, monkeypatch) -> None:
     assert (len(fake_calculation['urls']) == 1)
     upgrade_report_with_unscannable_urls(fake_report.id, scan.id)
     fake_report = UrlListReport.objects.all().first()
-    assert(len(fake_report.calculation['urls']) == len(urls))
+    assert (len(fake_report.calculation['urls']) == len(urls))
 
     # the first url should still be by apple:
     assert fake_report.calculation['urls'][0]['url'] == "apple.com"

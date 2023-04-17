@@ -437,8 +437,9 @@ osm2geojson==0.2.3
     # via
     #   -c requirements.txt
     #   websecmap
-packaging==21.0
+packaging==23.1
     # via
+    #   -r requirements-dev.in
     #   pytest
     #   rst2pdf
     #   sphinx
@@ -484,8 +485,6 @@ pydash==7.0.1
     # via sphinx-markdown-builder
 pydocstyle==6.3.0
     # via pylama
-pydotplus==2.0.2
-    # via -r requirements-dev.in
 pyexcel==0.7.0
     # via
     #   -c requirements.txt
@@ -546,8 +545,6 @@ pyopenssl==22.1.0
     # via
     #   -c requirements.txt
     #   websecmap
-pyparsing==2.4.7
-    # via pydotplus
 pytest==7.3.0
     # via
     #   -r requirements-dev.in
@@ -659,6 +656,8 @@ retry==0.9.2
 rich==13.3.4
     # via bandit
 rst2pdf==0.100
+    # via -r requirements-dev.in
+ruff==0.0.261
     # via -r requirements-dev.in
 sentry-sdk==0.20.2
     # via

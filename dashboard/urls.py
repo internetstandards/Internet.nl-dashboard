@@ -14,9 +14,8 @@ Including another URLconf
     1. Import the include() function: from django.urls import include, path
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
-from django.urls import include, re_path
 from django.contrib import admin
-from django.urls import path
+from django.urls import include, path, re_path
 from two_factor.urls import urlpatterns as tf_urls
 
 admin.site.site_header = 'Dashboard Admin'
@@ -39,7 +38,7 @@ admin_urls = [
 ]
 
 frontend_urls = [
-    re_path('', include('dashboard.internet_nl_dashboard.urls')),
+    path('', include('dashboard.internet_nl_dashboard.urls')),
     # Enabling the default auth logins can bypass the two factor authentication. Don't enable it.
     # path('', include('django.contrib.auth.urls')),
     re_path(r'', include(tf_urls)),

@@ -7,10 +7,12 @@ from django.http import HttpResponse, JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from websecmap.app.common import JSEncoder
 
-from dashboard.internet_nl_dashboard.logic.report import (
-    ad_hoc_tagged_report, get_previous_report, get_public_reports, get_recent_reports, get_report,
-    get_report_differences_compared_to_current_list, get_shared_report, get_urllist_timeline_graph,
-    save_ad_hoc_tagged_report, share, unshare, update_report_code, update_share_code)
+from dashboard.internet_nl_dashboard.logic.report import (ad_hoc_tagged_report, get_previous_report, get_public_reports,
+                                                          get_recent_reports, get_report,
+                                                          get_report_differences_compared_to_current_list,
+                                                          get_shared_report, get_urllist_timeline_graph,
+                                                          save_ad_hoc_tagged_report, share, unshare, update_report_code,
+                                                          update_share_code)
 from dashboard.internet_nl_dashboard.logic.shared_report_lists import (
     get_latest_report_id_from_list_and_type, get_publicly_shared_lists_per_account,
     get_publicly_shared_lists_per_account_and_list_id)

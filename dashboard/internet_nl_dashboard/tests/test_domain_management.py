@@ -6,10 +6,11 @@ Run these tests with tox -e test -- -k test_urllist_management
 """
 from websecmap.organizations.models import Url
 
-from dashboard.internet_nl_dashboard.logic.domains import (
-    delete_list, delete_url_from_urllist, get_or_create_list_by_name, get_urllist_content,
-    get_urllists_from_account, keys_are_present_in_object, rename_list,
-    retrieve_possible_urls_from_unfiltered_input, save_urllist_content_by_name)
+from dashboard.internet_nl_dashboard.logic.domains import (delete_list, delete_url_from_urllist,
+                                                           get_or_create_list_by_name, get_urllist_content,
+                                                           get_urllists_from_account, keys_are_present_in_object,
+                                                           rename_list, retrieve_possible_urls_from_unfiltered_input,
+                                                           save_urllist_content_by_name)
 from dashboard.internet_nl_dashboard.models import Account
 
 
@@ -164,8 +165,8 @@ def u(url: str) -> int:
 
 
 def test_delete_url_from_urllist(db, redis_server):
-    a1, created = Account.objects.all().get_or_create(name="a1")
-    a2, created = Account.objects.all().get_or_create(name="a2")
+    a1, _ = Account.objects.all().get_or_create(name="a1")
+    a2, _ = Account.objects.all().get_or_create(name="a2")
     l1 = get_or_create_list_by_name(a1, "l1")
     l2 = get_or_create_list_by_name(a2, "l2")
     save_urllist_content_by_name(a1, "l1", {

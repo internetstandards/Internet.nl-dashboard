@@ -13,14 +13,14 @@ def make_url_with_endpoint_and_scan():
     day_0 = datetime(day=1, month=1, year=2000, tzinfo=timezone.utc)
     day_1 = datetime(day=2, month=1, year=2000, tzinfo=timezone.utc)
 
-    account, created = Account.objects.all().get_or_create(name="test")
+    account, _ = Account.objects.all().get_or_create(name="test")
 
-    url, created = Url.objects.all().get_or_create(url='test.nl', created_on=day_0, not_resolvable=False)
+    url, _ = Url.objects.all().get_or_create(url='test.nl', created_on=day_0, not_resolvable=False)
 
-    endpoint, created = Endpoint.objects.all().get_or_create(
+    endpoint, _ = Endpoint.objects.all().get_or_create(
         url=url, protocol='https', port='443', ip_version=4, discovered_on=day_1, is_dead=False)
 
-    scan, created = EndpointGenericScan.objects.all().get_or_create(
+    scan, _ = EndpointGenericScan.objects.all().get_or_create(
         endpoint=endpoint, type='tls_qualys_encryption_quality', rating='A+', rating_determined_on=day_1,
         last_scan_moment=day_1, comply_or_explain_is_explained=False, is_the_latest_scan=True)
 
@@ -31,7 +31,7 @@ def create_scan_report(account: Account, urllist: UrlList):
     rate_urllists_now([urllist])
 
     # create a scan for this list,
-    scan, created = InternetNLV2Scan.objects.all().get_or_create(
+    scan, _ = InternetNLV2Scan.objects.all().get_or_create(
         pk=1, type='web', state="finished")
 
     ainls = AccountInternetNLScan()

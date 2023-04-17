@@ -34,9 +34,9 @@ from django.core.files.storage import FileSystemStorage
 from django.db import transaction
 from xlrd import XLRDError
 
-from dashboard.internet_nl_dashboard.logic.domains import (
-    _add_to_urls_to_urllist, clean_urls, retrieve_possible_urls_from_unfiltered_input,
-    save_urllist_content_by_name)
+from dashboard.internet_nl_dashboard.logic.domains import (_add_to_urls_to_urllist, clean_urls,
+                                                           retrieve_possible_urls_from_unfiltered_input,
+                                                           save_urllist_content_by_name)
 from dashboard.internet_nl_dashboard.models import Account, DashboardUser, UploadLog, UrlList
 
 log = logging.getLogger(__package__)
@@ -345,7 +345,7 @@ def upload_domain_spreadsheet_to_list(account: Account, user: DashboardUser, url
     result = {'incorrect_urls': [],
               'added_to_list': 0,
               'already_in_list': 0}
-    for list_name, domain_data in domain_lists.items():
+    for _, domain_data in domain_lists.items():
         extracted_urls, _ = retrieve_possible_urls_from_unfiltered_input(", ".join(domain_data))
         cleaned_urls = clean_urls(extracted_urls)
 
@@ -360,9 +360,7 @@ def upload_domain_spreadsheet_to_list(account: Account, user: DashboardUser, url
         result['incorrect_urls'] += cleaned_urls['incorrect']
 
     details_str = f"{urllist.name}: new: {result['added_to_list']}, existing: {result['already_in_list']}; "
-
     message = "Spreadsheet uploaded successfully. " \
               f"Added {len(domain_lists)} lists and {number_of_urls} urls. Details: {details_str}"
-    response = {'error': False, 'success': True, 'message': message, 'details': details_str, 'status': 'success'}
     log_spreadsheet_upload(user=user, file=file, status='success', message=message)
-    return response
+    return {'error': False, 'success': True, 'message': message, 'details': details_str, 'status': 'success'}

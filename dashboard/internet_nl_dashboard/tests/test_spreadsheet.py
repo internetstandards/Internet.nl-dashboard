@@ -4,9 +4,8 @@ from pathlib import Path
 
 from django.contrib.auth.models import User
 
-from dashboard.internet_nl_dashboard.logic.spreadsheet import (get_data, get_upload_history,
-                                                               is_file, is_valid_extension,
-                                                               is_valid_mimetype,
+from dashboard.internet_nl_dashboard.logic.spreadsheet import (get_data, get_upload_history, is_file,
+                                                               is_valid_extension, is_valid_mimetype,
                                                                log_spreadsheet_upload, save_data)
 from dashboard.internet_nl_dashboard.models import Account, DashboardUser, TaggedUrlInUrllist
 

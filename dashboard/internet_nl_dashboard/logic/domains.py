@@ -1,8 +1,8 @@
 # SPDX-License-Identifier: Apache-2.0
 import logging
 import re
-from typing import Any, Dict, List, Tuple
 from datetime import datetime, timezone
+from typing import Any, Dict, List, Tuple
 
 import pyexcel as p
 import tldextract
@@ -15,11 +15,9 @@ from websecmap.scanners.models import Endpoint
 from websecmap.scanners.scanner.dns_endpoints import compose_discover_task
 
 from dashboard.internet_nl_dashboard.logic import operation_response
-from dashboard.internet_nl_dashboard.models import (Account, AccountInternetNLScan,
-                                                    TaggedUrlInUrllist, UrlList, UrlListReport,
-                                                    determine_next_scan_moment)
-from dashboard.internet_nl_dashboard.scanners.scan_internet_nl_per_account import (initialize_scan,
-                                                                                   update_state)
+from dashboard.internet_nl_dashboard.models import (Account, AccountInternetNLScan, TaggedUrlInUrllist, UrlList,
+                                                    UrlListReport, determine_next_scan_moment)
+from dashboard.internet_nl_dashboard.scanners.scan_internet_nl_per_account import initialize_scan, update_state
 from dashboard.internet_nl_dashboard.views.download_spreadsheet import create_spreadsheet_download
 
 log = logging.getLogger(__package__)
