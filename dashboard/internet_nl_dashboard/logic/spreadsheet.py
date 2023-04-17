@@ -131,7 +131,7 @@ def get_data(file: str) -> Dict[str, Dict[str, Dict[str, set]]]:
     :return:
     """
 
-    data: Dict[str] = {}
+    data: Dict[str, Any] = {}
 
     try:
         sheet = p.get_sheet(file_name=file, name_columns_by_row=0)

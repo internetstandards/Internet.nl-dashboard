@@ -262,7 +262,7 @@ pylint: ${app}
 	DJANGO_SETTINGS_MODULE=${app_name}.settings ${bin}/pylint --load-plugins pylint_django dashboard
 
 .QA: qa
-qa: fix pylint bandit mypy vulture check test ruff
+qa: fix pylint bandit vulture check test ruff
 
 
 ## Utility

@@ -1,4 +1,4 @@
-from typing import Dict, List
+from typing import Dict, List, Optional
 
 from django.db.models import Prefetch
 
@@ -6,7 +6,7 @@ from dashboard.internet_nl_dashboard import log
 from dashboard.internet_nl_dashboard.models import UrlList, UrlListReport
 
 
-def get_latest_report_id_from_list_and_type(urllist_id: int, report_type: str = '') -> Dict[str, int]:
+def get_latest_report_id_from_list_and_type(urllist_id: int, report_type: str = '') -> Dict[str, str]:
     report = UrlListReport.objects.filter(urllist=urllist_id, is_publicly_shared=True)
 
     if report_type in {"web", "mail"}:
@@ -17,7 +17,7 @@ def get_latest_report_id_from_list_and_type(urllist_id: int, report_type: str = 
     return (
         {'latest_report_public_report_code': found_report.public_report_code}
         if found_report
-        else {'latest_report_public_report_code': None}
+        else {'latest_report_public_report_code': ''}
     )
 
 
@@ -25,7 +25,7 @@ def get_publicly_shared_lists_per_account_and_list_id(account_id: int, urllist_i
     return get_publicly_shared_lists_per_account(account_id, urllist_id)
 
 
-def get_publicly_shared_lists_per_account(account_id, urllist_id: int = None) -> List[dict]:
+def get_publicly_shared_lists_per_account(account_id, urllist_id: Optional[int] = None) -> List[dict]:
 
     log.debug(f"get_publicly_shared_lists_per_account account_id: {account_id}")
 

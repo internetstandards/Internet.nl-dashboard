@@ -2,7 +2,7 @@
 import logging
 from copy import deepcopy
 from datetime import datetime, timedelta, timezone
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Optional
 
 from celery import group
 from deepdiff import DeepDiff
@@ -120,7 +120,8 @@ def rate_urllists_now(urllists: List[UrlList], prevent_duplicates: bool = True, 
 
 @app.task(queue='storage')
 def rate_urllist_on_moment(
-        urllist: UrlList, when: datetime = None, prevent_duplicates: bool = True, scan_type: str = "web") -> int:
+        urllist: UrlList, when: Optional[datetime] = None, prevent_duplicates: bool = True,
+        scan_type: str = "web") -> int:
     """
     :param urllist:
     :param when: A moment in time of which data should be aggregated

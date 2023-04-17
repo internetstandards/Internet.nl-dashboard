@@ -45,11 +45,11 @@ def create_spreadsheet_download(file_name: str, spreadsheet_data: Any, file_type
 
     if file_type == "xlsx-openpyxl":
         with open(spreadsheet_data.name, 'rb') as file_handle:
-            output = HttpResponse(file_handle.read())
+            output: HttpResponse = HttpResponse(file_handle.read())
         file_type = "xlsx"
     else:
         # Simple xls files and such
-        output: HttpResponse = excel.make_response(spreadsheet_data, file_type)
+        output = excel.make_response(spreadsheet_data, file_type)
 
     output["Content-Disposition"] = f"attachment; filename={slugify(file_name)}.{file_type}"
     output["Content-type"] = content_types[file_type]

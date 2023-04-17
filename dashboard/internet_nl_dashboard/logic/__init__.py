@@ -1,10 +1,10 @@
 # SPDX-License-Identifier: Apache-2.0
 from datetime import datetime, timezone
-from typing import Any, Dict
+from typing import Any, Dict, Optional
 
 
 def operation_response(
-        error: bool = False, success: bool = False, message: str = "", data: Dict = None
+        error: bool = False, success: bool = False, message: str = "", data: Optional[Dict[Any, Any]] = None
 ) -> Dict[str, Any]:
     return {'error': error,
             'success': success,
