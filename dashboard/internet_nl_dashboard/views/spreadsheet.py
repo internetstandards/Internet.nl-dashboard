@@ -10,7 +10,7 @@ from websecmap.app.common import JSEncoder
 
 from dashboard.internet_nl_dashboard.logic.spreadsheet import (complete_import, get_upload_history, save_file,
                                                                upload_domain_spreadsheet_to_list)
-from dashboard.internet_nl_dashboard.views.__init__ import LOGIN_URL, get_account, get_dashboarduser
+from dashboard.internet_nl_dashboard.views import LOGIN_URL, get_account, get_dashboarduser
 
 log = logging.getLogger(__package__)
 
