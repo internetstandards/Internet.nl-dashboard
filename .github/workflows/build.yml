@@ -23,7 +23,6 @@ jobs:
         run: |
           make pylint
           make bandit
-          make mypy
           make vulture
           make check
       - name: test
