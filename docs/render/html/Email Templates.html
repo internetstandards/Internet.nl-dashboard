@@ -1,20 +1,20 @@
 
 <!DOCTYPE html>
 
-<html xmlns="http://www.w3.org/1999/xhtml">
+<html lang="en">
   <head>
     <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
+
     <title>Email Templates &#8212; Internet.nl Dashboard  documentation</title>
-    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
-    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
-    <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
-    <script type="text/javascript" src="_static/jquery.js"></script>
-    <script type="text/javascript" src="_static/underscore.js"></script>
-    <script type="text/javascript" src="_static/doctools.js"></script>
-    <script type="text/javascript" src="_static/language_data.js"></script>
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="_static/alabaster.css" />
+    <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+    <script src="_static/doctools.js"></script>
+    <script src="_static/sphinx_highlight.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="prev" title="internet.nl dashboard documentation" href="index.html" />
+    <link rel="prev" title="Dashboard User Management" href="User%20Management.html" />
    
   <link rel="stylesheet" href="_static/custom.css" type="text/css" />
   
@@ -31,21 +31,21 @@
 
           <div class="body" role="main">
             
-  <div class="section" id="email-templates">
-<h1>Email Templates<a class="headerlink" href="#email-templates" title="Permalink to this headline">¶</a></h1>
+  <section id="email-templates">
+<h1>Email Templates<a class="headerlink" href="#email-templates" title="Permalink to this heading">¶</a></h1>
 <p>The dashboard can send out mail when scans are finished.
 An email is composed using a template. These templates are rich in functionality, and can
 be adjusted without the need of re-building and re-deploying this software.</p>
-<div class="section" id="general-information">
-<h2>General information<a class="headerlink" href="#general-information" title="Permalink to this headline">¶</a></h2>
-<div class="section" id="where-can-i-find-templates">
-<h3>Where can i find templates<a class="headerlink" href="#where-can-i-find-templates" title="Permalink to this headline">¶</a></h3>
+<section id="general-information">
+<h2>General information<a class="headerlink" href="#general-information" title="Permalink to this heading">¶</a></h2>
+<section id="where-can-i-find-templates">
+<h3>Where can i find templates<a class="headerlink" href="#where-can-i-find-templates" title="Permalink to this heading">¶</a></h3>
 <p>Templates are located at /admin/django_mail_admin/emailtemplate/ on your installation.
 They are part of the admin system and require the right permissions to be edited.
 An admin can edit them easily.</p>
-</div>
-<div class="section" id="what-templates-are-available">
-<h3>What templates are available<a class="headerlink" href="#what-templates-are-available" title="Permalink to this headline">¶</a></h3>
+</section>
+<section id="what-templates-are-available">
+<h3>What templates are available<a class="headerlink" href="#what-templates-are-available" title="Permalink to this heading">¶</a></h3>
 <p>Currenty there is one feature that uses an e-mail template, which is <cite>scan_finished</cite>.
 When a scan is finished, this mail template is used to draft a mail.</p>
 <p>The scan finished template uses two sub-templates, which are:</p>
@@ -61,31 +61,31 @@ When a scan is finished, this mail template is used to draft a mail.</p>
 </li>
 </ul>
 <p>The sub templates are tables that list regressions and improvements.</p>
-</div>
-<div class="section" id="how-do-i-define-templates-in-multiple-languages">
-<h3>How do i define templates in multiple languages<a class="headerlink" href="#how-do-i-define-templates-in-multiple-languages" title="Permalink to this headline">¶</a></h3>
+</section>
+<section id="how-do-i-define-templates-in-multiple-languages">
+<h3>How do i define templates in multiple languages<a class="headerlink" href="#how-do-i-define-templates-in-multiple-languages" title="Permalink to this heading">¶</a></h3>
 <p>Templates are postfixed with a language identifier. The default is ‘_en’, for English.
 The dashboard currently supports two languages, Dutch and English: nl and en.</p>
 <p>If a template for _nl (or any other language) is missing, it will use _en.</p>
 <p>(Technically there are many solutions to make sure translations are multilingual, most of which
 require re-compilation or maintenance of external translation files that require a build. When
 there are many languages in use, there will be a need to switch.)</p>
-</div>
-<div class="section" id="what-template-system-is-used">
-<h3>What template system is used<a class="headerlink" href="#what-template-system-is-used" title="Permalink to this headline">¶</a></h3>
+</section>
+<section id="what-template-system-is-used">
+<h3>What template system is used<a class="headerlink" href="#what-template-system-is-used" title="Permalink to this heading">¶</a></h3>
 <p>The Django template system is used, with one exception: all fields from the dashboard are strings.</p>
 <p>The Django template system is a mix of special tags and HTML, Javascript and CSS. It is also
 used in building front end systems which are rendered on the server side.</p>
 <p>The Django Template system is documented here:
 <a class="reference external" href="https://docs.djangoproject.com/en/3.1/ref/templates/language/">https://docs.djangoproject.com/en/3.1/ref/templates/language/</a></p>
-</div>
-<div class="section" id="what-do-i-need-to-watch-out-for">
-<h3>What do i need to watch out for<a class="headerlink" href="#what-do-i-need-to-watch-out-for" title="Permalink to this headline">¶</a></h3>
+</section>
+<section id="what-do-i-need-to-watch-out-for">
+<h3>What do i need to watch out for<a class="headerlink" href="#what-do-i-need-to-watch-out-for" title="Permalink to this heading">¶</a></h3>
 <p>Syntax mistakes can prevent a mail from being composed or sent. In this case the software will crash.
 This is the largest drawback of the current approach. When editing a template, be careful.</p>
-</div>
-<div class="section" id="what-are-the-pros-and-cons-of-the-current-approach">
-<h3>What are the pros and cons of the current approach<a class="headerlink" href="#what-are-the-pros-and-cons-of-the-current-approach" title="Permalink to this headline">¶</a></h3>
+</section>
+<section id="what-are-the-pros-and-cons-of-the-current-approach">
+<h3>What are the pros and cons of the current approach<a class="headerlink" href="#what-are-the-pros-and-cons-of-the-current-approach" title="Permalink to this heading">¶</a></h3>
 <p>Pros:</p>
 <ul class="simple">
 <li><p>No need to recompile / rebuild / deliver the software when templates change</p></li>
@@ -97,9 +97,9 @@ This is the largest drawback of the current approach. When editing a template, b
 <li><p>No syntax highlighting or checking of templates in the editor, use an external editor(!)</p></li>
 <li><p>A template per language is annoying when doing maintenance</p></li>
 </ul>
-</div>
-<div class="section" id="how-to-set-up-e-mail-sending">
-<h3>How to set up e-mail sending<a class="headerlink" href="#how-to-set-up-e-mail-sending" title="Permalink to this headline">¶</a></h3>
+</section>
+<section id="how-to-set-up-e-mail-sending">
+<h3>How to set up e-mail sending<a class="headerlink" href="#how-to-set-up-e-mail-sending" title="Permalink to this heading">¶</a></h3>
 <p>Email sending uses Django Mail Admin: <a class="reference external" href="https://github.com/Bearle/django_mail_admin/">https://github.com/Bearle/django_mail_admin/</a></p>
 <dl>
 <dt>You need to configure an outbox with proper values. You can test if this works via the command line</dt><dd><p>with the command:</p>
@@ -108,12 +108,12 @@ This is the largest drawback of the current approach. When editing a template, b
 </div>
 </dd>
 </dl>
-</div>
-</div>
-<div class="section" id="scan-finished-mail">
-<h2>Scan Finished mail<a class="headerlink" href="#scan-finished-mail" title="Permalink to this headline">¶</a></h2>
-<div class="section" id="when-is-this-mail-sent">
-<h3>When is this mail sent<a class="headerlink" href="#when-is-this-mail-sent" title="Permalink to this headline">¶</a></h3>
+</section>
+</section>
+<section id="scan-finished-mail">
+<h2>Scan Finished mail<a class="headerlink" href="#scan-finished-mail" title="Permalink to this heading">¶</a></h2>
+<section id="when-is-this-mail-sent">
+<h3>When is this mail sent<a class="headerlink" href="#when-is-this-mail-sent" title="Permalink to this heading">¶</a></h3>
 <p>This mail is only sent when the user has set that in their profile. You can review that for example here:
 /admin/auth/user/1/change/</p>
 <p>The fields that are used to send this mail are:</p>
@@ -125,9 +125,9 @@ This is the largest drawback of the current approach. When editing a template, b
 </ul>
 <p>If all preconditions are correct, a mail will be queued as part of the scanning process, just before the
 scan is finished.</p>
-</div>
-<div class="section" id="how-to-test-this-mail">
-<h3>How to test this mail<a class="headerlink" href="#how-to-test-this-mail" title="Permalink to this headline">¶</a></h3>
+</section>
+<section id="how-to-test-this-mail">
+<h3>How to test this mail<a class="headerlink" href="#how-to-test-this-mail" title="Permalink to this heading">¶</a></h3>
 <p>A test mail can be sent at will on the admin page of AccountInternetNLScan, here:
 /admin/internet_nl_dashboard/accountinternetnlscan/</p>
 <p>A mail can only be sent if a scan is finished and the mail preconditions and setup are correct.</p>
@@ -136,9 +136,9 @@ or perform this via the command line (during development):</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">dashboard</span> <span class="n">send_queued_mail</span> <span class="o">--</span><span class="n">processes</span><span class="o">=</span><span class="mi">1</span> <span class="o">--</span><span class="n">log</span><span class="o">-</span><span class="n">level</span><span class="o">=</span><span class="mi">2</span>
 </pre></div>
 </div>
-</div>
-<div class="section" id="scan-finished-tags">
-<h3>scan_finished tags<a class="headerlink" href="#scan-finished-tags" title="Permalink to this headline">¶</a></h3>
+</section>
+<section id="scan-finished-tags">
+<h3>scan_finished tags<a class="headerlink" href="#scan-finished-tags" title="Permalink to this heading">¶</a></h3>
 <ul class="simple">
 <li><p>{{unsubscribe_code}}</p></li>
 </ul>
@@ -275,9 +275,9 @@ have been deleted from the list of domains during the new scan.</p>
 <li><p>{{dashboard_address}}</p></li>
 </ul>
 <p>The web address of the dashboard. This is configured in the settings at: /admin/constance/config/</p>
-</div>
-<div class="section" id="example-template">
-<h3>Example template<a class="headerlink" href="#example-template" title="Permalink to this headline">¶</a></h3>
+</section>
+<section id="example-template">
+<h3>Example template<a class="headerlink" href="#example-template" title="Permalink to this heading">¶</a></h3>
 <p>scan_finished_en takes into account a multitude of situations where there are no scan results.</p>
 <p>This template will probably be quickly outdated, but shows how to build a nice template with the fields above.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Hi</span> <span class="p">{{</span><span class="n">recipient</span><span class="p">}},</span><span class="o">&lt;</span><span class="n">br</span><span class="o">&gt;</span>
@@ -432,9 +432,9 @@ have been deleted from the list of domains during the new scan.</p>
 <span class="p">{</span><span class="o">%</span> <span class="n">endfor</span> <span class="o">%</span><span class="p">}</span>
 </pre></div>
 </div>
-</div>
-</div>
-</div>
+</section>
+</section>
+</section>
 
 
           </div>
@@ -453,8 +453,9 @@ have been deleted from the list of domains during the new scan.</p>
 
 
 <h3>Navigation</h3>
-<p class="caption"><span class="caption-text">Administration Manual</span></p>
+<p class="caption" role="heading"><span class="caption-text">Administration Manual</span></p>
 <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="User%20Management.html">Dashboard User Management</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Email Templates</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#general-information">General information</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#scan-finished-mail">Scan Finished mail</a></li>
@@ -466,7 +467,7 @@ have been deleted from the list of domains during the new scan.</p>
 <h3>Related Topics</h3>
 <ul>
   <li><a href="index.html">Documentation overview</a><ul>
-      <li>Previous: <a href="index.html" title="previous chapter">internet.nl dashboard documentation</a></li>
+      <li>Previous: <a href="User%20Management.html" title="previous chapter">Dashboard User Management</a></li>
   </ul></li>
 </ul>
 </div>
@@ -474,12 +475,12 @@ have been deleted from the list of domains during the new scan.</p>
   <h3 id="searchlabel">Quick search</h3>
     <div class="searchformwrapper">
     <form class="search" action="search.html" method="get">
-      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
       <input type="submit" value="Go" />
     </form>
     </div>
 </div>
-<script type="text/javascript">$('#searchbox').show(0);</script>
+<script>document.getElementById('searchbox').style.display = "block"</script>
 
 
 
@@ -496,7 +497,7 @@ have been deleted from the list of domains during the new scan.</p>
       &copy;2020, ECP / Internet.nl.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.2.1</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 6.1.3</a>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
       |

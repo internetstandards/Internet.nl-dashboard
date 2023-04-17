@@ -1,4 +1,9 @@
-# SPDX-License-Identifier: Apache-2.0
-from pkg_resources import get_distribution
+try:
+    from .__version__ import VERSION
 
-__version__ = get_distribution(__name__.split('.', 1)[0]).version
+    print("Websecmap version: ", VERSION)
+except ModuleNotFoundError:
+    # if not available, that means the application is running in development
+    VERSION = "0.0.0.dev0"
+
+__version__ = VERSION

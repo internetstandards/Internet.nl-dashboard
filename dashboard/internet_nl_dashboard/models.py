@@ -1,15 +1,14 @@
 # SPDX-License-Identifier: Apache-2.0
 import logging
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
+from uuid import uuid4
 
-import pytz
 import requests
 from constance import config
 from cryptography.fernet import Fernet
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.db import models
-from django.utils import timezone
 from django_countries.fields import CountryField
 from jsonfield import JSONField
 from requests.auth import HTTPBasicAuth
@@ -209,7 +208,7 @@ class UrlList(models.Model):
     scheduled_next_scan = models.DateTimeField(
         help_text="An indication at what moment the scan will be started. The scan can take a while, thus this does "
                   "not tell you when a scan will be finished. All dates in the past will be scanned and updated.",
-        default=datetime(2030, 1, 1, 1, 1, 1, 601526, tzinfo=pytz.utc)
+        default=datetime(2030, 1, 1, 1, 1, 1, 601526, tzinfo=timezone.utc)
     )
 
     is_deleted = models.BooleanField(
@@ -226,15 +225,40 @@ class UrlList(models.Model):
         blank=True
     )
 
+    enable_report_sharing_page = models.BooleanField(
+        default=False,
+        help_text="When true there will be page under the list-id that shows all reports that are shared publicly."
+    )
+
+    # will be available under: /public/account-id/list-id/latest
+    # will be available under: /public/account-id/list-id/list (for a list of public reports for this list)
+    #   and                    /public/account-id/list-id/report-id
+    #   and                    /public/account-id/list-name-slug/latest
+    #   and                    /public/account-id/list-name-slug/report-id
+    automatically_share_new_reports = models.BooleanField(
+        help_text="Sharing can be disabled and re-enabled where the report code and the share code (password) "
+                  "stay the same. Sharing means that all new reports will be made public under a set of standard urls.",
+        default=False
+    )
+
+    default_public_share_code_for_new_reports = models.CharField(
+        max_length=64,
+        help_text="An unencrypted share code that can be seen by all users in an account. Can be modified by all. "
+                  "New reports get this code set automatically. You can change this per report. An empty field "
+                  "means no share code and the report is accessible publicly.",
+        blank=True,
+        default=""
+    )
+
     def __str__(self):
-        return "%s/%s" % (self.account, self.name)
+        return f"{self.account}/{self.name}"
 
     def is_due_for_scanning(self) -> bool:
         # when disabled, will not be scanned automatically anymore.
         if self.automated_scan_frequency == 'disabled':
             return False
 
-        return timezone.now() > self.scheduled_next_scan
+        return datetime.now(timezone.utc) > self.scheduled_next_scan
 
     def renew_scan_moment(self) -> None:
         self.scheduled_next_scan = determine_next_scan_moment(self.automated_scan_frequency)
@@ -258,7 +282,7 @@ class UrlList(models.Model):
             return False
 
         # Deprecated: At least N hours should have passed since the last manual scan.
-        # yesterday = timezone.now() - timedelta(hours=1)
+        # yesterday = datetime.now(timezone.utc) - timedelta(hours=1)
         # manual scans have their own 'is available flag', as the 'create_dashboard_scan_tasks()' does not guarantee
         # a new scan is created instantly. The flag needs to be set otherwise a user can initiate tons of scans.
         # if self.last_manual_scan and self.last_manual_scan > yesterday:
@@ -274,7 +298,7 @@ class UrlList(models.Model):
 
         # no get method on scan object... 30 is an arbitrary number that is long enough to again allow scans.
         # finished_on = last_scan.scan.finished_on \
-        #     if last_scan.scan.finished_on else timezone.now() - timedelta(days=30)
+        #     if last_scan.scan.finished_on else datetime.now(timezone.utc) - timedelta(days=30)
         # and finished_on < yesterday
         if last_scan.state in ['finished', 'cancelled']:
             # log.debug("Sc an now available: last scan finished over 24 hours ago on list %s" % self)
@@ -329,8 +353,8 @@ def determine_next_scan_moment(preference: str) -> datetime:
     :param preference:
     :return:
     """
-    now = timezone.now()
-    returned = datetime(year=now.year, month=1, day=1, tzinfo=pytz.utc)
+    now = datetime.now(timezone.utc)
+    returned = datetime(year=now.year, month=1, day=1, tzinfo=timezone.utc)
 
     if preference == 'disabled':
         # far, far in the future, so it will not be scanned and probably will be re-calculated. 24 years...
@@ -494,6 +518,11 @@ class UrlListReport(SeriesOfUrlsReportMixin):  # pylint: disable=too-many-ancest
         index_together = [
             ["at_when", "id"],
         ]
+
+    def save(self, *args, **kwargs):
+        # the public share code is a random string string that should be unique and non-guessable
+        self.public_report_code = str(uuid4())
+        super().save(*args, **kwargs)
 
     def get_previous_report_from_this_list(self):
         """

@@ -1,12 +1,14 @@
 # SPDX-License-Identifier: Apache-2.0
 import logging
+from datetime import datetime, timedelta, timezone
 from modulefinder import Module
 from typing import List
 
 from celery import Task, group
+from constance import config
 
 from dashboard.celery import app
-from dashboard.internet_nl_dashboard.models import UrlList
+from dashboard.internet_nl_dashboard.models import UrlList, UrlListReport
 from dashboard.internet_nl_dashboard.scanners import scan_internet_nl_per_account
 from dashboard.internet_nl_dashboard.scanners.scan_internet_nl_per_account import initialize_scan
 
@@ -47,3 +49,23 @@ def start_scans_for_lists_who_are_up_for_scanning() -> Task:
 # explicitly declare the imported modules as this modules 'content', prevents pyflakes issues
 # Todo: List item 0 has incompatible type Module; expected Module
 __all__: List[Module] = [scan_internet_nl_per_account]  # type: ignore
+
+
+@app.task(queue='storage')
+def autoshare_report_to_front_page():
+    ids = config.DASHBOARD_FRONT_PAGE_URL_LISTS
+    if not ids:
+        return
+
+    ids = ids.split(',')
+
+    ints = [int(id_) for id_ in ids]
+
+    # Do not publish historic reports, things can actually stay offline if there was an error with a report
+    UrlListReport.objects.filter(
+        urllist__id__in=ints,
+        at_when__gte=datetime.now(timezone.utc) - timedelta(hours=24)
+    ).update(
+        is_publicly_shared=True,
+        is_shared_on_homepage=True,
+    )

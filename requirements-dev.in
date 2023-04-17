@@ -18,7 +18,9 @@ django-extensions
 django-debug-toolbar
 django-debug-toolbar-request-history
 pytest-mock
-pytest-docker
+git+https://gitlab.com/internet-cleanup-foundation/web-security-map@888b243bf037e9661f4f7027e96b19d1436b867d#egg=websecmap
+# use the version with relaxed attr requirements
+git+https://github.com/avast/pytest-docker@519b155009b6f3570c01f1f56e7c4e6ce3c5c760
 
 # docs / readthedocs.io
 sphinx
@@ -30,10 +32,8 @@ sphinx-markdown-builder
 httmock
 freezegun
 colorama
-pydotplus  # generating graphs with the docs command...
 
 django-cprofile-middleware
-moviepy
 
 # django phonenumber field (via otp) needs this, and cannot get it themselves:
 phonenumberslite>=7.0.2
@@ -47,14 +47,16 @@ django-stubs
 vulture
 pylint
 pylint-django
+ruff
 
 types-redis
 types-freezegun
 types-Markdown
 types-polib
 types-requests
-types-pytz
 types-setuptools
+
+packaging>=23.1
 
 # include (security) version constraints for non primary dependencies
 -c security-constraints.in

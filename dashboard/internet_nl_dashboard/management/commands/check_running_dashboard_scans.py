@@ -3,8 +3,7 @@ import logging
 
 from websecmap.app.management.commands._private import TaskCommand
 
-from dashboard.internet_nl_dashboard.scanners.scan_internet_nl_per_account import \
-    check_running_dashboard_scans
+from dashboard.internet_nl_dashboard.scanners.scan_internet_nl_per_account import check_running_dashboard_scans
 
 log = logging.getLogger(__name__)
 

@@ -6,9 +6,9 @@ from websecmap.map.views import security_txt
 
 # We have to import the signals somewhere..?!
 import dashboard.internet_nl_dashboard.signals  # noqa  # pylint: disable=unused-import
-from dashboard.internet_nl_dashboard.views import (__init__, account, domains, download_spreadsheet,
-                                                   mail, powertools, report, scan_monitor, session,
-                                                   spreadsheet, subdomains, tags, usage, user)
+from dashboard.internet_nl_dashboard.views import (account, domains, download_spreadsheet, logout_view, mail,
+                                                   powertools, report, scan_monitor, session, signup, spreadsheet,
+                                                   subdomains, tags, usage, user)
 
 
 class SpreadsheetFileTypeConverter:
@@ -34,7 +34,7 @@ urlpatterns = [
     path('data/powertools/get_accounts/', powertools.get_accounts),
     path('data/powertools/set_account/', powertools.set_account),
     path('data/powertools/save_instant_account/', powertools.save_instant_account),
-    path('logout/', __init__.logout_view),
+    path('logout/', logout_view),
 
     # domain management
     path('data/urllists/get/', domains.get_lists),
@@ -50,6 +50,8 @@ urlpatterns = [
     path('data/urllist/url/save/', domains.alter_url_in_urllist_),
     path('data/urllist/url/add/', domains.add_urls_to_urllist),
     path('data/urllist/url/delete/', domains.delete_url_from_urllist_),
+    path('data/urllist/download/', domains.download_list_),
+    path('data/urllist/upload/<int:list_id>/', spreadsheet.upload_list_),
 
     path('data/urllist/tag/add/', tags.add_tag_),
     path('data/urllist/tag/remove/', tags.remove_tag_),
@@ -83,6 +85,14 @@ urlpatterns = [
     path('data/report/share/update_share_code/', report.x_update_share_code),
     path('data/report/share/update_report_code/', report.x_update_report_code),
 
+    path('data/report/public/account/<int:account_id>/lists/all/', report.get_publicly_shared_lists_per_account_),
+    path('data/report/public/account/<int:account_id>/lists/<int:urllist_id>/',
+         report.get_publicly_shared_lists_per_account_and_list_id_),
+    path('data/report/public/lists/<int:urllist_id>/latest/',
+         report.get_latest_report_id_from_list),
+    path('data/report/public/lists/<int:urllist_id>/latest/<str:report_type>/',
+         report.get_latest_report_id_from_list_and_type_),
+
 
     path('data/report/differences_compared_to_current_list/<int:report_id>/',
          report.get_report_differences_compared_to_current_list_),
@@ -97,6 +107,8 @@ urlpatterns = [
     path('data/usage/', usage.usage_),
 
     path('mail/unsubscribe/<str:feed>/<str:unsubscribe_code>/', mail.unsubscribe_),
+
+    path('data/signup/', signup.process_application),
 
     # session management
     # logging in via javascript is not possible, because the CSRF is tied to the session cookie.

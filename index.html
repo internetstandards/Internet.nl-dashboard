@@ -1,0 +1,228 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]> <html lang="nl" class="ie8 no-js"> <![endif]-->
+<!--[if IE 9]> <html lang="nl" class="ie9 no-js"> <![endif]-->
+<!--[if !IE]><!-->
+<html lang="nl" class="no-js">
+<head>
+  <meta charset="utf-8" />
+  <title>Djuma E-Loket</title>
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta content="width=device-width, initial-scale=1" name="viewport" />
+  <meta content="" name="description" />
+  <meta content="" name="author" />
+  <meta content="1.0.174.1" name="version" />
+  <meta content="01" name="reference" />
+  <meta content="none" name="msapplication-config" />
+   
+  <link href="//fonts.googleapis.com/css?family=Open+Sans:400,300,600,700&amp;subset=all" rel="stylesheet" type="text/css" />
+
+  <link href="/Content/WbdId?v=q6sKU3IZpVDTj2z3LqDazOKVs8Mz10FlWn2sUHtZnbI1" rel="stylesheet"/>
+
+
+
+
+    <link rel="shortcut icon" href="/Content/Custom/Images/Icons/favicon.ico" type="image/x-icon" />
+  <link rel="apple-touch-icon" href="/Content/Custom/Images/Icons/apple-touch-icon.png" />
+  <link rel="apple-touch-icon" sizes="57x57" href="/Content/Custom/Images/Icons/apple-touch-icon-57x57.png" />
+  <link rel="apple-touch-icon" sizes="72x72" href="/Content/Custom/Images/Icons/apple-touch-icon-72x72.png" />
+  <link rel="apple-touch-icon" sizes="76x76" href="/Content/Custom/Images/Icons/apple-touch-icon-76x76.png" />
+  <link rel="apple-touch-icon" sizes="114x114" href="/Content/Custom/Images/Icons/apple-touch-icon-114x114.png" />
+  <link rel="apple-touch-icon" sizes="120x120" href="/Content/Custom/Images/Icons/apple-touch-icon-120x120.png" />
+  <link rel="apple-touch-icon" sizes="144x144" href="/Content/Custom/Images/Icons/apple-touch-icon-144x144.png" />
+  <link rel="apple-touch-icon" sizes="152x152" href="/Content/Custom/Images/Icons/apple-touch-icon-152x152.png" />
+  <link rel="apple-touch-icon" sizes="180x180" href="/Content/Custom/Images/Icons/apple-touch-icon-180x180.png" />
+  
+  <script>
+    
+    redirectIfHashStartsWith('#/nxt/'); 
+    redirectIfHashStartsWith('#/nxt-'); 
+
+    function redirectIfHashStartsWith(expectedStart) {
+      var hash = location.hash || '';
+      var starts = hash.substr(0, expectedStart.length);
+      if (starts === expectedStart) {
+        location.href = location.href.replace('#/', '');
+      }
+    }
+  </script>
+
+  <script>
+    var baseUrl = '/{area}/{controller}/{action}'; // passing an area to Url.Action does not work here (Url.Action returns null), so we have to use Url.Content
+    var baseContentUrl = '/Content/{relativePath}';
+    var defaultErrorMessage = "Er is iets fout gegaan, probeer het later nog eens.";
+    var wopiClientUrl = "";
+    var eformulierFinishUrl = "http://www.brabantsedelta.nl/";
+    var eformulierFinishStopUrl = "http://www.brabantsedelta.nl/";
+    var klantportaalFinishUrl = "http://www.brabantsedelta.nl/";
+
+    // Contains the maximum allowed request length in bytes.
+    // Max total size for files that can be uploaded in one request. Equals the max request length minus 2 MB.
+    var maxFilesSize = (18432 -2048) * 1024;
+
+    var maxRequestLengthFriendlyErrorMessageForExceededForSingleFile = "Fout tijdens het uploaden van het bestand '{0}'. Het bestand mag niet groter dan {1} zijn. Het bestand is nu {2} groot.";
+    var maxRequestLengthFriendlyErrorMessageForExceededForMultipleFiles = "Fout tijdens het uploaden van de bestanden. De bestanden {0} mogen samen niet groter dan {1} zijn. De huidige grootte is {2}.";
+    var friendlyErrorMessageForNotAllowedFileExtension = "Alleen bestanden van de volgende types zijn toegestaan: pdf, gif, jpg, png, jpeg, dsc, efdj, docx, xlsx.";
+    var friendlyErrorMessageForDuplicateFileName = "Dubbele bestandsnamen zijn niet toegestaan. Een bestand met de naam '{0}' is al toegevoegd aan de lijst van bijlagen.";
+    var friendlyErrorMessageForFileWithNoData = "Lege bestanden zijn niet toegestaan. Bestand met naam '{0}' bevat geen data.";
+
+    var allowedFileExtensionsAsString = "pdf,gif,jpg,png,jpeg,dsc,efdj,docx,xlsx";
+    var allowedFileExtensions = [];
+    if (allowedFileExtensionsAsString) {
+      allowedFileExtensions = allowedFileExtensionsAsString.split(',');
+    }
+
+    function createUrl(area, controller, action) {
+      /// <summary>Creates an URL for redirecting to a controller outside the current area.</summary>
+      /// <param name="area">Name of the area. Specify an empty string if you want to redirect to a top-level controller (in the /Controller folder).</param>
+      /// <param name="controller" type="String">The controller</param>
+      /// <param name="action" type="String">The action on the controller</param>
+      return baseUrl.replace("{area}", area).replace("{controller}", controller).replace("{action}", action).replace("//", "/");
+    }
+
+    function createContentUrl(relativePath) {
+      /// <summary>Creates an URL to a file in the "~/Content" folder.</summary>
+      /// <param name="relativePath">Path to a file relative to the "~/Content/" folder.</param>
+      return baseContentUrl.replace("{relativePath}", relativePath);
+    }
+  </script>
+
+  <script src="/DynamicScripts/resources.js"></script>
+
+  <script src="/Scripts/HeaderScripts?v=fnoemrAaB7iA-r7AbPQiV-ZmhIZGLV89viXpIg69Cwo1"></script>
+
+  <script type="text/javascript">
+    log4javascript.setEnabled(true);
+  </script>
+
+  
+</head>
+
+<body data-ng-app="zaaksysteem" data-ng-controller="rootController" data-cng-block-ui="loadingOrPostingData > 0" class="page-header-fixed" data-cng-application-initialization>
+
+
+
+<div class="page-header navbar" data-ng-controller="applicationHeaderController">
+  <!-- BEGIN TOP NAVIGATION BAR -->
+  <div class="page-header-inner">
+    <!-- BEGIN LOGO -->
+    <div class="page-logo">
+      <img src="/Content/DjumaUI/images/Djuma-logo.svg" alt="logo" class="logo-default" />
+    </div>
+    <!-- END LOGO -->
+  </div>
+
+  <!-- BEGIN RESPONSIVE MENU TOGGLER -->
+  <a href="javascript:;"
+     class="menu-toggler responsive-toggler"
+     data-ng-show="(shouldDisplayLogoutButton() && isLoggedIn()) || !hideMenu()"
+     data-toggle="collapse"
+     data-target=".navbar-collapse">
+    <i class="fa fa-bars"></i>
+  </a>
+  <!-- END RESPONSIVE MENU TOGGLER -->
+  <!-- BEGIN TOP NAVIGATION MENU -->
+  <div class="top-menu">
+    <ul class="nav navbar-nav collapse hidden-xs hidden-sm pull-right">
+      <li>
+        <button type="button"
+                data-ng-show="shouldDisplayLogoutButton()"
+                data-ng-disabled="!isLoggedIn()"
+                data-ng-click="logOut()"
+                class="btn btn-primary btn-logout pull-right ng-hide">
+          <i class="fa fa-sign-out"></i>
+          Afmelden
+        </button>
+
+      </li>
+
+    </ul>
+  </div>
+  <!-- END TOP NAVIGATION BAR -->
+</div>
+  <div class="clearfix"></div>
+
+  <div class="page-container page-full-width" data-ng-class="{ 'page-full-width' : hideMenu() }">
+
+<div class="page-sidebar-wrapper" data-ng-controller="applicationHeaderController">
+  <div class="page-sidebar navbar-collapse collapse">
+    
+    <ul class="page-sidebar-menu">
+      <li class="nav-item" data-ng-class="{active : activeViewPath.indexOf('/p/' + getCurrentIdentificatieWijze() + '/mijngegevens') == 0}" data-ng-if="!hideMenu()">
+        <a id="mijngegevens-link" href="#/p/{{getCurrentIdentificatieWijze()}}/mijngegevens" class="nav-link">
+          <i class="fa fa-user"></i>
+          <span class="title">Mijn gegevens</span>
+        </a>
+      </li>
+
+      <li class="nav-item" data-ng-class="{active : activeViewPath.indexOf('/p/' + getCurrentIdentificatieWijze() + '/mijnzaken') == 0}" data-ng-if="!hideMenu()">
+        <a id="mijnzaken-link" href="#/p/{{getCurrentIdentificatieWijze()}}/mijnzaken" class="nav-link">
+          <i class="fa fa-folder-open"></i>
+          <span class="title">Mijn zaken</span>
+        </a>
+      </li>
+
+      <li class="nav-item hidden-md hidden-lg">
+        <a href="#"
+           onclick="return false;"
+           data-ng-click="logOut()"
+           class="nav-link">
+          <i class="fa fa-sign-out"></i>
+          <span class="title">Afmelden</span>
+        </a>
+      </li>
+
+      <li class="sidebar-toggler-wrapper">
+        
+        <div class="sidebar-toggler desktop-only">
+          <i class="fa fa-angle-left"></i>
+          <span>Minimaliseer</span>
+        </div>
+        
+      </li>
+    </ul>
+    
+  </div>
+</div>
+
+    <div class="page-content-wrapper" data-cng-request-verification-token="yE_LGvG0KdCSaUzV5wnl_SldJ9Qi6Ez08nY0Z3Nm2dC_EhAdaGahzYGekcRuDP5eNgVuaqePFgcBseqeHo2rNWM6NNk1:WtDxu2DhGMpurMmOPVyZhtB8SmZ8vhXGLnbg6bGyb4CQyU2_aajzBrIwx2cj6kfREQOaWkhFAP8PnFiNqkYZuZAyRu01">
+      <div class="page-content">
+
+<div data-default-page-content-errors></div><div class="page-content-inner container-fluid" data-ng-view data-cng-page-content data-cng-page-content-locale="U heeft nog gegevens in bewerking. Kies voor opslaan of annuleren bij de betreffende gegevens."></div>        <div class="clearfix"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- BEGIN JAVASCRIPTS(Load javascripts at bottom, this will reduce page load time) -->
+  <script src="/Scripts/Plugins?v=EcUQ9nFns3vE93janJBavlkrpf7YigFfL3HiH0NsXwo1"></script>
+
+
+  
+
+  <script src="/Scripts/UIComponents/angular-locale_nl-nl.js"></script>
+  <script src="/Scripts/CustomScripts?v=vTYEh34jDU2Ay1t1VmIGyaqWiZZwsMJJtkfyFngT7AY1"></script>
+
+  
+  
+  
+
+
+<script type="text/ng-template" id="cngErrorPopup.html">
+  <div class="modal-header">
+    <h1>Fout</h1>
+  </div>
+  <div class="modal-body form-horizontal">
+    Er is een fout opgetreden in verbinding met de server. De fout is gelogd.<br /><br />
+    <a href="#" data-ng-show="!showDetails" data-ng-click="showDetails = true">Toon details</a>
+    <a href="#" data-ng-show="showDetails" data-ng-click="showDetails = false">Verberg details</a>
+    <br /><br />
+    <div data-ng-show="showDetails">{{error}}</div>
+  </div>
+  <div class="modal-footer">
+    <button class="btn btn-primary" data-ng-click="ok()">OK</button>
+  </div>
+</script>
+
+</body>
+</html>

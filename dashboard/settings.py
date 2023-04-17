@@ -83,6 +83,7 @@ INSTALLED_APPS = [
     'websecmap.scanners',  # Endpoint, EndpointGenericScan, UrlGenericScan
     'websecmap.reporting',  # Various reporting functions (might be not needed)
     'websecmap.map',  # because some scanners are intertwined with map configurations. That needs to go.
+    'websecmap.game',
 
 
     # Custom Apps
@@ -461,6 +462,16 @@ CONSTANCE_CONFIG = {
         'we can move to a javascript-only frontend.',
         str
     ),
+    'DASHBOARD_SIGNUP_NOTIFICATION_EMAIL_ADRESSES': (
+        'vraag@internet.nl',
+        'Comma separated list of email addresses to notify about new users.',
+        str
+    ),
+    'DASHBOARD_FRONT_PAGE_URL_LISTS': (
+        '',
+        'Comma separated list of urllists of which all reports will be shared on the front page',
+        str
+    ),
 
     'INTERNET_NL_API_USERNAME': (
         'dummy',
@@ -527,7 +538,29 @@ CONSTANCE_CONFIG = {
     "SECURITY_TXT_REDIRECT_URL": ("", "The url where security.txt resides", str),
     "SECURITY_TXT_CONTENT": ("", "The content of the security.txt file, located at .well-known/security.txt", str),
     "CREDENTIAL_CHECK_URL": ("https://batch.internet.nl/api/", "The url where internet.nl api credentials are checked. "
-                                                               "This is usually the api endpoint.", str)
+                                                               "This is usually the api endpoint.", str),
+
+    # enable all by default, easier for tests
+    "INTERNET_NL_ADD_CALCULATED_RESULTS_WEBSECMAP": (
+        True,
+        "Add calculated results for web security map.",
+        bool,
+    ),
+    "INTERNET_NL_ADD_CALCULATED_RESULTS_FORUM_STANDAARDISATIE": (
+        True,
+        "Add calculated results for forum standaardisatie, the internet.nl dashboard.",
+        bool,
+    ),
+    "INTERNET_NL_ADD_CALCULATED_RESULTS_VNG_V6": (
+        False,
+        "Add calculated results for VNG, obsoleted IPv6 derived conclusions.",
+        bool,
+    ),
+    "INTERNET_NL_WEB_ONLY_TOP_LEVEL": (
+        False,
+        "Do not send in subdomains. To reduce the number of tests while still getting an impression on a broader scope",
+        bool,
+    ),
 }
 
 CONSTANCE_CONFIG_FIELDSETS = OrderedDict(
@@ -535,11 +568,13 @@ CONSTANCE_CONFIG_FIELDSETS = OrderedDict(
         ('DASHBOARD', ('DASHBOARD_FRONTEND_URL',
                        'DASHBOARD_MAXIMUM_DOMAINS_PER_LIST',
                        'DASHBOARD_MAXIMUM_DOMAINS_PER_SPREADSHEET',
-                       'DASHBOARD_MAXIMUM_LISTS_PER_SPREADSHEET')),
+                       'DASHBOARD_MAXIMUM_LISTS_PER_SPREADSHEET',
+                       'DASHBOARD_SIGNUP_NOTIFICATION_EMAIL_ADRESSES',
+                       'DASHBOARD_FRONT_PAGE_URL_LISTS')),
         ('E-Mail', ('EMAIL_NOTIFICATION_SENDER',
                     'EMAIL_FALLBACK_LANGUAGE',
                     'EMAIL_TEST_RECIPIENT',
-                    'EMAIL_DASHBOARD_ADDRESS')),
+                    'EMAIL_DASHBOARD_ADDRESS',)),
         ('Internet.nl Scans', ('SCAN_AT_ALL', 'INTERNET_NL_API_USERNAME', 'INTERNET_NL_API_PASSWORD',
                                'INTERNET_NL_API_URL',
                                'INTERNET_NL_MAXIMUM_URLS',
@@ -548,7 +583,12 @@ CONSTANCE_CONFIG_FIELDSETS = OrderedDict(
                                'SCAN_TIMEOUT_MINUTES_RETRIEVING_SCANABLE_URLS',
                                'SCAN_TIMEOUT_MINUTES_REGISTERING_SCAN_AT_INTERNET_NL',
                                'SCAN_TIMEOUT_MINUTES_IMPORTING_SCAN_RESULTS', 'SCAN_TIMEOUT_MINUTES_CREATING_REPORT',
-                               'SCAN_TIMEOUT_MINUTES_SENDING_MAIL', 'SCAN_TIMEOUT_MINUTES_SERVER_ERROR')),
+                               'SCAN_TIMEOUT_MINUTES_SENDING_MAIL', 'SCAN_TIMEOUT_MINUTES_SERVER_ERROR',
+                               "INTERNET_NL_ADD_CALCULATED_RESULTS_WEBSECMAP",
+                               "INTERNET_NL_ADD_CALCULATED_RESULTS_FORUM_STANDAARDISATIE",
+                               "INTERNET_NL_ADD_CALCULATED_RESULTS_VNG_V6",
+                               "INTERNET_NL_WEB_ONLY_TOP_LEVEL",
+                               )),
         ("Scanning preferences", ("SCANNER_NAMESERVERS",)),
         (
             "Developer configuration. For debugging and verification",
@@ -644,9 +684,10 @@ if not DEBUG:
 SENTRY_DSN = os.environ.get('SENTRY_DSN')
 if SENTRY_DSN:
     # new sentry_sdk implementation, with hopes to also get exceptions from workers.
-    sentry_sdk.init(dsn=SENTRY_DSN,  # pylint: disable=abstract-class-instantiated  # (following the documentation)
-                    integrations=[CeleryIntegration(), DjangoIntegration(), RedisIntegration()],
-                    release=__version__, send_default_pii=False)
+    sentry_sdk.init(  # pylint: disable=abstract-class-instantiated  # (following the documentation)  # type: ignore
+        dsn=SENTRY_DSN,
+        integrations=[CeleryIntegration(), DjangoIntegration(), RedisIntegration()],
+        release=__version__, send_default_pii=False)
 
 SENTRY_ORGANIZATION = 'internet-cleanup-foundation'
 SENTRY_PROJECT = 'internet-nl-dashboard'
@@ -703,7 +744,8 @@ CORS_ALLOWED_ORIGINS = [
     "https://acc.dashboard.internet.nl",
     "https://dashboard.internet.nl",
     "http://localhost:8080",
-    "http://127.0.0.1:8080"
+    "http://127.0.0.1:8080",
+    "http://127.0.0.1:8081"
 ]
 
 # as soon as this is set, the vue post stuff doesn't work anymore.
@@ -725,3 +767,19 @@ TAGGIT_CASE_INSENSITIVE = True
 
 # Django 3.2
 DEFAULT_AUTO_FIELD = "django.db.models.AutoField"
+
+
+# New in django 4.2:
+STORAGES = {
+    "default": {
+        "BACKEND": "django.core.files.storage.FileSystemStorage",
+    },
+    "staticfiles": {
+        "BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage",
+    },
+}
+
+# required from django 4.0
+CSRF_TRUSTED_ORIGINS = ["http://localhost", "https://internet.nl", "https://*.internet.nl",
+                        "http://localhost", "http://127.0.0.1", "http://::1", "http://localhost:8080",
+                        "http://localhost:8081"]

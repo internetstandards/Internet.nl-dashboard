@@ -37,3 +37,8 @@ pip-wheel-metadata/
 
 # make state files
 .make.*
+_db.sqlite3_
+
+# devenv
+.devenv
+.devenv.flake.nix

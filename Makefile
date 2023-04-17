@@ -18,10 +18,11 @@ $(info Virtualenv path: ${VIRTUAL_ENV})
 
 # variables for environment
 bin = ${VIRTUAL_ENV}/bin
-env = env PATH=${bin}:$$PATH
+env = PATH=${bin}:$$PATH
 
 # shortcuts for common used binaries
-python = ${bin}/python
+python = ${bin}/python3.10
+python3 = ${bin}/python3.10
 pip = ${bin}/pip
 pip-compile = ${bin}/pip-compile
 pip-sync = ${bin}/pip-sync
@@ -31,7 +32,7 @@ app = ${bin}/${app_name}
 
 $(shell test -z "$$PS1" || echo -e \nRun `make help` for available commands or use tab-completion.\n)
 
-pysrcdirs = ${app_name}/ tests
+pysrcdirs = ${app_name}/
 pysrc = $(shell find ${pysrcdirs} -name \*.py 2>/dev/null)
 src = $(shell find ${pysrcdirs} -type f -print0 2>/dev/null)
 shsrc = $(shell find * ! -path vendor\* -name \*.sh 2>/dev/null)
@@ -64,17 +65,20 @@ ${VIRTUAL_ENV}/.requirements.installed: requirements.txt requirements-dev.txt | 
 
 # perform 'pip freeze' on first class requirements in .in files.
 requirements: requirements.txt requirements-dev.txt requirements-deploy.txt
-requirements-dev.txt requirements-deploy.txt: requirements.txt
-requirements.txt requirements-dev.txt requirements-deploy.txt: %.txt: %.in security-constraints.in | ${pip-compile}
+# perform 'pip freeze' on first class requirements in .in files.
+requirements.txt: requirements.in | ${pip-compile}
 	${pip-compile} ${pip_compile_args} --output-file $@ $<
-	# remove `extra` marker as there is no way to specify it during install
-	sed -E -i '' 's/extra == "deploy"//' $@
+
+requirements-dev.txt: requirements-dev.in requirements.in | ${pip-compile}
+	${pip-compile} ${pip_compile_args} --output-file $@ $<
+
+requirements-deploy.txt: requirements-deploy.in requirements.in | ${pip-compile}
+	${pip-compile} ${pip_compile_args} --output-file $@ $<
 
 update_requirements: pip_compile_args=--upgrade
 update_requirements: _mark_outdated requirements.txt requirements-dev.txt _commit_update
 
 _mark_outdated:
-	touch requirements*.in
 	touch requirements*.in
 
 # get latest sha for gitlab.com:icf/websecmap@master and update requirements
@@ -121,7 +125,7 @@ test: .make.test	## run test suite
 	# and pretty html
 	${env} coverage html
 	# ensure no model updates are commited without migrations
-	${env} ${app} makemigrations --check
+	${env} ${app} makemigrations --verbosity=3 --check ${app_name}
 	@touch $@
 
 check: .make.check.py .make.check.sh  ## code quality checks
@@ -204,9 +208,9 @@ image:  ## Create Docker images
 docs: ## Generate documentation in various formats
 	# Remove existing documentation folder
 	-rm -rf docs/render/*
-	-${bin}/python3 -m sphinx -b html docs/input docs/render/html
-	-${bin}/python3 -m sphinx -b markdown docs/input docs/render/markdown
-	-${bin}/python3 -m sphinx -b pdf docs/input docs/render/pdf
+	${python} -m sphinx -b html docs/input docs/render/html
+	${python} -m sphinx -b markdown docs/input docs/render/markdown
+	${python} -m sphinx -b pdf docs/input docs/render/pdf
 
 ## Housekeeping
 clean:  ## cleanup build artifacts, caches, databases, etc.
@@ -223,7 +227,7 @@ clean:  ## cleanup build artifacts, caches, databases, etc.
 
 clean_virtualenv:  ## cleanup virtualenv and installed app/dependencies
 	# remove virtualenv
-	-rm -fr ${VIRTUAL_ENV}/
+	-rm -fr ${VIRTUAL_ENV}
 
 mrproper: clean clean_virtualenv ## thorough cleanup, also removes virtualenv
 
@@ -238,24 +242,27 @@ ${python} ${pip}:
 		echo "Python 3 is not available. Please refer to installation instructions in README.md"; \
 	fi
 	# create virtualenv
-	python3 -mvenv ${VIRTUAL_ENV}
+	python3.10 -mvenv ${VIRTUAL_ENV}
 	# ensure a recent version of pip is used to avoid errors with intalling
-	${VIRTUAL_ENV}/bin/pip install --upgrade pip>=19.1.1
+	${VIRTUAL_ENV}/bin/pip install --upgrade "pip>=19.1.1"
 
 mypy: ${app} ## Check for type issues with mypy
-	${bin}/python3 -m mypy --check dashboard
+	${python} -m mypy --check dashboard
 
 vulture: ${app} ## Check for unused code
-	${bin}/python3 -m vulture ${pysrcdirs}
+	${python} -m vulture ${pysrcdirs}
+
+ruff: ${app} ## Faster than black, might autoformat some things
+	${python} -m ruff ${pysrcdirs}
 
 bandit: ${app} ## Run basic security audit
-	${bin}/python3 -m bandit --configfile bandit.yaml -r ${pysrcdirs}
+	${python} -m bandit --configfile bandit.yaml -r ${pysrcdirs}
 
 pylint: ${app}
 	DJANGO_SETTINGS_MODULE=${app_name}.settings ${bin}/pylint --load-plugins pylint_django dashboard
 
 .QA: qa
-qa: fix pylint bandit mypy vulture check test
+qa: fix pylint bandit vulture check test ruff
 
 
 ## Utility

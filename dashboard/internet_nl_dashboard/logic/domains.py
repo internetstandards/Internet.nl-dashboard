@@ -1,23 +1,24 @@
 # SPDX-License-Identifier: Apache-2.0
 import logging
 import re
-from typing import Any, Dict, List, Tuple
+from datetime import datetime, timezone
+from typing import Any, Dict, List, Tuple, Union
 
+import pyexcel as p
 import tldextract
 from actstream import action
 from constance import config
 from django.db.models import Count, Prefetch
-from django.utils import timezone
+from django.http import JsonResponse
 from websecmap.organizations.models import Url
 from websecmap.scanners.models import Endpoint
 from websecmap.scanners.scanner.dns_endpoints import compose_discover_task
 
 from dashboard.internet_nl_dashboard.logic import operation_response
-from dashboard.internet_nl_dashboard.models import (Account, AccountInternetNLScan,
-                                                    TaggedUrlInUrllist, UrlList, UrlListReport,
-                                                    determine_next_scan_moment)
-from dashboard.internet_nl_dashboard.scanners.scan_internet_nl_per_account import (initialize_scan,
-                                                                                   update_state)
+from dashboard.internet_nl_dashboard.models import (Account, AccountInternetNLScan, TaggedUrlInUrllist, UrlList,
+                                                    UrlListReport, determine_next_scan_moment)
+from dashboard.internet_nl_dashboard.scanners.scan_internet_nl_per_account import initialize_scan, update_state
+from dashboard.internet_nl_dashboard.views.download_spreadsheet import create_spreadsheet_download
 
 log = logging.getLogger(__package__)
 
@@ -117,7 +118,7 @@ def scan_now(account, user_input) -> Dict[str, Any]:
 
     # done: have to update the list info. On the other hand: there is no guarantee that this task already has started
     # ...to fix this issue, we'll use a 'last_manual_scan' field.
-    urllist.last_manual_scan = timezone.now()
+    urllist.last_manual_scan = datetime.now(timezone.utc)
     urllist.save()
 
     return operation_response(success=True, message="Scan started")
@@ -131,7 +132,7 @@ def scan_urllist_now_ignoring_business_rules(urllist: UrlList):
 
     initialize_scan(my_urllist.id)
 
-    my_urllist.last_manual_scan = timezone.now()
+    my_urllist.last_manual_scan = datetime.now(timezone.utc)
     my_urllist.save()
 
     return operation_response(success=True, message="Scan started")
@@ -148,7 +149,9 @@ def get_url(new_url_string: str):
 
 
 def create_list(account: Account, user_input: Dict) -> Dict[str, Any]:
-    expected_keys = ['id', 'name', 'enable_scans', 'scan_type', 'automated_scan_frequency', 'scheduled_next_scan']
+    expected_keys = ['id', 'name', 'enable_scans', 'scan_type', 'automated_scan_frequency', 'scheduled_next_scan',
+                     'automatically_share_new_reports', 'default_public_share_code_for_new_reports',
+                     'enable_report_sharing_page']
     if sorted(user_input.keys()) != sorted(expected_keys):
         return operation_response(error=True, message="Missing settings.")
 
@@ -160,6 +163,9 @@ def create_list(account: Account, user_input: Dict) -> Dict[str, Any]:
         'scan_type': validate_list_scan_type(user_input['scan_type']),
         'automated_scan_frequency': frequency,
         'scheduled_next_scan': determine_next_scan_moment(frequency),
+        'enable_report_sharing_page': bool(user_input.get('enable_report_sharing_page', '')),
+        'automatically_share_new_reports': bool(user_input.get('automatically_share_new_reports', '')),
+        'default_public_share_code_for_new_reports': user_input.get('default_public_share_code_for_new_reports', '')
     }
 
     urllist = UrlList(**data)
@@ -201,7 +207,7 @@ def delete_list(account: Account, user_input: dict):
 
     urllist.is_deleted = True
     urllist.enable_scans = False
-    urllist.deleted_on = timezone.now()
+    urllist.deleted_on = datetime.now(timezone.utc)
     urllist.save()
 
     # Sprinkling an activity stream action.
@@ -277,7 +283,7 @@ def cancel_scan(account: Account, scan_id: int):
     if scan.state == 'cancelled':
         return operation_response(success=True, message="scan already cancelled")
 
-    scan.finished_on = timezone.now()
+    scan.finished_on = datetime.now(timezone.utc)
     scan.save()
     update_state("cancelled", scan.id)
 
@@ -324,7 +330,7 @@ def update_list_settings(account: Account, user_input: Dict) -> Dict[str, Any]:
         to_attr='last_report'
     )
 
-    urllist = UrlList.objects.all().filter(
+    urllist: UrlList = UrlList.objects.all().filter(
         account=account,
         id=user_input['id'],
         is_deleted=False
@@ -345,6 +351,9 @@ def update_list_settings(account: Account, user_input: Dict) -> Dict[str, Any]:
         'scan_type': validate_list_scan_type(user_input['scan_type']),
         'automated_scan_frequency': frequency,
         'scheduled_next_scan': determine_next_scan_moment(frequency),
+        'enable_report_sharing_page': bool(user_input.get('enable_report_sharing_page', '')),
+        'automatically_share_new_reports': bool(user_input.get('automatically_share_new_reports', '')),
+        'default_public_share_code_for_new_reports': user_input.get('default_public_share_code_for_new_reports', '')
     }
 
     updated_urllist = UrlList(**data)
@@ -377,8 +386,6 @@ def update_list_settings(account: Account, user_input: Dict) -> Dict[str, Any]:
     if urllist.num_urls > config.DASHBOARD_MAXIMUM_DOMAINS_PER_LIST:
         list_warnings.append('WARNING_DOMAINS_IN_LIST_EXCEED_MAXIMUM_ALLOWED')
     data['list_warnings'] = []
-
-    log.debug(data)
 
     # Sprinkling an activity stream action.
     action.send(account, verb='updated list', target=updated_urllist, public=False)
@@ -451,7 +458,8 @@ def get_urllists_from_account(account: Account) -> Dict:
         account=account,
         is_deleted=False
     ).annotate(num_urls=Count('urls')).order_by('name').only(
-        'id', 'name', 'enable_scans', 'scan_type', 'automated_scan_frequency', 'scheduled_next_scan'
+        'id', 'name', 'enable_scans', 'scan_type', 'automated_scan_frequency', 'scheduled_next_scan',
+        'enable_report_sharing_page', 'default_public_share_code_for_new_reports', 'automatically_share_new_reports',
     )
 
     url_lists = []
@@ -468,6 +476,9 @@ def get_urllists_from_account(account: Account) -> Dict:
             'automated_scan_frequency': urllist.automated_scan_frequency,
             'scheduled_next_scan': urllist.scheduled_next_scan,
             'scan_now_available': urllist.is_scan_now_available(),
+            'enable_report_sharing_page': urllist.enable_report_sharing_page,
+            'automatically_share_new_reports': urllist.automatically_share_new_reports,
+            'default_public_share_code_for_new_reports': urllist.default_public_share_code_for_new_reports,
 
             'last_scan_id': None,
             'last_scan_state': None,
@@ -644,7 +655,7 @@ def save_urllist_content(account: Account, user_input: Dict[str, Any]) -> Dict:
     return operation_response(success=True, message="add_domains_valid_urls_added", data=result)
 
 
-def save_urllist_content_by_name(account: Account, urllist_name: str, urls: List[str]) -> dict:
+def save_urllist_content_by_name(account: Account, urllist_name: str, urls: Dict[str, Dict[str, set]]) -> dict:
     """
     This 'by name' variant is a best guess when a spreadsheet upload with list names is used.
 
@@ -664,7 +675,7 @@ def save_urllist_content_by_name(account: Account, urllist_name: str, urls: List
 
     if cleaned_urls['correct']:
         urllist = get_or_create_list_by_name(account=account, name=urllist_name)
-        counters = _add_to_urls_to_urllist(account, urllist, urls=cleaned_urls['correct'])
+        counters = _add_to_urls_to_urllist(account, urllist, urls=cleaned_urls['correct'], urls_with_tags_mapping=urls)
     else:
         counters = {'added_to_list': 0, 'already_in_list': 0}
 
@@ -675,33 +686,48 @@ def save_urllist_content_by_name(account: Account, urllist_name: str, urls: List
     return result
 
 
-def _add_to_urls_to_urllist(account: Account, current_list: UrlList, urls: List[str]) -> Dict[str, Any]:
+def _add_to_urls_to_urllist(
+        account: Account,
+        current_list: UrlList,
+        urls: List[str],
+        urls_with_tags_mapping: Dict[str, Dict[str, set]] = None
+) -> Dict[str, Any]:
     counters: Dict[str, int] = {'added_to_list': 0, 'already_in_list': 0}
 
     for url in urls:
 
         # if already in list, don't need to save it again
         already_in_list = UrlList.objects.all().filter(
-            account=account, id=current_list.id, urls__url__iexact=url).exists()
+            account=account, id=current_list.id, urls__url__iexact=url
+        ).exists()
         if already_in_list:
+            # don't overwrite tags of urls that are already in the list when uploading large lists of domains
+            # because it causes all kinds of side-effects. Only touch lists where there is an upload done explicitly.
             counters['already_in_list'] += 1
             continue
 
-        # if url already in database, we only need to add it to the list:
         existing_url = Url.objects.all().filter(url=url).first()
-        if existing_url:
-            current_list.urls.add(existing_url)
-            counters['added_to_list'] += 1
-        else:
-            new_url = Url.add(url)
+        if not existing_url:
+            existing_url = Url.add(url)
 
             # always try to find a few dns endpoints...
-            compose_discover_task(urls_filter={'pk': new_url.id}).apply_async()
+            compose_discover_task(urls_filter={'pk': existing_url.id}).apply_async()
 
-            current_list.urls.add(new_url)
-            counters['added_to_list'] += 1
+        current_list.urls.add(existing_url)
 
+        if urls_with_tags_mapping:
+            add_tags_to_urls_in_urllist(existing_url, current_list, urls_with_tags_mapping.get(url, {}).get("tags", []))
+
+        counters['added_to_list'] += 1
     return counters
+
+
+def add_tags_to_urls_in_urllist(existing_url: Url, current_list: UrlList, tags: List[str]) -> None:
+    match = TaggedUrlInUrllist.objects.all().filter(url=existing_url, urllist=current_list).first()
+    for tag in tags:
+        tag = tag.strip()
+        if tag:
+            match.tags.add(tag)
 
 
 def _add_to_urls_to_urllist_nicer(account: Account, current_list: UrlList, urls: List[str]) -> Dict[str, List[str]]:
@@ -736,7 +762,7 @@ def _add_to_urls_to_urllist_nicer(account: Account, current_list: UrlList, urls:
     return counters
 
 
-def clean_urls(urls: List[str]) -> Dict[str, List]:
+def clean_urls(urls: List[str]) -> Dict[str, List[Union[str, int]]]:
     """
     Incorrect urls are urls that are not following the uri scheme standard and don't have a recognizable suffix. They
     are returned for informational purposes and can contain utter garbage. The editor of the urls can then easily see
@@ -746,7 +772,7 @@ def clean_urls(urls: List[str]) -> Dict[str, List]:
     :return:
     """
 
-    result: Dict[str, List] = {'incorrect': [], 'correct': []}
+    result: Dict[str, List[Union[str, int]]] = {'incorrect': [], 'correct': []}
 
     for url in urls:
         # all urls in the system must be lowercase (if applicable to used character)
@@ -796,3 +822,25 @@ def delete_url_from_urllist(account: Account, urllist_id: int, url_id: int) -> b
     urllist.urls.remove(url_is_in_list)
 
     return True
+
+
+def download_as_spreadsheet(account: Account, urllist_id: int, file_type: str = "xlsx") -> Any:
+
+    urls = TaggedUrlInUrllist.objects.all().filter(
+        urllist__account=account,
+        urllist__pk=urllist_id
+    )
+
+    if not urls:
+        return JsonResponse({})
+
+    # results is a matrix / 2-d array / array with arrays.
+    data: List[List[Any]] = []
+    data += [["List(s)", "Domain(s)", "Tags"]]
+
+    for url in urls.all():
+        data += [[url.urllist.name, url.url.url, ", ".join(url.tags.values_list('name', flat=True))]]
+
+    book = p.get_book(bookdict={"Domains": data})
+
+    return create_spreadsheet_download("internet dashboard list", book, file_type)

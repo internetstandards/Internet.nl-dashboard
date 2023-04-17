@@ -8,8 +8,7 @@ from django.template import Context, Template
 from django.utils import translation
 from tldextract import tldextract
 
-from dashboard.internet_nl_dashboard.logic.internet_nl_translations import (get_po_as_dictionary_v2,
-                                                                            translate_field)
+from dashboard.internet_nl_dashboard.logic.internet_nl_translations import get_po_as_dictionary_v2, translate_field
 from dashboard.internet_nl_dashboard.logic.mail_admin_templates import xget_template_as_string
 
 log = logging.getLogger(__name__)

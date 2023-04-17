@@ -1,16 +1,14 @@
 # SPDX-License-Identifier: Apache-2.0
 import logging
 from copy import copy
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from typing import Dict, List, Union
 
-import pytz
 from actstream import action
 from celery import Task, chain, group
 from constance import config
 from django.db import transaction
 from django.db.models import Q
-from django.utils import timezone
 from websecmap.app.constance import constance_cached_value
 from websecmap.organizations.models import Url
 from websecmap.reporting.report import recreate_url_reports
@@ -19,12 +17,11 @@ from websecmap.scanners.scanner import add_model_filter, dns_endpoints, internet
 from websecmap.scanners.scanner.internet_nl_v2 import InternetNLApiSettings
 
 from dashboard.celery import app
-from dashboard.internet_nl_dashboard.logic.mail import (email_configration_is_correct,
-                                                        send_scan_finished_mails)
+from dashboard.internet_nl_dashboard.logic.mail import email_configration_is_correct, send_scan_finished_mails
 from dashboard.internet_nl_dashboard.logic.report import optimize_calculation_and_add_statistics
 from dashboard.internet_nl_dashboard.logic.urllist_dashboard_report import create_dashboard_report
-from dashboard.internet_nl_dashboard.models import (AccountInternetNLScan, AccountInternetNLScanLog,
-                                                    UrlList, UrlListReport)
+from dashboard.internet_nl_dashboard.models import (AccountInternetNLScan, AccountInternetNLScanLog, UrlList,
+                                                    UrlListReport)
 # done: create more flexible filters
 # done: map mail scans to an endpoint (changed the scanner for it)
 # done: make nice tracking name for internet nl that is echoed in the scan results.
@@ -105,7 +102,7 @@ def create_scan(internal_scan_type: str, urllist: UrlList, manual_or_scheduled: 
     accountinternetnlscan = AccountInternetNLScan()
     accountinternetnlscan.account = urllist.account
     accountinternetnlscan.urllist = urllist
-    accountinternetnlscan.started_on = datetime.now(pytz.utc)
+    accountinternetnlscan.started_on = datetime.now(timezone.utc)
     accountinternetnlscan.scan = new_scan
     accountinternetnlscan.state = ""
     accountinternetnlscan.save()
@@ -465,7 +462,7 @@ def finishing_scan(scan_id: int):
         return group([])
 
     # No further actions, so not setting "finishing scan" as a state, but set it to "scan finished" directly.
-    scan.finished_on = datetime.now(pytz.utc)
+    scan.finished_on = datetime.now(timezone.utc)
     scan.save()
 
     update_state("finished", scan.id)
@@ -531,7 +528,7 @@ def monitor_timeout(scan_id: int):
     # determine if there is an actual timeout.
     if scan.state_changed_on:
         scan_will_timeout_on = scan.state_changed_on + timedelta(minutes=strategy['timeout in minutes'])
-        if timezone.now() > scan_will_timeout_on:
+        if datetime.now(timezone.utc) > scan_will_timeout_on:
             update_state(f"timeout reached for: '{scan.state}', "
                          f"performing recovery to '{strategy['state after timeout']}'", scan.id)
             update_state(strategy['state after timeout'], scan.id)
@@ -711,13 +708,13 @@ def update_state(state: str, scan_id: int) -> None:
 
     # First state, or a new state.
     scan.state = state
-    scan.state_changed_on = timezone.now()
+    scan.state_changed_on = datetime.now(timezone.utc)
     scan.save()
 
     # Then log the state change, if it changed, even if it already changed before, so it's clear things went wrong:
     scanlog = AccountInternetNLScanLog()
     scanlog.scan = scan
-    scanlog.at_when = timezone.now()
+    scanlog.at_when = datetime.now(timezone.utc)
     scanlog.state = state
     scanlog.save()
 
