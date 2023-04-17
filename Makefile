@@ -21,7 +21,8 @@ bin = ${VIRTUAL_ENV}/bin
 env = PATH=${bin}:$$PATH
 
 # shortcuts for common used binaries
-python = ${bin}/python
+python = ${bin}/python3.10
+python3 = ${bin}/python3.10
 pip = ${bin}/pip
 pip-compile = ${bin}/pip-compile
 pip-sync = ${bin}/pip-sync
@@ -207,9 +208,9 @@ image:  ## Create Docker images
 docs: ## Generate documentation in various formats
 	# Remove existing documentation folder
 	-rm -rf docs/render/*
-	-${bin}/python3 -m sphinx -b html docs/input docs/render/html
-	-${bin}/python3 -m sphinx -b markdown docs/input docs/render/markdown
-	-${bin}/python3 -m sphinx -b pdf docs/input docs/render/pdf
+	${python} -m sphinx -b html docs/input docs/render/html
+	${python} -m sphinx -b markdown docs/input docs/render/markdown
+	${python} -m sphinx -b pdf docs/input docs/render/pdf
 
 ## Housekeeping
 clean:  ## cleanup build artifacts, caches, databases, etc.
@@ -241,21 +242,21 @@ ${python} ${pip}:
 		echo "Python 3 is not available. Please refer to installation instructions in README.md"; \
 	fi
 	# create virtualenv
-	python3 -mvenv ${VIRTUAL_ENV}
+	python3.10 -mvenv ${VIRTUAL_ENV}
 	# ensure a recent version of pip is used to avoid errors with intalling
 	${VIRTUAL_ENV}/bin/pip install --upgrade "pip>=19.1.1"
 
 mypy: ${app} ## Check for type issues with mypy
-	${bin}/python3 -m mypy --check dashboard
+	${python} -m mypy --check dashboard
 
 vulture: ${app} ## Check for unused code
-	${bin}/python3 -m vulture ${pysrcdirs}
+	${python} -m vulture ${pysrcdirs}
 
 ruff: ${app} ## Faster than black, might autoformat some things
-	${bin}/python3 -m ruff ${pysrcdirs}
+	${python} -m ruff ${pysrcdirs}
 
 bandit: ${app} ## Run basic security audit
-	${bin}/python3 -m bandit --configfile bandit.yaml -r ${pysrcdirs}
+	${python} -m bandit --configfile bandit.yaml -r ${pysrcdirs}
 
 pylint: ${app}
 	DJANGO_SETTINGS_MODULE=${app_name}.settings ${bin}/pylint --load-plugins pylint_django dashboard
