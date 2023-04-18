@@ -92,6 +92,7 @@ INSTALLED_APPS = [
     'dashboard.internet_nl_dashboard',
 
     # Two factor auth
+    'phonenumber_field',
     'django_otp',
     'django_otp.plugins.otp_static',
     'django_otp.plugins.otp_totp',
