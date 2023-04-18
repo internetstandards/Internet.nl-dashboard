@@ -1,37 +1,14 @@
 # make sure there are no version conflicts with requirements.txt
 -c requirements.txt
 
-autopep8
-autoflake
-isort
-pylama
-coverage
-pytest
-pytest-cov
-pytest-django
-# counterpart of requests for mock responses
-pytest-responses
-# output logging when test fails
-pytest-logging
-django-coverage
-django-extensions
-django-debug-toolbar
-django-debug-toolbar-request-history
-pytest-mock
-git+https://gitlab.com/internet-cleanup-foundation/web-security-map@888b243bf037e9661f4f7027e96b19d1436b867d#egg=websecmap
+# include dependecies from websecmap development
+websecmap[dev] @ git+https://gitlab.com/internet-cleanup-foundation/web-security-map@484d4b099523697e46f9c85fd35fb5162906217f
+
 # use the version with relaxed attr requirements
-git+https://github.com/avast/pytest-docker@519b155009b6f3570c01f1f56e7c4e6ce3c5c760
+pytest-docker @ git+https://github.com/avast/pytest-docker@519b155009b6f3570c01f1f56e7c4e6ce3c5c760
 
 # docs / readthedocs.io
-sphinx
-sphinx-autobuild
-recommonmark
 sphinx-markdown-builder
-
-# tests (of scanners)
-httmock
-freezegun
-colorama
 
 django-cprofile-middleware
 
@@ -41,12 +18,7 @@ phonenumberslite>=7.0.2
 rst2pdf
 
 # QA tooling
-bandit
-mypy
-django-stubs
 vulture
-pylint
-pylint-django
 ruff
 
 types-redis
@@ -55,8 +27,6 @@ types-Markdown
 types-polib
 types-requests
 types-setuptools
-
-packaging>=23.1
 
 # include (security) version constraints for non primary dependencies
 -c security-constraints.in
