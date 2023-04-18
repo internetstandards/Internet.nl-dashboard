@@ -267,6 +267,8 @@ orjson==3.8.3
     # via websecmap
 osm2geojson==0.2.3
     # via websecmap
+phonenumbers==8.13.9
+    # via -r requirements.in
 pillow==9.3.0
     # via
     #   -c security-constraints.in

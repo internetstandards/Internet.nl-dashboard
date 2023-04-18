@@ -39,3 +39,8 @@ numpy >= 1.21.0
 
 # tags on urls in relationships
 django-taggit
+
+# not auto-installed dependency for django-two-factor-auth
+# see: https://github.com/jazzband/django-two-factor-auth/issues/213
+# and: https://django-phonenumber-field.readthedocs.io/en/latest/
+phonenumbers
