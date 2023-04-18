@@ -115,7 +115,7 @@ def perform_subdomain_scan(scan_id: int) -> None:
         # This is run in a task where there is only exception info in sentry or the task itself.
         update_state(scan.id, "error", str(my_exception))
         # Still send it to sentry and crash
-        raise Exception from my_exception  # pylint: disable=broad-exception-raised
+        raise
 
 
 def add_discovered_subdomains(scan, urllist, domains_to_check: List[str]):

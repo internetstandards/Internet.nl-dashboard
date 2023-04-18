@@ -20,6 +20,7 @@ rst2pdf
 # QA tooling
 vulture
 ruff
+autopep8
 
 types-redis
 types-freezegun

@@ -55,6 +55,8 @@ attrs==22.2.0
     #   websecmap
 autoflake==2.0.0
     # via websecmap
+autopep8==2.0.2
+    # via -r requirements-dev.in
 babel==2.11.0
     # via
     #   -c security-constraints.in
@@ -534,6 +536,7 @@ py==1.11.0
     #   websecmap
 pycodestyle==2.10.0
     # via
+    #   autopep8
     #   pylama
     #   websecmap
 pycparser==2.21
@@ -857,6 +860,7 @@ toml==0.10.2
 tomli==2.0.1
     # via
     #   autoflake
+    #   autopep8
     #   black
     #   pylint
     #   websecmap

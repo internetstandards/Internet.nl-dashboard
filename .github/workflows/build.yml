@@ -19,16 +19,15 @@ jobs:
         uses: actions/setup-python@v2
         with:
           python-version: ${{ matrix.python-version }}
+      - name: setup virtualenv and dependencies
+        run: |
+          make setup
       - name: qa
         run: |
-          make pylint
-          make bandit
-          make vulture
           make check
       - name: test
         run: |
-          make setup
-          make
+          make test
       - name: just build
         # for pull requests only test building image
         if: github.event_name == 'pull_request'

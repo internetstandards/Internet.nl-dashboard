@@ -128,7 +128,7 @@ test: .make.test	## run test suite
 	${env} ${app} makemigrations --verbosity=3 --check ${app_name}
 	@touch $@
 
-check: .make.check.py .make.check.sh  ## code quality checks
+check: .make.check.py .make.check.sh pylint bandit vulture ruff ## code quality checks
 .make.check.py: ${pysrc} ${app}
 	# check code quality
 	${env} pylama ${pysrcdirs} --skip "**/migrations/*"
@@ -262,7 +262,7 @@ pylint: ${app}
 	DJANGO_SETTINGS_MODULE=${app_name}.settings ${bin}/pylint --load-plugins pylint_django dashboard
 
 .QA: qa
-qa: fix pylint bandit vulture check test ruff
+qa: fix check test
 
 
 ## Utility
