@@ -829,7 +829,7 @@ def download_as_spreadsheet(account: Account, urllist_id: int, file_type: str = 
     urls = TaggedUrlInUrllist.objects.all().filter(
         urllist__account=account,
         urllist__pk=urllist_id
-    )
+    ).order_by('url__computed_domain', 'url__computed_subdomain')
 
     if not urls:
         return JsonResponse({})
