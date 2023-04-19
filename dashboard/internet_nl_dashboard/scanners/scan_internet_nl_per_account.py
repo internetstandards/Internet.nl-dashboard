@@ -550,6 +550,14 @@ def connect_urllistreport_to_accountinternetnlscan(urllistreport_id: int, scan_i
     scan.report = urllistreport
     scan.save()
 
+    # publicly share this report if the list is configured this is needed
+    urllist: UrlList = UrlList.objects.all().filter(id=urllistreport.urllist.id).first()
+    if urllist and urllist.automatically_share_new_reports:
+        # report code is set automatically on save
+        urllistreport.is_publicly_shared = True
+        urllistreport.public_share_code = urllist.default_public_share_code_for_new_reports
+        urllistreport.save()
+
     return int(urllistreport.id)
 
 
