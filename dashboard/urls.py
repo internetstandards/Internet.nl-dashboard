@@ -18,7 +18,10 @@ from django.contrib import admin
 from django.urls import include, path, re_path
 from two_factor.urls import urlpatterns as tf_urls
 
-admin.site.site_header = 'Dashboard Admin'
+from . import __version__
+
+admin.site.site_header = f'Dashboard Admin {__version__}'
+# Don't show version in title, as that might be shared without auth
 admin.site.site_title = 'Dashboard Admin'
 
 

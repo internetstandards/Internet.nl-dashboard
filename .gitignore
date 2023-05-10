@@ -44,3 +44,6 @@ _db.sqlite3_
 .devenv.flake.nix
 
 .ruff_cache
+
+# is generated during build, don't include in git
+websecmap/__version__.py

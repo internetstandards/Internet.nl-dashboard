@@ -45,6 +45,9 @@ ENV VENDOR_DIR /source/vendor/
 # collect all static files form all django applications into static files directory
 RUN /usr/local/bin/dashboard collectstatic
 
+ARG VERSION=0.0.0-dev0
+RUN echo "VERSION='$VERSION'" >> /source/dashboard/__version__.py
+
 EXPOSE 8000
 
 ENTRYPOINT [ "/usr/local/bin/dashboard" ]
