@@ -1,0 +1,172 @@
+<component name="InspectionProjectProfileManager">
+  <profile version="1.0">
+    <option name="myName" value="Project Default" />
+    <inspection_tool class="Eslint" enabled="true" level="WARNING" enabled_by_default="true" />
+    <inspection_tool class="HttpUrlsUsage" enabled="true" level="WEAK WARNING" enabled_by_default="true">
+      <option name="ignoredUrls">
+        <list>
+          <option value="http://localhost" />
+          <option value="http://127.0.0.1" />
+          <option value="http://0.0.0.0" />
+          <option value="http://www.w3.org/" />
+          <option value="http://json-schema.org/draft" />
+          <option value="http://java.sun.com/" />
+          <option value="http://xmlns.jcp.org/" />
+          <option value="http://javafx.com/javafx/" />
+          <option value="http://javafx.com/fxml" />
+          <option value="http://maven.apache.org/xsd/" />
+          <option value="http://maven.apache.org/POM/" />
+          <option value="http://www.springframework.org/schema/" />
+          <option value="http://www.springframework.org/tags" />
+          <option value="http://www.springframework.org/security/tags" />
+          <option value="http://www.thymeleaf.org" />
+          <option value="http://www.jboss.org/j2ee/schema/" />
+          <option value="http://www.jboss.com/xml/ns/" />
+          <option value="http://www.ibm.com/webservices/xsd" />
+          <option value="http://activemq.apache.org/schema/" />
+          <option value="http://schema.cloudfoundry.org/spring/" />
+          <option value="http://schemas.xmlsoap.org/" />
+          <option value="http://cxf.apache.org/schemas/" />
+          <option value="http://primefaces.org/ui" />
+          <option value="http://tiles.apache.org/" />
+          <option value="http://{domain_name_without_protocol}" />
+        </list>
+      </option>
+    </inspection_tool>
+    <inspection_tool class="PyPackageRequirementsInspection" enabled="true" level="WARNING" enabled_by_default="true">
+      <option name="ignoredPackages">
+        <value>
+          <list size="120">
+            <item index="0" class="java.lang.String" itemvalue="PyQt4" />
+            <item index="1" class="java.lang.String" itemvalue="django" />
+            <item index="2" class="java.lang.String" itemvalue="django-autocomplete-light" />
+            <item index="3" class="java.lang.String" itemvalue="greenlet" />
+            <item index="4" class="java.lang.String" itemvalue="tabulate" />
+            <item index="5" class="java.lang.String" itemvalue="validators" />
+            <item index="6" class="java.lang.String" itemvalue="django-activity-stream" />
+            <item index="7" class="java.lang.String" itemvalue="defusedxml" />
+            <item index="8" class="java.lang.String" itemvalue="py" />
+            <item index="9" class="java.lang.String" itemvalue="lml" />
+            <item index="10" class="java.lang.String" itemvalue="django-nested-admin" />
+            <item index="11" class="java.lang.String" itemvalue="pycparser" />
+            <item index="12" class="java.lang.String" itemvalue="redis" />
+            <item index="13" class="java.lang.String" itemvalue="python-magic" />
+            <item index="14" class="java.lang.String" itemvalue="sentry-sdk" />
+            <item index="15" class="java.lang.String" itemvalue="gevent" />
+            <item index="16" class="java.lang.String" itemvalue="uwsgi" />
+            <item index="17" class="java.lang.String" itemvalue="xlrd" />
+            <item index="18" class="java.lang.String" itemvalue="django-formtools" />
+            <item index="19" class="java.lang.String" itemvalue="csscompressor" />
+            <item index="20" class="java.lang.String" itemvalue="asgiref" />
+            <item index="21" class="java.lang.String" itemvalue="python3-openid" />
+            <item index="22" class="java.lang.String" itemvalue="simplejson" />
+            <item index="23" class="java.lang.String" itemvalue="pyyaml" />
+            <item index="24" class="java.lang.String" itemvalue="humanize" />
+            <item index="25" class="java.lang.String" itemvalue="idna" />
+            <item index="26" class="java.lang.String" itemvalue="spectra" />
+            <item index="27" class="java.lang.String" itemvalue="decorator" />
+            <item index="28" class="java.lang.String" itemvalue="networkx" />
+            <item index="29" class="java.lang.String" itemvalue="python-crontab" />
+            <item index="30" class="java.lang.String" itemvalue="cffi" />
+            <item index="31" class="java.lang.String" itemvalue="django-mail-admin" />
+            <item index="32" class="java.lang.String" itemvalue="numpy" />
+            <item index="33" class="java.lang.String" itemvalue="requests" />
+            <item index="34" class="java.lang.String" itemvalue="jdcal" />
+            <item index="35" class="java.lang.String" itemvalue="celery" />
+            <item index="36" class="java.lang.String" itemvalue="tenacity" />
+            <item index="37" class="java.lang.String" itemvalue="markdown" />
+            <item index="38" class="java.lang.String" itemvalue="tldextract" />
+            <item index="39" class="java.lang.String" itemvalue="django-cors-headers" />
+            <item index="40" class="java.lang.String" itemvalue="django-picklefield" />
+            <item index="41" class="java.lang.String" itemvalue="django-3-jet" />
+            <item index="42" class="java.lang.String" itemvalue="rcssmin" />
+            <item index="43" class="java.lang.String" itemvalue="tornado" />
+            <item index="44" class="java.lang.String" itemvalue="amqp" />
+            <item index="45" class="java.lang.String" itemvalue="django-select2" />
+            <item index="46" class="java.lang.String" itemvalue="statsd" />
+            <item index="47" class="java.lang.String" itemvalue="django-compressor" />
+            <item index="48" class="java.lang.String" itemvalue="et-xmlfile" />
+            <item index="49" class="java.lang.String" itemvalue="flower" />
+            <item index="50" class="java.lang.String" itemvalue="social-auth-core" />
+            <item index="51" class="java.lang.String" itemvalue="python-monkey-business" />
+            <item index="52" class="java.lang.String" itemvalue="social-auth-app-django" />
+            <item index="53" class="java.lang.String" itemvalue="babel" />
+            <item index="54" class="java.lang.String" itemvalue="pytz" />
+            <item index="55" class="java.lang.String" itemvalue="websecmap" />
+            <item index="56" class="java.lang.String" itemvalue="iso3166" />
+            <item index="57" class="java.lang.String" itemvalue="pyjwt" />
+            <item index="58" class="java.lang.String" itemvalue="rdp" />
+            <item index="59" class="java.lang.String" itemvalue="mysqlclient" />
+            <item index="60" class="java.lang.String" itemvalue="django-colorful" />
+            <item index="61" class="java.lang.String" itemvalue="django-otp" />
+            <item index="62" class="java.lang.String" itemvalue="colorlog" />
+            <item index="63" class="java.lang.String" itemvalue="pyexcel-ods" />
+            <item index="64" class="java.lang.String" itemvalue="texttable" />
+            <item index="65" class="java.lang.String" itemvalue="python-dateutil" />
+            <item index="66" class="java.lang.String" itemvalue="psycopg2-binary" />
+            <item index="67" class="java.lang.String" itemvalue="pyexcel-text" />
+            <item index="68" class="java.lang.String" itemvalue="kombu" />
+            <item index="69" class="java.lang.String" itemvalue="deepdiff" />
+            <item index="70" class="java.lang.String" itemvalue="markuppy" />
+            <item index="71" class="java.lang.String" itemvalue="django-countries" />
+            <item index="72" class="java.lang.String" itemvalue="django-proxy" />
+            <item index="73" class="java.lang.String" itemvalue="django-excel" />
+            <item index="74" class="java.lang.String" itemvalue="certifi" />
+            <item index="75" class="java.lang.String" itemvalue="oauthlib" />
+            <item index="76" class="java.lang.String" itemvalue="vine" />
+            <item index="77" class="java.lang.String" itemvalue="django-celery-beat" />
+            <item index="78" class="java.lang.String" itemvalue="dnspython" />
+            <item index="79" class="java.lang.String" itemvalue="rjsmin" />
+            <item index="80" class="java.lang.String" itemvalue="django-crispy-forms" />
+            <item index="81" class="java.lang.String" itemvalue="tablib" />
+            <item index="82" class="java.lang.String" itemvalue="django-import-export" />
+            <item index="83" class="java.lang.String" itemvalue="cryptography" />
+            <item index="84" class="java.lang.String" itemvalue="zope.interface" />
+            <item index="85" class="java.lang.String" itemvalue="django-appconf" />
+            <item index="86" class="java.lang.String" itemvalue="odfpy" />
+            <item index="87" class="java.lang.String" itemvalue="pyexcel" />
+            <item index="88" class="java.lang.String" itemvalue="requests-file" />
+            <item index="89" class="java.lang.String" itemvalue="django-statsd-mozilla" />
+            <item index="90" class="java.lang.String" itemvalue="pyexcel-xls" />
+            <item index="91" class="java.lang.String" itemvalue="pyexcel-xlsx" />
+            <item index="92" class="java.lang.String" itemvalue="diff-match-patch" />
+            <item index="93" class="java.lang.String" itemvalue="jsonfield" />
+            <item index="94" class="java.lang.String" itemvalue="qrcode" />
+            <item index="95" class="java.lang.String" itemvalue="django-constance" />
+            <item index="96" class="java.lang.String" itemvalue="django-leaflet" />
+            <item index="97" class="java.lang.String" itemvalue="sqlparse" />
+            <item index="98" class="java.lang.String" itemvalue="requests-oauthlib" />
+            <item index="99" class="java.lang.String" itemvalue="python-resize-image" />
+            <item index="100" class="java.lang.String" itemvalue="netaddr" />
+            <item index="101" class="java.lang.String" itemvalue="django-admin-sortable2" />
+            <item index="102" class="java.lang.String" itemvalue="googlemaps" />
+            <item index="103" class="java.lang.String" itemvalue="django-phonenumber-field" />
+            <item index="104" class="java.lang.String" itemvalue="urllib3" />
+            <item index="105" class="java.lang.String" itemvalue="zope.event" />
+            <item index="106" class="java.lang.String" itemvalue="pyexcel-webio" />
+            <item index="107" class="java.lang.String" itemvalue="billiard" />
+            <item index="108" class="java.lang.String" itemvalue="retry" />
+            <item index="109" class="java.lang.String" itemvalue="ordered-set" />
+            <item index="110" class="java.lang.String" itemvalue="pyexcel-io" />
+            <item index="111" class="java.lang.String" itemvalue="xlwt" />
+            <item index="112" class="java.lang.String" itemvalue="prometheus-client" />
+            <item index="113" class="java.lang.String" itemvalue="django-two-factor-auth" />
+            <item index="114" class="java.lang.String" itemvalue="django-uwsgi" />
+            <item index="115" class="java.lang.String" itemvalue="colormath" />
+            <item index="116" class="java.lang.String" itemvalue="django-timezone-field" />
+            <item index="117" class="java.lang.String" itemvalue="pillow" />
+            <item index="118" class="java.lang.String" itemvalue="wikidata" />
+            <item index="119" class="java.lang.String" itemvalue="openpyxl" />
+          </list>
+        </value>
+      </option>
+    </inspection_tool>
+    <inspection_tool class="PyPep8Inspection" enabled="true" level="WEAK WARNING" enabled_by_default="true">
+      <option name="ignoredErrors">
+        <list>
+          <option value="W605" />
+        </list>
+      </option>
+    </inspection_tool>
+  </profile>
+</component>
