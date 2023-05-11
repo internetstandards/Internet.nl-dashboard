@@ -149,7 +149,7 @@ def get_urllist_timeline_graph(account: Account, urllist_ids: str, report_type: 
     statistics_over_last_years_reports = Prefetch(
         'urllistreport_set',
         queryset=UrlListReport.objects.filter(report_type=report_type).order_by('at_when').only(
-            'at_when', 'average_internet_nl_score', 'total_urls'),
+            'at_when', 'average_internet_nl_score', 'total_urls', 'urllist_id'),
         to_attr='reports_from_the_last_year')
 
     # The actual query, note that the ordering is asc on ID, whatever order you specify...
@@ -493,6 +493,16 @@ def clean_up_not_required_data_to_speed_up_report_on_client(calculation: Dict[st
                 del endpoint['ratings_by_type'][rating_key]['not_testable']  # only 'ok' is used in spreadsheet export.
                 del endpoint['ratings_by_type'][rating_key]['not_applicable']  # only 'ok' is used in spreadsheet export
                 del endpoint['ratings_by_type'][rating_key]['error_in_test']  # only 'ok' is used in spreadsheet export
+                del endpoint['ratings_by_type'][rating_key]['last_scan']  # not used in front end
+
+                # the since field can be unix timestamp, which is less data
+                try:
+                    endpoint['ratings_by_type'][rating_key]['since'
+                                                            ] = datetime.fromisoformat(
+                        endpoint['ratings_by_type'][rating_key]['since']).timestamp()
+                except ValueError:
+                    # then don't update it.
+                    ...
 
                 # Because of the 'ad hoc' reports, it's valuable to show when a measurement was performed
                 # as a report can contain metrics from various moments in time (due to re-scans on measurement errors)
@@ -505,7 +515,24 @@ def clean_up_not_required_data_to_speed_up_report_on_client(calculation: Dict[st
 
             # remove the original rating, as that slows parsing on the client down significantly.
             # with significantly == Vue will parse it, and for a 500 url list this will take 5 seconds.
-            endpoint['ratings'] = []
+            del endpoint['ratings']
+
+        del url['total_endpoints']
+        del url['high_endpoints']
+        del url['medium_endpoints']
+        del url['low_endpoints']
+        del url['ok_endpoints']
+
+        del url['total_url_issues']
+        del url['url_issues_high']
+        del url['url_issues_medium']
+        del url['url_issues_low']
+        del url['url_ok']
+
+        del url['total_endpoint_issues']
+        del url['endpoint_issues_high']
+        del url['endpoint_issues_medium']
+        del url['endpoint_issues_low']
 
 
 def add_simple_verdicts(calculation: Dict[str, Any]):
