@@ -10,7 +10,7 @@ from sentry_sdk.integrations.celery import CeleryIntegration
 from sentry_sdk.integrations.django import DjangoIntegration
 from sentry_sdk.integrations.redis import RedisIntegration
 
-__version__ = '0.0.0'
+from . import __version__
 
 """
 Django settings for dashboard project.

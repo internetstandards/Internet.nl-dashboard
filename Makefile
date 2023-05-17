@@ -18,7 +18,7 @@ $(info Virtualenv path: ${VIRTUAL_ENV})
 
 # variables for environment
 bin = ${VIRTUAL_ENV}/bin
-env = env PATH=${bin}:$$PATH
+env = PATH=${bin}:$$PATH
 
 # shortcuts for common used binaries
 python = ${bin}/python
@@ -199,7 +199,7 @@ push_image:
 	docker push ${docker_image_name}
 
 image:  ## Create Docker images
-	docker build -t ${docker_image_name} .
+	docker build -t ${docker_image_name} ${build_args} .
 
 docs: ## Generate documentation in various formats
 	# Remove existing documentation folder
