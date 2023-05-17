@@ -6,6 +6,7 @@
 #
 aiohttp==3.8.4
     # via
+    #   geoip2
     #   openai
     #   websecmap
 aiosignal==1.3.1
@@ -31,10 +32,16 @@ attrs==22.2.0
     # via
     #   aiohttp
     #   websecmap
+beautifulsoup4==4.12.2
+    # via
+    #   bs4
+    #   websecmap
 billiard==3.6.4.0
     # via
     #   celery
     #   websecmap
+bs4==0.0.1
+    # via websecmap
 cachetools==5.3.0
     # via websecmap
 celery[gevent,redis]==4.4.7
@@ -184,6 +191,8 @@ frozenlist==1.3.3
     #   aiohttp
     #   aiosignal
     #   websecmap
+geoip2==4.7.0
+    # via websecmap
 gevent==22.10.2
     # via
     #   celery
@@ -229,6 +238,10 @@ markdown==3.4.1
 markuppy==1.14
     # via
     #   tablib
+    #   websecmap
+maxminddb==2.3.0
+    # via
+    #   geoip2
     #   websecmap
 multidict==6.0.4
     # via
@@ -361,6 +374,7 @@ redis==4.4.2
 requests==2.28.2
     # via
     #   django-proxy
+    #   geoip2
     #   googlemaps
     #   openai
     #   osm2geojson
@@ -391,6 +405,10 @@ six==1.16.0
     #   python-dateutil
     #   python-monkey-business
     #   requests-file
+    #   websecmap
+soupsieve==2.4.1
+    # via
+    #   beautifulsoup4
     #   websecmap
 sqlparse==0.4.3
     # via
@@ -448,7 +466,7 @@ vine==1.3.0
     #   celery
     #   flower
     #   websecmap
-websecmap @ git+https://gitlab.com/internet-cleanup-foundation/web-security-map@888b243bf037e9661f4f7027e96b19d1436b867d
+websecmap @ git+https://gitlab.com/internet-cleanup-foundation/web-security-map@a6805e539602702276d479fbc8343a678859c387
     # via -r requirements.in
 wikidata==0.7.0
     # via websecmap
