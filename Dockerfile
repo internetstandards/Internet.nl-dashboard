@@ -1,4 +1,4 @@
-FROM python:3.8
+FROM python:3.10
 
 ENV PIP_DISABLE_PIP_VERSION_CHECK 1
 
@@ -44,6 +44,9 @@ ENV VENDOR_DIR /source/vendor/
 
 # collect all static files form all django applications into static files directory
 RUN /usr/local/bin/dashboard collectstatic
+
+ARG VERSION=0.0.0-dev0
+RUN echo "VERSION='$VERSION'" >> /source/dashboard/__version__.py
 
 EXPOSE 8000
 

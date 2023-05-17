@@ -14,12 +14,14 @@ Including another URLconf
     1. Import the include() function: from django.urls import include, path
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
-from django.conf.urls import include, url
 from django.contrib import admin
-from django.urls import path
+from django.urls import include, path, re_path
 from two_factor.urls import urlpatterns as tf_urls
 
-admin.site.site_header = 'Dashboard Admin'
+from . import __version__
+
+admin.site.site_header = f'Dashboard Admin {__version__}'
+# Don't show version in title, as that might be shared without auth
 admin.site.site_title = 'Dashboard Admin'
 
 
@@ -30,19 +32,19 @@ def trigger_error(request):
 
 admin_urls = [
     path('sentry-debug/', trigger_error),
-    url(r'^admin/', admin.site.urls),
-    url(r'^admin/doc/', include('django.contrib.admindocs.urls')),
-    url(r'^admin/jet/', include('jet.urls', 'jet')),
-    url(r'^admin/jet/dashboard/', include('jet.dashboard.urls', 'jet-dashboard')),
-    url(r'^nested_admin/', include('nested_admin.urls')),
-    url(r'^activity/', include('actstream.urls')),
+    re_path(r'^admin/', admin.site.urls),
+    re_path(r'^admin/doc/', include('django.contrib.admindocs.urls')),
+    re_path(r'^admin/jet/', include('jet.urls', 'jet')),
+    re_path(r'^admin/jet/dashboard/', include('jet.dashboard.urls', 'jet-dashboard')),
+    re_path(r'^nested_admin/', include('nested_admin.urls')),
+    re_path(r'^activity/', include('actstream.urls')),
 ]
 
 frontend_urls = [
-    url('', include('dashboard.internet_nl_dashboard.urls')),
+    path('', include('dashboard.internet_nl_dashboard.urls')),
     # Enabling the default auth logins can bypass the two factor authentication. Don't enable it.
     # path('', include('django.contrib.auth.urls')),
-    url(r'', include(tf_urls)),
+    re_path(r'', include(tf_urls)),
 ]
 
 urlpatterns = frontend_urls.copy()

@@ -9,10 +9,10 @@
 # - no version pinning, unless it is required and explained
 
 # to update websecmap, update the SHA hash and run: make update_requirement_websecmap
-git+https://gitlab.com/internet-cleanup-foundation/web-security-map@87809216175cef42f8836b50366dee351e04ce5f#egg=websecmap
+git+https://gitlab.com/internet-cleanup-foundation/web-security-map@a6805e539602702276d479fbc8343a678859c387#egg=websecmap
 
 django-otp
-django-two-factor-auth
+django-two-factor-auth>1.15
 django-picklefield
 validators
 
@@ -21,12 +21,11 @@ validators
 # line by the Unix command file.
 # Used to determine mimetype in spreadsheet uploads.
 python-magic
-pytz
 polib
 django-activity-stream
 
 # sending mail notifications, per #54, translatable and managable templates in the admin interface
-django_mail_admin
+django_mail_admin>0.3
 
 # Allow CORS requests from client on the same server:
 django-cors-headers
@@ -40,3 +39,8 @@ numpy >= 1.21.0
 
 # tags on urls in relationships
 django-taggit
+
+# not auto-installed dependency for django-two-factor-auth
+# see: https://github.com/jazzband/django-two-factor-auth/issues/213
+# and: https://django-phonenumber-field.readthedocs.io/en/latest/
+phonenumbers

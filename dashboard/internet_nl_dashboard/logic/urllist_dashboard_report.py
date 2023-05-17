@@ -1,26 +1,26 @@
 # SPDX-License-Identifier: Apache-2.0
 import logging
 from copy import deepcopy
-from datetime import datetime, timedelta
-from typing import Any, Dict, List
+from datetime import datetime, timedelta, timezone
+from typing import Any, Dict, List, Optional
 
-import pytz
 from celery import group
 from deepdiff import DeepDiff
 from websecmap.celery import Task, app
 from websecmap.organizations.models import Url
 from websecmap.reporting.report import (add_statistics_to_calculation, aggegrate_url_rating_scores,
                                         get_latest_urlratings_fast, relevant_urls_at_timepoint,
-                                        remove_issues_from_calculation,
-                                        statistics_over_url_calculation)
+                                        remove_issues_from_calculation, statistics_over_url_calculation)
 
-from dashboard.internet_nl_dashboard.logic import (  # pylint: disable=duplicate-code
-    MAIL_AUTH_FIELDS, MAIL_CATEGORIES, MAIL_DNSSEC_FIELDS, MAIL_IPV6_FIELDS, MAIL_LEGACY_FIELDS,
-    MAIL_RPKI_FIELDS, MAIL_TLS_CERTIFICATE_FIELDS, MAIL_TLS_DANE_FIELDS, MAIL_TLS_TLS_FIELDS,
-    WEB_APPSECPRIV_CATEGORY, WEB_APPSECPRIV_FIELDS, WEB_DNSSEC_CATEGORY, WEB_DNSSEC_FIELDS,
-    WEB_IPV6_CATEGORY, WEB_IPV6_FIELDS, WEB_LEGACY_CATEGORY, WEB_LEGACY_FIELDS, WEB_RPKI_CATEGORY,
-    WEB_RPKI_FIELDS, WEB_TLS_CATEGORY, WEB_TLS_CERTIFICATE_FIELDS, WEB_TLS_DANE_FIELDS,
-    WEB_TLS_HTTP_FIELDS, WEB_TLS_TLS_FIELDS)
+from dashboard.internet_nl_dashboard.logic import (MAIL_AUTH_FIELDS, MAIL_CATEGORIES,  # pylint: disable=duplicate-code
+                                                   MAIL_DNSSEC_FIELDS, MAIL_IPV6_FIELDS, MAIL_LEGACY_FIELDS,
+                                                   MAIL_RPKI_FIELDS, MAIL_TLS_CERTIFICATE_FIELDS, MAIL_TLS_DANE_FIELDS,
+                                                   MAIL_TLS_TLS_FIELDS, WEB_APPSECPRIV_CATEGORY, WEB_APPSECPRIV_FIELDS,
+                                                   WEB_DNSSEC_CATEGORY, WEB_DNSSEC_FIELDS, WEB_IPV6_CATEGORY,
+                                                   WEB_IPV6_FIELDS, WEB_LEGACY_CATEGORY, WEB_LEGACY_FIELDS,
+                                                   WEB_RPKI_CATEGORY, WEB_RPKI_FIELDS, WEB_TLS_CATEGORY,
+                                                   WEB_TLS_CERTIFICATE_FIELDS, WEB_TLS_DANE_FIELDS, WEB_TLS_HTTP_FIELDS,
+                                                   WEB_TLS_TLS_FIELDS)
 from dashboard.internet_nl_dashboard.models import AccountInternetNLScan, UrlList, UrlListReport
 
 log = logging.getLogger(__package__)
@@ -87,7 +87,7 @@ def create_dashboard_report(scan_id: int):
     # the latest results. It should not happen with scans that happened today, but it does. Therefore, we move
     # the report creation process one minute forward
     # todo: this should be fixed to be more accurate.
-    now = datetime.now(pytz.utc) + timedelta(minutes=1)
+    now = datetime.now(timezone.utc) + timedelta(minutes=1)
 
     # The model is not complete: it can be optional but at this point it will not ever will be empty(!)
     if scan.scan is None:
@@ -114,13 +114,14 @@ def create_dashboard_report_at(urllist: UrlList, at_when: datetime, scan_type: s
 @app.task(queue='storage')
 def rate_urllists_now(urllists: List[UrlList], prevent_duplicates: bool = True, scan_type: str = "web"):
     for urllist in urllists:
-        now = datetime.now(pytz.utc)
+        now = datetime.now(timezone.utc)
         rate_urllist_on_moment(urllist, now, prevent_duplicates, scan_type)
 
 
 @app.task(queue='storage')
 def rate_urllist_on_moment(
-        urllist: UrlList, when: datetime = None, prevent_duplicates: bool = True, scan_type: str = "web") -> int:
+        urllist: UrlList, when: Optional[datetime] = None, prevent_duplicates: bool = True,
+        scan_type: str = "web") -> int:
     """
     :param urllist:
     :param when: A moment in time of which data should be aggregated
@@ -130,7 +131,7 @@ def rate_urllist_on_moment(
     """
     # If there is no time slicing, then it's today.
     if not when:
-        when = datetime.now(pytz.utc)
+        when = datetime.now(timezone.utc)
 
     log.info(f"Creating report for urllist {urllist} on {when}")
 

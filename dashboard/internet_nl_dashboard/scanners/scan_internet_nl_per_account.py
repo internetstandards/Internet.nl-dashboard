@@ -1,30 +1,27 @@
 # SPDX-License-Identifier: Apache-2.0
 import logging
 from copy import copy
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from typing import Dict, List, Union
 
-import pytz
 from actstream import action
 from celery import Task, chain, group
 from constance import config
 from django.db import transaction
 from django.db.models import Q
-from django.utils import timezone
 from websecmap.app.constance import constance_cached_value
 from websecmap.organizations.models import Url
 from websecmap.reporting.report import recreate_url_reports
 from websecmap.scanners.models import InternetNLV2Scan
-from websecmap.scanners.scanner import add_model_filter, dns_endpoints, internet_nl_v2_websecmap
-from websecmap.scanners.scanner.internet_nl_v2 import InternetNLApiSettings
+from websecmap.scanners.scanner import add_model_filter, dns_endpoints, internet_nl_websecmap
+from websecmap.scanners.scanner.internet_nl import InternetNLApiSettings
 
 from dashboard.celery import app
-from dashboard.internet_nl_dashboard.logic.mail import (email_configration_is_correct,
-                                                        send_scan_finished_mails)
+from dashboard.internet_nl_dashboard.logic.mail import email_configration_is_correct, send_scan_finished_mails
 from dashboard.internet_nl_dashboard.logic.report import optimize_calculation_and_add_statistics
 from dashboard.internet_nl_dashboard.logic.urllist_dashboard_report import create_dashboard_report
-from dashboard.internet_nl_dashboard.models import (AccountInternetNLScan, AccountInternetNLScanLog,
-                                                    UrlList, UrlListReport)
+from dashboard.internet_nl_dashboard.models import (AccountInternetNLScan, AccountInternetNLScanLog, UrlList,
+                                                    UrlListReport)
 # done: create more flexible filters
 # done: map mail scans to an endpoint (changed the scanner for it)
 # done: make nice tracking name for internet nl that is echoed in the scan results.
@@ -74,7 +71,7 @@ def create_api_settings(v2_scan_id: InternetNLV2Scan) -> Dict[str, Union[str, in
 
 # overwrite the create API settings with one that handles credentials for every separate account. This is needed
 # for internet.nl to generate some statistics over API usage.
-internet_nl_v2_websecmap.create_api_settings = create_api_settings
+internet_nl_websecmap.create_api_settings = create_api_settings
 
 
 @app.task(queue='storage')
@@ -98,14 +95,14 @@ def create_scan(internal_scan_type: str, urllist: UrlList, manual_or_scheduled: 
     new_scan = InternetNLV2Scan()
     new_scan.type = internal_scan_type
     new_scan.save()
-    internet_nl_v2_websecmap.update_state(new_scan.id, "requested and empty",
-                                          "requested a scan to be performed on internet.nl api")
+    internet_nl_websecmap.update_state(new_scan.id, "requested and empty",
+                                       "requested a scan to be performed on internet.nl api")
 
     # We need to store the scan type in the InternetNLV2Scan at creation, because the type in the list might change:
     accountinternetnlscan = AccountInternetNLScan()
     accountinternetnlscan.account = urllist.account
     accountinternetnlscan.urllist = urllist
-    accountinternetnlscan.started_on = datetime.now(pytz.utc)
+    accountinternetnlscan.started_on = datetime.now(timezone.utc)
     accountinternetnlscan.scan = new_scan
     accountinternetnlscan.state = ""
     accountinternetnlscan.save()
@@ -280,7 +277,7 @@ def recover_and_retry(scan_id: int):
 
     # Also have to rollback the underlying scan, if there already is one.
     if scan.scan:
-        internet_nl_v2_websecmap.recover_and_retry(scan.scan.id)
+        internet_nl_websecmap.recover_and_retry(scan.scan.id)
 
     return group([])
 
@@ -343,10 +340,10 @@ def registering_scan_at_internet_nl(scan_id: int):
     # auto saved.
     scan.scan.subject_urls.set(get_relevant_urls(scan.urllist.id, relevant_endpoint_types[scan.scan.type]))
 
-    internet_nl_v2_websecmap.update_state(
+    internet_nl_websecmap.update_state(
         scan.scan.id, "requested", "requested a scan to be performed on internet.nl api")
 
-    return chain(internet_nl_v2_websecmap.progress_running_scan(scan.scan.id)
+    return chain(internet_nl_websecmap.progress_running_scan(scan.scan.id)
                  | copy_state_from_websecmap_scan.si(scan.id))
 
 
@@ -358,7 +355,7 @@ def running_scan(scan_id: int):
         log.warning(f'Trying to running_scan with unknown scan: {scan_id}.')
         return group([])
 
-    return chain(internet_nl_v2_websecmap.progress_running_scan(scan.scan.id)
+    return chain(internet_nl_websecmap.progress_running_scan(scan.scan.id)
                  | copy_state_from_websecmap_scan.si(scan.id))
 
 
@@ -369,7 +366,7 @@ def continue_running_scan(scan_id: int):
         log.warning(f'Trying to continue_running_scan with unknown scan: {scan_id}.')
         return group([])
 
-    return chain(internet_nl_v2_websecmap.progress_running_scan(scan.scan.id)
+    return chain(internet_nl_websecmap.progress_running_scan(scan.scan.id)
                  | copy_state_from_websecmap_scan.si(scan.id))
 
 
@@ -381,7 +378,7 @@ def storing_scan_results(scan_id: int):
         log.warning(f'Trying to storing_scan_results with unknown scan: {scan_id}.')
         return group([])
 
-    return chain(internet_nl_v2_websecmap.progress_running_scan(scan.scan.id)
+    return chain(internet_nl_websecmap.progress_running_scan(scan.scan.id)
                  | copy_state_from_websecmap_scan.si(scan.id))
 
 
@@ -393,7 +390,7 @@ def processing_scan_results(scan_id: int):
         log.warning(f'Trying to processing_scan_results with unknown scan: {scan_id}.')
         return group([])
 
-    return chain(internet_nl_v2_websecmap.progress_running_scan(scan.scan.id)
+    return chain(internet_nl_websecmap.progress_running_scan(scan.scan.id)
                  | copy_state_from_websecmap_scan.si(scan.id))
 
 
@@ -465,7 +462,7 @@ def finishing_scan(scan_id: int):
         return group([])
 
     # No further actions, so not setting "finishing scan" as a state, but set it to "scan finished" directly.
-    scan.finished_on = datetime.now(pytz.utc)
+    scan.finished_on = datetime.now(timezone.utc)
     scan.save()
 
     update_state("finished", scan.id)
@@ -531,7 +528,7 @@ def monitor_timeout(scan_id: int):
     # determine if there is an actual timeout.
     if scan.state_changed_on:
         scan_will_timeout_on = scan.state_changed_on + timedelta(minutes=strategy['timeout in minutes'])
-        if timezone.now() > scan_will_timeout_on:
+        if datetime.now(timezone.utc) > scan_will_timeout_on:
             update_state(f"timeout reached for: '{scan.state}', "
                          f"performing recovery to '{strategy['state after timeout']}'", scan.id)
             update_state(strategy['state after timeout'], scan.id)
@@ -552,6 +549,14 @@ def connect_urllistreport_to_accountinternetnlscan(urllistreport_id: int, scan_i
 
     scan.report = urllistreport
     scan.save()
+
+    # publicly share this report if the list is configured this is needed
+    urllist: UrlList = UrlList.objects.all().filter(id=urllistreport.urllist.id).first()
+    if urllist and urllist.automatically_share_new_reports:
+        # report code is set automatically on save
+        urllistreport.is_publicly_shared = True
+        urllistreport.public_share_code = urllist.default_public_share_code_for_new_reports
+        urllistreport.save()
 
     return int(urllistreport.id)
 
@@ -711,13 +716,13 @@ def update_state(state: str, scan_id: int) -> None:
 
     # First state, or a new state.
     scan.state = state
-    scan.state_changed_on = timezone.now()
+    scan.state_changed_on = datetime.now(timezone.utc)
     scan.save()
 
     # Then log the state change, if it changed, even if it already changed before, so it's clear things went wrong:
     scanlog = AccountInternetNLScanLog()
     scanlog.scan = scan
-    scanlog.at_when = timezone.now()
+    scanlog.at_when = datetime.now(timezone.utc)
     scanlog.state = state
     scanlog.save()
 

@@ -5,6 +5,7 @@ internet.nl dashboard documentation
    :maxdepth: 2
    :caption: Administration Manual
 
+   User Management
    Email Templates
 
 
