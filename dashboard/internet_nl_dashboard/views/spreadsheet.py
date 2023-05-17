@@ -2,15 +2,15 @@
 import logging
 
 from constance import config
-from django.conf import settings
 from django.contrib.auth.decorators import login_required
-from django.core.files.storage import FileSystemStorage
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render
+from django.views.decorators.http import require_http_methods
 from websecmap.app.common import JSEncoder
 
-from dashboard.internet_nl_dashboard.logic.spreadsheet import complete_import, get_upload_history
-from dashboard.internet_nl_dashboard.views.__init__ import LOGIN_URL, get_account, get_dashboarduser
+from dashboard.internet_nl_dashboard.logic.spreadsheet import (complete_import, get_upload_history, save_file,
+                                                               upload_domain_spreadsheet_to_list)
+from dashboard.internet_nl_dashboard.views import LOGIN_URL, get_account, get_dashboarduser
 
 log = logging.getLogger(__package__)
 
@@ -56,18 +56,21 @@ def upload_spreadsheet(request) -> HttpResponse:
     return response
 
 
-def save_file(myfile) -> str:
-    # todo: filesystem might be full.
-    # https://docs.djangoproject.com/en/2.1/ref/files/storage/
-    file_system_storage = FileSystemStorage(location=settings.MEDIA_ROOT)
-    filename = file_system_storage.save(myfile.name, myfile)
-    file = settings.MEDIA_ROOT + '/' + filename
-    return file
-
-
 @login_required(login_url=LOGIN_URL)
 def upload_history(request) -> JsonResponse:
     account = get_account(request)
 
     # list of dicts: In order to allow non-dict objects to be serialized set the safe parameter to False.
     return JsonResponse(get_upload_history(account), encoder=JSEncoder, safe=False)
+
+
+@login_required(login_url=LOGIN_URL)
+@require_http_methods(["POST"])
+def upload_list_(request, list_id):
+    # params = get_json_body(request)
+    return JsonResponse(upload_domain_spreadsheet_to_list(
+        get_account(request),
+        get_dashboarduser(request),
+        list_id,
+        request.FILES.get('file', None)
+    ))

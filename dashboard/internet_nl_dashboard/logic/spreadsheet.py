@@ -22,20 +22,22 @@ import logging
 import os
 import re
 import zipfile
-from datetime import datetime
-from typing import Any, Dict, List, Optional
+from datetime import datetime, timezone
+from typing import Any, Dict, List, Optional, Tuple, Union
 
 import magic
 import pyexcel as p
-import pytz
 from actstream import action
 from constance import config
+from django.conf import settings
+from django.core.files.storage import FileSystemStorage
 from django.db import transaction
 from xlrd import XLRDError
 
-from dashboard.internet_nl_dashboard.logic.domains import (
-    clean_urls, retrieve_possible_urls_from_unfiltered_input, save_urllist_content_by_name)
-from dashboard.internet_nl_dashboard.models import Account, DashboardUser, UploadLog
+from dashboard.internet_nl_dashboard.logic.domains import (_add_to_urls_to_urllist, clean_urls,
+                                                           retrieve_possible_urls_from_unfiltered_input,
+                                                           save_urllist_content_by_name)
+from dashboard.internet_nl_dashboard.models import Account, DashboardUser, UploadLog, UrlList
 
 log = logging.getLogger(__package__)
 
@@ -68,6 +70,15 @@ def is_file(file: str) -> bool:
         log.debug('Not a valid file path.')
         return False
     return True
+
+
+def save_file(myfile) -> str:
+    # todo: filesystem might be full.
+    # https://docs.djangoproject.com/en/2.1/ref/files/storage/
+    file_system_storage = FileSystemStorage(location=settings.MEDIA_ROOT)
+    filename = file_system_storage.save(myfile.name, myfile)
+    file = settings.MEDIA_ROOT + '/' + filename
+    return file
 
 
 # make sure the file is of a spreadsheet type
@@ -104,7 +115,7 @@ def is_valid_extension(file: str) -> bool:
     return False
 
 
-def get_data(file: str) -> Dict[str, set]:
+def get_data(file: str) -> Dict[str, Dict[str, Dict[str, set]]]:
     """
     Will return a simple set of data, without too much validation. Deduplicates data per unique category.
 
@@ -113,11 +124,14 @@ def get_data(file: str) -> Dict[str, set]:
     Compound records are decompounded and placed in the correct categories. Below might result in four additions:
     category, category - url, url
 
+    Example:
+    data["mylistname"]["mydomain.com"]["tags"] = {"tag1", "tag2"}
+
     :param file:
     :return:
     """
 
-    data: Dict[str, set] = {}
+    data: Dict[str, Any] = {}
 
     try:
         sheet = p.get_sheet(file_name=file, name_columns_by_row=0)
@@ -140,6 +154,7 @@ def get_data(file: str) -> Dict[str, set]:
         # Data is parsed to python-like datatype. In this case we only expect strings and cast them as such.
         found_categories = str(row[0]).lower().strip().split(',')
         found_urls = str(row[1]).lower().strip().split(',')
+        found_tags = str(row[2]).lower().strip().split(',')
 
         for found_category in found_categories:
             found_category = found_category.strip()
@@ -149,9 +164,13 @@ def get_data(file: str) -> Dict[str, set]:
 
                 # create new category
                 if found_category not in data:
-                    data[found_category] = set()
+                    data[found_category] = {}
 
-                data[found_category].add(found_url)
+                if found_url not in data[found_category]:
+                    data[found_category][found_url] = {'tags': set()}
+
+                for tag in found_tags:
+                    data[found_category][found_url]['tags'].add(tag)
 
     # During editing, it might happen there are some 'left over' cells that are also added.
     # These left overs contain no urls. If they do, and something has been attempted to be added to
@@ -204,7 +223,7 @@ def log_spreadsheet_upload(user: DashboardUser, file: str, status: str = "", mes
               'internal_filename': internal_filename[0:250],
               'status': status[0:250],
               'message': message[0:250],
-              'upload_date': datetime.now(pytz.utc),
+              'upload_date': datetime.now(timezone.utc),
               'filesize': os.path.getsize(file)}
 
     uploadlog = UploadLog(**upload)
@@ -219,12 +238,11 @@ def log_spreadsheet_upload(user: DashboardUser, file: str, status: str = "", mes
 # Do not accept partial imports. Or all, or nothing in a single transaction.
 # Depending on the speed this needs to become a task, as the wait will be too long.
 @transaction.atomic
-def save_data(account: Account, data: dict):
-    results = {}
-    for urllist in data.keys():
-        results[urllist] = save_urllist_content_by_name(account, urllist, data[urllist])
-
-    return results
+def save_data(account: Account, data: Dict[str, Dict[str, Dict[str, set]]]):
+    return {
+        urllist: save_urllist_content_by_name(account, urllist, data[urllist])
+        for urllist in data
+    }
 
 
 def upload_error(message, user, file) -> Dict[str, Any]:
@@ -251,33 +269,32 @@ def inspect_upload_file(user: DashboardUser, file: str) -> Optional[Dict[str, An
     return None
 
 
-def complete_import(user: DashboardUser, file: str) -> Dict[str, Any]:
-
+def get_data_from_spreadsheet(
+        user: DashboardUser, file: str
+) -> Union[Tuple[Dict[str, Dict[str, Dict[str, set]]], int], Tuple[Dict[str, Any], str]]:
     has_errors = inspect_upload_file(user, file)
     if has_errors:
-        return has_errors
+        return has_errors, "error"
 
     # urllist: urls
-    domain_lists = get_data(file)
+    domain_lists: Dict[str, Dict[str, Dict[str, set]]] = get_data(file)
     if not domain_lists:
         return upload_error("The uploaded file contained no data. This might happen when the file is not in the "
-                            "correct format. Are you sure it is a correct spreadsheet file?", user, file)
+                            "correct format. Are you sure it is a correct spreadsheet file?", user, file), "error"
 
     # sanity check on data length and number of lists (this does not prevent anyone from trying to upload the same
     # file over and over again), it's just a usability feature against mistakes.
-    number_of_urls = 0
-    for _, urls in domain_lists.items():
-        number_of_urls += len(urls)
+    number_of_urls = sum(len(urls) for _, urls in domain_lists.items())
 
     if len(domain_lists) > config.DASHBOARD_MAXIMUM_LISTS_PER_SPREADSHEET:
         return upload_error(f"The maximum number of new lists is {config.DASHBOARD_MAXIMUM_LISTS_PER_SPREADSHEET}. "
                             "The uploaded spreadsheet contains more than this limit. Try again in smaller batches.",
-                            user, file)
+                            user, file), "error"
 
     if number_of_urls > config.DASHBOARD_MAXIMUM_DOMAINS_PER_SPREADSHEET:
         return upload_error(f"The maximum number of new urls is {config.DASHBOARD_MAXIMUM_DOMAINS_PER_SPREADSHEET}."
                             "The uploaded spreadsheet contains more than this limit. Try again in smaller batches.",
-                            user, file)
+                            user, file), "error"
 
     for urllist, urls in domain_lists.items():
         possible_urls, _ = retrieve_possible_urls_from_unfiltered_input(", ".join(urls))
@@ -287,7 +304,15 @@ def complete_import(user: DashboardUser, file: str) -> Dict[str, Any]:
             return upload_error("This spreadsheet contains urls that are not in the correct format. Please correct "
                                 "them and try again. The first list that contains an error is "
                                 f"{urllist} with the url(s) {', '.join(url_check['incorrect'])}",
-                                user, file)
+                                user, file), "error"
+
+    return domain_lists, number_of_urls
+
+
+def complete_import(user: DashboardUser, file: str) -> Dict[str, Any]:
+    domain_lists, number_of_urls = get_data_from_spreadsheet(user, file)
+    if number_of_urls == "error":
+        return domain_lists
 
     # File system full, database full.
     details = save_data(user.account, domain_lists)
@@ -302,3 +327,40 @@ def complete_import(user: DashboardUser, file: str) -> Dict[str, Any]:
     response = {'error': False, 'success': True, 'message': message, 'details': details, 'status': 'success'}
     log_spreadsheet_upload(user=user, file=file, status='success', message=message)
     return response
+
+
+def upload_domain_spreadsheet_to_list(account: Account, user: DashboardUser, urllist_id: int, file: str):
+
+    file = save_file(file)
+
+    domain_lists, number_of_urls = get_data_from_spreadsheet(user, file)
+    if number_of_urls == "error":
+        return domain_lists
+
+    urllist = UrlList.objects.all().filter(id=urllist_id, account=account).first()
+    if not urllist:
+        return {'error': True, 'success': False, 'message': 'list_does_not_exist', 'details': '', 'status': 'error'}
+
+    # we don't care about the list name, we'll just add anything that is given as input...
+    result = {'incorrect_urls': [],
+              'added_to_list': 0,
+              'already_in_list': 0}
+    for _, domain_data in domain_lists.items():
+        extracted_urls, _ = retrieve_possible_urls_from_unfiltered_input(", ".join(domain_data))
+        cleaned_urls = clean_urls(extracted_urls)
+
+        if cleaned_urls['correct']:
+            counters = _add_to_urls_to_urllist(account, urllist, urls=cleaned_urls['correct'],
+                                               urls_with_tags_mapping=domain_data)
+        else:
+            counters = {'added_to_list': 0, 'already_in_list': 0}
+
+        result['added_to_list'] += counters['added_to_list']
+        result['already_in_list'] += counters['already_in_list']
+        result['incorrect_urls'] += cleaned_urls['incorrect']
+
+    details_str = f"{urllist.name}: new: {result['added_to_list']}, existing: {result['already_in_list']}; "
+    message = "Spreadsheet uploaded successfully. " \
+              f"Added {len(domain_lists)} lists and {number_of_urls} urls. Details: {details_str}"
+    log_spreadsheet_upload(user=user, file=file, status='success', message=message)
+    return {'error': False, 'success': True, 'message': message, 'details': details_str, 'status': 'success'}

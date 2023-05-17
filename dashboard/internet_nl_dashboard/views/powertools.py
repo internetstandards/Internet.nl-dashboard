@@ -4,8 +4,7 @@ from django.contrib.auth.models import User
 from django.http import HttpResponse, JsonResponse
 
 from dashboard.internet_nl_dashboard.logic import operation_response
-from dashboard.internet_nl_dashboard.models import (Account, AccountInternetNLScan, DashboardUser,
-                                                    UrlList)
+from dashboard.internet_nl_dashboard.models import Account, AccountInternetNLScan, DashboardUser, UrlList
 from dashboard.internet_nl_dashboard.views import get_account, get_json_body
 from dashboard.settings import LOGIN_URL
 

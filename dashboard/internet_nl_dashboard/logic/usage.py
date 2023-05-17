@@ -23,10 +23,9 @@ Details obv action metingen gestart eind januari 2020 (er mist bijna een maand d
 
 """
 from collections import defaultdict
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from typing import Any, Dict
 
-import pytz
 from actstream.models import Action
 from django.contrib.auth.models import User
 from websecmap.organizations.models import Url
@@ -34,20 +33,20 @@ from websecmap.scanners.models import EndpointGenericScan
 
 from dashboard.internet_nl_dashboard.models import AccountInternetNLScan, UrlList
 
-DASHBOARD_EPOCH = datetime(2019, 6, 1, tzinfo=pytz.utc)
+DASHBOARD_EPOCH = datetime(2019, 6, 1, tzinfo=timezone.utc)
 
 
 def dashboard_years() -> range:
     # range is excluding the upper bound
-    return range(DASHBOARD_EPOCH.year, datetime.now(pytz.utc).year + 1)
+    return range(DASHBOARD_EPOCH.year, datetime.now(timezone.utc).year + 1)
 
 
 def dashboard_months(year) -> range:
     if year == DASHBOARD_EPOCH.year:
         return range(DASHBOARD_EPOCH.month, 13)
 
-    if year == datetime.now(pytz.utc).year:
-        return range(1, datetime.now(pytz.utc).month + 1)
+    if year == datetime.now(timezone.utc).year:
+        return range(1, datetime.now(timezone.utc).month + 1)
 
     return range(1, 13)
 
@@ -105,7 +104,7 @@ def usage_metrics():
 
 
 def user_logged_in_past_n_days(days=30):
-    n_days_ago = datetime.now(pytz.utc) - timedelta(days=days)
+    n_days_ago = datetime.now(timezone.utc) - timedelta(days=days)
     return User.objects.all().filter(last_login__gt=n_days_ago).count()
 
 

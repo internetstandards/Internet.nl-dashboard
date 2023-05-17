@@ -1,9 +1,8 @@
 # SPDX-License-Identifier: Apache-2.0
 import logging
 import re
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 
-import pytz
 from celery import group
 from constance.admin import Config, ConstanceAdmin, ConstanceForm
 from django.contrib import admin
@@ -25,11 +24,11 @@ from dashboard.internet_nl_dashboard import models
 from dashboard.internet_nl_dashboard.forms import CustomAccountModelForm
 from dashboard.internet_nl_dashboard.logic.domains import scan_urllist_now_ignoring_business_rules
 from dashboard.internet_nl_dashboard.logic.mail import send_scan_finished_mails
-from dashboard.internet_nl_dashboard.models import (Account, AccountInternetNLScan,
-                                                    AccountInternetNLScanLog, DashboardUser,
-                                                    TaggedUrlInUrllist, UploadLog, UrlList)
-from dashboard.internet_nl_dashboard.scanners.scan_internet_nl_per_account import (
-    creating_report, progress_running_scan, recover_and_retry)
+from dashboard.internet_nl_dashboard.models import (Account, AccountInternetNLScan, AccountInternetNLScanLog,
+                                                    DashboardUser, TaggedUrlInUrllist, UploadLog, UrlList)
+from dashboard.internet_nl_dashboard.scanners.scan_internet_nl_per_account import (creating_report,
+                                                                                   progress_running_scan,
+                                                                                   recover_and_retry)
 
 log = logging.getLogger(__package__)
 
@@ -59,7 +58,7 @@ class MyPeriodicTaskForm(PeriodicTaskForm):
         cleaned_data = super().clean()
 
         # if not self.cleaned_data['last_run_at']:
-        #     self.cleaned_data['last_run_at'] = datetime.now(pytz.utc)
+        #     self.cleaned_data['last_run_at'] = datetime.now(timezone.utc)
 
         return cleaned_data
 
@@ -97,8 +96,8 @@ class IEPeriodicTaskAdmin(PeriodicTaskAdmin, ImportExportModelAdmin):
             return obj.schedule.remaining_estimate(last_run_at=obj.last_run_at)
 
         # y in seconds
-        _, y_in_seconds = obj.schedule.is_due(last_run_at=datetime.now(pytz.utc))
-        date = datetime.now(pytz.utc) + timedelta(seconds=y_in_seconds)
+        _, y_in_seconds = obj.schedule.is_due(last_run_at=datetime.now(timezone.utc))
+        date = datetime.now(timezone.utc) + timedelta(seconds=y_in_seconds)
 
         return naturaltime(date)
 
@@ -107,7 +106,7 @@ class IEPeriodicTaskAdmin(PeriodicTaskAdmin, ImportExportModelAdmin):
         if obj.last_run_at:
             return obj.schedule.remaining_estimate(last_run_at=obj.last_run_at)
 
-        return obj.schedule.remaining_estimate(last_run_at=datetime.now(pytz.utc))
+        return obj.schedule.remaining_estimate(last_run_at=datetime.now(timezone.utc))
 
     @staticmethod
     def next(obj):
@@ -115,10 +114,10 @@ class IEPeriodicTaskAdmin(PeriodicTaskAdmin, ImportExportModelAdmin):
             return obj.schedule.remaining_estimate(last_run_at=obj.last_run_at)
 
         # y in seconds
-        _, y_in_seconds = obj.schedule.is_due(last_run_at=datetime.now(pytz.utc))
+        _, y_in_seconds = obj.schedule.is_due(last_run_at=datetime.now(timezone.utc))
         # somehow the cron jobs still give the correct countdown even last_run_at is not set.
 
-        date = datetime.now(pytz.utc) + timedelta(seconds=y_in_seconds)
+        date = datetime.now(timezone.utc) + timedelta(seconds=y_in_seconds)
 
         return date
 
@@ -266,7 +265,8 @@ class UrlListAdmin(ImportExportModelAdmin, admin.ModelAdmin):
 
     # we don't add the urls as that might cause a deletion by mistake
     fields = ('name', 'account', 'scan_type', 'enable_scans', 'automated_scan_frequency', 'scheduled_next_scan',
-              'last_manual_scan', 'is_deleted', 'deleted_on')
+              'last_manual_scan', 'is_deleted', 'deleted_on', 'enable_report_sharing_page',
+              'automatically_share_new_reports', 'default_public_share_code_for_new_reports')
 
     @staticmethod
     def no_of_urls(obj):
@@ -412,7 +412,7 @@ class UrlListReportAdmin(ImportExportModelAdmin, admin.ModelAdmin):
 
     list_display = ('urllist', 'average_internet_nl_score', 'high', 'medium', 'low', 'ok', 'total_endpoints',
                     'ok_endpoints', 'is_publicly_shared', 'is_shared_on_homepage', 'at_when', 'inspect_list')
-    search_fields = (['at_when'])
+    search_fields = ['at_when']
     list_filter = ['urllist', 'at_when', 'is_publicly_shared'][::-1]
     fields = ('urllist',
 

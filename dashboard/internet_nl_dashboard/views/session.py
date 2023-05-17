@@ -95,6 +95,7 @@ def session_status_(request):
         'is_authenticated': request.user.is_authenticated,
         'is_superuser': request.user.is_superuser,
         'account_name': request.user.dashboarduser.account.name,
+        'account_id': request.user.dashboarduser.account.id,
     }
 
 

@@ -470,11 +470,11 @@
       "description": ""
     }
   },
-    {
+  {
     "model": "django_celery_beat.periodictask",
     "pk": 106,
     "fields": {
-      "name": "&#x1F501; Check running dashboard scans",
+      "name": "&#x1F501; Progress subdomain discovery",
       "task": "websecmap.app.models.create_function_job",
       "interval": null,
       "crontab": 33,
@@ -489,6 +489,31 @@
       "one_off": false,
       "start_time": null,
       "enabled": false,
+      "last_run_at": "2019-01-24T05:00:00Z",
+      "total_run_count": 0,
+      "date_changed": "2019-01-24T05:02:10Z",
+      "description": ""
+    }
+  },
+  {
+    "model": "django_celery_beat.periodictask",
+    "pk": 107,
+    "fields": {
+      "name": "&#x1F501; autoshare_report_to_front_page",
+      "task": "dashboard.internet_nl_dashboard.tasks.autoshare_report_to_front_page",
+      "interval": null,
+      "crontab": 33,
+      "solar": null,
+      "args": "[]",
+      "kwargs": "{}",
+      "queue": "storage",
+      "exchange": null,
+      "routing_key": null,
+      "priority": null,
+      "expires": null,
+      "one_off": false,
+      "start_time": null,
+      "enabled": true,
       "last_run_at": "2019-01-24T05:00:00Z",
       "total_run_count": 0,
       "date_changed": "2019-01-24T05:02:10Z",
