@@ -23,6 +23,6 @@ def check_dns_resolver(server) -> bool:
         resolver.resolve(search_domain, "A", search=True)
         print(f"Resolved {search_domain} on {server}")
         return True
-    except Exception as e:
-        print(f"Did not resolve {search_domain} on {server}. Error: {e}")
+    except Exception as exc:  # pylint: disable=broad-except
+        print(f"Did not resolve {search_domain} on {server}. Error: {exc}")
         return False
