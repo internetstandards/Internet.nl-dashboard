@@ -484,14 +484,15 @@ yarl==1.8.2
     # via
     #   aiohttp
     #   websecmap
-zope-event==4.5.0
+zope.event==4.5.0
     # via
     #   gevent
     #   websecmap
-zope-interface==5.5.2
+zope.interface==5.5.2
     # via
     #   gevent
     #   websecmap
+
 
 # The following packages are considered to be unsafe in a requirements file:
 # setuptools
