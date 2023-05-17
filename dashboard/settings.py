@@ -122,6 +122,11 @@ MIDDLEWARE = [
 
     # Two factor Auth
     'django_otp.middleware.OTPMiddleware',
+
+    # https://docs.djangoproject.com/en/4.2/ref/middleware/#django.middleware.gzip.GZipMiddleware
+    # This middleware should be placed before any other middleware that need to read or write the response body so
+    # that compression happens afterward.
+    'django.middleware.gzip.GZipMiddleware',
 ]
 
 ROOT_URLCONF = 'dashboard.urls'
