@@ -509,7 +509,8 @@ CONSTANCE_CONFIG = {
         str
     ),
     "SCANNER_NAMESERVERS": (
-        '["1.1.1.1", "8.8.8.8", "9.9.9.9", "208.67.222.222", "8.26.56.26"]',
+        '["193.17.47.1", "185.43.135.1", "193.110.81.0", "185.253.5.0", "9.9.9.9", "149.112.112.112", '
+        '"2001:148f:ffff::1", "2001:148f:fffe::1", "2a0f:fc80::", "2a0f:fc81::", "2620:fe::fe", "2620:fe::9"]',
         "Nameservers used during scans (dns endpoints and subdomains). This string is loaded as JSON, but not validated"
         "due to limitations of this settings library. Be careful when editing(!). This information is cached and loaded"
         "only once every 10 minutes.",
