@@ -7,3 +7,6 @@ git+https://gitlab.com/internet-cleanup-foundation/web-security-map@a6805e539602
 
 # include (security) version constraints for non primary dependencies
 -c security-constraints.in
+
+uwsgi
+django-uwsgi
