@@ -96,7 +96,7 @@ def create_scan(internal_scan_type: str, urllist: UrlList, manual_or_scheduled: 
     new_scan.type = internal_scan_type
     new_scan.save()
     internet_nl_websecmap.update_state(new_scan.id, "requested and empty",
-                                          "requested a scan to be performed on internet.nl api")
+                                       "requested a scan to be performed on internet.nl api")
 
     # We need to store the scan type in the InternetNLV2Scan at creation, because the type in the list might change:
     accountinternetnlscan = AccountInternetNLScan()
