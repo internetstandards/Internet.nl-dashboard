@@ -571,7 +571,6 @@ def get_urllist_content(account: Account, urllist_id: int) -> dict:
         for tag1 in [x.tags.values_list('name') for x in url.url_tags]:
             for tag2 in tag1:
                 tags.extend(iter(tag2))
-        # log.debug(tags)
 
         response['urls'].append({
             'id': url.id,
