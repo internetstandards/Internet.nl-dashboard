@@ -536,11 +536,20 @@ def get_urllist_content(account: Account, urllist_id: int) -> dict:
                         queryset=Endpoint.objects.filter(protocol__in=['dns_soa', 'dns_a_aaaa'], is_dead=False),
                         to_attr='relevant_endpoints')
 
+    prefetch_tags = Prefetch(
+        'taggedurlinurllist_set',
+        queryset=TaggedUrlInUrllist.objects.all().filter(urllist=urllist_id).prefetch_related('tags'),
+        to_attr='url_tags'
+    )
+
     # This ordering makes sure all subdomains are near the domains with the right extension.
     urls = Url.objects.all().filter(
         urls_in_dashboard_list_2__account=account,
         urls_in_dashboard_list_2__id=urllist_id
-    ).order_by('computed_domain', 'computed_suffix', 'computed_subdomain').prefetch_related(prefetch).all()
+    ).order_by('computed_domain', 'computed_suffix', 'computed_subdomain').prefetch_related(
+        prefetch,
+        prefetch_tags
+    ).all()
 
     """ It's very possible that the urrlist_id is not matching with the account. The query will just return
     nothing. Only of both matches it will return something we can work with. """
@@ -551,8 +560,18 @@ def get_urllist_content(account: Account, urllist_id: int) -> dict:
         has_mail_endpoint = len([x for x in url.relevant_endpoints if x.protocol == 'dns_soa']) > 0
         has_web_endpoint = len([x for x in url.relevant_endpoints if x.protocol == 'dns_a_aaaa']) > 0
 
-        has_tags = TaggedUrlInUrllist.objects.all().filter(url=url, urllist=urllist_id).only('id').first()
-        tags = list(has_tags.tags.names()) if has_tags else []
+        # this is terrible code... as it appears prefetching tags is bit complex with queries in
+        # queries with n-to-n on n-to-n and such.
+        # and thus the result is similarly complex. This is done in the hope the number
+        # of queries will be reduced.
+        # has_tags = TaggedUrlInUrllist.objects.all().filter(url=url, urllist=urllist_id).only('id').first()
+        # tags = list(has_tags.tags.names()) if has_tags else []
+        # log.warning(url.url_tags)
+        tags = []
+        for tag1 in [x.tags.values_list('name') for x in url.url_tags]:
+            for tag2 in tag1:
+                tags.extend(iter(tag2))
+        # log.debug(tags)
 
         response['urls'].append({
             'id': url.id,
@@ -564,7 +583,7 @@ def get_urllist_content(account: Account, urllist_id: int) -> dict:
             'resolves': not url.not_resolvable,
             'has_mail_endpoint': has_mail_endpoint,
             'has_web_endpoint': has_web_endpoint,
-            'tags': tags
+            'tags': tags,
         })
 
     return response
