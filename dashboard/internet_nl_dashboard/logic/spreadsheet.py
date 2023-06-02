@@ -115,7 +115,7 @@ def is_valid_extension(file: str) -> bool:
     return False
 
 
-def get_data(file: str) -> Dict[str, Dict[str, Dict[str, set]]]:
+def get_data(file: str) -> Dict[str, Dict[str, Dict[str, list]]]:
     """
     Will return a simple set of data, without too much validation. Deduplicates data per unique category.
 
@@ -166,11 +166,14 @@ def get_data(file: str) -> Dict[str, Dict[str, Dict[str, set]]]:
                 if found_category not in data:
                     data[found_category] = {}
 
+                # use a list because a set is not json serializable:
                 if found_url not in data[found_category]:
-                    data[found_category][found_url] = {'tags': set()}
+                    data[found_category][found_url] = {'tags': []}
 
                 for tag in found_tags:
-                    data[found_category][found_url]['tags'].add(tag)
+                    # not use a set here, while that would save a line of code to support serialization
+                    if tag not in data[found_category][found_url]['tags']:
+                        data[found_category][found_url]['tags'].append(tag)
 
     # During editing, it might happen there are some 'left over' cells that are also added.
     # These left overs contain no urls. If they do, and something has been attempted to be added to
@@ -271,13 +274,13 @@ def inspect_upload_file(user: DashboardUser, file: str) -> Optional[Dict[str, An
 
 def get_data_from_spreadsheet(
         user: DashboardUser, file: str
-) -> Union[Tuple[Dict[str, Dict[str, Dict[str, set]]], int], Tuple[Dict[str, Any], str]]:
+) -> Union[Tuple[Dict[str, Dict[str, Dict[str, list]]], int], Tuple[Dict[str, Any], str]]:
     has_errors = inspect_upload_file(user, file)
     if has_errors:
         return has_errors, "error"
 
     # urllist: urls
-    domain_lists: Dict[str, Dict[str, Dict[str, set]]] = get_data(file)
+    domain_lists: Dict[str, Dict[str, Dict[str, list]]] = get_data(file)
     if not domain_lists:
         return upload_error("The uploaded file contained no data. This might happen when the file is not in the "
                             "correct format. Are you sure it is a correct spreadsheet file?", user, file), "error"

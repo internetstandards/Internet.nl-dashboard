@@ -10,7 +10,7 @@ from dashboard.internet_nl_dashboard.tests import make_url_with_endpoint_and_sca
 def test_rate_urllists_now(db) -> None:  # pylint: disable=invalid-name, unused-argument
     account, url, _, _ = make_url_with_endpoint_and_scan()
     my_list = get_or_create_list_by_name(account, name="test list 1", scan_type="mail")
-    _add_to_urls_to_urllist(account, my_list, [url])
+    _add_to_urls_to_urllist(account, my_list, [url.url])
 
     # first rate the urls.
     create_url_reports(url)

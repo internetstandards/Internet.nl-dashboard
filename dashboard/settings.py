@@ -454,7 +454,7 @@ CONSTANCE_CONFIG = {
     ),
     'DASHBOARD_MAXIMUM_DOMAINS_PER_LIST': (
         # The average list is about 300. 90DEV is 600. One exception of 13.000.
-        10000,
+        5000,
         'The maximum amount of domains that can be in a list. There will be no crash when somebody imports more '
         'via a spreadsheet: it will be added but the list will refuse to scan and show a warning.'
         'In normal use cases these limits will not be reached.',

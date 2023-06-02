@@ -11,7 +11,7 @@ def test_report_to_spreadsheet(db) -> None:
     account, url, endpoint, scan = make_url_with_endpoint_and_scan()
 
     urllist = get_or_create_list_by_name(account, "test list 1")
-    _add_to_urls_to_urllist(account, urllist, [url])
+    _add_to_urls_to_urllist(account, urllist, [url.url])
     create_url_reports(url)
     create_scan_report(account, urllist)
 

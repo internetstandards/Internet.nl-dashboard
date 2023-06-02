@@ -4,14 +4,60 @@ These testcases help to validate the working of the listmanagement API.
 
 Run these tests with tox -e test -- -k test_urllist_management
 """
+from constance.test import override_config
 from websecmap.organizations.models import Url
 
 from dashboard.internet_nl_dashboard.logic.domains import (delete_list, delete_url_from_urllist,
                                                            get_or_create_list_by_name, get_urllist_content,
                                                            get_urllists_from_account, keys_are_present_in_object,
                                                            rename_list, retrieve_possible_urls_from_unfiltered_input,
-                                                           save_urllist_content_by_name)
+                                                           save_urllist_content, save_urllist_content_by_name)
 from dashboard.internet_nl_dashboard.models import Account
+
+
+@override_config(DASHBOARD_MAXIMUM_DOMAINS_PER_LIST=5000)
+def test_save_urllist_content(db, current_path):
+    """
+    Add 1000 domains, which should be very fast.
+
+    Should give a warning after the limit of N domains is crossed, should add to this limit.
+    """
+
+    file = f'{current_path}/test_domain_management/top_10000_nl_domains.txt'
+    with open(file, 'rt') as f:
+        domains = f.read()
+
+    domains = domains.split("\n")
+
+    account, created = Account.objects.all().get_or_create(name="test")
+
+    list_1 = get_or_create_list_by_name(account, "test list 1")
+
+    # you can't go past the DASHBOARD_MAXIMUM_DOMAINS_PER_LIST
+    response = save_urllist_content(account, {
+        'list_id': list_1.id,
+        'urls': ", ".join(domains[:6000])
+    })
+
+    assert response['error'] is True
+    assert response['message'] == "too_many_domains"
+
+    # add an existing url, this should be one query check:
+    new_url = Url.objects.all().create(url='nu.nl')
+    list_1.urls.add(new_url)
+
+    response = save_urllist_content(account, {
+        'list_id': list_1.id,
+        'urls': ", ".join(domains[:100])
+    })
+
+    assert response['success'] is True
+    assert response['data'] == {
+        'incorrect_urls': [],
+        'added_to_list': 99,
+        'already_in_list': 1,
+        'duplicates_removed': 0
+    }
 
 
 def test_keys_match():
@@ -80,12 +126,12 @@ def test_urllists(db, redis_server) -> None:
     """ Should be no problem to add the same urls, it just has not so much effect. """
     added = save_urllist_content_by_name(
         account, "test list 1", {
-            'test.nl': {'tags': set()}, 'internet.nl': {'tags': set()}, 'internetcleanup.foundation': {'tags': set()}})
+            'test.nl': {'tags': []}, 'internet.nl': {'tags': []}, 'internetcleanup.foundation': {'tags': []}})
     assert added['added_to_list'] == 3 and added['already_in_list'] == 0 and len(added['incorrect_urls']) == 0
 
     already = save_urllist_content_by_name(
         account, "test list 1", {
-            'test.nl': {'tags': set()}, 'internet.nl': {'tags': set()}, 'internetcleanup.foundation': {'tags': set()}})
+            'test.nl': {'tags': []}, 'internet.nl': {'tags': []}, 'internetcleanup.foundation': {'tags': []}})
     assert already['added_to_list'] == 0 and already['already_in_list'] == 3 and len(already['incorrect_urls']) == 0
 
     list_content = get_urllist_content(account=account, urllist_id=list_1.pk)
@@ -95,7 +141,7 @@ def test_urllists(db, redis_server) -> None:
     # Impossible to filter out garbage domains, as the tld and domain is checked along the way... and some parts
     # of the domain like 'info' might be seen as a domain while it isn't
     already = save_urllist_content_by_name(account, "test list 1", {
-        'test.nonse^': {'tags': set()}, 'NONSENSE': {'tags': set()}, '127.0.0.1': {'tags': set()}})
+        'test.nonse^': {'tags': []}, 'NONSENSE': {'tags': []}, '127.0.0.1': {'tags': []}})
     assert already['added_to_list'] == 0 and already['already_in_list'] == 0 and len(already['incorrect_urls']) == 0
 
     """ Check if really nothing was added """
@@ -170,9 +216,9 @@ def test_delete_url_from_urllist(db, redis_server):
     l1 = get_or_create_list_by_name(a1, "l1")
     l2 = get_or_create_list_by_name(a2, "l2")
     save_urllist_content_by_name(a1, "l1", {
-        'test.nl': {'tags': set()}, 'internet.nl': {'tags': set()}, 'internetcleanup.foundation': {'tags': set()}})
+        'test.nl': {'tags': []}, 'internet.nl': {'tags': []}, 'internetcleanup.foundation': {'tags': []}})
     save_urllist_content_by_name(a2, "l2", {
-        'nu.nl': {'tags': set()}, 'nos.nl': {'tags': set()}, 'tweakers.net': {'tags': set()}})
+        'nu.nl': {'tags': []}, 'nos.nl': {'tags': []}, 'tweakers.net': {'tags': []}})
 
     assert l1 != l2
     assert a1 != a2
