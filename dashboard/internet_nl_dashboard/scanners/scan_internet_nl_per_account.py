@@ -11,6 +11,7 @@ from django.db import transaction
 from django.db.models import Q
 from websecmap.app.constance import constance_cached_value
 from websecmap.organizations.models import Url
+from websecmap.reporting.diskreport import store_report, retrieve_report
 from websecmap.reporting.report import recreate_url_reports
 from websecmap.scanners.models import InternetNLV2Scan
 from websecmap.scanners.scanner import add_model_filter, dns_endpoints, internet_nl_websecmap
@@ -568,9 +569,8 @@ def upgrade_report_with_statistics(urllistreport_id: int) -> int:
         return -1
 
     log.debug(f"Creating statistics over urllistreport {urllistreport}.")
-
-    urllistreport.calculation = optimize_calculation_and_add_statistics(urllistreport.calculation)
-    urllistreport.save()
+    calculation = retrieve_report(urllistreport_id, "UrlListReport")
+    store_report(urllistreport_id, "UrlListReport", optimize_calculation_and_add_statistics(calculation))
 
     return int(urllistreport.pk)
 

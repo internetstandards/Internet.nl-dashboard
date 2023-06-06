@@ -284,7 +284,7 @@ LOGGING = {
             '()': 'colorlog.ColoredFormatter',
             'format': '%(log_color)s%(asctime)s\t%(levelname)-8s - '
                       '%(message)s',
-            'datefmt': '%Y-%m-%d %H:%M',
+            'datefmt': '%Y-%m-%d %H:%M:%S',
             'log_colors': {
                 'DEBUG': 'green',
                 'INFO': 'white',
@@ -790,3 +790,5 @@ STORAGES = {
 CSRF_TRUSTED_ORIGINS = ["http://localhost", "https://internet.nl", "https://*.internet.nl",
                         "http://localhost", "http://127.0.0.1", "http://::1", "http://localhost:8080",
                         "http://localhost:8081"]
+
+REPORT_STORAGE_DIR = os.environ.get("REPORT_STORAGE_DIR", MEDIA_ROOT + "diskreports/")

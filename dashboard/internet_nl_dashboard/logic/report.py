@@ -1,16 +1,19 @@
 # SPDX-License-Identifier: Apache-2.0
+import gzip
 import json
 import logging
 import re
 from copy import copy
 from datetime import datetime
 from time import sleep
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Dict, List, Optional, Union, Type
 from uuid import uuid4
 
+from dashboard.celery import app
 from actstream import action
 from django.db.models import Prefetch
 from websecmap.organizations.models import Url
+from websecmap.reporting.diskreport import store_report, retrieve_report, location_on_disk
 from websecmap.reporting.report import relevant_urls_at_timepoint
 
 from dashboard.internet_nl_dashboard.logic import operation_response
@@ -88,8 +91,13 @@ def ad_hoc_report_create(account: Account, report_id: int, tags: List[str], at_w
 def save_ad_hoc_tagged_report(account: Account, report_id: int, tags: List[str], at_when: Optional[datetime]):
     report = ad_hoc_report_create(account, report_id, tags, at_when)
     # A new ID saves as a new record
+    tmp_calculation = report.calculation
+    report.calculation = None
     report.id = None
     report.save()
+
+    store_report(report.pk, "UrlListReport", tmp_calculation)
+
     return operation_response(success=True)
 
 
@@ -190,7 +198,8 @@ def get_urllist_timeline_graph(account: Account, urllist_ids: str, report_type: 
     return ordered_lists
 
 
-def get_report(account: Account, report_id: int):
+def get_report(account: Account, report_id: int) -> str:
+    log.debug("Retrieve report data")
     report = UrlListReport.objects.all().filter(
         urllist__account=account,
         urllist__is_deleted=False,
@@ -199,20 +208,32 @@ def get_report(account: Account, report_id: int):
              'urllist__name', 'is_publicly_shared', 'public_report_code', 'public_share_code'
              ).first()
 
-    # todo: add report metadata...
-
     if not report:
-        return []
+        return "{}"
+
+    log_report_access_async.apply_async([report_id, account.id])
+    calculation_raw = retrieve_report_raw(report_id, "UrlListReport")
+
+    log.debug("Dumping report to json")
+    data = f"{dump_report_to_text_resembling_json(report, calculation_raw)}"
+    log.debug("Returning the report")
+    return data
+
+
+@app.task(queue="storage")
+def log_report_access_async(report_id: int, account_id: int):
+    # do this async to speed up report retrieval. Don't execute extra queries when retrieving data...
+
+    account = Account.objects.filter(pk=account_id).first()
 
     # Sprinkling an activity stream action.
+    log.debug("Saving activity stream action")
     log_report = UrlListReport.objects.all().filter(
         urllist__account=account,
         urllist__is_deleted=False,
         pk=report_id
     ).only('id').first()
     action.send(account, verb='viewed report', target=log_report, public=False)
-
-    return f"{dump_report_to_text_resembling_json(report)}"
 
 
 def get_public_reports():
@@ -243,14 +264,17 @@ def get_shared_report(report_code: str, share_code: str = ""):
         return []
 
     if report['public_share_code'] == share_code:
-        return f"{dump_report_to_text_resembling_json(report)}"
+        # todo: prevent loads/dumps with report calculation, it is should be sent without any loading to speed up
+        #  large reports
+        calculation = retrieve_report_raw(report.id, "UrlListReport")
+        return f"{dump_report_to_text_resembling_json(report, calculation)}"
 
     # todo: should be a normal REST response
     return f'{{"authentication_required": true, "public_report_code": "{report_code}", "id": "{report["id"]}", ' \
            f'"urllist_name": "{report["urllist__name"]}", "at_when": "{report["at_when"]}"}}'
 
 
-def dump_report_to_text_resembling_json(report):
+def dump_report_to_text_resembling_json(report, calculation):
     """
     Does _not_ create a python object of a report, because that's slow. Instead it relies on the capanility
     to store json as text and just dump it out there. This requires no conversion to python object or parsing first.
@@ -268,7 +292,7 @@ def dump_report_to_text_resembling_json(report):
            f'"total_urls": {report["total_urls"]}, ' \
            f'"is_publicly_shared": {"true" if report["is_publicly_shared"] else "false"}, ' \
            f'"at_when": "{report["at_when"]}", ' \
-           f'"calculation": {json.dumps(report["calculation"])}, ' \
+           f'"calculation": {calculation}, ' \
            f'"report_type": "{report["report_type"]}", ' \
            f'"public_report_code": "{report["public_report_code"]}", ' \
            f'"public_share_code": "{report["public_share_code"]}" ' \
@@ -323,13 +347,13 @@ def get_report_differences_compared_to_current_list(account: Account, report_id:
         urllist__account=account,
         urllist__is_deleted=False,
         pk=report_id
-    ).values('urllist_id', 'calculation').first()
+    ).values('urllist_id').first()
 
     if not report:
         return {}
 
     # since django 3.0 it's already retrieved as json
-    calculation = report["calculation"]
+    calculation = retrieve_report(report_id, "UrlListReport")
 
     urls_in_report: List[str] = [url['url'] for url in calculation['urls']]
 
@@ -766,3 +790,17 @@ def report_sharing_data(report: UrlListReport) -> Dict[str, Any]:
         'public_share_code': report.public_share_code,
         'is_publicly_shared': report.is_publicly_shared
     }
+
+
+def retrieve_report_raw(report_id: Union[int, str], model: Union[str, Type["Model"]] = "UrlListReport"):
+    return _read_raw_data_from_gzip(location_on_disk(report_id, model))
+
+
+def _read_raw_data_from_gzip(location):
+    try:
+        # log.debug(f"Reading report file: {location}")
+        with gzip.open(location, "rt") as file:
+            return file.read()
+    except FileNotFoundError:
+        log.info("Report does not exist on location %s.", location)
+        return ""

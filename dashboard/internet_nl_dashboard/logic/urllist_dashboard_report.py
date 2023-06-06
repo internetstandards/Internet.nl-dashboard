@@ -8,6 +8,7 @@ from celery import group
 from deepdiff import DeepDiff
 from websecmap.celery import Task, app
 from websecmap.organizations.models import Url
+from websecmap.reporting.diskreport import store_report
 from websecmap.reporting.report import (add_statistics_to_calculation, aggegrate_url_rating_scores,
                                         get_latest_urlratings_fast, relevant_urls_at_timepoint,
                                         remove_issues_from_calculation, statistics_over_url_calculation)
@@ -171,8 +172,11 @@ def rate_urllist_on_moment(
     report.report_type = external_scan_type[scan_type]
     report.at_when = when
     report.average_internet_nl_score = sum_internet_nl_scores_over_rating(calculation)
-    report.calculation = calculation
+    report.calculation = None
     report.save()
+
+    store_report(report.pk, "UrlListReport", calculation)
+
     return int(report.id)
 
 
