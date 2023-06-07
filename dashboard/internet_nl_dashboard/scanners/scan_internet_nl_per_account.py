@@ -617,7 +617,8 @@ def upgrade_report_with_unscannable_urls(urllistreport_id: int, scan_id: int):
     # for the report are correct(!). This means all unscannable domains _will_ be in the report, as that matches
     # the list of domains to scan.
 
-    urls_in_report: List[str] = [url['url'] for url in urllistreport.calculation['urls']]
+    calculation = retrieve_report(urllistreport_id, "UrlListReport")
+    urls_in_report: List[str] = [url['url'] for url in calculation['urls']]
     urls_in_list: List[Url] = list(scan.urllist.urls.all())
     urls_not_in_report = [url.url for url in urls_in_list if url.url not in urls_in_report]
 
@@ -652,12 +653,13 @@ def upgrade_report_with_unscannable_urls(urllistreport_id: int, scan_id: int):
         # missing domains).
         tmp_empty_url_template = copy(empty_url_template)
         tmp_empty_url_template['url'] = url_not_in_report
-        urllistreport.calculation['urls'].append(tmp_empty_url_template)
+        calculation['urls'].append(tmp_empty_url_template)
 
     # also update the total urls, as that can be influenced:
-    urllistreport.calculation['total_urls'] = len(urllistreport.calculation['urls'])
-    urllistreport.total_urls = len(urllistreport.calculation['urls'])
+    calculation['total_urls'] = len(calculation['urls'])
+    urllistreport.total_urls = len(calculation['urls'])
     urllistreport.save()
+    store_report(urllistreport_id, "UrlListReport", calculation)
 
     return
 
