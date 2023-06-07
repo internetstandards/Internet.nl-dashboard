@@ -11,7 +11,7 @@ from django.db import transaction
 from django.db.models import Q
 from websecmap.app.constance import constance_cached_value
 from websecmap.organizations.models import Url
-from websecmap.reporting.diskreport import store_report, retrieve_report
+from websecmap.reporting.diskreport import retrieve_report, store_report
 from websecmap.reporting.report import recreate_url_reports
 from websecmap.scanners.models import InternetNLV2Scan
 from websecmap.scanners.scanner import add_model_filter, dns_endpoints, internet_nl_websecmap

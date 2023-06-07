@@ -1,8 +1,7 @@
 # SPDX-License-Identifier: Apache-2.0
 import logging
-import sys
-
 import re
+import sys
 from datetime import datetime, timezone
 from typing import Any, Dict, List, Tuple, Union
 

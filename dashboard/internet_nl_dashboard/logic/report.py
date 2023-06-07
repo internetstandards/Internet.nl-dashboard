@@ -6,16 +6,17 @@ import re
 from copy import copy
 from datetime import datetime
 from time import sleep
-from typing import Any, Dict, List, Optional, Union, Type
+from typing import Any, Dict, List, Optional, Type, Union
 from uuid import uuid4
 
-from dashboard.celery import app
 from actstream import action
+from django.db.models import Model  # pylint: disable=unused-import
 from django.db.models import Prefetch
 from websecmap.organizations.models import Url
-from websecmap.reporting.diskreport import store_report, retrieve_report, location_on_disk
+from websecmap.reporting.diskreport import location_on_disk, retrieve_report, store_report
 from websecmap.reporting.report import relevant_urls_at_timepoint
 
+from dashboard.celery import app
 from dashboard.internet_nl_dashboard.logic import operation_response
 from dashboard.internet_nl_dashboard.logic.urllist_dashboard_report import (create_calculation_on_urls,
                                                                             sum_internet_nl_scores_over_rating)
