@@ -13,7 +13,7 @@ jobs:
         # 3.9, 2025-10
         # 3.10 2026-10
         python-version: [ "3.10" ]
-        redis-version: [6]
+        redis-version: [ 6 ]
     steps:
       - uses: actions/checkout@v2
       - name: Set up Python ${{ matrix.python-version }}
@@ -21,9 +21,9 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
       - name: Start Redis
-          uses: supercharge/redis-github-action@1.5.0
-          with:
-            redis-version: ${{ matrix.redis-version }}
+        uses: supercharge/redis-github-action@1.5.0
+        with:
+          redis-version: ${{ matrix.redis-version }}
       - name: qa
         run: |
           make pylint
