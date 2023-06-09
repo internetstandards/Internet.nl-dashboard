@@ -85,7 +85,7 @@ def get_locale_content(locale: str) -> bytes:
     :return: str
     """
 
-    url = f"https://raw.githubusercontent.com/NLnetLabs/Internet.nl/master/translations/{locale}/main.po"
+    url = f"https://raw.githubusercontent.com/internetstandards/Internet.nl/master/translations/{locale}/main.po"
     response = requests.get(url, timeout=30)
     return response.content
 
