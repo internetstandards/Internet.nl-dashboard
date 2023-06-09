@@ -1,19 +1,23 @@
 # SPDX-License-Identifier: Apache-2.0
 import logging
 import re
+import sys
 from datetime import datetime, timezone
 from typing import Any, Dict, List, Tuple, Union
 
 import pyexcel as p
 import tldextract
 from actstream import action
+from celery import group
 from constance import config
 from django.db.models import Count, Prefetch
 from django.http import JsonResponse
+from websecmap.app.constance import constance_cached_value
 from websecmap.organizations.models import Url
 from websecmap.scanners.models import Endpoint
 from websecmap.scanners.scanner.dns_endpoints import compose_discover_task
 
+from dashboard.celery import app
 from dashboard.internet_nl_dashboard.logic import operation_response
 from dashboard.internet_nl_dashboard.models import (Account, AccountInternetNLScan, TaggedUrlInUrllist, UrlList,
                                                     UrlListReport, determine_next_scan_moment)
@@ -589,6 +593,9 @@ def get_urllist_content(account: Account, urllist_id: int) -> dict:
 
 
 def retrieve_possible_urls_from_unfiltered_input(unfiltered_input: str) -> Tuple[List[str], int]:
+    # we do everything lowercase:
+    unfiltered_input = unfiltered_input.lower()
+
     # Protocols are irrelevant:
     unfiltered_input = unfiltered_input.replace("http://", "")
     unfiltered_input = unfiltered_input.replace("https://", "")
@@ -655,10 +662,16 @@ def save_urllist_content(account: Account, user_input: Dict[str, Any]) -> Dict:
     if not urllist:
         return operation_response(error=True, message="add_domains_list_does_not_exist")
 
+    # this is extremely fast for 10k domains.
     urls, duplicates_removed = retrieve_possible_urls_from_unfiltered_input(unfiltered_urls)
-    cleaned_urls = clean_urls(urls)  # type: ignore
+    cleaned_urls: Dict[str, List[str]] = clean_urls(urls)  # type: ignore
+
+    proposed_number_of_urls = urllist.urls.all().count() + len(cleaned_urls['correct'])
+    if proposed_number_of_urls > int(constance_cached_value('DASHBOARD_MAXIMUM_DOMAINS_PER_LIST')):
+        return operation_response(error=True, message="too_many_domains")
 
     if cleaned_urls['correct']:
+        # this operation takes a while, to speed it up urls are added async.
         counters = _add_to_urls_to_urllist(account, urllist, urls=cleaned_urls['correct'])
     else:
         counters = {'added_to_list': 0, 'already_in_list': 0}
@@ -673,7 +686,7 @@ def save_urllist_content(account: Account, user_input: Dict[str, Any]) -> Dict:
     return operation_response(success=True, message="add_domains_valid_urls_added", data=result)
 
 
-def save_urllist_content_by_name(account: Account, urllist_name: str, urls: Dict[str, Dict[str, set]]) -> dict:
+def save_urllist_content_by_name(account: Account, urllist_name: str, urls: Dict[str, Dict[str, list]]) -> dict:
     """
     This 'by name' variant is a best guess when a spreadsheet upload with list names is used.
 
@@ -689,7 +702,7 @@ def save_urllist_content_by_name(account: Account, urllist_name: str, urls: Dict
 
     extracted_urls, _ = retrieve_possible_urls_from_unfiltered_input(", ".join(urls))
 
-    cleaned_urls = clean_urls(extracted_urls)
+    cleaned_urls: Dict[str, List[str]] = clean_urls(extracted_urls)
 
     if cleaned_urls['correct']:
         urllist = get_or_create_list_by_name(account=account, name=urllist_name)
@@ -697,54 +710,69 @@ def save_urllist_content_by_name(account: Account, urllist_name: str, urls: Dict
     else:
         counters = {'added_to_list': 0, 'already_in_list': 0}
 
-    result = {'incorrect_urls': cleaned_urls['incorrect'],
-              'added_to_list': counters['added_to_list'],
-              'already_in_list': counters['already_in_list']}
-
-    return result
+    return {
+        'incorrect_urls': cleaned_urls['incorrect'],
+        'added_to_list': counters['added_to_list'],
+        'already_in_list': counters['already_in_list'],
+    }
 
 
 def _add_to_urls_to_urllist(
         account: Account,
         current_list: UrlList,
         urls: List[str],
-        urls_with_tags_mapping: Dict[str, Dict[str, set]] = None
+        urls_with_tags_mapping: Dict[str, Dict[str, list]] = None
 ) -> Dict[str, Any]:
-    counters: Dict[str, int] = {'added_to_list': 0, 'already_in_list': 0}
 
-    for url in urls:
+    already_existing_urls = UrlList.objects.all().filter(
+        account=account, id=current_list.id, urls__url__in=urls
+    ).values_list('urls__url', flat=True)
 
-        # if already in list, don't need to save it again
-        already_in_list = UrlList.objects.all().filter(
-            account=account, id=current_list.id, urls__url__iexact=url
-        ).exists()
-        if already_in_list:
-            # don't overwrite tags of urls that are already in the list when uploading large lists of domains
-            # because it causes all kinds of side-effects. Only touch lists where there is an upload done explicitly.
-            counters['already_in_list'] += 1
-            continue
+    new_urls = list(set(urls) - set(already_existing_urls))
 
-        existing_url = Url.objects.all().filter(url=url).first()
-        if not existing_url:
-            existing_url = Url.add(url)
+    # run the database operations async to speed them up and to give faster user interaction
+    # todo: when running pytest, this needs to be done sync.
+    tasks = group([
+        add_new_url_to_list_async.si(url, current_list.id, urls_with_tags_mapping)
+        | discover_endpoints.s()
+        for url in new_urls
+    ])
+    if "pytest" in sys.modules:
+        tasks.apply()
+    else:
+        tasks.apply_async()
 
-            # always try to find a few dns endpoints...
-            compose_discover_task(urls_filter={'pk': existing_url.id}).apply_async()
+    return {
+        'added_to_list': len(new_urls),
+        'already_in_list': len(already_existing_urls),
+    }
 
-        current_list.urls.add(existing_url)
 
-        if urls_with_tags_mapping:
-            add_tags_to_urls_in_urllist(existing_url, current_list, urls_with_tags_mapping.get(url, {}).get("tags", []))
+@app.task(queue="storage")
+def add_new_url_to_list_async(url: str, current_list_id: int, urls_with_tags_mapping: Dict[str, Dict[str, set]] = None):
+    db_url = Url.add(url)
+    urllist = UrlList.objects.all().filter(id=current_list_id).first()
+    if not urllist:
+        return db_url
 
-        counters['added_to_list'] += 1
-    return counters
+    urllist.urls.add(db_url)
+
+    if urls_with_tags_mapping:
+        add_tags_to_urls_in_urllist(db_url, urllist, urls_with_tags_mapping.get(url, {}).get("tags", []))
+
+    return db_url.id
+
+
+@app.task(queue="storage")
+def discover_endpoints(url_id):
+    # always try to find a few dns endpoints...
+    compose_discover_task(urls_filter={'pk': url_id}).apply_async()
 
 
 def add_tags_to_urls_in_urllist(existing_url: Url, current_list: UrlList, tags: List[str]) -> None:
     match = TaggedUrlInUrllist.objects.all().filter(url=existing_url, urllist=current_list).first()
     for tag in tags:
-        tag = tag.strip()
-        if tag:
+        if tag := tag.strip():
             match.tags.add(tag)
 
 
@@ -754,16 +782,16 @@ def _add_to_urls_to_urllist_nicer(account: Account, current_list: UrlList, urls:
 
     for url in urls:
 
-        # if already in list, don't need to save it again
-        already_in_list = UrlList.objects.all().filter(
-            account=account, id=current_list.id, urls__url__iexact=url).exists()
-        if already_in_list:
+        if (
+            UrlList.objects.all()
+            .filter(account=account, id=current_list.id, urls__url__iexact=url)
+            .exists()
+        ):
             counters['already_in_list'].append(url)
             continue
 
         # if url already in database, we only need to add it to the list:
-        existing_url = Url.objects.all().filter(url=url).first()
-        if existing_url:
+        if existing_url := Url.objects.all().filter(url=url).first():
             current_list.urls.add(existing_url)
             counters['added_to_list'].append(url)
             counters['added_to_list_already_in_db'].append(url)
@@ -780,7 +808,7 @@ def _add_to_urls_to_urllist_nicer(account: Account, current_list: UrlList, urls:
     return counters
 
 
-def clean_urls(urls: List[str]) -> Dict[str, List[Union[str, int]]]:
+def clean_urls(urls: List[str]) -> Dict[str, List[str]]:
     """
     Incorrect urls are urls that are not following the uri scheme standard and don't have a recognizable suffix. They
     are returned for informational purposes and can contain utter garbage. The editor of the urls can then easily see
@@ -805,9 +833,15 @@ def clean_urls(urls: List[str]) -> Dict[str, List[Union[str, int]]]:
 
 
 def get_or_create_list_by_name(account, name: str, scan_type: str = "web") -> UrlList:
-    existing_list = UrlList.objects.all().filter(account=account, name=name, is_deleted=False, ).first()
-
-    if existing_list:
+    if (
+        existing_list := UrlList.objects.all()
+        .filter(
+            account=account,
+            name=name,
+            is_deleted=False,
+        )
+        .first()
+    ):
         return existing_list
 
     urllist = UrlList(**{'name': name, 'account': account, 'scan_type': scan_type})

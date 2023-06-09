@@ -10,6 +10,7 @@ from django.utils.text import slugify
 from openpyxl import load_workbook
 from openpyxl.formatting.rule import CellIsRule
 from openpyxl.styles import Font, PatternFill
+from websecmap.reporting.diskreport import retrieve_report
 
 from dashboard.internet_nl_dashboard.logic import MAIL_AUTH_CATEGORY  # pylint: disable=duplicate-code
 from dashboard.internet_nl_dashboard.logic import (MAIL_AUTH_FIELDS, MAIL_DNSSEC_CATEGORY, MAIL_DNSSEC_FIELDS,
@@ -97,7 +98,7 @@ def create_spreadsheet(account: Account, report_id: int):
     if not report:
         return None, None
 
-    calculation = report.calculation
+    calculation = retrieve_report(report_id, "UrlListReport")
     urls = calculation["urls"]
 
     protocol = 'dns_soa' if report.report_type == 'mail' else 'dns_a_aaaa'

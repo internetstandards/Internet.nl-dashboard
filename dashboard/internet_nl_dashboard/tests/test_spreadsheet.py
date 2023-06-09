@@ -41,9 +41,9 @@ def test_spreadsheet(db, redis_server) -> None:
         assert len(data) == 2
 
         # testsite contains these three
-        assert data['testsites'] == {'aaenmaas.nl': {'tags': {'test'}},
-                                     'hdsr.nl': {'tags': {' waterschap', ' extra', 'test'}},
-                                     'zuiderzeeland.nl': {'tags': {'extra'}}}
+        assert data['testsites'] == {'aaenmaas.nl': {'tags': ['test']},
+                                     'hdsr.nl': {'tags': ['test', ' waterschap', ' extra']},
+                                     'zuiderzeeland.nl': {'tags': ['extra']}}
 
         # waterschappen should contain 24 items (including two compound items(!))
         assert len(data['waterschappen']) == 24

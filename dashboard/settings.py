@@ -284,7 +284,7 @@ LOGGING = {
             '()': 'colorlog.ColoredFormatter',
             'format': '%(log_color)s%(asctime)s\t%(levelname)-8s - '
                       '%(message)s',
-            'datefmt': '%Y-%m-%d %H:%M',
+            'datefmt': '%Y-%m-%d %H:%M:%S',
             'log_colors': {
                 'DEBUG': 'green',
                 'INFO': 'white',
@@ -454,7 +454,7 @@ CONSTANCE_CONFIG = {
     ),
     'DASHBOARD_MAXIMUM_DOMAINS_PER_LIST': (
         # The average list is about 300. 90DEV is 600. One exception of 13.000.
-        10000,
+        5000,
         'The maximum amount of domains that can be in a list. There will be no crash when somebody imports more '
         'via a spreadsheet: it will be added but the list will refuse to scan and show a warning.'
         'In normal use cases these limits will not be reached.',
@@ -790,3 +790,5 @@ STORAGES = {
 CSRF_TRUSTED_ORIGINS = ["http://localhost", "https://internet.nl", "https://*.internet.nl",
                         "http://localhost", "http://127.0.0.1", "http://::1", "http://localhost:8080",
                         "http://localhost:8081"]
+
+REPORT_STORAGE_DIR = os.environ.get("REPORT_STORAGE_DIR", MEDIA_ROOT + "diskreports/")

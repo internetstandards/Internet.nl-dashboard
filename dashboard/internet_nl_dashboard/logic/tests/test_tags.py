@@ -18,7 +18,7 @@ def validate(url_id, urllist_id, expected_tags: List[str]):
 def test_tags(db):  # pylint: disable=invalid-name, unused-argument
     account, url, _, _ = make_url_with_endpoint_and_scan()
     my_list = get_or_create_list_by_name(account, name="test list 1", scan_type="mail")
-    _add_to_urls_to_urllist(account, my_list, [url])
+    _add_to_urls_to_urllist(account, my_list, [url.url])
 
     validate(url.id, my_list.id, [])
     add_tag(account, [url.id], my_list.id, "test_tag")
