@@ -31,14 +31,14 @@ def mocked_requests_get(*args, **kwargs):
             self.content = content
             self.status_code = status_code
 
-    if args[0] == 'https://raw.githubusercontent.com/NLnetLabs/Internet.nl/master/translations/nl/main.po':
+    if args[0] == 'https://raw.githubusercontent.com/internetstandards/Internet.nl/master/translations/nl/main.po':
         return MockResponse(file_get_contents(f'{path}/translation files/main.po').encode(), 200)
 
     return MockResponse(None, 404)
 
 
 @mock.patch('requests.get', side_effect=mocked_requests_get)
-def test_urllists(db, tmpdir) -> None:
+def test_convert_vue_i18n_format(db, tmpdir) -> None:
 
     content = get_locale_content('nl')
     assert len(content) > 1000
