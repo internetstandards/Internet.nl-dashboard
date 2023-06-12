@@ -2,6 +2,8 @@
 """
 Compares reports, in a generic way.
 """
+from copy import deepcopy
+
 from dashboard.internet_nl_dashboard.logic.mail_admin_templates import store_template
 from dashboard.internet_nl_dashboard.logic.report_comparison import (compare_report_in_detail,
                                                                      determine_changes_in_ratings,
@@ -503,8 +505,9 @@ def test_render_comparison_view(db):
     )
 
     # no input, no output and no crashes:
+
     output = render_comparison_view(
-        {},
+        [],
         impact="improvement",
         language="nl"
     )
@@ -562,8 +565,10 @@ def test_render_comparison_view(db):
     # the first time called the correct translation language is used, the second time it's not...
     # as activating a translation catalog is done on per-thread basis and such change will affect
     # code running in the same thread.
+    # # Do not _change_ the comparison report itself, as it might be used for different things. Or reused in a testcase.
+    data = filter_comparison_report(deepcopy(comparison), "improvement")
     output = render_comparison_view(
-        comparison,
+        data,
         impact="improvement",
         language="nl"
     )
@@ -585,8 +590,9 @@ def test_render_comparison_view(db):
     assert "TLS-versie" in output
 
     # test that translating to english also works.
+    data = filter_comparison_report(deepcopy(comparison), "improvement")
     output = render_comparison_view(
-        comparison,
+        data,
         impact="improvement",
         language="en"
     )

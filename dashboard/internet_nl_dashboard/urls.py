@@ -79,6 +79,8 @@ urlpatterns = [
 
     path('data/report/ad_hoc/<int:report_id>/', report.get_ad_hoc_tagged_report_),
     path('data/report/ad_hoc_save/<int:report_id>/', report.save_ad_hoc_tagged_report_),
+    path('data/report/get_improvements_and_regressions/<int:report_id>/',
+         report.improvement_regressions_compared_to_previous_report_),
 
     path('data/report/share/share/', report.x_share),
     path('data/report/share/unshare/', report.x_unshare),
@@ -92,6 +94,7 @@ urlpatterns = [
          report.get_latest_report_id_from_list),
     path('data/report/public/lists/<int:urllist_id>/latest/<str:report_type>/',
          report.get_latest_report_id_from_list_and_type_),
+
 
 
     path('data/report/differences_compared_to_current_list/<int:report_id>/',

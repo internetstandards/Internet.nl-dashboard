@@ -2,6 +2,7 @@
 import logging
 import string
 import time
+from copy import deepcopy
 from datetime import datetime, timezone
 from random import choice
 
@@ -14,8 +15,8 @@ from django_mail_admin.models import Outbox
 from dashboard.celery import app
 from dashboard.internet_nl_dashboard.logic.mail_admin_templates import xget_template
 from dashboard.internet_nl_dashboard.logic.report import get_report_directly
-from dashboard.internet_nl_dashboard.logic.report_comparison import (compare_report_in_detail, key_calculation,
-                                                                     render_comparison_view)
+from dashboard.internet_nl_dashboard.logic.report_comparison import (compare_report_in_detail, filter_comparison_report,
+                                                                     key_calculation, render_comparison_view)
 from dashboard.internet_nl_dashboard.models import AccountInternetNLScan, DashboardUser, UrlListReport
 
 log = logging.getLogger(__package__)
@@ -99,25 +100,19 @@ def send_scan_finished_mails(scan: AccountInternetNLScan) -> int:
 
         placeholders = {
             "unsubscribe_code": user.dashboarduser.mail_after_mail_unsubscribe_code,
-
-            "recipient": user.first_name if user.first_name else user.last_name if user.last_name else user.username,
+            "recipient": user.first_name or user.last_name or user.username,
             "user_id": user.id,
-
             "list_name": scan.urllist.name,
-
             "report_id": report.id,
             "report_average_internet_nl_score": report.average_internet_nl_score,
             "report_number_of_urls": report.total_urls,
-
             "scan_id": scan.id,
             "scan_started_on": None,
             # the scan is not yet completely finished, because this step (mailing) is still performed
             # so perform a guess, which might be a few minutes off...
             "scan_finished_on": datetime.now(timezone.utc).isoformat(),
             "scan_duration": 0,
-            # Don't use 'mail_dashboard', only mail.
             "scan_type": "",
-
             "dashboard_address": config.EMAIL_DASHBOARD_ADDRESS,
         }
 
@@ -133,8 +128,9 @@ def send_scan_finished_mails(scan: AccountInternetNLScan) -> int:
         previous = values_from_previous_report(
             report.id,
             report.get_previous_report_from_this_list(),
-            user.dashboarduser.mail_preferred_language.code.lower()
         )
+        previous = convert_to_email_safe_values(previous, user.dashboarduser.mail_preferred_language.code.lower())
+
         placeholders = {**placeholders, **previous}
 
         mail.send(
@@ -151,32 +147,39 @@ def send_scan_finished_mails(scan: AccountInternetNLScan) -> int:
     return len(users)
 
 
-def values_from_previous_report(report_id: int, previous_report: UrlListReport, mail_language: str):
+def values_from_previous_report(report_id: int, previous_report: UrlListReport) -> dict:
+    empty_response = {
+        "previous_report_available": False,
+        "previous_report_average_internet_nl_score": 0,
+        "current_report_average_internet_nl_score": 0,
+        "compared_report_id": 0,
+        "comparison_is_empty": True,
+        "improvement": 0,
+        "regression": 0,
+        "neutral": 0,
+        "comparison_report_available": False,
+        "comparison_report_contains_improvement": False,
+        "comparison_report_contains_regression": False,
+        "days_between_current_and_previous_report": 0,
+        "comparison_table_improvement": [],
+        "comparison_table_regression": [],
+        "domains_exclusive_in_current_report": "",
+        "domains_exclusive_in_other_report": "",
+    }
 
     if not previous_report:
-        return {
-            "previous_report_available": str(False),
-            "previous_report_average_internet_nl_score": 0,
-            "compared_report_id": 0,
-            "comparison_is_empty": str(True),
-            "improvement": 0,
-            "regression": 0,
-            "neutral": 0,
-            "comparison_report_available": str(False),
-            "comparison_report_contains_improvement": str(False),
-            "comparison_report_contains_regression": str(False),
-            "days_between_current_and_previous_report": 0,
-            "comparison_table_improvement": render_comparison_view({}, impact="improvement", language=mail_language),
-            "comparison_table_regression": render_comparison_view({}, impact="regression", language=mail_language),
-            "domains_exclusive_in_current_report": "",
-            "domains_exclusive_in_other_report": "",
-        }
+        return empty_response
 
     # Django retrieves fields that are deferred automatically when explicitly requested.
     # This is a direct select query, and thus faster than adding the textfield in the search query.
+    first_report_data = get_report_directly(report_id)
+    second_report_data = get_report_directly(previous_report.id)
+    if "urls" not in first_report_data["calculation"] or "urls" not in second_report_data["calculation"]:
+        return empty_response
+
     comp = compare_report_in_detail(
-        key_calculation(get_report_directly(report_id)),
-        key_calculation(get_report_directly(previous_report.id))
+        key_calculation(first_report_data),
+        key_calculation(second_report_data)
     )
 
     difference = datetime.now(timezone.utc) - previous_report.at_when
@@ -188,23 +191,49 @@ def values_from_previous_report(report_id: int, previous_report: UrlListReport, 
     return {
         # comparison reports:
         # The template system only knows strings, so the boolean is coded as string here
-        "previous_report_available": str(True),
+        "previous_report_available": True,
         "previous_report_average_internet_nl_score": comp['old']['average_internet_nl_score'],
+        "current_report_average_internet_nl_score": comp['new']['average_internet_nl_score'],
         "compared_report_id": previous_report.id,
 
-        "comparison_is_empty": str(comparison_is_empty),
-        "improvement": comp['summary']['improvement'],
-        "regression": comp['summary']['regression'],
-        "neutral": comp['summary']['neutral'],
-        "comparison_report_available": str(True),
-        "comparison_report_contains_improvement": str(comp['summary']['improvement'] > 0),
-        "comparison_report_contains_regression": str(comp['summary']['regression'] > 0),
+        "comparison_is_empty": comparison_is_empty,
+        "improvement": summary['improvement'],
+        "regression": summary['regression'],
+        "neutral": summary['neutral'],
+        "comparison_report_available": True,
+        "comparison_report_contains_improvement": summary['improvement'] > 0,
+        "comparison_report_contains_regression": summary['regression'] > 0,
 
         "days_between_current_and_previous_report": days_between_current_and_previous_report,
-        "comparison_table_improvement": render_comparison_view(comp, impact="improvement", language=mail_language),
-        "comparison_table_regression": render_comparison_view(comp, impact="regression", language=mail_language),
-        "domains_exclusive_in_current_report": ",".join(sorted(comp['urls_exclusive_in_new_report'])),
-        "domains_exclusive_in_other_report": ",".join(sorted(comp['urls_exclusive_in_old_report'])),
+        "comparison_table_improvement": filter_comparison_report(deepcopy(comp), "improvement"),
+        "comparison_table_regression": filter_comparison_report(deepcopy(comp), "regression"),
+        "domains_exclusive_in_current_report": sorted(comp['urls_exclusive_in_new_report']),
+        "domains_exclusive_in_other_report": sorted(comp['urls_exclusive_in_old_report']),
+    }
+
+
+def convert_to_email_safe_values(values: dict, mail_language: str = "en") -> dict:
+    return {
+        "previous_report_available": str(values["previous_report_available"]),
+        "previous_report_average_internet_nl_score": values["previous_report_average_internet_nl_score"],
+        "compared_report_id": values["compared_report_id"],
+
+        "comparison_is_empty": str(values["comparison_is_empty"]),
+        "improvement": values["improvement"],
+        "regression": values["regression"],
+        "neutral": values["neutral"],
+
+        "comparison_report_available": str(values["comparison_report_available"]),
+        "comparison_report_contains_improvement": str(values["comparison_report_contains_improvement"]),
+        "comparison_report_contains_regression": str(values["comparison_report_contains_regression"]),
+
+        "days_between_current_and_previous_report": values["days_between_current_and_previous_report"],
+        "comparison_table_improvement": render_comparison_view(values["comparison_table_improvement"],
+                                                               impact="improvement", language=mail_language),
+        "comparison_table_regression": render_comparison_view(values["comparison_table_regression"],
+                                                              impact="regression", language=mail_language),
+        "domains_exclusive_in_current_report": ",".join(values['domains_exclusive_in_current_report']),
+        "domains_exclusive_in_other_report": ",".join(values['domains_exclusive_in_other_report']),
     }
 
 

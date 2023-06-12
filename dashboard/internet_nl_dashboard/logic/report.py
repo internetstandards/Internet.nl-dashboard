@@ -103,7 +103,6 @@ def save_ad_hoc_tagged_report(account: Account, report_id: int, tags: List[str],
 
 
 def ad_hoc_tagged_report(account: Account, report_id: int, tags: List[str], at_when: Optional[datetime]):
-
     report = ad_hoc_report_create(account, report_id, tags, at_when)
 
     return '{' \
@@ -246,7 +245,6 @@ def get_public_reports():
 
 
 def get_shared_report(report_code: str, share_code: str = ""):
-
     # Check if report_code exists. If so see if a share code is required.
     report = UrlListReport.objects.all().filter(
         # A deleted list means that the report cannot be seen anymore
@@ -310,10 +308,15 @@ def get_report_directly(report_id):
 
     report = UrlListReport.objects.all().filter(
         pk=report_id
-    ).values('id', 'urllist_id', 'calculation', 'average_internet_nl_score', 'total_urls', 'at_when').first()
+    ).values('id', 'urllist_id', 'average_internet_nl_score', 'total_urls', 'at_when').first()
 
     if not report:
         return {}
+
+    # since this is stored on disk now, get this separately. Use this in the old flow as if nothing has changed.
+    report["calculation"] = retrieve_report(report_id, "UrlListReport")
+    if not report["calculation"]:
+        log.warning(f"Report {report_id} has no calculation, returning empty json.")
 
     return dump_report_to_json(report)
 
@@ -323,13 +326,14 @@ def dump_report_to_json(report):
     Creates a json variant of the report, used internally.
     :return:
     """
-    return {'id': report["id"],
-            'urllist_id': report["urllist_id"],
-            'average_internet_nl_score': report["average_internet_nl_score"],
-            'total_urls': report["total_urls"],
-            'at_when': report["at_when"],
-            'calculation': report["calculation"]
-            }
+    return {
+        'id': report["id"],
+        'urllist_id': report["urllist_id"],
+        'average_internet_nl_score': report["average_internet_nl_score"],
+        'total_urls': report["total_urls"],
+        'at_when': report["at_when"],
+        'calculation': report["calculation"]
+    }
 
 
 def get_report_differences_compared_to_current_list(account: Account, report_id: int):
@@ -393,7 +397,6 @@ def get_previous_report(account: Account, urllist_id, at_when):
 
 
 def optimize_calculation_and_add_statistics(calculation: Dict[str, Any]):
-
     # This saves a lot of data / weight.
     remove_comply_or_explain(calculation)
 
@@ -794,6 +797,7 @@ def report_sharing_data(report: UrlListReport) -> Dict[str, Any]:
 
 
 def retrieve_report_raw(report_id: Union[int, str], model: Union[str, Type["Model"]] = "UrlListReport"):
+    # used for direct dumping to output, not parsing any json here to speed up things!
     return _read_raw_data_from_gzip(location_on_disk(report_id, model))
 
 
