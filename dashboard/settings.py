@@ -795,5 +795,6 @@ REPORT_STORAGE_DIR = os.environ.get("REPORT_STORAGE_DIR", MEDIA_ROOT + "diskrepo
 
 # todo: should be handled better, this is a fix to know for sure reports can be written to disk...
 # check diskreport dir, todo: move to django file field
-if not os.path.isdir(REPORT_STORAGE_DIR + "original/UrlListReport/"):
-    os.makedirs(REPORT_STORAGE_DIR, exist_ok=True)
+full_report_storage_dir = REPORT_STORAGE_DIR + "original/UrlListReport/"
+if not os.path.isdir(full_report_storage_dir):
+    os.makedirs(full_report_storage_dir, exist_ok=True)
