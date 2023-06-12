@@ -7,6 +7,7 @@ from django.http import HttpResponse, JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from websecmap.app.common import JSEncoder
 
+from dashboard.internet_nl_dashboard.logic.mail import values_from_previous_report
 from dashboard.internet_nl_dashboard.logic.report import (ad_hoc_tagged_report, get_previous_report, get_public_reports,
                                                           get_recent_reports, get_report,
                                                           get_report_differences_compared_to_current_list,
@@ -16,6 +17,7 @@ from dashboard.internet_nl_dashboard.logic.report import (ad_hoc_tagged_report, 
 from dashboard.internet_nl_dashboard.logic.shared_report_lists import (
     get_latest_report_id_from_list_and_type, get_publicly_shared_lists_per_account,
     get_publicly_shared_lists_per_account_and_list_id)
+from dashboard.internet_nl_dashboard.models import UrlListReport
 from dashboard.internet_nl_dashboard.views import LOGIN_URL, get_account, get_json_body
 
 
@@ -140,3 +142,20 @@ def get_latest_report_id_from_list(request, urllist_id) -> JsonResponse:
 
 def get_latest_report_id_from_list_and_type_(request, urllist_id, report_type) -> JsonResponse:
     return JsonResponse(get_latest_report_id_from_list_and_type(urllist_id, report_type), safe=False)
+
+
+def improvement_regressions_compared_to_previous_report_(request, report_id):
+    account = get_account(request)
+
+    report = UrlListReport.objects.all().filter(id=report_id, urllist__account=account).first()
+    return (
+        JsonResponse(
+            values_from_previous_report(
+                report.id,
+                report.get_previous_report_from_this_list(),
+            ),
+            safe=False,
+        )
+        if report
+        else JsonResponse({}, safe=False)
+    )

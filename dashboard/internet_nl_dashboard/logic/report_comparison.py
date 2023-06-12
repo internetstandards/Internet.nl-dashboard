@@ -1,6 +1,5 @@
 # SPDX-License-Identifier: Apache-2.0
 import logging
-from copy import deepcopy
 from datetime import datetime
 from typing import Any, Dict, List, Union
 
@@ -71,7 +70,7 @@ def filter_comparison_report(comparison_report: Dict[str, Any], impact: str = "i
     return data
 
 
-def render_comparison_view(comparison_report: Dict[str, Any], impact: str = "improvement", language: str = "nl") -> str:
+def render_comparison_view(data: List[Dict[str, Any]], impact: str = "improvement", language: str = "nl") -> str:
     """
     This uses the Django Template engine to create a template that can be used in the report.
     The template is translated using the usual django translations which are not ideal but documented.
@@ -88,9 +87,6 @@ def render_comparison_view(comparison_report: Dict[str, Any], impact: str = "imp
     # prevent an arbitrary file inclusion
     if impact not in ['regression', 'improvement', 'neutral']:
         return ""
-
-    # # Do not _change_ the comparison report itself, as it might be used for different things. Or reused in a testcase.
-    data = filter_comparison_report(deepcopy(comparison_report), impact)
 
     # In case there was nothing to compare, there is no output.
     if not data:
@@ -444,6 +440,9 @@ def key_calculation(report_data):
 
     :return:
     """
+    if "urls" not in report_data['calculation']:
+        report_data['calculation']['urls_by_url'] = []
+        return report_data
 
     urls_by_key = {}
     for url in report_data['calculation']['urls']:

@@ -16,7 +16,7 @@ from dashboard.internet_nl_dashboard.models import Account
 
 
 @override_config(DASHBOARD_MAXIMUM_DOMAINS_PER_LIST=5000)
-def test_save_urllist_content(db, current_path):
+def test_save_urllist_content(db, current_path, redis_server):
     """
     Add 1000 domains, which should be very fast.
 
