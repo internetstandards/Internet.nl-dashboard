@@ -236,7 +236,7 @@ if DEBUG:
 else:
     STATIC_ROOT = os.environ.get('STATIC_ROOT', '/srv/dashboard/static/')  # noqa
 
-MEDIA_ROOT = os.environ.get('MEDIA_ROOT', os.path.abspath(os.path.dirname(__file__)) + '/uploads/')
+MEDIA_ROOT = os.environ.get("MEDIA_ROOT", os.path.abspath(os.path.dirname(__file__)) + "/uploads/")
 UPLOAD_ROOT: str = os.environ.get('MEDIA_ROOT', os.path.abspath(os.path.dirname(__file__)) + '/uploads/')
 
 # Two factor auth
@@ -792,3 +792,9 @@ CSRF_TRUSTED_ORIGINS = ["http://localhost", "https://internet.nl", "https://*.in
                         "http://localhost:8081"]
 
 REPORT_STORAGE_DIR = os.environ.get("REPORT_STORAGE_DIR", MEDIA_ROOT + "diskreports/")
+
+# todo: should be handled better, this is a fix to know for sure reports can be written to disk...
+# check diskreport dir, todo: move to django file field
+full_report_storage_dir = REPORT_STORAGE_DIR + "original/UrlListReport/"
+if not os.path.isdir(full_report_storage_dir):
+    os.makedirs(full_report_storage_dir, exist_ok=True)
