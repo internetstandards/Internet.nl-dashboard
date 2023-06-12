@@ -163,8 +163,8 @@ def values_from_previous_report(report_id: int, previous_report: UrlListReport) 
         "days_between_current_and_previous_report": 0,
         "comparison_table_improvement": [],
         "comparison_table_regression": [],
-        "domains_exclusive_in_current_report": "",
-        "domains_exclusive_in_other_report": "",
+        "domains_exclusive_in_current_report": [],
+        "domains_exclusive_in_other_report": [],
     }
 
     if not previous_report:
