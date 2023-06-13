@@ -232,15 +232,16 @@ def get_scan_status_of_list(account: Account, list_id: int) -> Dict[str, Any]:
 
     prefetch_last_scan = Prefetch(
         'accountinternetnlscan_set',
-        queryset=AccountInternetNLScan.objects.order_by('-id').select_related('scan').only('scan_id',
-                                                                                           'finished_on'),
+        queryset=AccountInternetNLScan.objects.order_by('-id').select_related('scan').only('scan_id', 'id',
+                                                                                           'finished_on', 'state',
+                                                                                           'urllist__id', 'urllist'),
         to_attr='last_scan'
     )
 
     last_report_prefetch = Prefetch(
         'urllistreport_set',
         # filter(pk=UrlListReport.objects.latest('id').pk).
-        queryset=UrlListReport.objects.order_by('-id').only('id', 'at_when'),
+        queryset=UrlListReport.objects.order_by('-id').only('id', 'at_when', 'urllist__id', 'urllist'),
         to_attr='last_report'
     )
 
