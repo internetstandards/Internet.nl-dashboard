@@ -4,7 +4,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## V4.2.0 - 17 April 2023
+## V4.2.0 - 10 July 2023
 
 ### Added
 - Editing of domain lists via spreadsheets (uploading and downloading spreadsheet files)
@@ -12,11 +12,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Be able to automatically share the latest report of a list
 - Signup form for easier onboarding
 - Support for automatically sharing of sharing specific reports on the front page
+- View changes compared to the previous report in a dedicated overview on the report page
 
 ### Changed
+- Major speedups in report viewing and domain list editing
+- All unfinished scans are shown in scan monitor, not just the last 30
 - www subdomain discovery has been replaced with crt.sh subdomain discovery
 - Support for Django 4.2, with psql12
 - Minimum python version is now 3.10
+- Reports are now stored on disk instead of the database for compression reasons
+- Reduced the size of reports by changing data types
+- Fix several N+1 issues
+- Downloads of domains are in the same order as in the list
 
 
 ## V4.1.0 - 7 February 2023

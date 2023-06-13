@@ -34,7 +34,7 @@ def get_scan_monitor_data(account: Account) -> List[Dict[str, Union[str, int, bo
     unfinished_scans = AccountInternetNLScan.objects.all().filter(
         account=account,
         urllist__is_deleted=False,
-    ).exclude(state__in=['finished']).order_by('-pk').select_related(
+    ).exclude(state__in=['finished', 'cancelled']).order_by('-pk').select_related(
         'urllist', 'scan', 'report'
     ).only(
         'id',
