@@ -265,7 +265,7 @@ def get_shared_report(report_code: str, share_code: str = ""):
     if report['public_share_code'] == share_code:
         # todo: prevent loads/dumps with report calculation, it is should be sent without any loading to speed up
         #  large reports
-        calculation = retrieve_report_raw(report.id, "UrlListReport")
+        calculation = retrieve_report_raw(report["id"], "UrlListReport")
         return f"{dump_report_to_text_resembling_json(report, calculation)}"
 
     # todo: should be a normal REST response
