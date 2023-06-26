@@ -203,7 +203,7 @@ push_image:
 	docker push ${docker_image_name}
 
 image:  ## Create Docker images
-	docker build -t ${docker_image_name} .
+	docker build -t ${docker_image_name} ${build_args} .
 
 docs: ## Generate documentation in various formats
 	# Remove existing documentation folder
