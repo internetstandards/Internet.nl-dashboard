@@ -435,7 +435,7 @@ openai==0.27.8
     # via
     #   -c requirements.txt
     #   websecmap
-openpyxl==3.1.2
+openpyxl==3.0.10
     # via
     #   -c requirements.txt
     #   pyexcel-xlsx
@@ -499,7 +499,7 @@ pycparser==2.21
     #   websecmap
 pydocstyle==6.3.0
     # via pylama
-pyexcel==0.7.0
+pyexcel==0.6.7
     # via
     #   -c requirements.txt
     #   django-excel
@@ -849,7 +849,7 @@ vine==1.3.0
     #   websecmap
 vulture==2.7
     # via -r requirements-dev.in
-websecmap @ git+https://gitlab.com/internet-cleanup-foundation/web-security-map@f2a684a3f21fb3b8ed80b71b71fd5918b84638a8
+websecmap @ git+https://gitlab.com/internet-cleanup-foundation/web-security-map@29a3433b05b4ca8cf96a1b22575809ff2c85acbf
     # via -r requirements-dev.in
 wikidata==0.7.0
     # via
