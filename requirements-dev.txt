@@ -876,12 +876,12 @@ yarl==1.9.2
     #   websecmap
 zipp==3.15.0
     # via importlib-metadata
-zope-event==5.0
+zope.event==5.0
     # via
     #   -c requirements.txt
     #   gevent
     #   websecmap
-zope-interface==6.0
+zope.interface==6.0
     # via
     #   -c requirements.txt
     #   gevent

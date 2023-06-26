@@ -626,12 +626,12 @@ yarl==1.8.2
     #   -c requirements.txt
     #   aiohttp
     #   websecmap
-zope-event==4.5.0
+zope.event==5.0
     # via
     #   -c requirements.txt
     #   gevent
     #   websecmap
-zope-interface==5.5.2
+zope.interface==6.0
     # via
     #   -c requirements.txt
     #   gevent
