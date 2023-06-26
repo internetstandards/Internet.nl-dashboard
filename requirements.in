@@ -9,7 +9,7 @@
 # - no version pinning, unless it is required and explained
 
 # to update websecmap, update the SHA hash and run: make update_requirement_websecmap
-git+https://gitlab.com/internet-cleanup-foundation/web-security-map@df63262f9a14aa24098035ebf1a0424f97ad923f#egg=websecmap
+git+https://gitlab.com/internet-cleanup-foundation/web-security-map@29a3433b05b4ca8cf96a1b22575809ff2c85acbf#egg=websecmap
 
 django-otp
 django-two-factor-auth>1.15
@@ -44,3 +44,9 @@ django-taggit
 # see: https://github.com/jazzband/django-two-factor-auth/issues/213
 # and: https://django-phonenumber-field.readthedocs.io/en/latest/
 phonenumbers
+
+# An error was not yet corrected:
+# https://github.com/pyexcel/pyexcel-xlsx/issues/52
+pyexcel==0.6.7
+pyexcel-xlsx==0.6.0
+openpyxl==3.0.10

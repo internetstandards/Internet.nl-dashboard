@@ -18,7 +18,7 @@ django-extensions
 django-debug-toolbar
 django-debug-toolbar-request-history
 pytest-mock
-git+https://gitlab.com/internet-cleanup-foundation/web-security-map@df63262f9a14aa24098035ebf1a0424f97ad923f#egg=websecmap
+git+https://gitlab.com/internet-cleanup-foundation/web-security-map@29a3433b05b4ca8cf96a1b22575809ff2c85acbf#egg=websecmap
 # use the version with relaxed attr requirements
 git+https://github.com/avast/pytest-docker@519b155009b6f3570c01f1f56e7c4e6ce3c5c760
 

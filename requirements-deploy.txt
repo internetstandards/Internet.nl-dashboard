@@ -385,7 +385,7 @@ pycparser==2.21
     #   -c requirements.txt
     #   cffi
     #   websecmap
-pyexcel==0.7.0
+pyexcel==0.6.7
     # via
     #   -c requirements.txt
     #   django-excel
@@ -601,7 +601,7 @@ vine==1.3.0
     #   celery
     #   flower
     #   websecmap
-websecmap @ git+https://gitlab.com/internet-cleanup-foundation/web-security-map@df63262f9a14aa24098035ebf1a0424f97ad923f
+websecmap @ git+https://gitlab.com/internet-cleanup-foundation/web-security-map@29a3433b05b4ca8cf96a1b22575809ff2c85acbf
     # via
     #   -c requirements.txt
     #   -r requirements-deploy.in
@@ -626,12 +626,12 @@ yarl==1.8.2
     #   -c requirements.txt
     #   aiohttp
     #   websecmap
-zope-event==4.5.0
+zope.event==5.0
     # via
     #   -c requirements.txt
     #   gevent
     #   websecmap
-zope-interface==5.5.2
+zope.interface==6.0
     # via
     #   -c requirements.txt
     #   gevent
