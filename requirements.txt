@@ -27,7 +27,6 @@ asgiref==3.7.2
 async-timeout==4.0.2
     # via
     #   aiohttp
-    #   redis
     #   websecmap
 attrs==23.1.0
     # via
@@ -453,7 +452,6 @@ tqdm==4.65.0
     #   websecmap
 typing-extensions==4.6.3
     # via
-    #   asgiref
     #   django-countries
     #   qrcode
     #   websecmap
@@ -490,15 +488,14 @@ yarl==1.9.2
     # via
     #   aiohttp
     #   websecmap
-zope.event==5.0
+zope-event==5.0
     # via
     #   gevent
     #   websecmap
-zope.interface==6.0
+zope-interface==6.0
     # via
     #   gevent
     #   websecmap
-
 
 # The following packages are considered to be unsafe in a requirements file:
 # setuptools

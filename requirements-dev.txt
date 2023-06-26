@@ -38,7 +38,6 @@ async-timeout==4.0.2
     # via
     #   -c requirements.txt
     #   aiohttp
-    #   redis
     #   websecmap
 attrs==23.1.0
     # via
@@ -277,8 +276,6 @@ et-xmlfile==1.1.0
     #   -c requirements.txt
     #   openpyxl
     #   websecmap
-exceptiongroup==1.1.1
-    # via pytest
 filelock==3.12.2
     # via
     #   -c requirements.txt
@@ -639,7 +636,6 @@ reportlab==4.0.4
     # via rst2pdf
 requests==2.31.0
     # via
-    #   -c requirements.txt
     #   django-proxy
     #   geoip2
     #   googlemaps
@@ -775,15 +771,6 @@ tldextract==3.4.4
     #   websecmap
 toml==0.10.2
     # via vulture
-tomli==2.0.1
-    # via
-    #   autoflake
-    #   autopep8
-    #   coverage
-    #   django-stubs
-    #   mypy
-    #   pylint
-    #   pytest
 tomlkit==0.11.8
     # via pylint
 tornado==6.3.2
@@ -822,8 +809,6 @@ types-urllib3==1.26.25.13
 typing-extensions==4.6.3
     # via
     #   -c requirements.txt
-    #   asgiref
-    #   astroid
     #   django-countries
     #   django-stubs
     #   django-stubs-ext
@@ -876,12 +861,12 @@ yarl==1.9.2
     #   websecmap
 zipp==3.15.0
     # via importlib-metadata
-zope.event==5.0
+zope-event==5.0
     # via
     #   -c requirements.txt
     #   gevent
     #   websecmap
-zope.interface==6.0
+zope-interface==6.0
     # via
     #   -c requirements.txt
     #   gevent
