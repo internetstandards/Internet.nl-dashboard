@@ -17,7 +17,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - Major speedups in report viewing and domain list editing
 - All unfinished scans are shown in scan monitor, not just the last 30
-- www subdomain discovery has been replaced with crt.sh subdomain discovery
 - Support for Django 4.2, with psql12
 - Minimum python version is now 3.10
 - Reports are now stored on disk instead of the database for compression reasons

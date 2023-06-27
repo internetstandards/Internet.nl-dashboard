@@ -57,9 +57,11 @@ def scan_status(account: Account, urllist_id: int):
 @app.task(queue="storage")
 def progress_subdomain_discovery_scans():
     scans = SubdomainDiscoveryScan.objects.all().filter(state="requested")
+    log.error("yolo")
 
     tasks = []
     for scan in scans:
+        log.error("swag")
         update_state(scan.id, "scanning")
         tasks.append(group(perform_subdomain_scan.si(scan.id) | update_state.si(scan.id, "finished")))
 
@@ -98,16 +100,9 @@ def perform_subdomain_scan(scan_id: int) -> None:
 
     try:
         toplevel_domains = urllist.urls.filter(computed_subdomain="")
-        # domains_to_check = [f"www.{url.url}" for url in toplevel_domains]
-        # add_discovered_subdomains(scan, urllist, domains_to_check)
 
-        domains_to_check = []
-        for tld in toplevel_domains:
-            if subdomains := certificate_transparency_scan(tld.url):
-                domains_to_check.extend([f"{sub}.{tld}" for sub in subdomains])
-
-        log.debug("Found subdomains:")
-        log.debug(domains_to_check)
+        # In the future when ct is stable we can easily support other methods of finding subdomains.
+        domains_to_check = discover_subdomains_www(toplevel_domains)
 
         add_discovered_subdomains(scan, urllist, domains_to_check)
 
@@ -116,6 +111,25 @@ def perform_subdomain_scan(scan_id: int) -> None:
         update_state(scan.id, "error", str(my_exception))
         # Still send it to sentry and crash
         raise Exception from my_exception  # pylint: disable=broad-exception-raised
+
+
+def discover_subdomains_www(toplevel_domains) -> List[str]:
+    return [f"www.{url.url}" for url in toplevel_domains]
+
+
+def discover_subdomains_ctlogs_sectigo(toplevel_domains) -> List[str]:
+    # Not used for now given the service of sectigo has two issues:
+    # 1: it's highly unreliable: it might or might not give a result
+    # 2: a preview is needed of what will be imported, to prevent adding thousands of subdomains
+
+    domains_to_check = []
+    for tld in toplevel_domains:
+        if subdomains := certificate_transparency_scan(tld.url):
+            domains_to_check.extend([f"{sub}.{tld}" for sub in subdomains])
+
+    log.debug("Found subdomains:")
+    log.debug(domains_to_check)
+    return list(set(domains_to_check))
 
 
 def add_discovered_subdomains(scan, urllist, domains_to_check: List[str]):
