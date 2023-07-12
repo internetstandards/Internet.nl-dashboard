@@ -94,7 +94,6 @@ diff-match-patch==20230430
     #   websecmap
 django==4.2.3
     # via
-    #   -c security-constraints.in
     #   django-activity-stream
     #   django-celery-beat
     #   django-colorful
