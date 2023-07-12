@@ -92,7 +92,7 @@ diff-match-patch==20230430
     # via
     #   django-import-export
     #   websecmap
-django==4.2.2
+django==4.2.3
     # via
     #   -c security-constraints.in
     #   django-activity-stream
@@ -472,7 +472,7 @@ vine==1.3.0
     #   celery
     #   flower
     #   websecmap
-websecmap @ git+https://gitlab.com/internet-cleanup-foundation/web-security-map@29a3433b05b4ca8cf96a1b22575809ff2c85acbf
+websecmap @ git+https://gitlab.com/internet-cleanup-foundation/web-security-map@483583988ead67b23ed94621c37c56ab95a61fd1
     # via -r requirements.in
 wikidata==0.7.0
     # via websecmap
@@ -490,15 +490,14 @@ yarl==1.9.2
     # via
     #   aiohttp
     #   websecmap
-zope.event==5.0
+zope-event==5.0
     # via
     #   gevent
     #   websecmap
-zope.interface==6.0
+zope-interface==6.0
     # via
     #   gevent
     #   websecmap
-
 
 # The following packages are considered to be unsafe in a requirements file:
 # setuptools
