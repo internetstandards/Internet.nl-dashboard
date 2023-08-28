@@ -27,3 +27,16 @@ Django>=3.1.14
 
 # GHSA-p5w8-wqhj-9hhf
 sqlparse>=0.4.2
+
+# https://github.com/internetstandards/Internet.nl-dashboard/security/dependabot/131
+gitpython>=3.1.32
+
+# https://github.com/internetstandards/Internet.nl-dashboard/security/dependabot/141
+uwsgi>=2.0.22
+
+# https://github.com/internetstandards/Internet.nl-dashboard/security/dependabot/140
+certifi>=2023.7.22
+
+# https://github.com/internetstandards/Internet.nl-dashboard/security/dependabot/137
+cryptography>=41.0.2
+
