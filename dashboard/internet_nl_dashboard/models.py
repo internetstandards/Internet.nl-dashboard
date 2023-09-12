@@ -521,7 +521,9 @@ class UrlListReport(SeriesOfUrlsReportMixin):  # pylint: disable=too-many-ancest
 
     def save(self, *args, **kwargs):
         # the public share code is a random string string that should be unique and non-guessable
-        self.public_report_code = str(uuid4())
+        # only set it if there is nothing set yet.
+        if not self.public_report_code:
+            self.public_report_code = str(uuid4())
         super().save(*args, **kwargs)
 
     def get_previous_report_from_this_list(self):

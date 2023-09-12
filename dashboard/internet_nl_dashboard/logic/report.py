@@ -259,6 +259,7 @@ def get_shared_report(report_code: str, share_code: str = ""):
 
     if not report:
         # deter brute forcing
+        log.debug("Could not find report with code %s", report_code)
         sleep(3)
         return []
 
