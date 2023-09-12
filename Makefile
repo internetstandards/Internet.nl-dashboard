@@ -66,13 +66,13 @@ ${VIRTUAL_ENV}/.requirements.installed: requirements.txt requirements-dev.txt | 
 # perform 'pip freeze' on first class requirements in .in files.
 requirements: requirements.txt requirements-dev.txt requirements-deploy.txt
 # perform 'pip freeze' on first class requirements in .in files.
-requirements.txt: requirements.in | ${pip-compile}
+requirements.txt: requirements.in security-constraints.in | ${pip-compile}
 	${pip-compile} ${pip_compile_args} --resolver=backtracking --output-file $@ $<
 
-requirements-dev.txt: requirements-dev.in requirements.in | ${pip-compile}
+requirements-dev.txt: requirements-dev.in requirements.in security-constraints.in | ${pip-compile}
 	${pip-compile} ${pip_compile_args} --resolver=backtracking --output-file $@ $<
 
-requirements-deploy.txt: requirements-deploy.in requirements.in | ${pip-compile}
+requirements-deploy.txt: requirements-deploy.in requirements.in security-constraints.in | ${pip-compile}
 	${pip-compile} ${pip_compile_args} --resolver=backtracking --output-file $@ $<
 
 update_requirements: pip_compile_args=--upgrade --resolver=backtracking
