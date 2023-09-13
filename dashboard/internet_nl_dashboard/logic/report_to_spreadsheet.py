@@ -6,6 +6,7 @@ from tempfile import NamedTemporaryFile
 from typing import Any, Dict, List, Union
 
 import pyexcel as p
+from django.db.models import Prefetch
 from django.utils.text import slugify
 from openpyxl import load_workbook
 from openpyxl.formatting.rule import CellIsRule
@@ -24,7 +25,7 @@ from dashboard.internet_nl_dashboard.logic import (MAIL_AUTH_FIELDS, MAIL_DNSSEC
                                                    WEB_TLS_CATEGORY, WEB_TLS_CERTIFICATE_FIELDS, WEB_TLS_DANE_FIELDS,
                                                    WEB_TLS_HTTP_FIELDS, WEB_TLS_TLS_FIELDS)
 from dashboard.internet_nl_dashboard.logic.internet_nl_translations import get_po_as_dictionary_v2, translate_field
-from dashboard.internet_nl_dashboard.models import Account, UrlListReport
+from dashboard.internet_nl_dashboard.models import Account, TaggedUrlInUrllist, Url, UrlListReport
 
 log = logging.getLogger(__package__)
 
@@ -83,10 +84,41 @@ SANE_COLUMN_ORDER = {
 
 
 def iter_all_strings():
-    # https://stackoverflow.com/questions/29351492/how-to-make-a-continuous-alphabetic-list-python-from-a-z-then-from-aa-ab
+    # https://stackoverflow.com/questions/29351492/
+    # how-to-make-a-continuous-alphabetic-list-python-from-a-z-then-from-aa-ab
     for size in itertools.count(1):
         for product in itertools.product(ascii_uppercase, repeat=size):
             yield "".join(product)
+
+
+def get_tags_from_urllist_urls(account: Account, urllist_id: int) -> Dict[str, List[str]]:
+    # todo: queries taken from: get_urllist_content, probably deduplicate. This saves one query on endpoints though.
+    # This might significantly slow down an export, and this might be a separate process is we're going to process
+    # a ton of huge lists in the future.
+    prefetch_tags = Prefetch(
+        'taggedurlinurllist_set',
+        queryset=TaggedUrlInUrllist.objects.all().filter(urllist=urllist_id).prefetch_related('tags'),
+        to_attr='url_tags'
+    )
+
+    # This ordering makes sure all subdomains are near the domains with the right extension.
+    urls = Url.objects.all().filter(
+        urls_in_dashboard_list_2__account=account,
+        urls_in_dashboard_list_2__id=urllist_id
+    ).prefetch_related(
+        prefetch_tags
+    ).all()
+
+    data = {}
+
+    for url in urls:
+        tags = []
+        for tag1 in [x.tags.values_list('name') for x in url.url_tags]:
+            for tag2 in tag1:
+                tags.extend(iter(tag2))
+        data[url.url] = tags
+
+    return data
 
 
 def create_spreadsheet(account: Account, report_id: int):
@@ -100,6 +132,10 @@ def create_spreadsheet(account: Account, report_id: int):
 
     calculation = retrieve_report(report_id, "UrlListReport")
     urls = calculation["urls"]
+
+    # tags are not stored in the report, they can be anyting at any time...
+    # so when exporting they need to be retrieved one by one, which takes a lot of time.
+    url_tag_mapping = get_tags_from_urllist_urls(account, report.urllist.id)
 
     protocol = 'dns_soa' if report.report_type == 'mail' else 'dns_a_aaaa'
 
@@ -116,7 +152,8 @@ def create_spreadsheet(account: Account, report_id: int):
     data += [[]]
     data += [category_headers(protocol)]
     data += [headers(protocol)]
-    data += urllistreport_to_spreadsheet_data(category_name=report.urllist.name, urls=urls, protocol=protocol)
+    data += urllistreport_to_spreadsheet_data(category_name=report.urllist.name, urls=urls, protocol=protocol,
+                                              tags=url_tag_mapping)
 
     filename = "internet nl dashboard report " \
                f"{report.pk} {report.urllist.name} {report.urllist.scan_type} {report.at_when.date()}"
@@ -165,7 +202,7 @@ def upgrade_excel_spreadsheet(spreadsheet_data):
             'F', 'G', 'H', 'I', 'J', 'K', 'L', "M", "N", 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z',
             'AA', 'AB', 'AC', 'AD', 'AE', 'AF', 'AG', 'AH', 'AI', 'AJ', 'AK', 'AL', 'AM', 'AN', 'AO',
             'AP', 'AQ', 'AR', 'AS', 'AT', 'AU', 'AV', 'AW', 'AX', 'AY', 'AZ', 'BA', 'BB', 'BC', 'BD',
-            'BE', 'BF', 'BG', 'BH', 'BI', 'BJ', 'BK', "BL", "BM", "BN", "BO", "BP", "BQ", "BR", "BS"
+            'BE', 'BF', 'BG', 'BH', 'BI', 'BJ', 'BK', "BL", "BM", "BN", "BO", "BP", "BQ", "BR", "BS", "BT", "BU",
         ]
 
         # add some statistics
@@ -175,21 +212,21 @@ def upgrade_excel_spreadsheet(spreadsheet_data):
                 # There is a max of 5000 domains per scan. So we set this to something lower.
                 # There is no good support of headers versus data, which makes working with excel a drama
                 # If you ever read this code, and want a good spreadsheet editor: try Apple Numbers. It's fantastic.
-                worksheet[f'{cell}1'] = f'=COUNTA({cell}13:{cell}5050)'
+                worksheet[f'{cell}1'] = f'=COUNTA({cell}13:{cell}9999)'
                 # todo: also support other values
-                worksheet[f'{cell}2'] = f'=COUNTIF({cell}13:{cell}5050, "passed")'
-                worksheet[f'{cell}3'] = f'=COUNTIF({cell}13:{cell}5050, "info")'
-                worksheet[f'{cell}4'] = f'=COUNTIF({cell}13:{cell}5050, "warning")'
-                worksheet[f'{cell}5'] = f'=COUNTIF({cell}13:{cell}5050, "failed")'
-                worksheet[f'{cell}6'] = f'=COUNTIF({cell}13:{cell}5050, "not_tested")'
+                worksheet[f'{cell}2'] = f'=COUNTIF({cell}13:{cell}9999, "passed")'
+                worksheet[f'{cell}3'] = f'=COUNTIF({cell}13:{cell}9999, "info")'
+                worksheet[f'{cell}4'] = f'=COUNTIF({cell}13:{cell}9999, "warning")'
+                worksheet[f'{cell}5'] = f'=COUNTIF({cell}13:{cell}9999, "failed")'
+                worksheet[f'{cell}6'] = f'=COUNTIF({cell}13:{cell}9999, "not_tested")'
                 worksheet[f'{cell}7'] = f'=' \
-                    f'COUNTIF({cell}13:{cell}5050, "error")+' \
-                    f'COUNTIF({cell}13:{cell}5050, "unreachable")+' \
-                    f'COUNTIF({cell}13:{cell}5050, "untestable")+' \
-                    f'COUNTIF({cell}13:{cell}5050, "not_testable")'
+                    f'COUNTIF({cell}13:{cell}9999, "error")+' \
+                    f'COUNTIF({cell}13:{cell}9999, "unreachable")+' \
+                    f'COUNTIF({cell}13:{cell}9999, "untestable")+' \
+                    f'COUNTIF({cell}13:{cell}9999, "not_testable")'
                 worksheet[f'{cell}8'] = f'=' \
-                    f'COUNTIF({cell}13:{cell}5050, "no_mx")+' \
-                    f'COUNTIF({cell}13:{cell}5050, "not_applicable")'
+                    f'COUNTIF({cell}13:{cell}9999, "no_mx")+' \
+                    f'COUNTIF({cell}13:{cell}9999, "not_applicable")'
                 # Not applicable and not testable are subtracted from the total.
                 # See https://github.com/internetstandards/Internet.nl-dashboard/issues/68
                 # Rounding's num digits is NOT the number of digits behind the comma, but the total number of digits.
@@ -202,9 +239,10 @@ def upgrade_excel_spreadsheet(spreadsheet_data):
         # make headers bold
         worksheet['A12'].font = Font(bold=True)  # List
         worksheet['B12'].font = Font(bold=True)  # Url
-        worksheet['C11'].font = Font(bold=True)  # overall
-        worksheet['C12'].font = Font(bold=True)  # % Score
-        worksheet['D12'].font = Font(bold=True)  # Report
+        worksheet['D11'].font = Font(bold=True)  # overall
+        worksheet['C12'].font = Font(bold=True)  # Tags
+        worksheet['D12'].font = Font(bold=True)  # % Score
+        worksheet['E12'].font = Font(bold=True)  # Report
         for cell in data_columns:
             worksheet[f'{cell}11'].font = Font(bold=True)
             worksheet[f'{cell}12'].font = Font(bold=True)
@@ -226,7 +264,7 @@ def upgrade_excel_spreadsheet(spreadsheet_data):
         # There is no true/false, but we can color based on value.
         for grade, pattern in conditional_rules.items():
             worksheet.conditional_formatting.add(
-                'F13:CD5050',
+                'F13:CD9999',
                 CellIsRule(operator='=', formula=[f'"{grade}"'], stopIfTrue=True, fill=pattern)
             )
 
@@ -236,7 +274,7 @@ def upgrade_excel_spreadsheet(spreadsheet_data):
 
 
 def category_headers(protocol: str = 'dns_soa'):
-    sheet_headers: List[str] = ['', '']
+    sheet_headers: List[str] = ['', '', '']
     for group in SANE_COLUMN_ORDER[protocol]:
         sheet_headers += [translate_field(group, translation_dictionary=po_file_as_dictionary)]
 
@@ -250,7 +288,7 @@ def category_headers(protocol: str = 'dns_soa'):
 
 
 def headers(protocol: str = 'dns_soa'):
-    sheet_headers = ['List', 'Url']
+    sheet_headers = ['List', 'Url', 'Tags']
     for group in SANE_COLUMN_ORDER[protocol]:
         sheet_headers += SANE_COLUMN_ORDER[protocol][group]
         # add empty thing after each group to make distinction per group clearer
@@ -288,9 +326,12 @@ def formula_row(function: str, protocol: str = 'dns_soa'):
     return data
 
 
-def urllistreport_to_spreadsheet_data(category_name: str, urls: List[Any], protocol: str = 'dns_soa'):
+def urllistreport_to_spreadsheet_data(
+        category_name: str, urls: List[Any], protocol: str = 'dns_soa', tags: Dict[str, List[str]] = None
+):
     data = []
     for url in urls:
+        url_tags = ', '.join(tags.get(url['url'], []))
 
         if len(url['endpoints']) == 1:
             # we can just put the whole result in one, which is nicer to look at.
@@ -298,16 +339,16 @@ def urllistreport_to_spreadsheet_data(category_name: str, urls: List[Any], proto
                 if endpoint['protocol'] != protocol:
                     continue
                 keyed_ratings = endpoint['ratings_by_type']
-                data.append([category_name, url['url']] + keyed_values_as_boolean(keyed_ratings, protocol))
+                data.append([category_name, url['url'], url_tags] + keyed_values_as_boolean(keyed_ratings, protocol))
 
         else:
-            data.append([category_name, url['url']])
+            data.append([category_name, url['url'], url_tags])
 
             for endpoint in url['endpoints']:
                 if endpoint['protocol'] != protocol:
                     continue
                 keyed_ratings = endpoint['ratings_by_type']
-                data.append(['', ''] + keyed_values_as_boolean(keyed_ratings, protocol))
+                data.append(['', '', ''] + keyed_values_as_boolean(keyed_ratings, protocol))
 
     # log.debug(data)
     return data
