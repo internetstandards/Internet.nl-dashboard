@@ -5,6 +5,7 @@ from time import sleep
 
 from constance import config
 from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
 from django_mail_admin import mail, models
 from django_mail_admin.models import Log
 
@@ -15,6 +16,7 @@ from dashboard.internet_nl_dashboard.views import get_json_body
 log = logging.getLogger(__package__)
 
 
+@csrf_exempt
 def process_application(request):
     data = get_json_body(request)
 
