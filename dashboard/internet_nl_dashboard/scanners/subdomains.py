@@ -57,11 +57,9 @@ def scan_status(account: Account, urllist_id: int):
 @app.task(queue="storage")
 def progress_subdomain_discovery_scans():
     scans = SubdomainDiscoveryScan.objects.all().filter(state="requested")
-    log.error("yolo")
 
     tasks = []
     for scan in scans:
-        log.error("swag")
         update_state(scan.id, "scanning")
         tasks.append(group(perform_subdomain_scan.si(scan.id) | update_state.si(scan.id, "finished")))
 
