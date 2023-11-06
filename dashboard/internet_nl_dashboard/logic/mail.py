@@ -18,6 +18,7 @@ from dashboard.internet_nl_dashboard.logic.report import get_report_directly
 from dashboard.internet_nl_dashboard.logic.report_comparison import (compare_report_in_detail, filter_comparison_report,
                                                                      key_calculation, render_comparison_view)
 from dashboard.internet_nl_dashboard.models import AccountInternetNLScan, DashboardUser, UrlListReport
+from dashboard.settings import LANGUAGES
 
 log = logging.getLogger(__package__)
 
@@ -92,9 +93,11 @@ def send_scan_finished_mails(scan: AccountInternetNLScan) -> int:
     report = UrlListReport.objects.all().filter(id=scan.report.id).order_by("-id").defer('calculation').first()
 
     for user in users:
+        log.debug("Sending finished mail to user %s", user.id)
 
         # set unsubscribe code if it's not set yet. This allows the user to instantly unsubscribe from this feed.
         if user.dashboarduser.mail_after_mail_unsubscribe_code == "":
+            log.debug("For some reason user %s has no unsubscribe code, generating one now", user.id)
             user.dashboarduser.mail_after_mail_unsubscribe_code = generate_unsubscribe_code()
             user.dashboarduser.save()
 
@@ -132,7 +135,7 @@ def send_scan_finished_mails(scan: AccountInternetNLScan) -> int:
         previous = convert_to_email_safe_values(previous, user.dashboarduser.mail_preferred_language.code.lower())
 
         placeholders = {**placeholders, **previous}
-
+        log.debug("Sending actual finished mail to user %s", user.id)
         mail.send(
             sender=config.EMAIL_NOTIFICATION_SENDER,
             recipients=user.dashboarduser.mail_preferred_mail_address,  # List of email addresses also accepted
@@ -213,6 +216,15 @@ def values_from_previous_report(report_id: int, previous_report: UrlListReport) 
 
 
 def convert_to_email_safe_values(values: dict, mail_language: str = "en") -> dict:
+
+    # in some cases this is not set or defaults to 'af' / afghanistan, which is the first ISO code in the list
+    # list here: https://en.wikipedia.org/wiki/List_of_ISO_3166_country_codes. Even though we do error handling.
+    # so we're nice here and try to use a code that we know in case this happens.
+    # see issue INTERNET-NL-DASHBOARD-68
+    if mail_language not in [language_code for language_code, name in LANGUAGES]:
+        mail_language = 'en'
+    log.debug("Mail language: %s", mail_language)
+
     return {
         "previous_report_available": str(values["previous_report_available"]),
         "previous_report_average_internet_nl_score": values["previous_report_average_internet_nl_score"],

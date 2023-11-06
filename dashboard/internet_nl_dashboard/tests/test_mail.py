@@ -18,7 +18,8 @@ def setup_test():
     account = Account(**{'name': 'test'})
     account.save()
 
-    dashboarduser = DashboardUser(**{'mail_preferred_mail_address': 'info@example.com', 'mail_preferred_language': 'nl',
+    # use a language that is not supported, so the system will fall back to english...
+    dashboarduser = DashboardUser(**{'mail_preferred_mail_address': 'info@example.com', 'mail_preferred_language': 'af',
                                      'mail_send_mail_after_scan_finished': True, 'account': account, 'user': user})
     dashboarduser.save()
 
