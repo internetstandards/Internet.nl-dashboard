@@ -115,6 +115,22 @@ def is_valid_extension(file: str) -> bool:
     return False
 
 
+def get_sheet(file: str) -> List:
+    try:
+        sheet = p.get_sheet(file_name=file, name_columns_by_row=0)
+    except XLRDError:
+        # xlrd.biffh.XLRDError: Unsupported format, or corrupt file: Expected BOF record; found b'thisfile'
+        return []
+    except zipfile.BadZipFile:
+        # the corrupted file in the unit tests
+        return []
+    except Exception as exc:  # pylint: disable=broad-except
+        log.exception(exc)
+        return []
+
+    return sheet
+
+
 def get_data(file: str) -> Dict[str, Dict[str, Dict[str, list]]]:
     """
     Will return a simple set of data, without too much validation. Deduplicates data per unique category.
@@ -133,16 +149,8 @@ def get_data(file: str) -> Dict[str, Dict[str, Dict[str, list]]]:
 
     data: Dict[str, Any] = {}
 
-    try:
-        sheet = p.get_sheet(file_name=file, name_columns_by_row=0)
-    except XLRDError:
-        # xlrd.biffh.XLRDError: Unsupported format, or corrupt file: Expected BOF record; found b'thisfile'
-        return data
-    except zipfile.BadZipFile:
-        # the corrupted file in the unit tests
-        return data
-    except Exception as exc:  # pylint: disable=broad-except
-        log.exception(exc)
+    sheet = get_sheet(file=file)
+    if not sheet:
         return data
 
     # Skips the first entry
@@ -154,7 +162,10 @@ def get_data(file: str) -> Dict[str, Dict[str, Dict[str, list]]]:
         # Data is parsed to python-like datatype. In this case we only expect strings and cast them as such.
         found_categories = str(row[0]).lower().strip().split(',')
         found_urls = str(row[1]).lower().strip().split(',')
-        found_tags = str(row[2]).lower().strip().split(',')
+        found_tags = []
+        # if there is no tag column:
+        if len(row) > 2:
+            found_tags = str(row[2]).lower().strip().split(',')
 
         for found_category in found_categories:
             found_category = found_category.strip()
@@ -344,11 +355,21 @@ def upload_domain_spreadsheet_to_list(account: Account, user: DashboardUser, url
     if not urllist:
         return {'error': True, 'success': False, 'message': 'list_does_not_exist', 'details': '', 'status': 'error'}
 
+    # the spreadsheet content is leading, this means that anything in the current list, including tags, will
+    # be removed. There is no smart merging strategy here. This might be added in the future: where we look
+    # at what is already in the list and only add changes.
+    # this will also remove the tags on this list automatically, without touching other lists that have the same
+    # url and different tags.
+    urllist.urls.clear()
+
     # we don't care about the list name, we'll just add anything that is given as input...
     result = {'incorrect_urls': [],
               'added_to_list': 0,
               'already_in_list': 0}
     for _, domain_data in domain_lists.items():
+        log.debug(domain_data)
+        # todo: when a tag has a domain, it might be added as a domain, which is wrong. Only use the first
+        #  column of uploaded data.
         extracted_urls, _ = retrieve_possible_urls_from_unfiltered_input(", ".join(domain_data))
         cleaned_urls = clean_urls(extracted_urls)
 

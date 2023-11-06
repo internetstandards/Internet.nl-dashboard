@@ -331,7 +331,7 @@ def update_list_settings(account: Account, user_input: Dict) -> Dict[str, Any]:
     last_report_prefetch = Prefetch(
         'urllistreport_set',
         # filter(pk=UrlListReport.objects.latest('id').pk).
-        queryset=UrlListReport.objects.order_by('-id').only('id', 'at_when'),
+        queryset=UrlListReport.objects.order_by('-id').only('id', 'at_when', 'urllist__id'),
         to_attr='last_report'
     )
 

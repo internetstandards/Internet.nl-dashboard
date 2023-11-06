@@ -9,7 +9,7 @@ from constance import config
 
 from dashboard.celery import app
 from dashboard.internet_nl_dashboard.models import UrlList, UrlListReport
-from dashboard.internet_nl_dashboard.scanners import scan_internet_nl_per_account
+from dashboard.internet_nl_dashboard.scanners import scan_internet_nl_per_account, subdomains
 from dashboard.internet_nl_dashboard.scanners.scan_internet_nl_per_account import initialize_scan
 
 log = logging.getLogger(__name__)
@@ -48,7 +48,7 @@ def start_scans_for_lists_who_are_up_for_scanning() -> Task:
 
 # explicitly declare the imported modules as this modules 'content', prevents pyflakes issues
 # Todo: List item 0 has incompatible type Module; expected Module
-__all__: List[Module] = [scan_internet_nl_per_account]  # type: ignore
+__all__: List[Module] = [scan_internet_nl_per_account, subdomains]  # type: ignore
 
 
 @app.task(queue='storage')

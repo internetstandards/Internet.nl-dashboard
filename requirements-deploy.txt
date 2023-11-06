@@ -4,7 +4,7 @@
 #
 #    pip-compile --output-file=requirements-deploy.txt requirements-deploy.in
 #
-aiohttp==3.8.4
+aiohttp==3.8.6
     # via
     #   -c requirements.txt
     #   geoip2
@@ -97,7 +97,7 @@ colorlog==6.7.0
     # via
     #   -c requirements.txt
     #   websecmap
-cryptography==41.0.3
+cryptography==41.0.5
     # via
     #   -c requirements.txt
     #   -c security-constraints.in
@@ -123,7 +123,7 @@ diff-match-patch==20230430
     #   -c requirements.txt
     #   django-import-export
     #   websecmap
-django==4.2.3
+django==4.2.7
     # via
     #   -c requirements.txt
     #   -c security-constraints.in
@@ -472,7 +472,7 @@ rdp==0.8
     # via
     #   -c requirements.txt
     #   websecmap
-redis==4.6.0
+redis==5.0.0
     # via
     #   -c requirements.txt
     #   celery
@@ -569,7 +569,7 @@ tldextract==3.4.4
     # via
     #   -c requirements.txt
     #   websecmap
-tornado==6.3.2
+tornado==6.3.3
     # via
     #   -c requirements.txt
     #   flower
@@ -585,7 +585,7 @@ typing-extensions==4.6.3
     #   asgiref
     #   django-countries
     #   websecmap
-urllib3==1.26.6
+urllib3==1.26.18
     # via
     #   -c requirements.txt
     #   requests
@@ -607,7 +607,7 @@ vine==1.3.0
     #   celery
     #   flower
     #   websecmap
-websecmap[deploy] @ git+https://gitlab.com/internet-cleanup-foundation/web-security-map@6fcf0110e5809fceb0ddf93b8553804a7cc52151
+websecmap[deploy] @ git+https://gitlab.com/internet-cleanup-foundation/web-security-map@d60d90d787d94de122dfe139df4790b82eee7554
     # via
     #   -c requirements.txt
     #   -r requirements-deploy.in
