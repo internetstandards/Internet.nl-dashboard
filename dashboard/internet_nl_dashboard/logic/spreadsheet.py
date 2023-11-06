@@ -347,11 +347,21 @@ def upload_domain_spreadsheet_to_list(account: Account, user: DashboardUser, url
     if not urllist:
         return {'error': True, 'success': False, 'message': 'list_does_not_exist', 'details': '', 'status': 'error'}
 
+    # the spreadsheet content is leading, this means that anything in the current list, including tags, will
+    # be removed. There is no smart merging strategy here. This might be added in the future: where we look
+    # at what is already in the list and only add changes.
+    # this will also remove the tags on this list automatically, without touching other lists that have the same
+    # url and different tags.
+    urllist.urls.clear()
+
     # we don't care about the list name, we'll just add anything that is given as input...
     result = {'incorrect_urls': [],
               'added_to_list': 0,
               'already_in_list': 0}
     for _, domain_data in domain_lists.items():
+        log.debug(domain_data)
+        # todo: when a tag has a domain, it might be added as a domain, which is wrong. Only use the first
+        #  column of uploaded data.
         extracted_urls, _ = retrieve_possible_urls_from_unfiltered_input(", ".join(domain_data))
         cleaned_urls = clean_urls(extracted_urls)
 
