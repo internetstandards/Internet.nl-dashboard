@@ -154,7 +154,10 @@ def get_data(file: str) -> Dict[str, Dict[str, Dict[str, list]]]:
         # Data is parsed to python-like datatype. In this case we only expect strings and cast them as such.
         found_categories = str(row[0]).lower().strip().split(',')
         found_urls = str(row[1]).lower().strip().split(',')
-        found_tags = str(row[2]).lower().strip().split(',')
+        found_tags = []
+        # if there is no tag column:
+        if len(row) > 2:
+            found_tags = str(row[2]).lower().strip().split(',')
 
         for found_category in found_categories:
             found_category = found_category.strip()
