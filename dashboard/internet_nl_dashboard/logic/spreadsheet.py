@@ -115,6 +115,22 @@ def is_valid_extension(file: str) -> bool:
     return False
 
 
+def get_sheet(file: str) -> List:
+    try:
+        sheet = p.get_sheet(file_name=file, name_columns_by_row=0)
+    except XLRDError:
+        # xlrd.biffh.XLRDError: Unsupported format, or corrupt file: Expected BOF record; found b'thisfile'
+        return []
+    except zipfile.BadZipFile:
+        # the corrupted file in the unit tests
+        return []
+    except Exception as exc:  # pylint: disable=broad-except
+        log.exception(exc)
+        return []
+
+    return sheet
+
+
 def get_data(file: str) -> Dict[str, Dict[str, Dict[str, list]]]:
     """
     Will return a simple set of data, without too much validation. Deduplicates data per unique category.
@@ -133,16 +149,8 @@ def get_data(file: str) -> Dict[str, Dict[str, Dict[str, list]]]:
 
     data: Dict[str, Any] = {}
 
-    try:
-        sheet = p.get_sheet(file_name=file, name_columns_by_row=0)
-    except XLRDError:
-        # xlrd.biffh.XLRDError: Unsupported format, or corrupt file: Expected BOF record; found b'thisfile'
-        return data
-    except zipfile.BadZipFile:
-        # the corrupted file in the unit tests
-        return data
-    except Exception as exc:  # pylint: disable=broad-except
-        log.exception(exc)
+    sheet = get_sheet(file=file)
+    if not sheet:
         return data
 
     # Skips the first entry
