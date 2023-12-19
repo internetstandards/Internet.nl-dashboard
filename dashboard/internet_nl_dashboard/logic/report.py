@@ -27,8 +27,9 @@ log = logging.getLogger(__name__)
 
 def get_recent_reports(account: Account) -> List[Dict[str, Any]]:
     # loading the calculation takes some time. In this case we don't need the calculation and as such we defer it.
+    # also show the reports from deleted lists... urllist__is_deleted=False
     reports = UrlListReport.objects.all().filter(
-        urllist__account=account, urllist__is_deleted=False).order_by('-pk').select_related(
+        urllist__account=account).order_by('-pk').select_related(
         'urllist').defer('calculation')
 
     return create_report_response(reports)
@@ -200,9 +201,10 @@ def get_urllist_timeline_graph(account: Account, urllist_ids: str, report_type: 
 
 def get_report(account: Account, report_id: int) -> str:
     log.debug("Retrieve report data")
+    # it's okay if the list is deleted. Still be able to see reports from the past
+    # urllist__is_deleted=False,
     report = UrlListReport.objects.all().filter(
         urllist__account=account,
-        urllist__is_deleted=False,
         pk=report_id
     ).values('id', 'urllist_id', 'calculation', 'average_internet_nl_score', 'total_urls', 'at_when', 'report_type',
              'urllist__name', 'is_publicly_shared', 'public_report_code', 'public_share_code'
