@@ -104,6 +104,12 @@ INSTALLED_APPS = [
 
     # Sending templated and translatable emails
     'django_mail_admin',
+
+    # allauth
+    'allauth',
+    'allauth.account',
+    'allauth.socialaccount',
+
 ]
 
 # django activity stream wants a site-id:
@@ -128,6 +134,8 @@ MIDDLEWARE = [
     # that compression happens afterward.
     # https://github.com/internetstandards/Internet.nl-dashboard/issues/436
     # 'django.middleware.gzip.GZipMiddleware',
+    # allauth
+    "allauth.account.middleware.AccountMiddleware",
 ]
 
 ROOT_URLCONF = 'dashboard.urls'
@@ -799,3 +807,26 @@ REPORT_STORAGE_DIR = os.environ.get("REPORT_STORAGE_DIR", MEDIA_ROOT + "diskrepo
 full_report_storage_dir = REPORT_STORAGE_DIR + "original/UrlListReport/"
 if not os.path.isdir(full_report_storage_dir):
     os.makedirs(full_report_storage_dir, exist_ok=True)
+
+
+AUTHENTICATION_BACKENDS = [
+    # Needed to login by username in Django admin, regardless of `allauth`
+    'django.contrib.auth.backends.ModelBackend',
+
+    # `allauth` specific authentication methods, such as login by email
+    'allauth.account.auth_backends.AuthenticationBackend',
+]
+
+# https://docs.allauth.org/en/latest/installation/quickstart.html
+# SOCIALACCOUNT_PROVIDERS = {
+#     'google': {
+#         # For each OAuth based provider, either add a ``SocialApp``
+#         # (``socialaccount`` app) containing the required client
+#         # credentials, or list them here:
+#         'APP': {
+#             'client_id': '123',
+#             'secret': '456',
+#             'key': ''
+#         }
+#     }
+# }

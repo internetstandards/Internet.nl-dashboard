@@ -1,0 +1,108 @@
+<!DOCTYPE html>{% load static %} {% load i18n %} {% load allauth %}
+{% get_current_language as LANGUAGE_CODE %}
+<html lang="{{ LANGUAGE_CODE }}">
+<head>
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+    <meta charset="utf-8">
+    <title>{% trans "home pagetitle" %}</title>
+    <meta name="viewport" content="width=device-width,initial-scale=1.0">
+    <meta name="author" content="Platform Internetstandaarden / Internet Standards Platform">
+    <link rel="icon" href="https://www.internet.nl/static/favicon.png" sizes="32x32">
+    <link rel="icon" href="https://www.internet.nl/static/favicon.png" sizes="192x192">
+    <link rel="apple-touch-icon-precomposed" href="https://www.internet.nl/static/favicon.png">
+    <meta name="msapplication-TileImage" content="/static/favicon.png">
+
+    <link rel="stylesheet" type="text/css" href="{% static 'css/vendor/internet_nl/style-min.css' %}">
+    <link rel="stylesheet" type="text/css" id="overrides" href="{% static 'css/overrides_dashboard.css' %}">
+
+    <script type="text/javascript" src="{% static 'js/vendor/internet_nl/imagecheck-min.js' %}" defer="defer"></script>
+
+    <script>
+        function set_language(language_code) {
+            document.cookie = "dashboard_language=" + (language_code || "en") + "; path=/";
+            location.reload();
+        }
+    </script>
+    <style>
+        .errorlist {
+            font-weight: bold;
+            color: red;
+
+        }
+
+    </style>
+
+</head>
+<body class="home body-with-semifixed-header" cz-shortcut-listen="true">
+
+<header>
+    <div class="wrap">
+        <div id="masthead">
+            <p id="site-title"><a href="/"></a></p>
+        </div>
+
+        <div id="language-switch-header-container">
+            <ul class="language-switch-list">
+                {% with user_language=request.LANGUAGE_CODE %}
+                    {% get_language_info_list for LANGUAGES as languages %}
+
+                    {% for language in languages %}
+                        <li>
+                            {% if language.code == user_language %}
+                                <button class="active-language" disabled>{{ language.name_local }}</button>
+                            {% else %}
+                                <a onclick="set_language('{{ language.code }}')">{{ language.name_local }}</a>
+                            {% endif %}
+                        </li>
+                    {% endfor %}
+                {% endwith %}
+            </ul>
+        </div>
+
+        <nav id="sitenav">
+            <div id="menu">
+                <ul>
+                    <li class="current">Internet.nl Dashboard</li>
+                </ul>
+            </div>
+        </nav>
+    </div>
+</header>
+
+<main id="content" class="clearfix" tabindex="-1">
+    <div class="wrap">
+        <div class="block fullwidth">
+            {% block content %}
+            {% endblock %}
+            {% block default %}
+            {% endblock %}
+
+        </div>
+    </div>
+</main>
+
+<footer id="footer">
+    <img id="flag" src="{% static 'images/vendor/internet_nl/clear.gif' %}" alt="">
+    <div class="wrap">
+        {% trans "base info" %}
+        <hr>
+        <ul>
+            <li><a class="footlink" href="https://www.internet.nl/disclosure/">
+                {% trans "base disclosure" %}
+            </a></li>
+            <li><a class="footlink" href="https://www.internet.nl/privacy/">
+                {% trans "base privacy" %}
+            </a></li>
+            <li><a class="footlink" href="https://www.internet.nl/copyright/">
+                {% trans "base copyright" %}
+            </a></li>
+            <li class="follow-us"><a class="footlink twitterfollow" href="https://twitter.com/internet_nl">
+                {% trans "base followtwitter" %}
+            </a></li>
+        </ul>
+    </div>
+</footer>
+
+<script type="text/javascript" src="/static/js/vendor/internet_nl/menu-min.js" defer></script>
+</body>
+</html>

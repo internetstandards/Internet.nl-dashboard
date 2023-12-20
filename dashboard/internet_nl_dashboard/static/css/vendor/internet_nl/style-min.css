@@ -1289,7 +1289,7 @@ table td {
 
 .body-with-semifixed-header main {
     display: block;
-    padding-top: 66px
+
 }
 
 .header-js-animated {
@@ -1431,7 +1431,7 @@ footer ul li:last-child {
 @media (min-width: 740px) {
     .body-with-semifixed-header main {
         overflow: hidden;
-        padding-top: 5.563em
+
     }
 
     .home main .wrap {
