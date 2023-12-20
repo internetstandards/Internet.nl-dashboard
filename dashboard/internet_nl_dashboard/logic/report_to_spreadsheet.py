@@ -222,33 +222,7 @@ def upgrade_excel_spreadsheet(spreadsheet_data):
         for cell in data_columns:
             # if header, then aggregate
             if worksheet[f'{cell}12'].value:
-                # There is a max of 5000 domains per scan. So we set this to something lower.
-                # There is no good support of headers versus data, which makes working with excel a drama
-                # If you ever read this code, and want a good spreadsheet editor: try Apple Numbers. It's fantastic.
-                worksheet[f'{cell}1'] = f'=COUNTA({cell}13:{cell}{lines})'
-                # todo: also support other values
-                worksheet[f'{cell}2'] = f'=COUNTIF({cell}13:{cell}{lines}, "passed")'
-                worksheet[f'{cell}3'] = f'=COUNTIF({cell}13:{cell}{lines}, "info")'
-                worksheet[f'{cell}4'] = f'=COUNTIF({cell}13:{cell}{lines}, "warning")'
-                worksheet[f'{cell}5'] = f'=COUNTIF({cell}13:{cell}{lines}, "failed")'
-                worksheet[f'{cell}6'] = f'=COUNTIF({cell}13:{cell}{lines}, "not_tested")'
-                worksheet[f'{cell}7'] = f'=' \
-                    f'COUNTIF({cell}13:{cell}{lines}, "error")+' \
-                    f'COUNTIF({cell}13:{cell}{lines}, "unreachable")+' \
-                    f'COUNTIF({cell}13:{cell}{lines}, "untestable")+' \
-                    f'COUNTIF({cell}13:{cell}{lines}, "not_testable")'
-                worksheet[f'{cell}8'] = f'=' \
-                    f'COUNTIF({cell}13:{cell}{lines}, "no_mx")+' \
-                    f'COUNTIF({cell}13:{cell}{lines}, "not_applicable")'
-                # Not applicable and not testable are subtracted from the total.
-                # See https://github.com/internetstandards/Internet.nl-dashboard/issues/68
-                # Rounding's num digits is NOT the number of digits behind the comma, but the total number of digits.
-                # todo: we should use the calculations in report.py. And there include the "missing" / empty stuff IF
-                # that is missing.
-                #                   IF(     H1=0,0,ROUND(     H2÷     H1, 4))
-                worksheet[f'{cell}9'] = f'=IF({cell}1=0,0,ROUND({cell}2/{cell}1, 4))'
-                worksheet[f'{cell}9'].number_format = '0.00%'
-
+                _extracted_from_upgrade_excel_spreadsheet_57(cell, lines, worksheet)
         # make headers bold
         worksheet['A12'].font = Font(bold=True)  # List
         worksheet['B12'].font = Font(bold=True)  # Url
@@ -289,6 +263,36 @@ def upgrade_excel_spreadsheet(spreadsheet_data):
         workbook.save(tmp.name)
 
         return tmp
+
+
+# TODO Rename this here and in `upgrade_excel_spreadsheet`
+def _extracted_from_upgrade_excel_spreadsheet_57(cell, lines, worksheet):
+    # There is a max of 5000 domains per scan. So we set this to something lower.
+    # There is no good support of headers versus data, which makes working with excel a drama
+    # If you ever read this code, and want a good spreadsheet editor: try Apple Numbers. It's fantastic.
+    worksheet[f'{cell}1'] = f'=COUNTA({cell}13:{cell}{lines})'
+    # todo: also support other values
+    worksheet[f'{cell}2'] = f'=COUNTIF({cell}13:{cell}{lines}, "passed")'
+    worksheet[f'{cell}3'] = f'=COUNTIF({cell}13:{cell}{lines}, "info")'
+    worksheet[f'{cell}4'] = f'=COUNTIF({cell}13:{cell}{lines}, "warning")'
+    worksheet[f'{cell}5'] = f'=COUNTIF({cell}13:{cell}{lines}, "failed")'
+    worksheet[f'{cell}6'] = f'=COUNTIF({cell}13:{cell}{lines}, "not_tested")'
+    worksheet[f'{cell}7'] = f'=' \
+        f'COUNTIF({cell}13:{cell}{lines}, "error")+' \
+        f'COUNTIF({cell}13:{cell}{lines}, "unreachable")+' \
+        f'COUNTIF({cell}13:{cell}{lines}, "untestable")+' \
+        f'COUNTIF({cell}13:{cell}{lines}, "not_testable")'
+    worksheet[f'{cell}8'] = f'=' \
+        f'COUNTIF({cell}13:{cell}{lines}, "no_mx")+' \
+        f'COUNTIF({cell}13:{cell}{lines}, "not_applicable")'
+    # Not applicable and not testable are subtracted from the total.
+    # See https://github.com/internetstandards/Internet.nl-dashboard/issues/68
+    # Rounding's num digits is NOT the number of digits behind the comma, but the total number of digits.
+    # todo: we should use the calculations in report.py. And there include the "missing" / empty stuff IF
+    # that is missing.
+    #                   IF(     H1=0,0,ROUND(     H2÷     H1, 4))
+    worksheet[f'{cell}9'] = f'=IF({cell}1=0,0,ROUND({cell}2/{cell}1, 4))'
+    worksheet[f'{cell}9'].number_format = '0.00%'
 
 
 def category_headers(protocol: str = 'dns_soa'):
