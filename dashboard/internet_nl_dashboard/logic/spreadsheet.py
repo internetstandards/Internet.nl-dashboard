@@ -38,6 +38,7 @@ from dashboard.internet_nl_dashboard.logic.domains import (_add_to_urls_to_urlli
                                                            retrieve_possible_urls_from_unfiltered_input,
                                                            save_urllist_content_by_name)
 from dashboard.internet_nl_dashboard.models import Account, DashboardUser, UploadLog, UrlList
+from websecmap.celery import Task, app
 
 log = logging.getLogger(__package__)
 
@@ -323,10 +324,32 @@ def get_data_from_spreadsheet(
     return domain_lists, number_of_urls
 
 
-def complete_import(user: DashboardUser, file: str) -> Dict[str, Any]:
+def import_step_1(user: DashboardUser, file: str) -> Dict[str, Any]:
     domain_lists, number_of_urls = get_data_from_spreadsheet(user, file)
     if number_of_urls == "error":
         return domain_lists
+
+    return {
+        'error': False,
+        'success': True,
+        'message': "Spreadsheet will be uploaded asynchronously",
+        'details': {},
+        'status': 'success'
+    }
+
+
+@app.task(queue='storage')
+def import_step_2(user: int, file: str) -> Dict[str, Any]:
+
+    user = DashboardUser.objects.all().filter(id=user).first()
+    if not user:
+        return upload_error("User does not exist", user, file)
+
+    domain_lists, number_of_urls = get_data_from_spreadsheet(user, file)
+    if number_of_urls == "error":
+        return domain_lists
+
+    log_spreadsheet_upload(user=user, file=file, status='pending', message="Uploading and processing spreadsheet...")
 
     # File system full, database full.
     details = save_data(user.account, domain_lists)
@@ -344,7 +367,8 @@ def complete_import(user: DashboardUser, file: str) -> Dict[str, Any]:
 
 
 def upload_domain_spreadsheet_to_list(account: Account, user: DashboardUser, urllist_id: int, file: str):
-
+    # todo: perform this in two steps, and step two asynchronously as it may take a long time to add a long list of
+    # domains...
     file = save_file(file)
 
     domain_lists, number_of_urls = get_data_from_spreadsheet(user, file)
