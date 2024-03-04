@@ -2,6 +2,7 @@
 import logging
 import re
 import sys
+import unicodedata
 from datetime import datetime, timezone
 from typing import Any, Dict, List, Tuple, Union
 
@@ -608,6 +609,13 @@ def retrieve_possible_urls_from_unfiltered_input(unfiltered_input: str) -> Tuple
 
     # split email addresses from their domain
     unfiltered_input = unfiltered_input.replace("@", " ")
+
+    # https://github.com/internetstandards/Internet.nl-dashboard/issues/410
+    # remove all invisible unicode characters and control characters such as ­
+    # https://stackoverflow.com/questions/4324790/removing-control-characters-from-a-string-in-python
+    # http://www.unicode.org/reports/tr44/#GC_Values_Table
+    # Other characters will be translated to punycode when running. But saved as unicode for readability.
+    unfiltered_input = "".join(ch for ch in unfiltered_input if unicodedata.category(ch)[0] != "C")
 
     # Split also removes double spaces etc
     unfiltered_input_list: List[str] = unfiltered_input.split(" ")

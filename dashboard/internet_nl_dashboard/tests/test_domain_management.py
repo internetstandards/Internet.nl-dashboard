@@ -97,6 +97,11 @@ def test_retrieve_urls_from_unfiltered_input() -> None:
     # ' ', ' ⠀ ',  '\u200b '
     assert output == ['eskillsplatform.nl', 'stichtingmediawijzer.nl']
 
+    # test #410
+    unsanitized_input = "home­lan­der.nl"
+    output, duplicates_removed = retrieve_possible_urls_from_unfiltered_input(unsanitized_input)
+    assert output == ['homelander.nl']
+
 
 def test_retrieve_urls_from_unfiltered_input_email() -> None:
     # fix 246 and 316
