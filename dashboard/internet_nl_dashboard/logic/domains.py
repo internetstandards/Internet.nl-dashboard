@@ -640,7 +640,7 @@ def retrieve_possible_urls_from_unfiltered_input(unfiltered_input: str) -> Tuple
     return sorted(has_tld), duplicates_removed
 
 
-def save_urllist_content(account: Account, user_input: Dict[str, Any]) -> Dict:
+def add_domains_from_raw_user_data(account: Account, user_input: Dict[str, Any]) -> Dict:
     """
     This is the 'id' version of save_urllist. It is a bit stricter as in that it requires the list to exist.
 
@@ -658,31 +658,14 @@ def save_urllist_content(account: Account, user_input: Dict[str, Any]) -> Dict:
     list_id: int = int(user_input.get('list_id', -1))
     unfiltered_urls: str = user_input.get('urls', [])
 
-    urllist = UrlList.objects.all().filter(account=account, id=list_id, is_deleted=False).first()
+    # these are random unfiltered strings and the method expects keys...
+    # in this case we'll run an extra retrieve_possible_urls_from_unfiltered_input so there is already some filtering.
+    urls, _ = retrieve_possible_urls_from_unfiltered_input(unfiltered_urls)
 
-    if not urllist:
-        return operation_response(error=True, message="add_domains_list_does_not_exist")
-
-    # this is extremely fast for 10k domains.
-    urls, duplicates_removed = retrieve_possible_urls_from_unfiltered_input(unfiltered_urls)
-    cleaned_urls: Dict[str, List[str]] = clean_urls(urls)  # type: ignore
-
-    proposed_number_of_urls = urllist.urls.all().count() + len(cleaned_urls['correct'])
-    if proposed_number_of_urls > int(constance_cached_value('DASHBOARD_MAXIMUM_DOMAINS_PER_LIST')):
-        return operation_response(error=True, message="too_many_domains")
-
-    if cleaned_urls['correct']:
-        # this operation takes a while, to speed it up urls are added async.
-        counters = _add_to_urls_to_urllist(account, urllist, urls=cleaned_urls['correct'])
-    else:
-        counters = {'added_to_list': 0, 'already_in_list': 0}
-
-    result = {
-        'incorrect_urls': cleaned_urls['incorrect'],
-        'added_to_list': counters['added_to_list'],
-        'already_in_list': counters['already_in_list'],
-        'duplicates_removed': duplicates_removed
-    }
+    # does this remove tags of existing urls?
+    result = save_urllist_content_by_id(account, list_id, {url: {"tags": []} for url in urls})
+    if "error" in result:
+        return result
 
     return operation_response(success=True, message="add_domains_valid_urls_added", data=result)
 
@@ -701,13 +684,28 @@ def save_urllist_content_by_name(account: Account, urllist_name: str, urls: Dict
     Urls are just strings, which is enough to determine if it should be added.
     """
 
-    extracted_urls, _ = retrieve_possible_urls_from_unfiltered_input(", ".join(urls))
+    urllist = get_or_create_list_by_name(account=account, name=urllist_name)
+    return save_urllist_content_by_id(account, urllist.id, urls)
 
-    cleaned_urls: Dict[str, List[str]] = clean_urls(extracted_urls)
+
+def save_urllist_content_by_id(account: Account, urllist_id: id, unfiltered_urls: Dict[str, Dict[str, list]]) -> dict:
+    urllist = UrlList.objects.all().filter(account=account, id=urllist_id, is_deleted=False).first()
+
+    if not urllist:
+        return operation_response(error=True, message="add_domains_list_does_not_exist")
+
+    # this is extremely fast for 10k domains.
+    urls, duplicates_removed = retrieve_possible_urls_from_unfiltered_input(", ".join(unfiltered_urls.keys()))
+    cleaned_urls: Dict[str, List[str]] = clean_urls(urls)  # type: ignore
+
+    proposed_number_of_urls = urllist.urls.all().count() + len(cleaned_urls['correct'])
+    if proposed_number_of_urls > int(constance_cached_value('DASHBOARD_MAXIMUM_DOMAINS_PER_LIST')):
+        return operation_response(error=True, message="too_many_domains")
 
     if cleaned_urls['correct']:
-        urllist = get_or_create_list_by_name(account=account, name=urllist_name)
-        counters = _add_to_urls_to_urllist(account, urllist, urls=cleaned_urls['correct'], urls_with_tags_mapping=urls)
+        # this operation takes a while, to speed it up urls are added async.
+        counters = _add_to_urls_to_urllist(account, urllist, urls=cleaned_urls['correct'],
+                                           urls_with_tags_mapping=unfiltered_urls)
     else:
         counters = {'added_to_list': 0, 'already_in_list': 0}
 
@@ -715,6 +713,7 @@ def save_urllist_content_by_name(account: Account, urllist_name: str, urls: Dict
         'incorrect_urls': cleaned_urls['incorrect'],
         'added_to_list': counters['added_to_list'],
         'already_in_list': counters['already_in_list'],
+        'duplicates_removed': duplicates_removed,
     }
 
 
@@ -732,16 +731,19 @@ def _add_to_urls_to_urllist(
     new_urls = list(set(urls) - set(already_existing_urls))
 
     # run the database operations async to speed them up and to give faster user interaction
-    # todo: when running pytest, this needs to be done sync.
-    tasks = group([
-        add_new_url_to_list_async.si(url, current_list.id, urls_with_tags_mapping)
-        | discover_endpoints.s()
-        for url in new_urls
-    ])
-    if "pytest" in sys.modules:
-        tasks.apply()
-    else:
-        tasks.apply_async()
+    # doing this in a group will create a memory overflow with 50k tasks, as each task contains the 50k other tasks
+    # with each of them taking 250kb of ram. This quickly amounts to hundreds of megs or gigs. Therefore split
+    # these tasks to individual tasks.
+    for url in new_urls:
+        tasks = group([
+            add_new_url_to_list_async.si(url, current_list.id, urls_with_tags_mapping)
+            | discover_endpoints.s()]
+        )
+        # pytest async tests requires a running stack, which is more complex. Therefore trust that apply_async works.
+        if "pytest" in sys.modules:
+            tasks.apply()
+        else:
+            tasks.apply_async()
 
     return {
         'added_to_list': len(new_urls),

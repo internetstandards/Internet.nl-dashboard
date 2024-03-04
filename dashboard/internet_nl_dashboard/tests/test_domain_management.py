@@ -7,16 +7,17 @@ Run these tests with tox -e test -- -k test_urllist_management
 from constance.test import override_config
 from websecmap.organizations.models import Url
 
-from dashboard.internet_nl_dashboard.logic.domains import (delete_list, delete_url_from_urllist,
-                                                           get_or_create_list_by_name, get_urllist_content,
-                                                           get_urllists_from_account, keys_are_present_in_object,
-                                                           rename_list, retrieve_possible_urls_from_unfiltered_input,
-                                                           save_urllist_content, save_urllist_content_by_name)
+from dashboard.internet_nl_dashboard.logic.domains import (add_domains_from_raw_user_data, delete_list,
+                                                           delete_url_from_urllist, get_or_create_list_by_name,
+                                                           get_urllist_content, get_urllists_from_account,
+                                                           keys_are_present_in_object, rename_list,
+                                                           retrieve_possible_urls_from_unfiltered_input,
+                                                           save_urllist_content_by_name)
 from dashboard.internet_nl_dashboard.models import Account
 
 
 @override_config(DASHBOARD_MAXIMUM_DOMAINS_PER_LIST=5000)
-def test_save_urllist_content(db, current_path, redis_server):
+def test_add_domains_from_raw_user_data(db, current_path, redis_server):
     """
     Add 1000 domains, which should be very fast.
 
@@ -34,7 +35,7 @@ def test_save_urllist_content(db, current_path, redis_server):
     list_1 = get_or_create_list_by_name(account, "test list 1")
 
     # you can't go past the DASHBOARD_MAXIMUM_DOMAINS_PER_LIST
-    response = save_urllist_content(account, {
+    response = add_domains_from_raw_user_data(account, {
         'list_id': list_1.id,
         'urls': ", ".join(domains[:6000])
     })
@@ -46,7 +47,7 @@ def test_save_urllist_content(db, current_path, redis_server):
     new_url = Url.objects.all().create(url='nu.nl')
     list_1.urls.add(new_url)
 
-    response = save_urllist_content(account, {
+    response = add_domains_from_raw_user_data(account, {
         'list_id': list_1.id,
         'urls': ", ".join(domains[:100])
     })
@@ -178,11 +179,11 @@ def test_urllists(db, redis_server) -> None:
     assert operation_response['success'] is False
 
     """ A new list will not be created if there are no urls for it..."""
-    added = save_urllist_content_by_name(account, "should be empty", [])
+    added = save_urllist_content_by_name(account, "should be empty", {})
     assert added['added_to_list'] == 0 and added['already_in_list'] == 0 and len(added['incorrect_urls']) == 0
 
     """ A new list will not be created if there are only nonsensical urls (non valid) for it """
-    added = save_urllist_content_by_name(account, "should be empty", ['iuygvb.uighblkj'])
+    added = save_urllist_content_by_name(account, "should be empty", {'iuygvb.uighblkj': {'tags': []}})
 
     list_content = get_urllist_content(account=account, urllist_id=9001)
     assert len(list_content['urls']) == 0

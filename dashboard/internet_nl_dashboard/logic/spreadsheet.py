@@ -32,13 +32,12 @@ from constance import config
 from django.conf import settings
 from django.core.files.storage import FileSystemStorage
 from django.db import transaction
+from websecmap.celery import app
 from xlrd import XLRDError
 
-from dashboard.internet_nl_dashboard.logic.domains import (_add_to_urls_to_urllist, clean_urls,
-                                                           retrieve_possible_urls_from_unfiltered_input,
-                                                           save_urllist_content_by_name)
+from dashboard.internet_nl_dashboard.logic.domains import (clean_urls, retrieve_possible_urls_from_unfiltered_input,
+                                                           save_urllist_content_by_id, save_urllist_content_by_name)
 from dashboard.internet_nl_dashboard.models import Account, DashboardUser, UploadLog, UrlList
-from websecmap.celery import Task, app
 
 log = logging.getLogger(__package__)
 
@@ -356,11 +355,20 @@ def import_step_2(user: int, file: str) -> Dict[str, Any]:
 
     # Make the details a little bit easier for humans to understand:
     details_str = ""
+    error_set = False
     for urllist, detail in details.items():
-        details_str += f"{urllist}: new: {detail['added_to_list']}, existing: {detail['already_in_list']}; "
+        if "error" in detail:
+            error_set = True
+            details_str += f"{urllist}: {detail['message']}; "
+        else:
+            details_str += f"{urllist}: new: {detail['added_to_list']}, existing: {detail['already_in_list']}; "
 
-    message = "Spreadsheet uploaded successfully. " \
-              f"Added {len(domain_lists)} lists and {number_of_urls} urls. Details: {details_str}"
+    if not error_set:
+        message = "Spreadsheet uploaded successfully. " \
+                  f"Added {len(domain_lists)} lists and {number_of_urls} urls. Details: {details_str}"
+    else:
+        message = "Spreadsheet upload failed. " \
+                  f"Might not have added {len(domain_lists)} lists and {number_of_urls} urls. Details: {details_str}"
     response = {'error': False, 'success': True, 'message': message, 'details': details, 'status': 'success'}
     log_spreadsheet_upload(user=user, file=file, status='success', message=message)
     return response
@@ -379,6 +387,9 @@ def upload_domain_spreadsheet_to_list(account: Account, user: DashboardUser, url
     if not urllist:
         return {'error': True, 'success': False, 'message': 'list_does_not_exist', 'details': '', 'status': 'error'}
 
+    log_spreadsheet_upload(user=user, file=file, status='pending', message="Uploading and processing spreadsheet...")
+
+    # todo: put this in a separate task, to make sure the upload is fast enough and give this feedback to the user.
     # the spreadsheet content is leading, this means that anything in the current list, including tags, will
     # be removed. There is no smart merging strategy here. This might be added in the future: where we look
     # at what is already in the list and only add changes.
@@ -386,26 +397,14 @@ def upload_domain_spreadsheet_to_list(account: Account, user: DashboardUser, url
     # url and different tags.
     urllist.urls.clear()
 
-    # we don't care about the list name, we'll just add anything that is given as input...
-    result = {'incorrect_urls': [],
-              'added_to_list': 0,
-              'already_in_list': 0}
+    # domain lists: {'10ksites': {'1.site.nl': {'tags': ['1']}, 'asdasd': {'tags': ['2']}}}
+    result = {'added_to_list': 0, 'already_in_list': 0}
     for _, domain_data in domain_lists.items():
-        log.debug(domain_data)
-        # todo: when a tag has a domain, it might be added as a domain, which is wrong. Only use the first
-        #  column of uploaded data.
-        extracted_urls, _ = retrieve_possible_urls_from_unfiltered_input(", ".join(domain_data))
-        cleaned_urls = clean_urls(extracted_urls)
-
-        if cleaned_urls['correct']:
-            counters = _add_to_urls_to_urllist(account, urllist, urls=cleaned_urls['correct'],
-                                               urls_with_tags_mapping=domain_data)
-        else:
-            counters = {'added_to_list': 0, 'already_in_list': 0}
-
-        result['added_to_list'] += counters['added_to_list']
-        result['already_in_list'] += counters['already_in_list']
-        result['incorrect_urls'] += cleaned_urls['incorrect']
+        result = save_urllist_content_by_id(account, urllist.id, domain_data)
+        # too many domains
+        if "error" in result:
+            log_spreadsheet_upload(user=user, file=file, status='success', message="Too many domains in list.")
+            return result
 
     details_str = f"{urllist.name}: new: {result['added_to_list']}, existing: {result['already_in_list']}; "
     message = "Spreadsheet uploaded successfully. " \
