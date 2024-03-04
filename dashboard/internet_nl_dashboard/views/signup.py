@@ -49,14 +49,25 @@ def process_application(request):
 @app.task(queue="storage")
 def send_mail_async(form_data):
     email_subject = "Access to API / dashboard requested"
-    email_content = json.dumps({"form_data": form_data}, indent=4)
+    json_content = json.dumps({"form_data": form_data}, indent=4)
     email_addresses = config.DASHBOARD_SIGNUP_NOTIFICATION_EMAIL_ADRESSES.split(",")
+
+    email_content = f"""Access to the API/dashboard requested by {form_data.get("name", "")} at {datetime.now()}<br>
+<br>
+Signup details:<br>
+<pre>{json_content}</pre><br>
+<br>
+Kind regards,<br>
+The Dashboard Team<br>
+<br>
+<br>
+"""
 
     mail.send(
         sender=config.EMAIL_NOTIFICATION_SENDER,
         recipients=email_addresses,
         subject=email_subject,
-        message=email_content,
+        message=email_content.replace("<br>", ""),
         priority=models.PRIORITY.now,
         html_message=email_content,
     )
