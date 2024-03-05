@@ -6,6 +6,7 @@ from tempfile import NamedTemporaryFile
 from typing import Any, Dict, List, Union
 
 import pyexcel as p
+import tldextract
 from django.db.models import Prefetch
 from django.utils.text import slugify
 from openpyxl import load_workbook
@@ -169,6 +170,7 @@ def create_spreadsheet(account: Account, report_id: int):
 
 
 def upgrade_excel_spreadsheet(spreadsheet_data):
+    lines = "1000000"
 
     with NamedTemporaryFile(suffix=".xlsx", delete=False) as tmp:
         log.debug(f"Saving temp outout to {tmp.name}")
@@ -194,61 +196,51 @@ def upgrade_excel_spreadsheet(spreadsheet_data):
         worksheet['B8'] = "Test not applicable (mail only)"
         worksheet['B9'] = "Percentage passed"
 
+        # one to one match on the values, so they can be filtered
+        worksheet['I1'] = "<>"
+        worksheet['I2'] = "passed"
+        worksheet['I3'] = "info"
+        worksheet['I4'] = "warning"
+        worksheet['I5'] = "failed"
+        worksheet['I6'] = "not_tested"
+        worksheet['I7'] = "error"
+        worksheet['I8'] = "not_applicable"
+
         # bold totals:
         for i in range(1, 10):
             worksheet[f'B{i}'].font = Font(bold=True)
 
         data_columns = [
-            'F', 'G', 'H', 'I', 'J', 'K', 'L', "M", "N", 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z',
+            'J', 'K', 'L', "M", "N", 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z',
             'AA', 'AB', 'AC', 'AD', 'AE', 'AF', 'AG', 'AH', 'AI', 'AJ', 'AK', 'AL', 'AM', 'AN', 'AO',
             'AP', 'AQ', 'AR', 'AS', 'AT', 'AU', 'AV', 'AW', 'AX', 'AY', 'AZ', 'BA', 'BB', 'BC', 'BD',
-            'BE', 'BF', 'BG', 'BH', 'BI', 'BJ', 'BK', "BL", "BM", "BN", "BO", "BP", "BQ", "BR", "BS", "BT", "BU",
+            'BE', 'BF', 'BG', 'BH', 'BI', 'BJ', 'BK', "BL", "BM", "BN", "BO", "BP", "BQ", "BR", "BS",
+            "BT", "BU", "BV", "BW", "BX", "BY", "BZ", "CA", "CB",
         ]
 
         # add some statistics
         for cell in data_columns:
             # if header, then aggregate
             if worksheet[f'{cell}12'].value:
-                # There is a max of 5000 domains per scan. So we set this to something lower.
-                # There is no good support of headers versus data, which makes working with excel a drama
-                # If you ever read this code, and want a good spreadsheet editor: try Apple Numbers. It's fantastic.
-                worksheet[f'{cell}1'] = f'=COUNTA({cell}13:{cell}9999)'
-                # todo: also support other values
-                worksheet[f'{cell}2'] = f'=COUNTIF({cell}13:{cell}9999, "passed")'
-                worksheet[f'{cell}3'] = f'=COUNTIF({cell}13:{cell}9999, "info")'
-                worksheet[f'{cell}4'] = f'=COUNTIF({cell}13:{cell}9999, "warning")'
-                worksheet[f'{cell}5'] = f'=COUNTIF({cell}13:{cell}9999, "failed")'
-                worksheet[f'{cell}6'] = f'=COUNTIF({cell}13:{cell}9999, "not_tested")'
-                worksheet[f'{cell}7'] = f'=' \
-                    f'COUNTIF({cell}13:{cell}9999, "error")+' \
-                    f'COUNTIF({cell}13:{cell}9999, "unreachable")+' \
-                    f'COUNTIF({cell}13:{cell}9999, "untestable")+' \
-                    f'COUNTIF({cell}13:{cell}9999, "not_testable")'
-                worksheet[f'{cell}8'] = f'=' \
-                    f'COUNTIF({cell}13:{cell}9999, "no_mx")+' \
-                    f'COUNTIF({cell}13:{cell}9999, "not_applicable")'
-                # Not applicable and not testable are subtracted from the total.
-                # See https://github.com/internetstandards/Internet.nl-dashboard/issues/68
-                # Rounding's num digits is NOT the number of digits behind the comma, but the total number of digits.
-                # todo: we should use the calculations in report.py. And there include the "missing" / empty stuff IF
-                # that is missing.
-                #                   IF(     H1=0,0,ROUND(     H2÷     H1, 4))
-                worksheet[f'{cell}9'] = f'=IF({cell}1=0,0,ROUND({cell}2/{cell}1, 4))'
-                worksheet[f'{cell}9'].number_format = '0.00%'
-
+                _extracted_from_upgrade_excel_spreadsheet_57(cell, lines, worksheet)
         # make headers bold
         worksheet['A12'].font = Font(bold=True)  # List
         worksheet['B12'].font = Font(bold=True)  # Url
-        worksheet['D11'].font = Font(bold=True)  # overall
-        worksheet['C12'].font = Font(bold=True)  # Tags
-        worksheet['D12'].font = Font(bold=True)  # % Score
-        worksheet['E12'].font = Font(bold=True)  # Report
+        worksheet['C12'].font = Font(bold=True)  # Subdomain
+        worksheet['D12'].font = Font(bold=True)  # Domain
+        worksheet['E12'].font = Font(bold=True)  # Suffix
+        worksheet['F12'].font = Font(bold=True)  # Tags
+        worksheet['G12'].font = Font(bold=True)  # InStats
+        worksheet['H11'].font = Font(bold=True)  # overall
+        worksheet['H12'].font = Font(bold=True)  # % Score
+        worksheet['I12'].font = Font(bold=True)  # Report
+
         for cell in data_columns:
             worksheet[f'{cell}11'].font = Font(bold=True)
             worksheet[f'{cell}12'].font = Font(bold=True)
 
         # Freeze pane to make navigation easier.
-        worksheet.freeze_panes = worksheet['E13']
+        worksheet.freeze_panes = worksheet['K13']
 
         # there is probably a feature that puts this in a single conditional value.
         conditional_rules = {
@@ -264,7 +256,7 @@ def upgrade_excel_spreadsheet(spreadsheet_data):
         # There is no true/false, but we can color based on value.
         for grade, pattern in conditional_rules.items():
             worksheet.conditional_formatting.add(
-                'F13:CD9999',
+                f'F13:CD{lines}',
                 CellIsRule(operator='=', formula=[f'"{grade}"'], stopIfTrue=True, fill=pattern)
             )
 
@@ -273,8 +265,38 @@ def upgrade_excel_spreadsheet(spreadsheet_data):
         return tmp
 
 
+# TODO Rename this here and in `upgrade_excel_spreadsheet`
+def _extracted_from_upgrade_excel_spreadsheet_57(cell, lines, worksheet):
+    # There is a max of 5000 domains per scan. So we set this to something lower.
+    # There is no good support of headers versus data, which makes working with excel a drama
+    # If you ever read this code, and want a good spreadsheet editor: try Apple Numbers. It's fantastic.
+    worksheet[f'{cell}1'] = f'=COUNTA({cell}13:{cell}{lines})'
+    # todo: also support other values
+    worksheet[f'{cell}2'] = f'=COUNTIF({cell}13:{cell}{lines}, "passed")'
+    worksheet[f'{cell}3'] = f'=COUNTIF({cell}13:{cell}{lines}, "info")'
+    worksheet[f'{cell}4'] = f'=COUNTIF({cell}13:{cell}{lines}, "warning")'
+    worksheet[f'{cell}5'] = f'=COUNTIF({cell}13:{cell}{lines}, "failed")'
+    worksheet[f'{cell}6'] = f'=COUNTIF({cell}13:{cell}{lines}, "not_tested")'
+    worksheet[f'{cell}7'] = f'=' \
+        f'COUNTIF({cell}13:{cell}{lines}, "error")+' \
+        f'COUNTIF({cell}13:{cell}{lines}, "unreachable")+' \
+        f'COUNTIF({cell}13:{cell}{lines}, "untestable")+' \
+        f'COUNTIF({cell}13:{cell}{lines}, "not_testable")'
+    worksheet[f'{cell}8'] = f'=' \
+        f'COUNTIF({cell}13:{cell}{lines}, "no_mx")+' \
+        f'COUNTIF({cell}13:{cell}{lines}, "not_applicable")'
+    # Not applicable and not testable are subtracted from the total.
+    # See https://github.com/internetstandards/Internet.nl-dashboard/issues/68
+    # Rounding's num digits is NOT the number of digits behind the comma, but the total number of digits.
+    # todo: we should use the calculations in report.py. And there include the "missing" / empty stuff IF
+    # that is missing.
+    #                   IF(     H1=0,0,ROUND(     H2÷     H1, 4))
+    worksheet[f'{cell}9'] = f'=IF({cell}1=0,0,ROUND({cell}2/{cell}1, 4))'
+    worksheet[f'{cell}9'].number_format = '0.00%'
+
+
 def category_headers(protocol: str = 'dns_soa'):
-    sheet_headers: List[str] = ['', '', '']
+    sheet_headers: List[str] = ['', '', '', '', '', '', '']
     for group in SANE_COLUMN_ORDER[protocol]:
         sheet_headers += [translate_field(group, translation_dictionary=po_file_as_dictionary)]
 
@@ -288,7 +310,7 @@ def category_headers(protocol: str = 'dns_soa'):
 
 
 def headers(protocol: str = 'dns_soa'):
-    sheet_headers = ['List', 'Url', 'Tags']
+    sheet_headers = ['List', 'Url', "Subdomain", "Domain", "Suffix", 'Tags', 'InStats']
     for group in SANE_COLUMN_ORDER[protocol]:
         sheet_headers += SANE_COLUMN_ORDER[protocol][group]
         # add empty thing after each group to make distinction per group clearer
@@ -331,6 +353,8 @@ def urllistreport_to_spreadsheet_data(
 ):
     data = []
     for url in urls:
+        extract = tldextract.extract(url['url'])
+
         url_tags = ', '.join(tags.get(url['url'], []))
 
         if len(url['endpoints']) == 1:
@@ -339,16 +363,19 @@ def urllistreport_to_spreadsheet_data(
                 if endpoint['protocol'] != protocol:
                     continue
                 keyed_ratings = endpoint['ratings_by_type']
-                data.append([category_name, url['url'], url_tags] + keyed_values_as_boolean(keyed_ratings, protocol))
-
+                data.append(
+                    [category_name, url['url'], extract.subdomain, extract.domain, extract.suffix, url_tags, 'TRUE'] +
+                    keyed_values_as_boolean(keyed_ratings, protocol)
+                )
         else:
-            data.append([category_name, url['url'], url_tags])
+            data.append([category_name, url['url'], extract.subdomain,
+                        extract.domain, extract.suffix, url_tags, 'TRUE'])
 
             for endpoint in url['endpoints']:
                 if endpoint['protocol'] != protocol:
                     continue
                 keyed_ratings = endpoint['ratings_by_type']
-                data.append(['', '', ''] + keyed_values_as_boolean(keyed_ratings, protocol))
+                data.append(['', '', '', '', '', '', ''] + keyed_values_as_boolean(keyed_ratings, protocol))
 
     # log.debug(data)
     return data

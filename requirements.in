@@ -50,3 +50,6 @@ phonenumbers
 pyexcel==0.6.7
 pyexcel-xlsx==0.6.0
 openpyxl==3.0.10
+
+# password change forms, saml oauth and more
+django-allauth

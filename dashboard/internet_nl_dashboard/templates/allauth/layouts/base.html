@@ -1,4 +1,4 @@
-<!DOCTYPE html>{% load static %} {% load i18n %}
+<!DOCTYPE html>{% load static %} {% load i18n %} {% load allauth %}
 {% get_current_language as LANGUAGE_CODE %}
 <html lang="{{ LANGUAGE_CODE }}">
 <head>
@@ -23,6 +23,14 @@
             location.reload();
         }
     </script>
+    <style>
+        .errorlist {
+            font-weight: bold;
+            color: red;
+
+        }
+
+    </style>
 
 </head>
 <body class="home body-with-semifixed-header" cz-shortcut-listen="true">
@@ -66,6 +74,9 @@
         <div class="block fullwidth">
             {% block content %}
             {% endblock %}
+            {% block default %}
+            {% endblock %}
+
         </div>
     </div>
 </main>
@@ -84,6 +95,9 @@
             </a></li>
             <li><a class="footlink" href="https://www.internet.nl/copyright/">
                 {% trans "base copyright" %}
+            </a></li>
+            <li class="follow-us"><a class="footlink twitterfollow" href="https://twitter.com/internet_nl">
+                {% trans "base followtwitter" %}
             </a></li>
         </ul>
     </div>

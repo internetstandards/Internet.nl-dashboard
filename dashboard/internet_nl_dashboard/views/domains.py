@@ -6,11 +6,12 @@ from django.http import JsonResponse
 from django.views.decorators.http import require_http_methods
 from websecmap.app.common import JSEncoder
 
-from dashboard.internet_nl_dashboard.logic.domains import (alter_url_in_urllist, cancel_scan, create_list, delete_list,
+from dashboard.internet_nl_dashboard.logic.domains import (add_domains_from_raw_user_data, alter_url_in_urllist,
+                                                           cancel_scan, create_list, delete_list,
                                                            delete_url_from_urllist, download_as_spreadsheet,
                                                            get_scan_status_of_list, get_urllist_content,
-                                                           get_urllists_from_account, save_urllist_content,
-                                                           save_urllist_content_by_name, scan_now, update_list_settings)
+                                                           get_urllists_from_account, save_urllist_content_by_name,
+                                                           scan_now, update_list_settings)
 from dashboard.internet_nl_dashboard.views import LOGIN_URL, get_account, get_json_body
 
 
@@ -56,7 +57,7 @@ def alter_url_in_urllist_(request):
 
 @login_required(login_url=LOGIN_URL)
 def add_urls_to_urllist(request):
-    return JsonResponse(save_urllist_content(get_account(request), get_json_body(request)))
+    return JsonResponse(add_domains_from_raw_user_data(get_account(request), get_json_body(request)))
 
 
 @login_required(login_url=LOGIN_URL)

@@ -1,6 +1,7 @@
 # SPDX-License-Identifier: Apache-2.0
 import logging
 
+from celery import group
 from constance import config
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse, JsonResponse
@@ -8,8 +9,8 @@ from django.shortcuts import render
 from django.views.decorators.http import require_http_methods
 from websecmap.app.common import JSEncoder
 
-from dashboard.internet_nl_dashboard.logic.spreadsheet import (complete_import, get_upload_history, save_file,
-                                                               upload_domain_spreadsheet_to_list)
+from dashboard.internet_nl_dashboard.logic.spreadsheet import (get_upload_history, import_step_1, import_step_2,
+                                                               save_file, upload_domain_spreadsheet_to_list)
 from dashboard.internet_nl_dashboard.views import LOGIN_URL, get_account, get_dashboarduser
 
 log = logging.getLogger(__package__)
@@ -42,13 +43,15 @@ def upload_spreadsheet(request) -> HttpResponse:
 
     if request.method == 'POST' and request.FILES['file']:
         file = save_file(request.FILES['file'])
-        status = complete_import(user=get_dashboarduser(request), file=file)
+        status = import_step_1(user=get_dashboarduser(request), file=file)
 
         if status['error']:
             # The GUI wants the error to contain some text: As that text is sensitive to xss(?) (probably only
             # if you see the output directly, not via javascript or json).
             status['error'] = status['message']
             return response
+
+        group([import_step_2.si(get_dashboarduser(request).id, file)]).apply_async()
 
         response.status_code = 200
         return response
