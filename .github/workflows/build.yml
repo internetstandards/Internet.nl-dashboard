@@ -16,6 +16,10 @@ jobs:
         redis-version: [ 6 ]
     steps:
       - uses: actions/checkout@v2
+      # This helps with adding version information to the build in the admin on production. CI usually works shallow.
+      # https://stackoverflow.com/questions/4916492/git-describe-fails-with-fatal-no-names-found-cannot-describe-anything
+      # this will fetch the whole repository, which is more expensive.
+      - run: git fetch --prune --unshallow --tags
       - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v2
         with:
