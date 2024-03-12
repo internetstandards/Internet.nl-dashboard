@@ -332,11 +332,6 @@ class AccountInternetNLScanAdmin(ImportExportModelAdmin, admin.ModelAdmin):
     def internetnl_scan_type(obj):
         return obj.scan.type
 
-    @staticmethod
-    def domains(obj):
-        return "?"
-        # return obj.scan.subject_urls.count()
-
     actions = []
 
     def attempt_rollback(self, request, queryset):
