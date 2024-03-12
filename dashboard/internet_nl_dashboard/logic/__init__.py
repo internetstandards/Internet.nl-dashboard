@@ -245,3 +245,101 @@ MAIL_LEGACY_FIELDS = [
 
 MAIL_CATEGORIES = MAIL_IPV6_CATEGORY + MAIL_DNSSEC_CATEGORY + MAIL_AUTH_CATEGORY + MAIL_TLS_CATEGORY + \
     MAIL_RPKI_CATEGORY + MAIL_LEGACY_CATEGORY
+
+# When exporting, it also needs to be clear what field belongs to what category, otherwise duplicate
+# field names will make it unclear what is meant. See examples in issue:
+# This mapping is maintained in report_mixin.vue where the hierarchy is setup
+# https://github.com/internetstandards/Internet.nl-dashboard/issues/397
+# perhaps at a later state the mapping from the frontend can be copied 1 to 1, but that's more mental luggage
+FIELD_TO_CATEGORY_MAP = {
+    'internet_nl_web_ipv6_ns_address': 'category_web_ipv6_name_server',
+    'internet_nl_web_ipv6_ns_reach': 'category_web_ipv6_name_server',
+    'internet_nl_web_ipv6_ws_address': 'category_web_ipv6_web_server',
+    'internet_nl_web_ipv6_ws_reach': 'category_web_ipv6_web_server',
+    'internet_nl_web_ipv6_ws_similar': 'category_web_ipv6_web_server',
+
+    'internet_nl_web_dnssec_exist': 'category_web_dnssec_dnssec',
+    'internet_nl_web_dnssec_valid': 'category_web_dnssec_dnssec',
+
+    'internet_nl_web_https_http_available': 'category_web_tls_http',
+    'internet_nl_web_https_http_redirect': 'category_web_tls_http',
+    'internet_nl_web_https_http_compress': 'category_web_tls_http',
+    'internet_nl_web_https_http_hsts': 'category_web_tls_http',
+
+    'internet_nl_web_https_tls_version': 'category_web_tls_tls',
+    'internet_nl_web_https_tls_ciphers': 'category_web_tls_tls',
+    'internet_nl_web_https_tls_cipherorder': 'category_web_tls_tls',
+    'internet_nl_web_https_tls_keyexchange': 'category_web_tls_tls',
+    'internet_nl_web_https_tls_keyexchangehash': 'category_web_tls_tls',
+    'internet_nl_web_https_tls_compress': 'category_web_tls_tls',
+    'internet_nl_web_https_tls_secreneg': 'category_web_tls_tls',
+    'internet_nl_web_https_tls_clientreneg': 'category_web_tls_tls',
+    'internet_nl_web_https_tls_0rtt': 'category_web_tls_tls',
+    'internet_nl_web_https_tls_ocsp': 'category_web_tls_tls',
+
+    'internet_nl_web_https_cert_chain': 'category_web_tls_certificate',
+    'internet_nl_web_https_cert_pubkey': 'category_web_tls_certificate',
+    'internet_nl_web_https_cert_sig': 'category_web_tls_certificate',
+    'internet_nl_web_https_cert_domain': 'category_web_tls_certificate',
+
+    'internet_nl_web_https_dane_exist': 'category_web_tls_dane',
+    'internet_nl_web_https_dane_valid': 'category_web_tls_dane',
+
+    'internet_nl_web_appsecpriv_x_frame_options': 'category_web_security_options_appsecpriv',
+    'internet_nl_web_appsecpriv_x_content_type_options': 'category_web_security_options_appsecpriv',
+    'internet_nl_web_appsecpriv_csp': 'category_web_security_options_appsecpriv',
+    'internet_nl_web_appsecpriv_referrer_policy': 'category_web_security_options_appsecpriv',
+    'internet_nl_web_appsecpriv_securitytxt': 'category_web_security_options_other',
+
+    'internet_nl_web_rpki_exists': 'category_web_rpki_name_server',
+    'internet_nl_web_rpki_valid': 'category_web_rpki_name_server',
+    'internet_nl_web_ns_rpki_exists': 'category_web_rpki_web_server',
+    'internet_nl_web_ns_rpki_valid': 'category_web_rpki_web_server',
+
+    'internet_nl_mail_ipv6_ns_address': 'category_mail_ipv6_name_servers',
+    'internet_nl_mail_ipv6_ns_reach': 'category_mail_ipv6_name_servers',
+
+    'internet_nl_mail_ipv6_mx_address': 'category_mail_ipv6_mail_servers',
+    'internet_nl_mail_ipv6_mx_reach': 'category_mail_ipv6_mail_servers',
+
+    'internet_nl_mail_dnssec_mailto_exist': 'category_mail_dnssec_email_address_domain',
+    'internet_nl_mail_dnssec_mailto_valid': 'category_mail_dnssec_email_address_domain',
+    'internet_nl_mail_dnssec_mx_exist': 'category_mail_dnssec_mail_server_domain',
+    'internet_nl_mail_dnssec_mx_valid': 'category_mail_dnssec_mail_server_domain',
+
+    'internet_nl_mail_auth_dmarc_exist': 'category_mail_dashboard_auth_dmarc',
+    'internet_nl_mail_auth_dmarc_policy': 'category_mail_dashboard_auth_dmarc',
+    'internet_nl_mail_auth_dkim_exist': 'category_mail_dashboard_aut_dkim',
+    'internet_nl_mail_auth_spf_exist': 'category_mail_dashboard_aut_spf',
+    'internet_nl_mail_auth_spf_policy': 'category_mail_dashboard_aut_spf',
+
+    'internet_nl_mail_starttls_tls_available': 'category_mail_starttls_tls',
+    'internet_nl_mail_starttls_tls_version': 'category_mail_starttls_tls',
+    'internet_nl_mail_starttls_tls_ciphers': 'category_mail_starttls_tls',
+    'internet_nl_mail_starttls_tls_cipherorder': 'category_mail_starttls_tls',
+    'internet_nl_mail_starttls_tls_keyexchange': 'category_mail_starttls_tls',
+    'internet_nl_mail_starttls_tls_keyexchangehash': 'category_mail_starttls_tls',
+    'internet_nl_mail_starttls_tls_compress': 'category_mail_starttls_tls',
+    'internet_nl_mail_starttls_tls_secreneg': 'category_mail_starttls_tls',
+    'internet_nl_mail_starttls_tls_clientreneg': 'category_mail_starttls_tls',
+    'internet_nl_mail_starttls_tls_0rtt': 'category_mail_starttls_tls',
+
+    'internet_nl_mail_starttls_cert_chain': 'category_mail_starttls_certificate',
+    'internet_nl_mail_starttls_cert_pubkey': 'category_mail_starttls_certificate',
+    'internet_nl_mail_starttls_cert_sig': 'category_mail_starttls_certificate',
+    'internet_nl_mail_starttls_cert_domain': 'category_mail_starttls_certificate',
+
+    'internet_nl_mail_starttls_dane_exist': 'category_mail_starttls_dane',
+    'internet_nl_mail_starttls_dane_valid': 'category_mail_starttls_dane',
+    'internet_nl_mail_starttls_dane_rollover': 'category_mail_starttls_dane',
+
+    'internet_nl_mail_rpki_exists': 'category_mail_rpki_name_server',
+    'internet_nl_mail_rpki_valid': 'category_mail_rpki_name_server',
+    'internet_nl_mail_ns_rpki_exists': 'category_mail_rpki_name_mail_server',
+    'internet_nl_mail_ns_rpki_valid': 'category_mail_rpki_name_mail_server',
+    'internet_nl_mail_mx_ns_rpki_exists': 'category_mail_rpki_mail_server',
+    'internet_nl_mail_mx_ns_rpki_valid': 'category_mail_rpki_mail_server',
+
+    # 'internet_nl_web_legacy_category': 'internet_nl_web_legacy_category',
+    # 'internet_nl_mail_legacy_category': 'internet_nl_mail_legacy_category',
+}

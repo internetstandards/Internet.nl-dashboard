@@ -359,6 +359,32 @@ def translate_field(field_label, translation_dictionary: Dict[str, str]):
         'internet_nl_mail_dashboard_ipv6': 'test_mailipv6_label',
         'internet_nl_mail_dashboard_rpki': 'test_mailrpki_label',
 
+        "category_web_ipv6_name_server": 'results_domain_mail_ipv6_name_servers_label',
+        "category_web_ipv6_web_server": 'results_domain_ipv6_web_server_label',
+        "category_web_dnssec_dnssec": 'test_sitednssec_label',
+        "category_web_tls_http": 'results_domain_tls_https_label',
+        "category_web_tls_tls": 'results_domain_tls_tls_label',
+        "category_web_tls_certificate": 'results_domain_mail_tls_certificate_label',
+        "category_web_tls_dane": 'results_domain_mail_tls_dane_label',
+        "category_web_security_options_appsecpriv": 'results_domain_appsecpriv_http_headers_label',
+
+        'category_mail_ipv6_name_servers': 'results_domain_mail_ipv6_name_servers_label',
+        'category_mail_ipv6_mail_servers': 'results_mail_ipv6_mail_servers_label',
+        'category_mail_dnssec_email_address_domain': 'results_mail_dnssec_domain_label',
+        'category_mail_dnssec_mail_server_domain': 'results_mail_dnssec_mail_servers_label',
+        'category_mail_dashboard_auth_dmarc': 'results_mail_auth_dmarc_label',
+        'category_mail_dashboard_aut_dkim': 'results_mail_auth_dkim_label',
+        'category_mail_dashboard_aut_spf': 'results_mail_auth_spf_label',
+        'category_mail_starttls_tls': 'results_mail_tls_starttls_label',
+        'category_mail_starttls_certificate': 'results_domain_mail_tls_certificate_label',
+        'category_mail_starttls_dane': 'results_domain_mail_tls_dane_label',
+        'category_web_security_options_other': 'results_domain_appsecpriv_other_options_label',
+        'category_web_rpki_name_server': 'results_domain_mail_rpki_name_servers_label',
+        'category_web_rpki_web_server': 'results_domain_rpki_web_server_label',
+        'category_mail_rpki_name_server': 'results_domain_mail_rpki_name_servers_label',
+        'category_mail_rpki_name_mail_server': 'results_mail_rpki_mx_name_servers_label',
+        'category_mail_rpki_mail_server': 'results_mail_rpki_mail_servers_label',
+
         'internet_nl_score': '% Score',
         'internet_nl_score_report': 'Report',
 
@@ -376,6 +402,7 @@ def translate_field(field_label, translation_dictionary: Dict[str, str]):
         'internet_nl_mail_legacy_category_ipv6': 'IPv6',
         'internet_nl_mail_legacy_ipv6_nameserver': 'IPv6 nameserver',
         'internet_nl_mail_legacy_ipv6_mailserver': 'IPv6 mailserver',
+        'internet_nl_mail_legacy_category': 'Extra Fields',
 
         'internet_nl_web_legacy_dnssec': 'DNSSEC',
         'internet_nl_web_legacy_tls_available': 'TLS available',
@@ -385,6 +412,7 @@ def translate_field(field_label, translation_dictionary: Dict[str, str]):
         'internet_nl_web_legacy_category_ipv6': 'IPv6',
         'internet_nl_web_legacy_ipv6_nameserver': 'IPv6 nameserver',
         'internet_nl_web_legacy_ipv6_webserver': 'IPv6 webserver',
+        'internet_nl_web_legacy_category': 'Extra Fields',
         # Deleted on request
         # 'internet_nl_web_legacy_dane': 'DANE',
 
@@ -398,6 +426,14 @@ def translate_field(field_label, translation_dictionary: Dict[str, str]):
         'legacy': 'Extra Fields',
         'internet_nl_mail_dashboard_overall_score': 'Score',
         'internet_nl_web_overall_score': 'Score',
+
+        'overall': "Score",
+        "ipv6": "Modern address (IPv6)",
+        "dnssec": "DNSSEC",
+        "tls": "Secure connection (HTTPS)",
+        "appsecpriv": "HTTP security headers / Other",
+        "rpki": "Route authorisation (RPKI)",
+        "auth": "Authenticity marks against phishing (DMARC, DKIM and SPF)",
     }
 
     # handle inconsistent naming and (why cannot i load something else than django.po?)
