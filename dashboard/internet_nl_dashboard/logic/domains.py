@@ -758,7 +758,7 @@ def update_spreadsheet_upload_(upload_id: int, status: str = "pending", message:
     uploads.save()
 
 
-def _add_to_urls_to_urllist(
+def _add_to_urls_to_urllist(  # pylint: disable=too-many-arguments
         account: Account,
         current_list: UrlList,
         urls: List[str],
