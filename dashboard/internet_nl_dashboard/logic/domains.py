@@ -170,7 +170,8 @@ def create_list(account: Account, user_input: Dict) -> Dict[str, Any]:
         'scheduled_next_scan': determine_next_scan_moment(frequency),
         'enable_report_sharing_page': bool(user_input.get('enable_report_sharing_page', '')),
         'automatically_share_new_reports': bool(user_input.get('automatically_share_new_reports', '')),
-        'default_public_share_code_for_new_reports': user_input.get('default_public_share_code_for_new_reports', '')
+        'default_public_share_code_for_new_reports': user_input.get(
+            'default_public_share_code_for_new_reports', '')[:64]
     }
 
     urllist = UrlList(**data)
@@ -359,7 +360,8 @@ def update_list_settings(account: Account, user_input: Dict) -> Dict[str, Any]:
         'scheduled_next_scan': determine_next_scan_moment(frequency),
         'enable_report_sharing_page': bool(user_input.get('enable_report_sharing_page', '')),
         'automatically_share_new_reports': bool(user_input.get('automatically_share_new_reports', '')),
-        'default_public_share_code_for_new_reports': user_input.get('default_public_share_code_for_new_reports', '')
+        'default_public_share_code_for_new_reports': user_input.get(
+            'default_public_share_code_for_new_reports', '')[:64]
     }
 
     updated_urllist = UrlList(**data)
@@ -409,7 +411,7 @@ def keys_are_present_in_object(expected_keys: List[str], any_object: Dict[str, A
 
 
 def validate_list_name(list_name):
-    return list_name[0:120]
+    return list_name[:120]
 
 
 # todo: this can be a generic tuple check.
