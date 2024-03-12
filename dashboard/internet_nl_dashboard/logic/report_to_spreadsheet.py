@@ -14,17 +14,17 @@ from openpyxl.formatting.rule import CellIsRule
 from openpyxl.styles import Font, PatternFill
 from websecmap.reporting.diskreport import retrieve_report
 
-from dashboard.internet_nl_dashboard.logic import MAIL_AUTH_CATEGORY  # pylint: disable=duplicate-code
-from dashboard.internet_nl_dashboard.logic import (MAIL_AUTH_FIELDS, MAIL_DNSSEC_CATEGORY, MAIL_DNSSEC_FIELDS,
-                                                   MAIL_IPV6_CATEGORY, MAIL_IPV6_FIELDS, MAIL_LEGACY_FIELDS,
-                                                   MAIL_OVERALL_FIELDS, MAIL_RPKI_CATEGORY, MAIL_RPKI_FIELDS,
-                                                   MAIL_TLS_CATEGORY, MAIL_TLS_CERTIFICATE_FIELDS, MAIL_TLS_DANE_FIELDS,
-                                                   MAIL_TLS_TLS_FIELDS, WEB_APPSECPRIV_CATEGORY, WEB_APPSECPRIV_FIELDS,
-                                                   WEB_DNSSEC_CATEGORY, WEB_DNSSEC_FIELDS, WEB_IPV6_CATEGORY,
-                                                   WEB_IPV6_FIELDS, WEB_LEGACY_CATEGORY, WEB_LEGACY_FIELDS,
-                                                   WEB_OVERALL_FIELDS, WEB_RPKI_CATEGORY, WEB_RPKI_FIELDS,
-                                                   WEB_TLS_CATEGORY, WEB_TLS_CERTIFICATE_FIELDS, WEB_TLS_DANE_FIELDS,
-                                                   WEB_TLS_HTTP_FIELDS, WEB_TLS_TLS_FIELDS)
+from dashboard.internet_nl_dashboard.logic import FIELD_TO_CATEGORY_MAP  # pylint: disable=duplicate-code
+from dashboard.internet_nl_dashboard.logic import (MAIL_AUTH_CATEGORY, MAIL_AUTH_FIELDS, MAIL_DNSSEC_CATEGORY,
+                                                   MAIL_DNSSEC_FIELDS, MAIL_IPV6_CATEGORY, MAIL_IPV6_FIELDS,
+                                                   MAIL_LEGACY_FIELDS, MAIL_OVERALL_FIELDS, MAIL_RPKI_CATEGORY,
+                                                   MAIL_RPKI_FIELDS, MAIL_TLS_CATEGORY, MAIL_TLS_CERTIFICATE_FIELDS,
+                                                   MAIL_TLS_DANE_FIELDS, MAIL_TLS_TLS_FIELDS, WEB_APPSECPRIV_CATEGORY,
+                                                   WEB_APPSECPRIV_FIELDS, WEB_DNSSEC_CATEGORY, WEB_DNSSEC_FIELDS,
+                                                   WEB_IPV6_CATEGORY, WEB_IPV6_FIELDS, WEB_LEGACY_CATEGORY,
+                                                   WEB_LEGACY_FIELDS, WEB_OVERALL_FIELDS, WEB_RPKI_CATEGORY,
+                                                   WEB_RPKI_FIELDS, WEB_TLS_CATEGORY, WEB_TLS_CERTIFICATE_FIELDS,
+                                                   WEB_TLS_DANE_FIELDS, WEB_TLS_HTTP_FIELDS, WEB_TLS_TLS_FIELDS)
 from dashboard.internet_nl_dashboard.logic.internet_nl_translations import get_po_as_dictionary_v2, translate_field
 from dashboard.internet_nl_dashboard.models import Account, TaggedUrlInUrllist, Url, UrlListReport
 
@@ -152,6 +152,7 @@ def create_spreadsheet(account: Account, report_id: int):
     # add an empty row for clarity
     data += [[]]
     data += [category_headers(protocol)]
+    data += [subcategory_headers(protocol)]
     data += [headers(protocol)]
     data += urllistreport_to_spreadsheet_data(category_name=report.urllist.name, urls=urls, protocol=protocol,
                                               tags=url_tag_mapping)
@@ -238,9 +239,10 @@ def upgrade_excel_spreadsheet(spreadsheet_data):
         for cell in data_columns:
             worksheet[f'{cell}11'].font = Font(bold=True)
             worksheet[f'{cell}12'].font = Font(bold=True)
+            worksheet[f'{cell}13'].font = Font(bold=True)
 
         # Freeze pane to make navigation easier.
-        worksheet.freeze_panes = worksheet['K13']
+        worksheet.freeze_panes = worksheet['K14']
 
         # there is probably a feature that puts this in a single conditional value.
         conditional_rules = {
@@ -309,6 +311,18 @@ def category_headers(protocol: str = 'dns_soa'):
     return sheet_headers
 
 
+def subcategory_headers(protocol: str = 'dns_soa'):
+    sheet_headers = ['', '', '', '', '', '', '']
+    for group in SANE_COLUMN_ORDER[protocol]:
+        sheet_headers += SANE_COLUMN_ORDER[protocol][group]
+        # add empty thing after each group to make distinction per group clearer
+        sheet_headers += ['']
+
+    # translate them:
+    return [translate_field(FIELD_TO_CATEGORY_MAP.get(header, ''),
+                            translation_dictionary=po_file_as_dictionary) for header in sheet_headers]
+
+
 def headers(protocol: str = 'dns_soa'):
     sheet_headers = ['List', 'Url', "Subdomain", "Domain", "Suffix", 'Tags', 'InStats']
     for group in SANE_COLUMN_ORDER[protocol]:
@@ -317,9 +331,7 @@ def headers(protocol: str = 'dns_soa'):
         sheet_headers += ['']
 
     # translate them:
-    sheet_headers = [translate_field(header, translation_dictionary=po_file_as_dictionary) for header in sheet_headers]
-
-    return sheet_headers
+    return [translate_field(header, translation_dictionary=po_file_as_dictionary) for header in sheet_headers]
 
 
 def formula_row(function: str, protocol: str = 'dns_soa'):

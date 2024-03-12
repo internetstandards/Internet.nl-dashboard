@@ -4,6 +4,49 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## V4.3.0 - t.b.d.
+
+Version 4.3.0 targets to support creating lists and viewing reports up to 10.000 domains.
+
+### Added
+- Password change functionality
+
+### Changed
+- Reduced the amount of memory needed to view reports
+- Improved interaction of uploading spreadsheets with domain
+- Excel spreadsheets are now formatted > 5000 rows
+- Improved a11y
+- Some changes on the signup form and e-mail
+- The results table in the report is now much higher
+- Footer links have changed
+- API 2.4.0 support
+
+### Bugfixes
+- 409 Deleting lists also deletes associated reports
+- 338 domain was missing in the example sharing url
+- 486 password was not set when sharing a report with a password the first time
+- 344 label fuction was not working
+- 471 Timeline becomes ugly with a lot of reports
+- Several other small issues
+
+
+## V4.2.2 - 6 nov 2023
+
+### Bugfixes
+- 487 Spreadsheet uploads without tags crash
+- 483 Tags don't overwrite on upload
+- Fixed crash INTERNET-NL-DASHBOARD-69: loading translations of a non existing language, template did not exist. Falls back to a supported language if no language is supplied
+- Update websecmap and other dependencies to fix vulnerabilities
+
+
+## V4.2.1 - 19 sept 2023
+
+### Bugfixes
+- Add tags to spreadsheet exports
+- 463 Shared reports without passwords are not loaded
+- 466 Filtering on report removes entire table
+
+
 ## V4.2.0 - 10 July 2023
 
 ### Added

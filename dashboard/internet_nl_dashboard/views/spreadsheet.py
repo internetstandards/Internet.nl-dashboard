@@ -9,8 +9,9 @@ from django.shortcuts import render
 from django.views.decorators.http import require_http_methods
 from websecmap.app.common import JSEncoder
 
-from dashboard.internet_nl_dashboard.logic.spreadsheet import (get_upload_history, import_step_1, import_step_2,
-                                                               save_file, upload_domain_spreadsheet_to_list)
+from dashboard.internet_nl_dashboard.logic.spreadsheet import (get_upload_history, import_step_2,
+                                                               log_spreadsheet_upload, save_file,
+                                                               upload_domain_spreadsheet_to_list)
 from dashboard.internet_nl_dashboard.views import LOGIN_URL, get_account, get_dashboarduser
 
 log = logging.getLogger(__package__)
@@ -32,26 +33,29 @@ def upload(request) -> HttpResponse:
 def upload_spreadsheet(request) -> HttpResponse:
     # Instead of some json message, give a full page, so the classic uploader also functions pretty well.
     # todo: Or should this be a redirect, so the 'reload' page does not try to resend the form...
+    log.debug("Uploading")
     response = upload(request)
 
     # The status code is needed for dropzone. So a redirect status code will not work properly.
     response.status_code = 400
 
+    user = get_dashboarduser(request)
+
     # happens when no file is sent
     if 'file' not in request.FILES:
         return response
 
+    # a request of 25k domains will take 12 seconds, which is already too long for interaction.
+    # so all steps are now parallelized.
     if request.method == 'POST' and request.FILES['file']:
+        log.debug("Saving file")
         file = save_file(request.FILES['file'])
-        status = import_step_1(user=get_dashboarduser(request), file=file)
+        upload_data = log_spreadsheet_upload(
+            user=user, file=file, status='[1/3] Initializing', message="[1/3] Initializing upload..."
+        )
+        uploadlog_id = upload_data['id']
 
-        if status['error']:
-            # The GUI wants the error to contain some text: As that text is sensitive to xss(?) (probably only
-            # if you see the output directly, not via javascript or json).
-            status['error'] = status['message']
-            return response
-
-        group([import_step_2.si(get_dashboarduser(request).id, file)]).apply_async()
+        group([import_step_2.si(user.id, file, uploadlog_id)]).apply_async()
 
         response.status_code = 200
         return response
