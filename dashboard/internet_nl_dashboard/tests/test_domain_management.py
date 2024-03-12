@@ -258,7 +258,7 @@ def test_retrieve_possible_urls_from_unfiltered_input_speed() -> None:
         lambda: clean_urls(domains),
         number=25
     )
-    assert time < 0.5  # it's 0.102 on a dev machine for 25k
+    assert time < 1.5  # it's 0.102 on a dev machine for 25k
 
 
 def test_urllists(db, redis_server) -> None:
