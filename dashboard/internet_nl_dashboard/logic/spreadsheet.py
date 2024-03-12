@@ -31,7 +31,6 @@ from actstream import action
 from constance import config
 from django.conf import settings
 from django.core.files.storage import FileSystemStorage
-from django.db import transaction
 from websecmap.celery import app
 from xlrd import XLRDError
 
@@ -199,17 +198,27 @@ def get_data(file: str) -> Dict[str, Dict[str, Dict[str, list]]]:
 
 def get_upload_history(account: Account) -> List:
     uploads = UploadLog.objects.all().filter(user__account=account).order_by('-pk')
-    data = []
-
-    for upload in uploads:
-        data.append({
+    return [
+        {
             'original_filename': upload.original_filename,
             'message': upload.message,
             'upload_date': upload.upload_date,
             'filesize': upload.filesize,
-        })
+        }
+        for upload in uploads
+    ]
 
-    return data
+
+def update_spreadsheet_upload(upload_id: int, status: str = "pending", message: str = "") -> None:
+    # user feedback is important on large uploads, as it may take a few minutes to hours it's nice to
+    # get some feedback on how much stuff has been processed (if possible).
+    uploads = UploadLog.objects.all().filter(upload_id=upload_id).first()
+    if not uploads:
+        return
+
+    uploads.status = status
+    uploads.message = message
+    uploads.save()
 
 
 def log_spreadsheet_upload(user: DashboardUser, file: str, status: str = "", message: str = "") -> dict:
@@ -232,13 +241,15 @@ def log_spreadsheet_upload(user: DashboardUser, file: str, status: str = "", mes
     else:
         original_filename = internal_filename
 
-    upload = {'user': user,
-              'original_filename': original_filename[0:250],
-              'internal_filename': internal_filename[0:250],
-              'status': status[0:250],
-              'message': message[0:250],
-              'upload_date': datetime.now(timezone.utc),
-              'filesize': os.path.getsize(file)}
+    upload = {
+        'user': user,
+        'original_filename': original_filename[:250],
+        'internal_filename': internal_filename[:250],
+        'status': status[:250],
+        'message': message[:250],
+        'upload_date': datetime.now(timezone.utc),
+        'filesize': os.path.getsize(file),
+    }
 
     uploadlog = UploadLog(**upload)
     uploadlog.save()
@@ -251,7 +262,7 @@ def log_spreadsheet_upload(user: DashboardUser, file: str, status: str = "", mes
 
 # Do not accept partial imports. Or all, or nothing in a single transaction.
 # Depending on the speed this needs to become a task, as the wait will be too long.
-@transaction.atomic
+# transaction atomic cannot happen on very large lists it seems...
 def save_data(account: Account, data: Dict[str, Dict[str, Dict[str, set]]]):
     return {
         urllist: save_urllist_content_by_name(account, urllist, data[urllist])
