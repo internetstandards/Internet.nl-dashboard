@@ -1,10 +1,9 @@
 # SPDX-License-Identifier: Apache-2.0
 import logging
-import re
 import sys
 import unicodedata
 from datetime import datetime, timezone
-from typing import Any, Dict, List, Tuple, Union
+from typing import Any, Dict, List, Set, Tuple, Union
 
 import pyexcel as p
 import tldextract
@@ -20,8 +19,8 @@ from websecmap.scanners.scanner.dns_endpoints import compose_discover_task
 
 from dashboard.celery import app
 from dashboard.internet_nl_dashboard.logic import operation_response
-from dashboard.internet_nl_dashboard.models import (Account, AccountInternetNLScan, TaggedUrlInUrllist, UrlList,
-                                                    UrlListReport, determine_next_scan_moment)
+from dashboard.internet_nl_dashboard.models import (Account, AccountInternetNLScan, TaggedUrlInUrllist, UploadLog,
+                                                    UrlList, UrlListReport, determine_next_scan_moment)
 from dashboard.internet_nl_dashboard.scanners.scan_internet_nl_per_account import initialize_scan, update_state
 from dashboard.internet_nl_dashboard.views.download_spreadsheet import create_spreadsheet_download
 
@@ -600,7 +599,7 @@ def retrieve_possible_urls_from_unfiltered_input(unfiltered_input: str) -> Tuple
     # we do everything lowercase:
     unfiltered_input = unfiltered_input.lower()
 
-    # Protocols are irrelevant:
+    # Protocol is removed by tldextract
     # unfiltered_input = unfiltered_input.replace("http://", "")
     # unfiltered_input = unfiltered_input.replace("https://", "")
 
@@ -620,22 +619,24 @@ def retrieve_possible_urls_from_unfiltered_input(unfiltered_input: str) -> Tuple
     unfiltered_input = "".join(ch for ch in unfiltered_input if unicodedata.category(ch)[0] != "C")
 
     # Split also removes double spaces etc
-    unfiltered_input_list: List[str] = unfiltered_input.split(" ")
+    unfiltered_input_list: Set[str] = set(unfiltered_input.split(" "))
 
     # this is done above
     # now remove _all_ whitespace characters
     # unfiltered_input_list = [re.sub(r"\s+", " ", u) for u in unfiltered_input_list]
 
-    # this is done with tldextrac
+    # this is done with tldextract
     # remove port numbers and paths
     # unfiltered_input_list = [re.sub(r":[^\s]*", "", u) for u in unfiltered_input_list]
 
-    # this is done with tldextrac
+    # this is done with tldextract
     # remove paths, directories etc
     # unfiltered_input_list = [re.sub(r"/[^\s]*", "", u) for u in unfiltered_input_list]
 
-    # Remove empty values
-    while "" in unfiltered_input_list:
+    # Remove empty values, only once because it's a set
+    # The large number of spaces was the reason the function was very slow(!) It took 6 seconds for 25 domains.
+    # But with using a set it's not even hitting 0.1 second for the same dataset
+    if "" in unfiltered_input_list:
         unfiltered_input_list.remove("")
 
     # make list unique
@@ -687,7 +688,8 @@ def add_domains_from_raw_user_data(account: Account, user_input: Dict[str, Any])
     return operation_response(success=True, message="add_domains_valid_urls_added", data=result)
 
 
-def save_urllist_content_by_name(account: Account, urllist_name: str, urls: Dict[str, Dict[str, list]]) -> dict:
+def save_urllist_content_by_name(account: Account, urllist_name: str, urls: Dict[str, Dict[str, list]],
+                                 uploadlog_id: int = None, pending_message: str = None) -> dict:
     """
     This 'by name' variant is a best guess when a spreadsheet upload with list names is used.
 
@@ -699,13 +701,16 @@ def save_urllist_content_by_name(account: Account, urllist_name: str, urls: Dict
     Do not attempt to create a list if there are no valid urls for it, that would be a waste.
 
     Urls are just strings, which is enough to determine if it should be added.
+
+    uploadlog_id and pending_message are used for user feedback, otherwise very long lists will never have interaction
     """
 
     urllist = get_or_create_list_by_name(account=account, name=urllist_name)
-    return save_urllist_content_by_id(account, urllist.id, urls)
+    return save_urllist_content_by_id(account, urllist.id, urls, uploadlog_id, pending_message)
 
 
-def save_urllist_content_by_id(account: Account, urllist_id: id, unfiltered_urls: Dict[str, Dict[str, list]]) -> dict:
+def save_urllist_content_by_id(account: Account, urllist_id: id, unfiltered_urls: Dict[str, Dict[str, list]],
+                               uploadlog_id: int = None, pending_message: str = None) -> dict:
     urllist = UrlList.objects.all().filter(account=account, id=urllist_id, is_deleted=False).first()
 
     if not urllist:
@@ -722,9 +727,14 @@ def save_urllist_content_by_id(account: Account, urllist_id: id, unfiltered_urls
     if cleaned_urls['correct']:
         # this operation takes a while, to speed it up urls are added async.
         counters = _add_to_urls_to_urllist(account, urllist, urls=cleaned_urls['correct'],
-                                           urls_with_tags_mapping=unfiltered_urls)
+                                           urls_with_tags_mapping=unfiltered_urls,
+                                           uploadlog_id=uploadlog_id, pending_message=pending_message)
     else:
         counters = {'added_to_list': 0, 'already_in_list': 0}
+
+    update_spreadsheet_upload_.si(uploadlog_id, "[2/3] Processing",
+                                  f"{pending_message}. Added {counters['added_to_list']} to {urllist.name}. "
+                                  f"{counters['already_in_list']} already  list.")
 
     return {
         'incorrect_urls': cleaned_urls['incorrect'],
@@ -734,11 +744,27 @@ def save_urllist_content_by_id(account: Account, urllist_id: id, unfiltered_urls
     }
 
 
+@app.task()
+def update_spreadsheet_upload_(upload_id: int, status: str = "pending", message: str = "") -> None:
+    # double to prevent circulair import. This is not nice and should be removed.
+    # user feedback is important on large uploads, as it may take a few minutes to hours it's nice to
+    # get some feedback on how much stuff has been processed (if possible).
+    uploads = UploadLog.objects.all().filter(id=upload_id).first()
+    if not uploads:
+        return
+
+    uploads.status = status
+    uploads.message = message
+    uploads.save()
+
+
 def _add_to_urls_to_urllist(
         account: Account,
         current_list: UrlList,
         urls: List[str],
-        urls_with_tags_mapping: Dict[str, Dict[str, list]] = None
+        urls_with_tags_mapping: Dict[str, Dict[str, list]] = None,
+        uploadlog_id: int = None,
+        pending_message: str = None
 ) -> Dict[str, Any]:
 
     already_existing_urls = UrlList.objects.all().filter(
@@ -751,16 +777,29 @@ def _add_to_urls_to_urllist(
     # doing this in a group will create a memory overflow with 50k tasks, as each task contains the 50k other tasks
     # with each of them taking 250kb of ram. This quickly amounts to hundreds of megs or gigs. Therefore split
     # these tasks to individual tasks.
-    for url in new_urls:
-        tasks = group([
-            add_new_url_to_list_async.si(url, current_list.id, urls_with_tags_mapping)
-            | discover_endpoints.s()]
+    # Run them a to z so there is a sense of progress per list.
+    for url in sorted(new_urls):
+        tasks = group(
+            [
+                add_new_url_to_list_async.si(url, current_list.id, urls_with_tags_mapping)
+                # discovering endpoints is not a hard requirements, this is done before a scan starts anyway
+                # and will only slow down creating the list.
+                # | discover_endpoints.s()
+                | update_spreadsheet_upload_.si(uploadlog_id, "[3/3] Processing",
+                                                f"{pending_message}. Added: {url} to {current_list.name}.")
+            ]
         )
         # pytest async tests requires a running stack, which is more complex. Therefore trust that apply_async works.
         if "pytest" in sys.modules:
             tasks.apply()
         else:
             tasks.apply_async()
+
+    # This might be performed ealier than above tasks in the queue. Therefore perform it so that it is certainly handled
+    for _ in range(200):
+        group([update_spreadsheet_upload_.si(uploadlog_id, "[3/3] Processing",
+                                             f"[3/3] Processing completed for list {current_list.name}.")]
+              ).apply_async()
 
     return {
         'added_to_list': len(new_urls),

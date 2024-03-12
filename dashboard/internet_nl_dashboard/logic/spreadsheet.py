@@ -116,7 +116,11 @@ def is_valid_extension(file: str) -> bool:
 
 def get_sheet(file: str) -> List:
     try:
-        sheet = p.get_sheet(file_name=file, name_columns_by_row=0)
+        # perhaps some files have additional columns, which are not needed as part of the imprt
+        # do not try to be smart about types, as everything in the uploads are strings
+        # There is no alternative, it just takes 12 seconds for a 25k line file
+        sheet = p.get_sheet(file_name=file, name_columns_by_row=0, column_limit=3, skip_empty_rows=True,
+                            auto_detect_int=False, auto_detect_datetime=False, auto_detect_float=False)
     except XLRDError:
         # xlrd.biffh.XLRDError: Unsupported format, or corrupt file: Expected BOF record; found b'thisfile'
         return []
@@ -148,11 +152,13 @@ def get_data(file: str) -> Dict[str, Dict[str, Dict[str, list]]]:
 
     data: Dict[str, Any] = {}
 
+    log.debug("Running get_sheet...")
     sheet = get_sheet(file=file)
     if not sheet:
         return data
 
     # Skips the first entry
+    log.debug("Doing some calculation on retrieved data")
     for row in sheet:
         # Do not handle CSV files that only contain urls on a newline. Return nothing.
         if len(row) < 2:
@@ -191,6 +197,7 @@ def get_data(file: str) -> Dict[str, Dict[str, Dict[str, list]]]:
     if '' in data:
         data.pop('')
 
+    log.debug("Freeeing resources")
     p.free_resources()
 
     return data
@@ -212,7 +219,7 @@ def get_upload_history(account: Account) -> List:
 def update_spreadsheet_upload(upload_id: int, status: str = "pending", message: str = "") -> None:
     # user feedback is important on large uploads, as it may take a few minutes to hours it's nice to
     # get some feedback on how much stuff has been processed (if possible).
-    uploads = UploadLog.objects.all().filter(upload_id=upload_id).first()
+    uploads = UploadLog.objects.all().filter(id=upload_id).first()
     if not uploads:
         return
 
@@ -254,6 +261,8 @@ def log_spreadsheet_upload(user: DashboardUser, file: str, status: str = "", mes
     uploadlog = UploadLog(**upload)
     uploadlog.save()
 
+    upload['id'] = uploadlog.id
+
     # Sprinkling an activity stream action.
     action.send(user, verb='uploaded spreadsheet', target=uploadlog, public=False)
 
@@ -263,9 +272,10 @@ def log_spreadsheet_upload(user: DashboardUser, file: str, status: str = "", mes
 # Do not accept partial imports. Or all, or nothing in a single transaction.
 # Depending on the speed this needs to become a task, as the wait will be too long.
 # transaction atomic cannot happen on very large lists it seems...
-def save_data(account: Account, data: Dict[str, Dict[str, Dict[str, set]]]):
+def save_data(account: Account, data: Dict[str, Dict[str, Dict[str, set]]],
+              uploadlog_id: int = None, pending_message: str = None):
     return {
-        urllist: save_urllist_content_by_name(account, urllist, data[urllist])
+        urllist: save_urllist_content_by_name(account, urllist, data[urllist],  uploadlog_id, pending_message)
         for urllist in data
     }
 
@@ -302,6 +312,7 @@ def get_data_from_spreadsheet(
         return has_errors, "error"
 
     # urllist: urls
+    log.debug("Getting data from file")
     domain_lists: Dict[str, Dict[str, Dict[str, list]]] = get_data(file)
     if not domain_lists:
         return upload_error("The uploaded file contained no data. This might happen when the file is not in the "
@@ -309,6 +320,7 @@ def get_data_from_spreadsheet(
 
     # sanity check on data length and number of lists (this does not prevent anyone from trying to upload the same
     # file over and over again), it's just a usability feature against mistakes.
+    log.debug("Calculating number of urls")
     number_of_urls = sum(len(urls) for _, urls in domain_lists.items())
 
     if len(domain_lists) > config.DASHBOARD_MAXIMUM_LISTS_PER_SPREADSHEET:
@@ -321,7 +333,9 @@ def get_data_from_spreadsheet(
                             "The uploaded spreadsheet contains more than this limit. Try again in smaller batches.",
                             user, file), "error"
 
+    log.debug("Checking url data per list inside the spreadsheet")
     for urllist, urls in domain_lists.items():
+        log.debug(f"Checking url data for {urllist}")
         possible_urls, _ = retrieve_possible_urls_from_unfiltered_input(", ".join(urls))
         url_check = clean_urls(possible_urls)
 
@@ -334,37 +348,27 @@ def get_data_from_spreadsheet(
     return domain_lists, number_of_urls
 
 
-def import_step_1(user: DashboardUser, file: str) -> Dict[str, Any]:
-    domain_lists, number_of_urls = get_data_from_spreadsheet(user, file)
-    if number_of_urls == "error":
-        return domain_lists
-
-    return {
-        'error': False,
-        'success': True,
-        'message': "Spreadsheet will be uploaded asynchronously",
-        'details': {},
-        'status': 'success'
-    }
-
-
 @app.task(queue='storage')
-def import_step_2(user: int, file: str) -> Dict[str, Any]:
+def import_step_2(user: int, file: str, uploadlog_id: int):
 
     user = DashboardUser.objects.all().filter(id=user).first()
     if not user:
-        return upload_error("User does not exist", user, file)
+        update_spreadsheet_upload(uploadlog_id, status="error", message="User does not exist")
+        return
 
     domain_lists, number_of_urls = get_data_from_spreadsheet(user, file)
     if number_of_urls == "error":
-        return domain_lists
+        update_spreadsheet_upload(uploadlog_id, status="error", message=domain_lists['message'])
+        return
 
-    log_spreadsheet_upload(user=user, file=file, status='pending', message="Uploading and processing spreadsheet...")
+    step_2_message = f"[2/3] Saving {len(domain_lists)} lists and {number_of_urls} urls. This can take a while."
+    update_spreadsheet_upload(uploadlog_id, status='[2/3] Processing', message=step_2_message)
 
     # File system full, database full.
-    details = save_data(user.account, domain_lists)
+    details = save_data(user.account, domain_lists, uploadlog_id=uploadlog_id, pending_message=step_2_message)
 
     # Make the details a little bit easier for humans to understand:
+    # It's normal that this message is sent earlier than the processing of each domain.
     details_str = ""
     error_set = False
     for urllist, detail in details.items():
@@ -375,14 +379,14 @@ def import_step_2(user: int, file: str) -> Dict[str, Any]:
             details_str += f"{urllist}: new: {detail['added_to_list']}, existing: {detail['already_in_list']}; "
 
     if not error_set:
-        message = "Spreadsheet uploaded successfully. " \
+        message = "[3/3] Spreadsheet uploaded successfully. " \
                   f"Added {len(domain_lists)} lists and {number_of_urls} urls. Details: {details_str}"
     else:
-        message = "Spreadsheet upload failed. " \
+        message = "[3/3] Spreadsheet upload failed. " \
                   f"Might not have added {len(domain_lists)} lists and {number_of_urls} urls. Details: {details_str}"
-    response = {'error': False, 'success': True, 'message': message, 'details': details, 'status': 'success'}
-    log_spreadsheet_upload(user=user, file=file, status='success', message=message)
-    return response
+
+    update_spreadsheet_upload(uploadlog_id, status='[3/3] Finished', message=message)
+    return
 
 
 def upload_domain_spreadsheet_to_list(account: Account, user: DashboardUser, urllist_id: int, file: str):
