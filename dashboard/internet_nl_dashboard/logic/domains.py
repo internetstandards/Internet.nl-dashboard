@@ -732,9 +732,9 @@ def save_urllist_content_by_id(account: Account, urllist_id: id, unfiltered_urls
     else:
         counters = {'added_to_list': 0, 'already_in_list': 0}
 
-    update_spreadsheet_upload_.si(uploadlog_id, "[2/3] Processing",
-                                  f"{pending_message}. Added {counters['added_to_list']} to {urllist.name}. "
-                                  f"{counters['already_in_list']} already  list.")
+    update_spreadsheet_upload_(uploadlog_id, "[2/3] Processing",
+                               f"{pending_message} Added {counters['added_to_list']} to {urllist.name}. "
+                               f"{counters['already_in_list']} already  list.")
 
     return {
         'incorrect_urls': cleaned_urls['incorrect'],
@@ -744,7 +744,7 @@ def save_urllist_content_by_id(account: Account, urllist_id: id, unfiltered_urls
     }
 
 
-@app.task()
+@app.task(ignore_result=True)
 def update_spreadsheet_upload_(upload_id: int, status: str = "pending", message: str = "") -> None:
     # double to prevent circulair import. This is not nice and should be removed.
     # user feedback is important on large uploads, as it may take a few minutes to hours it's nice to
@@ -807,7 +807,7 @@ def _add_to_urls_to_urllist(  # pylint: disable=too-many-arguments
     }
 
 
-@app.task(queue="storage")
+@app.task(queue="storage", ignore_result=True)
 def add_new_url_to_list_async(url: str, current_list_id: int, urls_with_tags_mapping: Dict[str, Dict[str, set]] = None):
     db_url = Url.add(url)
     urllist = UrlList.objects.all().filter(id=current_list_id).first()
@@ -822,7 +822,7 @@ def add_new_url_to_list_async(url: str, current_list_id: int, urls_with_tags_map
     return db_url.id
 
 
-@app.task(queue="storage")
+@app.task(queue="storage", ignore_result=True)
 def discover_endpoints(url_id):
     # always try to find a few dns endpoints...
     compose_discover_task(urls_filter={'pk': url_id}).apply_async()

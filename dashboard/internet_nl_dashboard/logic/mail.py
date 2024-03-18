@@ -275,7 +275,7 @@ def unsubscribe(feed: str = "scan_finished", unsubscribe_code: str = ""):
     return {'unsubscribed': True}
 
 
-@app.task(queue='storage')
+@app.task(queue='storage', ignore_result=True)
 def send_queued_mail():
     """
     To use this, add a periodic task. The signature is:

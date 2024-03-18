@@ -46,7 +46,7 @@ def process_application(request):
     return JsonResponse(operation_response(success=True, message="access_requested"))
 
 
-@app.task(queue="storage")
+@app.task(queue="storage", ignore_result=True)
 def send_mail_async(form_data):
     email_subject = "Access to API / dashboard requested"
     json_content = json.dumps({"form_data": form_data}, indent=4)

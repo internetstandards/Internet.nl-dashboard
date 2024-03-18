@@ -222,7 +222,7 @@ def get_report(account: Account, report_id: int) -> str:
     return data
 
 
-@app.task(queue="storage")
+@app.task(queue="storage", ignore_result=True)
 def log_report_access_async(report_id: int, account_id: int):
     # do this async to speed up report retrieval. Don't execute extra queries when retrieving data...
 
