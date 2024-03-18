@@ -55,7 +55,7 @@ def upload_spreadsheet(request) -> HttpResponse:
         )
         uploadlog_id = upload_data['id']
 
-        group([import_step_2.si(user.id, file, uploadlog_id)]).apply_async()
+        group(import_step_2.si(user.id, file, uploadlog_id)).apply_async()
 
         response.status_code = 200
         return response

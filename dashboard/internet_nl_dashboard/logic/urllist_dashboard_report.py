@@ -112,7 +112,7 @@ def create_dashboard_report_at(urllist: UrlList, at_when: datetime, scan_type: s
     return rate_urllist_on_moment(urllist, when=at_when, prevent_duplicates=False, scan_type=scan_type)
 
 
-@app.task(queue='storage')
+@app.task(queue='storage', ignore_result=True)
 def rate_urllists_now(urllists: List[UrlList], prevent_duplicates: bool = True, scan_type: str = "web"):
     for urllist in urllists:
         now = datetime.now(timezone.utc)

@@ -395,7 +395,7 @@ def processing_scan_results(scan_id: int):
                  | copy_state_from_websecmap_scan.si(scan.id))
 
 
-@app.task(queue="storage")
+@app.task(queue="storage", ignore_result=True)
 def copy_state_from_websecmap_scan(scan_id: int):
     scan = AccountInternetNLScan.objects.all().filter(id=scan_id).first()
     if not scan or not scan.scan:
@@ -575,7 +575,7 @@ def upgrade_report_with_statistics(urllistreport_id: int) -> int:
     return int(urllistreport.pk)
 
 
-@app.task(queue='storage')
+@app.task(queue='storage', ignore_result=True)
 def upgrade_report_with_unscannable_urls(urllistreport_id: int, scan_id: int):
     """
     Urls that cannot be scanned using the internet.nl website are not allowed to be scanned. This is where endpoint
@@ -691,7 +691,7 @@ def check_retrieved_scannable_urls(urls: List[int]):
     return "retrieved scannable urls"
 
 
-@app.task(queue='storage')
+@app.task(queue='storage', ignore_result=True)
 def update_state(state: str, scan_id: int) -> None:
     """Update the current scan state. Also write it to the scan log. From this log we should also be able to see
     retries... when celery retries on exceptions etc..."""

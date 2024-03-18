@@ -67,7 +67,7 @@ def progress_subdomain_discovery_scans():
     return group(tasks)
 
 
-@app.task(queue="storage")
+@app.task(queue="storage", ignore_result=True)
 def update_state(scan_id: int, new_state: str, message: str = ""):
 
     scan = SubdomainDiscoveryScan.objects.all().filter(id=scan_id).first()
@@ -82,7 +82,7 @@ def update_state(scan_id: int, new_state: str, message: str = ""):
 
 
 # todo: does scanning queue exist in internet.nl dashboard environment?
-@app.task(queue="storage")
+@app.task(queue="storage", ignore_result=True)
 def perform_subdomain_scan(scan_id: int) -> None:
     # This is different than the dns_endpoints scanner, because that runs on URLS that already are in the database.
     # In this case we want to check if the url exists BEFORE adding it to the database.

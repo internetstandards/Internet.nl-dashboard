@@ -348,7 +348,7 @@ def get_data_from_spreadsheet(
     return domain_lists, number_of_urls
 
 
-@app.task(queue='storage')
+@app.task(queue='storage', ignore_result=True)
 def import_step_2(user: int, file: str, uploadlog_id: int):
 
     user = DashboardUser.objects.all().filter(id=user).first()

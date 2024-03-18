@@ -51,7 +51,7 @@ def start_scans_for_lists_who_are_up_for_scanning() -> Task:
 __all__: List[Module] = [scan_internet_nl_per_account, subdomains]  # type: ignore
 
 
-@app.task(queue='storage')
+@app.task(queue='storage', ignore_result=True)
 def autoshare_report_to_front_page():
     ids = config.DASHBOARD_FRONT_PAGE_URL_LISTS
     if not ids:
