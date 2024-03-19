@@ -16,12 +16,13 @@ Version 4.3.0 targets to support creating lists and viewing reports up to 10.000
 - Improved interaction of uploading spreadsheets with domain
 - Excel spreadsheets are now formatted > 5000 rows
 - Improved a11y
-- Some changes on the signup form and e-mail
+- Some changes on the signup form and e-mail, sending a mail to whom signed up
 - The results table in the report is now much higher
 - Footer links have changed
 - API 2.4.0 support
 
 ### Bugfixes
+- 502 Public share code was not capped in a form and in the backend validation
 - 409 Deleting lists also deletes associated reports
 - 338 domain was missing in the example sharing url
 - 486 password was not set when sharing a report with a password the first time
