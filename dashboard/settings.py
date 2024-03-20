@@ -512,6 +512,11 @@ CONSTANCE_CONFIG = {
         'The sender of email update notification, such as scan finished.',
         str
     ),
+    'EMAIL_NOTIFICATION_SENDER_FOR_SIGNUP': (
+        'noreply@dashboard.internet.nl',
+        'The sender of email signups.',
+        str
+    ),
     'EMAIL_TEST_RECIPIENT': (
         'elger@internetcleanup.foundation',
         'Who receives the testmail from dashboard send_testmail.',
@@ -587,7 +592,7 @@ CONSTANCE_CONFIG_FIELDSETS = OrderedDict(
                        'DASHBOARD_MAXIMUM_LISTS_PER_SPREADSHEET',
                        'DASHBOARD_SIGNUP_NOTIFICATION_EMAIL_ADRESSES',
                        'DASHBOARD_FRONT_PAGE_URL_LISTS')),
-        ('E-Mail', ('EMAIL_NOTIFICATION_SENDER',
+        ('E-Mail', ('EMAIL_NOTIFICATION_SENDER', 'EMAIL_NOTIFICATION_SENDER_FOR_SIGNUP',
                     'EMAIL_FALLBACK_LANGUAGE',
                     'EMAIL_TEST_RECIPIENT',
                     'EMAIL_DASHBOARD_ADDRESS',)),

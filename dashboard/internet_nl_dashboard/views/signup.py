@@ -91,7 +91,7 @@ def send_signup_received_mail_to_requester(form_data):
 
     # the backoffice team will see a mail coming in every request, so don't add those addresses here...
     mail.send(
-        sender=config.EMAIL_NOTIFICATION_SENDER,
+        sender=config.EMAIL_NOTIFICATION_SENDER_FOR_SIGNUP,
         recipients=form_data['email'],  # List of email addresses also accepted
         template=xget_template(
             template_name="signup_thank_you",
