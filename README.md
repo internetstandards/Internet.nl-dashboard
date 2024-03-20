@@ -1,4 +1,91 @@
-# dashboard-internet.nl
+# Internet.nl Dashboard
+The internet.nl dashboard allows you to visualize batch scans from the internet.nl API. It allows:
+
+- Multiple user accounts that manage their own lists of domains
+- Domain managements in various lists up to thousands of domains per list
+- Spreadsheet uploads / downloads of lists for offline bulk list editing
+- Monitoring of ongoing scans
+- Repeating scans
+- Reports with results in tables, diagrams and comparisons to previous reports and spreadsheet exports
+- Publishing reports for outside users, including automatic publishing
+- E-Mail notifications on new reports
+- User settings for what field is visible
+- Second factor authentication
+- Seamless internet.nl API integration
+
+## Screenshots
+
+Some screenshots can be found at: https://dashboard.internet.nl/#/tour
+
+![](readme/manage_domains.png)
+List management has options for configuration, adding domains, direct scanning, scheduled scanning, 
+sharing, exporting to spreadsheets and of course deletion.
+
+![](readme/import_domains.png)
+It's possible to upload domains in Excel, ODS and CSV files domains. Examples are available on the upload page
+
+![](readme/scan.png)
+Scans can be performed simultaneously. The scan monitor shows the progress of each scan and allows for cancelling scans.
+The image shows several scans, of which one is still running. Our demo scan is finished and a report is ready.
+
+![](readme/focus_on_metrics.png)
+The report is printer friendly and contains several graphs and a result table. It's even possible to download the 
+report as a spreadsheet. In the screenshot all IPv6 metrics are now visible in the report. 
+Enable or disable the entire group with one click and even include an average.
+
+![](readme/report_table.png)
+All results are visible in a table. The table is split into several categories and only shows the information that 
+is needed. The table has a power feature: it's possible to compare data with a second report and see 
+improvements/declines for all domains that are in both reports. 
+It's possible to filter domains and view the complete report on internet.nl. Sorting of results is available.
+
+![](readme/report_bar_chart.png)
+These bar are more versatile than meets the eye. It's possible to compare reports (up to five) and they are available 
+for every category and subcategory (such as IPv6, DNSSEC, TLS).
+
+![](readme/report_timeline.png)
+Every time a list is scanned, the data in the timeline grows. 
+The timeline allow comparing multiple lists over time, showing multiple lines.
+
+![](readme/export_spreadsheet.png)
+Reports can be exported to Excel, Libreoffice and CSV data. The Excel spreadsheet includes some 
+statistics over the presented metrics.
+
+![](readme/report_sharing.png)
+Reports can be shared with the world or with a select audience. Using the sharing option anyone with the link, 
+or anyone with the password, can view the report and take action.
+
+![](readme/account_notifications.png)
+Be notified when a scan is finished. The notification includes an overview of the scan results, including the major 
+changes compared to the previous scan
+
+## System requirements
+The dashboard runs on modest hardware. For measuring, it uses a configurable internet.nl API account. The API comes 
+from an internet.nl installation.
+
+A server with 16 gig of ram, 320 gig disk space and 6 cores can handle dozens of accounts each with their own lists.
+Lists up to 5000 domains process fine, albeit slower in busy periods. We've seen that working with lists of 25.000 domains 
+or more is possible in this configuration with a scanning interval of every two weeks. Of course more beefy setups make
+the dashboard more responsive in those kinds of high volume usage.
+
+
+## Deployment information
+The dashboard consists of three parts: a server config, the backend logic and a separate front-end. These are located
+in the following repositories:
+
+* Backend: https://github.com/internetstandards/Internet.nl-dashboard/
+* Server: https://github.com/internetstandards/Internet.nl-dashboard-server/
+* Frontend: https://github.com/internetstandards/Internet.nl-dashboard-frontend
+
+The server ties all of these together, but it's very much possible to just run the backend and frontend yourself.
+
+There is currently an open issue to make deployment of the dashboard easier in other environments.
+
+The dashboard needs an internet.nl API to run, which requires a configured internet.nl instance. More information about
+that is listed in the internet.nl repo: https://github.com/internetstandards/Internet.nl/
+
+
+# Developer Documentation
 
 [![Badges](https://img.shields.io/badge/badges-1-yellowgreen.svg)](https://shields.io)
 
