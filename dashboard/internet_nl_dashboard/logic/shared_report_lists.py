@@ -12,7 +12,7 @@ def get_latest_report_id_from_list_and_type(urllist_id: int, report_type: str = 
     if report_type in {"web", "mail"}:
         report = report.filter(report_type=report_type)
 
-    found_report = report.first()
+    found_report = report.last()
 
     return (
         {'latest_report_public_report_code': found_report.public_report_code}
