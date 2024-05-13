@@ -4,10 +4,9 @@
 #
 #    pip-compile --output-file=requirements.txt --resolver=backtracking requirements.in
 #
-aiohttp==3.8.6
+aiohttp==3.8.4
     # via
     #   geoip2
-    #   openai
     #   websecmap
 aiosignal==1.3.1
     # via
@@ -74,7 +73,7 @@ charset-normalizer==3.1.0
     #   websecmap
 colorlog==6.7.0
     # via websecmap
-cryptography==41.0.5
+cryptography==41.0.3
     # via
     #   -c security-constraints.in
     #   pyjwt
@@ -96,7 +95,7 @@ diff-match-patch==20230430
     # via
     #   django-import-export
     #   websecmap
-django==4.2.7
+django==4.2.3
     # via
     #   -c security-constraints.in
     #   django-activity-stream
@@ -205,6 +204,8 @@ gevent==22.10.2
     # via
     #   celery
     #   websecmap
+google-cloud-sqlcommenter==2.0.0
+    # via websecmap
 googlemaps==4.10.0
     # via websecmap
 greenlet==2.0.2
@@ -275,8 +276,6 @@ odfpy==1.4.1
     #   pyexcel-ods
     #   tablib
     #   websecmap
-openai==0.27.8
-    # via websecmap
 openpyxl==3.0.10
     # via
     #   -r requirements.in
@@ -395,7 +394,6 @@ requests==2.31.0
     #   django-proxy
     #   geoip2
     #   googlemaps
-    #   openai
     #   osm2geojson
     #   python-resize-image
     #   requests-file
@@ -460,13 +458,9 @@ texttable==1.6.7
     #   websecmap
 tldextract==3.4.4
     # via websecmap
-tornado==6.3.3
+tornado==6.3.2
     # via
     #   flower
-    #   websecmap
-tqdm==4.65.0
-    # via
-    #   openai
     #   websecmap
 typing-extensions==4.6.3
     # via
@@ -474,7 +468,7 @@ typing-extensions==4.6.3
     #   django-countries
     #   qrcode
     #   websecmap
-urllib3==1.26.18
+urllib3==1.26.6
     # via
     #   requests
     #   sentry-sdk
@@ -489,7 +483,7 @@ vine==1.3.0
     #   celery
     #   flower
     #   websecmap
-websecmap @ git+https://gitlab.com/internet-cleanup-foundation/web-security-map@d60d90d787d94de122dfe139df4790b82eee7554
+websecmap @ git+https://gitlab.com/internet-cleanup-foundation/web-security-map@3f60686d2c3491046289e91d6ae541e5635c7171
     # via -r requirements.in
 wikidata==0.7.0
     # via websecmap
