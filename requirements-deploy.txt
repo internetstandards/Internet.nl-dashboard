@@ -569,7 +569,7 @@ tldextract==3.4.4
     # via
     #   -c requirements.txt
     #   websecmap
-tornado==6.4
+tornado==6.4.0
     # via
     #   -c requirements.txt
     #   flower
@@ -607,7 +607,7 @@ vine==1.3.0
     #   celery
     #   flower
     #   websecmap
-websecmap[deploy] @ git+https://gitlab.com/internet-cleanup-foundation/web-security-map@d60d90d787d94de122dfe139df4790b82eee7554
+websecmap[deploy] @ git+https://gitlab.com/internet-cleanup-foundation/web-security-map@8f9e6924abdc349807a4f89ffede6020fb2f4397
     # via
     #   -c requirements.txt
     #   -r requirements-deploy.in
