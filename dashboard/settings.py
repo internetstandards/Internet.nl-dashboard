@@ -502,6 +502,11 @@ CONSTANCE_CONFIG = {
                             'The internet address for the Internet.nl API installation. Defaults to a version from '
                             '2020.', str),
     'INTERNET_NL_MAXIMUM_URLS': (1000, 'The maximum amount of domains per scan.', int),
+    'INTERNET_NL_SCAN_TRACKING_NAME': {
+        'Dashboard Internet NL',
+        'What dashboard installation is sending API requests?',
+        str
+    },
     'EMAIL_FALLBACK_LANGUAGE': (
         'en',
         'Default language used for templates. Template should end with _en in lowercase.',
@@ -609,6 +614,7 @@ CONSTANCE_CONFIG_FIELDSETS = OrderedDict(
                                "INTERNET_NL_ADD_CALCULATED_RESULTS_FORUM_STANDAARDISATIE",
                                "INTERNET_NL_ADD_CALCULATED_RESULTS_VNG_V6",
                                "INTERNET_NL_WEB_ONLY_TOP_LEVEL",
+                               "INTERNET_NL_SCAN_TRACKING_NAME"
                                )),
         ("Scanning preferences", ("SCANNER_NAMESERVERS",)),
         (
@@ -789,6 +795,7 @@ TAGGIT_CASE_INSENSITIVE = True
 # Django 3.2
 DEFAULT_AUTO_FIELD = "django.db.models.AutoField"
 
+MEDIA_URL = os.environ.get("MEDIA_URL", "/admin/uploads/")
 
 # New in django 4.2:
 STORAGES = {
@@ -798,6 +805,7 @@ STORAGES = {
     "staticfiles": {
         "BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage",
     },
+    "paper_trail": {"BACKEND": "django.core.files.storage.FileSystemStorage", "OPTIONS": {"base_url": MEDIA_URL}},
 }
 
 # required from django 4.0
