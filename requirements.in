@@ -9,7 +9,7 @@
 # - no version pinning, unless it is required and explained
 
 # to update websecmap, update the SHA hash and run: make update_requirement_websecmap
-websecmap @ git+https://gitlab.com/internet-cleanup-foundation/web-security-map@8f9e6924abdc349807a4f89ffede6020fb2f4397
+websecmap @ git+https://gitlab.com/internet-cleanup-foundation/web-security-map@1c555a1b1551369e7e2f0292183d2bd00d3a4ff0
 
 django-otp
 django-two-factor-auth>1.15

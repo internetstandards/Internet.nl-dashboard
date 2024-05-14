@@ -502,11 +502,11 @@ CONSTANCE_CONFIG = {
                             'The internet address for the Internet.nl API installation. Defaults to a version from '
                             '2020.', str),
     'INTERNET_NL_MAXIMUM_URLS': (1000, 'The maximum amount of domains per scan.', int),
-    'INTERNET_NL_SCAN_TRACKING_NAME': {
+    'INTERNET_NL_SCAN_TRACKING_NAME': (
         'Dashboard Internet NL',
         'What dashboard installation is sending API requests?',
         str
-    },
+    ),
     'EMAIL_FALLBACK_LANGUAGE': (
         'en',
         'Default language used for templates. Template should end with _en in lowercase.',
