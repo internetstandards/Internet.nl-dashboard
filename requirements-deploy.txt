@@ -149,7 +149,7 @@ django-colorful==1.3
     # via
     #   -c requirements.txt
     #   websecmap
-django-constance[database]==2.9.1
+django-constance==3.1.0
     # via
     #   -c requirements.txt
     #   websecmap
@@ -607,7 +607,7 @@ vine==1.3.0
     #   celery
     #   flower
     #   websecmap
-websecmap[deploy] @ git+https://gitlab.com/internet-cleanup-foundation/web-security-map@1c555a1b1551369e7e2f0292183d2bd00d3a4ff0
+websecmap[deploy] @ git+https://gitlab.com/internet-cleanup-foundation/web-security-map@6e360ed6c3d3205a4c2caddb04d946e28420fed4
     # via
     #   -c requirements.txt
     #   -r requirements-deploy.in
@@ -632,12 +632,12 @@ yarl==1.9.2
     #   -c requirements.txt
     #   aiohttp
     #   websecmap
-zope-event==5.0
+zope.event==5.0
     # via
     #   -c requirements.txt
     #   gevent
     #   websecmap
-zope-interface==6.0
+zope.interface==6.0
     # via
     #   -c requirements.txt
     #   gevent

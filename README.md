@@ -301,3 +301,18 @@ and run: `arch -x86_64 sh`, `cd /usr/local/bin`, `/brew install --build-from-sou
 
 and run: `arch -x86_64 brew install libmagic`
 You'll get an error but at least there is now an x64/intel file at: `/usr/local/lib/libmagic.dylib`
+
+
+# issues  with celery < 5in
+pkg_resources.extern.packaging.requirements.InvalidRequirement: Expected closing RIGHT_PARENTHESIS
+    pytz (>dev)
+
+add the following line:
+`requirement_string = requirement_string.replace(">dev", "")`
+just before
+`parsed = parse_requirement(requirement_string)`
+in
+`/site-packages/pkg_resources/_vendor/packaging/requirements.py`
+Probably line 36...
+
+`/Users/stitch/Library/Caches/virtualenvs/internet.nl-dashboard/lib/python3.10/site-packages/pkg_resources/_vendor/packaging/`

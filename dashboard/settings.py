@@ -48,7 +48,8 @@ ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', 'localhost,127.0.0.1,::1').split
 INSTALLED_APPS = [
     # Constance
     'constance',
-    'constance.backends.database',
+    # not needed since 3.0
+    # 'constance.backends.database',
 
     # Jet
     'jet.dashboard',
@@ -487,7 +488,6 @@ CONSTANCE_CONFIG = {
         'Comma separated list of urllists of which all reports will be shared on the front page',
         str
     ),
-
     'INTERNET_NL_API_USERNAME': (
         'dummy',
         'Username for the internet.nl API. You can request one via the contact '
@@ -506,6 +506,16 @@ CONSTANCE_CONFIG = {
         'Dashboard Internet NL',
         'What dashboard installation is sending API requests?',
         str
+    ),
+    "SCANNER_LOG_PLANNED_SCANS": (
+        True,
+        "Used when debugging, logs all changes to planned scans to a separate table. Causes millions of records a day",
+        bool,
+    ),
+    "SCANNER_AUTO_PURGE_FINISHED_SCANS": (
+        False,
+        "Removes the scan record from the planned scan table, which reduces the amount of data stored.",
+        bool,
     ),
     'EMAIL_FALLBACK_LANGUAGE': (
         'en',
@@ -614,7 +624,8 @@ CONSTANCE_CONFIG_FIELDSETS = OrderedDict(
                                "INTERNET_NL_ADD_CALCULATED_RESULTS_FORUM_STANDAARDISATIE",
                                "INTERNET_NL_ADD_CALCULATED_RESULTS_VNG_V6",
                                "INTERNET_NL_WEB_ONLY_TOP_LEVEL",
-                               "INTERNET_NL_SCAN_TRACKING_NAME"
+                               "INTERNET_NL_SCAN_TRACKING_NAME",
+                               "SCANNER_LOG_PLANNED_SCANS", "SCANNER_AUTO_PURGE_FINISHED_SCANS"
                                )),
         ("Scanning preferences", ("SCANNER_NAMESERVERS",)),
         (
