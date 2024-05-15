@@ -172,7 +172,7 @@ app: ${app}  ## perform arbitrary app commands
 	DEBUG=1 NETWORK_SUPPORTS_IPV6=1 ${env} ${app} ${cmd}
 
 run-worker: ${app}  ## only run worker component
-	DEBUG=1 NETWORK_SUPPORTS_IPV6=1 ${env} ${app} celery worker -ldebug -Q storage,celery,reporting,ipv4,ipv6,4and6,internet,isolated
+	DEBUG=1 NETWORK_SUPPORTS_IPV6=1 ${env} ${app} celery worker -ldebug -Q storage,celery,reporting,ipv4,ipv6,4and6,internet,isolated,database,kickoff,default,database_deprecate
 
 run-broker:  ## only run broker
 	docker run --rm --name=redis -p 6379:6379 redis
@@ -223,7 +223,7 @@ clean:  ## cleanup build artifacts, caches, databases, etc.
 	# remove build artifacts
 	-rm -rf *.egg-info dist/ pip-wheel-metadata/
 	# remove runtime state files
-	-rm -rf *.sqlite3
+	# -rm -rf *.sqlite3
 
 clean_virtualenv:  ## cleanup virtualenv and installed app/dependencies
 	# remove virtualenv

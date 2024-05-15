@@ -1,4 +1,5 @@
 # SPDX-License-Identifier: Apache-2.0
+import json
 import logging
 from copy import copy
 from datetime import datetime, timedelta, timezone
@@ -344,7 +345,25 @@ def registering_scan_at_internet_nl(scan_id: int):
     internet_nl_websecmap.update_state(
         scan.scan.id, "requested", "requested a scan to be performed on internet.nl api")
 
-    return chain(internet_nl_websecmap.progress_running_scan(scan.scan.id)
+    # use our own tracking information for this scan, based on #451
+    # max length = 255.
+    tracking_info = {
+        # add the configured tracking name:
+        'origin': constance_cached_value("INTERNET_NL_SCAN_TRACKING_NAME")[:40],  # + 6
+        # lists:
+        'list': {  # + 4
+            'id': scan.urllist.id,  # 6 chars + 2
+            'name': scan.urllist.name[:80],  # 60 + 4
+            'interval': scan.urllist.automated_scan_frequency,  # 30 chars + 8
+            'account': {  # + 6
+                'id': scan.urllist.account.id,  # 6 chars + 2
+                'name': scan.urllist.account.name[:50],  # 40 + 4
+            }
+        },
+    }
+
+    # total json overhead is about 40 characters.
+    return chain(internet_nl_websecmap.progress_running_scan(scan.scan.id, tracking_info=json.dumps(tracking_info))
                  | copy_state_from_websecmap_scan.si(scan.id))
 
 

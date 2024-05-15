@@ -4,10 +4,9 @@
 #
 #    pip-compile --output-file=requirements.txt --resolver=backtracking requirements.in
 #
-aiohttp==3.8.6
+aiohttp==3.9.5
     # via
     #   geoip2
-    #   openai
     #   websecmap
 aiosignal==1.3.1
     # via
@@ -69,12 +68,11 @@ chardet==5.1.0
     #   websecmap
 charset-normalizer==3.1.0
     # via
-    #   aiohttp
     #   requests
     #   websecmap
 colorlog==6.7.0
     # via websecmap
-cryptography==41.0.5
+cryptography==41.0.7
     # via
     #   -c security-constraints.in
     #   pyjwt
@@ -96,7 +94,7 @@ diff-match-patch==20230430
     # via
     #   django-import-export
     #   websecmap
-django==4.2.7
+django==4.2.13
     # via
     #   -c security-constraints.in
     #   django-activity-stream
@@ -127,7 +125,7 @@ django-celery-beat==2.1.0
     # via websecmap
 django-colorful==1.3
     # via websecmap
-django-constance[database]==2.9.1
+django-constance==3.1.0
     # via websecmap
 django-cors-headers==4.1.0
     # via
@@ -205,6 +203,8 @@ gevent==22.10.2
     # via
     #   celery
     #   websecmap
+google-cloud-sqlcommenter==2.0.0
+    # via websecmap
 googlemaps==4.10.0
     # via websecmap
 greenlet==2.0.2
@@ -275,8 +275,6 @@ odfpy==1.4.1
     #   pyexcel-ods
     #   tablib
     #   websecmap
-openai==0.27.8
-    # via websecmap
 openpyxl==3.0.10
     # via
     #   -r requirements.in
@@ -395,7 +393,6 @@ requests==2.31.0
     #   django-proxy
     #   geoip2
     #   googlemaps
-    #   openai
     #   osm2geojson
     #   python-resize-image
     #   requests-file
@@ -460,13 +457,9 @@ texttable==1.6.7
     #   websecmap
 tldextract==3.4.4
     # via websecmap
-tornado==6.3.3
+tornado==6.4.0
     # via
     #   flower
-    #   websecmap
-tqdm==4.65.0
-    # via
-    #   openai
     #   websecmap
 typing-extensions==4.6.3
     # via
@@ -489,7 +482,7 @@ vine==1.3.0
     #   celery
     #   flower
     #   websecmap
-websecmap @ git+https://gitlab.com/internet-cleanup-foundation/web-security-map@d60d90d787d94de122dfe139df4790b82eee7554
+websecmap @ git+https://gitlab.com/internet-cleanup-foundation/web-security-map@6e360ed6c3d3205a4c2caddb04d946e28420fed4
     # via -r requirements.in
 wikidata==0.7.0
     # via websecmap
@@ -507,11 +500,11 @@ yarl==1.9.2
     # via
     #   aiohttp
     #   websecmap
-zope-event==5.0
+zope.event==5.0
     # via
     #   gevent
     #   websecmap
-zope-interface==6.0
+zope.interface==6.0
     # via
     #   gevent
     #   websecmap
