@@ -8,14 +8,13 @@ aiohttp==3.9.5
     # via
     #   -c requirements.txt
     #   geoip2
-    #   openai
     #   websecmap
 aiosignal==1.3.1
     # via
     #   -c requirements.txt
     #   aiohttp
     #   websecmap
-amqp==2.6.1
+amqp==5.2.0
     # via
     #   -c requirements.txt
     #   kombu
@@ -46,7 +45,7 @@ beautifulsoup4==4.12.2
     #   -c requirements.txt
     #   bs4
     #   websecmap
-billiard==3.6.4.0
+billiard==4.2.0
     # via
     #   -c requirements.txt
     #   celery
@@ -59,7 +58,7 @@ cachetools==5.3.1
     # via
     #   -c requirements.txt
     #   websecmap
-celery[gevent,redis]==4.4.7
+celery[gevent,redis]==5.4.0
     # via
     #   -c requirements.txt
     #   celery-statsd
@@ -90,12 +89,39 @@ chardet==5.1.0
 charset-normalizer==3.1.0
     # via
     #   -c requirements.txt
-    #   aiohttp
     #   requests
+    #   websecmap
+click==8.1.7
+    # via
+    #   -c requirements.txt
+    #   celery
+    #   click-didyoumean
+    #   click-plugins
+    #   click-repl
+    #   websecmap
+click-didyoumean==0.3.1
+    # via
+    #   -c requirements.txt
+    #   celery
+    #   websecmap
+click-plugins==1.1.1
+    # via
+    #   -c requirements.txt
+    #   celery
+    #   websecmap
+click-repl==0.3.0
+    # via
+    #   -c requirements.txt
+    #   celery
     #   websecmap
 colorlog==6.7.0
     # via
     #   -c requirements.txt
+    #   websecmap
+cron-descriptor==1.4.3
+    # via
+    #   -c requirements.txt
+    #   django-celery-beat
     #   websecmap
 cryptography==41.0.7
     # via
@@ -141,7 +167,7 @@ django==4.2.13
     #   djangorestframework
     #   jsonfield
     #   websecmap
-django-celery-beat==2.1.0
+django-celery-beat==2.6.0
     # via
     #   -c requirements.txt
     #   websecmap
@@ -202,7 +228,7 @@ django-taggit==4.0.0
     # via
     #   -c requirements.txt
     #   websecmap
-django-timezone-field==4.2.3
+django-timezone-field==6.1.0
     # via
     #   -c requirements.txt
     #   django-celery-beat
@@ -234,7 +260,7 @@ filelock==3.12.2
     #   -c requirements.txt
     #   tldextract
     #   websecmap
-flower==0.9.7
+flower==2.0.1
     # via
     #   -c requirements.txt
     #   websecmap
@@ -248,21 +274,25 @@ geoip2==4.7.0
     # via
     #   -c requirements.txt
     #   websecmap
-gevent==22.10.2
+gevent==24.2.1
     # via
     #   -c requirements.txt
     #   celery
+    #   websecmap
+google-cloud-sqlcommenter==2.0.0
+    # via
+    #   -c requirements.txt
     #   websecmap
 googlemaps==4.10.0
     # via
     #   -c requirements.txt
     #   websecmap
-greenlet==2.0.2
+greenlet==3.0.3
     # via
     #   -c requirements.txt
     #   gevent
     #   websecmap
-humanize==4.6.0
+humanize==4.9.0
     # via
     #   -c requirements.txt
     #   flower
@@ -282,7 +312,7 @@ jsonfield==3.1.0
     # via
     #   -c requirements.txt
     #   websecmap
-kombu==4.6.11
+kombu==5.3.7
     # via
     #   -c requirements.txt
     #   celery
@@ -340,10 +370,6 @@ odfpy==1.4.1
     #   pyexcel-ods
     #   tablib
     #   websecmap
-openai==0.27.8
-    # via
-    #   -c requirements.txt
-    #   websecmap
 openpyxl==3.0.10
     # via
     #   -c requirements.txt
@@ -369,10 +395,15 @@ pillow==9.5.0
     #   -c security-constraints.in
     #   python-resize-image
     #   websecmap
-prometheus-client==0.8.0
+prometheus-client==0.20.0
     # via
     #   -c requirements.txt
     #   flower
+    #   websecmap
+prompt-toolkit==3.0.43
+    # via
+    #   -c requirements.txt
+    #   click-repl
     #   websecmap
 psycopg2-binary==2.9.6
     # via
@@ -436,6 +467,7 @@ python-crontab==2.7.1
 python-dateutil==2.8.2
     # via
     #   -c requirements.txt
+    #   celery
     #   python-crontab
     #   websecmap
 python-masscan==1.0.0
@@ -458,8 +490,6 @@ python-resize-image==1.1.20
 pytz==2023.3
     # via
     #   -c requirements.txt
-    #   celery
-    #   django-timezone-field
     #   djangorestframework
     #   flower
     #   websecmap
@@ -483,7 +513,6 @@ requests==2.31.0
     #   django-proxy
     #   geoip2
     #   googlemaps
-    #   openai
     #   osm2geojson
     #   python-resize-image
     #   requests-file
@@ -520,7 +549,6 @@ six==1.16.0
     # via
     #   -c requirements.txt
     #   celery-statsd
-    #   django-jet-reboot
     #   python-dateutil
     #   python-monkey-business
     #   requests-file
@@ -569,21 +597,22 @@ tldextract==3.4.4
     # via
     #   -c requirements.txt
     #   websecmap
-tornado==6.4.0
+tornado==6.4
     # via
     #   -c requirements.txt
     #   flower
-    #   websecmap
-tqdm==4.65.0
-    # via
-    #   -c requirements.txt
-    #   openai
     #   websecmap
 typing-extensions==4.6.3
     # via
     #   -c requirements.txt
     #   asgiref
     #   django-countries
+    #   websecmap
+tzdata==2024.1
+    # via
+    #   -c requirements.txt
+    #   celery
+    #   django-celery-beat
     #   websecmap
 urllib3==1.26.18
     # via
@@ -600,12 +629,17 @@ validators==0.20.0
     # via
     #   -c requirements.txt
     #   websecmap
-vine==1.3.0
+vine==5.1.0
     # via
     #   -c requirements.txt
     #   amqp
     #   celery
-    #   flower
+    #   kombu
+    #   websecmap
+wcwidth==0.2.13
+    # via
+    #   -c requirements.txt
+    #   prompt-toolkit
     #   websecmap
 websecmap[deploy] @ git+https://gitlab.com/internet-cleanup-foundation/web-security-map@d622c22a9f180a1501c1d68e63c16863ad4a0369
     # via
@@ -632,12 +666,12 @@ yarl==1.9.2
     #   -c requirements.txt
     #   aiohttp
     #   websecmap
-zope.event==5.0
+zope-event==5.0
     # via
     #   -c requirements.txt
     #   gevent
     #   websecmap
-zope.interface==6.0
+zope-interface==6.0
     # via
     #   -c requirements.txt
     #   gevent
