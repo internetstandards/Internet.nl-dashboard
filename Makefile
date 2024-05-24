@@ -76,7 +76,7 @@ requirements-deploy.txt: requirements-deploy.in requirements.in security-constra
 	${pip-compile} ${pip_compile_args} --resolver=backtracking --output-file $@ $<
 
 update_requirements: pip_compile_args=--upgrade --resolver=backtracking
-update_requirements: _mark_outdated requirements.txt requirements-dev.txt _commit_update
+update_requirements: _mark_outdated requirements.txt requirements-dev.txt requirements-deploy.txt _commit_update
 
 _mark_outdated:
 	touch requirements*.in
