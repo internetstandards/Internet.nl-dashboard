@@ -86,7 +86,6 @@ INSTALLED_APPS = [
     'websecmap.map',  # because some scanners are intertwined with map configurations. That needs to go.
     'websecmap.game',
 
-
     # Custom Apps
     # These apps overwrite whatever is declared above, for example the user information.
     # Yet, it does not overwrite management commands.
@@ -437,11 +436,6 @@ if DEBUG:
 CONSTANCE_BACKEND = 'constance.backends.database.DatabaseBackend'
 
 CONSTANCE_ADDITIONAL_FIELDS = {
-    "yes_no_null_select": [
-        "django.forms.fields.ChoiceField",
-        {"widget": "django.forms.Select", "choices": ((None, "-----"), ("1", "Yes"), ("0", "No"))},
-    ],
-    # Todo: no validation options, that is offloaded to the widget?
     "json": [
         "django.forms.fields.CharField",
         {"widget": "django.forms.Textarea"},
@@ -449,119 +443,203 @@ CONSTANCE_ADDITIONAL_FIELDS = {
 }
 
 CONSTANCE_CONFIG = {
-    'SCAN_AT_ALL': (
-        True,
-        'This quickly enables or disabled all scans. Note that scans in the scan queue will still be processed.',
-        bool
+    # general settings
+    'DASHBOARD_FRONTEND_URL': (
+        'https://dashboard.example.com',
+        'Url where the frontend is reachable on for end users. This url is references in a few parts of the frontend.',
+        str
+    ),
+    'DASHBOARD_MAXIMUM_DOMAINS_PER_LIST': (
+        1000,
+        'The maximum amount of domains that can be in a list. There will be no crash when somebody imports more '
+        'via a spreadsheet: domains will be added but the list will refuse to scan and show a warning.'
+        'In normal use cases these limits will not be reached as average lists are about 300 domains. Lists '
+        'with 600 domains are unusual. Lists with 10.000+ domains are exceptional.',
+        int
     ),
     'DASHBOARD_MAXIMUM_DOMAINS_PER_SPREADSHEET': (
-        10000,
+        1000,
         'The maximum amount of domains that can be imported via a spreadsheet at one time. '
         'In normal use cases these limits will not be reached.',
         int
     ),
     'DASHBOARD_MAXIMUM_LISTS_PER_SPREADSHEET': (
-        200,
+        20,
         'The maximum amount of lists that can be imported via a spreadsheet at one time. '
         'In normal usec ases these limits will not be reached.',
         int
     ),
-    'DASHBOARD_MAXIMUM_DOMAINS_PER_LIST': (
-        # The average list is about 300. 90DEV is 600. One exception of 13.000.
-        5000,
-        'The maximum amount of domains that can be in a list. There will be no crash when somebody imports more '
-        'via a spreadsheet: it will be added but the list will refuse to scan and show a warning.'
-        'In normal use cases these limits will not be reached.',
-        int
-    ),
-    'DASHBOARD_FRONTEND_URL': (
-        'https://dashboard.internet.nl',
-        'The frontend of the dashboard is split from the django application, as move to more easily develop the '
-        'frontend with modern techniques. Unfortunately autentication and second factor authentication are not '
-        'converted to a javascript only approach. A good second factor alternative has to be figured out before '
-        'we can move to a javascript-only frontend.',
-        str
-    ),
-    'DASHBOARD_SIGNUP_NOTIFICATION_EMAIL_ADRESSES': (
-        'vraag@internet.nl',
-        'Comma separated list of email addresses to notify about new users.',
-        str
-    ),
     'DASHBOARD_FRONT_PAGE_URL_LISTS': (
         '',
-        'Comma separated list of urllists of which all reports will be shared on the front page',
+        'Comma separated list of urllists of which all reports will automatically be shared on the front page. '
+        'For example: 1,2,3. No data means the front page will not show any lists, just the usual information.',
         str
     ),
-    'INTERNET_NL_API_USERNAME': (
-        'dummy',
-        'Username for the internet.nl API. You can request one via the contact '
-        'options on their site, https://internet.nl.',
-        str),
-    'INTERNET_NL_API_PASSWORD': (
-        '',
-        'Password for the internet.nl API',
-        str
-    ),
-    'INTERNET_NL_API_URL': ('https://batch.internet.nl/api/batch/v2',
-                            'The internet address for the Internet.nl API installation. Defaults to a version from '
-                            '2020.', str),
-    'INTERNET_NL_MAXIMUM_URLS': (1000, 'The maximum amount of domains per scan.', int),
-    'INTERNET_NL_SCAN_TRACKING_NAME': (
-        'Dashboard Internet NL',
-        'What dashboard installation is sending API requests?',
-        str
-    ),
-    "SCANNER_LOG_PLANNED_SCANS": (
+
+    # scan settings
+    'SCAN_AT_ALL': (
         True,
-        "Used when debugging, logs all changes to planned scans to a separate table. Causes millions of records a day",
-        bool,
+        'This enables or disabled all scans. Note that scans that are picked up will still be processed.',
+        bool
     ),
-    "SCANNER_AUTO_PURGE_FINISHED_SCANS": (
-        False,
-        "Removes the scan record from the planned scan table, which reduces the amount of data stored.",
-        bool,
-    ),
-    'EMAIL_FALLBACK_LANGUAGE': (
-        'en',
-        'Default language used for templates. Template should end with _en in lowercase.',
+    'INTERNET_NL_API_URL': (
+        'https://batch.example.com/api/batch/v2',
+        'The internet address for the Internet.nl API installation. This is commonly called a "batch server".',
         str
     ),
-    'EMAIL_NOTIFICATION_SENDER': (
-        'noreply@dashboard.internet.nl',
-        'The sender of email update notification, such as scan finished.',
-        str
-    ),
-    'EMAIL_NOTIFICATION_SENDER_FOR_SIGNUP': (
-        'noreply@dashboard.internet.nl',
-        'The sender of email signups.',
-        str
-    ),
-    'EMAIL_TEST_RECIPIENT': (
-        'elger@internetcleanup.foundation',
-        'Who receives the testmail from dashboard send_testmail.',
-        str
-    ),
-    'EMAIL_DASHBOARD_ADDRESS': (
-        'https://dashboard.internet.nl',
-        'The address of the dashboard, can be set to any url. Available in email template at {{dashboard_address}}',
+    'INTERNET_NL_SCAN_TRACKING_NAME': (
+        'Dashboard InternetNL [countrycode]',
+        'This setting is used when sending API requests for tracking purposes. Setting this value make it clear who '
+        'is sending API requests. A good setting contains something unique about this installation, such as an '
+        'organization name. The maximum length is 40 characters.',
         str
     ),
     "SCANNER_NAMESERVERS": (
         '["193.17.47.1", "185.43.135.1", "193.110.81.0", "185.253.5.0", "9.9.9.9", "149.112.112.112", '
         '"2001:148f:ffff::1", "2001:148f:fffe::1", "2a0f:fc80::", "2a0f:fc81::", "2620:fe::fe", "2620:fe::9"]',
         "Nameservers used during scans (dns endpoints and subdomains). This string is loaded as JSON, but not validated"
-        "due to limitations of this settings library. Be careful when editing(!). This information is cached and loaded"
-        "only once every 10 minutes.",
+        " due to limitations of this settings library. Be careful when editing(!). "
+        "This information is cached and loaded only once every 10 minutes.",
         "json",
     ),
-    "SCAN_TIMEOUT_MINUTES_DISCOVERING_ENDPOINTS": (1440, 'timeout for phase DISCOVERING_ENDPOINTS', int),
-    "SCAN_TIMEOUT_MINUTES_RETRIEVING_SCANABLE_URLS": (1440, 'timeout for phase RETRIEVING_SCANABLE_URLS', int),
+    "CREDENTIAL_CHECK_URL": (
+        "https://batch.example.com/api/",
+        "The url where internet.nl api credentials are checked. This is usually the bare INTERNET_NL_API_URL endpoint. "
+        "This feature is used in the admin interface at account management. "
+        "There the option 'check credentials' can be performed for each account.",
+        str
+    ),
+
+    # email settings
+    'EMAIL_NOTIFICATION_SENDER': (
+        'noreply@example.com',
+        'The sender of email report notification: this is the e-mail that contains the current scan results and a '
+        'summary. It also compares the result to the previous results. Use an e-mail address that is in use.',
+        str
+    ),
+    'EMAIL_FALLBACK_LANGUAGE': (
+        'en',
+        'Default language used for templates. Template should end with _en in lowercase. Example e-mail templates are '
+        'included and can be found in the menu of the admin interface.',
+        str
+    ),
+    'EMAIL_TEST_RECIPIENT': (
+        'info@example.com',
+        'Which e-mail address receives the testmail from the command "dashboard send_testmail". This command tests if '
+        'the e-mail outbox is properly configured.',
+        str
+    ),
+    'EMAIL_DASHBOARD_ADDRESS': (
+        'https://example.com',
+        'The address of the dashboard, can be set to any url. Available in email template at {{dashboard_address}}. '
+        'This is probably the same as the DASHBOARD_FRONTEND_URL. Only in rare cases this would differ.',
+        str
+    ),
+
+    # security.txt
+    "SECURITY_TXT_IS_REDIRECTED": (
+        False,
+        "Security.txt is used to allow security researchers to report vulnerabilities. This can be either set to a "
+        "redirect to an existing security.txt or configured with your own security.txt policy.",
+        bool
+    ),
+    "SECURITY_TXT_REDIRECT_URL": (
+        "https://example.com/.well-known/security.txt",
+        "The url where the security.txt files redirect to. This is usually an external site.",
+        str
+    ),
+    "SECURITY_TXT_CONTENT": (
+        "",
+        "The content of the security.txt file, located at .well-known/security.txt. Only "
+        "used when redirect is disabled. Go to securitytxt.org to create a configuration "
+        "for this installation.",
+        str
+    ),
+
+    # signup settings
+    "SHOW_SIGNUP_FORM": (
+        False,
+        "Show the signup form on the front page, so visitors of the dashboard can sign up for an account. Currently "
+        "only internet.nl signup questions are available. So this might not be useful for most installations.",
+        bool,
+    ),
+    'EMAIL_NOTIFICATION_SENDER_FOR_SIGNUP': (
+        'noreply@example.com',
+        'The sender of the "thank you" e-mail after signing up. The template for this e-mail can be found in the '
+        'E-Mail templates menu of the admin interface.',
+        str
+    ),
+    'DASHBOARD_SIGNUP_NOTIFICATION_EMAIL_ADRESSES': (
+        'support@example.com',
+        'Comma separated list of email addresses to notify about new signups. Don\'t add extra spaces in between.',
+        str
+    ),
+
+    # timeouts
+    "SCAN_TIMEOUT_MINUTES_DISCOVERING_ENDPOINTS": (
+        10000,
+        'timeout for phase DISCOVERING_ENDPOINTS',
+        int
+    ),
+    "SCAN_TIMEOUT_MINUTES_RETRIEVING_SCANABLE_URLS": (
+        1440,
+        'timeout for phase RETRIEVING_SCANABLE_URLS',
+        int
+    ),
     "SCAN_TIMEOUT_MINUTES_REGISTERING_SCAN_AT_INTERNET_NL": (
-        1440, 'timeout for phase REGISTERING_SCAN_AT_INTERNET_NL', int),
-    "SCAN_TIMEOUT_MINUTES_IMPORTING_SCAN_RESULTS": (1440, 'timeout for phase IMPORTING_SCAN_RESULTS', int),
-    "SCAN_TIMEOUT_MINUTES_CREATING_REPORT": (1440, 'timeout for phase CREATING_REPORT', int),
-    "SCAN_TIMEOUT_MINUTES_SENDING_MAIL": (1440, 'timeout for phase SENDING_MAIL', int),
-    "SCAN_TIMEOUT_MINUTES_SERVER_ERROR": (1440, 'timeout for phase SERVER_ERROR', int),
+        1440,
+        'timeout for phase REGISTERING_SCAN_AT_INTERNET_NL',
+        int
+    ),
+    "SCAN_TIMEOUT_MINUTES_IMPORTING_SCAN_RESULTS": (
+        10000,
+        'timeout for phase IMPORTING_SCAN_RESULTS',
+        int
+    ),
+    "SCAN_TIMEOUT_MINUTES_CREATING_REPORT": (
+        10000,
+        'timeout for phase CREATING_REPORT',
+        int
+    ),
+    "SCAN_TIMEOUT_MINUTES_SENDING_MAIL": (
+        1440,
+        'timeout for phase SENDING_MAIL',
+        int
+    ),
+    "SCAN_TIMEOUT_MINUTES_SERVER_ERROR": (
+        1440,
+        'timeout for phase SERVER_ERROR',
+        int
+    ),
+
+    # other stuff
+    'INTERNET_NL_API_USERNAME': (
+        'dummy',
+        'Username for the internet.nl API. This option is ignored as every account uses their own credentials. Keep '
+        'this value set to dummy for legacy reasons.',
+        str),
+    'INTERNET_NL_API_PASSWORD': (
+        '',
+        'Username for the internet.nl API. This option is ignored as every account uses their own credentials. Keep '
+        'this value set to dummy for legacy reasons.',
+        str
+    ),
+    'INTERNET_NL_MAXIMUM_URLS': (
+        1000,
+        'The maximum amount of domains per scan, not relevant for dashboard, only for websecmap.',
+        int
+    ),
+
+    "SCANNER_LOG_PLANNED_SCANS": (
+        False,
+        "Used when debugging, logs all changes to planned scans to a separate table. Causes millions of records a day",
+        bool,
+    ),
+    "SCANNER_AUTO_PURGE_FINISHED_SCANS": (
+        True,
+        "Removes the scan record from the planned scan table, which reduces the amount of data stored.",
+        bool,
+    ),
     "CONNECTIVITY_TEST_DOMAIN": (
         "internet.nl",
         "A server that is reachable over IPv4. This is used by a worker to determine what kind of scans it can do. "
@@ -574,26 +652,22 @@ CONSTANCE_CONFIG = {
         "what kind of scans it can do. Enter an address that you own or manage.",
         str,
     ),
-    "SECURITY_TXT_IS_REDIRECTED": (False, "When a redirect is used, it will not show the content anymore.", bool),
-    "SECURITY_TXT_REDIRECT_URL": ("", "The url where security.txt resides", str),
-    "SECURITY_TXT_CONTENT": ("", "The content of the security.txt file, located at .well-known/security.txt", str),
-    "CREDENTIAL_CHECK_URL": ("https://batch.internet.nl/api/", "The url where internet.nl api credentials are checked. "
-                                                               "This is usually the api endpoint.", str),
-
-    # enable all by default, easier for tests
     "INTERNET_NL_ADD_CALCULATED_RESULTS_WEBSECMAP": (
-        True,
-        "Add calculated results for web security map.",
+        False,
+        "Add calculated results for web security map. This is used only for installations by the "
+        "Internet Cleanup Foundation.",
         bool,
     ),
     "INTERNET_NL_ADD_CALCULATED_RESULTS_FORUM_STANDAARDISATIE": (
-        True,
-        "Add calculated results for forum standaardisatie, the internet.nl dashboard.",
+        False,
+        "Add calculated results for forum standaardisatie, the internet.nl dashboard. These calculations are created "
+        "on top of the internet.nl metrics. These are used for official publications. You probably do not need these.",
         bool,
     ),
     "INTERNET_NL_ADD_CALCULATED_RESULTS_VNG_V6": (
         False,
-        "Add calculated results for VNG, obsoleted IPv6 derived conclusions.",
+        "Add calculated results for VNG, obsoleted IPv6 derived conclusions. No need to enable these and will be "
+        "removed in a future release.",
         bool,
     ),
     "INTERNET_NL_WEB_ONLY_TOP_LEVEL": (
@@ -605,41 +679,83 @@ CONSTANCE_CONFIG = {
 
 CONSTANCE_CONFIG_FIELDSETS = OrderedDict(
     [
-        ('DASHBOARD', ('DASHBOARD_FRONTEND_URL',
-                       'DASHBOARD_MAXIMUM_DOMAINS_PER_LIST',
-                       'DASHBOARD_MAXIMUM_DOMAINS_PER_SPREADSHEET',
-                       'DASHBOARD_MAXIMUM_LISTS_PER_SPREADSHEET',
-                       'DASHBOARD_SIGNUP_NOTIFICATION_EMAIL_ADRESSES',
-                       'DASHBOARD_FRONT_PAGE_URL_LISTS')),
-        ('E-Mail', ('EMAIL_NOTIFICATION_SENDER', 'EMAIL_NOTIFICATION_SENDER_FOR_SIGNUP',
-                    'EMAIL_FALLBACK_LANGUAGE',
-                    'EMAIL_TEST_RECIPIENT',
-                    'EMAIL_DASHBOARD_ADDRESS',)),
-        ('Internet.nl Scans', ('SCAN_AT_ALL', 'INTERNET_NL_API_USERNAME', 'INTERNET_NL_API_PASSWORD',
-                               'INTERNET_NL_API_URL',
-                               'INTERNET_NL_MAXIMUM_URLS',
-                               "CREDENTIAL_CHECK_URL",
-                               'SCAN_TIMEOUT_MINUTES_DISCOVERING_ENDPOINTS',
-                               'SCAN_TIMEOUT_MINUTES_RETRIEVING_SCANABLE_URLS',
-                               'SCAN_TIMEOUT_MINUTES_REGISTERING_SCAN_AT_INTERNET_NL',
-                               'SCAN_TIMEOUT_MINUTES_IMPORTING_SCAN_RESULTS', 'SCAN_TIMEOUT_MINUTES_CREATING_REPORT',
-                               'SCAN_TIMEOUT_MINUTES_SENDING_MAIL', 'SCAN_TIMEOUT_MINUTES_SERVER_ERROR',
-                               "INTERNET_NL_ADD_CALCULATED_RESULTS_WEBSECMAP",
-                               "INTERNET_NL_ADD_CALCULATED_RESULTS_FORUM_STANDAARDISATIE",
-                               "INTERNET_NL_ADD_CALCULATED_RESULTS_VNG_V6",
-                               "INTERNET_NL_WEB_ONLY_TOP_LEVEL",
-                               "INTERNET_NL_SCAN_TRACKING_NAME",
-                               "SCANNER_LOG_PLANNED_SCANS", "SCANNER_AUTO_PURGE_FINISHED_SCANS"
-                               )),
-        ("Scanning preferences", ("SCANNER_NAMESERVERS",)),
         (
-            "Developer configuration. For debugging and verification",
-            (
-                "IPV6_TEST_DOMAIN",
-                "CONNECTIVITY_TEST_DOMAIN"
+            'General Dashboard Settings', (
+                'DASHBOARD_FRONTEND_URL',
+                'DASHBOARD_MAXIMUM_DOMAINS_PER_LIST',
+                'DASHBOARD_MAXIMUM_DOMAINS_PER_SPREADSHEET',
+                'DASHBOARD_MAXIMUM_LISTS_PER_SPREADSHEET',
+                'DASHBOARD_FRONT_PAGE_URL_LISTS'
+            )
+        ),
+
+        (
+            'Internet.nl Scan Settings', (
+                'SCAN_AT_ALL',
+                'INTERNET_NL_API_URL',
+                "INTERNET_NL_SCAN_TRACKING_NAME",
+                "SCANNER_NAMESERVERS",
+                "CREDENTIAL_CHECK_URL",
+            )
+        ),
+
+        (
+            'E-Mail Settings', (
+                'EMAIL_NOTIFICATION_SENDER',
+                'EMAIL_FALLBACK_LANGUAGE',
+                'EMAIL_TEST_RECIPIENT',
+                'EMAIL_DASHBOARD_ADDRESS',
             ),
         ),
-        ("security.txt", ("SECURITY_TXT_IS_REDIRECTED", "SECURITY_TXT_REDIRECT_URL", "SECURITY_TXT_CONTENT")),
+
+        (
+            "Security.txt", (
+                "SECURITY_TXT_IS_REDIRECTED",
+                "SECURITY_TXT_REDIRECT_URL",
+                "SECURITY_TXT_CONTENT"
+            )
+        ),
+
+        (
+            'Signup Settings (internet.nl only)', (
+                'SHOW_SIGNUP_FORM',
+                'EMAIL_NOTIFICATION_SENDER_FOR_SIGNUP',
+                'DASHBOARD_SIGNUP_NOTIFICATION_EMAIL_ADRESSES'
+            )
+        ),
+
+        (
+            "Timeouts (advanced)", (
+                'SCAN_TIMEOUT_MINUTES_DISCOVERING_ENDPOINTS',
+                'SCAN_TIMEOUT_MINUTES_RETRIEVING_SCANABLE_URLS',
+                'SCAN_TIMEOUT_MINUTES_REGISTERING_SCAN_AT_INTERNET_NL',
+                'SCAN_TIMEOUT_MINUTES_IMPORTING_SCAN_RESULTS',
+                'SCAN_TIMEOUT_MINUTES_CREATING_REPORT',
+                'SCAN_TIMEOUT_MINUTES_SENDING_MAIL',
+                'SCAN_TIMEOUT_MINUTES_SERVER_ERROR',
+            )
+        ),
+
+        (
+            "Logging settings (advanced)", (
+                "SCANNER_LOG_PLANNED_SCANS",
+                "SCANNER_AUTO_PURGE_FINISHED_SCANS",
+            )
+        ),
+
+        (
+            "Unused / Expert settings", (
+                'INTERNET_NL_API_USERNAME',
+                'INTERNET_NL_API_PASSWORD',
+                'INTERNET_NL_MAXIMUM_URLS',
+                "INTERNET_NL_ADD_CALCULATED_RESULTS_WEBSECMAP",
+                "INTERNET_NL_ADD_CALCULATED_RESULTS_FORUM_STANDAARDISATIE",
+                "INTERNET_NL_ADD_CALCULATED_RESULTS_VNG_V6",
+                "INTERNET_NL_WEB_ONLY_TOP_LEVEL",
+                "IPV6_TEST_DOMAIN",
+                "CONNECTIVITY_TEST_DOMAIN"
+            )
+        )
     ]
 )
 
@@ -655,14 +771,17 @@ except ImportError:
 
 JET_SIDE_MENU_ITEMS = [
 
-    {'label': _('👤 User'), 'items': [
-        {'name': 'auth.user'},
-        {'name': 'internet_nl_dashboard.account'},
-        {'name': 'otp_totp.totpdevice'},
+    {'label': '', 'items': [
+        {'name': 'constance.config', 'label': '🎛️ Dashboard Configuration'},
+        {'name': 'django_mail_admin.emailtemplate', 'label': '📨 E-Mail Templates'},
+        {'name': 'django_mail_admin.outbox', 'label': '📨 Outboxes'},
+        {'name': 'django_celery_beat.periodictask', 'label': '⏰ Periodic Tasks'},
+        {'name': 'auth.user', 'label': '👤 Users'},
+        {'name': 'internet_nl_dashboard.account', 'label': '🏢 Accounts'},
+        {'name': 'otp_totp.totpdevice', 'label': '📱 TOTP Devices'},
     ]},
 
     {'label': _('📘 Dashboard'), 'items': [
-        {'name': 'constance.config', 'label': '🎛️ Config'},
         {'name': 'internet_nl_dashboard.urllist', 'label': "Domain lists"},
         {'name': 'internet_nl_dashboard.taggedurlinurllist', 'label': 'Tagged Url'},
         {'name': 'internet_nl_dashboard.uploadlog', 'label': 'Uploads'},
@@ -682,23 +801,21 @@ JET_SIDE_MENU_ITEMS = [
         {'name': 'scanners.endpointgenericscan', 'label': 'Endpoint Scans'},
     ]},
 
-    {'label': _('📨 E-Mail (beta)'), 'items': [
-        {'name': 'django_mail_admin.emailtemplate', 'label': 'Templates'},
-        {'name': 'django_mail_admin.outgoingemail', 'label': 'Sent mail'},
-        {'name': 'django_mail_admin.outbox', 'label': 'Outboxes'},
-        {'name': 'django_mail_admin.log', 'label': 'Logs'},
-    ]},
-
     {'label': _('📊 Report'), 'items': [
         {'name': 'reporting.urlreport', 'label': 'Url Reports'},
         {'name': 'internet_nl_dashboard.urllistreport', 'label': 'Full Reports'}
     ]},
 
     {'label': _('🕒 Periodic Tasks'), 'items': [
-
         {'name': 'django_celery_beat.periodictask'},
         {'name': 'django_celery_beat.crontabschedule'},
-        {'name': 'app.job'},
+    ]},
+
+    {'label': _('📨 E-Mail'), 'items': [
+        {'name': 'django_mail_admin.emailtemplate', 'label': 'Templates'},
+        {'name': 'django_mail_admin.outgoingemail', 'label': 'Sent mail'},
+        {'name': 'django_mail_admin.outbox', 'label': 'Outboxes'},
+        {'name': 'django_mail_admin.log', 'label': 'Logs'},
     ]},
 
     {'label': _('✨ Activity'), 'items': [
@@ -731,8 +848,8 @@ if SENTRY_DSN:
         integrations=[CeleryIntegration(), DjangoIntegration(), RedisIntegration()],
         release=__version__, send_default_pii=False)
 
-SENTRY_ORGANIZATION = 'internet-cleanup-foundation'
-SENTRY_PROJECT = 'internet-nl-dashboard'
+SENTRY_ORGANIZATION = os.environ.get("SENTRY_ORGANIZATION", 'internet-cleanup-foundation')
+SENTRY_PROJECT = os.environ.get("SENTRY_PROJECT", 'internet-nl-dashboard')
 SENTRY_PROJECT_URL = f'https://sentry.io/{SENTRY_ORGANIZATION}/{SENTRY_PROJECT}'
 
 # Copied from internet.nl
@@ -783,8 +900,8 @@ X_FRAME_OPTIONS = "SAMEORIGIN"
 # See
 # https://github.com/adamchainz/django-cors-headers
 CORS_ALLOWED_ORIGINS = [
-    "https://acc.dashboard.internet.nl",
-    "https://dashboard.internet.nl",
+    os.environ.get("CORS_ALLOWED_ACCEPT_DOMAIN", 'https://acc.dashboard.internet.nl'),
+    os.environ.get("CORS_ALLOWED_DOMAIN", 'https://dashboard.internet.nl'),
     "http://localhost:8080",
     "http://127.0.0.1:8080",
     "http://127.0.0.1:8081"
@@ -806,7 +923,6 @@ LOCKFILE_DIR = os.environ.get('LOCKFILE_DIR', os.path.abspath(os.path.dirname(__
 
 TAGGIT_CASE_INSENSITIVE = True
 
-
 # Django 3.2
 DEFAULT_AUTO_FIELD = "django.db.models.AutoField"
 
@@ -824,9 +940,16 @@ STORAGES = {
 }
 
 # required from django 4.0
-CSRF_TRUSTED_ORIGINS = ["http://localhost", "https://internet.nl", "https://*.internet.nl",
-                        "http://localhost", "http://127.0.0.1", "http://::1", "http://localhost:8080",
-                        "http://localhost:8081"]
+CSRF_TRUSTED_ORIGINS = [
+    "http://localhost",
+    "http://localhost",
+    "http://127.0.0.1",
+    "http://::1",
+    "http://localhost:8080",
+    "http://localhost:8081",
+    os.environ.get("CSRF_TRUSTED_ORIGINS_DEFAULT_DOMAIN", 'https://internet.nl'),
+    os.environ.get("CSRF_TRUSTED_ORIGINS_WILDCARD_DOMAIN", 'https://*.internet.nl')
+]
 
 REPORT_STORAGE_DIR = os.environ.get("REPORT_STORAGE_DIR", MEDIA_ROOT + "diskreports/")
 
@@ -835,7 +958,6 @@ REPORT_STORAGE_DIR = os.environ.get("REPORT_STORAGE_DIR", MEDIA_ROOT + "diskrepo
 full_report_storage_dir = REPORT_STORAGE_DIR + "original/UrlListReport/"
 if not os.path.isdir(full_report_storage_dir):
     os.makedirs(full_report_storage_dir, exist_ok=True)
-
 
 AUTHENTICATION_BACKENDS = [
     # Needed to login by username in Django admin, regardless of `allauth`

@@ -57,7 +57,7 @@ def test_send_scan_finished_mails(db) -> None:
     sent_mail = OutgoingEmail.objects.all().first()
 
     # default address
-    assert sent_mail.from_email == "noreply@dashboard.internet.nl"
+    assert sent_mail.from_email == "noreply@example.com"
     assert sent_mail.to == ["info@example.com"]
     assert sent_mail.template == EmailTemplate.objects.get(name="scan_finished_en")
 

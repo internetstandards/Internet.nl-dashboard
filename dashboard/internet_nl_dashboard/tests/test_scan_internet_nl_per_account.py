@@ -151,10 +151,12 @@ def test_creating_report(db, redis_server, default_policy, default_scan_metadata
     #  available it returns 4 instead of the 3 we expect (and see locally during test).
     # assert UrlReport.objects.all().count() == 3
     first_urlreport = UrlReport.objects.all().filter(url__url='dierenscheboys.nl').first()
-    assert first_urlreport.high == 12
+    # this fluctuates if settings such as forum_standardisation metrics are enabled/disabled.
+    # since the default changed on 20240618 this amount is lowered from 12 to 6.
+    assert first_urlreport.high == 6
     assert first_urlreport.medium == 6
     assert first_urlreport.low == 3
-    assert first_urlreport.ok == 22
+    assert first_urlreport.ok == 18
     assert UrlReport.objects.all().filter(url__url='vitesse.nl').count() == 2
     # To see what the calculation is exactly: assert first_urlreport.calculation == {}
 
@@ -165,7 +167,7 @@ def test_creating_report(db, redis_server, default_policy, default_scan_metadata
     first_urllistreport = UrlListReport.objects.all().filter().first()
     # association was made during creating_report
     assert first_urllistreport.urllist == urllist
-    assert first_urllistreport.high == 12
+    assert first_urllistreport.high == 6
     assert first_urllistreport.average_internet_nl_score == 76
     # stats per issue types have been added
 
