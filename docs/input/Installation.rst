@@ -1,5 +1,8 @@
-Installation
+Installation (draft)
 ###############
+
+This is a draft document that will be ready in version 5.0 of the internet.nl dashboard.
+
 
 Overview
 =====================
