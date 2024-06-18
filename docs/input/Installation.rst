@@ -37,6 +37,13 @@ Server installation
 1: Setting the SECRET_KEY and FIELD_ENCRYPTION_KEY (will happen on installation?) Automate this...
 2: Creating the first application user (automated probably)
 
+The fixtures needed to be installed are:
+
+* dashboard_production_periodic_tasks
+* dashboard_production_example_email_templates
+
+Possibly an account has to be added and connected to the user. Should this be a command line thing?
+
 
 Backend application
 ======================
