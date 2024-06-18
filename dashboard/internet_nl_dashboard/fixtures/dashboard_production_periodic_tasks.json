@@ -1,0 +1,214 @@
+[
+  {
+    "model": "django_celery_beat.crontabschedule",
+    "pk": 31,
+    "fields": {
+      "minute": "*/1",
+      "hour": "*",
+      "day_of_week": "*",
+      "day_of_month": "*",
+      "month_of_year": "*",
+      "timezone": "UTC"
+    }
+  },
+  {
+    "model": "django_celery_beat.crontabschedule",
+    "pk": 32,
+    "fields": {
+      "minute": "*/10",
+      "hour": "*",
+      "day_of_week": "*",
+      "day_of_month": "*",
+      "month_of_year": "*",
+      "timezone": "UTC"
+    }
+  },
+  {
+    "model": "django_celery_beat.crontabschedule",
+    "pk": 36,
+    "fields": {
+      "minute": "0",
+      "hour": "4",
+      "day_of_week": "*",
+      "day_of_month": "*",
+      "month_of_year": "*",
+      "timezone": "UTC"
+    }
+  },
+  {
+    "model": "django_celery_beat.intervalschedule",
+    "pk": 2,
+    "fields": {
+      "every": 10,
+      "period": "seconds"
+    }
+  },
+  {
+    "model": "django_celery_beat.periodictask",
+    "pk": 101,
+    "fields": {
+      "name": "Check running dashboard scans",
+      "task": "websecmap.app.models.create_function_job",
+      "interval": 2,
+      "crontab": null,
+      "solar": null,
+      "clocked": null,
+      "args": "[\"dashboard.internet_nl_dashboard.scanners.scan_internet_nl_per_account.check_running_dashboard_scans\"]",
+      "kwargs": "{}",
+      "queue": "storage",
+      "exchange": null,
+      "routing_key": null,
+      "headers": "{}",
+      "priority": null,
+      "expires": null,
+      "expire_seconds": null,
+      "one_off": false,
+      "start_time": null,
+      "enabled": true,
+      "last_run_at": "2024-06-18T15:09:54.137Z",
+      "total_run_count": 12993137,
+      "date_changed": "2024-06-18T15:10:04.217Z",
+      "description": ""
+    }
+  },
+  {
+    "model": "django_celery_beat.periodictask",
+    "pk": 102,
+    "fields": {
+      "name": "Run Scheduled Scans",
+      "task": "websecmap.app.models.create_function_job",
+      "interval": null,
+      "crontab": 31,
+      "solar": null,
+      "clocked": null,
+      "args": "[\"dashboard.internet_nl_dashboard.tasks.start_scans_for_lists_who_are_up_for_scanning\"]",
+      "kwargs": "{}",
+      "queue": "storage",
+      "exchange": null,
+      "routing_key": null,
+      "headers": "{}",
+      "priority": null,
+      "expires": null,
+      "expire_seconds": null,
+      "one_off": false,
+      "start_time": null,
+      "enabled": true,
+      "last_run_at": "2024-06-18T15:10:00.021Z",
+      "total_run_count": 2635114,
+      "date_changed": "2024-06-18T15:10:04.146Z",
+      "description": ""
+    }
+  },
+  {
+    "model": "django_celery_beat.periodictask",
+    "pk": 104,
+    "fields": {
+      "name": "celery.backend_cleanup",
+      "task": "celery.backend_cleanup",
+      "interval": null,
+      "crontab": 36,
+      "solar": null,
+      "clocked": null,
+      "args": "[]",
+      "kwargs": "{}",
+      "queue": null,
+      "exchange": null,
+      "routing_key": null,
+      "headers": "{}",
+      "priority": null,
+      "expires": null,
+      "expire_seconds": 43200,
+      "one_off": false,
+      "start_time": null,
+      "enabled": true,
+      "last_run_at": "2024-06-18T04:00:00.051Z",
+      "total_run_count": 1832,
+      "date_changed": "2024-06-18T04:00:33.086Z",
+      "description": ""
+    }
+  },
+  {
+    "model": "django_celery_beat.periodictask",
+    "pk": 105,
+    "fields": {
+      "name": "Send queued mail",
+      "task": "dashboard.internet_nl_dashboard.logic.mail.send_queued_mail",
+      "interval": null,
+      "crontab": 31,
+      "solar": null,
+      "clocked": null,
+      "args": "[]",
+      "kwargs": "{}",
+      "queue": null,
+      "exchange": null,
+      "routing_key": null,
+      "headers": "{}",
+      "priority": null,
+      "expires": null,
+      "expire_seconds": null,
+      "one_off": false,
+      "start_time": null,
+      "enabled": true,
+      "last_run_at": "2024-06-18T15:10:00.033Z",
+      "total_run_count": 1866360,
+      "date_changed": "2024-06-18T15:10:04.234Z",
+      "description": ""
+    }
+  },
+  {
+    "model": "django_celery_beat.periodictask",
+    "pk": 138,
+    "fields": {
+      "name": "Progress Subdomain Discovery Scans",
+      "task": "websecmap.app.models.create_function_job",
+      "interval": null,
+      "crontab": 31,
+      "solar": null,
+      "clocked": null,
+      "args": "[\"dashboard.internet_nl_dashboard.scanners.subdomains.progress_subdomain_discovery_scans\"]",
+      "kwargs": "{}",
+      "queue": "storage",
+      "exchange": null,
+      "routing_key": null,
+      "headers": "{}",
+      "priority": null,
+      "expires": null,
+      "expire_seconds": null,
+      "one_off": false,
+      "start_time": null,
+      "enabled": true,
+      "last_run_at": "2024-06-18T15:10:00.049Z",
+      "total_run_count": 1372383,
+      "date_changed": "2024-06-18T15:10:04.178Z",
+      "description": ""
+    }
+  },
+  {
+    "model": "django_celery_beat.periodictask",
+    "pk": 139,
+    "fields": {
+      "name": "Auto share on front page",
+      "task": "dashboard.internet_nl_dashboard.tasks.autoshare_report_to_front_page",
+      "interval": null,
+      "crontab": 32,
+      "solar": null,
+      "clocked": null,
+      "args": "[]",
+      "kwargs": "{}",
+      "queue": null,
+      "exchange": null,
+      "routing_key": null,
+      "headers": "{}",
+      "priority": null,
+      "expires": null,
+      "expire_seconds": null,
+      "one_off": false,
+      "start_time": null,
+      "enabled": true,
+      "last_run_at": "2024-06-18T15:10:00.009Z",
+      "total_run_count": 39348,
+      "date_changed": "2024-06-18T15:10:04.162Z",
+      "description": ""
+    }
+  }
+]

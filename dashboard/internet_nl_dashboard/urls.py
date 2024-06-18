@@ -6,7 +6,7 @@ from websecmap.map.views import security_txt
 
 # We have to import the signals somewhere..?!
 import dashboard.internet_nl_dashboard.signals  # noqa  # pylint: disable=unused-import
-from dashboard.internet_nl_dashboard.views import (account, domains, download_spreadsheet, logout_view, mail,
+from dashboard.internet_nl_dashboard.views import (account, app, domains, download_spreadsheet, logout_view, mail,
                                                    powertools, report, scan_monitor, session, signup, spreadsheet,
                                                    subdomains, tags, usage, user)
 
@@ -29,6 +29,8 @@ register_converter(SpreadsheetFileTypeConverter, 'spreadsheet_filetype')
 
 urlpatterns = [
     path('', lambda request: redirect(config.DASHBOARD_FRONTEND_URL)),
+    path('data/config/', app.config),
+
     # The SPA is not reachable anymore.
     # path('spa/', powertools.spa),
     path('data/powertools/get_accounts/', powertools.get_accounts),

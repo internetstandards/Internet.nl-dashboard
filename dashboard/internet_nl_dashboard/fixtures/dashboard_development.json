@@ -8884,7 +8884,7 @@
     "model": "internet_nl_dashboard.account",
     "pk": 1,
     "fields": {
-      "name": "Internet Cleanup Foundation",
+      "name": "Example Account",
       "enable_scans": true,
       "internet_nl_api_username": "",
       "internet_nl_api_password": "",
@@ -9456,7 +9456,7 @@
       "user": 1,
       "content_type": 55,
       "object_id": "1",
-      "object_repr": "Internet Cleanup Foundation",
+      "object_repr": "Example Account",
       "action_flag": 1,
       "change_message": "[{\"added\": {}}]"
     }
