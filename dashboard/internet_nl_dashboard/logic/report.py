@@ -1,6 +1,5 @@
 # SPDX-License-Identifier: Apache-2.0
 import gzip
-import json
 import logging
 import re
 from copy import copy
@@ -9,6 +8,7 @@ from time import sleep
 from typing import Any, Dict, List, Optional, Type, Union
 from uuid import uuid4
 
+import orjson
 from actstream import action
 from django.db.models import Model  # pylint: disable=unused-import
 from django.db.models import Prefetch
@@ -114,7 +114,7 @@ def ad_hoc_tagged_report(account: Account, report_id: int, tags: List[str], at_w
            f'"total_urls": {len(report.calculation["urls"])}, ' \
            f'"is_publicly_shared": {"true" if report.is_publicly_shared else "false"}, ' \
            f'"at_when": "{report.at_when}", ' \
-           f'"calculation": {json.dumps(report.calculation)}, ' \
+           f'"calculation": {orjson.dumps(report.calculation)}, ' \
            f'"report_type": "{report.report_type}", ' \
            f'"public_report_code": "{report.public_report_code}", ' \
            f'"public_share_code": "{report.public_share_code}" ' \
