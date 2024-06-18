@@ -2,7 +2,7 @@ Installation (draft)
 ###############
 
 This is a draft document that will be ready in version 5.0 of the internet.nl dashboard.
-
+More about this in this issue: https://github.com/internetstandards/Internet.nl-dashboard/issues/495
 
 Overview
 =====================
