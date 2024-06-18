@@ -451,6 +451,13 @@ class UploadLog(models.Model):
         null=True
     )
 
+    percentage = models.PositiveIntegerField(
+        default=0,
+        blank=True,
+        null=True,
+        help_text="The percentage of domains added in the upload."
+    )
+
 
 class UrlListReport(SeriesOfUrlsReportMixin):  # pylint: disable=too-many-ancestors
     """

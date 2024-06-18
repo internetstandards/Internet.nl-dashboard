@@ -1,6 +1,7 @@
 # SPDX-License-Identifier: Apache-2.0
 import logging
 import sys
+import time
 import unicodedata
 from datetime import datetime, timezone
 from typing import Any, Dict, List, Set, Tuple, Union
@@ -734,7 +735,7 @@ def save_urllist_content_by_id(account: Account, urllist_id: id, unfiltered_urls
 
     update_spreadsheet_upload_(uploadlog_id, "[2/3] Processing",
                                f"{pending_message} Added {counters['added_to_list']} to {urllist.name}. "
-                               f"{counters['already_in_list']} already  list.")
+                               f"{counters['already_in_list']} already  list.", percentage=0)
 
     return {
         'incorrect_urls': cleaned_urls['incorrect'],
@@ -745,7 +746,8 @@ def save_urllist_content_by_id(account: Account, urllist_id: id, unfiltered_urls
 
 
 @app.task(ignore_result=True)
-def update_spreadsheet_upload_(upload_id: int, status: str = "pending", message: str = "") -> None:
+def update_spreadsheet_upload_(upload_id: int, status: str = "pending", message: str = "",
+                               percentage: int = -1) -> None:
     # double to prevent circulair import. This is not nice and should be removed.
     # user feedback is important on large uploads, as it may take a few minutes to hours it's nice to
     # get some feedback on how much stuff has been processed (if possible).
@@ -753,9 +755,17 @@ def update_spreadsheet_upload_(upload_id: int, status: str = "pending", message:
     if not uploads:
         return
 
+    if percentage != -1:
+        uploads.percentage = percentage
+
     uploads.status = status
     uploads.message = message
     uploads.save()
+
+
+@app.task(queue="storage")
+def sleep():
+    time.sleep(2)
 
 
 def _add_to_urls_to_urllist(  # pylint: disable=too-many-arguments
@@ -766,7 +776,6 @@ def _add_to_urls_to_urllist(  # pylint: disable=too-many-arguments
         uploadlog_id: int = None,
         pending_message: str = None
 ) -> Dict[str, Any]:
-
     already_existing_urls = UrlList.objects.all().filter(
         account=account, id=current_list.id, urls__url__in=urls
     ).values_list('urls__url', flat=True)
@@ -778,28 +787,42 @@ def _add_to_urls_to_urllist(  # pylint: disable=too-many-arguments
     # with each of them taking 250kb of ram. This quickly amounts to hundreds of megs or gigs. Therefore split
     # these tasks to individual tasks.
     # Run them a to z so there is a sense of progress per list.
-    for url in sorted(new_urls):
-        tasks = group(
-            [
-                add_new_url_to_list_async.si(url, current_list.id, urls_with_tags_mapping)
-                # discovering endpoints is not a hard requirements, this is done before a scan starts anyway
-                # and will only slow down creating the list.
-                # | discover_endpoints.s()
-                | update_spreadsheet_upload_.si(uploadlog_id, "[3/3] Processing",
-                                                f"{pending_message}. Added: {url} to {current_list.name}.")
-            ]
+    tasks = []
+    for position, url in enumerate(sorted(new_urls)):
+        tasks.append(
+            group(add_new_url_to_list_async.si(url, current_list.id, urls_with_tags_mapping)
+                  # discovering endpoints is not a hard requirements, this is done before a scan starts anyway
+                  # and will only slow down creating the list.
+                  # | discover_endpoints.s()
+                  | update_spreadsheet_upload_.si(uploadlog_id, "[3/3] Processing",
+                                                  f"{pending_message}. Added: {url} to {current_list.name}.",
+                                                  percentage=round(100 * position / len(new_urls), 0)
+                                                  )
+                  )
         )
-        # pytest async tests requires a running stack, which is more complex. Therefore trust that apply_async works.
-        if "pytest" in sys.modules:
-            tasks.apply()
-        else:
-            tasks.apply_async()
 
-    # This might be performed ealier than above tasks in the queue. Therefore perform it so that it is certainly handled
-    for _ in range(200):
-        group([update_spreadsheet_upload_.si(uploadlog_id, "[3/3] Processing",
-                                             f"[3/3] Processing completed for list {current_list.name}.")]
-              ).apply_async()
+    # This might be performed earlier than above tasks in the queue
+    for _ in range(4):
+        tasks.append(
+            group(
+                # simulate the time it takes to add something...
+                sleep.si() |
+                update_spreadsheet_upload_.si(
+                    uploadlog_id, "[3/3] Processing",
+                    f"[3/3] Processing completed for list \"{current_list.name}\".", 100
+                )
+            )
+        )
+
+    print(f"created {len(tasks)} tasks")
+
+    # pytest async tests requires a running stack, which is more complex. Therefore trust that apply_async works.
+    if "pytest" in sys.modules:
+        for task in tasks:
+            task.apply()
+    else:
+        for task in tasks:
+            task.apply_async()
 
     return {
         'added_to_list': len(new_urls),
@@ -841,11 +864,7 @@ def _add_to_urls_to_urllist_nicer(account: Account, current_list: UrlList, urls:
 
     for url in urls:
 
-        if (
-            UrlList.objects.all()
-            .filter(account=account, id=current_list.id, urls__url__iexact=url)
-            .exists()
-        ):
+        if UrlList.objects.all().filter(account=account, id=current_list.id, urls__url__iexact=url).exists():
             counters['already_in_list'].append(url)
             continue
 
@@ -892,15 +911,7 @@ def clean_urls(urls: List[str]) -> Dict[str, List[str]]:
 
 
 def get_or_create_list_by_name(account, name: str, scan_type: str = "web") -> UrlList:
-    if (
-        existing_list := UrlList.objects.all()
-        .filter(
-            account=account,
-            name=name,
-            is_deleted=False,
-        )
-        .first()
-    ):
+    if existing_list := UrlList.objects.all().filter(account=account, name=name, is_deleted=False).first():
         return existing_list
 
     urllist = UrlList(**{'name': name, 'account': account, 'scan_type': scan_type})
@@ -936,7 +947,6 @@ def delete_url_from_urllist(account: Account, urllist_id: int, url_id: int) -> b
 
 
 def download_as_spreadsheet(account: Account, urllist_id: int, file_type: str = "xlsx") -> Any:
-
     urls = TaggedUrlInUrllist.objects.all().filter(
         urllist__account=account,
         urllist__pk=urllist_id

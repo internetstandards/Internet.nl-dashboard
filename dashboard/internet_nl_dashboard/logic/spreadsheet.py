@@ -204,13 +204,15 @@ def get_data(file: str) -> Dict[str, Dict[str, Dict[str, list]]]:
 
 
 def get_upload_history(account: Account) -> List:
-    uploads = UploadLog.objects.all().filter(user__account=account).order_by('-pk')
+    # limit amount of history due to frequent updates
+    uploads = UploadLog.objects.all().filter(user__account=account).order_by('-pk')[:30]
     return [
         {
             'original_filename': upload.original_filename,
             'message': upload.message,
             'upload_date': upload.upload_date,
             'filesize': upload.filesize,
+            'percentage': upload.percentage,
         }
         for upload in uploads
     ]
