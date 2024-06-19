@@ -68,6 +68,7 @@ chardet==5.1.0
     #   websecmap
 charset-normalizer==3.1.0
     # via
+    #   niquests
     #   requests
     #   websecmap
 click==8.1.7
@@ -232,21 +233,34 @@ greenlet==3.0.3
     # via
     #   gevent
     #   websecmap
+h11==0.14.0
+    # via
+    #   urllib3-future
+    #   websecmap
 humanize==4.9.0
     # via
     #   flower
     #   websecmap
 idna==3.4
     # via
+    #   niquests
     #   requests
     #   tldextract
     #   websecmap
     #   yarl
 iso3166==2.1.1
     # via websecmap
+jh2==5.0.3
+    # via
+    #   urllib3-future
+    #   websecmap
 jsonfield==3.1.0
     # via
     #   django-mail-admin
+    #   websecmap
+kiss-headers==2.4.3
+    # via
+    #   niquests
     #   websecmap
 kombu==5.3.7
     # via
@@ -283,6 +297,8 @@ netaddr==0.8.0
     # via
     #   dnsrecon
     #   websecmap
+niquests==3.6.6
+    # via websecmap
 numpy==1.25.0
     # via
     #   -r requirements.in
@@ -397,6 +413,10 @@ pyyaml==6.0
     # via
     #   tablib
     #   websecmap
+qh3==1.0.7
+    # via
+    #   urllib3-future
+    #   websecmap
 qrcode==7.4.2
     # via django-two-factor-auth
 rdp==0.8
@@ -491,6 +511,10 @@ urllib3==1.26.18
     #   requests
     #   sentry-sdk
     #   websecmap
+urllib3-future==2.7.912
+    # via
+    #   niquests
+    #   websecmap
 validators==0.20.0
     # via
     #   -r requirements.in
@@ -501,11 +525,15 @@ vine==5.1.0
     #   celery
     #   kombu
     #   websecmap
+wassima==1.1.1
+    # via
+    #   niquests
+    #   websecmap
 wcwidth==0.2.13
     # via
     #   prompt-toolkit
     #   websecmap
-websecmap @ git+https://gitlab.com/internet-cleanup-foundation/web-security-map@d622c22a9f180a1501c1d68e63c16863ad4a0369
+websecmap @ git+https://gitlab.com/internet-cleanup-foundation/web-security-map@5a97fb289d0e86b444d98cf6d30fbef3b964120b
     # via -r requirements.in
 wikidata==0.7.0
     # via websecmap
