@@ -262,6 +262,15 @@ CONSTANCE_CONFIG = {
         "The amount of days to extend the range to search for available subdomains",
         int,
     ),
+
+    # frontend
+    "SITE_LAYOUT_NAME": (
+        'internet_nl',
+        'The name of the layout, when internet_nl is used, logos, footer and styling from internet.nl is used. When '
+        'this field is empty all references to internet.nl disappear while still using the same color scheme. '
+        'Supported values: internet_nl, [empty]',
+        str
+    ),
 }
 
 CONSTANCE_CONFIG_FIELDSETS = OrderedDict(
@@ -273,6 +282,12 @@ CONSTANCE_CONFIG_FIELDSETS = OrderedDict(
                 'DASHBOARD_MAXIMUM_DOMAINS_PER_SPREADSHEET',
                 'DASHBOARD_MAXIMUM_LISTS_PER_SPREADSHEET',
                 'DASHBOARD_FRONT_PAGE_URL_LISTS'
+            )
+        ),
+
+        (
+            'Front End Settings', (
+                'SITE_LAYOUT_NAME',
             )
         ),
 
