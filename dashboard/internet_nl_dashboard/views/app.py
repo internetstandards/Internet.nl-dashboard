@@ -1,4 +1,5 @@
-from django.http import JsonResponse
+import orjson
+from django.http import HttpResponse
 from django.views.decorators.cache import cache_page
 from websecmap.app.constance import get_all_values
 
@@ -12,9 +13,12 @@ def config_content():
         "show": {
             "signup_form": configuration["SHOW_SIGNUP_FORM"],
         },
+        "app": {
+            "layout": configuration["SITE_LAYOUT_NAME"],
+        },
     }
 
 
 @cache_page(ONE_HOUR)
-def config(request) -> JsonResponse:
-    return JsonResponse(config_content(), status=200, safe=False)
+def config(request) -> HttpResponse:
+    return HttpResponse(orjson.dumps(config_content()), content_type="application/json", status=200)

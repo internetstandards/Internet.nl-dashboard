@@ -553,6 +553,15 @@ CONSTANCE_CONFIG = {
         str
     ),
 
+    # frontend
+    "SITE_LAYOUT_NAME": (
+        'internet_nl',
+        'The name of the layout, when internet_nl is used, logos, footer and styling from internet.nl is used. When '
+        'this field is empty all references to internet.nl disappear while still using the same color scheme. '
+        'Supported values: internet_nl, [empty]',
+        str
+    ),
+
     # signup settings
     "SHOW_SIGNUP_FORM": (
         False,
@@ -682,7 +691,8 @@ CONSTANCE_CONFIG_FIELDSETS = OrderedDict(
                 'DASHBOARD_MAXIMUM_DOMAINS_PER_LIST',
                 'DASHBOARD_MAXIMUM_DOMAINS_PER_SPREADSHEET',
                 'DASHBOARD_MAXIMUM_LISTS_PER_SPREADSHEET',
-                'DASHBOARD_FRONT_PAGE_URL_LISTS'
+                'DASHBOARD_FRONT_PAGE_URL_LISTS',
+                'SITE_LAYOUT_NAME'
             )
         ),
 

@@ -47,6 +47,8 @@ The fixtures needed to be installed are:
 
 Possibly an account has to be added and connected to the user. Should this be a command line thing?
 
+todo: add security considerations
+
 
 Backend application
 ======================
