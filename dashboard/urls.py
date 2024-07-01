@@ -19,6 +19,7 @@ from django.contrib import admin
 from django.contrib.auth.decorators import login_required
 from django.urls import include, path, re_path
 from two_factor.urls import urlpatterns as tf_urls
+from django.http import HttpResponse
 
 from . import __version__
 
@@ -43,8 +44,8 @@ admin_urls = [
 ]
 
 
-def dummy():
-    ...
+def not_supported(*arg, **args):
+    return HttpResponse("Feature not supported.")
 
 
 frontend_urls = [
@@ -61,8 +62,8 @@ frontend_urls = [
     # with the accounts we currently have. So social login might be feasible, but the normal log
     # not yet. Also disable reauthenticate
     #  -> this view is mandatory to register, but directing it to the wrong page on purpose
-    path("accounts/password/", dummy, name="account_login", ),
-    path("accounts/password/reset/", dummy, name="account_reset_password"),
+    path("accounts/password/", not_supported, name="account_login", ),
+    path("accounts/password/reset/", not_supported, name="account_reset_password"),
 
     # https://github.com/pennersr/django-allauth/issues/468
     path(
