@@ -7,6 +7,7 @@ from corsheaders.defaults import default_headers
 from sentry_sdk.integrations.celery import CeleryIntegration
 from sentry_sdk.integrations.django import DjangoIntegration
 from sentry_sdk.integrations.redis import RedisIntegration
+from .settings_util import get_field_encryption_key_from_file_or_env, get_secret_key_from_file_or_env
 
 from . import __version__
 from .settings_constance import (CONSTANCE_ADDITIONAL_FIELDS, CONSTANCE_BACKEND, CONSTANCE_CONFIG,
@@ -35,9 +36,9 @@ SETTINGS_PATH = os.path.normpath(os.path.dirname(__file__))
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/2.1/howto/deployment/checklist/
 
-# SECURITY WARNING: keep the secret key used in production secret!
-# The routine validate_keys_are_changed is run in production and will prevent the default keys to be used.
-SECRET_KEY: str = os.environ.get('SECRET_KEY', '_dzlo^9d#ox6!7c9rju@=u8+4^sprqocy3s*l*ejc2yr34@&98')
+# secret key is used for various cryptographic functions, it should be unique per installation
+# the key is generated and cached the first time the application is started
+SECRET_KEY = get_secret_key_from_file_or_env()
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.environ.get('DEBUG', False)
@@ -266,22 +267,7 @@ TWO_FACTOR_PATCH_ADMIN = True
 TOOLS = {'organizations': {'import_data_dir': ''}}
 
 # Encrypted fields
-# Note that this key is not stored in the database, that would be a security risk.
-# The key can be generated with the following routine:
-# https://cryptography.io/en/latest/fernet/
-# from cryptography.fernet import Fernet
-# Fernet.generate_key()
-# Make sure you remove the b' and ' from the string, so you're working with a string.
-# For example: b'JjvHNnFMfEaGd7Y0SAHBRNZYGGpNs7ydEp-ixmKSvkQ=' becomes
-# JjvHNnFMfEaGd7Y0SAHBRNZYGGpNs7ydEp-ixmKSvkQ=
-# Also note that on the production server a different key is required, otherwise the server will not start.
-# See dashboard_prdserver for more details.
-# The routine validate_keys_are_changed is run in production and will prevent the default keys to be used.
-IMPORTED_FIELD_ENCRYPTION_KEY: str = os.environ.get('FIELD_ENCRYPTION_KEY',
-                                                    "JjvHNnFMfEaGd7Y0SAHBRNZYGGpNs7ydEp-ixmKSvkQ=")
-
-# The encryption key under ENV variables can only be stored as a string. This means we'll have to parse it to bytes.
-FIELD_ENCRYPTION_KEY: bytes = IMPORTED_FIELD_ENCRYPTION_KEY.encode()
+FIELD_ENCRYPTION_KEY: bytes = get_field_encryption_key_from_file_or_env()
 
 LOGGING = {
     'version': 1,
