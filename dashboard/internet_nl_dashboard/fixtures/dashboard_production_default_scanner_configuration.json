@@ -1,5 +1,47 @@
 [
   {
+    "model": "scanners.scantypecategory",
+    "pk": 1,
+    "fields": {
+      "name": "confidentiality"
+    }
+  },
+  {
+    "model": "scanners.scantypecategory",
+    "pk": 2,
+    "fields": {
+      "name": "integrity"
+    }
+  },
+  {
+    "model": "scanners.scantypecategory",
+    "pk": 3,
+    "fields": {
+      "name": "availability"
+    }
+  },
+  {
+    "model": "scanners.scantypecategory",
+    "pk": 4,
+    "fields": {
+      "name": "website"
+    }
+  },
+  {
+    "model": "scanners.scantypecategory",
+    "pk": 5,
+    "fields": {
+      "name": "email"
+    }
+  },
+  {
+    "model": "scanners.scantypecategory",
+    "pk": 6,
+    "fields": {
+      "name": "dns"
+    }
+  },
+  {
     "model": "scanners.scanneractivity",
     "pk": 1,
     "fields": {
@@ -2347,7 +2389,7 @@
       "enabled": false,
       "rate_limit": 500,
       "task_pickup_timeout_in_minutes": 240,
-      "needs_results_from": 12,
+      "needs_results_from": null,
       "plannable_activities": [
         1
       ],
@@ -2431,7 +2473,7 @@
       "enabled": false,
       "rate_limit": 500,
       "task_pickup_timeout_in_minutes": 240,
-      "needs_results_from": 12,
+      "needs_results_from": null,
       "plannable_activities": [
         1
       ],
