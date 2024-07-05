@@ -624,8 +624,9 @@ CONSTANCE_CONFIG = {
         'Username for the internet.nl API. This option is ignored as every account uses their own credentials. Keep '
         'this value set to dummy for legacy reasons.',
         str),
+    # this is defaulting to dummy as otherwise the scanner wil give an error that no credential has been configured.
     'INTERNET_NL_API_PASSWORD': (
-        '',
+        'dummy',
         'Username for the internet.nl API. This option is ignored as every account uses their own credentials. Keep '
         'this value set to dummy for legacy reasons.',
         str
@@ -702,7 +703,7 @@ CONSTANCE_CONFIG_FIELDSETS = OrderedDict(
                 'INTERNET_NL_API_URL',
                 "INTERNET_NL_SCAN_TRACKING_NAME",
                 "SCANNER_NAMESERVERS",
-                "CREDENTIAL_CHECK_URL",
+                "CREDENTIAL_CHECK_URL",\
             )
         ),
 
