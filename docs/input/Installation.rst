@@ -48,7 +48,7 @@ What do you need
 Installation
 ======
 
-Getting started
+Setting up the server
 ----
 Download the version you want to run. These can be downloaded from the releases page, here:
 https://github.com/internetstandards/Internet.nl-dashboard/releases
@@ -66,35 +66,56 @@ from the command line, with the following command:
 
 After a short while your dashboard instance will be ready at :8000.
 
-
+Setting up the first user
+-----
 
 Load up the first account which associates the first user made with above command.
 
 ``docker exec -ti internetnl-dashboard-backend-1 dashboard loaddata dashboard_production_default_account`
 ``docker exec -ti internetnl-dashboard-backend-1 dashboard loaddata dashboard_production_example_email_templates``
 ``docker exec -ti internetnl-dashboard-backend-1 dashboard loaddata dashboard_production_periodic_tasks``
+``docker exec -ti internetnl-dashboard-backend-1 dashboard loaddata dashboard_production_default_scanner_configuration``
+``docker exec -ti internetnl-dashboard-backend-1 dashboard loaddata dashboard_production_default_scan_policy``
+
+# todo: load up scanners / scan configurations and default policies... has to be a fixture :)
 
 
-(the celerybackendcleanup task is already present in django_celery_beat)
 Create a new user:
 
 ``docker exec -ti internetnl-dashboard-backend-1 dashboard createsuperuser``
 
-The first superuser has user id 1, this is connected to default account 1. You can configure multiple users per
-account, for more info see the account/users documentation.
-
+Associate that user to the default account, assuming the createsuperuser made user id 1:
 ``docker exec -ti internetnl-dashboard-database-1 psql --user dashboard -c "update internet_nl_dashboard_dashboarduser set account_id=1 where user_id=1;"``
 
 Now you can login at :8000.
 
-Setting up connection with an internet.nl API server:
-- Configure INTERNET_NL_API_URL and CREDENTIAL_CHECK_URL to your api instance.
+
+Setting up scanning
+---
+
+1: Visit the admin console on ``/admin/`` and log in.
+2: Go to "🎛️ Dashboard Configuration" in the left menu
+3: Configure the variable INTERNET_NL_API_URL with url of your internet.nl batch instance
+4: Configure the variable CREDENTIAL_CHECK_URL with url of your internet.nl batch instance
+5: Go go accounts ``/admin/internet_nl_dashboard/account/``
+
+Performing your first scan
+---
+
+1: Visit the dashboard frontend and log in
+2: Create a new list, set it to web and mail scanning.
+3: Add an example url such as internet.nl.
+4: Hit "scan".
+5: Visit the scans page to see the progress of the running scans
+6: After the scans have completed, visit the reports page.
+
+
+Setting up e-mail
+-----
+After a scan completes it's possible to receive an e-mail. An SMTP server has to be configured.
 
 
 
-You have to configure the internet.nl api endpoint and credentials by hand, see the configuration section. You can
-check the credentials for the user using the following feature:
-.. cedential_check image.
 
 
 todo: add /static/images/vendor/internet_nl/clear.gif in de frontend, of haal deze weg.

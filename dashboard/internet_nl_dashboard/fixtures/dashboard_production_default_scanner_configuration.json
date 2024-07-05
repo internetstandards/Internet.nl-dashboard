@@ -1,0 +1,2497 @@
+[
+  {
+    "model": "scanners.scanneractivity",
+    "pk": 1,
+    "fields": {
+      "name": "scan"
+    }
+  },
+  {
+    "model": "scanners.scanneractivity",
+    "pk": 2,
+    "fields": {
+      "name": "discover"
+    }
+  },
+  {
+    "model": "scanners.scanneractivity",
+    "pk": 3,
+    "fields": {
+      "name": "verify"
+    }
+  },
+  {
+    "model": "scanners.scantypedocumentationlink",
+    "pk": 11,
+    "fields": {
+      "url": "https://www.internet.nl/faqs/ipv6/",
+      "provider": "ipv6_internetnl",
+      "friendly_name": "Internet.nl"
+    }
+  },
+  {
+    "model": "scanners.scantype",
+    "pk": 22,
+    "fields": {
+      "name": "internet_nl_mail_starttls_tls_available",
+      "description": null,
+      "include_in_report": true,
+      "show_in_frontend": true,
+      "display_order": 2410,
+      "second_opinion_links": [
+        6
+      ],
+      "documentation_links": [
+        11
+      ],
+      "category": [
+        5
+      ]
+    }
+  },
+  {
+    "model": "scanners.scantype",
+    "pk": 23,
+    "fields": {
+      "name": "internet_nl_mail_auth_spf_exist",
+      "description": null,
+      "include_in_report": true,
+      "show_in_frontend": true,
+      "display_order": 2330,
+      "second_opinion_links": [
+        6
+      ],
+      "documentation_links": [
+        11
+      ],
+      "category": [
+        5
+      ]
+    }
+  },
+  {
+    "model": "scanners.scantype",
+    "pk": 24,
+    "fields": {
+      "name": "internet_nl_mail_auth_dkim_exist",
+      "description": null,
+      "include_in_report": true,
+      "show_in_frontend": true,
+      "display_order": 2320,
+      "second_opinion_links": [
+        6
+      ],
+      "documentation_links": [
+        11
+      ],
+      "category": [
+        5
+      ]
+    }
+  },
+  {
+    "model": "scanners.scantype",
+    "pk": 25,
+    "fields": {
+      "name": "internet_nl_mail_auth_dmarc_exist",
+      "description": null,
+      "include_in_report": true,
+      "show_in_frontend": true,
+      "display_order": 2310,
+      "second_opinion_links": [
+        6
+      ],
+      "documentation_links": [
+        11
+      ],
+      "category": [
+        5
+      ]
+    }
+  },
+  {
+    "model": "scanners.scantype",
+    "pk": 26,
+    "fields": {
+      "name": "internet_nl_mail_ipv6_mx_reach",
+      "description": null,
+      "include_in_report": true,
+      "show_in_frontend": true,
+      "display_order": 2105,
+      "second_opinion_links": [
+        6
+      ],
+      "documentation_links": [
+        11
+      ],
+      "category": [
+        5
+      ]
+    }
+  },
+  {
+    "model": "scanners.scantype",
+    "pk": 27,
+    "fields": {
+      "name": "internet_nl_mail_ipv6_ns_reach",
+      "description": null,
+      "include_in_report": true,
+      "show_in_frontend": true,
+      "display_order": 2103,
+      "second_opinion_links": [
+        6
+      ],
+      "documentation_links": [
+        11
+      ],
+      "category": [
+        5
+      ]
+    }
+  },
+  {
+    "model": "scanners.scantype",
+    "pk": 28,
+    "fields": {
+      "name": "internet_nl_mail_ipv6_ns_address",
+      "description": null,
+      "include_in_report": true,
+      "show_in_frontend": true,
+      "display_order": 2102,
+      "second_opinion_links": [
+        6
+      ],
+      "documentation_links": [
+        11
+      ],
+      "category": [
+        5
+      ]
+    }
+  },
+  {
+    "model": "scanners.scantype",
+    "pk": 29,
+    "fields": {
+      "name": "internet_nl_mail_ipv6_mx_address",
+      "description": null,
+      "include_in_report": true,
+      "show_in_frontend": true,
+      "display_order": 2104,
+      "second_opinion_links": [
+        6
+      ],
+      "documentation_links": [
+        11
+      ],
+      "category": [
+        5
+      ]
+    }
+  },
+  {
+    "model": "scanners.scantype",
+    "pk": 30,
+    "fields": {
+      "name": "internet_nl_mail_dnssec_mx_exist",
+      "description": null,
+      "include_in_report": true,
+      "show_in_frontend": true,
+      "display_order": 2202,
+      "second_opinion_links": [
+        6
+      ],
+      "documentation_links": [
+        11
+      ],
+      "category": [
+        5
+      ]
+    }
+  },
+  {
+    "model": "scanners.scantype",
+    "pk": 31,
+    "fields": {
+      "name": "internet_nl_mail_dnssec_mx_valid",
+      "description": null,
+      "include_in_report": true,
+      "show_in_frontend": true,
+      "display_order": 2203,
+      "second_opinion_links": [
+        6
+      ],
+      "documentation_links": [
+        11
+      ],
+      "category": [
+        5
+      ]
+    }
+  },
+  {
+    "model": "scanners.scantype",
+    "pk": 32,
+    "fields": {
+      "name": "internet_nl_mail_dnssec_mailto_valid",
+      "description": null,
+      "include_in_report": true,
+      "show_in_frontend": true,
+      "display_order": 2204,
+      "second_opinion_links": [
+        6
+      ],
+      "documentation_links": [
+        11
+      ],
+      "category": [
+        5
+      ]
+    }
+  },
+  {
+    "model": "scanners.scantype",
+    "pk": 33,
+    "fields": {
+      "name": "internet_nl_mail_dnssec_mailto_exist",
+      "description": null,
+      "include_in_report": true,
+      "show_in_frontend": true,
+      "display_order": 2205,
+      "second_opinion_links": [
+        6
+      ],
+      "documentation_links": [
+        11
+      ],
+      "category": [
+        5
+      ]
+    }
+  },
+  {
+    "model": "scanners.scantype",
+    "pk": 34,
+    "fields": {
+      "name": "internet_nl_mail_auth_spf_policy",
+      "description": null,
+      "include_in_report": true,
+      "show_in_frontend": true,
+      "display_order": 2331,
+      "second_opinion_links": [
+        6
+      ],
+      "documentation_links": [
+        11
+      ],
+      "category": [
+        5
+      ]
+    }
+  },
+  {
+    "model": "scanners.scantype",
+    "pk": 35,
+    "fields": {
+      "name": "internet_nl_mail_auth_dmarc_policy",
+      "description": null,
+      "include_in_report": true,
+      "show_in_frontend": true,
+      "display_order": 2311,
+      "second_opinion_links": [
+        6
+      ],
+      "documentation_links": [
+        11
+      ],
+      "category": [
+        5
+      ]
+    }
+  },
+  {
+    "model": "scanners.scantype",
+    "pk": 36,
+    "fields": {
+      "name": "internet_nl_mail_starttls_tls_keyexchange",
+      "description": null,
+      "include_in_report": true,
+      "show_in_frontend": true,
+      "display_order": 2414,
+      "second_opinion_links": [
+        6
+      ],
+      "documentation_links": [
+        11
+      ],
+      "category": [
+        5
+      ]
+    }
+  },
+  {
+    "model": "scanners.scantype",
+    "pk": 37,
+    "fields": {
+      "name": "internet_nl_mail_starttls_tls_compress",
+      "description": null,
+      "include_in_report": true,
+      "show_in_frontend": true,
+      "display_order": 2416,
+      "second_opinion_links": [
+        6
+      ],
+      "documentation_links": [
+        11
+      ],
+      "category": [
+        5
+      ]
+    }
+  },
+  {
+    "model": "scanners.scantype",
+    "pk": 38,
+    "fields": {
+      "name": "internet_nl_mail_starttls_cert_sig",
+      "description": null,
+      "include_in_report": true,
+      "show_in_frontend": true,
+      "display_order": 2432,
+      "second_opinion_links": [
+        6
+      ],
+      "documentation_links": [
+        11
+      ],
+      "category": [
+        5
+      ]
+    }
+  },
+  {
+    "model": "scanners.scantype",
+    "pk": 39,
+    "fields": {
+      "name": "internet_nl_mail_starttls_cert_pubkey",
+      "description": null,
+      "include_in_report": true,
+      "show_in_frontend": true,
+      "display_order": 2431,
+      "second_opinion_links": [
+        6
+      ],
+      "documentation_links": [
+        11
+      ],
+      "category": [
+        5
+      ]
+    }
+  },
+  {
+    "model": "scanners.scantype",
+    "pk": 40,
+    "fields": {
+      "name": "internet_nl_mail_starttls_dane_rollover",
+      "description": null,
+      "include_in_report": true,
+      "show_in_frontend": true,
+      "display_order": 2452,
+      "second_opinion_links": [
+        6
+      ],
+      "documentation_links": [
+        11
+      ],
+      "category": [
+        5
+      ]
+    }
+  },
+  {
+    "model": "scanners.scantype",
+    "pk": 41,
+    "fields": {
+      "name": "internet_nl_mail_starttls_tls_secreneg",
+      "description": null,
+      "include_in_report": true,
+      "show_in_frontend": true,
+      "display_order": 2417,
+      "second_opinion_links": [
+        6
+      ],
+      "documentation_links": [
+        11
+      ],
+      "category": [
+        5
+      ]
+    }
+  },
+  {
+    "model": "scanners.scantype",
+    "pk": 42,
+    "fields": {
+      "name": "internet_nl_mail_starttls_dane_exist",
+      "description": null,
+      "include_in_report": true,
+      "show_in_frontend": true,
+      "display_order": 2450,
+      "second_opinion_links": [
+        6
+      ],
+      "documentation_links": [
+        11
+      ],
+      "category": [
+        5
+      ]
+    }
+  },
+  {
+    "model": "scanners.scantype",
+    "pk": 43,
+    "fields": {
+      "name": "internet_nl_mail_starttls_dane_valid",
+      "description": null,
+      "include_in_report": true,
+      "show_in_frontend": true,
+      "display_order": 2451,
+      "second_opinion_links": [
+        6
+      ],
+      "documentation_links": [
+        11
+      ],
+      "category": [
+        5
+      ]
+    }
+  },
+  {
+    "model": "scanners.scantype",
+    "pk": 44,
+    "fields": {
+      "name": "internet_nl_mail_starttls_tls_ciphers",
+      "description": null,
+      "include_in_report": true,
+      "show_in_frontend": true,
+      "display_order": 2412,
+      "second_opinion_links": [
+        6
+      ],
+      "documentation_links": [
+        11
+      ],
+      "category": [
+        5
+      ]
+    }
+  },
+  {
+    "model": "scanners.scantype",
+    "pk": 45,
+    "fields": {
+      "name": "internet_nl_mail_starttls_tls_clientreneg",
+      "description": null,
+      "include_in_report": true,
+      "show_in_frontend": true,
+      "display_order": 2418,
+      "second_opinion_links": [
+        6
+      ],
+      "documentation_links": [
+        11
+      ],
+      "category": [
+        5
+      ]
+    }
+  },
+  {
+    "model": "scanners.scantype",
+    "pk": 46,
+    "fields": {
+      "name": "internet_nl_mail_starttls_cert_chain",
+      "description": null,
+      "include_in_report": true,
+      "show_in_frontend": true,
+      "display_order": 2430,
+      "second_opinion_links": [
+        6
+      ],
+      "documentation_links": [
+        11
+      ],
+      "category": [
+        5
+      ]
+    }
+  },
+  {
+    "model": "scanners.scantype",
+    "pk": 47,
+    "fields": {
+      "name": "internet_nl_mail_starttls_tls_version",
+      "description": null,
+      "include_in_report": true,
+      "show_in_frontend": true,
+      "display_order": 2411,
+      "second_opinion_links": [
+        6
+      ],
+      "documentation_links": [
+        11
+      ],
+      "category": [
+        5
+      ]
+    }
+  },
+  {
+    "model": "scanners.scantype",
+    "pk": 48,
+    "fields": {
+      "name": "internet_nl_mail_starttls_cert_domain",
+      "description": null,
+      "include_in_report": true,
+      "show_in_frontend": true,
+      "display_order": 2433,
+      "second_opinion_links": [
+        6
+      ],
+      "documentation_links": [
+        11
+      ],
+      "category": [
+        5
+      ]
+    }
+  },
+  {
+    "model": "scanners.scantype",
+    "pk": 49,
+    "fields": {
+      "name": "internet_nl_mail_dashboard_tls",
+      "description": null,
+      "include_in_report": true,
+      "show_in_frontend": true,
+      "display_order": 2401,
+      "second_opinion_links": [
+        6
+      ],
+      "documentation_links": [
+        11
+      ],
+      "category": [
+        5
+      ]
+    }
+  },
+  {
+    "model": "scanners.scantype",
+    "pk": 50,
+    "fields": {
+      "name": "internet_nl_mail_dashboard_auth",
+      "description": null,
+      "include_in_report": true,
+      "show_in_frontend": true,
+      "display_order": 2301,
+      "second_opinion_links": [
+        6
+      ],
+      "documentation_links": [
+        11
+      ],
+      "category": [
+        5
+      ]
+    }
+  },
+  {
+    "model": "scanners.scantype",
+    "pk": 51,
+    "fields": {
+      "name": "internet_nl_mail_dashboard_dnssec",
+      "description": null,
+      "include_in_report": true,
+      "show_in_frontend": true,
+      "display_order": 2201,
+      "second_opinion_links": [
+        6
+      ],
+      "documentation_links": [
+        11
+      ],
+      "category": [
+        5
+      ]
+    }
+  },
+  {
+    "model": "scanners.scantype",
+    "pk": 52,
+    "fields": {
+      "name": "internet_nl_mail_dashboard_ipv6",
+      "description": null,
+      "include_in_report": true,
+      "show_in_frontend": true,
+      "display_order": 2101,
+      "second_opinion_links": [
+        6
+      ],
+      "documentation_links": [
+        11
+      ],
+      "category": [
+        5
+      ]
+    }
+  },
+  {
+    "model": "scanners.scantype",
+    "pk": 53,
+    "fields": {
+      "name": "internet_nl_mail_dashboard_overall_score",
+      "description": null,
+      "include_in_report": true,
+      "show_in_frontend": true,
+      "display_order": 2000,
+      "second_opinion_links": [
+        6
+      ],
+      "documentation_links": [
+        11
+      ],
+      "category": [
+        5
+      ]
+    }
+  },
+  {
+    "model": "scanners.scantype",
+    "pk": 54,
+    "fields": {
+      "name": "internet_nl_mail_legacy_dmarc",
+      "description": null,
+      "include_in_report": true,
+      "show_in_frontend": true,
+      "display_order": 2501,
+      "second_opinion_links": [
+        6
+      ],
+      "documentation_links": [
+        11
+      ],
+      "category": [
+        5
+      ]
+    }
+  },
+  {
+    "model": "scanners.scantype",
+    "pk": 55,
+    "fields": {
+      "name": "internet_nl_mail_legacy_dkim",
+      "description": null,
+      "include_in_report": true,
+      "show_in_frontend": true,
+      "display_order": 2502,
+      "second_opinion_links": [
+        6
+      ],
+      "documentation_links": [
+        11
+      ],
+      "category": [
+        5
+      ]
+    }
+  },
+  {
+    "model": "scanners.scantype",
+    "pk": 56,
+    "fields": {
+      "name": "internet_nl_mail_legacy_spf",
+      "description": null,
+      "include_in_report": true,
+      "show_in_frontend": true,
+      "display_order": 2503,
+      "second_opinion_links": [
+        6
+      ],
+      "documentation_links": [
+        11
+      ],
+      "category": [
+        5
+      ]
+    }
+  },
+  {
+    "model": "scanners.scantype",
+    "pk": 57,
+    "fields": {
+      "name": "internet_nl_mail_legacy_dmarc_policy",
+      "description": null,
+      "include_in_report": true,
+      "show_in_frontend": true,
+      "display_order": 2504,
+      "second_opinion_links": [
+        6
+      ],
+      "documentation_links": [
+        11
+      ],
+      "category": [
+        5
+      ]
+    }
+  },
+  {
+    "model": "scanners.scantype",
+    "pk": 58,
+    "fields": {
+      "name": "internet_nl_mail_legacy_spf_policy",
+      "description": null,
+      "include_in_report": true,
+      "show_in_frontend": true,
+      "display_order": 2505,
+      "second_opinion_links": [
+        6
+      ],
+      "documentation_links": [
+        11
+      ],
+      "category": [
+        5
+      ]
+    }
+  },
+  {
+    "model": "scanners.scantype",
+    "pk": 59,
+    "fields": {
+      "name": "internet_nl_mail_legacy_start_tls",
+      "description": null,
+      "include_in_report": true,
+      "show_in_frontend": true,
+      "display_order": 2506,
+      "second_opinion_links": [
+        6
+      ],
+      "documentation_links": [
+        11
+      ],
+      "category": [
+        5
+      ]
+    }
+  },
+  {
+    "model": "scanners.scantype",
+    "pk": 60,
+    "fields": {
+      "name": "internet_nl_mail_legacy_start_tls_ncsc",
+      "description": null,
+      "include_in_report": true,
+      "show_in_frontend": true,
+      "display_order": 2507,
+      "second_opinion_links": [
+        6
+      ],
+      "documentation_links": [
+        11
+      ],
+      "category": [
+        5
+      ]
+    }
+  },
+  {
+    "model": "scanners.scantype",
+    "pk": 61,
+    "fields": {
+      "name": "internet_nl_mail_legacy_dnssec_email_domain",
+      "description": null,
+      "include_in_report": true,
+      "show_in_frontend": true,
+      "display_order": 2508,
+      "second_opinion_links": [
+        6
+      ],
+      "documentation_links": [
+        11
+      ],
+      "category": [
+        5
+      ]
+    }
+  },
+  {
+    "model": "scanners.scantype",
+    "pk": 62,
+    "fields": {
+      "name": "internet_nl_mail_legacy_dnssec_mx",
+      "description": null,
+      "include_in_report": true,
+      "show_in_frontend": true,
+      "display_order": 2509,
+      "second_opinion_links": [
+        6
+      ],
+      "documentation_links": [
+        11
+      ],
+      "category": [
+        5
+      ]
+    }
+  },
+  {
+    "model": "scanners.scantype",
+    "pk": 63,
+    "fields": {
+      "name": "internet_nl_mail_legacy_dane",
+      "description": null,
+      "include_in_report": true,
+      "show_in_frontend": true,
+      "display_order": 2510,
+      "second_opinion_links": [
+        6
+      ],
+      "documentation_links": [
+        11
+      ],
+      "category": [
+        5
+      ]
+    }
+  },
+  {
+    "model": "scanners.scantype",
+    "pk": 64,
+    "fields": {
+      "name": "internet_nl_mail_legacy_ipv6_nameserver",
+      "description": null,
+      "include_in_report": true,
+      "show_in_frontend": true,
+      "display_order": 2512,
+      "second_opinion_links": [
+        6
+      ],
+      "documentation_links": [
+        11
+      ],
+      "category": [
+        5
+      ]
+    }
+  },
+  {
+    "model": "scanners.scantype",
+    "pk": 65,
+    "fields": {
+      "name": "internet_nl_mail_legacy_ipv6_mailserver",
+      "description": null,
+      "include_in_report": true,
+      "show_in_frontend": true,
+      "display_order": 2513,
+      "second_opinion_links": [
+        6
+      ],
+      "documentation_links": [
+        11
+      ],
+      "category": [
+        5
+      ]
+    }
+  },
+  {
+    "model": "scanners.scantype",
+    "pk": 67,
+    "fields": {
+      "name": "internet_nl_mail_starttls_tls_cipherorder",
+      "description": null,
+      "include_in_report": true,
+      "show_in_frontend": true,
+      "display_order": 2413,
+      "second_opinion_links": [
+        6
+      ],
+      "documentation_links": [
+        11
+      ],
+      "category": [
+        5
+      ]
+    }
+  },
+  {
+    "model": "scanners.scantype",
+    "pk": 68,
+    "fields": {
+      "name": "internet_nl_mail_starttls_tls_keyexchangehash",
+      "description": null,
+      "include_in_report": true,
+      "show_in_frontend": true,
+      "display_order": 2415,
+      "second_opinion_links": [
+        6
+      ],
+      "documentation_links": [
+        11
+      ],
+      "category": [
+        5
+      ]
+    }
+  },
+  {
+    "model": "scanners.scantype",
+    "pk": 69,
+    "fields": {
+      "name": "internet_nl_mail_starttls_tls_0rtt",
+      "description": null,
+      "include_in_report": true,
+      "show_in_frontend": true,
+      "display_order": 2419,
+      "second_opinion_links": [
+        6
+      ],
+      "documentation_links": [
+        11
+      ],
+      "category": [
+        5
+      ]
+    }
+  },
+  {
+    "model": "scanners.scantype",
+    "pk": 70,
+    "fields": {
+      "name": "internet_nl_mail_legacy_mail_non_sending_domain",
+      "description": null,
+      "include_in_report": true,
+      "show_in_frontend": true,
+      "display_order": 2514,
+      "second_opinion_links": [
+        6
+      ],
+      "documentation_links": [
+        11
+      ],
+      "category": [
+        5
+      ]
+    }
+  },
+  {
+    "model": "scanners.scantype",
+    "pk": 71,
+    "fields": {
+      "name": "internet_nl_mail_legacy_mail_sending_domain",
+      "description": null,
+      "include_in_report": true,
+      "show_in_frontend": true,
+      "display_order": 2515,
+      "second_opinion_links": [
+        6
+      ],
+      "documentation_links": [
+        11
+      ],
+      "category": [
+        5
+      ]
+    }
+  },
+  {
+    "model": "scanners.scantype",
+    "pk": 72,
+    "fields": {
+      "name": "internet_nl_mail_legacy_mail_server_testable",
+      "description": null,
+      "include_in_report": true,
+      "show_in_frontend": true,
+      "display_order": 2516,
+      "second_opinion_links": [
+        6
+      ],
+      "documentation_links": [
+        11
+      ],
+      "category": [
+        5
+      ]
+    }
+  },
+  {
+    "model": "scanners.scantype",
+    "pk": 73,
+    "fields": {
+      "name": "internet_nl_mail_legacy_mail_server_reachable",
+      "description": null,
+      "include_in_report": true,
+      "show_in_frontend": true,
+      "display_order": 2517,
+      "second_opinion_links": [
+        6
+      ],
+      "documentation_links": [
+        11
+      ],
+      "category": [
+        5
+      ]
+    }
+  },
+  {
+    "model": "scanners.scantype",
+    "pk": 74,
+    "fields": {
+      "name": "internet_nl_mail_legacy_domain_has_mx",
+      "description": null,
+      "include_in_report": true,
+      "show_in_frontend": true,
+      "display_order": 2518,
+      "second_opinion_links": [
+        6
+      ],
+      "documentation_links": [
+        11
+      ],
+      "category": [
+        5
+      ]
+    }
+  },
+  {
+    "model": "scanners.scantype",
+    "pk": 75,
+    "fields": {
+      "name": "internet_nl_mail_legacy_tls_1_3",
+      "description": null,
+      "include_in_report": true,
+      "show_in_frontend": true,
+      "display_order": 2520,
+      "second_opinion_links": [
+        6
+      ],
+      "documentation_links": [
+        11
+      ],
+      "category": [
+        5
+      ]
+    }
+  },
+  {
+    "model": "scanners.scantype",
+    "pk": 76,
+    "fields": {
+      "name": "internet_nl_mail_legacy_category_ipv6",
+      "description": null,
+      "include_in_report": true,
+      "show_in_frontend": true,
+      "display_order": 2511,
+      "second_opinion_links": [
+        6
+      ],
+      "documentation_links": [
+        11
+      ],
+      "category": [
+        5
+      ]
+    }
+  },
+  {
+    "model": "scanners.scantype",
+    "pk": 77,
+    "fields": {
+      "name": "internet_nl_mail_legacy_category",
+      "description": null,
+      "include_in_report": true,
+      "show_in_frontend": true,
+      "display_order": 2500,
+      "second_opinion_links": [
+        6
+      ],
+      "documentation_links": [
+        11
+      ],
+      "category": [
+        5
+      ]
+    }
+  },
+  {
+    "model": "scanners.scantype",
+    "pk": 79,
+    "fields": {
+      "name": "internet_nl_web_ipv6",
+      "description": null,
+      "include_in_report": true,
+      "show_in_frontend": true,
+      "display_order": 1100,
+      "second_opinion_links": [
+        3
+      ],
+      "documentation_links": [
+        11
+      ],
+      "category": [
+        4
+      ]
+    }
+  },
+  {
+    "model": "scanners.scantype",
+    "pk": 80,
+    "fields": {
+      "name": "internet_nl_web_dnssec",
+      "description": null,
+      "include_in_report": true,
+      "show_in_frontend": true,
+      "display_order": 1200,
+      "second_opinion_links": [
+        3
+      ],
+      "documentation_links": [
+        11
+      ],
+      "category": [
+        4
+      ]
+    }
+  },
+  {
+    "model": "scanners.scantype",
+    "pk": 81,
+    "fields": {
+      "name": "internet_nl_web_tls",
+      "description": null,
+      "include_in_report": true,
+      "show_in_frontend": true,
+      "display_order": 1300,
+      "second_opinion_links": [
+        3
+      ],
+      "documentation_links": [
+        11
+      ],
+      "category": [
+        4
+      ]
+    }
+  },
+  {
+    "model": "scanners.scantype",
+    "pk": 83,
+    "fields": {
+      "name": "internet_nl_web_ipv6_ws_similar",
+      "description": null,
+      "include_in_report": true,
+      "show_in_frontend": true,
+      "display_order": 1105,
+      "second_opinion_links": [
+        3
+      ],
+      "documentation_links": [
+        11
+      ],
+      "category": [
+        4
+      ]
+    }
+  },
+  {
+    "model": "scanners.scantype",
+    "pk": 84,
+    "fields": {
+      "name": "internet_nl_web_ipv6_ws_address",
+      "description": null,
+      "include_in_report": true,
+      "show_in_frontend": true,
+      "display_order": 1103,
+      "second_opinion_links": [
+        3
+      ],
+      "documentation_links": [
+        11
+      ],
+      "category": [
+        4
+      ]
+    }
+  },
+  {
+    "model": "scanners.scantype",
+    "pk": 85,
+    "fields": {
+      "name": "internet_nl_web_ipv6_ns_reach",
+      "description": null,
+      "include_in_report": true,
+      "show_in_frontend": true,
+      "display_order": 1102,
+      "second_opinion_links": [
+        3
+      ],
+      "documentation_links": [
+        11
+      ],
+      "category": [
+        4
+      ]
+    }
+  },
+  {
+    "model": "scanners.scantype",
+    "pk": 86,
+    "fields": {
+      "name": "internet_nl_web_ipv6_ws_reach",
+      "description": null,
+      "include_in_report": true,
+      "show_in_frontend": true,
+      "display_order": 1104,
+      "second_opinion_links": [
+        3
+      ],
+      "documentation_links": [
+        11
+      ],
+      "category": [
+        4
+      ]
+    }
+  },
+  {
+    "model": "scanners.scantype",
+    "pk": 87,
+    "fields": {
+      "name": "internet_nl_web_ipv6_ns_address",
+      "description": null,
+      "include_in_report": true,
+      "show_in_frontend": true,
+      "display_order": 1101,
+      "second_opinion_links": [
+        3
+      ],
+      "documentation_links": [
+        11
+      ],
+      "category": [
+        4
+      ]
+    }
+  },
+  {
+    "model": "scanners.scantype",
+    "pk": 88,
+    "fields": {
+      "name": "internet_nl_web_dnssec_valid",
+      "description": null,
+      "include_in_report": true,
+      "show_in_frontend": true,
+      "display_order": 1202,
+      "second_opinion_links": [
+        3
+      ],
+      "documentation_links": [
+        11
+      ],
+      "category": [
+        4
+      ]
+    }
+  },
+  {
+    "model": "scanners.scantype",
+    "pk": 89,
+    "fields": {
+      "name": "internet_nl_web_dnssec_exist",
+      "description": null,
+      "include_in_report": true,
+      "show_in_frontend": true,
+      "display_order": 1201,
+      "second_opinion_links": [
+        3
+      ],
+      "documentation_links": [
+        11
+      ],
+      "category": [
+        4
+      ]
+    }
+  },
+  {
+    "model": "scanners.scantype",
+    "pk": 90,
+    "fields": {
+      "name": "internet_nl_web_https_tls_keyexchange",
+      "description": null,
+      "include_in_report": true,
+      "show_in_frontend": true,
+      "display_order": 1323,
+      "second_opinion_links": [
+        3
+      ],
+      "documentation_links": [
+        11
+      ],
+      "category": [
+        4
+      ]
+    }
+  },
+  {
+    "model": "scanners.scantype",
+    "pk": 91,
+    "fields": {
+      "name": "internet_nl_web_https_tls_compress",
+      "description": null,
+      "include_in_report": true,
+      "show_in_frontend": true,
+      "display_order": 1325,
+      "second_opinion_links": [
+        3
+      ],
+      "documentation_links": [
+        11
+      ],
+      "category": [
+        4
+      ]
+    }
+  },
+  {
+    "model": "scanners.scantype",
+    "pk": 92,
+    "fields": {
+      "name": "internet_nl_web_https_cert_sig",
+      "description": null,
+      "include_in_report": true,
+      "show_in_frontend": true,
+      "display_order": 1342,
+      "second_opinion_links": [
+        3
+      ],
+      "documentation_links": [
+        11
+      ],
+      "category": [
+        4
+      ]
+    }
+  },
+  {
+    "model": "scanners.scantype",
+    "pk": 93,
+    "fields": {
+      "name": "internet_nl_web_https_cert_pubkey",
+      "description": null,
+      "include_in_report": true,
+      "show_in_frontend": true,
+      "display_order": 1341,
+      "second_opinion_links": [
+        3
+      ],
+      "documentation_links": [
+        11
+      ],
+      "category": [
+        4
+      ]
+    }
+  },
+  {
+    "model": "scanners.scantype",
+    "pk": 94,
+    "fields": {
+      "name": "internet_nl_web_https_dane_valid",
+      "description": null,
+      "include_in_report": true,
+      "show_in_frontend": true,
+      "display_order": 1345,
+      "second_opinion_links": [
+        3
+      ],
+      "documentation_links": [
+        11
+      ],
+      "category": [
+        4
+      ]
+    }
+  },
+  {
+    "model": "scanners.scantype",
+    "pk": 95,
+    "fields": {
+      "name": "internet_nl_web_https_tls_secreneg",
+      "description": null,
+      "include_in_report": true,
+      "show_in_frontend": true,
+      "display_order": 1326,
+      "second_opinion_links": [
+        3
+      ],
+      "documentation_links": [
+        11
+      ],
+      "category": [
+        4
+      ]
+    }
+  },
+  {
+    "model": "scanners.scantype",
+    "pk": 96,
+    "fields": {
+      "name": "internet_nl_web_https_http_hsts",
+      "description": null,
+      "include_in_report": true,
+      "show_in_frontend": true,
+      "display_order": 1313,
+      "second_opinion_links": [
+        3
+      ],
+      "documentation_links": [
+        11
+      ],
+      "category": [
+        4
+      ]
+    }
+  },
+  {
+    "model": "scanners.scantype",
+    "pk": 97,
+    "fields": {
+      "name": "internet_nl_web_https_http_compress",
+      "description": null,
+      "include_in_report": true,
+      "show_in_frontend": true,
+      "display_order": 1312,
+      "second_opinion_links": [
+        3
+      ],
+      "documentation_links": [
+        11
+      ],
+      "category": [
+        4
+      ]
+    }
+  },
+  {
+    "model": "scanners.scantype",
+    "pk": 98,
+    "fields": {
+      "name": "internet_nl_web_https_dane_exist",
+      "description": null,
+      "include_in_report": true,
+      "show_in_frontend": true,
+      "display_order": 1344,
+      "second_opinion_links": [
+        3
+      ],
+      "documentation_links": [
+        11
+      ],
+      "category": [
+        4
+      ]
+    }
+  },
+  {
+    "model": "scanners.scantype",
+    "pk": 99,
+    "fields": {
+      "name": "internet_nl_web_https_http_available",
+      "description": null,
+      "include_in_report": true,
+      "show_in_frontend": true,
+      "display_order": 1310,
+      "second_opinion_links": [
+        3
+      ],
+      "documentation_links": [
+        11
+      ],
+      "category": [
+        4
+      ]
+    }
+  },
+  {
+    "model": "scanners.scantype",
+    "pk": 100,
+    "fields": {
+      "name": "internet_nl_web_https_tls_ciphers",
+      "description": null,
+      "include_in_report": true,
+      "show_in_frontend": true,
+      "display_order": 1321,
+      "second_opinion_links": [
+        3
+      ],
+      "documentation_links": [
+        11
+      ],
+      "category": [
+        4
+      ]
+    }
+  },
+  {
+    "model": "scanners.scantype",
+    "pk": 101,
+    "fields": {
+      "name": "internet_nl_web_https_tls_clientreneg",
+      "description": null,
+      "include_in_report": true,
+      "show_in_frontend": true,
+      "display_order": 1327,
+      "second_opinion_links": [
+        3
+      ],
+      "documentation_links": [
+        11
+      ],
+      "category": [
+        4
+      ]
+    }
+  },
+  {
+    "model": "scanners.scantype",
+    "pk": 102,
+    "fields": {
+      "name": "internet_nl_web_https_tls_version",
+      "description": null,
+      "include_in_report": true,
+      "show_in_frontend": true,
+      "display_order": 1320,
+      "second_opinion_links": [
+        3
+      ],
+      "documentation_links": [
+        11
+      ],
+      "category": [
+        4
+      ]
+    }
+  },
+  {
+    "model": "scanners.scantype",
+    "pk": 103,
+    "fields": {
+      "name": "internet_nl_web_https_cert_chain",
+      "description": null,
+      "include_in_report": true,
+      "show_in_frontend": true,
+      "display_order": 1340,
+      "second_opinion_links": [
+        3
+      ],
+      "documentation_links": [
+        11
+      ],
+      "category": [
+        4
+      ]
+    }
+  },
+  {
+    "model": "scanners.scantype",
+    "pk": 104,
+    "fields": {
+      "name": "internet_nl_web_https_http_redirect",
+      "description": null,
+      "include_in_report": true,
+      "show_in_frontend": true,
+      "display_order": 1311,
+      "second_opinion_links": [
+        3
+      ],
+      "documentation_links": [
+        11
+      ],
+      "category": [
+        4
+      ]
+    }
+  },
+  {
+    "model": "scanners.scantype",
+    "pk": 105,
+    "fields": {
+      "name": "internet_nl_web_https_cert_domain",
+      "description": null,
+      "include_in_report": true,
+      "show_in_frontend": true,
+      "display_order": 1343,
+      "second_opinion_links": [
+        3
+      ],
+      "documentation_links": [
+        11
+      ],
+      "category": [
+        4
+      ]
+    }
+  },
+  {
+    "model": "scanners.scantype",
+    "pk": 109,
+    "fields": {
+      "name": "internet_nl_web_overall_score",
+      "description": null,
+      "include_in_report": true,
+      "show_in_frontend": true,
+      "display_order": 1000,
+      "second_opinion_links": [
+        3
+      ],
+      "documentation_links": [
+        11
+      ],
+      "category": [
+        4
+      ]
+    }
+  },
+  {
+    "model": "scanners.scantype",
+    "pk": 110,
+    "fields": {
+      "name": "internet_nl_web_legacy_dnssec",
+      "description": null,
+      "include_in_report": true,
+      "show_in_frontend": true,
+      "display_order": 1501,
+      "second_opinion_links": [
+        3
+      ],
+      "documentation_links": [
+        11
+      ],
+      "category": [
+        4
+      ]
+    }
+  },
+  {
+    "model": "scanners.scantype",
+    "pk": 111,
+    "fields": {
+      "name": "internet_nl_web_legacy_tls_available",
+      "description": null,
+      "include_in_report": true,
+      "show_in_frontend": true,
+      "display_order": 1502,
+      "second_opinion_links": [
+        3
+      ],
+      "documentation_links": [
+        11
+      ],
+      "category": [
+        4
+      ]
+    }
+  },
+  {
+    "model": "scanners.scantype",
+    "pk": 112,
+    "fields": {
+      "name": "internet_nl_web_legacy_tls_ncsc_web",
+      "description": null,
+      "include_in_report": true,
+      "show_in_frontend": true,
+      "display_order": 1503,
+      "second_opinion_links": [
+        3
+      ],
+      "documentation_links": [
+        11
+      ],
+      "category": [
+        4
+      ]
+    }
+  },
+  {
+    "model": "scanners.scantype",
+    "pk": 113,
+    "fields": {
+      "name": "internet_nl_web_legacy_https_enforced",
+      "description": null,
+      "include_in_report": true,
+      "show_in_frontend": true,
+      "display_order": 1504,
+      "second_opinion_links": [
+        3
+      ],
+      "documentation_links": [
+        11
+      ],
+      "category": [
+        4
+      ]
+    }
+  },
+  {
+    "model": "scanners.scantype",
+    "pk": 114,
+    "fields": {
+      "name": "internet_nl_web_legacy_hsts",
+      "description": null,
+      "include_in_report": true,
+      "show_in_frontend": true,
+      "display_order": 1505,
+      "second_opinion_links": [
+        3
+      ],
+      "documentation_links": [
+        11
+      ],
+      "category": [
+        4
+      ]
+    }
+  },
+  {
+    "model": "scanners.scantype",
+    "pk": 115,
+    "fields": {
+      "name": "internet_nl_web_legacy_ipv6_nameserver",
+      "description": null,
+      "include_in_report": true,
+      "show_in_frontend": true,
+      "display_order": 1507,
+      "second_opinion_links": [
+        3
+      ],
+      "documentation_links": [
+        11
+      ],
+      "category": [
+        4
+      ]
+    }
+  },
+  {
+    "model": "scanners.scantype",
+    "pk": 116,
+    "fields": {
+      "name": "internet_nl_web_legacy_ipv6_webserver",
+      "description": null,
+      "include_in_report": true,
+      "show_in_frontend": true,
+      "display_order": 1508,
+      "second_opinion_links": [
+        3
+      ],
+      "documentation_links": [
+        11
+      ],
+      "category": [
+        4
+      ]
+    }
+  },
+  {
+    "model": "scanners.scantype",
+    "pk": 118,
+    "fields": {
+      "name": "internet_nl_web_appsecpriv",
+      "description": null,
+      "include_in_report": true,
+      "show_in_frontend": true,
+      "display_order": 1400,
+      "second_opinion_links": [
+        3
+      ],
+      "documentation_links": [
+        11
+      ],
+      "category": [
+        4
+      ]
+    }
+  },
+  {
+    "model": "scanners.scantype",
+    "pk": 119,
+    "fields": {
+      "name": "internet_nl_web_appsecpriv_csp",
+      "description": null,
+      "include_in_report": true,
+      "show_in_frontend": true,
+      "display_order": 1403,
+      "second_opinion_links": [
+        3
+      ],
+      "documentation_links": [
+        11
+      ],
+      "category": [
+        4
+      ]
+    }
+  },
+  {
+    "model": "scanners.scantype",
+    "pk": 120,
+    "fields": {
+      "name": "internet_nl_web_appsecpriv_referrer_policy",
+      "description": null,
+      "include_in_report": true,
+      "show_in_frontend": true,
+      "display_order": 1404,
+      "second_opinion_links": [
+        3
+      ],
+      "documentation_links": [
+        11
+      ],
+      "category": [
+        4
+      ]
+    }
+  },
+  {
+    "model": "scanners.scantype",
+    "pk": 121,
+    "fields": {
+      "name": "internet_nl_web_appsecpriv_x_content_type_options",
+      "description": null,
+      "include_in_report": true,
+      "show_in_frontend": true,
+      "display_order": 1402,
+      "second_opinion_links": [
+        3
+      ],
+      "documentation_links": [
+        11
+      ],
+      "category": [
+        4
+      ]
+    }
+  },
+  {
+    "model": "scanners.scantype",
+    "pk": 122,
+    "fields": {
+      "name": "internet_nl_web_appsecpriv_x_frame_options",
+      "description": null,
+      "include_in_report": true,
+      "show_in_frontend": true,
+      "display_order": 1401,
+      "second_opinion_links": [
+        3
+      ],
+      "documentation_links": [
+        11
+      ],
+      "category": [
+        4
+      ]
+    }
+  },
+  {
+    "model": "scanners.scantype",
+    "pk": 124,
+    "fields": {
+      "name": "internet_nl_web_https_tls_cipherorder",
+      "description": null,
+      "include_in_report": true,
+      "show_in_frontend": true,
+      "display_order": 1322,
+      "second_opinion_links": [
+        3
+      ],
+      "documentation_links": [
+        11
+      ],
+      "category": [
+        4
+      ]
+    }
+  },
+  {
+    "model": "scanners.scantype",
+    "pk": 125,
+    "fields": {
+      "name": "internet_nl_web_https_tls_0rtt",
+      "description": null,
+      "include_in_report": true,
+      "show_in_frontend": true,
+      "display_order": 1328,
+      "second_opinion_links": [
+        3
+      ],
+      "documentation_links": [
+        11
+      ],
+      "category": [
+        4
+      ]
+    }
+  },
+  {
+    "model": "scanners.scantype",
+    "pk": 126,
+    "fields": {
+      "name": "internet_nl_web_https_tls_ocsp",
+      "description": null,
+      "include_in_report": true,
+      "show_in_frontend": true,
+      "display_order": 1329,
+      "second_opinion_links": [
+        3
+      ],
+      "documentation_links": [
+        11
+      ],
+      "category": [
+        4
+      ]
+    }
+  },
+  {
+    "model": "scanners.scantype",
+    "pk": 127,
+    "fields": {
+      "name": "internet_nl_web_https_tls_keyexchangehash",
+      "description": null,
+      "include_in_report": true,
+      "show_in_frontend": true,
+      "display_order": 1324,
+      "second_opinion_links": [
+        3
+      ],
+      "documentation_links": [
+        11
+      ],
+      "category": [
+        4
+      ]
+    }
+  },
+  {
+    "model": "scanners.scantype",
+    "pk": 128,
+    "fields": {
+      "name": "internet_nl_web_legacy_tls_1_3",
+      "description": null,
+      "include_in_report": true,
+      "show_in_frontend": true,
+      "display_order": 1509,
+      "second_opinion_links": [
+        3
+      ],
+      "documentation_links": [
+        11
+      ],
+      "category": [
+        4
+      ]
+    }
+  },
+  {
+    "model": "scanners.scantype",
+    "pk": 129,
+    "fields": {
+      "name": "internet_nl_web_legacy_category_ipv6",
+      "description": null,
+      "include_in_report": true,
+      "show_in_frontend": true,
+      "display_order": 1506,
+      "second_opinion_links": [
+        3
+      ],
+      "documentation_links": [
+        11
+      ],
+      "category": [
+        4
+      ]
+    }
+  },
+  {
+    "model": "scanners.scantype",
+    "pk": 130,
+    "fields": {
+      "name": "internet_nl_web_legacy_category",
+      "description": null,
+      "include_in_report": true,
+      "show_in_frontend": true,
+      "display_order": 1500,
+      "second_opinion_links": [
+        3
+      ],
+      "documentation_links": [
+        11
+      ],
+      "category": [
+        4
+      ]
+    }
+  },
+  {
+    "model": "scanners.scantype",
+    "pk": 131,
+    "fields": {
+      "name": "dummy",
+      "description": null,
+      "include_in_report": false,
+      "show_in_frontend": false,
+      "display_order": 3004,
+      "second_opinion_links": [
+        3
+      ],
+      "documentation_links": [
+        1
+      ],
+      "category": [
+        1
+      ]
+    }
+  },
+  {
+    "model": "scanners.scantype",
+    "pk": 132,
+    "fields": {
+      "name": "internet_nl_web_appsecpriv_securitytxt",
+      "description": "",
+      "include_in_report": true,
+      "show_in_frontend": true,
+      "display_order": 1405,
+      "second_opinion_links": [
+        3
+      ],
+      "documentation_links": [],
+      "category": [
+        1,
+        4
+      ]
+    }
+  },
+  {
+    "model": "scanners.scantype",
+    "pk": 133,
+    "fields": {
+      "name": "internet_nl_web_rpki",
+      "description": "",
+      "include_in_report": true,
+      "show_in_frontend": true,
+      "display_order": 1500,
+      "second_opinion_links": [
+        3
+      ],
+      "documentation_links": [],
+      "category": [
+        2,
+        4
+      ]
+    }
+  },
+  {
+    "model": "scanners.scantype",
+    "pk": 134,
+    "fields": {
+      "name": "internet_nl_web_rpki_exists",
+      "description": "",
+      "include_in_report": true,
+      "show_in_frontend": true,
+      "display_order": 1501,
+      "second_opinion_links": [
+        3
+      ],
+      "documentation_links": [],
+      "category": [
+        2,
+        4
+      ]
+    }
+  },
+  {
+    "model": "scanners.scantype",
+    "pk": 135,
+    "fields": {
+      "name": "internet_nl_web_rpki_valid",
+      "description": "",
+      "include_in_report": true,
+      "show_in_frontend": true,
+      "display_order": 1502,
+      "second_opinion_links": [
+        3
+      ],
+      "documentation_links": [],
+      "category": [
+        2,
+        4
+      ]
+    }
+  },
+  {
+    "model": "scanners.scantype",
+    "pk": 136,
+    "fields": {
+      "name": "internet_nl_web_ns_rpki_exists",
+      "description": "",
+      "include_in_report": true,
+      "show_in_frontend": true,
+      "display_order": 1503,
+      "second_opinion_links": [
+        3
+      ],
+      "documentation_links": [],
+      "category": [
+        2,
+        4
+      ]
+    }
+  },
+  {
+    "model": "scanners.scantype",
+    "pk": 137,
+    "fields": {
+      "name": "internet_nl_web_ns_rpki_valid",
+      "description": "",
+      "include_in_report": true,
+      "show_in_frontend": true,
+      "display_order": 1504,
+      "second_opinion_links": [
+        3
+      ],
+      "documentation_links": [],
+      "category": [
+        2,
+        4
+      ]
+    }
+  },
+  {
+    "model": "scanners.scantype",
+    "pk": 138,
+    "fields": {
+      "name": "internet_nl_mail_dashboard_rpki",
+      "description": "",
+      "include_in_report": true,
+      "show_in_frontend": true,
+      "display_order": 2500,
+      "second_opinion_links": [
+        6
+      ],
+      "documentation_links": [],
+      "category": [
+        2,
+        5
+      ]
+    }
+  },
+  {
+    "model": "scanners.scantype",
+    "pk": 139,
+    "fields": {
+      "name": "internet_nl_mail_rpki_exists",
+      "description": "",
+      "include_in_report": true,
+      "show_in_frontend": true,
+      "display_order": 2501,
+      "second_opinion_links": [
+        6
+      ],
+      "documentation_links": [],
+      "category": [
+        2,
+        5
+      ]
+    }
+  },
+  {
+    "model": "scanners.scantype",
+    "pk": 140,
+    "fields": {
+      "name": "internet_nl_mail_rpki_valid",
+      "description": "",
+      "include_in_report": true,
+      "show_in_frontend": true,
+      "display_order": 2502,
+      "second_opinion_links": [
+        6
+      ],
+      "documentation_links": [],
+      "category": [
+        2,
+        5
+      ]
+    }
+  },
+  {
+    "model": "scanners.scantype",
+    "pk": 141,
+    "fields": {
+      "name": "internet_nl_mail_ns_rpki_exists",
+      "description": "",
+      "include_in_report": true,
+      "show_in_frontend": true,
+      "display_order": 2503,
+      "second_opinion_links": [
+        6
+      ],
+      "documentation_links": [],
+      "category": [
+        2,
+        5
+      ]
+    }
+  },
+  {
+    "model": "scanners.scantype",
+    "pk": 142,
+    "fields": {
+      "name": "internet_nl_mail_ns_rpki_valid",
+      "description": "",
+      "include_in_report": true,
+      "show_in_frontend": true,
+      "display_order": 2504,
+      "second_opinion_links": [
+        6
+      ],
+      "documentation_links": [],
+      "category": [
+        2,
+        5
+      ]
+    }
+  },
+  {
+    "model": "scanners.scantype",
+    "pk": 143,
+    "fields": {
+      "name": "internet_nl_mail_mx_ns_rpki_exists",
+      "description": "",
+      "include_in_report": true,
+      "show_in_frontend": true,
+      "display_order": 2505,
+      "second_opinion_links": [
+        6
+      ],
+      "documentation_links": [],
+      "category": [
+        2,
+        5
+      ]
+    }
+  },
+  {
+    "model": "scanners.scantype",
+    "pk": 144,
+    "fields": {
+      "name": "internet_nl_mail_mx_ns_rpki_valid",
+      "description": "",
+      "include_in_report": true,
+      "show_in_frontend": true,
+      "display_order": 2506,
+      "second_opinion_links": [
+        6
+      ],
+      "documentation_links": [],
+      "category": [
+        2,
+        5
+      ]
+    }
+  },
+  {
+    "model": "scanners.scanner",
+    "pk": 12,
+    "fields": {
+      "name": "Find DNS endpoints for Internet.nl scans",
+      "python_name": "dns_endpoints",
+      "description": "Finds DNS pointers towards supposedly existing services. Used for internet.nl scans.",
+      "to": 0,
+      "enabled": false,
+      "rate_limit": 500,
+      "task_pickup_timeout_in_minutes": 240,
+      "needs_results_from": null,
+      "plannable_activities": [
+        2,
+        3
+      ],
+      "enabled_activities": [],
+      "creates_scan_types": []
+    }
+  },
+  {
+    "model": "scanners.scanner",
+    "pk": 26,
+    "fields": {
+      "name": "Internet.nl Mail Test",
+      "python_name": "internet_nl_mail",
+      "description": "Scan recipient for STARTTLS, SPF, DKIM and DMARC using internet.nl",
+      "to": 0,
+      "enabled": false,
+      "rate_limit": 500,
+      "task_pickup_timeout_in_minutes": 240,
+      "needs_results_from": 12,
+      "plannable_activities": [
+        1
+      ],
+      "enabled_activities": [
+        1
+      ],
+      "creates_scan_types": [
+        22,
+        23,
+        24,
+        25,
+        26,
+        27,
+        28,
+        29,
+        30,
+        31,
+        32,
+        33,
+        34,
+        35,
+        36,
+        37,
+        38,
+        39,
+        40,
+        41,
+        42,
+        43,
+        44,
+        45,
+        46,
+        47,
+        48,
+        49,
+        50,
+        51,
+        52,
+        53,
+        54,
+        55,
+        56,
+        57,
+        58,
+        59,
+        60,
+        61,
+        62,
+        63,
+        64,
+        65,
+        67,
+        68,
+        69,
+        70,
+        71,
+        72,
+        73,
+        74,
+        75,
+        76,
+        77,
+        138,
+        139,
+        140,
+        141,
+        142,
+        143,
+        144
+      ]
+    }
+  },
+  {
+    "model": "scanners.scanner",
+    "pk": 27,
+    "fields": {
+      "name": "Internet.nl Website Test",
+      "python_name": "internet_nl_web",
+      "description": "Scan recipient for HTTPS, Security Headers, IPv6 and DNSSEC using internet.nl",
+      "to": 0,
+      "enabled": false,
+      "rate_limit": 500,
+      "task_pickup_timeout_in_minutes": 240,
+      "needs_results_from": 12,
+      "plannable_activities": [
+        1
+      ],
+      "enabled_activities": [
+        1
+      ],
+      "creates_scan_types": [
+        128,
+        129,
+        130,
+        79,
+        80,
+        81,
+        83,
+        84,
+        85,
+        86,
+        87,
+        88,
+        89,
+        90,
+        91,
+        92,
+        93,
+        94,
+        95,
+        96,
+        97,
+        98,
+        99,
+        100,
+        101,
+        102,
+        103,
+        104,
+        105,
+        109,
+        110,
+        111,
+        112,
+        113,
+        114,
+        115,
+        116,
+        118,
+        119,
+        120,
+        121,
+        122,
+        124,
+        125,
+        126,
+        127,
+        132,
+        133,
+        134,
+        135,
+        136,
+        137
+      ]
+    }
+  }
+]
