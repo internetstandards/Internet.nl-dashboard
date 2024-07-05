@@ -6,48 +6,150 @@ More about this in this issue: https://github.com/internetstandards/Internet.nl-
 
 Overview
 =====================
-Setting up and configuring a dashboard instance is somewhat involved due to all available options and tailoring for
-specific environments. With this tutorial you should be up and running within a single day, gaining familiarity and
-confidence with with running a dashboard installation.
+While setting up an installation of the internet.nl dashboard is not more than running a single command, actually
+managing the application requires knowledge about some concepts and choices made.
+
+This tutorial will help you setting up and managing an internet.nl dashboard instance. With this tutorial you should
+be up and running within a few hours, gaining familiarity and confidence with with running a dashboard installation.
 
 For general and paid support with installations, updates and managing installations: please send a support request to vraag@internet.nl.
 
-Components
+Application component overview
 -------
-The internet.nl dashboard consists of three components: server, backend and frontend.
-The server hosts both the backend and frontend application.
+The dashboard contains of three application components: dockerfile, backend and frontend.
 
-Technical overview
-------
-The backend is written in python/django and communicates via JSON calls over HTTP.
-The frontend is written HTML/Javascript/CSS(BootstrapVue).
+The dockerfile will setup a complete dashboard with sample users and sample configuration. This is one command and
+should be run on a system that runs docker, colima or another similar tool.
 
-Both the backend and frontend expose parts of the dashboard application. The frontend is the thing most regular users
-will interact with. The backend is only meant for administrators for managing the application and logging in users.
+The backend is where all logic happens. List creation, result processing, session management and such. A few parts look
+like the frontend: the login page, the password reset page and spreadsheet upload page. All other pages are either
+redirects or interaction via JSON calls.
+
+The frontend is the place where a users maintain lists, start scans, view and share reports. This is (mostly) the
+'actual' website for day to day use.
+
+
+Creating your own unique look and feel
+-----
+The included default layout is an unbranded version of internet.nl, using the internet.nl styling. Only the logo's
+and references have been disabled. The setting for using your own template is called 'SITE_LAYOUT_NAME' and is exposed
+to the backend and frontend. The dashboard has not been optimized for custom branding yet, so your mileage to implement
+this for your organization may vary.
+
 
 What do you need
 --------
-* a domain name / address for hosting the application and also sending and receiving e-mail.
+* a domain name / address for hosting the application and also being able to send e-mail (SMTP settings).
 * a server, with certain specs...
 * novice command line expertise probably
 * ...
 
 
-Server installation
+Installation
 ======
 
-0: Limiting access to the admin interface via IP addresses
+Getting started
+----
+Download the version you want to run. These can be downloaded from the releases page, here:
+https://github.com/internetstandards/Internet.nl-dashboard/releases
+
+Releases from version 5.0 and over support docker compose. You can also download a release
+from the command line, with the following command:
+
+``mkdir dashboard && cd dashboard``
+
+``wget https://github.com/internetstandards/Internet.nl-dashboard/archive/refs/tags/v5.0.tar.gz``
+
+``tar -zxvf v5.0.tar.gz``
+
+``docker compose up --build``
+
+After a short while your dashboard instance will be ready at :8000.
+
+
+
+Load up the first account which associates the first user made with above command.
+
+``docker exec -ti internetnl-dashboard-backend-1 dashboard loaddata dashboard_production_default_account`
+``docker exec -ti internetnl-dashboard-backend-1 dashboard loaddata dashboard_production_example_email_templates``
+``docker exec -ti internetnl-dashboard-backend-1 dashboard loaddata dashboard_production_periodic_tasks``
+
+
+(the celerybackendcleanup task is already present in django_celery_beat)
+Create a new user:
+
+``docker exec -ti internetnl-dashboard-backend-1 dashboard createsuperuser``
+
+The first superuser has user id 1, this is connected to default account 1. You can configure multiple users per
+account, for more info see the account/users documentation.
+
+``docker exec -ti internetnl-dashboard-database-1 psql --user dashboard -c "update internet_nl_dashboard_dashboarduser set account_id=1 where user_id=1;"``
+
+Now you can login at :8000.
+
+Setting up connection with an internet.nl API server:
+- Configure INTERNET_NL_API_URL and CREDENTIAL_CHECK_URL to your api instance.
+
+
+
+You have to configure the internet.nl api endpoint and credentials by hand, see the configuration section. You can
+check the credentials for the user using the following feature:
+.. cedential_check image.
+
+
+todo: add /static/images/vendor/internet_nl/clear.gif in de frontend, of haal deze weg.
+todo johan: Report does not exist on location /source/dashboard/uploads/diskreports//original/UrlListReport/2.gson
+diskreports werken niet, daar mist nog een mapping.
+
+
+
+
+
+( todo: do you need direnv allow? probably not )
+
+All configuration setup for your operating system is out of scope. This includes configuration of firewalls, security settings,
+user management and so on. You can make your own choices. This includes what ports to use.
+
+After starting the containers, the application can be reached on localhost on port 8042 unless otherwise configured.
+
+todo: Dit is een `environment file`, .env. Daarin e.e.a. inrichten. Maak de file aan met deze inhoud.
+
+Backend application
+----
 1: Setting the SECRET_KEY and FIELD_ENCRYPTION_KEY (will happen on installation?) Automate this...
+-> this is generated once. Hoeft niet want gegenereerd op eerste startup. (geef aan johan het command om er een te maken).
+
+Todo: How do you make a secret key and field encryption key?
+
+
 2: Creating the first application user (automated probably)
+user = dashboard_admin,  createsuperuser. Eerste user is blanco.
+Ik geef de commands aan Johan.
 
-The fixtures needed to be installed are:
 
+3: Installing default fixtures
+* dashboard_production_dummy_user
 * dashboard_production_periodic_tasks
 * dashboard_production_example_email_templates
+
+
+Configuring settings in the admin interface
+---
+
+
+Connection to the internet.nl API
+----
+Via
 
 Possibly an account has to be added and connected to the user. Should this be a command line thing?
 
 todo: add security considerations
+
+Application security tips
+-----
+
+1: delete the first account and first user (make sure you have a different superuser set up and associated)
+2: do not use the same API credentials as user accounts
 
 
 Backend application
@@ -61,7 +163,7 @@ When the server is installed, the application uses several defaults.
 The admin interface
 --------------
 All data in the application is visible in the admin interface. This interface should only be reachable by a limited
-amount of users. This is enforced via the Server installation.
+amount of users. The path for limited access should be /admin/.
 
 The admin interface can be viewed on the url ``/admin/``. Visiting this requires an application user which was setup
 in the chapter 'server installation'. After logging in, the following interface is presented:

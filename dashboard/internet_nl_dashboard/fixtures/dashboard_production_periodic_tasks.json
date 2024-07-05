@@ -101,34 +101,6 @@
   },
   {
     "model": "django_celery_beat.periodictask",
-    "pk": 104,
-    "fields": {
-      "name": "celery.backend_cleanup",
-      "task": "celery.backend_cleanup",
-      "interval": null,
-      "crontab": 36,
-      "solar": null,
-      "clocked": null,
-      "args": "[]",
-      "kwargs": "{}",
-      "queue": null,
-      "exchange": null,
-      "routing_key": null,
-      "headers": "{}",
-      "priority": null,
-      "expires": null,
-      "expire_seconds": 43200,
-      "one_off": false,
-      "start_time": null,
-      "enabled": true,
-      "last_run_at": "2024-06-18T04:00:00.051Z",
-      "total_run_count": 1832,
-      "date_changed": "2024-06-18T04:00:33.086Z",
-      "description": ""
-    }
-  },
-  {
-    "model": "django_celery_beat.periodictask",
     "pk": 105,
     "fields": {
       "name": "Send queued mail",
