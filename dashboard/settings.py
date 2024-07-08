@@ -9,9 +9,9 @@ from django.utils.translation import gettext_lazy as _
 from sentry_sdk.integrations.celery import CeleryIntegration
 from sentry_sdk.integrations.django import DjangoIntegration
 from sentry_sdk.integrations.redis import RedisIntegration
-from .settings_util import get_field_encryption_key_from_file_or_env, get_secret_key_from_file_or_env
 
 from . import __version__
+from .settings_util import get_field_encryption_key_from_file_or_env, get_secret_key_from_file_or_env
 
 """
 Django settings for dashboard project.
