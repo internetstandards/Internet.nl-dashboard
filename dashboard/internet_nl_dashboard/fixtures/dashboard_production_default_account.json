@@ -1,0 +1,14 @@
+[
+  {
+    "model": "internet_nl_dashboard.account",
+    "pk": 1,
+    "fields": {
+      "name": "default_account",
+      "enable_scans": true,
+      "internet_nl_api_username": "internetnl",
+      "internet_nl_api_password": "b'gAAAAABmh-l8zisrtWyjMDkkDmQBEQzpLY17FIrN81NBgMq-DacASKVVb4ZjiDvjFIgerTtYD38Y-fvq9irDfnT1vbuh4Qa_dg=='",
+      "can_connect_to_internet_nl_api": false,
+      "report_settings": null
+    }
+  }
+]

@@ -485,7 +485,7 @@ CONSTANCE_CONFIG = {
         str
     ),
     'INTERNET_NL_SCAN_TRACKING_NAME': (
-        'Dashboard InternetNL [countrycode]',
+        '',
         'This setting is used when sending API requests for tracking purposes. Setting this value make it clear who '
         'is sending API requests. A good setting contains something unique about this installation, such as an '
         'organization name. The maximum length is 40 characters.',
@@ -553,6 +553,15 @@ CONSTANCE_CONFIG = {
         str
     ),
 
+    # frontend
+    "SITE_LAYOUT_NAME": (
+        '',
+        'The name of the layout, when internet_nl is used, logos, footer and styling from internet.nl is used. When '
+        'this field is empty all references to internet.nl disappear while still using the same color scheme. '
+        'Supported values: internet_nl, [empty]',
+        str
+    ),
+
     # signup settings
     "SHOW_SIGNUP_FORM": (
         False,
@@ -615,8 +624,9 @@ CONSTANCE_CONFIG = {
         'Username for the internet.nl API. This option is ignored as every account uses their own credentials. Keep '
         'this value set to dummy for legacy reasons.',
         str),
+    # this is defaulting to dummy as otherwise the scanner wil give an error that no credential has been configured.
     'INTERNET_NL_API_PASSWORD': (
-        '',
+        'dummy',
         'Username for the internet.nl API. This option is ignored as every account uses their own credentials. Keep '
         'this value set to dummy for legacy reasons.',
         str
@@ -679,20 +689,9 @@ CONSTANCE_CONFIG_FIELDSETS = OrderedDict(
         (
             'General Dashboard Settings', (
                 'DASHBOARD_FRONTEND_URL',
-                'DASHBOARD_MAXIMUM_DOMAINS_PER_LIST',
-                'DASHBOARD_MAXIMUM_DOMAINS_PER_SPREADSHEET',
-                'DASHBOARD_MAXIMUM_LISTS_PER_SPREADSHEET',
-                'DASHBOARD_FRONT_PAGE_URL_LISTS'
-            )
-        ),
-
-        (
-            'Internet.nl Scan Settings', (
-                'SCAN_AT_ALL',
                 'INTERNET_NL_API_URL',
-                "INTERNET_NL_SCAN_TRACKING_NAME",
-                "SCANNER_NAMESERVERS",
                 "CREDENTIAL_CHECK_URL",
+                "INTERNET_NL_SCAN_TRACKING_NAME",
             )
         ),
 
@@ -714,6 +713,22 @@ CONSTANCE_CONFIG_FIELDSETS = OrderedDict(
         ),
 
         (
+            'Lists & Limitations', (
+                'DASHBOARD_MAXIMUM_DOMAINS_PER_LIST',
+                'DASHBOARD_MAXIMUM_DOMAINS_PER_SPREADSHEET',
+                'DASHBOARD_MAXIMUM_LISTS_PER_SPREADSHEET',
+            )
+        ),
+
+        (
+            'Advanced settings', (
+                'SITE_LAYOUT_NAME',
+                "SCANNER_NAMESERVERS",
+                'DASHBOARD_FRONT_PAGE_URL_LISTS',
+            )
+        ),
+
+        (
             'Signup Settings (internet.nl only)', (
                 'SHOW_SIGNUP_FORM',
                 'EMAIL_NOTIFICATION_SENDER_FOR_SIGNUP',
@@ -722,7 +737,7 @@ CONSTANCE_CONFIG_FIELDSETS = OrderedDict(
         ),
 
         (
-            "Timeouts (advanced)", (
+            "Timeouts (expert settings)", (
                 'SCAN_TIMEOUT_MINUTES_DISCOVERING_ENDPOINTS',
                 'SCAN_TIMEOUT_MINUTES_RETRIEVING_SCANABLE_URLS',
                 'SCAN_TIMEOUT_MINUTES_REGISTERING_SCAN_AT_INTERNET_NL',
@@ -734,7 +749,7 @@ CONSTANCE_CONFIG_FIELDSETS = OrderedDict(
         ),
 
         (
-            "Logging settings (advanced)", (
+            "Logging settings (expert settings)", (
                 "SCANNER_LOG_PLANNED_SCANS",
                 "SCANNER_AUTO_PURGE_FINISHED_SCANS",
             )
@@ -742,6 +757,7 @@ CONSTANCE_CONFIG_FIELDSETS = OrderedDict(
 
         (
             "Unused / Expert settings", (
+                'SCAN_AT_ALL',
                 'INTERNET_NL_API_USERNAME',
                 'INTERNET_NL_API_PASSWORD',
                 'INTERNET_NL_MAXIMUM_URLS',

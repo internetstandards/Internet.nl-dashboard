@@ -12,6 +12,9 @@ def config_content():
         "show": {
             "signup_form": configuration["SHOW_SIGNUP_FORM"],
         },
+        "app": {
+            "layout": configuration["SITE_LAYOUT_NAME"],
+        },
     }
 
 
