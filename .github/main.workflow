@@ -29,7 +29,7 @@ action "test image" {
 action "compose" {
   needs = ["test image"]
   uses = "docker://python:3.8"
-  runs = ["/bin/sh", "-c", "pip install docker-compose; docker-compose up"]
+  runs = ["/bin/sh", "-c", "pip install docker-compose; docker-compose -f docker-compose.yml up"]
   env  = {PIP_DISABLE_PIP_VERSION_CHECK="1"}
 }
 
