@@ -1,7 +1,8 @@
 Dashboard User Management
 #########################
 
-
+.. sectnum::
+   :start: 2
 
 Overview
 ========
@@ -80,3 +81,9 @@ The last part of the form are the settings the user can edit when logged into th
 which account the user operates. You can leave the other fields empty, they can set that up themselves.
 
 .. image:: user-management/user_edit.png
+
+
+.. rst-class:: page-break
+.. raw:: pdf
+
+   PageBreak

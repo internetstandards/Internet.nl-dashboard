@@ -6,9 +6,9 @@ internet.nl dashboard documentation
    :maxdepth: 2
    :caption: Administration Manual
 
-   Installation
-   User Management
-   Email Templates
+   1_installation
+   2_user_management
+   3_email_templates
 
 
 Indices and tables
