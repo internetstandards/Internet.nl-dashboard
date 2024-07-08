@@ -42,6 +42,7 @@ In the command shell, perform the following commands.
 ```default
 git clone https://github.com/internetstandards/Internet.nl-dashboard/
 cd Internet.nl-dashboard
+git checkout 50
 docker compose up --build
 ```
 
@@ -96,18 +97,23 @@ Associate that user to the default account, assuming the createsuperuser made us
 
 `docker exec -ti internetnl-dashboard-database-1 psql --user dashboard -c "update internet_nl_dashboard_dashboarduser set account_id=1 where user_id=1;"`
 
-Now you can login at :8000.
+Now you can login at [http://localhost:8000/admin/](http://localhost:8000/admin/), or the same path under your server url.
+
+If you get an error that a certain user already exists, this might not be your first attempt to install the dashboard
+via this method. The docker installation method shares the same database.
+Make sure to associate the newly created super user also is connected to an account. This can be performed with SQL and
+via the admin portal.
 
 PageBreak
 
 ### Setting up scanning
 
-1. Visit the admin console on `/admin/` and log in. You might be redirected to the dashboard after login, so go
-to the admin login panel again.
+1. Visit the admin webpage on `/admin/` and log in. You might be redirected to the end-user website after logging in,
+so go to `/admin/` again.
 
 ![image](installation/admin_login_window.png)
 
-After going to `/admin/` again you will see this page:
+After a successful login you will see something that looks like this:
 
 ![image](installation/admin_panel.png)
 1. Go to “🎛️ Dashboard Configuration” in the left menu
@@ -119,16 +125,34 @@ After going to `/admin/` again you will see this page:
 > 4. INTERNET_NL_SCAN_TRACKING_NAME
 > 5. Click the save button
 ![image](installation/config_example_general_settings.png)
-1. Setup the API credentials for the account
 
-> 1. Go to the account management page: `/admin/internet_nl_dashboard/account/`
+These settings can also be set using the command line, this saves some time clicking through the admin interface.
+
+Use the following commands, of course with your own personal settings:
+
+```default
+docker exec -ti internetnl-dashboard-backend-1 dashboard constance set DASHBOARD_FRONTEND_URL http://127.0.0.1
+docker exec -ti internetnl-dashboard-backend-1 dashboard constance set INTERNET_NL_API_URL http://127.0.0.1:9000/api/batch/v2
+docker exec -ti internetnl-dashboard-backend-1 dashboard constance set CREDENTIAL_CHECK_URL http://127.0.0.1:9000/api/
+docker exec -ti internetnl-dashboard-backend-1 dashboard constance set INTERNET_NL_SCAN_TRACKING_NAME "My Dashboard Instance"
+```
+
+1. Setup the API credentials for the account.
+
+> 1. Go to the account management page
+
+> 2. `http://127.0.0.1:8000/admin/internet_nl_dashboard/account/`
 > 2. Click on the admin user
 > 3. Setup the “internet nl api username” and “new password” field and click save
 > 4. To test if the account was setup properly, use the ‘Check API credentials’
 > 5. If the credentials are correctly configured the check will return a checkmark symbol, otherwise a cross symbol will be visible on the row of this account.
-![image](installation/config_credential_check.png)
+![image](installation/config_setup_api_credentials.png)![image](installation/config_credential_check.png)
 
-You are now set to perform your first scan
+Note that the password in step 4.3 is being saved inside the database as an encrypted value. The key to that encryption
+was auto-generated using this setup. This key is stored inside a file, if you change it the currently stored passwords
+cannot be used anymore.
+
+You are now set to perform your first scan.
 
 PageBreak
 
@@ -163,7 +187,7 @@ After a scan has finished a report will be ready.
 
 ## Advanced configuration
 
-### Setting up e-mail
+### Setting up e-mail notification after scanning
 
 After a scan completes it’s possible to receive an e-mail. An SMTP server has to be configured.
 
@@ -173,7 +197,13 @@ After a scan completes it’s possible to receive an e-mail. An SMTP server has 
 3. Fill in the form with all SMTP details and click save. Only one outbox is needed.
 .. image:: installation/email_add_outbox.png
 
-![image](installation/email_configured_outbox.png)PageBreak
+![image](installation/email_configured_outbox.png)
+
+The e-mails that are being sent are stored as templates in the “📨 E-Mail Templates” section. The default language for
+templates is English and several templates are pre-installed to be customized. For more information about these templates
+check the Email Templates chapter.
+
+PageBreak
 
 ## Background information
 
@@ -197,3 +227,5 @@ The included default layout is an unbranded version of internet.nl, using the in
 and references have been disabled. The setting for using your own template is called ‘SITE_LAYOUT_NAME’ and is exposed
 to the backend and frontend. The dashboard has not been optimized for custom branding yet, so your mileage to implement
 this for your organization may vary.
+
+PageBreak

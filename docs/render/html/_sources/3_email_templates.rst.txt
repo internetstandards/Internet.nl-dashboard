@@ -1,3 +1,8 @@
+.. _Email Templates:
+
+.. sectnum::
+   :start: 3
+
 Email Templates
 ###############
 
@@ -18,7 +23,7 @@ An admin can edit them easily.
 
 What templates are available
 --------------------------------
-Currenty there is one feature that uses an e-mail template, which is `scan_finished`.
+Currently there is one feature that uses an e-mail template, which is `scan_finished`.
 When a scan is finished, this mail template is used to draft a mail.
 
 
@@ -423,3 +428,9 @@ detailed_comparison_improvement_en:
         </td>
     </tr>
     {% endfor %}
+
+
+.. rst-class:: page-break
+.. raw:: pdf
+
+   PageBreak

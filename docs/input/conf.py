@@ -18,7 +18,7 @@
 # -- Project information -----------------------------------------------------
 
 project = 'Internet.nl Dashboard'
-copyright = '2020, ECP / Internet.nl'
+copyright = '2020-2024, ECP / Internet.nl'
 author = 'internet.nl'
 
 # -- General configuration ---------------------------------------------------

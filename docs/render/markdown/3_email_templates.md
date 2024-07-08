@@ -14,7 +14,7 @@ An admin can edit them easily.
 
 ### What templates are available
 
-Currenty there is one feature that uses an e-mail template, which is scan_finished.
+Currently there is one feature that uses an e-mail template, which is scan_finished.
 When a scan is finished, this mail template is used to draft a mail.
 
 The scan finished template uses two sub-templates, which are:
@@ -412,3 +412,5 @@ detailed_comparison_improvement_en:
 </tr>
 {% endfor %}
 ```
+
+PageBreak

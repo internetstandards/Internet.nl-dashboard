@@ -120,7 +120,7 @@
       "expire_seconds": null,
       "one_off": false,
       "start_time": null,
-      "enabled": true,
+      "admin": true,
       "last_run_at": "2024-06-18T15:10:00.033Z",
       "total_run_count": 1866360,
       "date_changed": "2024-06-18T15:10:04.234Z",
