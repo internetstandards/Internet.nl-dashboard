@@ -36,10 +36,11 @@ def get_field_encryption_key_from_file_or_env() -> bytes:
     if field_encryption_key_file := os.environ.get('FIELD_ENCRYPTION_KEY_FILE', None):
         if not os.path.exists(field_encryption_key_file):
             field_encryption_key: bytes = Fernet.generate_key()
-            with open(field_encryption_key_file, 'wb+', encoding="UTF-8") as f:
+            # Binary mode doesn't take an encoding argument
+            with open(field_encryption_key_file, 'wb+') as f:
                 f.write(field_encryption_key)
 
-        with open(field_encryption_key_file, 'rb', encoding="UTF-8") as f:
+        with open(field_encryption_key_file, 'rb') as f:
             field_encryption_key: bytes = f.readline().strip()
     else:
         # Note that this key is not stored in the database, that would be a security risk.
