@@ -63,7 +63,7 @@ In the command shell, perform the following commands.
 
     git clone https://github.com/internetstandards/Internet.nl-dashboard/
     cd Internet.nl-dashboard
-    docker compose up --build
+    docker compose -f Dockerfile_50 up --build
 
 After a short while your dashboard instance will be ready at :8000.
 
