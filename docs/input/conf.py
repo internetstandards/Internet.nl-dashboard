@@ -21,7 +21,6 @@ project = 'Internet.nl Dashboard'
 copyright = '2020, ECP / Internet.nl'
 author = 'internet.nl'
 
-
 # -- General configuration ---------------------------------------------------
 
 # Add any Sphinx extension module names here, as strings. They can be
@@ -43,7 +42,6 @@ templates_path = ['_templates']
 # This pattern also affects html_static_path and html_extra_path.
 exclude_patterns = []
 
-
 # -- Options for HTML output -------------------------------------------------
 
 # The theme to use for HTML and HTML Help pages.  See the documentation for
@@ -56,5 +54,25 @@ html_theme = 'alabaster'
 # so a file named "default.css" will overwrite the builtin "default.css".
 html_static_path = ['_static']
 
-
 autodoc_member_order = 'bysource'
+
+latex_engine = 'xelatex'
+latex_elements = {
+    'papersize': 'a4papaer',
+
+    'fontpkg': r'''
+\setmainfont{DejaVu Serif}
+\setsansfont{DejaVu Sans}
+\setmonofont{DejaVu Sans Mono}
+''',
+    'preamble': r'''
+\usepackage[titles]{tocloft}
+\cftsetpnumwidth {1.25cm}\cftsetrmarg{1.5cm}
+\setlength{\cftchapnumwidth}{0.75cm}
+\setlength{\cftsecindent}{\cftchapnumwidth}
+\setlength{\cftsecnumwidth}{1.25cm}
+''',
+    'fncychap': r'\usepackage[Bjornstrup]{fncychap}',
+    'printindex': r'\footnotesize\raggedright\printindex',
+}
+latex_show_urls = 'footnote'

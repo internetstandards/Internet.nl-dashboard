@@ -1,10 +1,10 @@
 Dashboard User Management
-###############
+#########################
 
 
 
 Overview
-=====================
+========
 
 The dashboard knows of three places that have to do with users:
 
@@ -26,19 +26,19 @@ We know that 'account' and 'user' is ambiguous.
 
 
 Abstract
------------------------------------
+--------
 .. image:: user-management/user_management_abstract.png
 
 
 
 In practice
---------------------------------
+-----------
 .. image:: user-management/user_management_in_practice.png
 
 
 
 Management
-=====================
+==========
 
 User and account management in the dashboard is done via the Dashboard app and the Django Admin Interface.
 The latter is a bare bones data management application that allows editing data directly onto the database. The user
@@ -46,7 +46,7 @@ experience is good enough for system administrators that need ultimate power and
 great responsibility.
 
 Account Management
------------------------------------
+------------------
 
 Accounts can be created using the accounts menu. Accounts contain very little information. You will see
 report settings, which don't have to be altered. Just fill out the name and the Internet.nl API credentials.
@@ -61,7 +61,7 @@ they need to be sent to the API in a way that the API can read it. These credent
 
 
 User Management
------------------------------------
+---------------
 
 User management is a bit more challenging. An account can have multiple users. That's what you see in the screenshot
 below: both users are in the 'Internet.nl' account.

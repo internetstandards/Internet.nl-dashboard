@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="./">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>1. 1 Installation guide &#8212; Internet.nl Dashboard  documentation</title>
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=d1102ebc" />
+    <link rel="stylesheet" type="text/css" href="_static/alabaster.css?v=12dfc556" />
+    <script src="_static/documentation_options.js?v=5929fcd5"></script>
+    <script src="_static/doctools.js?v=9a2dae69"></script>
+    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="2. Dashboard User Management" href="User%20Management.html" />
+    <link rel="prev" title="internet.nl dashboard documentation" href="index.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+
+  
+  
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <section id="installation-guide">
+<h1><span class="section-number">1. </span><span class="sectnum">1 </span>Installation guide<a class="headerlink" href="#installation-guide" title="Link to this heading">¶</a></h1>
+<p>This is a draft installation guide that will be ready in version 5.0 of the internet.nl dashboard.</p>
+<p>The ticket for this issue: <a class="reference external" href="https://github.com/internetstandards/Internet.nl-dashboard/issues/495">https://github.com/internetstandards/Internet.nl-dashboard/issues/495</a></p>
+<section id="overview">
+<h2><span class="section-number">1.1. </span><span class="sectnum">1.1 </span>Overview<a class="headerlink" href="#overview" title="Link to this heading">¶</a></h2>
+<p>Setting up the dashboard requires an operating system with docker. This setup was developed on mac and linux, on other
+platforms your mileage may vary.</p>
+<p>This tutorial will help you setting up an internet.nl dashboard instance. With this tutorial you should
+be up and running within a few hours, gaining familiarity and confidence with with running a dashboard installation.</p>
+<p>All configuration setup for your operating system is out of scope. This includes configuration of firewalls, security settings,
+user management and so on.</p>
+<p>For general and paid support with installations, updates and managing installations: please send a support request to <a class="reference external" href="mailto:vraag&#37;&#52;&#48;internet&#46;nl">vraag<span>&#64;</span>internet<span>&#46;</span>nl</a>.</p>
+<section id="what-do-you-need">
+<h3><span class="section-number">1.1.1. </span><span class="sectnum">1.1.1 </span>What do you need<a class="headerlink" href="#what-do-you-need" title="Link to this heading">¶</a></h3>
+<ul class="simple">
+<li><p>A computer with git and docker installed</p>
+<ul>
+<li><p>4 cores and 8 gigabyte of ram recommended</p></li>
+</ul>
+</li>
+<li><p>Access to the command shell to perform installations commands</p></li>
+<li><p>Credential access to a running internet.nl API instance</p>
+<ul>
+<li><p>This can be the official internet.nl instance</p></li>
+<li><p>For information about running a batch instance,</p></li>
+<li><p>See: <a class="reference external" href="https://github.com/internetstandards/Internet.nl/blob/main/documentation/README.md">https://github.com/internetstandards/Internet.nl/blob/main/documentation/README.md</a></p></li>
+</ul>
+</li>
+<li><p>Optional: a domain name and SMTP settings</p></li>
+</ul>
+</section>
+</section>
+<section id="installation">
+<h2><span class="section-number">1.2. </span><span class="sectnum">1.2 </span>Installation<a class="headerlink" href="#installation" title="Link to this heading">¶</a></h2>
+<p>Installation is mostly configuration work inside the dashboard. Some of the below steps will be automated when 5.0
+is released.</p>
+<section id="running-the-dashboard-during-development-of-5-0">
+<h3><span class="section-number">1.2.1. </span><span class="sectnum">1.2.1 </span>Running the dashboard (during development of 5.0)<a class="headerlink" href="#running-the-dashboard-during-development-of-5-0" title="Link to this heading">¶</a></h3>
+<p>In the command shell, perform the following commands.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">git</span> <span class="n">clone</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">github</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">internetstandards</span><span class="o">/</span><span class="n">Internet</span><span class="o">.</span><span class="n">nl</span><span class="o">-</span><span class="n">dashboard</span><span class="o">/</span>
+<span class="n">cd</span> <span class="n">Internet</span><span class="o">.</span><span class="n">nl</span><span class="o">-</span><span class="n">dashboard</span>
+<span class="n">docker</span> <span class="n">compose</span> <span class="n">up</span> <span class="o">--</span><span class="n">build</span>
+</pre></div>
+</div>
+<p>After a short while your dashboard instance will be ready at :8000.</p>
+<p>You can start and restart the application by running <code class="docutils literal notranslate"><span class="pre">docker</span> <span class="pre">compose</span> <span class="pre">up</span> <span class="pre">--build</span></code>, use control+c to stop.</p>
+</section>
+<section id="running-the-dashboard-when-5-0-is-released">
+<h3><span class="section-number">1.2.2. </span><span class="sectnum">1.2.2 </span>Running the dashboard (when 5.0 is released)<a class="headerlink" href="#running-the-dashboard-when-5-0-is-released" title="Link to this heading">¶</a></h3>
+<p>Download the version you want to run. These can be downloaded from the releases page, here:
+<a class="reference external" href="https://github.com/internetstandards/Internet.nl-dashboard/releases">https://github.com/internetstandards/Internet.nl-dashboard/releases</a></p>
+<p>Releases from version 5.0 and over support docker compose. You can also download a release
+from the command line, with the following command:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">mkdir</span> <span class="n">dashboard</span> <span class="o">&amp;&amp;</span> <span class="n">cd</span> <span class="n">dashboard</span>
+<span class="n">wget</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">github</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">internetstandards</span><span class="o">/</span><span class="n">Internet</span><span class="o">.</span><span class="n">nl</span><span class="o">-</span><span class="n">dashboard</span><span class="o">/</span><span class="n">archive</span><span class="o">/</span><span class="n">refs</span><span class="o">/</span><span class="n">tags</span><span class="o">/</span><span class="n">v5</span><span class="mf">.0</span><span class="o">.</span><span class="n">tar</span><span class="o">.</span><span class="n">gz</span>
+<span class="n">tar</span> <span class="o">-</span><span class="n">zxvf</span> <span class="n">v5</span><span class="mf">.0</span><span class="o">.</span><span class="n">tar</span><span class="o">.</span><span class="n">gz</span>
+<span class="n">docker</span> <span class="n">compose</span> <span class="n">up</span> <span class="o">--</span><span class="n">build</span>
+</pre></div>
+</div>
+<p>After a short while your dashboard instance will be ready at :8000.</p>
+<p>You can start and restart the application by running <code class="docutils literal notranslate"><span class="pre">docker</span> <span class="pre">compose</span> <span class="pre">up</span> <span class="pre">--build</span></code>, use control+c to stop.</p>
+</section>
+<section id="load-up-default-configuration">
+<h3><span class="section-number">1.2.3. </span><span class="sectnum">1.2.3 </span>Load up default configuration<a class="headerlink" href="#load-up-default-configuration" title="Link to this heading">¶</a></h3>
+<p>This step will be automated before 5.0 is released. For now, run these commands to make sure default configuration is
+loaded. For this you need to know the name of the ‘backend’ docker container.</p>
+<p>You can retrieve the name of the backend docker container by running <code class="docutils literal notranslate"><span class="pre">docker</span> <span class="pre">ps</span></code>. Below documentation assumes the
+name of this container is <code class="docutils literal notranslate"><span class="pre">internetnl-dashboard-backend-1</span></code>.</p>
+<p>Load up the config:</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>docker<span class="w"> </span><span class="nb">exec</span><span class="w"> </span>-ti<span class="w"> </span>internetnl-dashboard-backend-1<span class="w"> </span>dashboard<span class="w"> </span>loaddata<span class="w"> </span>dashboard_production_default_account
+docker<span class="w"> </span><span class="nb">exec</span><span class="w"> </span>-ti<span class="w"> </span>internetnl-dashboard-backend-1<span class="w"> </span>dashboard<span class="w"> </span>loaddata<span class="w"> </span>dashboard_production_example_email_templates
+docker<span class="w"> </span><span class="nb">exec</span><span class="w"> </span>-ti<span class="w"> </span>internetnl-dashboard-backend-1<span class="w"> </span>dashboard<span class="w"> </span>loaddata<span class="w"> </span>dashboard_production_periodic_tasks
+docker<span class="w"> </span><span class="nb">exec</span><span class="w"> </span>-ti<span class="w"> </span>internetnl-dashboard-backend-1<span class="w"> </span>dashboard<span class="w"> </span>loaddata<span class="w"> </span>dashboard_production_default_scanner_configuration
+docker<span class="w"> </span><span class="nb">exec</span><span class="w"> </span>-ti<span class="w"> </span>internetnl-dashboard-backend-1<span class="w"> </span>dashboard<span class="w"> </span>loaddata<span class="w"> </span>dashboard_production_default_scan_policy
+</pre></div>
+</div>
+</section>
+<section id="setting-up-the-first-user">
+<h3><span class="section-number">1.2.4. </span><span class="sectnum">1.2.4 </span>Setting up the first user<a class="headerlink" href="#setting-up-the-first-user" title="Link to this heading">¶</a></h3>
+<p>Create a new user:</p>
+<p><code class="docutils literal notranslate"><span class="pre">docker</span> <span class="pre">exec</span> <span class="pre">-ti</span> <span class="pre">internetnl-dashboard-backend-1</span> <span class="pre">dashboard</span> <span class="pre">createsuperuser</span></code></p>
+<p>Associate that user to the default account, assuming the createsuperuser made user id 1:</p>
+<p><code class="docutils literal notranslate"><span class="pre">docker</span> <span class="pre">exec</span> <span class="pre">-ti</span> <span class="pre">internetnl-dashboard-database-1</span> <span class="pre">psql</span> <span class="pre">--user</span> <span class="pre">dashboard</span> <span class="pre">-c</span> <span class="pre">&quot;update</span> <span class="pre">internet_nl_dashboard_dashboarduser</span> <span class="pre">set</span> <span class="pre">account_id=1</span> <span class="pre">where</span> <span class="pre">user_id=1;&quot;</span></code></p>
+<p>Now you can login at :8000.</p>
+</section>
+<section id="setting-up-scanning">
+<h3><span class="section-number">1.2.5. </span><span class="sectnum">1.2.5 </span>Setting up scanning<a class="headerlink" href="#setting-up-scanning" title="Link to this heading">¶</a></h3>
+<p>1. Visit the admin console on <code class="docutils literal notranslate"><span class="pre">/admin/</span></code> and log in. You might be redirected to the dashboard after login, so go
+to the admin login panel again.</p>
+<img alt="_images/admin_login_window.png" src="_images/admin_login_window.png" />
+<p>After going to <code class="docutils literal notranslate"><span class="pre">/admin/</span></code> again you will see this page:</p>
+<img alt="_images/admin_panel.png" src="_images/admin_panel.png" />
+<ol class="arabic simple" start="2">
+<li><p>Go to “🎛️ Dashboard Configuration” in the left menu</p></li>
+<li><p>Set up the “general dashboard settings”:</p></li>
+</ol>
+<blockquote>
+<div><ol class="arabic simple">
+<li><p>DASHBOARD_FRONTEND_URL</p></li>
+<li><p>INTERNET_NL_API_URL</p></li>
+<li><p>CREDENTIAL_CHECK_URL</p></li>
+<li><p>INTERNET_NL_SCAN_TRACKING_NAME</p></li>
+<li><p>Click the save button</p></li>
+</ol>
+</div></blockquote>
+<img alt="_images/config_example_general_settings.png" src="_images/config_example_general_settings.png" />
+<ol class="arabic simple" start="4">
+<li><p>Setup the API credentials for the account</p></li>
+</ol>
+<blockquote>
+<div><ol class="arabic simple">
+<li><p>Go to the account management page: <code class="docutils literal notranslate"><span class="pre">/admin/internet_nl_dashboard/account/</span></code></p></li>
+<li><p>Click on the admin user</p></li>
+<li><p>Setup the “internet nl api username” and “new password” field and click save</p></li>
+<li><p>To test if the account was setup properly, use the ‘Check API credentials’</p></li>
+<li><p>If the credentials are correctly configured the check will return a checkmark symbol, otherwise a cross symbol will be visible on the row of this account.</p></li>
+</ol>
+</div></blockquote>
+<img alt="_images/config_credential_check.png" src="_images/config_credential_check.png" />
+<p>You are now set to perform your first scan</p>
+</section>
+</section>
+<section id="performing-your-first-scan">
+<h2><span class="section-number">1.3. </span><span class="sectnum">1.3 </span>Performing your first scan<a class="headerlink" href="#performing-your-first-scan" title="Link to this heading">¶</a></h2>
+<ol class="arabic simple">
+<li><p>Visit the dashboard frontend and log in.</p></li>
+</ol>
+<img alt="_images/scan_login_link.png" src="_images/scan_login_link.png" />
+<img alt="_images/admin_login_window.png" src="_images/admin_login_window.png" />
+<ol class="arabic simple" start="2">
+<li><p>Go to ‘domains’</p></li>
+<li><p>Create a new scan:</p></li>
+</ol>
+<blockquote>
+<div><ol class="arabic simple">
+<li><p>Click on ‘create new list’</p></li>
+<li><p>Enter the name for the list</p></li>
+<li><p>Set the list to scan both web and mail</p></li>
+<li><p>Save the list</p></li>
+</ol>
+</div></blockquote>
+<img alt="_images/scan_create_new_list.png" src="_images/scan_create_new_list.png" />
+<img alt="_images/scan_newly_created_list.png" src="_images/scan_newly_created_list.png" />
+<ol class="arabic simple" start="4">
+<li><p>Add domains to the list</p></li>
+</ol>
+<blockquote>
+<div><ol class="arabic simple">
+<li><p>Click ‘add domains’</p></li>
+<li><p>Add the domains in the text field</p></li>
+<li><p>Click ‘add the above domains to the list’</p></li>
+<li><p>After adding successfully, click ‘close’</p></li>
+</ol>
+</div></blockquote>
+<img alt="_images/scan_adding_domains.png" src="_images/scan_adding_domains.png" />
+<img alt="_images/scan_adding_success.png" src="_images/scan_adding_success.png" />
+<img alt="_images/scan_list_with_domains.png" src="_images/scan_list_with_domains.png" />
+<ol class="arabic simple" start="5">
+<li><p>start a scan by clicking ‘scan now’ and confirming the scan</p></li>
+</ol>
+<img alt="_images/scan_scan_now.png" src="_images/scan_scan_now.png" />
+<ol class="arabic simple" start="6">
+<li><p>On the <cite>scan monitor</cite> page the list of currently running scans can be seen.</p></li>
+</ol>
+<p>After a scan has finished a report will be ready.</p>
+<img alt="_images/scan_scan_monitor.png" src="_images/scan_scan_monitor.png" />
+</section>
+<section id="advanced-configuration">
+<h2><span class="section-number">1.4. </span><span class="sectnum">1.4 </span>Advanced configuration<a class="headerlink" href="#advanced-configuration" title="Link to this heading">¶</a></h2>
+<section id="setting-up-e-mail">
+<h3><span class="section-number">1.4.1. </span><span class="sectnum">1.4.1 </span>Setting up e-mail<a class="headerlink" href="#setting-up-e-mail" title="Link to this heading">¶</a></h3>
+<p>After a scan completes it’s possible to receive an e-mail. An SMTP server has to be configured.</p>
+<ol class="arabic simple">
+<li><p>Visit the admin interface on <code class="docutils literal notranslate"><span class="pre">/admin/</span></code> and log in.</p></li>
+<li><p>In the sidebar click “📨 Outboxes”</p></li>
+</ol>
+<p>3. Fill in the form with all SMTP details and click save. Only one outbox is needed.
+.. image:: installation/email_add_outbox.png</p>
+<img alt="_images/email_configured_outbox.png" src="_images/email_configured_outbox.png" />
+</section>
+</section>
+<section id="background-information">
+<h2><span class="section-number">1.5. </span><span class="sectnum">1.5 </span>Background information<a class="headerlink" href="#background-information" title="Link to this heading">¶</a></h2>
+<section id="application-component-overview">
+<h3><span class="section-number">1.5.1. </span><span class="sectnum">1.5.1 </span>Application component overview<a class="headerlink" href="#application-component-overview" title="Link to this heading">¶</a></h3>
+<p>The dashboard contains of three application components: dockerfile, backend and frontend.</p>
+<p>The dockerfile will setup a complete dashboard with sample users and sample configuration. This is one command and
+should be run on a system that runs docker, colima or another similar tool.</p>
+<p>The backend is where all logic happens. List creation, result processing, session management and such. A few parts look
+like the frontend: the login page, the password reset page and spreadsheet upload page. All other pages are either
+redirects or interaction via JSON calls.</p>
+<p>The frontend is the place where a users maintain lists, start scans, view and share reports. This is (mostly) the
+‘actual’ website for day to day use.</p>
+</section>
+<section id="creating-your-own-unique-look-and-feel">
+<h3><span class="section-number">1.5.2. </span><span class="sectnum">1.5.2 </span>Creating your own unique look and feel<a class="headerlink" href="#creating-your-own-unique-look-and-feel" title="Link to this heading">¶</a></h3>
+<p>The included default layout is an unbranded version of internet.nl, using the internet.nl styling. Only the logo’s
+and references have been disabled. The setting for using your own template is called ‘SITE_LAYOUT_NAME’ and is exposed
+to the backend and frontend. The dashboard has not been optimized for custom branding yet, so your mileage to implement
+this for your organization may vary.</p>
+</section>
+</section>
+</section>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="index.html">Internet.nl Dashboard</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption" role="heading"><span class="caption-text">Administration Manual</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">1. <span class="sectnum">1 </span>Installation guide</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#overview">1.1. <span class="sectnum">1.1 </span>Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#installation">1.2. <span class="sectnum">1.2 </span>Installation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#performing-your-first-scan">1.3. <span class="sectnum">1.3 </span>Performing your first scan</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#advanced-configuration">1.4. <span class="sectnum">1.4 </span>Advanced configuration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#background-information">1.5. <span class="sectnum">1.5 </span>Background information</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="User%20Management.html">2. Dashboard User Management</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Email%20Templates.html">3. Email Templates</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="index.html" title="previous chapter">internet.nl dashboard documentation</a></li>
+      <li>Next: <a href="User%20Management.html" title="next chapter"><span class="section-number">2. </span>Dashboard User Management</a></li>
+  </ul></li>
+</ul>
+</div>
+<search id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &#169;2020, ECP / Internet.nl.
+      
+      |
+      Powered by <a href="https://www.sphinx-doc.org/">Sphinx 7.3.7</a>
+      &amp; <a href="https://alabaster.readthedocs.io">Alabaster 0.7.16</a>
+      
+      |
+      <a href="_sources/Installation.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

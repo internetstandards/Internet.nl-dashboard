@@ -1,5 +1,4 @@
-import orjson
-from django.http import HttpResponse
+from django.http import JsonResponse
 from django.views.decorators.cache import cache_page
 from websecmap.app.constance import get_all_values
 
@@ -29,5 +28,5 @@ def config_content():
 
 
 @cache_page(ONE_HOUR)
-def config(request) -> HttpResponse:
-    return HttpResponse(orjson.dumps(config_content()), content_type="application/json", status=200)
+def config(request) -> JsonResponse:
+    return JsonResponse(config_content(), status=200, safe=False)

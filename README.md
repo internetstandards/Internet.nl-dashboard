@@ -13,6 +13,12 @@ The internet.nl dashboard allows you to visualize batch scans from the internet.
 - Second factor authentication
 - Seamless internet.nl API integration
 
+## Setup / installation
+
+Read the installation tutorial here: 
+https://github.com/internetstandards/Internet.nl-dashboard/blob/main/docs/render/markdown/Installation.md
+
+
 ## Screenshots
 
 Some screenshots can be found at: https://dashboard.internet.nl/#/tour
