@@ -175,11 +175,11 @@ Use the following commands, of course with your own personal settings::
 4. Setup the API credentials for the account.
 
   1. Go to the account management page
-  2. ``http://127.0.0.1:8000/admin/internet_nl_dashboard/account/``
-  2. Click on the admin user
-  3. Setup the "internet nl api username" and "new password" field and click save
-  4. To test if the account was setup properly, use the 'Check API credentials'
-  5. If the credentials are correctly configured the check will return a checkmark symbol, otherwise a cross symbol will be visible on the row of this account.
+  2. http://127.0.0.1:8000/admin/internet_nl_dashboard/account/
+  3. Click on the admin user
+  4. Setup the "internet nl api username" and "new password" field and click save
+  5. To test if the account was setup properly, use the 'Check API credentials'
+  6. If the credentials are correctly configured the check will return a checkmark symbol, otherwise a cross symbol will be visible on the row of this account.
 
 .. image:: installation/config_setup_api_credentials.png
 .. image:: installation/config_credential_check.png
@@ -262,7 +262,7 @@ After a scan completes it's possible to receive an e-mail. An SMTP server has to
 
 The e-mails that are being sent are stored as templates in the "📨 E-Mail Templates" section. The default language for
 templates is English and several templates are pre-installed to be customized. For more information about these templates
-check the :ref:`Email Templates` chapter.
+check the :ref:`email templates` chapter.
 
 
 .. rst-class:: page-break

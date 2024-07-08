@@ -1,4 +1,4 @@
-.. _Email Templates:
+.. _email templates:
 
 .. sectnum::
    :start: 3
