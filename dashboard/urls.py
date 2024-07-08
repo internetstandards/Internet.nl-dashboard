@@ -17,9 +17,9 @@ Including another URLconf
 from allauth.account import views as allauth_views
 from django.contrib import admin
 from django.contrib.auth.decorators import login_required
+from django.http import HttpResponse
 from django.urls import include, path, re_path
 from two_factor.urls import urlpatterns as tf_urls
-from django.http import HttpResponse
 
 from . import __version__
 
@@ -44,7 +44,7 @@ admin_urls = [
 ]
 
 
-def not_supported(*arg, **args):
+def not_supported(**args):
     return HttpResponse("Feature not supported.")
 
 
