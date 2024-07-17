@@ -104,32 +104,55 @@ Load up the config:
 
 .. code-block:: shell
 
-    docker exec -ti internetnl-dashboard-backend-1 dashboard loaddata dashboard_production_default_account
     docker exec -ti internetnl-dashboard-backend-1 dashboard loaddata dashboard_production_example_email_templates
     docker exec -ti internetnl-dashboard-backend-1 dashboard loaddata dashboard_production_periodic_tasks
     docker exec -ti internetnl-dashboard-backend-1 dashboard loaddata dashboard_production_default_scanner_configuration
     docker exec -ti internetnl-dashboard-backend-1 dashboard loaddata dashboard_production_default_scan_policy
 
 
+If you also want an example account and lists to get started, run the following command.
+
+.. code-block:: shell
+
+    docker exec -ti internetnl-dashboard-backend-1 dashboard loaddata dashboard_production_default_account
+
+
 Setting up the first user
 -------------------------
-
-
 Create a new user:
 
 ``docker exec -ti internetnl-dashboard-backend-1 dashboard createsuperuser``
 
 
-Associate that user to the default account, assuming the createsuperuser made user id 1:
+Associate that user to the default account, assuming the createsuperuser was added with user id 1:
 
 ``docker exec -ti internetnl-dashboard-database-1 psql --user dashboard -c "update internet_nl_dashboard_dashboarduser set account_id=1 where user_id=1;"``
 
-Now you can login at http://localhost:8000/admin/, or the same path under your server url.
 
 If you get an error that a certain user already exists, this might not be your first attempt to install the dashboard
 via this method. The docker installation method shares the same database.
 Make sure to associate the newly created super user also is connected to an account. This can be performed with SQL and
 via the admin portal.
+
+
+Logging in
+----------
+Now you can login at http://localhost:8000/admin/, or the same path under your server url.
+
+The account of this user connects to the default internet.nl development scanning instance on http://localhost:8080 with
+default credentials internetnl / internetnl. You will have to change the *account* credentials to the internet.nl API.
+These are *not* the user credentials for the dashboard.
+
+
+For testing purposes a development installation of the internet.nl API should be enough. This is documented here:
+
+https://github.com/internetstandards/Internet.nl/blob/main/documentation/Docker-getting-started.md
+
+
+Setting up a complete batch instance of internet.nl is detailed here:
+
+https://github.com/internetstandards/Internet.nl/blob/main/documentation/Docker-deployment-batch.md
+
 
 
 .. rst-class:: page-break
