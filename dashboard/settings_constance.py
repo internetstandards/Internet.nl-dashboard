@@ -10,7 +10,7 @@ CONSTANCE_ADDITIONAL_FIELDS = {
 CONSTANCE_CONFIG = {
     # general settings
     'DASHBOARD_FRONTEND_URL': (
-        'https://dashboard.example.com',
+        os.environ.get("DASHBOARD_FRONTEND_URL", 'http://localhost:8000'),
         'Url where the frontend is reachable on for end users. This url is references in a few parts of the frontend.',
         str
     ),
@@ -48,12 +48,12 @@ CONSTANCE_CONFIG = {
         bool
     ),
     'INTERNET_NL_API_URL': (
-        'https://batch.example.com/api/batch/v2',
+        'http://localhost:8080/api/batch/v2',
         'The internet address for the Internet.nl API installation. This is commonly called a "batch server".',
         str
     ),
     'INTERNET_NL_SCAN_TRACKING_NAME': (
-        'Dashboard InternetNL [countrycode]',
+        '',
         'This setting is used when sending API requests for tracking purposes. Setting this value make it clear who '
         'is sending API requests. A good setting contains something unique about this installation, such as an '
         'organization name. The maximum length is 40 characters.',
@@ -68,7 +68,7 @@ CONSTANCE_CONFIG = {
         "json",
     ),
     "CREDENTIAL_CHECK_URL": (
-        "https://batch.example.com/api/",
+        "http://localhost:8080/api/",
         "The url where internet.nl api credentials are checked. This is usually the bare INTERNET_NL_API_URL endpoint. "
         "This feature is used in the admin interface at account management. "
         "There the option 'check credentials' can be performed for each account.",
@@ -77,7 +77,7 @@ CONSTANCE_CONFIG = {
 
     # email settings
     'EMAIL_NOTIFICATION_SENDER': (
-        'noreply@example.com',
+        'noreply@localhost',
         'The sender of email report notification: this is the e-mail that contains the current scan results and a '
         'summary. It also compares the result to the previous results. Use an e-mail address that is in use.',
         str
@@ -89,13 +89,13 @@ CONSTANCE_CONFIG = {
         str
     ),
     'EMAIL_TEST_RECIPIENT': (
-        'info@example.com',
+        'info@localhost',
         'Which e-mail address receives the testmail from the command "dashboard send_testmail". This command tests if '
         'the e-mail outbox is properly configured.',
         str
     ),
     'EMAIL_DASHBOARD_ADDRESS': (
-        'https://example.com',
+        'http://localhost:8000',
         'The address of the dashboard, can be set to any url. Available in email template at {{dashboard_address}}. '
         'This is probably the same as the DASHBOARD_FRONTEND_URL. Only in rare cases this would differ.',
         str
@@ -109,7 +109,7 @@ CONSTANCE_CONFIG = {
         bool
     ),
     "SECURITY_TXT_REDIRECT_URL": (
-        "https://example.com/.well-known/security.txt",
+        "http://localhost:8000/.well-known/security.txt",
         "The url where the security.txt files redirect to. This is usually an external site.",
         str
     ),
@@ -121,6 +121,15 @@ CONSTANCE_CONFIG = {
         str
     ),
 
+    # frontend
+    "SITE_LAYOUT_NAME": (
+        'internet_nl',
+        'The name of the layout, when internet_nl is used, logos, footer and styling from internet.nl is used. When '
+        'this field is empty all references to internet.nl disappear while still using the same color scheme. '
+        'Supported values: internet_nl, [empty]',
+        str
+    ),
+
     # signup settings
     "SHOW_SIGNUP_FORM": (
         False,
@@ -129,13 +138,13 @@ CONSTANCE_CONFIG = {
         bool,
     ),
     'EMAIL_NOTIFICATION_SENDER_FOR_SIGNUP': (
-        'noreply@example.com',
+        'noreply@localhost',
         'The sender of the "thank you" e-mail after signing up. The template for this e-mail can be found in the '
         'E-Mail templates menu of the admin interface.',
         str
     ),
     'DASHBOARD_SIGNUP_NOTIFICATION_EMAIL_ADRESSES': (
-        'support@example.com',
+        'support@localhost',
         'Comma separated list of email addresses to notify about new signups. Don\'t add extra spaces in between.',
         str
     ),
@@ -183,8 +192,9 @@ CONSTANCE_CONFIG = {
         'Username for the internet.nl API. This option is ignored as every account uses their own credentials. Keep '
         'this value set to dummy for legacy reasons.',
         str),
+    # this is defaulting to dummy as otherwise the scanner wil give an error that no credential has been configured.
     'INTERNET_NL_API_PASSWORD': (
-        '',
+        'dummy',
         'Username for the internet.nl API. This option is ignored as every account uses their own credentials. Keep '
         'this value set to dummy for legacy reasons.',
         str
@@ -263,14 +273,6 @@ CONSTANCE_CONFIG = {
         int,
     ),
 
-    # frontend
-    "SITE_LAYOUT_NAME": (
-        'internet_nl',
-        'The name of the layout, when internet_nl is used, logos, footer and styling from internet.nl is used. When '
-        'this field is empty all references to internet.nl disappear while still using the same color scheme. '
-        'Supported values: internet_nl, [empty]',
-        str
-    ),
 }
 
 CONSTANCE_CONFIG_FIELDSETS = OrderedDict(
