@@ -104,17 +104,18 @@ Load up the config:
 
 .. code-block:: shell
 
+    docker exec -ti internetnl-dashboard-backend-1 dashboard loaddata dashboard_production_default_account
     docker exec -ti internetnl-dashboard-backend-1 dashboard loaddata dashboard_production_example_email_templates
     docker exec -ti internetnl-dashboard-backend-1 dashboard loaddata dashboard_production_periodic_tasks
     docker exec -ti internetnl-dashboard-backend-1 dashboard loaddata dashboard_production_default_scanner_configuration
     docker exec -ti internetnl-dashboard-backend-1 dashboard loaddata dashboard_production_default_scan_policy
 
 
-If you also want an example account and lists to get started, run the following command.
+If you also want an example lists to get started, run the following command.
 
 .. code-block:: shell
 
-    docker exec -ti internetnl-dashboard-backend-1 dashboard loaddata dashboard_production_default_account
+    docker exec -ti internetnl-dashboard-backend-1 dashboard loaddata dashboard_production_example_list
 
 
 Setting up the first user
