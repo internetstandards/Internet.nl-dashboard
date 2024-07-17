@@ -1,0 +1,90 @@
+[
+  {
+    "model": "internet_nl_dashboard.urllist",
+    "pk": 1,
+    "fields": {
+      "name": "Example List",
+      "account": 1,
+      "enable_scans": true,
+      "scan_type": "all",
+      "automated_scan_frequency": "twice per month",
+      "scheduled_next_scan": "2024-08-01T00:00:00Z",
+      "is_deleted": false,
+      "deleted_on": null,
+      "last_manual_scan": "2024-07-05T16:15:04Z",
+      "enable_report_sharing_page": false,
+      "automatically_share_new_reports": false,
+      "default_public_share_code_for_new_reports": ""
+    }
+  },
+  {
+    "model": "organizations.url",
+    "pk": 1,
+    "fields": {
+      "url": "internet.nl",
+      "internal_notes": null,
+      "created_on": "2024-07-05T12:52:23.853Z",
+      "not_resolvable": false,
+      "not_resolvable_since": null,
+      "not_resolvable_reason": null,
+      "is_dead": false,
+      "is_dead_since": null,
+      "is_dead_reason": null,
+      "uses_dns_wildcard": false,
+      "do_not_find_subdomains": false,
+      "dns_supports_mx": false,
+      "onboarding_stage": null,
+      "computed_subdomain": "",
+      "computed_domain": "internet",
+      "computed_suffix": "nl",
+      "onboarding_stage_set_on": null,
+      "onboarded": false,
+      "onboarded_on": null,
+      "origin": "",
+      "organization": []
+    }
+  },
+  {
+    "model": "organizations.url",
+    "pk": 2,
+    "fields": {
+      "url": "dashboard.internet.nl",
+      "internal_notes": null,
+      "created_on": "2024-07-17T06:46:54.138Z",
+      "not_resolvable": false,
+      "not_resolvable_since": null,
+      "not_resolvable_reason": null,
+      "is_dead": false,
+      "is_dead_since": null,
+      "is_dead_reason": null,
+      "uses_dns_wildcard": false,
+      "do_not_find_subdomains": false,
+      "dns_supports_mx": false,
+      "onboarding_stage": null,
+      "computed_subdomain": "dashboard",
+      "computed_domain": "internet",
+      "computed_suffix": "nl",
+      "onboarding_stage_set_on": null,
+      "onboarded": false,
+      "onboarded_on": null,
+      "origin": "",
+      "organization": []
+    }
+  },
+  {
+    "model": "internet_nl_dashboard.taggedurlinurllist",
+    "pk": 1,
+    "fields": {
+      "urllist": 1,
+      "url": 1
+    }
+  },
+  {
+    "model": "internet_nl_dashboard.taggedurlinurllist",
+    "pk": 2,
+    "fields": {
+      "urllist": 1,
+      "url": 2
+    }
+  }
+]
