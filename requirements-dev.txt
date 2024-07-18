@@ -904,7 +904,7 @@ urllib3==1.26.18
     #   responses
     #   sentry-sdk
     #   websecmap
-urllib3-future==2.8.907
+urllib3-future==2.7.912
     # via
     #   -c requirements.txt
     #   niquests
@@ -936,7 +936,7 @@ wcwidth==0.2.13
     #   -c requirements.txt
     #   prompt-toolkit
     #   websecmap
-websecmap @ git+https://gitlab.com/internet-cleanup-foundation/web-security-map@9833a47f52e6c39b5b02789cccf99cf49ee97ca9
+websecmap @ git+https://gitlab.com/internet-cleanup-foundation/web-security-map@c61e40b5681bf5e09be8f3373dc7ea7072d59e2f
     # via
     #   -c requirements.txt
     #   -r requirements-dev.in
