@@ -441,7 +441,9 @@ requests-file==1.5.1
     #   tldextract
     #   websecmap
 requests-toolbelt @ git+https://github.com/requests/toolbelt@c73ad2c204a2e0cd5617a836ac536d5e06778ab0
-    # via websecmap
+    # via
+    #   -r requirements.in
+    #   websecmap
 retry==0.9.2
     # via websecmap
 sentry-sdk==1.9.0
