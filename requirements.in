@@ -9,7 +9,7 @@
 # - no version pinning, unless it is required and explained
 
 # to update websecmap, update the SHA hash and run: make update_requirement_websecmap
-websecmap @ git+https://gitlab.com/internet-cleanup-foundation/web-security-map@5a97fb289d0e86b444d98cf6d30fbef3b964120b
+websecmap @ git+https://gitlab.com/internet-cleanup-foundation/web-security-map@c61e40b5681bf5e09be8f3373dc7ea7072d59e2f
 
 django-otp
 django-two-factor-auth>1.15
@@ -53,3 +53,9 @@ openpyxl==3.0.10
 
 # password change forms, saml oauth and more
 django-allauth
+
+# Scanner dep needed to parse SNI: when performing raw host requests the cert hostname also needs to be correct
+# see: https://toolbelt.readthedocs.io/en/latest/adapters.html#hostheaderssladapter
+# using unreleased version from github which has better support for SNI server_hostname which prevents connection
+# resets on some servers
+requests_toolbelt @ git+https://github.com/requests/toolbelt@c73ad2c204a2e0cd5617a836ac536d5e06778ab0

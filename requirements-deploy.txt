@@ -524,7 +524,7 @@ requests-file==1.5.1
     #   -c requirements.txt
     #   tldextract
     #   websecmap
-requests-toolbelt==1.0.0
+requests-toolbelt @ git+https://github.com/requests/toolbelt@c73ad2c204a2e0cd5617a836ac536d5e06778ab0
     # via
     #   -c requirements.txt
     #   websecmap
@@ -641,7 +641,7 @@ wcwidth==0.2.13
     #   -c requirements.txt
     #   prompt-toolkit
     #   websecmap
-websecmap[deploy] @ git+https://gitlab.com/internet-cleanup-foundation/web-security-map@5a97fb289d0e86b444d98cf6d30fbef3b964120b
+websecmap[deploy] @ git+https://gitlab.com/internet-cleanup-foundation/web-security-map@c61e40b5681bf5e09be8f3373dc7ea7072d59e2f
     # via
     #   -c requirements.txt
     #   -r requirements-deploy.in

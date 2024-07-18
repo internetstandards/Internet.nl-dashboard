@@ -18,7 +18,7 @@ django-extensions
 django-debug-toolbar
 django-debug-toolbar-request-history
 pytest-mock
-websecmap @ git+https://gitlab.com/internet-cleanup-foundation/web-security-map@5a97fb289d0e86b444d98cf6d30fbef3b964120b
+websecmap @ git+https://gitlab.com/internet-cleanup-foundation/web-security-map@c61e40b5681bf5e09be8f3373dc7ea7072d59e2f
 # use the version with relaxed attr requirements
 pytest-docker @ git+https://github.com/avast/pytest-docker@519b155009b6f3570c01f1f56e7c4e6ce3c5c760
 
@@ -60,3 +60,10 @@ packaging>=23.1
 
 # include (security) version constraints for non primary dependencies
 -c security-constraints.in
+
+
+# Scanner dep needed to parse SNI: when performing raw host requests the cert hostname also needs to be correct
+# see: https://toolbelt.readthedocs.io/en/latest/adapters.html#hostheaderssladapter
+# using unreleased version from github which has better support for SNI server_hostname which prevents connection
+# resets on some servers
+requests_toolbelt @ git+https://github.com/requests/toolbelt@c73ad2c204a2e0cd5617a836ac536d5e06778ab0

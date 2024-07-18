@@ -3,10 +3,17 @@
 # make sure there are no version conflicts with requirements.txt
 -c requirements.txt
 
-websecmap[deploy] @ git+https://gitlab.com/internet-cleanup-foundation/web-security-map@5a97fb289d0e86b444d98cf6d30fbef3b964120b
+websecmap[deploy] @ git+https://gitlab.com/internet-cleanup-foundation/web-security-map@c61e40b5681bf5e09be8f3373dc7ea7072d59e2f
 
 # include (security) version constraints for non primary dependencies
 -c security-constraints.in
 
 uwsgi
 django-uwsgi
+
+
+# Scanner dep needed to parse SNI: when performing raw host requests the cert hostname also needs to be correct
+# see: https://toolbelt.readthedocs.io/en/latest/adapters.html#hostheaderssladapter
+# using unreleased version from github which has better support for SNI server_hostname which prevents connection
+# resets on some servers
+requests_toolbelt @ git+https://github.com/requests/toolbelt@c73ad2c204a2e0cd5617a836ac536d5e06778ab0
