@@ -110,6 +110,7 @@ chardet==5.1.0
 charset-normalizer==3.1.0
     # via
     #   -c requirements.txt
+    #   niquests
     #   requests
     #   websecmap
 click==8.1.7
@@ -357,7 +358,11 @@ greenlet==3.0.3
     #   gevent
     #   websecmap
 h11==0.14.0
-    # via uvicorn
+    # via
+    #   -c requirements.txt
+    #   urllib3-future
+    #   uvicorn
+    #   websecmap
 httmock==1.4.0
     # via -r requirements-dev.in
 humanize==4.9.0
@@ -369,6 +374,7 @@ idna==3.4
     # via
     #   -c requirements.txt
     #   anyio
+    #   niquests
     #   requests
     #   tldextract
     #   websecmap
@@ -387,6 +393,11 @@ isort==5.13.2
     # via
     #   -r requirements-dev.in
     #   pylint
+jh2==5.0.3
+    # via
+    #   -c requirements.txt
+    #   urllib3-future
+    #   websecmap
 jinja2==3.1.4
     # via
     #   rst2pdf
@@ -394,6 +405,11 @@ jinja2==3.1.4
 jsonfield==3.1.0
     # via
     #   -c requirements.txt
+    #   websecmap
+kiss-headers==2.4.3
+    # via
+    #   -c requirements.txt
+    #   niquests
     #   websecmap
 kombu==5.3.7
     # via
@@ -454,6 +470,10 @@ netaddr==0.8.0
     # via
     #   -c requirements.txt
     #   dnsrecon
+    #   websecmap
+niquests==3.6.6
+    # via
+    #   -c requirements.txt
     #   websecmap
 numpy==1.25.0
     # via
@@ -661,6 +681,11 @@ pyyaml==6.0
     #   rst2pdf
     #   tablib
     #   websecmap
+qh3==1.0.7
+    # via
+    #   -c requirements.txt
+    #   urllib3-future
+    #   websecmap
 rdp==0.8
     # via
     #   -c requirements.txt
@@ -694,7 +719,7 @@ requests-file==1.5.1
     #   -c requirements.txt
     #   tldextract
     #   websecmap
-requests-toolbelt==1.0.0
+requests-toolbelt @ git+https://github.com/requests/toolbelt@c73ad2c204a2e0cd5617a836ac536d5e06778ab0
     # via
     #   -c requirements.txt
     #   websecmap
@@ -876,6 +901,11 @@ urllib3==1.26.18
     #   responses
     #   sentry-sdk
     #   websecmap
+urllib3-future==2.7.912
+    # via
+    #   -c requirements.txt
+    #   niquests
+    #   websecmap
 uvicorn==0.29.0
     # via sphinx-autobuild
 validators==0.20.0
@@ -891,6 +921,11 @@ vine==5.1.0
     #   websecmap
 vulture==2.11
     # via -r requirements-dev.in
+wassima==1.1.1
+    # via
+    #   -c requirements.txt
+    #   niquests
+    #   websecmap
 watchfiles==0.21.0
     # via sphinx-autobuild
 wcwidth==0.2.13
@@ -898,7 +933,7 @@ wcwidth==0.2.13
     #   -c requirements.txt
     #   prompt-toolkit
     #   websecmap
-websecmap @ git+https://gitlab.com/internet-cleanup-foundation/web-security-map@5a97fb289d0e86b444d98cf6d30fbef3b964120b
+websecmap @ git+https://gitlab.com/internet-cleanup-foundation/web-security-map@c61e40b5681bf5e09be8f3373dc7ea7072d59e2f
     # via
     #   -c requirements.txt
     #   -r requirements-dev.in
