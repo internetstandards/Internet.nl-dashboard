@@ -3,8 +3,9 @@ import os
 from cryptography.fernet import Fernet
 from django.core.management.utils import get_random_secret_key
 
-DEFAULT_SECRET_KEY = '_dzlo^9d#ox6!7c9rju@=u8+4^sprqocy3s*l*ejc2yr34@&98'
-DEFAULT_FIELD_ENCRYPTION_KEY = "JjvHNnFMfEaGd7Y0SAHBRNZYGGpNs7ydEp-ixmKSvkQ="
+# These secret keys are defaults and will not work as confirm_keys_are_changed will check if these are changed.
+DEFAULT_SECRET_KEY = '_dzlo^9d#ox6!7c9rju@=u8+4^sprqocy3s*l*ejc2yr34@&98'  # nosec
+DEFAULT_FIELD_ENCRYPTION_KEY = "JjvHNnFMfEaGd7Y0SAHBRNZYGGpNs7ydEp-ixmKSvkQ="  # nosec
 
 
 def get_secret_key_from_file_or_env() -> str:
