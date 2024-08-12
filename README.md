@@ -1,3 +1,6 @@
+For quick installation: Follow [these quick instructions](https://github.com/internetstandards/Internet.nl-dashboard/blob/50/docs/render/markdown/1_installation.md) 
+and watch [this 6 minute video](https://github.com/internetstandards/Internet.nl-dashboard/tree/50/docs/input/internet.nl%20dashboard%20installation%20video%20small.mp4).
+
 # Internet.nl Dashboard
 The internet.nl dashboard allows you to visualize batch scans from the internet.nl API. It allows:
 
@@ -15,8 +18,8 @@ The internet.nl dashboard allows you to visualize batch scans from the internet.
 
 ## Setup / installation
 
-Read the installation tutorial here: 
-https://github.com/internetstandards/Internet.nl-dashboard/blob/main/docs/render/markdown/Installation.md
+For quick installation: Follow [these quick instructions](https://github.com/internetstandards/Internet.nl-dashboard/blob/50/docs/render/markdown/1_installation.md) 
+and watch [this 6 minute video](https://github.com/internetstandards/Internet.nl-dashboard/tree/50/docs/input/internet.nl%20dashboard%20installation%20video%20small.mp4).
 
 
 ## Screenshots
