@@ -513,7 +513,7 @@ urllib3==1.26.18
     #   requests
     #   sentry-sdk
     #   websecmap
-urllib3-future==2.7.912
+urllib3-future==2.8.907
     # via
     #   niquests
     #   websecmap
@@ -535,7 +535,7 @@ wcwidth==0.2.13
     # via
     #   prompt-toolkit
     #   websecmap
-websecmap @ git+https://gitlab.com/internet-cleanup-foundation/web-security-map@c61e40b5681bf5e09be8f3373dc7ea7072d59e2f
+websecmap @ git+https://gitlab.com/internet-cleanup-foundation/web-security-map@9833a47f52e6c39b5b02789cccf99cf49ee97ca9
     # via -r requirements.in
 wikidata==0.7.0
     # via websecmap
@@ -557,7 +557,7 @@ zope-event==5.0
     # via
     #   gevent
     #   websecmap
-zope-interface==6.0
+zope.interface==6.0
     # via
     #   gevent
     #   websecmap

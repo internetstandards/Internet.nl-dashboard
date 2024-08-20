@@ -4,6 +4,20 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## V4.4.0 - 22 july 2024
+Maintenance release to reduce the amount of disk space used.
+
+### Changed
+- Compression of reports, saving a lot of disk space
+- Allow scanning of domains where the DNS server returns servfail
+- Limit the number of domains in a GUI upload and redirect to spreadsheets
+- Enforce passwords to be at least 16 characters
+- Improve API request name (for scan tracking on API backends)
+- Add progress bar to spreadsheet uploads
+
+### Bugfixes
+- Fixed a transaction issue creating duplicate endpoints
+
 ## V4.3.0 - 13 may 2024
 
 Version 4.3.0 targets to support creating lists and viewing reports up to 10.000 domains.
