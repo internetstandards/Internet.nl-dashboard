@@ -641,7 +641,7 @@ wcwidth==0.2.13
     #   -c requirements.txt
     #   prompt-toolkit
     #   websecmap
-websecmap[deploy] @ git+https://gitlab.com/internet-cleanup-foundation/web-security-map@c61e40b5681bf5e09be8f3373dc7ea7072d59e2f
+websecmap[deploy] @ git+https://gitlab.com/internet-cleanup-foundation/web-security-map@9833a47f52e6c39b5b02789cccf99cf49ee97ca9
     # via
     #   -c requirements.txt
     #   -r requirements-deploy.in
@@ -671,7 +671,7 @@ zope-event==5.0
     #   -c requirements.txt
     #   gevent
     #   websecmap
-zope-interface==6.0
+zope.interface==6.0
     # via
     #   -c requirements.txt
     #   gevent
