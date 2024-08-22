@@ -35,6 +35,7 @@ USER root
 ENV UWSGI_GID root
 ENV UWSGI_UID root
 ENV UWSGI_MODULE dashboard.wsgi
+ENV UWSGI_CHEAPER 0
 # serve static files (to caching proxy) from collected/generated static files
 ENV UWSGI_STATIC_MAP /static=/srv/dashboard/static
 # set proxy and browser caching for static files to 1 month
