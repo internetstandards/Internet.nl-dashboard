@@ -3,6 +3,7 @@ import logging
 import re
 from datetime import datetime, timedelta, timezone
 
+import nested_admin
 from celery import group
 from constance.admin import Config, ConstanceAdmin, ConstanceForm
 from django.contrib import admin
@@ -10,6 +11,7 @@ from django.contrib.auth.admin import GroupAdmin as BaseGroupAdmin
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 from django.contrib.auth.models import Group, User
 from django.contrib.humanize.templatetags.humanize import naturaltime
+from django.core.paginator import Paginator
 from django.utils.html import format_html
 from django.utils.safestring import mark_safe
 from django_celery_beat.admin import PeriodicTaskAdmin, PeriodicTaskForm
@@ -18,7 +20,8 @@ from import_export import resources
 from import_export.admin import ImportExportModelAdmin
 from jet.admin import CompactInline
 from websecmap.organizations.models import Url
-from websecmap.scanners.models import Endpoint
+from websecmap.scanners.admin import InternetNLV2ScanAdmin
+from websecmap.scanners.models import Endpoint, InternetNLV2Scan, InternetNLV2StateLog
 
 from dashboard.internet_nl_dashboard import models
 from dashboard.internet_nl_dashboard.forms import CustomAccountModelForm
@@ -31,6 +34,15 @@ from dashboard.internet_nl_dashboard.scanners.scan_internet_nl_per_account impor
                                                                                    recover_and_retry)
 
 log = logging.getLogger(__package__)
+
+
+class TooManyRecordsPaginator(Paginator):
+    def __init__(self, object_list, per_page, something, darkside):
+        super().__init__(object_list, per_page, something, darkside)
+
+    @property
+    def count(self):
+        return 13374223
 
 
 def only_alphanumeric(data: str) -> str:
@@ -299,16 +311,53 @@ class TaggedUrlInUrllistAdmin(ImportExportModelAdmin, admin.ModelAdmin):
     fields = ('url', 'urllist', 'tags')
 
 
+class InternetNLV2StateLogInline(nested_admin.NestedTabularInline):
+    model = InternetNLV2StateLog
+    can_delete = False
+
+    readonly_fields = ('state', 'state_message', 'last_state_check', 'at_when')
+
+    def has_add_permission(self, request, obj=None):
+        return False
+
+
+class AccountInternetNLScanLogInline(nested_admin.NestedTabularInline):
+    model = AccountInternetNLScanLog
+    can_delete = False
+    # readonly_fields = ('scan', 'account', 'urllist', 'log')
+    readonly_fields = ('state', 'at_when')
+    # todo: restrict any form of editing and creating things here.
+
+    def has_add_permission(self, request, obj=None):
+        return False
+
+
+class AccountInternetNLScanInline(nested_admin.NestedTabularInline):
+    model = AccountInternetNLScan
+    can_delete = False
+    inlines = [AccountInternetNLScanLogInline]
+
+    readonly_fields = ('account', 'urllist', 'report', 'state', 'started_on', 'finished_on', 'state_changed_on')
+
+    def has_add_permission(self, request, obj=None):
+        return False
+
+
 @admin.register(AccountInternetNLScan)
 class AccountInternetNLScanAdmin(ImportExportModelAdmin, admin.ModelAdmin):
 
     def get_queryset(self, request):
         qs = super().get_queryset(request)
 
+        # prefetch account, scan and urllist, as loading this takes ages because of subqueries.
+        qs = qs.select_related('account', 'urllist', 'scan')
+
         # this column prevents loading of long lists
-        qs.defer('')
+        qs = qs.defer('scan__subject_urls', 'scan__retrieved_scan_report', 'scan__retrieved_scan_report_technical')
 
         return qs
+
+    inlines = [AccountInternetNLScanLogInline]
 
     list_display = ('id', 'account', 'account__name', 'state', 'internetnl_scan', 'internetnl_scan_type',
                     'urllist', 'started_on', 'finished_on')
@@ -374,10 +423,65 @@ class AccountInternetNLScanAdmin(ImportExportModelAdmin, admin.ModelAdmin):
     actions.append('create_extra_report')
 
 
+class InternetNLV2ScanAdminNew(InternetNLV2ScanAdmin, nested_admin.NestedModelAdmin):
+    # add some inlines to make debugging easier.
+
+    def get_queryset(self, request):
+        qs = super().get_queryset(request)
+
+        # this column prevents loading of long lists
+        qs = qs.defer('subject_urls', 'retrieved_scan_report', 'retrieved_scan_report_technical')
+
+        return qs
+
+    list_display = (
+        "id",
+        "type",
+        "scan_id",
+        "online",
+        "state",
+        "state_message",
+        "last_state_check",
+        "last_state_change",
+        "account_scan"
+    )
+
+    list_filter = InternetNLV2ScanAdmin.list_filter + ()
+
+    def account_scan(self, obj):
+        account = AccountInternetNLScan.objects.all().filter(scan=obj).only(
+            'id', 'account__internet_nl_api_username', 'urllist__name').first()
+        return f"{account.id} - {account.account.internet_nl_api_username} - " \
+               f"{account.urllist.name}" if account else None
+
+    inlines = [InternetNLV2StateLogInline, AccountInternetNLScanInline]
+
+
+def create_modeladmin(modeladmin, model, name=None):
+    # This creates a proxy model so there can be a different view on organization data.
+    # In this case we can create WhoisOrganization which only allows easy overview and record editing
+    # of registrar information.
+    # https://stackoverflow.com/questions/2223375/multiple-modeladmins-views-for-same-model-in-django-admin
+    class Meta:
+        proxy = True
+        app_label = model._meta.app_label
+
+    attrs = {"__module__": "", "Meta": Meta}
+
+    newmodel = type(name, (model,), attrs)
+
+    admin.site.register(newmodel, modeladmin)
+    return modeladmin
+
+
+create_modeladmin(InternetNLV2ScanAdminNew, name="internetNlScanInspection", model=InternetNLV2Scan)
+
+
 @admin.register(AccountInternetNLScanLog)
 class AccountInternetNLScanLogAdmin(ImportExportModelAdmin, admin.ModelAdmin):
+    paginator = TooManyRecordsPaginator
 
-    list_display = ('scan', 'state', 'at_when')
+    list_display = ('id', 'scan', 'state', 'at_when')
     list_filter = ['scan', 'state', 'at_when'][::-1]
     search_fields = ('scan__urllist__name', 'scan__account__name')
     fields = list_display
