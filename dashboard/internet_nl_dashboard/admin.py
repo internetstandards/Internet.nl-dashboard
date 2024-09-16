@@ -317,7 +317,7 @@ class InternetNLV2StateLogInline(nested_admin.NestedTabularInline):  # pylint: d
 
     readonly_fields = ('state', 'state_message', 'last_state_check', 'at_when')
 
-    def has_add_permission(self):
+    def has_add_permission(self, *args, **kwargs):
         return False
 
 
@@ -328,7 +328,7 @@ class AccountInternetNLScanLogInl(nested_admin.NestedTabularInline):  # pylint: 
     readonly_fields = ('state', 'at_when')
     # todo: restrict any form of editing and creating things here.
 
-    def has_add_permission(self):
+    def has_add_permission(self, *args, **kwargs):
         return False
 
 
@@ -339,7 +339,7 @@ class AccountInternetNLScanInline(nested_admin.NestedTabularInline):  # pylint: 
 
     readonly_fields = ('account', 'urllist', 'report', 'state', 'started_on', 'finished_on', 'state_changed_on')
 
-    def has_add_permission(self):
+    def has_add_permission(self, *args, **kwargs):
         return False
 
 
