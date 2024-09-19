@@ -62,7 +62,6 @@ def send_backoffice_mail_async(form_data):
 <br>
 Signup details:<br>
 <pre>{json_content}</pre><br>
-<br>
 Kind regards,<br>
 The Dashboard Team<br>
 <br>
@@ -73,6 +72,8 @@ The Dashboard Team<br>
         sender=config.EMAIL_NOTIFICATION_SENDER,
         recipients=email_addresses,
         subject=email_subject,
+        # how to set the reply to: https://github.com/Bearle/django_mail_admin/blob/master/docs/usage.rst#L148
+        headers={'Reply-to': form_data.get('email', config.EMAIL_NOTIFICATION_SENDER)},
         message=email_content.replace("<br>", ""),
         priority=models.PRIORITY.now,
         html_message=email_content,
