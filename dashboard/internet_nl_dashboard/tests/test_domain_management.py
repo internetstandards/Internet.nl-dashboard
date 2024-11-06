@@ -6,6 +6,7 @@ Run these tests with tox -e test -- -k test_urllist_management
 """
 import timeit
 
+import responses
 from constance.test import override_config
 from websecmap.organizations.models import Url
 
@@ -16,7 +17,6 @@ from dashboard.internet_nl_dashboard.logic.domains import (add_domains_from_raw_
                                                            retrieve_possible_urls_from_unfiltered_input,
                                                            save_urllist_content_by_name, suggest_subdomains)
 from dashboard.internet_nl_dashboard.models import Account
-import responses
 
 
 @responses.activate
