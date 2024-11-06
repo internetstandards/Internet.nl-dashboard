@@ -725,7 +725,9 @@ requests-toolbelt @ git+https://github.com/requests/toolbelt@c73ad2c204a2e0cd561
     #   -r requirements-dev.in
     #   websecmap
 responses==0.25.0
-    # via pytest-responses
+    # via
+    #   -r requirements-dev.in
+    #   pytest-responses
 retry==0.9.2
     # via
     #   -c requirements.txt
@@ -968,7 +970,7 @@ zope-event==5.0
     #   -c requirements.txt
     #   gevent
     #   websecmap
-zope.interface==6.0
+zope-interface==6.0
     # via
     #   -c requirements.txt
     #   gevent

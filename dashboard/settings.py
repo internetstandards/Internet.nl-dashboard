@@ -672,6 +672,28 @@ CONSTANCE_CONFIG = {
         "Do not send in subdomains. To reduce the number of tests while still getting an impression on a broader scope",
         bool,
     ),
+
+    "SUBDOMAIN_SUGGESTION_ENABLED": (
+        False,
+        "Do you want subdomain suggestions to become available in the web interface?",
+        bool,
+    ),
+    "SUBDOMAIN_SUGGESTION_SERVER_ADDRESS": (
+        "http://localhost:8001/",
+        "Server address of the suggestions API. To run this API, go to: "
+        "https://github.com/internetstandards/Internet.nl-ct-log-subdomain-suggestions-api",
+        str,
+    ),
+    "SUBDOMAIN_SUGGESTION_DEFAULT_TIME_PERIOD": (
+        120,
+        "The amount of days the domain has to be last seen",
+        int,
+    ),
+    "SUBDOMAIN_SUGGESTION_DEFAULT_EXTEND_TIME_PERIOD": (
+        90,
+        "The amount of days to extend the range to search for available subdomains",
+        int,
+    ),
 }
 
 CONSTANCE_CONFIG_FIELDSETS = OrderedDict(
@@ -710,6 +732,15 @@ CONSTANCE_CONFIG_FIELDSETS = OrderedDict(
                 "SECURITY_TXT_IS_REDIRECTED",
                 "SECURITY_TXT_REDIRECT_URL",
                 "SECURITY_TXT_CONTENT"
+            )
+        ),
+
+        (
+            "Subdomain suggestions", (
+                "SUBDOMAIN_SUGGESTION_ENABLED",
+                "SUBDOMAIN_SUGGESTION_SERVER_ADDRESS",
+                "SUBDOMAIN_SUGGESTION_DEFAULT_TIME_PERIOD",
+                "SUBDOMAIN_SUGGESTION_DEFAULT_EXTEND_TIME_PERIOD"
             )
         ),
 
@@ -785,7 +816,7 @@ JET_SIDE_MENU_ITEMS = [
     ]},
 
     {'label': _('🔬 Scan'), 'items': [
-        {'name': 'scanners.internetnlscaninspection',  'label': 'Scan Inspections'},
+        {'name': 'scanners.internetnlscaninspection', 'label': 'Scan Inspections'},
         {'name': 'internet_nl_dashboard.accountinternetnlscan'},
         {'name': 'internet_nl_dashboard.accountinternetnlscanlog'},
         {'name': 'scanners.internetnlv2scan', 'label': 'Internet.nl Scans Tasks'},

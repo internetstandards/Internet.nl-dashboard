@@ -12,6 +12,17 @@ def config_content():
         "show": {
             "signup_form": configuration["SHOW_SIGNUP_FORM"],
         },
+        "app": {
+            "subdomain_suggestion": {
+                "enabled": configuration["SUBDOMAIN_SUGGESTION_ENABLED"],
+                "default_period": configuration["SUBDOMAIN_SUGGESTION_DEFAULT_PERIOD"],
+                "default_extend_period": configuration["SUBDOMAIN_SUGGESTION_DEFAULT_EXTEND_TIME_PERIOD"],
+            },
+            # in the future we'll support this
+            "signup": {
+                "enabled": configuration["SHOW_SIGNUP_FORM"],
+            }
+        }
     }
 
 
