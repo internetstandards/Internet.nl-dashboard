@@ -54,6 +54,7 @@ urlpatterns = [
     path('data/urllist/url/delete/', domains.delete_url_from_urllist_),
     path('data/urllist/download/', domains.download_list_),
     path('data/urllist/upload/<int:list_id>/', spreadsheet.upload_list_),
+    path('data/urllist/suggest-subdomains/', domains.suggest_subdomains_),
 
     path('data/urllist/tag/add/', tags.add_tag_),
     path('data/urllist/tag/remove/', tags.remove_tag_),

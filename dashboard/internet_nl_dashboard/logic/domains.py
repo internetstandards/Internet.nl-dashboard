@@ -7,6 +7,7 @@ from datetime import datetime, timezone
 from typing import Any, Dict, List, Set, Tuple, Union
 
 import pyexcel as p
+import requests
 import tldextract
 from actstream import action
 from celery import group
@@ -26,6 +27,25 @@ from dashboard.internet_nl_dashboard.scanners.scan_internet_nl_per_account impor
 from dashboard.internet_nl_dashboard.views.download_spreadsheet import create_spreadsheet_download
 
 log = logging.getLogger(__package__)
+
+
+def suggest_subdomains(domain: str, period: int = 370):
+    extract = tldextract.extract(domain)
+
+    # ip address or garbage
+    if not extract.domain or not extract.suffix:
+        return []
+
+    # call SUBDOMAIN_SUGGESTION_SERVER_ADDRESS
+    response = requests.get(config.SUBDOMAIN_SUGGESTION_SERVER_ADDRESS,
+                            params={'domain': extract.domain, 'suffix': extract.suffix, 'period': period},
+                            timeout=10)
+
+    if response.status_code != 200:
+        log.error("Failed to retrieve subdomain suggestions from  %s.", config.SUBDOMAIN_SUGGESTION_SERVER_ADDRESS)
+        return []
+
+    return response.json()
 
 
 # todo: write test

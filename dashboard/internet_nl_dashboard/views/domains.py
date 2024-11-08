@@ -11,8 +11,16 @@ from dashboard.internet_nl_dashboard.logic.domains import (add_domains_from_raw_
                                                            delete_url_from_urllist, download_as_spreadsheet,
                                                            get_scan_status_of_list, get_urllist_content,
                                                            get_urllists_from_account, save_urllist_content_by_name,
-                                                           scan_now, update_list_settings)
+                                                           scan_now, suggest_subdomains, update_list_settings)
 from dashboard.internet_nl_dashboard.views import LOGIN_URL, get_account, get_json_body
+
+
+@login_required(login_url=LOGIN_URL)
+def suggest_subdomains_(request) -> JsonResponse:
+    request = get_json_body(request)
+    domain = request.get("domain", "")
+    period = request.get("period", 370)
+    return JsonResponse(suggest_subdomains(domain, period), encoder=JSEncoder, safe=False)
 
 
 @login_required(login_url=LOGIN_URL)
