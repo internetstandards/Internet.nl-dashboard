@@ -253,7 +253,7 @@ vulture: ${app} ## Check for unused code
 	${python} -m vulture ${pysrcdirs}
 
 ruff: ${app} ## Faster than black, might autoformat some things
-	${python} -m ruff ${pysrcdirs}
+	${python} -m ruff check ${pysrcdirs}
 
 bandit: ${app} ## Run basic security audit
 	${python} -m bandit --configfile bandit.yaml -r ${pysrcdirs}
