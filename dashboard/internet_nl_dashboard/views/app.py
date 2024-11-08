@@ -15,7 +15,7 @@ def config_content():
         "app": {
             "subdomain_suggestion": {
                 "enabled": configuration["SUBDOMAIN_SUGGESTION_ENABLED"],
-                "default_period": configuration["SUBDOMAIN_SUGGESTION_DEFAULT_PERIOD"],
+                "default_period": configuration["SUBDOMAIN_SUGGESTION_DEFAULT_TIME_PERIOD"],
                 "default_extend_period": configuration["SUBDOMAIN_SUGGESTION_DEFAULT_EXTEND_TIME_PERIOD"],
             },
             # in the future we'll support this

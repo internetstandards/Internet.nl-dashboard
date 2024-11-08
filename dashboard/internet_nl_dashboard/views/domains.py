@@ -17,9 +17,10 @@ from dashboard.internet_nl_dashboard.views import LOGIN_URL, get_account, get_js
 
 @login_required(login_url=LOGIN_URL)
 def suggest_subdomains_(request) -> JsonResponse:
-    return JsonResponse(
-        suggest_subdomains(request.GET.get("domain", ""), request.GET.get("period", 370)
-                           ), encoder=JSEncoder, safe=False)
+    request = get_json_body(request)
+    domain = request.get("domain", "")
+    period = request.get("period", 370)
+    return JsonResponse(suggest_subdomains(domain, period), encoder=JSEncoder, safe=False)
 
 
 @login_required(login_url=LOGIN_URL)
