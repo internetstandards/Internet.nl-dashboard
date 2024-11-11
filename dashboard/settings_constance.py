@@ -123,7 +123,7 @@ CONSTANCE_CONFIG = {
 
     # frontend
     "SITE_LAYOUT_NAME": (
-        'internet_nl',
+        '',
         'The name of the layout, when internet_nl is used, logos, footer and styling from internet.nl is used. When '
         'this field is empty all references to internet.nl disappear while still using the same color scheme. '
         'Supported values: internet_nl, [empty]',
@@ -250,6 +250,11 @@ CONSTANCE_CONFIG = {
         "Do not send in subdomains. To reduce the number of tests while still getting an impression on a broader scope",
         bool,
     ),
+    "PROJECT_WEBSITE": (
+        "",
+        "",
+        str
+    ),
 
     "SUBDOMAIN_SUGGESTION_ENABLED": (
         False,
@@ -273,6 +278,12 @@ CONSTANCE_CONFIG = {
         int,
     ),
 
+    "SUPPORTED_LANGUAGES": (
+        ["en", "nl"],
+        "Languages supported in the front end, if you need a new language, add it to the dashboard project.",
+        "json",
+    ),
+
 }
 
 CONSTANCE_CONFIG_FIELDSETS = OrderedDict(
@@ -289,7 +300,8 @@ CONSTANCE_CONFIG_FIELDSETS = OrderedDict(
 
         (
             'Front End Settings', (
-                'SITE_LAYOUT_NAME',
+                "SITE_LAYOUT_NAME",
+                "SUPPORTED_LANGUAGES"
             )
         ),
 
@@ -366,7 +378,8 @@ CONSTANCE_CONFIG_FIELDSETS = OrderedDict(
                 "INTERNET_NL_ADD_CALCULATED_RESULTS_VNG_V6",
                 "INTERNET_NL_WEB_ONLY_TOP_LEVEL",
                 "IPV6_TEST_DOMAIN",
-                "CONNECTIVITY_TEST_DOMAIN"
+                "CONNECTIVITY_TEST_DOMAIN",
+                "PROJECT_WEBSITE"
             )
         )
     ]

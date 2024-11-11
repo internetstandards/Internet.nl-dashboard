@@ -23,6 +23,7 @@ def config_content():
                 "enabled": configuration["SHOW_SIGNUP_FORM"],
             },
             "layout": configuration["SITE_LAYOUT_NAME"],
+            "supported_languages": configuration["SUPPORTED_LANGUAGES"],
         }
     }
 

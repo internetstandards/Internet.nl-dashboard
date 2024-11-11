@@ -535,7 +535,7 @@ wcwidth==0.2.13
     # via
     #   prompt-toolkit
     #   websecmap
-websecmap @ git+https://gitlab.com/internet-cleanup-foundation/web-security-map@9833a47f52e6c39b5b02789cccf99cf49ee97ca9
+websecmap @ git+https://gitlab.com/internet-cleanup-foundation/web-security-map@a96dd3421e68b5711c8f8ecd90e92c2df871535b
     # via -r requirements.in
 wikidata==0.7.0
     # via websecmap

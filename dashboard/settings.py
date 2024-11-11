@@ -11,12 +11,12 @@ from sentry_sdk.integrations.redis import RedisIntegration
 from . import __version__
 from .settings_constance import (CONSTANCE_ADDITIONAL_FIELDS, CONSTANCE_BACKEND, CONSTANCE_CONFIG,
                                  CONSTANCE_CONFIG_FIELDSETS)   # noqa  # pylint: disable=unused-import
+from .settings_jet import JET_SIDE_MENU_COMPACT, JET_SIDE_MENU_ITEMS  # noqa  # pylint: disable=unused-import
 
 # import all of this and don't auto-lint it away because there are no references here.
 # most code refers to these settings.
 
 from .settings_util import get_field_encryption_key_from_file_or_env, get_secret_key_from_file_or_env
-
 
 """
 Django settings for dashboard project.

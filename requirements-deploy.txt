@@ -641,7 +641,7 @@ wcwidth==0.2.13
     #   -c requirements.txt
     #   prompt-toolkit
     #   websecmap
-websecmap[deploy] @ git+https://gitlab.com/internet-cleanup-foundation/web-security-map@c61e40b5681bf5e09be8f3373dc7ea7072d59e2f
+websecmap[deploy] @ git+https://gitlab.com/internet-cleanup-foundation/web-security-map@a96dd3421e68b5711c8f8ecd90e92c2df871535b
     # via
     #   -c requirements.txt
     #   -r requirements-deploy.in
