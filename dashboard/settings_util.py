@@ -15,7 +15,8 @@ def get_secret_key_from_file_or_env() -> str:
 
     if secret_key_file := os.environ.get('SECRET_KEY_FILE', None):
         if not os.path.exists(secret_key_file):
-            secret_key = get_random_secret_key()
+            # It's keys all the way down
+            secret_key = get_random_secret_key()  # noqa  py/clear-text-storage-sensitive-data
             with open(secret_key_file, 'w+', encoding="UTF-8") as f:
                 f.write(secret_key)
 
