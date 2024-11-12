@@ -63,6 +63,24 @@
     }
   },
   {
+    "model": "scanners.scantypesecondopinionlink",
+    "pk": 3,
+    "fields": {
+      "url": "https://www.internet.nl/faqs/ipv6/",
+      "provider": "ipv6_internetnl",
+      "friendly_name": "Internet.nl"
+    }
+  },
+  {
+    "model": "scanners.scantypesecondopinionlink",
+    "pk": 6,
+    "fields": {
+      "url": "https://www.internet.nl/faqs/ipv6/",
+      "provider": "ipv6_internetnl",
+      "friendly_name": "Internet.nl"
+    }
+  },
+  {
     "model": "scanners.scantypedocumentationlink",
     "pk": 11,
     "fields": {
@@ -2104,7 +2122,7 @@
         3
       ],
       "documentation_links": [
-        1
+        11
       ],
       "category": [
         1

@@ -20,7 +20,7 @@ For general and paid support with installations, updates and managing installati
 ### What do you need
 
 * A computer with git and docker installed
-  * 4 cores and 8 gigabyte of ram recommended
+  * 8 cores and 16 gigabyte of ram or more recommended
 * Access to the command shell to perform installations commands
 * Credential access to a running internet.nl API instance
   * This can be the official internet.nl instance
