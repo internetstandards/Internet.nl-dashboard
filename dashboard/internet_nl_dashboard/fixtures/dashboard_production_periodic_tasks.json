@@ -36,6 +36,18 @@
     }
   },
   {
+    "model": "django_celery_beat.crontabschedule",
+    "pk": 37,
+    "fields": {
+      "minute": "0",
+      "hour": "1",
+      "day_of_week": "*",
+      "day_of_month": "*",
+      "month_of_year": "*",
+      "timezone": "UTC"
+    }
+  },
+  {
     "model": "django_celery_beat.intervalschedule",
     "pk": 2,
     "fields": {
@@ -162,6 +174,34 @@
       "task": "dashboard.internet_nl_dashboard.tasks.autoshare_report_to_front_page",
       "interval": null,
       "crontab": 32,
+      "solar": null,
+      "clocked": null,
+      "args": "[]",
+      "kwargs": "{}",
+      "queue": null,
+      "exchange": null,
+      "routing_key": null,
+      "headers": "{}",
+      "priority": null,
+      "expires": null,
+      "expire_seconds": null,
+      "one_off": false,
+      "start_time": null,
+      "enabled": true,
+      "last_run_at": "2024-06-18T15:10:00.009Z",
+      "total_run_count": 39348,
+      "date_changed": "2024-06-18T15:10:04.162Z",
+      "description": ""
+    }
+  },
+    {
+    "model": "django_celery_beat.periodictask",
+    "pk": 140,
+    "fields": {
+      "name": "Check account credential validity to prevent starting scheduled scans that cannot finish",
+      "task": "dashboard.internet_nl_dashboard.tasks.update_account_access_to_api",
+      "interval": null,
+      "crontab": 37,
       "solar": null,
       "clocked": null,
       "args": "[]",
