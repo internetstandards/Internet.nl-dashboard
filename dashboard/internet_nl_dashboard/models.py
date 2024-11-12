@@ -522,9 +522,7 @@ class UrlListReport(SeriesOfUrlsReportMixin):  # pylint: disable=too-many-ancest
 
     class Meta:
         get_latest_by = "at_when"
-        index_together = [
-            ["at_when", "id"],
-        ]
+        indexes = [models.Index(fields=["at_when", "id"])]
 
     def save(self, *args, **kwargs):
         # the public share code is a random string string that should be unique and non-guessable

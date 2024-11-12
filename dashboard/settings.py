@@ -234,6 +234,7 @@ TIME_ZONE = 'UTC'
 
 USE_I18N = True
 
+# todo: remove in the migration to django 5.0
 USE_L10N = True
 
 USE_TZ = True
