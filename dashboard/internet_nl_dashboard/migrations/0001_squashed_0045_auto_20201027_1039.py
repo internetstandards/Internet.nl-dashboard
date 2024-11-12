@@ -7,7 +7,6 @@ import django_countries.fields
 import jsonfield.fields
 from django.conf import settings
 from django.db import migrations, models
-from django.utils.timezone import utc
 
 
 class Migration(migrations.Migration):
@@ -86,7 +85,7 @@ class Migration(migrations.Migration):
                                                         ('mail', 'mail')], default='web', max_length=4)),
                 ('automated_scan_frequency', models.CharField(choices=[('disabled', 'disabled'), ('every half year', 'every half year'), ('at the start of every quarter', 'at the start of every quarter'), (
                     'every 1st day of the month', 'every 1st day of the month'), ('twice per month', 'twice per month')], default='disabled', help_text='At what moment should the scan start?', max_length=30)),
-                ('scheduled_next_scan', models.DateTimeField(default=datetime.datetime(2030, 1, 1, 1, 1, 1, 601526, tzinfo=utc),
+                ('scheduled_next_scan', models.DateTimeField(default=datetime.datetime(2030, 1, 1, 1, 1, 1, 601526, tzinfo=datetime.timezone.utc),
                                                              help_text='An indication at what moment the scan will be started. The scan can take a while, thus this does not tell you when a scan will be finished. All dates in the past will be scanned and updated.')),
                 ('deleted_on', models.DateTimeField(blank=True, null=True)),
                 ('is_deleted', models.BooleanField(default=False)),

@@ -3,7 +3,6 @@
 import datetime
 
 from django.db import migrations, models
-from django.utils.timezone import utc
 
 
 class Migration(migrations.Migration):
@@ -21,7 +20,7 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='urllist',
             name='scheduled_next_scan',
-            field=models.DateTimeField(default=datetime.datetime(2019, 4, 29, 14, 52, 12, 15679, tzinfo=utc),
+            field=models.DateTimeField(default=datetime.datetime(2019, 4, 29, 14, 52, 12, 15679, tzinfo=datetime.timezone.utc),
                                        help_text='An indication at what moment the scan will be started. The scan can take a while, thus this does not tell you when a scan will be finished. All dates in the past will be scanned and updated.'),
         ),
     ]
