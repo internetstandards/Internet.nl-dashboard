@@ -1,4 +1,3 @@
-
 from dns.resolver import Resolver
 from websecmap.app.constance import constance_cached_value
 

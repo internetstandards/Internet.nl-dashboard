@@ -24,7 +24,7 @@ def config_content():
             },
             "layout": configuration["SITE_LAYOUT_NAME"],
             "supported_languages": configuration["SUPPORTED_LANGUAGES"],
-        }
+        },
     }
 
 

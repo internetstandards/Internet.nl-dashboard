@@ -9,7 +9,7 @@ from dashboard.internet_nl_dashboard.models import determine_next_scan_moment
 
 def test_determine_next_scan_moment():
 
-    preference = 'every half year'
+    preference = "every half year"
     tests = [
         {"input": "2012-01-01", "outcome": datetime(year=2012, month=7, day=1, tzinfo=timezone.utc)},
         {"input": "2012-06-30", "outcome": datetime(year=2012, month=7, day=1, tzinfo=timezone.utc)},

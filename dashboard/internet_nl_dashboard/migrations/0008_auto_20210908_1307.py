@@ -6,15 +6,18 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('organizations', '0060_auto_20200908_1055'),
-        ('internet_nl_dashboard', '0007_urllist_urls'),
+        ("organizations", "0060_auto_20200908_1055"),
+        ("internet_nl_dashboard", "0007_urllist_urls"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='urllist',
-            name='urls',
-            field=models.ManyToManyField(related_name='urls_in_dashboard_list_2',
-                                         through='internet_nl_dashboard.TaggedUrlInUrllist', to='organizations.Url'),
+            model_name="urllist",
+            name="urls",
+            field=models.ManyToManyField(
+                related_name="urls_in_dashboard_list_2",
+                through="internet_nl_dashboard.TaggedUrlInUrllist",
+                to="organizations.Url",
+            ),
         ),
     ]

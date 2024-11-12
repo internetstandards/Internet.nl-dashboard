@@ -13,4 +13,4 @@ def template_settings_processor(request):
     :return:
     """
 
-    return {'LANGUAGES': settings.LANGUAGES, 'debug': settings.DEBUG}
+    return {"LANGUAGES": settings.LANGUAGES, "debug": settings.DEBUG}

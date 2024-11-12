@@ -6,12 +6,12 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('internet_nl_dashboard', '0005_migrate_urlist_to_tagged_urllist'),
+        ("internet_nl_dashboard", "0005_migrate_urlist_to_tagged_urllist"),
     ]
 
     operations = [
         migrations.RemoveField(
-            model_name='urllist',
-            name='urls',
+            model_name="urllist",
+            name="urls",
         ),
     ]

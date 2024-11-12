@@ -22,10 +22,10 @@ def test_tags(db):  # pylint: disable=invalid-name, unused-argument
 
     validate(url.id, my_list.id, [])
     add_tag(account, [url.id], my_list.id, "test_tag")
-    validate(url.id, my_list.id, ['test_tag'])
+    validate(url.id, my_list.id, ["test_tag"])
     add_tag(account, [url.id], my_list.id, "test_tag_2")
     add_tag(account, [url.id], my_list.id, "test_tag_3")
-    assert tags_in_urllist(account, my_list.id) == ['test_tag', 'test_tag_2', 'test_tag_3']
+    assert tags_in_urllist(account, my_list.id) == ["test_tag", "test_tag_2", "test_tag_3"]
     remove_tag(account, [url.id], my_list.id, "test_tag")
     remove_tag(account, [url.id], my_list.id, "test_tag_2")
     remove_tag(account, [url.id], my_list.id, "test_tag_3")

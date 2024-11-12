@@ -16,13 +16,13 @@ def dedupe_urls():
     for target_url_name in urls_by_name:
         print(f"Going to deduplicate stuff for domain: {target_url_name}")
         # Move everything to the oldest url.
-        target_url = Url.objects.all().filter(url=target_url_name).order_by('created_on').first()
+        target_url = Url.objects.all().filter(url=target_url_name).order_by("created_on").first()
         duplicate_urls = list(Url.objects.all().filter(url=target_url.url).exclude(id=target_url.id))
         if not duplicate_urls:
             print("Could not find duplicates...")
             continue
 
-        print(f'Found {len(duplicate_urls)} for target url: {target_url}.')
+        print(f"Found {len(duplicate_urls)} for target url: {target_url}.")
         for duplicate_url in duplicate_urls:
 
             # transfer all endpoints and endpoints scans
@@ -33,21 +33,24 @@ def dedupe_urls():
                     protocol=duplicate_endpoint.protocol,
                     port=duplicate_endpoint.port,
                     ip_version=duplicate_endpoint.ip_version,
-                    is_dead=duplicate_endpoint.is_dead)
+                    is_dead=duplicate_endpoint.is_dead,
+                )
                 if created:
-                    print(f'A similar endpoint has been created at the target url. {duplicate_endpoint}')
+                    print(f"A similar endpoint has been created at the target url. {duplicate_endpoint}")
                 else:
-                    print('A similar endpoint already exists in the target url.')
+                    print("A similar endpoint already exists in the target url.")
                 # duplicate scans in a day is not a problem, those are filtered out and only the latest one is used
                 # so the data is consistent.
                 EndpointGenericScan.objects.all().filter(endpoint=duplicate_endpoint).update(endpoint=endpoint_target)
-                print(f'Moved all the scans from endpoint {duplicate_endpoint} to {endpoint_target}.')
+                print(f"Moved all the scans from endpoint {duplicate_endpoint} to {endpoint_target}.")
                 duplicate_endpoint.delete()
 
             # replace the duplicate_url with the original url in urllists.
             urllist_with_duplicate_urls = UrlList.objects.all().filter(urls__id=duplicate_url.id)
-            print(f'The duplicate url is being used in {len(urllist_with_duplicate_urls)} lists. It will be '
-                  f'replaced with the target url {target_url}.')
+            print(
+                f"The duplicate url is being used in {len(urllist_with_duplicate_urls)} lists. It will be "
+                f"replaced with the target url {target_url}."
+            )
             for urllist_with_duplicate_url in urllist_with_duplicate_urls:
                 urllist_with_duplicate_url.urls.remove(duplicate_url)
                 urllist_with_duplicate_url.urls.add(target_url)

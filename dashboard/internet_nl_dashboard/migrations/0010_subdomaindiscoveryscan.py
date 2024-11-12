@@ -7,20 +7,29 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('internet_nl_dashboard', '0009_auto_20210927_0933'),
+        ("internet_nl_dashboard", "0009_auto_20210927_0933"),
     ]
 
     operations = [
         migrations.CreateModel(
-            name='SubdomainDiscoveryScan',
+            name="SubdomainDiscoveryScan",
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('state', models.CharField(default='requested',
-                                           help_text='Name of the UrlList, for example name of the organization in it.', max_length=20)),
-                ('state_changed_on', models.DateTimeField(blank=True, null=True)),
-                ('state_message', models.CharField(max_length=200)),
-                ('domains_discovered', models.TextField()),
-                ('urllist', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='internet_nl_dashboard.urllist')),
+                ("id", models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
+                (
+                    "state",
+                    models.CharField(
+                        default="requested",
+                        help_text="Name of the UrlList, for example name of the organization in it.",
+                        max_length=20,
+                    ),
+                ),
+                ("state_changed_on", models.DateTimeField(blank=True, null=True)),
+                ("state_message", models.CharField(max_length=200)),
+                ("domains_discovered", models.TextField()),
+                (
+                    "urllist",
+                    models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to="internet_nl_dashboard.urllist"),
+                ),
             ],
         ),
     ]

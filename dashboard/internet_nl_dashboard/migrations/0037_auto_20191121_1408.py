@@ -7,30 +7,42 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('internet_nl_dashboard', '0036_urllistreport_average_internet_nl_score'),
+        ("internet_nl_dashboard", "0036_urllistreport_average_internet_nl_score"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='accountinternetnlscan',
-            name='state',
-            field=models.CharField(blank=True, default='', help_text='The current state', max_length=255),
+            model_name="accountinternetnlscan",
+            name="state",
+            field=models.CharField(blank=True, default="", help_text="The current state", max_length=255),
         ),
         migrations.AlterField(
-            model_name='accountinternetnlscan',
-            name='scan',
-            field=models.ForeignKey(null=True, on_delete=django.db.models.deletion.CASCADE,
-                                    to='scanners.InternetNLScan'),
+            model_name="accountinternetnlscan",
+            name="scan",
+            field=models.ForeignKey(
+                null=True, on_delete=django.db.models.deletion.CASCADE, to="scanners.InternetNLScan"
+            ),
         ),
         migrations.CreateModel(
-            name='AccountInternetNLScanLog',
+            name="AccountInternetNLScanLog",
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('state', models.CharField(blank=True, default='',
-                                           help_text='The state that was registered at a certain moment in time.', max_length=255)),
-                ('at_when', models.DateTimeField(blank=True, null=True)),
-                ('scan', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE,
-                                           to='internet_nl_dashboard.AccountInternetNLScan')),
+                ("id", models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
+                (
+                    "state",
+                    models.CharField(
+                        blank=True,
+                        default="",
+                        help_text="The state that was registered at a certain moment in time.",
+                        max_length=255,
+                    ),
+                ),
+                ("at_when", models.DateTimeField(blank=True, null=True)),
+                (
+                    "scan",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE, to="internet_nl_dashboard.AccountInternetNLScan"
+                    ),
+                ),
             ],
         ),
     ]

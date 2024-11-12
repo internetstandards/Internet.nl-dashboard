@@ -38,7 +38,11 @@ def remove_tag(account: Account, url_ids: List[int], urllist_id: int, tag: str) 
 
 def tags_in_urllist(account: Account, urllist_id: int) -> List[str]:
 
-    return list(sorted(Tag.objects.all().filter(
-        taggedurlinurllist__urllist=urllist_id,
-        taggedurlinurllist__urllist__account=account
-    ).values_list('name', flat=True).distinct()))
+    return list(
+        sorted(
+            Tag.objects.all()
+            .filter(taggedurlinurllist__urllist=urllist_id, taggedurlinurllist__urllist__account=account)
+            .values_list("name", flat=True)
+            .distinct()
+        )
+    )

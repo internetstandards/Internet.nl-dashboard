@@ -7,14 +7,19 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('internet_nl_dashboard', '0003_uploadlog'),
+        ("internet_nl_dashboard", "0003_uploadlog"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='uploadlog',
-            name='user',
-            field=models.ForeignKey(blank=True, help_text='What user performed this upload.', null=True,
-                                    on_delete=django.db.models.deletion.CASCADE, to='internet_nl_dashboard.DashboardUser'),
+            model_name="uploadlog",
+            name="user",
+            field=models.ForeignKey(
+                blank=True,
+                help_text="What user performed this upload.",
+                null=True,
+                on_delete=django.db.models.deletion.CASCADE,
+                to="internet_nl_dashboard.DashboardUser",
+            ),
         ),
     ]

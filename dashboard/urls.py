@@ -23,9 +23,9 @@ from two_factor.urls import urlpatterns as tf_urls
 
 from . import __version__
 
-admin.site.site_header = f'Dashboard Admin {__version__}'
+admin.site.site_header = f"Dashboard Admin {__version__}"
 # Don't show version in title, as that might be shared without auth
-admin.site.site_title = 'Dashboard Admin'
+admin.site.site_title = "Dashboard Admin"
 
 
 def trigger_error(request):
@@ -34,13 +34,13 @@ def trigger_error(request):
 
 
 admin_urls = [
-    path('sentry-debug/', trigger_error),
-    re_path(r'^admin/', admin.site.urls),
-    re_path(r'^admin/doc/', include('django.contrib.admindocs.urls')),
-    re_path(r'^admin/jet/', include('jet.urls', 'jet')),
-    re_path(r'^admin/jet/dashboard/', include('jet.dashboard.urls', 'jet-dashboard')),
-    re_path(r'^nested_admin/', include('nested_admin.urls')),
-    re_path(r'^activity/', include('actstream.urls')),
+    path("sentry-debug/", trigger_error),
+    re_path(r"^admin/", admin.site.urls),
+    re_path(r"^admin/doc/", include("django.contrib.admindocs.urls")),
+    re_path(r"^admin/jet/", include("jet.urls", "jet")),
+    re_path(r"^admin/jet/dashboard/", include("jet.dashboard.urls", "jet-dashboard")),
+    re_path(r"^nested_admin/", include("nested_admin.urls")),
+    re_path(r"^activity/", include("actstream.urls")),
 ]
 
 
@@ -49,11 +49,10 @@ def not_supported(**args):
 
 
 frontend_urls = [
-    path('', include('dashboard.internet_nl_dashboard.urls')),
+    path("", include("dashboard.internet_nl_dashboard.urls")),
     # Enabling the default auth logins can bypass the two factor authentication. Don't enable it.
     # path('', include('django.contrib.auth.urls')),
-    re_path(r'', include(tf_urls)),
-
+    re_path(r"", include(tf_urls)),
     # allauth also uses 429.html template when the included rate limits are reached. You can try this
     # by submitting a bunch of password changes in a second or so.
     # this exposes a password reset and change form.
@@ -62,9 +61,12 @@ frontend_urls = [
     # with the accounts we currently have. So social login might be feasible, but the normal log
     # not yet. Also disable reauthenticate
     #  -> this view is mandatory to register, but directing it to the wrong page on purpose
-    path("accounts/password/", not_supported, name="account_login", ),
+    path(
+        "accounts/password/",
+        not_supported,
+        name="account_login",
+    ),
     path("accounts/password/reset/", not_supported, name="account_reset_password"),
-
     # https://github.com/pennersr/django-allauth/issues/468
     path(
         "accounts/password/change/",
@@ -75,7 +77,6 @@ frontend_urls = [
         ),
         name="account_change_password",
     ),
-
     # These have not yet been requested and not tested how the work and if they are useful.
     # path(
     #     "accounts/password/reset/", password_reset, name="account_reset_password"

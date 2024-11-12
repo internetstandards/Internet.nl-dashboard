@@ -6,13 +6,13 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('internet_nl_dashboard', '0010_subdomaindiscoveryscan'),
+        ("internet_nl_dashboard", "0010_subdomaindiscoveryscan"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='subdomaindiscoveryscan',
-            name='state_message',
+            model_name="subdomaindiscoveryscan",
+            name="state_message",
             field=models.CharField(blank=True, max_length=200),
         ),
     ]

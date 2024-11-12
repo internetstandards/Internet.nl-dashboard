@@ -7,9 +7,13 @@ from unittest import mock
 
 from requests import Response
 
-from dashboard.internet_nl_dashboard.logic.internet_nl_translations import (convert_vue_i18n_format, get_locale_content,
-                                                                            get_po_as_dictionary_v2, load_as_po_file,
-                                                                            translate_field)
+from dashboard.internet_nl_dashboard.logic.internet_nl_translations import (
+    convert_vue_i18n_format,
+    get_locale_content,
+    get_po_as_dictionary_v2,
+    load_as_po_file,
+    translate_field,
+)
 
 path = Path(__file__).parent
 
@@ -21,7 +25,7 @@ perfect_response._content = "yolo"
 
 
 def file_get_contents(filepath):
-    with open(filepath, 'r') as content_file:
+    with open(filepath, "r") as content_file:
         return content_file.read()
 
 
@@ -31,22 +35,22 @@ def mocked_requests_get(*args, **kwargs):
             self.content = content
             self.status_code = status_code
 
-    if args[0] == 'https://raw.githubusercontent.com/internetstandards/Internet.nl/master/translations/nl/main.po':
-        return MockResponse(file_get_contents(f'{path}/translation files/main.po').encode(), 200)
+    if args[0] == "https://raw.githubusercontent.com/internetstandards/Internet.nl/master/translations/nl/main.po":
+        return MockResponse(file_get_contents(f"{path}/translation files/main.po").encode(), 200)
 
     return MockResponse(None, 404)
 
 
-@mock.patch('requests.get', side_effect=mocked_requests_get)
+@mock.patch("requests.get", side_effect=mocked_requests_get)
 def test_convert_vue_i18n_format(db, tmpdir) -> None:
 
-    content = get_locale_content('nl')
+    content = get_locale_content("nl")
     assert len(content) > 1000
 
     list_po_content = load_as_po_file(content)
     assert len(list_po_content) > 10
 
-    formatted = convert_vue_i18n_format('nl', list_po_content)
+    formatted = convert_vue_i18n_format("nl", list_po_content)
     assert len(formatted) > 1000
 
     # create the expected directory structure
@@ -63,16 +67,16 @@ def test_convert_vue_i18n_format(db, tmpdir) -> None:
 
 def test_field_translation():
     # Load dutch translation for a field
-    translation_dictionary = get_po_as_dictionary_v2('nl')
-    translated = translate_field('internet_nl_web_https_tls_version', translation_dictionary=translation_dictionary)
+    translation_dictionary = get_po_as_dictionary_v2("nl")
+    translated = translate_field("internet_nl_web_https_tls_version", translation_dictionary=translation_dictionary)
     assert translated == "TLS-versie"
 
     # Now verify that we can live switch to an english translation
-    translation_dictionary = get_po_as_dictionary_v2('en')
-    translated = translate_field('internet_nl_web_https_tls_version', translation_dictionary=translation_dictionary)
+    translation_dictionary = get_po_as_dictionary_v2("en")
+    translated = translate_field("internet_nl_web_https_tls_version", translation_dictionary=translation_dictionary)
     assert translated == "TLS version"
 
     # And switch back to dutch again
-    translation_dictionary = get_po_as_dictionary_v2('nl')
-    translated = translate_field('internet_nl_web_https_tls_version', translation_dictionary=translation_dictionary)
+    translation_dictionary = get_po_as_dictionary_v2("nl")
+    translated = translate_field("internet_nl_web_https_tls_version", translation_dictionary=translation_dictionary)
     assert translated == "TLS-versie"

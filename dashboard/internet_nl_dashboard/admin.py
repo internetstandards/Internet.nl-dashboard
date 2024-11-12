@@ -27,11 +27,20 @@ from dashboard.internet_nl_dashboard import models
 from dashboard.internet_nl_dashboard.forms import CustomAccountModelForm
 from dashboard.internet_nl_dashboard.logic.domains import scan_urllist_now_ignoring_business_rules
 from dashboard.internet_nl_dashboard.logic.mail import send_scan_finished_mails
-from dashboard.internet_nl_dashboard.models import (Account, AccountInternetNLScan, AccountInternetNLScanLog,
-                                                    DashboardUser, TaggedUrlInUrllist, UploadLog, UrlList)
-from dashboard.internet_nl_dashboard.scanners.scan_internet_nl_per_account import (creating_report,
-                                                                                   progress_running_scan,
-                                                                                   recover_and_retry)
+from dashboard.internet_nl_dashboard.models import (
+    Account,
+    AccountInternetNLScan,
+    AccountInternetNLScanLog,
+    DashboardUser,
+    TaggedUrlInUrllist,
+    UploadLog,
+    UrlList,
+)
+from dashboard.internet_nl_dashboard.scanners.scan_internet_nl_per_account import (
+    creating_report,
+    progress_running_scan,
+    recover_and_retry,
+)
 
 log = logging.getLogger(__package__)
 
@@ -46,7 +55,7 @@ class TooManyRecordsPaginator(Paginator):
 
 
 def only_alphanumeric(data: str) -> str:
-    return re.sub(r'[^A-Za-z0-9 ]+', '', data)
+    return re.sub(r"[^A-Za-z0-9 ]+", "", data)
 
 
 class MyPeriodicTaskForm(PeriodicTaskForm):
@@ -66,7 +75,7 @@ class MyPeriodicTaskForm(PeriodicTaskForm):
     """
 
     def clean(self):
-        print('cleaning')
+        print("cleaning")
         cleaned_data = super().clean()
 
         # if not self.cleaned_data['last_run_at']:
@@ -78,12 +87,25 @@ class MyPeriodicTaskForm(PeriodicTaskForm):
 class IEPeriodicTaskAdmin(PeriodicTaskAdmin, ImportExportModelAdmin):
     # most / all time schedule functions in celery beat are moot. So the code below likely makes no sense.
 
-    list_display = ('name_safe', 'enabled', 'interval', 'crontab', 'next',  'due',
-                    'precise', 'last_run_at', 'queue', 'task', 'args', 'last_run', 'runs')
+    list_display = (
+        "name_safe",
+        "enabled",
+        "interval",
+        "crontab",
+        "next",
+        "due",
+        "precise",
+        "last_run_at",
+        "queue",
+        "task",
+        "args",
+        "last_run",
+        "runs",
+    )
 
-    list_filter = ('enabled', 'queue', 'crontab')
+    list_filter = ("enabled", "queue", "crontab")
 
-    search_fields = ('name', 'queue', 'args')
+    search_fields = ("name", "queue", "args")
 
     form = MyPeriodicTaskForm
 
@@ -150,7 +172,7 @@ admin.site.register(CrontabSchedule, IECrontabSchedule)
 class DashboardUserInline(CompactInline):
     model = DashboardUser
     can_delete = False
-    verbose_name_plural = 'Dashboard Users'
+    verbose_name_plural = "Dashboard Users"
 
 
 # Thank you:
@@ -168,21 +190,30 @@ class GroupResource(resources.ModelResource):
 
 class UserAdmin(BaseUserAdmin, ImportExportModelAdmin):
     resource_class = UserResource
-    inlines = (DashboardUserInline, )
+    inlines = (DashboardUserInline,)
 
-    list_display = ('username', 'in_account', 'first_name', 'last_name',
-                    'email', 'is_active', 'is_staff', 'is_superuser', 'last_login')
+    list_display = (
+        "username",
+        "in_account",
+        "first_name",
+        "last_name",
+        "email",
+        "is_active",
+        "is_staff",
+        "is_superuser",
+        "last_login",
+    )
 
-    list_filter = ['is_active', 'is_staff', 'is_superuser'][::-1]
+    list_filter = ["is_active", "is_staff", "is_superuser"][::-1]
 
-    search_fields = ['username', 'dashboarduser__account__name', 'dashboarduser__account__internet_nl_api_username']
+    search_fields = ["username", "dashboarduser__account__name", "dashboarduser__account__internet_nl_api_username"]
 
     @staticmethod
     def in_account(obj):
         user = DashboardUser.objects.all().filter(user=obj).first()
 
         if not user:
-            return '-'
+            return "-"
 
         return user.account
 
@@ -207,7 +238,7 @@ class CustomConfigForm(ConstanceForm):
 
 class ConfigAdmin(ConstanceAdmin):
     change_list_form = CustomConfigForm
-    change_list_template = 'admin/config/settings.html'
+    change_list_template = "admin/config/settings.html"
 
 
 admin.site.unregister([Config])
@@ -218,10 +249,10 @@ admin.site.register([Config], ConfigAdmin)
 class AccountAdmin(ImportExportModelAdmin, admin.ModelAdmin):
     form = CustomAccountModelForm
 
-    list_display = ('name', 'internet_nl_api_username', 'can_connect_to_internet_nl_api', 'no_of_users')
-    search_fields = ('name', 'can_connect_to_internet_nl_api')
+    list_display = ("name", "internet_nl_api_username", "can_connect_to_internet_nl_api", "no_of_users")
+    search_fields = ("name", "can_connect_to_internet_nl_api")
     # list_filter = [][::-1]
-    fields = ('name', 'report_settings', 'internet_nl_api_username', 'new_password')
+    fields = ("name", "report_settings", "internet_nl_api_username", "new_password")
 
     # cannot use the DashboardUserInline, it acts like there are three un-assigned users and it breaks the 1 to 1
     # relation with the DashboardUser to user. Perhaps because Jet doesn't understands that type of relationship
@@ -236,15 +267,17 @@ class AccountAdmin(ImportExportModelAdmin, admin.ModelAdmin):
 
     @staticmethod
     def no_of_users(obj):
-        return mark_safe(f"<a href='/admin/auth/user/?q={only_alphanumeric(obj.name)}#/tab/inline_0/'>"  # nosec
-                         f"🔎 {DashboardUser.objects.all().filter(account=obj).count()}")
+        return mark_safe(
+            f"<a href='/admin/auth/user/?q={only_alphanumeric(obj.name)}#/tab/inline_0/'>"  # nosec
+            f"🔎 {DashboardUser.objects.all().filter(account=obj).count()}"
+        )
 
     def save_model(self, request, obj, form, change):
 
         # If the internet_nl_api_password changed, encrypt the new value.
         # Example usage and docs: https://github.com/pyca/cryptography
-        if 'new_password' in form.changed_data:
-            obj.internet_nl_api_password = Account.encrypt_password(form.cleaned_data.get('new_password'))
+        if "new_password" in form.changed_data:
+            obj.internet_nl_api_password = Account.encrypt_password(form.cleaned_data.get("new_password"))
 
         # check if the username / password combination is valid
 
@@ -262,23 +295,50 @@ class AccountAdmin(ImportExportModelAdmin, admin.ModelAdmin):
 
     # suppressing error: "Callable[[Any, Any, Any], Any]" has no attribute "short_description"
     # This comes from the manual... so, well.
-    check_api_connectivity.short_description = "Check API credentials"   # type: ignore
-    actions.append('check_api_connectivity')
+    check_api_connectivity.short_description = "Check API credentials"  # type: ignore
+    actions.append("check_api_connectivity")
 
 
 @admin.register(UrlList)
 class UrlListAdmin(ImportExportModelAdmin, admin.ModelAdmin):
 
-    list_display = ('pk', 'name', 'account', 'scan_type', 'no_of_urls', 'no_of_endpoints',
-                    'automated_scan_frequency', 'last_manual_scan', 'is_deleted', 'is_scan_now_available')
-    search_fields = ('name', 'account__name')
-    list_filter = ['account', 'is_deleted', 'scan_type', 'enable_scans', 'automated_scan_frequency',
-                   'last_manual_scan'][::-1]
+    list_display = (
+        "pk",
+        "name",
+        "account",
+        "scan_type",
+        "no_of_urls",
+        "no_of_endpoints",
+        "automated_scan_frequency",
+        "last_manual_scan",
+        "is_deleted",
+        "is_scan_now_available",
+    )
+    search_fields = ("name", "account__name")
+    list_filter = [
+        "account",
+        "is_deleted",
+        "scan_type",
+        "enable_scans",
+        "automated_scan_frequency",
+        "last_manual_scan",
+    ][::-1]
 
     # we don't add the urls as that might cause a deletion by mistake
-    fields = ('name', 'account', 'scan_type', 'enable_scans', 'automated_scan_frequency', 'scheduled_next_scan',
-              'last_manual_scan', 'is_deleted', 'deleted_on', 'enable_report_sharing_page',
-              'automatically_share_new_reports', 'default_public_share_code_for_new_reports')
+    fields = (
+        "name",
+        "account",
+        "scan_type",
+        "enable_scans",
+        "automated_scan_frequency",
+        "scheduled_next_scan",
+        "last_manual_scan",
+        "is_deleted",
+        "deleted_on",
+        "enable_report_sharing_page",
+        "automatically_share_new_reports",
+        "default_public_share_code_for_new_reports",
+    )
 
     @staticmethod
     def no_of_urls(obj):
@@ -286,8 +346,11 @@ class UrlListAdmin(ImportExportModelAdmin, admin.ModelAdmin):
 
     @staticmethod
     def no_of_endpoints(obj):
-        return Endpoint.objects.all().filter(url__urls_in_dashboard_list_2=obj, is_dead=False,
-                                             url__is_dead=False, url__not_resolvable=False).count()
+        return (
+            Endpoint.objects.all()
+            .filter(url__urls_in_dashboard_list_2=obj, is_dead=False, url__is_dead=False, url__not_resolvable=False)
+            .count()
+        )
 
     actions = []
 
@@ -300,22 +363,22 @@ class UrlListAdmin(ImportExportModelAdmin, admin.ModelAdmin):
 
     # suppressing error: "Callable[[Any, Any, Any], Any]" has no attribute "short_description"
     # This comes from the manual... so, well.
-    scan_urllist_now.short_description = "Scan now (bypassing quota and business rules)"   # type: ignore
-    actions.append('scan_urllist_now')
+    scan_urllist_now.short_description = "Scan now (bypassing quota and business rules)"  # type: ignore
+    actions.append("scan_urllist_now")
 
 
 @admin.register(TaggedUrlInUrllist)
 class TaggedUrlInUrllistAdmin(ImportExportModelAdmin, admin.ModelAdmin):
 
-    list_display = ('url', 'urllist')
-    fields = ('url', 'urllist', 'tags')
+    list_display = ("url", "urllist")
+    fields = ("url", "urllist", "tags")
 
 
 class InternetNLV2StateLogInline(nested_admin.NestedTabularInline):  # pylint: disable=no-member too-few-public-methods
     model = InternetNLV2StateLog
     can_delete = False
 
-    readonly_fields = ('state', 'state_message', 'last_state_check', 'at_when')
+    readonly_fields = ("state", "state_message", "last_state_check", "at_when")
 
     def has_add_permission(self, *args, **kwargs):
         return False
@@ -325,7 +388,7 @@ class AccountInternetNLScanLogInl(nested_admin.NestedTabularInline):  # pylint: 
     model = AccountInternetNLScanLog
     can_delete = False
     # readonly_fields = ('scan', 'account', 'urllist', 'log')
-    readonly_fields = ('state', 'at_when')
+    readonly_fields = ("state", "at_when")
     # todo: restrict any form of editing and creating things here.
 
     def has_add_permission(self, *args, **kwargs):
@@ -337,7 +400,7 @@ class AccountInternetNLScanInline(nested_admin.NestedTabularInline):  # pylint: 
     can_delete = False
     inlines = [AccountInternetNLScanLogInl]
 
-    readonly_fields = ('account', 'urllist', 'report', 'state', 'started_on', 'finished_on', 'state_changed_on')
+    readonly_fields = ("account", "urllist", "report", "state", "started_on", "finished_on", "state_changed_on")
 
     def has_add_permission(self, *args, **kwargs):
         return False
@@ -350,24 +413,33 @@ class AccountInternetNLScanAdmin(ImportExportModelAdmin, admin.ModelAdmin):
         qs = super().get_queryset(request)
 
         # prefetch account, scan and urllist, as loading this takes ages because of subqueries.
-        qs = qs.select_related('account', 'urllist', 'scan')
+        qs = qs.select_related("account", "urllist", "scan")
 
         # this column prevents loading of long lists
-        qs = qs.defer('scan__subject_urls', 'scan__retrieved_scan_report', 'scan__retrieved_scan_report_technical')
+        qs = qs.defer("scan__subject_urls", "scan__retrieved_scan_report", "scan__retrieved_scan_report_technical")
 
         return qs
 
     inlines = [AccountInternetNLScanLogInl]
 
-    list_display = ('id', 'account', 'account__name', 'state', 'internetnl_scan', 'internetnl_scan_type',
-                    'urllist', 'started_on', 'finished_on')
+    list_display = (
+        "id",
+        "account",
+        "account__name",
+        "state",
+        "internetnl_scan",
+        "internetnl_scan_type",
+        "urllist",
+        "started_on",
+        "finished_on",
+    )
 
-    list_filter = ['account', 'urllist', 'state', 'started_on', 'finished_on'][::-1]
-    search_fields = ('urllist__name', 'account__name')
+    list_filter = ["account", "urllist", "state", "started_on", "finished_on"][::-1]
+    search_fields = ("urllist__name", "account__name")
 
-    fields = ('state', 'state_changed_on', 'account', 'scan', 'urllist', 'started_on', 'finished_on')
+    fields = ("state", "state_changed_on", "account", "scan", "urllist", "started_on", "finished_on")
 
-    readonly_fields = ('account', 'scan', 'urllist')
+    readonly_fields = ("account", "scan", "urllist")
 
     @staticmethod
     def account__name(obj):
@@ -387,8 +459,9 @@ class AccountInternetNLScanAdmin(ImportExportModelAdmin, admin.ModelAdmin):
         for scan in queryset:
             recover_and_retry.apply_async([scan.id])
         self.message_user(request, "Rolling back asynchronously. May take a while.")
-    attempt_rollback.short_description = "Attempt rollback (async)"   # type: ignore
-    actions.append('attempt_rollback')
+
+    attempt_rollback.short_description = "Attempt rollback (async)"  # type: ignore
+    actions.append("attempt_rollback")
 
     def progress_scan(self, request, queryset):
         log.debug("Attempting to progress scan.")
@@ -398,8 +471,9 @@ class AccountInternetNLScanAdmin(ImportExportModelAdmin, admin.ModelAdmin):
             log.debug(f"Created task {tasks}.")
             tasks.apply_async()
         self.message_user(request, "Attempting to progress scans (async).")
-    progress_scan.short_description = "Progress scan (async)"   # type: ignore
-    actions.append('progress_scan')
+
+    progress_scan.short_description = "Progress scan (async)"  # type: ignore
+    actions.append("progress_scan")
 
     def send_finish_mail(self, request, queryset):
         sent = 0
@@ -408,8 +482,9 @@ class AccountInternetNLScanAdmin(ImportExportModelAdmin, admin.ModelAdmin):
                 sent += 1
                 send_scan_finished_mails(scan.id)
         self.message_user(request, f"A total of {sent} mails have been sent.")
-    send_finish_mail.short_description = "Queue finished mail (finished only)"   # type: ignore
-    actions.append('send_finish_mail')
+
+    send_finish_mail.short_description = "Queue finished mail (finished only)"  # type: ignore
+    actions.append("send_finish_mail")
 
     # This is used to create ad-hoc reports for testing the send_finish_mail function.
     def create_extra_report(self, request, queryset):
@@ -419,8 +494,8 @@ class AccountInternetNLScanAdmin(ImportExportModelAdmin, admin.ModelAdmin):
         group(tasks).apply_async()
         self.message_user(request, "Creating additional reports (async).")
 
-    create_extra_report.short_description = "Create additional report (async) (finished only)"   # type: ignore
-    actions.append('create_extra_report')
+    create_extra_report.short_description = "Create additional report (async) (finished only)"  # type: ignore
+    actions.append("create_extra_report")
 
 
 class InternetNLV2ScanAdminNew(InternetNLV2ScanAdmin, nested_admin.NestedModelAdmin):  # pylint: disable=no-member
@@ -430,7 +505,7 @@ class InternetNLV2ScanAdminNew(InternetNLV2ScanAdmin, nested_admin.NestedModelAd
         qs = super().get_queryset(request)
 
         # this column prevents loading of long lists
-        qs = qs.defer('subject_urls', 'retrieved_scan_report', 'retrieved_scan_report_technical')
+        qs = qs.defer("subject_urls", "retrieved_scan_report", "retrieved_scan_report_technical")
 
         return qs
 
@@ -443,16 +518,23 @@ class InternetNLV2ScanAdminNew(InternetNLV2ScanAdmin, nested_admin.NestedModelAd
         "state_message",
         "last_state_check",
         "last_state_change",
-        "account_scan"
+        "account_scan",
     )
 
     list_filter = InternetNLV2ScanAdmin.list_filter + ()
 
     def account_scan(self, obj):
-        account = AccountInternetNLScan.objects.all().filter(scan=obj).only(
-            'id', 'account__internet_nl_api_username', 'urllist__name').first()
-        return f"{account.id} - {account.account.internet_nl_api_username} - " \
-               f"{account.urllist.name}" if account else None
+        account = (
+            AccountInternetNLScan.objects.all()
+            .filter(scan=obj)
+            .only("id", "account__internet_nl_api_username", "urllist__name")
+            .first()
+        )
+        return (
+            f"{account.id} - {account.account.internet_nl_api_username} - " f"{account.urllist.name}"
+            if account
+            else None
+        )
 
     inlines = [InternetNLV2StateLogInline, AccountInternetNLScanInline]
 
@@ -462,7 +544,7 @@ def create_modeladmin(modeladmin, model, name=None):
     # In this case we can create WhoisOrganization which only allows easy overview and record editing
     # of registrar information.
     # https://stackoverflow.com/questions/2223375/multiple-modeladmins-views-for-same-model-in-django-admin
-    class Meta:    # pylint: disable=too-few-public-methods
+    class Meta:  # pylint: disable=too-few-public-methods
         proxy = True
         app_label = model._meta.app_label
 
@@ -481,26 +563,26 @@ create_modeladmin(InternetNLV2ScanAdminNew, name="internetNlScanInspection", mod
 class AccountInternetNLScanLogAdmin(ImportExportModelAdmin, admin.ModelAdmin):
     paginator = TooManyRecordsPaginator
 
-    list_display = ('id', 'scan', 'state', 'at_when')
-    list_filter = ['scan', 'state', 'at_when'][::-1]
-    search_fields = ('scan__urllist__name', 'scan__account__name')
+    list_display = ("id", "scan", "state", "at_when")
+    list_filter = ["scan", "state", "at_when"][::-1]
+    search_fields = ("scan__urllist__name", "scan__account__name")
     fields = list_display
 
 
 @admin.register(UploadLog)
 class UploadLogAdmin(ImportExportModelAdmin, admin.ModelAdmin):
-    list_display = ('original_filename', 'internal_filename', 'status', 'message', 'user', 'upload_date', 'filesize')
-    search_fields = ('internal_filename', 'orginal_filename', 'status')
-    list_filter = ['message', 'upload_date', 'user'][::-1]
+    list_display = ("original_filename", "internal_filename", "status", "message", "user", "upload_date", "filesize")
+    search_fields = ("internal_filename", "orginal_filename", "status")
+    list_filter = ["message", "upload_date", "user"][::-1]
 
-    fields = ('original_filename', 'internal_filename', 'status', 'message', 'user', 'upload_date', 'filesize')
+    fields = ("original_filename", "internal_filename", "status", "message", "user", "upload_date", "filesize")
 
 
 @admin.register(models.SubdomainDiscoveryScan)
 class SubdomainDiscoveryScanAdmin(ImportExportModelAdmin, admin.ModelAdmin):
-    list_display = ('urllist', 'state', 'state_changed_on', 'state_message')
+    list_display = ("urllist", "state", "state_changed_on", "state_message")
     fields = ("urllist", "state", "state_changed_on", "state_message", "domains_discovered")
-    list_filter = ('state', 'state_changed_on', "state_message")
+    list_filter = ("state", "state_changed_on", "state_message")
 
 
 @admin.register(models.UrlListReport)
@@ -508,8 +590,7 @@ class UrlListReportAdmin(ImportExportModelAdmin, admin.ModelAdmin):
 
     @staticmethod
     def inspect_list(obj):
-        return format_html('<a href="../../internet_nl_dashboard/urllist/{id}/change">inspect</a>',
-                           id=format(obj.id))
+        return format_html('<a href="../../internet_nl_dashboard/urllist/{id}/change">inspect</a>', id=format(obj.id))
 
     # do NOT load the calculation field, as that will be slow.
     # https://stackoverflow.com/questions/34774028/how-to-ignore-loading-huge-fields-in-django-admin-list-display
@@ -520,60 +601,69 @@ class UrlListReportAdmin(ImportExportModelAdmin, admin.ModelAdmin):
         qs = qs.defer("calculation")
         return qs
 
-    list_display = ('urllist', 'average_internet_nl_score', 'high', 'medium', 'low', 'ok', 'total_endpoints',
-                    'ok_endpoints', 'is_publicly_shared', 'is_shared_on_homepage', 'at_when', 'inspect_list')
-    search_fields = ['at_when']
-    list_filter = ['urllist', 'at_when', 'is_publicly_shared'][::-1]
-    fields = ('urllist',
-
-              'report_type',
-              'is_publicly_shared',
-              'is_shared_on_homepage',
-              'public_report_code',
-              'public_share_code',
-
-              'at_when',
-              'calculation',
-              'average_internet_nl_score',
-
-              'total_endpoints',
-              'total_issues',
-
-              'high',
-              'medium',
-              'low',
-              'ok',
-              'high_endpoints',
-              'medium_endpoints',
-              'low_endpoints',
-              'ok_endpoints',
-              'total_url_issues',
-              'url_issues_high',
-              'url_issues_medium',
-              'url_issues_low',
-              'url_ok',
-              'total_endpoint_issues',
-              'endpoint_issues_high',
-              'endpoint_issues_medium',
-              'endpoint_issues_low',
-              'endpoint_ok',
-              'explained_high',
-              'explained_medium',
-              'explained_low',
-              'explained_high_endpoints',
-              'explained_medium_endpoints',
-              'explained_low_endpoints',
-              'explained_total_url_issues',
-              'explained_url_issues_high',
-              'explained_url_issues_medium',
-              'explained_url_issues_low',
-              'explained_total_endpoint_issues',
-              'explained_endpoint_issues_high',
-              'explained_endpoint_issues_medium',
-              'explained_endpoint_issues_low',
-              )
+    list_display = (
+        "urllist",
+        "average_internet_nl_score",
+        "high",
+        "medium",
+        "low",
+        "ok",
+        "total_endpoints",
+        "ok_endpoints",
+        "is_publicly_shared",
+        "is_shared_on_homepage",
+        "at_when",
+        "inspect_list",
+    )
+    search_fields = ["at_when"]
+    list_filter = ["urllist", "at_when", "is_publicly_shared"][::-1]
+    fields = (
+        "urllist",
+        "report_type",
+        "is_publicly_shared",
+        "is_shared_on_homepage",
+        "public_report_code",
+        "public_share_code",
+        "at_when",
+        "calculation",
+        "average_internet_nl_score",
+        "total_endpoints",
+        "total_issues",
+        "high",
+        "medium",
+        "low",
+        "ok",
+        "high_endpoints",
+        "medium_endpoints",
+        "low_endpoints",
+        "ok_endpoints",
+        "total_url_issues",
+        "url_issues_high",
+        "url_issues_medium",
+        "url_issues_low",
+        "url_ok",
+        "total_endpoint_issues",
+        "endpoint_issues_high",
+        "endpoint_issues_medium",
+        "endpoint_issues_low",
+        "endpoint_ok",
+        "explained_high",
+        "explained_medium",
+        "explained_low",
+        "explained_high_endpoints",
+        "explained_medium_endpoints",
+        "explained_low_endpoints",
+        "explained_total_url_issues",
+        "explained_url_issues_high",
+        "explained_url_issues_medium",
+        "explained_url_issues_low",
+        "explained_total_endpoint_issues",
+        "explained_endpoint_issues_high",
+        "explained_endpoint_issues_medium",
+        "explained_endpoint_issues_low",
+    )
 
     ordering = ["-at_when"]
-    readonly_fields = ['calculation']
+    readonly_fields = ["calculation"]
 
     save_as = True

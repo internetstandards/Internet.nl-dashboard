@@ -9,9 +9,11 @@ from sentry_sdk.integrations.django import DjangoIntegration
 from sentry_sdk.integrations.redis import RedisIntegration
 
 from . import __version__
+
 from .settings_constance import (CONSTANCE_ADDITIONAL_FIELDS, CONSTANCE_BACKEND, CONSTANCE_CONFIG,
                                  CONSTANCE_CONFIG_FIELDSETS)   # noqa  # pylint: disable=unused-import
 from .settings_jet import JET_SIDE_MENU_COMPACT, JET_SIDE_MENU_ITEMS  # noqa  # pylint: disable=unused-import
+
 
 # import all of this and don't auto-lint it away because there are no references here.
 # most code refers to these settings.
@@ -43,98 +45,84 @@ SETTINGS_PATH = os.path.normpath(os.path.dirname(__file__))
 SECRET_KEY = get_secret_key_from_file_or_env()
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = os.environ.get('DEBUG', False)
+DEBUG = os.environ.get("DEBUG", False)
 if DEBUG:
-    print('Django debugging is enabled.')
+    print("Django debugging is enabled.")
 
-ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', 'localhost,127.0.0.1,::1').split(',')
+ALLOWED_HOSTS = os.environ.get("ALLOWED_HOSTS", "localhost,127.0.0.1,::1").split(",")
 
 # Application definition
 
 INSTALLED_APPS = [
     # Constance
-    'constance',
+    "constance",
     # not needed since 3.0
     # 'constance.backends.database',
-
     # Jet
-    'jet.dashboard',
-    'jet',
-    'nested_admin',
-
+    "jet.dashboard",
+    "jet",
+    "nested_admin",
     "taggit",
-
     # Import Export
-    'import_export',
-
+    "import_export",
     # Standard Django
-    'django.contrib.admin',
-    'django.contrib.auth',
-    'django.contrib.contenttypes',
-    'django.contrib.sessions',
-    'django.contrib.messages',
-    'django.contrib.staticfiles',
-    'django.contrib.humanize',
-
+    "django.contrib.admin",
+    "django.contrib.auth",
+    "django.contrib.contenttypes",
+    "django.contrib.sessions",
+    "django.contrib.messages",
+    "django.contrib.staticfiles",
+    "django.contrib.humanize",
     # Allow a client to access the data:
-    'corsheaders',
-
+    "corsheaders",
     # Periodic tasks
-    'django_celery_beat',
-
+    "django_celery_beat",
     # Web Security Map (todo: minimize the subset)
     # The reason (model) why it's included is in the comments.
-    'websecmap.app',  # Job
-    'websecmap.api',
-    'websecmap.organizations',  # Url
-    'websecmap.scanners',  # Endpoint, EndpointGenericScan, UrlGenericScan
-    'websecmap.reporting',  # Various reporting functions (might be not needed)
-    'websecmap.map',  # because some scanners are intertwined with map configurations. That needs to go.
-    'websecmap.game',
-
+    "websecmap.app",  # Job
+    "websecmap.api",
+    "websecmap.organizations",  # Url
+    "websecmap.scanners",  # Endpoint, EndpointGenericScan, UrlGenericScan
+    "websecmap.reporting",  # Various reporting functions (might be not needed)
+    "websecmap.map",  # because some scanners are intertwined with map configurations. That needs to go.
+    "websecmap.game",
     # Custom Apps
     # These apps overwrite whatever is declared above, for example the user information.
     # Yet, it does not overwrite management commands.
-    'dashboard.internet_nl_dashboard',
-
+    "dashboard.internet_nl_dashboard",
     # Two factor auth
-    'phonenumber_field',
-    'django_otp',
-    'django_otp.plugins.otp_static',
-    'django_otp.plugins.otp_totp',
-    'two_factor',
+    "phonenumber_field",
+    "django_otp",
+    "django_otp.plugins.otp_static",
+    "django_otp.plugins.otp_totp",
+    "two_factor",
     # Django activity stream
     # https://django-activity-stream.readthedocs.io/en/latest/installation.html
-    'django.contrib.sites',
-    'actstream',
-
+    "django.contrib.sites",
+    "actstream",
     # Sending templated and translatable emails
-    'django_mail_admin',
-
+    "django_mail_admin",
     # allauth
-    'allauth',
-    'allauth.account',
-    'allauth.socialaccount',
-
+    "allauth",
+    "allauth.account",
+    "allauth.socialaccount",
 ]
 
 # django activity stream wants a site-id:
 SITE_ID = 1
 
 MIDDLEWARE = [
-    'django.middleware.security.SecurityMiddleware',
-    'django.contrib.sessions.middleware.SessionMiddleware',
-    'django.middleware.locale.LocaleMiddleware',
-    'corsheaders.middleware.CorsMiddleware',
-    'django.middleware.common.CommonMiddleware',
-    'django.middleware.csrf.CsrfViewMiddleware',
-    'django.contrib.auth.middleware.AuthenticationMiddleware',
-    'django.contrib.messages.middleware.MessageMiddleware',
-    'django.middleware.clickjacking.XFrameOptionsMiddleware',
-
+    "django.middleware.security.SecurityMiddleware",
+    "django.contrib.sessions.middleware.SessionMiddleware",
+    "django.middleware.locale.LocaleMiddleware",
+    "corsheaders.middleware.CorsMiddleware",
+    "django.middleware.common.CommonMiddleware",
+    "django.middleware.csrf.CsrfViewMiddleware",
+    "django.contrib.auth.middleware.AuthenticationMiddleware",
+    "django.contrib.messages.middleware.MessageMiddleware",
+    "django.middleware.clickjacking.XFrameOptionsMiddleware",
     # Two factor Auth
-    'django_otp.middleware.OTPMiddleware',
-
+    "django_otp.middleware.OTPMiddleware",
     # https://docs.djangoproject.com/en/4.2/ref/middleware/#django.middleware.gzip.GZipMiddleware
     # This middleware should be placed before any other middleware that need to read or write the response body so
     # that compression happens afterward.
@@ -144,93 +132,95 @@ MIDDLEWARE = [
     "allauth.account.middleware.AccountMiddleware",
 ]
 
-ROOT_URLCONF = 'dashboard.urls'
+ROOT_URLCONF = "dashboard.urls"
 
 TEMPLATES = [
     {
-        'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [f'{BASE_DIR}/'],
-        'APP_DIRS': True,
-        'OPTIONS': {
-            'context_processors': [
-                'constance.context_processors.config',
-                'django.template.context_processors.debug',
-                'django.template.context_processors.request',
-                'django.contrib.auth.context_processors.auth',
-                'django.contrib.messages.context_processors.messages',
-                'dashboard.internet_nl_dashboard.context_processors.template_settings_processor',
+        "BACKEND": "django.template.backends.django.DjangoTemplates",
+        "DIRS": [f"{BASE_DIR}/"],
+        "APP_DIRS": True,
+        "OPTIONS": {
+            "context_processors": [
+                "constance.context_processors.config",
+                "django.template.context_processors.debug",
+                "django.template.context_processors.request",
+                "django.contrib.auth.context_processors.auth",
+                "django.contrib.messages.context_processors.messages",
+                "dashboard.internet_nl_dashboard.context_processors.template_settings_processor",
             ],
         },
     }
 ]
 
-WSGI_APPLICATION = 'dashboard.wsgi.application'
+WSGI_APPLICATION = "dashboard.wsgi.application"
 
 # Database
 # https://docs.djangoproject.com/en/2.1/ref/settings/#databases
 
 DATABASE_OPTIONS = {
-    'mysql': {'init_command': "SET character_set_connection=utf8,"
-                              "collation_connection=utf8_unicode_ci,"
-                              "sql_mode='STRICT_ALL_TABLES';"},
+    "mysql": {
+        "init_command": "SET character_set_connection=utf8,"
+        "collation_connection=utf8_unicode_ci,"
+        "sql_mode='STRICT_ALL_TABLES';"
+    },
 }
-DB_ENGINE = os.environ.get('DB_ENGINE', 'mysql')
+DB_ENGINE = os.environ.get("DB_ENGINE", "mysql")
 DATABASE_ENGINES = {
-    'mysql': 'dashboard.app.backends.mysql',
+    "mysql": "dashboard.app.backends.mysql",
 }
 DATABASES_SETTINGS = {
     # persist local database used during development (runserver)
-    'dev': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': os.environ.get('DB_NAME', 'db.sqlite3'),
+    "dev": {
+        "ENGINE": "django.db.backends.sqlite3",
+        "NAME": os.environ.get("DB_NAME", "db.sqlite3"),
     },
     # sqlite memory database for running tests without
-    'test': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': os.environ.get('DB_NAME', 'db.sqlite3'),
+    "test": {
+        "ENGINE": "django.db.backends.sqlite3",
+        "NAME": os.environ.get("DB_NAME", "db.sqlite3"),
     },
     # for production get database settings from environment (eg: docker)
-    'production': {
-        'ENGINE': DATABASE_ENGINES.get(DB_ENGINE, f'django.db.backends.{DB_ENGINE}'),
-        'NAME': os.environ.get('DB_NAME', 'dashboard'),
-        'USER': os.environ.get('DB_USER', 'dashboard'),
-        'PASSWORD': os.environ.get('DB_PASSWORD', 'dashboard'),
-        'HOST': os.environ.get('DB_HOST', 'mysql'),
-        'OPTIONS': DATABASE_OPTIONS.get(os.environ.get('DB_ENGINE', 'mysql'), {}),
+    "production": {
+        "ENGINE": DATABASE_ENGINES.get(DB_ENGINE, f"django.db.backends.{DB_ENGINE}"),
+        "NAME": os.environ.get("DB_NAME", "dashboard"),
+        "USER": os.environ.get("DB_USER", "dashboard"),
+        "PASSWORD": os.environ.get("DB_PASSWORD", "dashboard"),
+        "HOST": os.environ.get("DB_HOST", "mysql"),
+        "OPTIONS": DATABASE_OPTIONS.get(os.environ.get("DB_ENGINE", "mysql"), {}),
     },
 }
 # allow database to be selected through environment variables
-DATABASE = os.environ.get('DJANGO_DATABASE', 'dev')
-DATABASES = {'default': DATABASES_SETTINGS[DATABASE]}
+DATABASE = os.environ.get("DJANGO_DATABASE", "dev")
+DATABASES = {"default": DATABASES_SETTINGS[DATABASE]}
 
 # Password validation
 # https://docs.djangoproject.com/en/2.1/ref/settings/#auth-password-validators
 
 AUTH_PASSWORD_VALIDATORS = [
     {
-        'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
+        "NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator",
     },
     {
-        'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',
+        "NAME": "django.contrib.auth.password_validation.MinimumLengthValidator",
         # fix 514
         "OPTIONS": {
             "min_length": 16,
         },
     },
     {
-        'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator',
+        "NAME": "django.contrib.auth.password_validation.CommonPasswordValidator",
     },
     {
-        'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
+        "NAME": "django.contrib.auth.password_validation.NumericPasswordValidator",
     },
 ]
 
 # Internationalization
 # https://docs.djangoproject.com/en/2.1/topics/i18n/
 
-LANGUAGE_CODE = 'en-us'
+LANGUAGE_CODE = "en-us"
 
-TIME_ZONE = 'UTC'
+TIME_ZONE = "UTC"
 
 USE_I18N = True
 
@@ -239,99 +229,95 @@ USE_L10N = True
 
 USE_TZ = True
 
-LOCALE_PATHS = ['locale']
+LOCALE_PATHS = ["locale"]
 
-LANGUAGE_COOKIE_NAME = 'dashboard_language'
+LANGUAGE_COOKIE_NAME = "dashboard_language"
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/2.1/howto/static-files/
 
-STATIC_URL = '/static/'
+STATIC_URL = "/static/"
 
 # Absolute path to aggregate to and serve static file from.
 if DEBUG:
-    STATIC_ROOT = 'static'
+    STATIC_ROOT = "static"
 else:
-    STATIC_ROOT = os.environ.get('STATIC_ROOT', '/srv/dashboard/static/')  # noqa
+    STATIC_ROOT = os.environ.get("STATIC_ROOT", "/srv/dashboard/static/")  # noqa
 
 MEDIA_ROOT = os.environ.get("MEDIA_ROOT", f"{os.path.abspath(os.path.dirname(__file__))}/uploads/")
-UPLOAD_ROOT: str = os.environ.get('MEDIA_ROOT', f'{os.path.abspath(os.path.dirname(__file__))}/uploads/')
+UPLOAD_ROOT: str = os.environ.get("MEDIA_ROOT", f"{os.path.abspath(os.path.dirname(__file__))}/uploads/")
 
 # Two factor auth
 LOGIN_URL = "two_factor:login"
 LOGIN_REDIRECT_URL = "/"
 LOGOUT_REDIRECT_URL = LOGIN_URL
-TWO_FACTOR_QR_FACTORY = 'qrcode.image.pil.PilImage'
+TWO_FACTOR_QR_FACTORY = "qrcode.image.pil.PilImage"
 # 6 supports google authenticator
 TWO_FACTOR_TOTP_DIGITS = 6
 TWO_FACTOR_PATCH_ADMIN = True
 
 # something from websecmap
-TOOLS = {'organizations': {'import_data_dir': ''}}
+TOOLS = {"organizations": {"import_data_dir": ""}}
 
 # Encrypted fields
 FIELD_ENCRYPTION_KEY: bytes = get_field_encryption_key_from_file_or_env()
 
 LOGGING = {
-    'version': 1,
-    'disable_existing_loggers': False,
-    'handlers': {
-        'console': {
-            'class': 'logging.StreamHandler',  # sys.stdout
-            'formatter': 'color',
+    "version": 1,
+    "disable_existing_loggers": False,
+    "handlers": {
+        "console": {
+            "class": "logging.StreamHandler",  # sys.stdout
+            "formatter": "color",
         },
     },
-    'formatters': {
-        'debug': {
-            'format': '%(asctime)s\t%(levelname)-8s - %(filename)-20s:%(lineno)-4s - '
-                      '%(funcName)20s() - %(message)s',
+    "formatters": {
+        "debug": {
+            "format": "%(asctime)s\t%(levelname)-8s - %(filename)-20s:%(lineno)-4s - " "%(funcName)20s() - %(message)s",
         },
-        'color': {
-            '()': 'colorlog.ColoredFormatter',
-            'format': '%(log_color)s%(asctime)s\t%(levelname)-8s - '
-                      '%(message)s',
-            'datefmt': '%Y-%m-%d %H:%M:%S',
-            'log_colors': {
-                'DEBUG': 'green',
-                'INFO': 'white',
-                'WARNING': 'yellow',
-                'ERROR': 'red',
-                'CRITICAL': 'bold_red',
+        "color": {
+            "()": "colorlog.ColoredFormatter",
+            "format": "%(log_color)s%(asctime)s\t%(levelname)-8s - " "%(message)s",
+            "datefmt": "%Y-%m-%d %H:%M:%S",
+            "log_colors": {
+                "DEBUG": "green",
+                "INFO": "white",
+                "WARNING": "yellow",
+                "ERROR": "red",
+                "CRITICAL": "bold_red",
             },
-        }
+        },
     },
-    'loggers': {
+    "loggers": {
         # Used when there is no log defined or loaded. Disabled given we always use __package__ to log.
         # Would you enable it, all logging messages will be logged twice.
         # '': {
         #     'handlers': ['console'],
         #     'level': os.getenv('DJANGO_LOG_LEVEL', 'DEBUG'),
         # },
-
         # Default Django logging, we expect django to work, and therefore only show INFO messages.
         # It can be smart to sometimes want to see what's going on here, but not all the time.
         # https://docs.djangoproject.com/en/2.1/topics/logging/#django-s-logging-extensions
-        'django': {
-            'handlers': ['console'],
-            'level': os.getenv('DJANGO_LOG_LEVEL', 'INFO'),
+        "django": {
+            "handlers": ["console"],
+            "level": os.getenv("DJANGO_LOG_LEVEL", "INFO"),
         },
-
-        'celery.app.trace': {
-            'handlers': ['console'],
-            'level': os.getenv('CELERY_LOG_LEVEL', 'INFO'),
+        "celery.app.trace": {
+            "handlers": ["console"],
+            "level": os.getenv("CELERY_LOG_LEVEL", "INFO"),
         },
         # logging defaults to INFO, DEBUG logging is enabled in development using .envrc
-        'dashboard': {
-            'handlers': ['console'],
-            'level': os.getenv('APP_LOG_LEVEL', 'INFO'),
+        "dashboard": {
+            "handlers": ["console"],
+            "level": os.getenv("APP_LOG_LEVEL", "INFO"),
         },
-        'websecmap': {
-            'handlers': ['console'],
-            'level': os.getenv('APP_LOG_LEVEL', 'INFO'),
+        "websecmap": {
+            "handlers": ["console"],
+            "level": os.getenv("APP_LOG_LEVEL", "INFO"),
         },
-        'test': {
-            'handlers': ['console'],
-            'level': os.getenv('APP_LOG_LEVEL', 'INFO'),
+        "test": {
+            "handlers": ["console"],
+            "level": os.getenv("APP_LOG_LEVEL", "INFO"),
         },
     },
 }
@@ -350,11 +336,11 @@ CELERY_RESULT_SERIALIZER = "json"
 CELERY_EVENT_SERIALIZER = "json"
 
 # Celery config
-CELERY_BROKER_URL = os.environ.get('BROKER', 'redis://localhost:6379/0')
+CELERY_BROKER_URL = os.environ.get("BROKER", "redis://localhost:6379/0")
 CELERY_ENABLE_UTC = True
-CELERY_TIMEZONE = 'UTC'
+CELERY_TIMEZONE = "UTC"
 
-CELERY_BEAT_SCHEDULER = 'django_celery_beat.schedulers:DatabaseScheduler'
+CELERY_BEAT_SCHEDULER = "django_celery_beat.schedulers:DatabaseScheduler"
 
 CELERY_BROKER_CONNECTION_RETRY = True
 CELERY_BROKER_CONNECTION_MAX_RETRIES = 400
@@ -402,19 +388,21 @@ CELERY_BROKER_TRANSPORT_OPTIONS = {}  # type: ignore
 
 # Settings for statsd metrics collection. Statsd defaults over UDP port 8125.
 # https://django-statsd.readthedocs.io/en/latest/#celery-signals-integration
-STATSD_HOST = os.environ.get('STATSD_HOST', '127.0.0.1')
+STATSD_HOST = os.environ.get("STATSD_HOST", "127.0.0.1")
 STATSD_PORT = os.environ.get("STATSD_PORT", "8125")
-STATSD_PREFIX = 'dashboard'
+STATSD_PREFIX = "dashboard"
 STATSD_TELEGRAF = True
 # register hooks for selery tasks
 STATSD_CELERY_SIGNALS = True
 # send database query metric (in production, in development we have debug toolbar for this)
 if not DEBUG:
-    STATSD_PATCHES = ['django_statsd.patches.db', ]
+    STATSD_PATCHES = [
+        "django_statsd.patches.db",
+    ]
 
 
-OUTPUT_DIR = os.environ.get('OUTPUT_DIR', f'{os.path.abspath(os.path.dirname(__file__))}/')
-VENDOR_DIR = os.environ.get('VENDOR_DIR', f"{os.path.abspath(f'{os.path.dirname(__file__)}/../vendor/')}/")
+OUTPUT_DIR = os.environ.get("OUTPUT_DIR", f"{os.path.abspath(os.path.dirname(__file__))}/")
+VENDOR_DIR = os.environ.get("VENDOR_DIR", f"{os.path.abspath(f'{os.path.dirname(__file__)}/../vendor/')}/")
 
 if DEBUG:
     # too many sql variables....
@@ -424,42 +412,47 @@ if DEBUG:
 # Security options
 if not DEBUG:
     SESSION_COOKIE_SECURE = True  # insecure by default
-    SESSION_COOKIE_SAMESITE = 'Lax'
+    SESSION_COOKIE_SAMESITE = "Lax"
     SESSION_COOKIE_AGE = 1209600  # two weeks, could be longer
     CSRF_COOKIE_SECURE = True  # insecure by default
 
-if SENTRY_DSN := os.environ.get('SENTRY_DSN'):
+if SENTRY_DSN := os.environ.get("SENTRY_DSN"):
     # new sentry_sdk implementation, with hopes to also get exceptions from workers.
     sentry_sdk.init(  # pylint: disable=abstract-class-instantiated  # (following the documentation)  # type: ignore
         dsn=SENTRY_DSN,
         integrations=[CeleryIntegration(), DjangoIntegration(), RedisIntegration()],
-        release=__version__, send_default_pii=False)
+        release=__version__,
+        send_default_pii=False,
+    )
 
-SENTRY_ORGANIZATION = os.environ.get("SENTRY_ORGANIZATION", 'internet-cleanup-foundation')
-SENTRY_PROJECT = os.environ.get("SENTRY_PROJECT", 'internet-nl-dashboard')
-SENTRY_PROJECT_URL = f'https://sentry.io/{SENTRY_ORGANIZATION}/{SENTRY_PROJECT}'
+SENTRY_ORGANIZATION = os.environ.get("SENTRY_ORGANIZATION", "internet-cleanup-foundation")
+SENTRY_PROJECT = os.environ.get("SENTRY_PROJECT", "internet-nl-dashboard")
+SENTRY_PROJECT_URL = f"https://sentry.io/{SENTRY_ORGANIZATION}/{SENTRY_PROJECT}"
 
 # Copied from internet.nl
 
 # Supported languages.
 # NOTE: Make sure that a DNS record for each language exists.
 #       More information can be found in the README file.
-LANGUAGES = sorted([
-    ('nl', 'Dutch'),
-    ('en', 'English'),
-], key=lambda x: x[0])
+LANGUAGES = sorted(
+    [
+        ("nl", "Dutch"),
+        ("en", "English"),
+    ],
+    key=lambda x: x[0],
+)
 
 # email settings...
 # django_mail_admin.backends.OutboxEmailBackend = Store sent mails in outbox, so we know what has been sent.
 # It's not a log -> this is just a way to test things, and it will hang send_queued_mail.
 EMAIL_USE_SSL = False
 EMAIL_USE_TLS = False
-EMAIL_HOST_PASSWORD = ''  # nosec
-EMAIL_HOST_USER = ''
-EMAIL_PORT = ''
+EMAIL_HOST_PASSWORD = ""  # nosec
+EMAIL_HOST_USER = ""
+EMAIL_PORT = ""
 # As there are sanity checks, these settings need to be present during debugging too.
-EMAIL_HOST = ''
-EMAIL_BACKEND = 'django_mail_admin.backends.CustomEmailBackend'
+EMAIL_HOST = ""
+EMAIL_BACKEND = "django_mail_admin.backends.CustomEmailBackend"
 if DEBUG:
     # 25 megs for importing reports from live situations
     DATA_UPLOAD_MAX_MEMORY_SIZE = 26214400
@@ -476,26 +469,26 @@ X_FRAME_OPTIONS = "SAMEORIGIN"
 # See
 # https://github.com/adamchainz/django-cors-headers
 CORS_ALLOWED_ORIGINS = [
-    os.environ.get("CORS_ALLOWED_ACCEPT_DOMAIN", 'https://acc.dashboard.internet.nl'),
-    os.environ.get("CORS_ALLOWED_DOMAIN", 'https://dashboard.internet.nl'),
+    os.environ.get("CORS_ALLOWED_ACCEPT_DOMAIN", "https://acc.dashboard.internet.nl"),
+    os.environ.get("CORS_ALLOWED_DOMAIN", "https://dashboard.internet.nl"),
     "http://localhost:8080",
     "http://127.0.0.1:8080",
-    "http://127.0.0.1:8081"
+    "http://127.0.0.1:8081",
 ]
 
 # as soon as this is set, the vue post stuff doesn't work anymore.
 # CSRF_HEADER_NAME = 'X-CSRFToken'
 
 CORS_ALLOW_HEADERS = list(default_headers) + [
-    'cache-control',
-    'X-CSRFToken',
-    'csrfmiddlewaretoken',
+    "cache-control",
+    "X-CSRFToken",
+    "csrfmiddlewaretoken",
 ]
 
 # allow cookies to be sent as well, we have to, because there are logins and such.
 CORS_ALLOW_CREDENTIALS = True
 
-LOCKFILE_DIR = os.environ.get('LOCKFILE_DIR', f'{os.path.abspath(os.path.dirname(__file__))}/lockfiles/')
+LOCKFILE_DIR = os.environ.get("LOCKFILE_DIR", f"{os.path.abspath(os.path.dirname(__file__))}/lockfiles/")
 
 TAGGIT_CASE_INSENSITIVE = True
 
@@ -523,24 +516,23 @@ CSRF_TRUSTED_ORIGINS = [
     "http://::1",
     "http://localhost:8080",
     "http://localhost:8081",
-    os.environ.get("CSRF_TRUSTED_ORIGINS_DEFAULT_DOMAIN", 'https://internet.nl'),
-    os.environ.get("CSRF_TRUSTED_ORIGINS_WILDCARD_DOMAIN", 'https://*.internet.nl')
+    os.environ.get("CSRF_TRUSTED_ORIGINS_DEFAULT_DOMAIN", "https://internet.nl"),
+    os.environ.get("CSRF_TRUSTED_ORIGINS_WILDCARD_DOMAIN", "https://*.internet.nl"),
 ]
 
 REPORT_STORAGE_DIR = os.environ.get("REPORT_STORAGE_DIR", f"{MEDIA_ROOT}diskreports/")
 
 # todo: should be handled better, this is a fix to know for sure reports can be written to disk...
 # check diskreport dir, todo: move to django file field
-full_report_storage_dir = f"{REPORT_STORAGE_DIR}original/UrlListReport/"
-if not os.path.isdir(full_report_storage_dir):
-    os.makedirs(full_report_storage_dir, exist_ok=True)
+FULL_REPORT_STORAGE_DIR = f"{REPORT_STORAGE_DIR}original/UrlListReport/"
+if not os.path.isdir(FULL_REPORT_STORAGE_DIR):
+    os.makedirs(FULL_REPORT_STORAGE_DIR, exist_ok=True)
 
 AUTHENTICATION_BACKENDS = [
     # Needed to login by username in Django admin, regardless of `allauth`
-    'django.contrib.auth.backends.ModelBackend',
-
+    "django.contrib.auth.backends.ModelBackend",
     # `allauth` specific authentication methods, such as login by email
-    'allauth.account.auth_backends.AuthenticationBackend',
+    "allauth.account.auth_backends.AuthenticationBackend",
 ]
 
 # https://docs.allauth.org/en/latest/installation/quickstart.html

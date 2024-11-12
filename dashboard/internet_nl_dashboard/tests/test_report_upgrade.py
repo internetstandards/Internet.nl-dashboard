@@ -9,8 +9,12 @@ from datetime import datetime, timezone
 from websecmap.organizations.models import Url
 from websecmap.reporting.diskreport import retrieve_report, store_report
 
-from dashboard.internet_nl_dashboard.logic.report import (add_keyed_ratings, add_percentages_to_statistics,
-                                                          add_statistics_over_ratings, remove_comply_or_explain)
+from dashboard.internet_nl_dashboard.logic.report import (
+    add_keyed_ratings,
+    add_percentages_to_statistics,
+    add_statistics_over_ratings,
+    remove_comply_or_explain,
+)
 from dashboard.internet_nl_dashboard.models import Account, AccountInternetNLScan, UrlList, UrlListReport
 from dashboard.internet_nl_dashboard.scanners.scan_internet_nl_per_account import upgrade_report_with_unscannable_urls
 
@@ -20,9 +24,21 @@ def test_report_upgrade(db, monkeypatch) -> None:
     # megaupload.com will never be scannable, and the rest can have an endpoint and might be in the report
     # already because of this (but without endpoints)
 
-    urls = ['akamaihd.net', 'apple.com', 'bp.blogspot.com', 'clickbank.net', 'cocolog-nifty.com', 'fda.gov',
-            'geocities.jp', 'ggpht.com', 'googleusercontent.com', 'megaupload.com', 'nhk.or.jp',
-            'ssl-images-amazon.com', 'ytimg.com']
+    urls = [
+        "akamaihd.net",
+        "apple.com",
+        "bp.blogspot.com",
+        "clickbank.net",
+        "cocolog-nifty.com",
+        "fda.gov",
+        "geocities.jp",
+        "ggpht.com",
+        "googleusercontent.com",
+        "megaupload.com",
+        "nhk.or.jp",
+        "ssl-images-amazon.com",
+        "ytimg.com",
+    ]
 
     # create the list, code from test domain management:
     account, created = Account.objects.all().get_or_create(name="test")
@@ -116,7 +132,7 @@ def test_report_upgrade(db, monkeypatch) -> None:
                                 "comply_or_explain_explanation_valid_until": "",
                                 "comply_or_explain_valid_at_time_of_report": False,
                                 "scan": 114575,
-                                "scan_type": "internet_nl_web_ipv6_ws_address"
+                                "scan_type": "internet_nl_web_ipv6_ws_address",
                             },
                             {
                                 "type": "internet_nl_web_dnssec_valid",
@@ -136,7 +152,7 @@ def test_report_upgrade(db, monkeypatch) -> None:
                                 "comply_or_explain_explanation_valid_until": "",
                                 "comply_or_explain_valid_at_time_of_report": False,
                                 "scan": 114556,
-                                "scan_type": "internet_nl_web_dnssec_valid"
+                                "scan_type": "internet_nl_web_dnssec_valid",
                             },
                         ],
                         "high": 19,
@@ -145,7 +161,7 @@ def test_report_upgrade(db, monkeypatch) -> None:
                         "ok": 15,
                         "explained_high": 0,
                         "explained_medium": 0,
-                        "explained_low": 0
+                        "explained_low": 0,
                     }
                 ],
                 "total_issues": 26,
@@ -181,11 +197,11 @@ def test_report_upgrade(db, monkeypatch) -> None:
                 "explained_total_endpoint_issues": 0,
                 "explained_endpoint_issues_high": 0,
                 "explained_endpoint_issues_medium": 0,
-                "explained_endpoint_issues_low": 0
+                "explained_endpoint_issues_low": 0,
             }
         ],
         "total_issues": 26,
-        "name": "Unscannable Web + one scannable"
+        "name": "Unscannable Web + one scannable",
     }
 
     fake_report = UrlListReport()
@@ -196,13 +212,13 @@ def test_report_upgrade(db, monkeypatch) -> None:
 
     # First check if we are removing the comply_or_explain keys, mainly to save data:
     remove_comply_or_explain(fake_calculation)
-    assert "explained_endpoint_issues_high" not in fake_calculation['urls'][0]
-    assert "comply_or_explain_explanation" not in fake_calculation['urls'][0]['endpoints'][0]["ratings"][0]
+    assert "explained_endpoint_issues_high" not in fake_calculation["urls"][0]
+    assert "comply_or_explain_explanation" not in fake_calculation["urls"][0]["endpoints"][0]["ratings"][0]
 
     # Now add ratings based on keys, which makes direct access possible:
     add_keyed_ratings(fake_calculation)
-    assert "ratings_by_type" in fake_calculation['urls'][0]['endpoints'][0]
-    assert "internet_nl_web_ipv6_ws_address" in fake_calculation['urls'][0]['endpoints'][0]['ratings_by_type']
+    assert "ratings_by_type" in fake_calculation["urls"][0]["endpoints"][0]
+    assert "internet_nl_web_ipv6_ws_address" in fake_calculation["urls"][0]["endpoints"][0]["ratings_by_type"]
 
     # Add graph statistics, so the graphs can be instantly created based on report data
     add_statistics_over_ratings(fake_calculation)
@@ -217,14 +233,14 @@ def test_report_upgrade(db, monkeypatch) -> None:
 
     # and make sure the report is complete: meaning that all urls requested are present, even though they
     # could not be scanned. So a top 100 stays a top 100.
-    assert (len(fake_calculation['urls']) == 1)
+    assert len(fake_calculation["urls"]) == 1
 
     store_report(fake_report.id, "UrlListReport", fake_calculation)
     upgrade_report_with_unscannable_urls(fake_report.id, scan.id)
     fake_report = UrlListReport.objects.all().first()
     fake_report_calculation = retrieve_report(fake_report.id, "UrlListReport")
-    assert (len(fake_report_calculation['urls']) == len(urls))
+    assert len(fake_report_calculation["urls"]) == len(urls)
 
     # the first url should still be by apple:
-    assert fake_report_calculation['urls'][0]['url'] == "apple.com"
+    assert fake_report_calculation["urls"][0]["url"] == "apple.com"
     # assert fake_report_calculation['urls'][1]['url'] == "apple.com"

@@ -35,7 +35,7 @@ def is_powertool_user(user):
 @user_passes_test(is_powertool_user, login_url=LOGIN_URL)
 def set_account(request) -> HttpResponse:
     request_data = get_json_body(request)
-    selected_account_id: int = request_data['id']
+    selected_account_id: int = request_data["id"]
 
     if not selected_account_id:
         return JsonResponse(operation_response(error=True, message="No account supplied."))
@@ -44,16 +44,13 @@ def set_account(request) -> HttpResponse:
 
     # very new users don't have the dashboarduser fields filled in, and are thus not connected to an account.
     if not dashboard_user:
-        dashboard_user = DashboardUser(**{'account': Account.objects.all().first(), 'user': request.user})
+        dashboard_user = DashboardUser(**{"account": Account.objects.all().first(), "user": request.user})
 
     dashboard_user.account = Account.objects.get(id=selected_account_id)
     dashboard_user.save()
 
-    return JsonResponse(operation_response(
-        success=True,
-        message="switched_account",
-        data={'account_name': dashboard_user.account.name}
-    )
+    return JsonResponse(
+        operation_response(success=True, message="switched_account", data={"account_name": dashboard_user.account.name})
     )
 
 
@@ -62,75 +59,73 @@ def get_accounts(request) -> HttpResponse:
     myaccount = get_account(request)
     scans = AccountInternetNLScan.objects.all().filter(account=myaccount.id).count()
     lists = UrlList.objects.all().filter(account=myaccount.id).count()
-    users = list(User.objects.all().filter(dashboarduser__account=myaccount.id).values_list('username', flat=True))
+    users = list(User.objects.all().filter(dashboarduser__account=myaccount.id).values_list("username", flat=True))
     current_account = {
-        'id': myaccount.id,
-        'name': myaccount.name,
-        'scans': scans,
-        'lists': lists,
-        'users': users,
-        'label': f"{myaccount.id}: {myaccount.name} (Lists: {lists}, Scans: {scans}, Users: {len(users)})"
+        "id": myaccount.id,
+        "name": myaccount.name,
+        "scans": scans,
+        "lists": lists,
+        "users": users,
+        "label": f"{myaccount.id}: {myaccount.name} (Lists: {lists}, Scans: {scans}, Users: {len(users)})",
     }
 
-    accounts = Account.objects.all().values_list('id', 'name').order_by('id')
+    accounts = Account.objects.all().values_list("id", "name").order_by("id")
 
     account_data = []
     # add some metadata to the accounts, so it's more clear where you are switching to:
     for account in accounts:
         scans = AccountInternetNLScan.objects.all().filter(account=account[0]).count()
         lists = UrlList.objects.all().filter(account=account[0]).count()
-        users = list(User.objects.all().filter(dashboarduser__account=account[0]).values_list('username', flat=True))
+        users = list(User.objects.all().filter(dashboarduser__account=account[0]).values_list("username", flat=True))
         account_information = {
-            'id': account[0],
-            'name': account[1],
-            'scans': scans,
-            'lists': lists,
-            'users': users,
-            'label': f"{account[0]}: {account[1]} (Lists: {lists}, Scans: {scans}, Users: {len(users)})"
+            "id": account[0],
+            "name": account[1],
+            "scans": scans,
+            "lists": lists,
+            "users": users,
+            "label": f"{account[0]}: {account[1]} (Lists: {lists}, Scans: {scans}, Users: {len(users)})",
         }
 
         account_data.append(account_information)
 
-    return JsonResponse(
-        {
-            'current_account': current_account,
-            'accounts': account_data
-        }
-    )
+    return JsonResponse({"current_account": current_account, "accounts": account_data})
 
 
 @user_passes_test(is_powertool_user, login_url=LOGIN_URL)
 def save_instant_account(request) -> HttpResponse:
     request = get_json_body(request)
-    username = request['username']
-    password = request['password']
+    username = request["username"]
+    password = request["password"]
 
     if User.objects.all().filter(username=username).exists():
         return JsonResponse(operation_response(error=True, message=f"User with username '{username}' already exists."))
 
     if Account.objects.all().filter(name=username).exists():
-        return JsonResponse(operation_response(error=True,
-                                               message=f"Account with username {username}' already exists."))
+        return JsonResponse(
+            operation_response(error=True, message=f"Account with username {username}' already exists.")
+        )
 
     # Extremely arbitrary password requirements. Just to make sure a password has been filled in.
     if len(password) < 5:
         return JsonResponse(operation_response(error=True, message="Password not filled in or not long enough."))
 
     # all seems fine, let's add the user
-    user = User(**{'username': username})
+    user = User(**{"username": username})
     user.set_password(password)
     user.is_active = True
     user.save()
 
-    account = Account(**{
-        'name': username,
-        'internet_nl_api_username': username,
-        'internet_nl_api_password': Account.encrypt_password(password),
-        'can_connect_to_internet_nl_api': Account.connect_to_internet_nl_api(username, password)
-    })
+    account = Account(
+        **{
+            "name": username,
+            "internet_nl_api_username": username,
+            "internet_nl_api_password": Account.encrypt_password(password),
+            "can_connect_to_internet_nl_api": Account.connect_to_internet_nl_api(username, password),
+        }
+    )
     account.save()
 
-    dashboarduser = DashboardUser(**{'user': user, 'account': account})
+    dashboarduser = DashboardUser(**{"user": user, "account": account})
     dashboarduser.save()
 
     return JsonResponse(operation_response(success=True, message=f"Account and user with name '{username}' created!"))

@@ -13,9 +13,9 @@ def add_tag_(request):
     data = get_json_body(request)
     add_tag(
         account=get_account(request),
-        urllist_id=data.get('urllist_id', []),
-        url_ids=data.get('url_ids', []),
-        tag=data.get('tag', "")
+        urllist_id=data.get("urllist_id", []),
+        url_ids=data.get("url_ids", []),
+        tag=data.get("tag", ""),
     )
     return JsonResponse(operation_response(success=True), safe=False)
 
@@ -25,9 +25,9 @@ def remove_tag_(request):
     data = get_json_body(request)
     remove_tag(
         account=get_account(request),
-        urllist_id=data.get('urllist_id', []),
-        url_ids=data.get('url_ids', []),
-        tag=data.get('tag', "")
+        urllist_id=data.get("urllist_id", []),
+        url_ids=data.get("url_ids", []),
+        tag=data.get("tag", ""),
     )
     return JsonResponse(operation_response(success=True), safe=False)
 

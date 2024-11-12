@@ -12,9 +12,7 @@ INSERT INTO internet_nl_dashboard_urllist_x_tagged_url (urllist_id,url_id)
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('internet_nl_dashboard', '0004_taggedurlinurllist'),
+        ("internet_nl_dashboard", "0004_taggedurlinurllist"),
     ]
 
-    operations = [
-        migrations.RunSQL(migrate_join_table_data)
-    ]
+    operations = [migrations.RunSQL(migrate_join_table_data)]

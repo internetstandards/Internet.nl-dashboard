@@ -7,15 +7,17 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('internet_nl_dashboard', '0030_auto_20190515_1209'),
+        ("internet_nl_dashboard", "0030_auto_20190515_1209"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='account',
-            name='report_settings',
+            model_name="account",
+            name="report_settings",
             field=jsonfield.fields.JSONField(
-                default={}, help_text='This stores reporting preferences: what fields are shown in the UI and so on (if any other).This field can be edited on the report page.'),
+                default={},
+                help_text="This stores reporting preferences: what fields are shown in the UI and so on (if any other).This field can be edited on the report page.",
+            ),
             preserve_default=False,
         ),
     ]

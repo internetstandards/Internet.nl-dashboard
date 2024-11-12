@@ -10,7 +10,7 @@ def test_update_state(db):
     account = Account()
     account.save()
 
-    urllist = UrlList(**{'name': '', 'account': account})
+    urllist = UrlList(**{"name": "", "account": account})
     urllist.save()
 
     scan = AccountInternetNLScan()

@@ -7,14 +7,19 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('internet_nl_dashboard', '0038_accountinternetnlscan_state_changed_on'),
+        ("internet_nl_dashboard", "0038_accountinternetnlscan_state_changed_on"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='accountinternetnlscan',
-            name='report',
-            field=models.ForeignKey(blank=True, help_text='After a scan has finished, a report is created. This points to that report so no guessing is needed to figure out what report belongs to what scan.',
-                                    null=True, on_delete=django.db.models.deletion.CASCADE, to='internet_nl_dashboard.UrlListReport'),
+            model_name="accountinternetnlscan",
+            name="report",
+            field=models.ForeignKey(
+                blank=True,
+                help_text="After a scan has finished, a report is created. This points to that report so no guessing is needed to figure out what report belongs to what scan.",
+                null=True,
+                on_delete=django.db.models.deletion.CASCADE,
+                to="internet_nl_dashboard.UrlListReport",
+            ),
         ),
     ]

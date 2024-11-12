@@ -6,25 +6,34 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('internet_nl_dashboard', '0012_urllistreport_is_shared_on_homepage'),
+        ("internet_nl_dashboard", "0012_urllistreport_is_shared_on_homepage"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='urllist',
-            name='automatically_share_new_reports',
+            model_name="urllist",
+            name="automatically_share_new_reports",
             field=models.BooleanField(
-                default=False, help_text='Sharing can be disabled and re-enabled where the report code and the share code (password) stay the same. Sharing means that all new reports will be made public under a set of standard urls.'),
+                default=False,
+                help_text="Sharing can be disabled and re-enabled where the report code and the share code (password) stay the same. Sharing means that all new reports will be made public under a set of standard urls.",
+            ),
         ),
         migrations.AddField(
-            model_name='urllist',
-            name='default_public_share_code_for_new_reports',
-            field=models.CharField(blank=True, default='', help_text='An unencrypted share code that can be seen by all users in an account. Can be modified by all. New reports get this code set automatically. You can change this per report. An empty field means no share code and the report is accessible publicly.', max_length=64),
+            model_name="urllist",
+            name="default_public_share_code_for_new_reports",
+            field=models.CharField(
+                blank=True,
+                default="",
+                help_text="An unencrypted share code that can be seen by all users in an account. Can be modified by all. New reports get this code set automatically. You can change this per report. An empty field means no share code and the report is accessible publicly.",
+                max_length=64,
+            ),
         ),
         migrations.AddField(
-            model_name='urllist',
-            name='enable_report_sharing_page',
+            model_name="urllist",
+            name="enable_report_sharing_page",
             field=models.BooleanField(
-                default=False, help_text='When true there will be page under the list-id that shows all reports that are shared publicly.'),
+                default=False,
+                help_text="When true there will be page under the list-id that shows all reports that are shared publicly.",
+            ),
         ),
     ]

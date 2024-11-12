@@ -9,36 +9,83 @@ from deepdiff import DeepDiff
 from websecmap.celery import Task, app
 from websecmap.organizations.models import Url
 from websecmap.reporting.diskreport import store_report
-from websecmap.reporting.report import (add_statistics_to_calculation, aggegrate_url_rating_scores,
-                                        get_latest_urlratings_fast, relevant_urls_at_timepoint,
-                                        remove_issues_from_calculation, statistics_over_url_calculation)
+from websecmap.reporting.report import (
+    add_statistics_to_calculation,
+    aggegrate_url_rating_scores,
+    get_latest_urlratings_fast,
+    relevant_urls_at_timepoint,
+    remove_issues_from_calculation,
+    statistics_over_url_calculation,
+)
 
-from dashboard.internet_nl_dashboard.logic import (MAIL_AUTH_FIELDS, MAIL_CATEGORIES,  # pylint: disable=duplicate-code
-                                                   MAIL_DNSSEC_FIELDS, MAIL_IPV6_FIELDS, MAIL_LEGACY_FIELDS,
-                                                   MAIL_RPKI_FIELDS, MAIL_TLS_CERTIFICATE_FIELDS, MAIL_TLS_DANE_FIELDS,
-                                                   MAIL_TLS_TLS_FIELDS, WEB_APPSECPRIV_CATEGORY, WEB_APPSECPRIV_FIELDS,
-                                                   WEB_DNSSEC_CATEGORY, WEB_DNSSEC_FIELDS, WEB_IPV6_CATEGORY,
-                                                   WEB_IPV6_FIELDS, WEB_LEGACY_CATEGORY, WEB_LEGACY_FIELDS,
-                                                   WEB_RPKI_CATEGORY, WEB_RPKI_FIELDS, WEB_TLS_CATEGORY,
-                                                   WEB_TLS_CERTIFICATE_FIELDS, WEB_TLS_DANE_FIELDS, WEB_TLS_HTTP_FIELDS,
-                                                   WEB_TLS_TLS_FIELDS)
+from dashboard.internet_nl_dashboard.logic import MAIL_CATEGORIES  # pylint: disable=duplicate-code
+from dashboard.internet_nl_dashboard.logic import (
+    MAIL_AUTH_FIELDS,
+    MAIL_DNSSEC_FIELDS,
+    MAIL_IPV6_FIELDS,
+    MAIL_LEGACY_FIELDS,
+    MAIL_RPKI_FIELDS,
+    MAIL_TLS_CERTIFICATE_FIELDS,
+    MAIL_TLS_DANE_FIELDS,
+    MAIL_TLS_TLS_FIELDS,
+    WEB_APPSECPRIV_CATEGORY,
+    WEB_APPSECPRIV_FIELDS,
+    WEB_DNSSEC_CATEGORY,
+    WEB_DNSSEC_FIELDS,
+    WEB_IPV6_CATEGORY,
+    WEB_IPV6_FIELDS,
+    WEB_LEGACY_CATEGORY,
+    WEB_LEGACY_FIELDS,
+    WEB_RPKI_CATEGORY,
+    WEB_RPKI_FIELDS,
+    WEB_TLS_CATEGORY,
+    WEB_TLS_CERTIFICATE_FIELDS,
+    WEB_TLS_DANE_FIELDS,
+    WEB_TLS_HTTP_FIELDS,
+    WEB_TLS_TLS_FIELDS,
+)
 from dashboard.internet_nl_dashboard.models import AccountInternetNLScan, UrlList, UrlListReport
 
 log = logging.getLogger(__package__)
 
 urllist_report_content = {
-    'mail': ['internet_nl_mail_dashboard_overall_score'] +
-    MAIL_CATEGORIES + MAIL_IPV6_FIELDS + MAIL_DNSSEC_FIELDS + MAIL_TLS_CERTIFICATE_FIELDS +
-    MAIL_TLS_TLS_FIELDS + MAIL_TLS_DANE_FIELDS + MAIL_AUTH_FIELDS + MAIL_RPKI_FIELDS + MAIL_LEGACY_FIELDS,
-
-    'mail_dashboard': ['internet_nl_mail_dashboard_overall_score'] +
-    MAIL_CATEGORIES + MAIL_IPV6_FIELDS + MAIL_DNSSEC_FIELDS + MAIL_TLS_CERTIFICATE_FIELDS +
-    MAIL_TLS_TLS_FIELDS + MAIL_TLS_DANE_FIELDS + MAIL_AUTH_FIELDS + MAIL_RPKI_FIELDS + MAIL_LEGACY_FIELDS,
-
-    'web': ['internet_nl_web_overall_score'] + WEB_IPV6_CATEGORY + WEB_IPV6_FIELDS + WEB_DNSSEC_CATEGORY +
-    WEB_DNSSEC_FIELDS + WEB_TLS_CATEGORY + WEB_TLS_HTTP_FIELDS + WEB_TLS_TLS_FIELDS +
-    WEB_TLS_CERTIFICATE_FIELDS + WEB_TLS_DANE_FIELDS + WEB_APPSECPRIV_CATEGORY + WEB_APPSECPRIV_FIELDS +
-    WEB_RPKI_CATEGORY + WEB_RPKI_FIELDS + WEB_LEGACY_FIELDS + WEB_LEGACY_FIELDS + WEB_LEGACY_CATEGORY
+    "mail": ["internet_nl_mail_dashboard_overall_score"]
+    + MAIL_CATEGORIES
+    + MAIL_IPV6_FIELDS
+    + MAIL_DNSSEC_FIELDS
+    + MAIL_TLS_CERTIFICATE_FIELDS
+    + MAIL_TLS_TLS_FIELDS
+    + MAIL_TLS_DANE_FIELDS
+    + MAIL_AUTH_FIELDS
+    + MAIL_RPKI_FIELDS
+    + MAIL_LEGACY_FIELDS,
+    "mail_dashboard": ["internet_nl_mail_dashboard_overall_score"]
+    + MAIL_CATEGORIES
+    + MAIL_IPV6_FIELDS
+    + MAIL_DNSSEC_FIELDS
+    + MAIL_TLS_CERTIFICATE_FIELDS
+    + MAIL_TLS_TLS_FIELDS
+    + MAIL_TLS_DANE_FIELDS
+    + MAIL_AUTH_FIELDS
+    + MAIL_RPKI_FIELDS
+    + MAIL_LEGACY_FIELDS,
+    "web": ["internet_nl_web_overall_score"]
+    + WEB_IPV6_CATEGORY
+    + WEB_IPV6_FIELDS
+    + WEB_DNSSEC_CATEGORY
+    + WEB_DNSSEC_FIELDS
+    + WEB_TLS_CATEGORY
+    + WEB_TLS_HTTP_FIELDS
+    + WEB_TLS_TLS_FIELDS
+    + WEB_TLS_CERTIFICATE_FIELDS
+    + WEB_TLS_DANE_FIELDS
+    + WEB_APPSECPRIV_CATEGORY
+    + WEB_APPSECPRIV_FIELDS
+    + WEB_RPKI_CATEGORY
+    + WEB_RPKI_FIELDS
+    + WEB_LEGACY_FIELDS
+    + WEB_LEGACY_FIELDS
+    + WEB_LEGACY_CATEGORY,
 }
 
 
@@ -67,7 +114,7 @@ def compose_task(**kwargs) -> Task:
     return group(tasks)
 
 
-@app.task(queue='storage')
+@app.task(queue="storage")
 def create_dashboard_report(scan_id: int):
     """
     Simplified (and perhaps straightforward) version of rate_urllists_now, which returns a report id.
@@ -79,7 +126,7 @@ def create_dashboard_report(scan_id: int):
 
     scan = AccountInternetNLScan.objects.all().filter(id=scan_id).first()
     if not scan:
-        log.warning(f'Trying to creating_report with unknown scan: {scan_id}.')
+        log.warning(f"Trying to creating_report with unknown scan: {scan_id}.")
         return []
 
     log.debug(f"Creating dashboard report for urllist {scan.urllist}.")
@@ -99,7 +146,7 @@ def create_dashboard_report(scan_id: int):
     return rate_urllist_on_moment(scan.urllist, when=now, prevent_duplicates=False, scan_type=scan_type)
 
 
-@app.task(queue='storage')
+@app.task(queue="storage")
 def create_dashboard_report_at(urllist: UrlList, at_when: datetime, scan_type: str = "web"):
     """
     Simplified (and perhaps straightforward) version of rate_urllists_now, which returns a report id.
@@ -112,17 +159,17 @@ def create_dashboard_report_at(urllist: UrlList, at_when: datetime, scan_type: s
     return rate_urllist_on_moment(urllist, when=at_when, prevent_duplicates=False, scan_type=scan_type)
 
 
-@app.task(queue='storage', ignore_result=True)
+@app.task(queue="storage", ignore_result=True)
 def rate_urllists_now(urllists: List[UrlList], prevent_duplicates: bool = True, scan_type: str = "web"):
     for urllist in urllists:
         now = datetime.now(timezone.utc)
         rate_urllist_on_moment(urllist, now, prevent_duplicates, scan_type)
 
 
-@app.task(queue='storage')
+@app.task(queue="storage")
 def rate_urllist_on_moment(
-        urllist: UrlList, when: Optional[datetime] = None, prevent_duplicates: bool = True,
-        scan_type: str = "web") -> int:
+    urllist: UrlList, when: Optional[datetime] = None, prevent_duplicates: bool = True, scan_type: str = "web"
+) -> int:
     """
     :param urllist:
     :param when: A moment in time of which data should be aggregated
@@ -142,16 +189,16 @@ def rate_urllist_on_moment(
         return int(existing_report.id)
 
     urls = relevant_urls_at_timepoint_urllist(urllist=urllist, when=when)
-    log.debug(f'Found {len(urls)} to be relevant at this moment.')
+    log.debug(f"Found {len(urls)} to be relevant at this moment.")
 
     calculation = create_calculation_on_urls(urls, when, scan_type=scan_type)
 
     try:
-        last = UrlListReport.objects.filter(urllist=urllist, at_when__lte=when).latest('at_when')
+        last = UrlListReport.objects.filter(urllist=urllist, at_when__lte=when).latest("at_when")
     except UrlListReport.DoesNotExist:
         last = UrlListReport()  # create a dummy one for comparison
 
-    calculation['name'] = urllist.name
+    calculation["name"] = urllist.name
 
     if prevent_duplicates:
         if not DeepDiff(last.calculation, calculation, ignore_order=True, report_repetition=True):
@@ -163,8 +210,8 @@ def rate_urllist_on_moment(
     # remove urls and name from scores object, so it can be used as initialization parameters (saves lines)
     # this is by reference, meaning that the calculation will be affected if we don't work on a clone.
     init_scores = deepcopy(calculation)
-    del init_scores['name']
-    del init_scores['urls']
+    del init_scores["name"]
+    del init_scores["urls"]
 
     external_scan_type = {"web": "web", "mail": "mail", "mail_dashboard": "mail"}
     report = UrlListReport(**init_scores)
@@ -187,7 +234,8 @@ def create_calculation_on_urls(urls: List[Url], when: datetime, scan_type: str) 
     # and only the endpoint types
     for urlrating in all_url_ratings:
         calculation: Dict[str, Any] = remove_issues_from_calculation(
-            urlrating.calculation, urllist_report_content[scan_type])
+            urlrating.calculation, urllist_report_content[scan_type]
+        )
 
         # Some endpoint types use the same ratings, such as dns_soa and dns_mx... This means that not
         # all endpoints will be removed for internet.nl. We need the following endpoints per scan:
@@ -207,9 +255,10 @@ def create_calculation_on_urls(urls: List[Url], when: datetime, scan_type: str) 
 
 
 def only_include_endpoint_protocols(calculation, only_include_endpoint_types: List[str]):
-    new_endpoints = [endpoint
-                     for endpoint in calculation['endpoints'] if endpoint['protocol'] in only_include_endpoint_types]
-    calculation['endpoints'] = new_endpoints
+    new_endpoints = [
+        endpoint for endpoint in calculation["endpoints"] if endpoint["protocol"] in only_include_endpoint_types
+    ]
+    calculation["endpoints"] = new_endpoints
     return calculation
 
 
@@ -223,15 +272,15 @@ def sum_internet_nl_scores_over_rating(url_ratings: Dict[str, Any]) -> float:
     score = 0
     number_of_scores = 0
 
-    score_fields = ['internet_nl_mail_dashboard_overall_score', 'internet_nl_web_overall_score']
+    score_fields = ["internet_nl_mail_dashboard_overall_score", "internet_nl_web_overall_score"]
 
-    for url in url_ratings.get('urls', []):
-        for endpoint in url.get('endpoints', []):
-            for rating in endpoint.get('ratings', []):
-                if rating.get('type', "") in score_fields:
+    for url in url_ratings.get("urls", []):
+        for endpoint in url.get("endpoints", []):
+            for rating in endpoint.get("ratings", []):
+                if rating.get("type", "") in score_fields:
                     # explanation":"75 https://batch.internet.nl/mail/portaal.digimelding.nl/289480/",
                     log.debug(f"Explanation: {rating['explanation']}")
-                    value = rating['explanation'].split(" ")
+                    value = rating["explanation"].split(" ")
 
                     # in case the internet.nl api fails for a domain, all scanned values are set to error.
                     # this value is ignored in the average, not influencing the average with a 0 or 100.

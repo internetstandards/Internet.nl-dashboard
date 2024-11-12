@@ -19,7 +19,7 @@ log = logging.getLogger(__name__)
 #   from websecmap.celery, not from dashboard.celery. Which still doesn't solve it after changing.
 
 
-@app.task(queue='storage')
+@app.task(queue="storage")
 def start_scans_for_lists_who_are_up_for_scanning() -> Task:
     """
     This can be run every minute, only the ones that are up for scanning will be scanned. It will update all
@@ -51,20 +51,19 @@ def start_scans_for_lists_who_are_up_for_scanning() -> Task:
 __all__: List[Module] = [scan_internet_nl_per_account, subdomains]  # type: ignore
 
 
-@app.task(queue='storage', ignore_result=True)
+@app.task(queue="storage", ignore_result=True)
 def autoshare_report_to_front_page():
     ids = config.DASHBOARD_FRONT_PAGE_URL_LISTS
     if not ids:
         return
 
-    ids = ids.split(',')
+    ids = ids.split(",")
 
     ints = [int(id_) for id_ in ids]
 
     # Do not publish historic reports, things can actually stay offline if there was an error with a report
     UrlListReport.objects.filter(
-        urllist__id__in=ints,
-        at_when__gte=datetime.now(timezone.utc) - timedelta(hours=24)
+        urllist__id__in=ints, at_when__gte=datetime.now(timezone.utc) - timedelta(hours=24)
     ).update(
         is_publicly_shared=True,
         is_shared_on_homepage=True,

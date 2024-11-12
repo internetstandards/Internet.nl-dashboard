@@ -6,13 +6,13 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('internet_nl_dashboard', '0016_auto_20190401_1626'),
+        ("internet_nl_dashboard", "0016_auto_20190401_1626"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='urllist',
-            name='scan_type',
-            field=models.CharField(choices=[('web', 'web'), ('mail', 'mail')], default='web', max_length=4),
+            model_name="urllist",
+            name="scan_type",
+            field=models.CharField(choices=[("web", "web"), ("mail", "mail")], default="web", max_length=4),
         ),
     ]

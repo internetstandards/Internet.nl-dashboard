@@ -8,19 +8,21 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('internet_nl_dashboard', '0027_auto_20190507_1233'),
+        ("internet_nl_dashboard", "0027_auto_20190507_1233"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='urllist',
-            name='deleted_on',
+            model_name="urllist",
+            name="deleted_on",
             field=models.DateTimeField(blank=True, null=True),
         ),
         migrations.AlterField(
-            model_name='urllist',
-            name='scheduled_next_scan',
-            field=models.DateTimeField(default=datetime.datetime(2019, 5, 6, 15, 9, 11, 211754, tzinfo=datetime.timezone.utc),
-                                       help_text='An indication at what moment the scan will be started. The scan can take a while, thus this does not tell you when a scan will be finished. All dates in the past will be scanned and updated.'),
+            model_name="urllist",
+            name="scheduled_next_scan",
+            field=models.DateTimeField(
+                default=datetime.datetime(2019, 5, 6, 15, 9, 11, 211754, tzinfo=datetime.timezone.utc),
+                help_text="An indication at what moment the scan will be started. The scan can take a while, thus this does not tell you when a scan will be finished. All dates in the past will be scanned and updated.",
+            ),
         ),
     ]

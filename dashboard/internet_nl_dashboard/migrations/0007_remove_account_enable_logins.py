@@ -6,12 +6,12 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('internet_nl_dashboard', '0006_uploadlog_status'),
+        ("internet_nl_dashboard", "0006_uploadlog_status"),
     ]
 
     operations = [
         migrations.RemoveField(
-            model_name='account',
-            name='enable_logins',
+            model_name="account",
+            name="enable_logins",
         ),
     ]

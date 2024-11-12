@@ -8,14 +8,16 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('internet_nl_dashboard', '0022_auto_20190425_1438'),
+        ("internet_nl_dashboard", "0022_auto_20190425_1438"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='urllist',
-            name='scheduled_next_scan',
-            field=models.DateTimeField(default=datetime.datetime(2019, 4, 28, 9, 10, 42, 684534, tzinfo=datetime.timezone.utc),
-                                       help_text='An indication at what moment the scan will be started. The scan can take a while, thus this does not tell you when a scan will be finished.'),
+            model_name="urllist",
+            name="scheduled_next_scan",
+            field=models.DateTimeField(
+                default=datetime.datetime(2019, 4, 28, 9, 10, 42, 684534, tzinfo=datetime.timezone.utc),
+                help_text="An indication at what moment the scan will be started. The scan can take a while, thus this does not tell you when a scan will be finished.",
+            ),
         ),
     ]

@@ -48,6 +48,7 @@ vulture
 pylint
 pylint-django
 ruff
+black
 
 types-redis
 types-freezegun

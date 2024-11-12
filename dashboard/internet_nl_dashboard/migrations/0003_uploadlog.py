@@ -6,21 +6,49 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('internet_nl_dashboard', '0002_auto_20190318_1656'),
+        ("internet_nl_dashboard", "0002_auto_20190318_1656"),
     ]
 
     operations = [
         migrations.CreateModel(
-            name='UploadLog',
+            name="UploadLog",
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('orginal_filename', models.CharField(blank=True, help_text='The original filename of the file that has been uploaded. Django appends a random string if the file already exists. This is a reconstruction of the original filename and may not be 100% accurate.', max_length=255, null=True)),
-                ('internal_filename', models.CharField(
-                    blank=True, help_text='Generated filename by Django. This can be used to find specific files for debugging purposes.', max_length=255, null=True)),
-                ('message', models.CharField(blank=True, help_text='This message gives more specific information about what happened. For example, it might be the case that a file has been rejected because it had the wrong filetype etc.', max_length=255, null=True)),
-                ('upload_date', models.DateTimeField(blank=True, null=True)),
-                ('filesize', models.PositiveIntegerField(
-                    default=0, help_text='Gives an indication if your local file has changed (different size). The size is in bytes.')),
+                ("id", models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
+                (
+                    "orginal_filename",
+                    models.CharField(
+                        blank=True,
+                        help_text="The original filename of the file that has been uploaded. Django appends a random string if the file already exists. This is a reconstruction of the original filename and may not be 100% accurate.",
+                        max_length=255,
+                        null=True,
+                    ),
+                ),
+                (
+                    "internal_filename",
+                    models.CharField(
+                        blank=True,
+                        help_text="Generated filename by Django. This can be used to find specific files for debugging purposes.",
+                        max_length=255,
+                        null=True,
+                    ),
+                ),
+                (
+                    "message",
+                    models.CharField(
+                        blank=True,
+                        help_text="This message gives more specific information about what happened. For example, it might be the case that a file has been rejected because it had the wrong filetype etc.",
+                        max_length=255,
+                        null=True,
+                    ),
+                ),
+                ("upload_date", models.DateTimeField(blank=True, null=True)),
+                (
+                    "filesize",
+                    models.PositiveIntegerField(
+                        default=0,
+                        help_text="Gives an indication if your local file has changed (different size). The size is in bytes.",
+                    ),
+                ),
             ],
         ),
     ]

@@ -17,9 +17,9 @@
 
 # -- Project information -----------------------------------------------------
 
-project = 'Internet.nl Dashboard'
-copyright = '2020-2024, ECP / Internet.nl'
-author = 'internet.nl'
+project = "Internet.nl Dashboard"
+copyright = "2020-2024, ECP / Internet.nl"
+author = "internet.nl"
 
 # -- General configuration ---------------------------------------------------
 
@@ -27,15 +27,17 @@ author = 'internet.nl'
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
 extensions = [
-    'sphinx.ext.autodoc',
-    'sphinx.ext.napoleon',
-    'rst2pdf.pdfbuilder',
+    "sphinx.ext.autodoc",
+    "sphinx.ext.napoleon",
+    "rst2pdf.pdfbuilder",
 ]
 
-pdf_documents = [('index', u'dashboard', u'Internet.nl Dashboard Documentation', u'internet.nl'), ]
+pdf_documents = [
+    ("index", "dashboard", "Internet.nl Dashboard Documentation", "internet.nl"),
+]
 
 # Add any paths that contain templates here, relative to this directory.
-templates_path = ['_templates']
+templates_path = ["_templates"]
 
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
@@ -47,32 +49,31 @@ exclude_patterns = []
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
 #
-html_theme = 'alabaster'
+html_theme = "alabaster"
 
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
-html_static_path = ['_static']
+html_static_path = ["_static"]
 
-autodoc_member_order = 'bysource'
+autodoc_member_order = "bysource"
 
-latex_engine = 'xelatex'
+latex_engine = "xelatex"
 latex_elements = {
-    'papersize': 'a4papaer',
-
-    'fontpkg': r'''
+    "papersize": "a4papaer",
+    "fontpkg": r"""
 \setmainfont{DejaVu Serif}
 \setsansfont{DejaVu Sans}
 \setmonofont{DejaVu Sans Mono}
-''',
-    'preamble': r'''
+""",
+    "preamble": r"""
 \usepackage[titles]{tocloft}
 \cftsetpnumwidth {1.25cm}\cftsetrmarg{1.5cm}
 \setlength{\cftchapnumwidth}{0.75cm}
 \setlength{\cftsecindent}{\cftchapnumwidth}
 \setlength{\cftsecnumwidth}{1.25cm}
-''',
-    'fncychap': r'\usepackage[Bjornstrup]{fncychap}',
-    'printindex': r'\footnotesize\raggedright\printindex',
+""",
+    "fncychap": r"\usepackage[Bjornstrup]{fncychap}",
+    "printindex": r"\footnotesize\raggedright\printindex",
 }
-latex_show_urls = 'footnote'
+latex_show_urls = "footnote"

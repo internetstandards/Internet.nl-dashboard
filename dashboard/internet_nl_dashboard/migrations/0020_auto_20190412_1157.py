@@ -6,21 +6,21 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('internet_nl_dashboard', '0019_urllistreport_created_on'),
+        ("internet_nl_dashboard", "0019_urllistreport_created_on"),
     ]
 
     operations = [
         migrations.AlterModelOptions(
-            name='urllistreport',
-            options={'get_latest_by': 'at_when'},
+            name="urllistreport",
+            options={"get_latest_by": "at_when"},
         ),
         migrations.RenameField(
-            model_name='urllistreport',
-            old_name='when',
-            new_name='at_when',
+            model_name="urllistreport",
+            old_name="when",
+            new_name="at_when",
         ),
         migrations.AlterIndexTogether(
-            name='urllistreport',
-            index_together={('at_when', 'id')},
+            name="urllistreport",
+            index_together={("at_when", "id")},
         ),
     ]

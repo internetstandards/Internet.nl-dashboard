@@ -76,6 +76,8 @@ billiard==4.2.1
     #   -c requirements.txt
     #   celery
     #   websecmap
+black==24.10.0
+    # via -r requirements-dev.in
 bs4==0.0.2
     # via
     #   -c requirements.txt
@@ -122,6 +124,7 @@ charset-normalizer==3.4.0
 click==8.1.7
     # via
     #   -c requirements.txt
+    #   black
     #   celery
     #   click-didyoumean
     #   click-plugins
@@ -455,7 +458,9 @@ multidict==6.1.0
 mypy==1.13.0
     # via -r requirements-dev.in
 mypy-extensions==1.0.0
-    # via mypy
+    # via
+    #   black
+    #   mypy
 mysqlclient==2.2.5
     # via
     #   -c requirements.txt
@@ -501,9 +506,12 @@ osm2geojson==0.2.5
 packaging==24.2
     # via
     #   -r requirements-dev.in
+    #   black
     #   pytest
     #   rst2pdf
     #   sphinx
+pathspec==0.12.1
+    # via black
 pbr==6.1.0
     # via stevedore
 phonenumberslite==8.13.49
@@ -516,7 +524,9 @@ pillow==11.0.0
     #   reportlab
     #   websecmap
 platformdirs==4.3.6
-    # via pylint
+    # via
+    #   black
+    #   pylint
 pluggy==1.5.0
     # via pytest
 prometheus-client==0.21.0
@@ -836,6 +846,7 @@ tomli==2.1.0
     # via
     #   autoflake
     #   autopep8
+    #   black
     #   coverage
     #   django-stubs
     #   mypy
@@ -878,6 +889,7 @@ typing-extensions==4.12.2
     #   anyio
     #   asgiref
     #   astroid
+    #   black
     #   django-countries
     #   django-stubs
     #   django-stubs-ext

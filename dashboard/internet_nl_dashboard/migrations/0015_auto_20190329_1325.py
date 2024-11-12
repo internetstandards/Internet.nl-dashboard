@@ -7,19 +7,20 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('internet_nl_dashboard', '0014_accountinternetnlscan_urllist'),
+        ("internet_nl_dashboard", "0014_accountinternetnlscan_urllist"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='accountinternetnlscan',
-            name='urllist',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='internet_nl_dashboard.UrlList'),
+            model_name="accountinternetnlscan",
+            name="urllist",
+            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to="internet_nl_dashboard.UrlList"),
         ),
         migrations.AlterField(
-            model_name='urllist',
-            name='name',
+            model_name="urllist",
+            name="name",
             field=models.CharField(
-                help_text='Name of the UrlList, for example name of the organization in it.', max_length=120),
+                help_text="Name of the UrlList, for example name of the organization in it.", max_length=120
+            ),
         ),
     ]
