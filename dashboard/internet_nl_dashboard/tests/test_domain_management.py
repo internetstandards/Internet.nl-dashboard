@@ -106,7 +106,7 @@ def test_retrieve_urls_from_unfiltered_input() -> None:
      stichtingmediawijzer.nl	  ​ 
             , , ,   ⠀ 
      	   
-    eskillsplatform.nl  ,        
+    eskillsplatform.nl  ,
     """  # noqa violates python coding standard on points E101 and W191. Needed for this test :)
 
     output, duplicates_removed = retrieve_possible_urls_from_unfiltered_input(unsanitized_input)

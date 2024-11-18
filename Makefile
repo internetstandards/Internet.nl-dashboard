@@ -37,7 +37,7 @@ pysrc = $(shell find ${pysrcdirs} -name \*.py 2>/dev/null)
 src = $(shell find ${pysrcdirs} -type f -print0 2>/dev/null)
 shsrc = $(shell find * ! -path vendor\* -name \*.sh 2>/dev/null)
 
-.PHONY: test check setup run fix autofix clean mrproper test_integration requirements requirements-dev docs
+.PHONY: test check pylama pylint shellcheck setup run fix autofix clean mrproper test_integration requirements requirements-dev docs
 
 # default action to run
 all: check test setup requirements
@@ -115,32 +115,28 @@ libmagic: /usr/lib/x86_64-linux-gnu/libmagic.so.1
 endif
 
 ## QA
-test: .make.test	## run test suite
-.make.test: ${src} ${app}
+tests = .
+test: ${src} ${app}
 	# run testsuite
 	DJANGO_SETTINGS_MODULE=${app_name}.settings ${env} coverage run --include '${app_name}/*' --omit '*migrations*' \
-		-m pytest -vv -k 'not integration and not system' ${testargs}
+		-m pytest --no-migrations -k 'not integration and not system and ${tests}' ${testargs}
 	# generate coverage
 	${env} coverage report
 	# and pretty html
 	${env} coverage html
 	# ensure no model updates are commited without migrations
 	${env} ${app} makemigrations --verbosity=3 --check ${app_name}
-	@touch $@
 
-check: .make.check.py .make.check.sh  ## code quality checks
-.make.check.py: ${pysrc} ${app}
+check: pylama shellcheck pylint ## code quality checks
+pylama: ${pysrc} ${app}
 	# check code quality
 	${env} pylama ${pysrcdirs} --skip "**/migrations/*"
-	@touch $@
 
-.make.check.sh: ${shsrc}
+shellcheck: ${shsrc}
 	# shell script checks (if installed)
 	if command -v shellcheck &>/dev/null && ! test -z "${shsrc}";then ${env} shellcheck ${shsrc}; fi
-	@touch $@
 
-autofix fix: .make.fix  ## automatic fix of trivial code quality issues
-.make.fix: ${pysrc} ${app}
+autofix fix: ${pysrc} ${app} ## automatic fix of trivial code quality issues
 	# fix trivial pep8 style issues
 	${env} autopep8 -ri ${pysrcdirs}
 	# remove unused imports
@@ -149,7 +145,6 @@ autofix fix: .make.fix  ## automatic fix of trivial code quality issues
 	${env} isort -rc ${pysrcdirs}
 	# do a check after autofixing to show remaining problems
 	${MAKE} check
-	@touch $@
 
 ## Running
 # run: ${app}  ## run complete application stack (frontend, worker, broker)
@@ -216,8 +211,6 @@ docs: ## Generate documentation in various formats
 clean:  ## cleanup build artifacts, caches, databases, etc.
 	# remove python cache files
 	-find * -name __pycache__ -print0 | xargs -0 rm -rf
-	# remove state files
-	-rm -f .make.*
 	# remove test artifacts
 	-rm -rf .pytest_cache htmlcov/
 	# remove build artifacts
