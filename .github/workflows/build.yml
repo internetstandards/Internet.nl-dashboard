@@ -33,16 +33,15 @@ jobs:
         uses: supercharge/redis-github-action@1.5.0
         with:
           redis-version: ${{ matrix.redis-version }}
+      - name: setup
+        run: make setup
       - name: qa
         run: |
-          make pylint
+          make check
           make bandit
           make vulture
-          make check
       - name: test
-        run: |
-          make setup
-          make
+        run: make test
       - name: build image
         run: |
           make image build_args=--build-arg=VERSION=$(git describe --tags --abbrev=0)-$(git log -1 --pretty=format:%h)

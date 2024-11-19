@@ -6,12 +6,11 @@ import re
 from copy import copy
 from datetime import datetime
 from time import sleep
-from typing import Any, Dict, List, Optional, Type, Union
+from typing import Any, Dict, List, Optional, Union
 from uuid import uuid4
 
 from actstream import action
-from django.db.models import Model  # pylint: disable=unused-import
-from django.db.models import Prefetch
+from django.db.models import Model, Prefetch
 from websecmap.organizations.models import Url
 from websecmap.reporting.diskreport import location_on_disk, retrieve_report, store_report
 from websecmap.reporting.report import relevant_urls_at_timepoint
@@ -799,7 +798,7 @@ def report_sharing_data(report: UrlListReport) -> Dict[str, Any]:
     }
 
 
-def retrieve_report_raw(report_id: Union[int, str], model: Union[str, Type["Model"]] = "UrlListReport"):
+def retrieve_report_raw(report_id: Union[int, str], model: Union[str, Model] = "UrlListReport"):
     # used for direct dumping to output, not parsing any json here to speed up things!
     return _read_raw_data_from_gzip(location_on_disk(report_id, model))
 

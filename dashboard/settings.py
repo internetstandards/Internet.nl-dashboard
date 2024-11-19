@@ -9,12 +9,11 @@ from sentry_sdk.integrations.django import DjangoIntegration
 from sentry_sdk.integrations.redis import RedisIntegration
 
 from . import __version__
-from .settings_constance import CONSTANCE_CONFIG_FIELDSETS  # noqa pylint: disable=unused-import
-from .settings_constance import (CONSTANCE_ADDITIONAL_FIELDS,  # noqa  # pylint: disable=unused-import
-                                 CONSTANCE_BACKEND, CONSTANCE_CONFIG)
+from .settings_constance import (CONSTANCE_ADDITIONAL_FIELDS, CONSTANCE_BACKEND, CONSTANCE_CONFIG,
+                                 CONSTANCE_CONFIG_FIELDSETS)
+
 # import all of this and don't auto-lint it away because there are no references here.
 # most code refers to these settings.
-from .settings_jet import JET_SIDE_MENU_COMPACT, JET_SIDE_MENU_ITEMS  # noqa  # pylint: disable=unused-import
 
 """
 Django settings for dashboard project.
@@ -568,3 +567,6 @@ AUTHENTICATION_BACKENDS = [
 #         }
 #     }
 # }
+
+# make sure these imports don't get removed by linting tools
+__all__ = ['CONSTANCE_CONFIG', 'CONSTANCE_BACKEND', 'CONSTANCE_ADDITIONAL_FIELDS', 'CONSTANCE_CONFIG_FIELDSETS']

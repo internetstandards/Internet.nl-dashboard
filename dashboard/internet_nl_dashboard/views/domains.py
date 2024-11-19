@@ -2,7 +2,7 @@
 from typing import List
 
 from django.contrib.auth.decorators import login_required
-from django.http import JsonResponse
+from django.http import HttpResponseBadRequest, HttpResponseServerError, JsonResponse
 from django.views.decorators.http import require_http_methods
 from websecmap.app.common import JSEncoder
 
@@ -20,7 +20,14 @@ def suggest_subdomains_(request) -> JsonResponse:
     request = get_json_body(request)
     domain = request.get("domain", "")
     period = request.get("period", 370)
-    return JsonResponse(suggest_subdomains(domain, period), encoder=JSEncoder, safe=False)
+    try:
+        result = JsonResponse(suggest_subdomains(domain, period), encoder=JSEncoder, safe=False)
+    except ValueError:
+        result = HttpResponseBadRequest("Invalid input")
+    except Exception:  # pylint: disable=broad-exception-caught
+        result = HttpResponseServerError("Error occured while getting subdomain suggestions")
+
+    return result
 
 
 @login_required(login_url=LOGIN_URL)
