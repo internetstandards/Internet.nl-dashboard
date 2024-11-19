@@ -9,6 +9,7 @@ import timeit
 import pytest
 import responses
 from constance.test import override_config
+from django.contrib.auth.models import User
 from websecmap.organizations.models import Url
 
 from dashboard.internet_nl_dashboard.logic.domains import (ServerError, add_domains_from_raw_user_data, clean_urls,
@@ -36,6 +37,24 @@ def test_suggest_subdomains(db, caplog):
         suggest_subdomains("a")
     with pytest.raises(ServerError):
         suggest_subdomains("broken.nl")
+
+
+@responses.activate
+def test_suggest_subdomains_http(db, client):
+    responses.add(responses.GET, 'http://localhost:8001/?domain=test&suffix=nl&period=370', json=["test"], status=200)
+    responses.add(responses.GET, 'http://localhost:8001/?domain=notexisting&suffix=nl&period=370', json=[], status=404)
+    responses.add(responses.GET, 'http://localhost:8001/?domain=broken&suffix=nl&period=370', json=[], status=500)
+
+    assert client.get("/data/urllist/suggest-subdomains/",
+                      {"domain": "test.nl"}).status_code == 302, \
+        "unauthenticated request should result in login redirect"
+
+    user = User.objects.create(username="test")
+    client.force_login(user)
+
+    response = client.get("/data/urllist/suggest-subdomains/", {"domain": "test.nl"})
+    print(response)
+    assert response.json() == ["test"]
 
 
 @override_config(DASHBOARD_MAXIMUM_DOMAINS_PER_LIST=5000)
