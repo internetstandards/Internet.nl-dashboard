@@ -41,15 +41,20 @@ def suggest_subdomains(domain: str, period: int = 370):
         raise ValueError("Invalid input")
 
     # call SUBDOMAIN_SUGGESTION_SERVER_ADDRESS
-    response = requests.get(config.SUBDOMAIN_SUGGESTION_SERVER_ADDRESS,
-                            params={'domain': extract.domain, 'suffix': extract.suffix, 'period': period},
-                            timeout=10)
+    try:
+        response = requests.get(config.SUBDOMAIN_SUGGESTION_SERVER_ADDRESS,
+                                params={'domain': extract.domain, 'suffix': extract.suffix, 'period': period},
+                                timeout=10)
+    except Exception:  # pylint: disable=broad-exception-caught
+        log.exception("Failed to retrieve subdomain suggestions from  %s.", config.SUBDOMAIN_SUGGESTION_SERVER_ADDRESS)
+        raise
 
     if response.status_code == 404:
         return []
 
     if response.status_code != 200:
-        log.error("Failed to retrieve subdomain suggestions from  %s.", config.SUBDOMAIN_SUGGESTION_SERVER_ADDRESS)
+        log.error("Failed to retrieve subdomain suggestions from: %s, status code: %s.",
+                  config.SUBDOMAIN_SUGGESTION_SERVER_ADDRESS, response.status_code)
         raise ServerError("Failed to retrieve subdomain suggestions")
 
     return response.json()
