@@ -755,6 +755,7 @@ six==1.16.0
     # via
     #   -c requirements.txt
     #   celery-statsd
+    #   django-jet-reboot
     #   python-dateutil
     #   python-monkey-business
     #   requests-file
@@ -801,7 +802,7 @@ sqlparse==0.4.4
     #   django
     #   django-debug-toolbar
     #   websecmap
-starlette==0.37.2
+starlette==0.40.0
     # via sphinx-autobuild
 statsd==4.0.0
     # via
