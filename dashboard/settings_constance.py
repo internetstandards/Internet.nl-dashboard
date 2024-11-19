@@ -1,3 +1,4 @@
+import os
 from collections import OrderedDict
 
 CONSTANCE_BACKEND = 'constance.backends.database.DatabaseBackend'
@@ -246,7 +247,7 @@ CONSTANCE_CONFIG = {
         bool,
     ),
     "SUBDOMAIN_SUGGESTION_SERVER_ADDRESS": (
-        "http://localhost:8001/",
+        os.environ.get("DASHBOARD_SUBDOMAIN_SUGGESTION_SERVER_ADDRESS", "http://localhost:8001/"),
         "Server address of the suggestions API. To run this API, go to: "
         "https://github.com/internetstandards/Internet.nl-ct-log-subdomain-suggestions-api",
         str,
