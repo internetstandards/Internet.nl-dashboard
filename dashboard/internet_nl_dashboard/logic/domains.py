@@ -8,6 +8,7 @@ from datetime import datetime, timezone
 from typing import Any, Dict, List, Set, Tuple, Union
 
 import pyexcel as p
+import requests
 import tldextract
 from actstream import action
 from celery import group
@@ -49,9 +50,11 @@ def suggest_subdomains(domain: str, period: int = 370):
 
     # call SUBDOMAIN_SUGGESTION_SERVER_ADDRESS
     try:
-        response = requests.get(config.SUBDOMAIN_SUGGESTION_SERVER_ADDRESS,
-                                params={'domain': extract.domain, 'suffix': extract.suffix, 'period': period},
-                                timeout=10)
+        response = requests.get(
+            config.SUBDOMAIN_SUGGESTION_SERVER_ADDRESS,
+            params={"domain": extract.domain, "suffix": extract.suffix, "period": period},
+            timeout=10,
+        )
     except Exception:  # pylint: disable=broad-exception-caught
         log.exception("Failed to retrieve subdomain suggestions from  %s.", config.SUBDOMAIN_SUGGESTION_SERVER_ADDRESS)
         raise
@@ -60,8 +63,11 @@ def suggest_subdomains(domain: str, period: int = 370):
         return []
 
     if response.status_code != 200:
-        log.error("Failed to retrieve subdomain suggestions from: %s, status code: %s.",
-                  config.SUBDOMAIN_SUGGESTION_SERVER_ADDRESS, response.status_code)
+        log.error(
+            "Failed to retrieve subdomain suggestions from: %s, status code: %s.",
+            config.SUBDOMAIN_SUGGESTION_SERVER_ADDRESS,
+            response.status_code,
+        )
         raise ServerError("Failed to retrieve subdomain suggestions")
 
     return response.json()

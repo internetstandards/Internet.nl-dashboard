@@ -12,20 +12,29 @@ from constance.test import override_config
 from django.contrib.auth.models import User
 from websecmap.organizations.models import Url
 
-from dashboard.internet_nl_dashboard.logic.domains import (ServerError, add_domains_from_raw_user_data, clean_urls,
-                                                           delete_list, delete_url_from_urllist,
-                                                           get_or_create_list_by_name, get_urllist_content,
-                                                           get_urllists_from_account, keys_are_present_in_object,
-                                                           rename_list, retrieve_possible_urls_from_unfiltered_input,
-                                                           save_urllist_content_by_name, suggest_subdomains)
+from dashboard.internet_nl_dashboard.logic.domains import (
+    ServerError,
+    add_domains_from_raw_user_data,
+    clean_urls,
+    delete_list,
+    delete_url_from_urllist,
+    get_or_create_list_by_name,
+    get_urllist_content,
+    get_urllists_from_account,
+    keys_are_present_in_object,
+    rename_list,
+    retrieve_possible_urls_from_unfiltered_input,
+    save_urllist_content_by_name,
+    suggest_subdomains,
+)
 from dashboard.internet_nl_dashboard.models import Account
 
 
 @responses.activate
 def test_suggest_subdomains(db, caplog):
-    responses.add(responses.GET, 'http://localhost:8001/?domain=test&suffix=nl&period=370', json=["test"], status=200)
-    responses.add(responses.GET, 'http://localhost:8001/?domain=notexisting&suffix=nl&period=370', json=[], status=404)
-    responses.add(responses.GET, 'http://localhost:8001/?domain=broken&suffix=nl&period=370', json=[], status=500)
+    responses.add(responses.GET, "http://localhost:8001/?domain=test&suffix=nl&period=370", json=["test"], status=200)
+    responses.add(responses.GET, "http://localhost:8001/?domain=notexisting&suffix=nl&period=370", json=[], status=404)
+    responses.add(responses.GET, "http://localhost:8001/?domain=broken&suffix=nl&period=370", json=[], status=500)
 
     assert suggest_subdomains("test.nl", 370) == ["test"]
     assert suggest_subdomains("notexisting.nl") == []
@@ -41,13 +50,13 @@ def test_suggest_subdomains(db, caplog):
 
 @responses.activate
 def test_suggest_subdomains_http(db, client):
-    responses.add(responses.GET, 'http://localhost:8001/?domain=test&suffix=nl&period=370', json=["test"], status=200)
-    responses.add(responses.GET, 'http://localhost:8001/?domain=notexisting&suffix=nl&period=370', json=[], status=404)
-    responses.add(responses.GET, 'http://localhost:8001/?domain=broken&suffix=nl&period=370', json=[], status=500)
+    responses.add(responses.GET, "http://localhost:8001/?domain=test&suffix=nl&period=370", json=["test"], status=200)
+    responses.add(responses.GET, "http://localhost:8001/?domain=notexisting&suffix=nl&period=370", json=[], status=404)
+    responses.add(responses.GET, "http://localhost:8001/?domain=broken&suffix=nl&period=370", json=[], status=500)
 
-    assert client.get("/data/urllist/suggest-subdomains/",
-                      {"domain": "test.nl"}).status_code == 302, \
-        "unauthenticated request should result in login redirect"
+    assert (
+        client.get("/data/urllist/suggest-subdomains/", {"domain": "test.nl"}).status_code == 302
+    ), "unauthenticated request should result in login redirect"
 
     user = User.objects.create(username="test")
     client.force_login(user)
