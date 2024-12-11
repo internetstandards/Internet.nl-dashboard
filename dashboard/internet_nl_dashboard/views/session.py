@@ -30,15 +30,15 @@ def session_login_(request):
     :return:
     """
     # taken from: https://stackoverflow.com/questions/11891322/setting-up-a-user-login-in-python-django-using-json-and-
-    if request.method != 'POST':
+    if request.method != "POST":
         sleep(2)
         return operation_response(error=True, message="post_only")
 
     # get the json data:
     parameters = get_json_body(request)
 
-    username = parameters.get('username', '').strip()
-    password = parameters.get('password', '').strip()
+    username = parameters.get("username", "").strip()
+    password = parameters.get("password", "").strip()
 
     if not username or not password:
         sleep(2)
@@ -69,7 +69,7 @@ def session_logout_(request):
     # The preferred method of detecting anonymous users is to see if they are authenticated, according to:
     # https://docs.djangoproject.com/en/3.1/ref/contrib/auth/
     if not request.user.is_authenticated:
-        log.debug('User is not authenticated...')
+        log.debug("User is not authenticated...")
         return operation_response(success=True, message="logged_out")
 
     logout(request)
@@ -78,24 +78,24 @@ def session_logout_(request):
 
 def session_status_(request):
     """
-        Returns a dictionary of permissions the user has. We keep it simple and only distinct
-        :param request:
-        :return:
+    Returns a dictionary of permissions the user has. We keep it simple and only distinct
+    :param request:
+    :return:
     """
 
     if not request.user.is_authenticated:
         return {
-            'is_authenticated': False,
-            'is_superuser': False,
-            'second_factor_enabled': False,
-            'account_name': '',
+            "is_authenticated": False,
+            "is_superuser": False,
+            "second_factor_enabled": False,
+            "account_name": "",
         }
 
     return {
-        'is_authenticated': request.user.is_authenticated,
-        'is_superuser': request.user.is_superuser,
-        'account_name': request.user.dashboarduser.account.name,
-        'account_id': request.user.dashboarduser.account.id,
+        "is_authenticated": request.user.is_authenticated,
+        "is_superuser": request.user.is_superuser,
+        "account_name": request.user.dashboarduser.account.name,
+        "account_id": request.user.dashboarduser.account.id,
     }
 
 

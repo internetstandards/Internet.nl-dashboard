@@ -13,8 +13,8 @@ def test_get_publicly_shared_lists_per_account(db):
 
         # todo: perhaps mandate that a list-id is given, and perhaps that the list id has to be a guid.
         # no content no crash
-        response = c.get('/data/report/public/account/1/lists/all/')
-        assert response.content == b'[]'
+        response = c.get("/data/report/public/account/1/lists/all/")
+        assert response.content == b"[]"
 
         # create a list with some reports
         account = Account.objects.create(name="share_account")
@@ -25,48 +25,48 @@ def test_get_publicly_shared_lists_per_account(db):
 
         expected_response = [
             {
-                'account': {'public_name': ''},
-                'list': {
-                    'id': urllist.id,
-                    'name': urllist.name,
-                    'scan_type': 'web',
-                    'automatically_share_new_reports': False,
-                    'automated_scan_frequency': 'disabled'
+                "account": {"public_name": ""},
+                "list": {
+                    "id": urllist.id,
+                    "name": urllist.name,
+                    "scan_type": "web",
+                    "automatically_share_new_reports": False,
+                    "automated_scan_frequency": "disabled",
                 },
-                'number_of_reports': 1,
-                'reports': [
+                "number_of_reports": 1,
+                "reports": [
                     {
-                        'id': urllistreport.id,
-                        'at_when': '2020-01-01T00:00:00Z',
-                        'report_type': "web",
+                        "id": urllistreport.id,
+                        "at_when": "2020-01-01T00:00:00Z",
+                        "report_type": "web",
                         "has_public_share_code": False,
                         "average_internet_nl_score": 0.0,
-                        "public_report_code": '',
-                        'total_urls': 0,
-                        'urllist__name': urllist.name
+                        "public_report_code": "",
+                        "total_urls": 0,
+                        "urllist__name": urllist.name,
                     }
-                ]
+                ],
             }
         ]
 
-        response = c.get(f'/data/report/public/account/{account.id}/lists/all/')
+        response = c.get(f"/data/report/public/account/{account.id}/lists/all/")
 
         # remove randomness:
         assert response.status_code == 200
         json_data = response.json()
-        json_data[0]['reports'][0]['public_report_code'] = ""
+        json_data[0]["reports"][0]["public_report_code"] = ""
         assert json_data == expected_response
 
         # non existing list:
-        response = c.get(f'/data/report/public/account/{account.id}/lists/781263187/')
-        assert response.content == b'[]'
+        response = c.get(f"/data/report/public/account/{account.id}/lists/781263187/")
+        assert response.content == b"[]"
 
         # non existing account:
-        response = c.get(f'/data/report/public/account/781263187/lists/{urllist.id}/')
-        assert response.content == b'[]'
+        response = c.get(f"/data/report/public/account/781263187/lists/{urllist.id}/")
+        assert response.content == b"[]"
 
-        response = c.get(f'/data/report/public/account/{account.id}/lists/{urllist.id}/')
+        response = c.get(f"/data/report/public/account/{account.id}/lists/{urllist.id}/")
         json_data = response.json()
-        json_data[0]['reports'][0]['public_report_code'] = ""
+        json_data[0]["reports"][0]["public_report_code"] = ""
         assert json_data == expected_response
         assert response.status_code == 200

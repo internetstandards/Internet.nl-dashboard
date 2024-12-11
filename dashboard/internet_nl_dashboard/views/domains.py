@@ -6,12 +6,22 @@ from django.http import HttpResponseBadRequest, HttpResponseServerError, JsonRes
 from django.views.decorators.http import require_http_methods
 from websecmap.app.common import JSEncoder
 
-from dashboard.internet_nl_dashboard.logic.domains import (add_domains_from_raw_user_data, alter_url_in_urllist,
-                                                           cancel_scan, create_list, delete_list,
-                                                           delete_url_from_urllist, download_as_spreadsheet,
-                                                           get_scan_status_of_list, get_urllist_content,
-                                                           get_urllists_from_account, save_urllist_content_by_name,
-                                                           scan_now, suggest_subdomains, update_list_settings)
+from dashboard.internet_nl_dashboard.logic.domains import (
+    add_domains_from_raw_user_data,
+    alter_url_in_urllist,
+    cancel_scan,
+    create_list,
+    delete_list,
+    delete_url_from_urllist,
+    download_as_spreadsheet,
+    get_scan_status_of_list,
+    get_urllist_content,
+    get_urllists_from_account,
+    save_urllist_content_by_name,
+    scan_now,
+    update_list_settings,
+)
+from dashboard.internet_nl_dashboard.logic.suggestions import suggest_subdomains
 from dashboard.internet_nl_dashboard.views import LOGIN_URL, get_account, get_json_body
 
 
@@ -79,8 +89,8 @@ def add_urls_to_urllist(request):
 def delete_url_from_urllist_(request):
     account = get_account(request)
     request = get_json_body(request)
-    item_deleted = delete_url_from_urllist(account, request.get('urllist_id', None), request.get('url_id', None))
-    return JsonResponse({'items_deleted': None, 'success': item_deleted})
+    item_deleted = delete_url_from_urllist(account, request.get("urllist_id", None), request.get("url_id", None))
+    return JsonResponse({"items_deleted": None, "success": item_deleted})
 
 
 @login_required(login_url=LOGIN_URL)
@@ -92,7 +102,7 @@ def scan_now_(request):
 def cancel_scan_(request):
     account = get_account(request)
     request = get_json_body(request)
-    response = cancel_scan(account, request.get('id'))
+    response = cancel_scan(account, request.get("id"))
     return JsonResponse(response)
 
 
@@ -100,4 +110,4 @@ def cancel_scan_(request):
 @require_http_methods(["POST"])
 def download_list_(request):
     params = get_json_body(request)
-    return download_as_spreadsheet(get_account(request), params.get('list-id', None), params.get('file-type', None))
+    return download_as_spreadsheet(get_account(request), params.get("list-id", None), params.get("file-type", None))

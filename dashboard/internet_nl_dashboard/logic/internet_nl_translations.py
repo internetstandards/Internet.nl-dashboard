@@ -11,13 +11,13 @@ import requests
 from django.utils.text import slugify
 
 # Todo: refactor this to languages from settings.py
-SUPPORTED_LOCALES: List[str] = ['nl', 'en']
+SUPPORTED_LOCALES: List[str] = ["nl", "en"]
 
 log = logging.getLogger(__package__)
 
 # .parent = logic; .parent.parent = internet_nl_dashboard;
 DASHBOARD_APP_DIRECTORY = Path(__file__).parent.parent
-VUE_I18N_OUTPUT_PATH = f'{DASHBOARD_APP_DIRECTORY}/static/js/translations/'
+VUE_I18N_OUTPUT_PATH = f"{DASHBOARD_APP_DIRECTORY}/static/js/translations/"
 DJANGO_I18N_OUTPUT_PATH = f"{DASHBOARD_APP_DIRECTORY}/locale/"
 # log.debug(f"VUE_I18N_OUTPUT_PATH: {VUE_I18N_OUTPUT_PATH}")
 # log.debug(f"DJANGO_I18N_OUTPUT_PATH: {DJANGO_I18N_OUTPUT_PATH}")
@@ -59,15 +59,15 @@ def convert_internet_nl_content_to_vue():
         raw_content: bytes = get_locale_content(locale)
         store_as_django_locale(locale, raw_content)
         structured_content = load_as_po_file(raw_content)
-        translated_locales.append({'locale': locale, 'content': structured_content})
+        translated_locales.append({"locale": locale, "content": structured_content})
 
         # support a per-language kind of file, in case we're going to do dynamic loading of languages.
         vue_i18n_content: str = convert_vue_i18n_format(locale, structured_content)
         combined_vue_i18n_content += vue_i18n_content
-        store_vue_i18n_file(f'internet_nl.{locale}', vue_i18n_content)
+        store_vue_i18n_file(f"internet_nl.{locale}", vue_i18n_content)
 
     # the locales are easiest stored together. This makes language switching a lot easier.
-    store_vue_i18n_file('internet_nl', combined_vue_i18n_content)
+    store_vue_i18n_file("internet_nl", combined_vue_i18n_content)
 
 
 def get_locale_content(locale: str) -> bytes:
@@ -106,8 +106,8 @@ def store_as_django_locale(locale, content):
     # If the language does not exist yet, make the folder supporting this language.
     os.makedirs(Path(filepath).parent, exist_ok=True)
 
-    with open(filepath, 'w', encoding="UTF-8") as file:
-        file.write(content.decode('UTF-8'))
+    with open(filepath, "w", encoding="UTF-8") as file:
+        file.write(content.decode("UTF-8"))
 
 
 def load_as_po_file(raw_content: bytes) -> List[Any]:
@@ -162,7 +162,7 @@ def convert_vue_i18n_format(locale: str, po_content: Any) -> str:
     for entry in po_content:
         # to save a boatload of data, we're not storing the 'content' from the pages of internet.nl
         # we'll just have to point to this content.
-        if entry.msgid.endswith('content'):
+        if entry.msgid.endswith("content"):
             continue
 
         content += f"            {_js_safe_msgid(entry.msgid)}: '{_js_safe_msgstr(entry.msgstr)}',\n"
@@ -176,14 +176,14 @@ def get_po_as_dictionary(file):
     structured_content = polib.pofile(file)
     po_file_as_dictionary = {}
     for entry in structured_content:
-        if entry.msgid.endswith('content'):
+        if entry.msgid.endswith("content"):
             continue
         po_file_as_dictionary[_js_safe_msgid(entry.msgid)] = _js_safe_msgstr(entry.msgstr)
 
     return po_file_as_dictionary
 
 
-def get_po_as_dictionary_v2(language='en'):
+def get_po_as_dictionary_v2(language="en"):
     """Much easier to use with only the language parameters and no magic or miserable path stuff."""
 
     po_file_location = f"{DJANGO_I18N_OUTPUT_PATH}{language}/LC_MESSAGES/django.po"
@@ -191,9 +191,11 @@ def get_po_as_dictionary_v2(language='en'):
         log.debug(f"Loading locale file: {po_file_location}")
         return get_po_as_dictionary(po_file_location)
     except OSError as error:
-        raise SystemError(f"Missing PO file 'django.po' at {po_file_location}. Note that an exception about "
-                          f"incorrect syntax may be misleading. This is also given when there is no file. "
-                          f"The exception that is given: {error}. Is this language available?") from error
+        raise SystemError(
+            f"Missing PO file 'django.po' at {po_file_location}. Note that an exception about "
+            f"incorrect syntax may be misleading. This is also given when there is no file. "
+            f"The exception that is given: {error}. Is this language available?"
+        ) from error
 
 
 def _vue_format_start() -> str:
@@ -218,19 +220,19 @@ def _vue_format_end() -> str:
 
 
 def _js_safe_msgid(text):
-    return slugify(text).replace('-', '_')
+    return slugify(text).replace("-", "_")
 
 
 def _js_safe_msgstr(msgstr):
     # a poor mans escape for single quotes.
-    msgstr = msgstr.replace("'", "\\\'")
+    msgstr = msgstr.replace("'", "\\'")
     html = markdown.markdown(msgstr)
-    one_line_html = html.replace('\n', '')
+    one_line_html = html.replace("\n", "")
 
     # as happening on internet.nl, if the line is just a single paragraph, the paragraph tags are removed.
     # this is convenient for use in labels etc, that have their own markup.
     # see: https://github.com/NLnetLabs/Internet.nl/blob/cece8255ac7f39bded137f67c94a10748970c3c7/bin/pofiles.py
-    one_line_html = _strip_simple_item(one_line_html, 'p')
+    one_line_html = _strip_simple_item(one_line_html, "p")
 
     return one_line_html
 
@@ -241,8 +243,8 @@ def _strip_simple_item(text, html_tag):
         # Opening: <> and closing: </>
         len_opening_tag = len(html_tag) + 2
         len_closing_tag = len_opening_tag + 1
-
-        return text[len_opening_tag:len(text) - len_closing_tag]
+        finish = len(text) - len_closing_tag
+        return text[len_opening_tag:finish]
 
     return text
 
@@ -256,7 +258,7 @@ def store_vue_i18n_file(filename: str, content: str) -> None:
     :param content:
     :return:
     """
-    with open(f"{VUE_I18N_OUTPUT_PATH}{filename}.js", 'w', encoding="UTF-8") as file:
+    with open(f"{VUE_I18N_OUTPUT_PATH}{filename}.js", "w", encoding="UTF-8") as file:
         file.write(content)
 
 
@@ -271,163 +273,151 @@ def translate_field(field_label, translation_dictionary: Dict[str, str]):
     """
     field_mapping = {
         # mail fields, see dashboard.js
-        'internet_nl_mail_starttls_cert_domain': 'detail_mail_tls_cert_hostmatch_label',
-        'internet_nl_mail_starttls_tls_version': 'detail_mail_tls_version_label',
-        'internet_nl_mail_starttls_cert_chain': 'detail_mail_tls_cert_trust_label',
-        'internet_nl_mail_starttls_tls_available': 'detail_mail_tls_starttls_exists_label',
-        'internet_nl_mail_starttls_tls_clientreneg': 'detail_mail_tls_renegotiation_client_label',
-        'internet_nl_mail_starttls_tls_ciphers': 'detail_mail_tls_ciphers_label',
-        'internet_nl_mail_starttls_dane_valid': 'detail_mail_tls_dane_valid_label',
-        'internet_nl_mail_starttls_dane_exist': 'detail_mail_tls_dane_exists_label',
-        'internet_nl_mail_starttls_tls_secreneg': 'detail_mail_tls_renegotiation_secure_label',
-        'internet_nl_mail_starttls_dane_rollover': 'detail_mail_tls_dane_rollover_label',
-        'internet_nl_mail_starttls_cert_pubkey': 'detail_mail_tls_cert_pubkey_label',
-        'internet_nl_mail_starttls_cert_sig': 'detail_mail_tls_cert_signature_label',
-        'internet_nl_mail_starttls_tls_compress': 'detail_mail_tls_compression_label',
-        'internet_nl_mail_starttls_tls_keyexchange': 'detail_mail_tls_fs_params_label',
-        'internet_nl_mail_auth_dmarc_policy': 'detail_mail_auth_dmarc_policy_label',
-        'internet_nl_mail_auth_dmarc_exist': 'detail_mail_auth_dmarc_label',
-        'internet_nl_mail_auth_spf_policy': 'detail_mail_auth_spf_policy_label',
-        'internet_nl_mail_auth_dkim_exist': 'detail_mail_auth_dkim_label',
-        'internet_nl_mail_auth_spf_exist': 'detail_mail_auth_spf_label',
-        'internet_nl_mail_dnssec_mailto_exist': 'detail_mail_dnssec_exists_label',
-        'internet_nl_mail_dnssec_mailto_valid': 'detail_mail_dnssec_valid_label',
-        'internet_nl_mail_dnssec_mx_valid': 'detail_mail_dnssec_mx_valid_label',
-        'internet_nl_mail_dnssec_mx_exist': 'detail_mail_dnssec_mx_exists_label',
-        'internet_nl_mail_ipv6_mx_address': 'detail_mail_ipv6_mx_aaaa_label',
-        'internet_nl_mail_ipv6_mx_reach': 'detail_mail_ipv6_mx_reach_label',
-        'internet_nl_mail_ipv6_ns_reach': 'detail_web_mail_ipv6_ns_reach_label',
-        'internet_nl_mail_ipv6_ns_address': 'detail_web_mail_ipv6_ns_aaaa_label',
-        'internet_nl_mail_starttls_tls_cipherorder': 'detail_mail_tls_cipher_order_label',
-        'internet_nl_mail_starttls_tls_keyexchangehash': 'detail_mail_tls_kex_hash_func_label',
-        'internet_nl_mail_starttls_tls_0rtt': 'detail_mail_tls_zero_rtt_label',
-        'internet_nl_mail_rpki_exists': 'detail_mail_rpki_exists_label',
-        'internet_nl_mail_rpki_valid': 'detail_mail_rpki_valid_label',
-        'internet_nl_mail_ns_rpki_exists': 'detail_web_mail_rpki_ns_exists_label',
-        'internet_nl_mail_ns_rpki_valid': 'detail_web_mail_rpki_ns_valid_label',
-        'internet_nl_mail_mx_ns_rpki_exists': 'detail_mail_rpki_mx_ns_exists_label',
-        'internet_nl_mail_mx_ns_rpki_valid': 'detail_mail_rpki_mx_ns_valid_label',
-
-
+        "internet_nl_mail_starttls_cert_domain": "detail_mail_tls_cert_hostmatch_label",
+        "internet_nl_mail_starttls_tls_version": "detail_mail_tls_version_label",
+        "internet_nl_mail_starttls_cert_chain": "detail_mail_tls_cert_trust_label",
+        "internet_nl_mail_starttls_tls_available": "detail_mail_tls_starttls_exists_label",
+        "internet_nl_mail_starttls_tls_clientreneg": "detail_mail_tls_renegotiation_client_label",
+        "internet_nl_mail_starttls_tls_ciphers": "detail_mail_tls_ciphers_label",
+        "internet_nl_mail_starttls_dane_valid": "detail_mail_tls_dane_valid_label",
+        "internet_nl_mail_starttls_dane_exist": "detail_mail_tls_dane_exists_label",
+        "internet_nl_mail_starttls_tls_secreneg": "detail_mail_tls_renegotiation_secure_label",
+        "internet_nl_mail_starttls_dane_rollover": "detail_mail_tls_dane_rollover_label",
+        "internet_nl_mail_starttls_cert_pubkey": "detail_mail_tls_cert_pubkey_label",
+        "internet_nl_mail_starttls_cert_sig": "detail_mail_tls_cert_signature_label",
+        "internet_nl_mail_starttls_tls_compress": "detail_mail_tls_compression_label",
+        "internet_nl_mail_starttls_tls_keyexchange": "detail_mail_tls_fs_params_label",
+        "internet_nl_mail_auth_dmarc_policy": "detail_mail_auth_dmarc_policy_label",
+        "internet_nl_mail_auth_dmarc_exist": "detail_mail_auth_dmarc_label",
+        "internet_nl_mail_auth_spf_policy": "detail_mail_auth_spf_policy_label",
+        "internet_nl_mail_auth_dkim_exist": "detail_mail_auth_dkim_label",
+        "internet_nl_mail_auth_spf_exist": "detail_mail_auth_spf_label",
+        "internet_nl_mail_dnssec_mailto_exist": "detail_mail_dnssec_exists_label",
+        "internet_nl_mail_dnssec_mailto_valid": "detail_mail_dnssec_valid_label",
+        "internet_nl_mail_dnssec_mx_valid": "detail_mail_dnssec_mx_valid_label",
+        "internet_nl_mail_dnssec_mx_exist": "detail_mail_dnssec_mx_exists_label",
+        "internet_nl_mail_ipv6_mx_address": "detail_mail_ipv6_mx_aaaa_label",
+        "internet_nl_mail_ipv6_mx_reach": "detail_mail_ipv6_mx_reach_label",
+        "internet_nl_mail_ipv6_ns_reach": "detail_web_mail_ipv6_ns_reach_label",
+        "internet_nl_mail_ipv6_ns_address": "detail_web_mail_ipv6_ns_aaaa_label",
+        "internet_nl_mail_starttls_tls_cipherorder": "detail_mail_tls_cipher_order_label",
+        "internet_nl_mail_starttls_tls_keyexchangehash": "detail_mail_tls_kex_hash_func_label",
+        "internet_nl_mail_starttls_tls_0rtt": "detail_mail_tls_zero_rtt_label",
+        "internet_nl_mail_rpki_exists": "detail_mail_rpki_exists_label",
+        "internet_nl_mail_rpki_valid": "detail_mail_rpki_valid_label",
+        "internet_nl_mail_ns_rpki_exists": "detail_web_mail_rpki_ns_exists_label",
+        "internet_nl_mail_ns_rpki_valid": "detail_web_mail_rpki_ns_valid_label",
+        "internet_nl_mail_mx_ns_rpki_exists": "detail_mail_rpki_mx_ns_exists_label",
+        "internet_nl_mail_mx_ns_rpki_valid": "detail_mail_rpki_mx_ns_valid_label",
         # web fields, see dashboard.js
-        'internet_nl_web_appsecpriv': 'results_domain_appsecpriv_http_headers_label',
-        'internet_nl_web_appsecpriv_csp': 'detail_web_appsecpriv_http_csp_label',
-        'internet_nl_web_appsecpriv_referrer_policy': 'detail_web_appsecpriv_http_referrer_policy_label',
-        'internet_nl_web_appsecpriv_x_content_type_options': 'detail_web_appsecpriv_http_x_content_type_label',
-        'internet_nl_web_appsecpriv_x_frame_options': 'detail_web_appsecpriv_http_x_frame_label',
-        'internet_nl_web_appsecpriv_securitytxt': 'detail_web_appsecpriv_http_securitytxt_label',
-        'internet_nl_web_https_cert_domain': 'detail_web_tls_cert_hostmatch_label',
-        'internet_nl_web_https_http_redirect': 'detail_web_tls_https_forced_label',
-        'internet_nl_web_https_cert_chain': 'detail_web_tls_cert_trust_label',
-        'internet_nl_web_https_tls_version': 'detail_web_tls_version_label',
-        'internet_nl_web_https_tls_clientreneg': 'detail_web_tls_renegotiation_client_label',
-        'internet_nl_web_https_tls_ciphers': 'detail_web_tls_ciphers_label',
-        'internet_nl_web_https_http_available': 'detail_web_tls_https_exists_label',
-        'internet_nl_web_https_dane_exist': 'detail_web_tls_dane_exists_label',
-        'internet_nl_web_https_http_compress': 'detail_web_tls_http_compression_label',
-        'internet_nl_web_https_http_hsts': 'detail_web_tls_https_hsts_label',
-        'internet_nl_web_https_tls_secreneg': 'detail_web_tls_renegotiation_secure_label',
-        'internet_nl_web_https_dane_valid': 'detail_web_tls_dane_valid_label',
-        'internet_nl_web_https_cert_pubkey': 'detail_web_tls_cert_pubkey_label',
-        'internet_nl_web_https_cert_sig': 'detail_web_tls_cert_signature_label',
-        'internet_nl_web_https_tls_compress': 'detail_web_tls_compression_label',
-        'internet_nl_web_https_tls_keyexchange': 'detail_web_tls_fs_params_label',
-        'internet_nl_web_dnssec_valid': 'detail_web_dnssec_valid_label',
-        'internet_nl_web_dnssec_exist': 'detail_web_dnssec_exists_label',
-        'internet_nl_web_ipv6_ws_similar': 'detail_web_ipv6_web_ipv46_label',
-        'internet_nl_web_ipv6_ws_address': 'detail_web_ipv6_web_aaaa_label',
-        'internet_nl_web_ipv6_ns_reach': 'detail_web_mail_ipv6_ns_reach_label',
-        'internet_nl_web_ipv6_ws_reach': 'detail_web_ipv6_web_reach_label',
-        'internet_nl_web_ipv6_ns_address': 'detail_web_mail_ipv6_ns_aaaa_label',
-        'internet_nl_web_https_tls_cipherorder': 'detail_web_tls_cipher_order_label',
-        'internet_nl_web_https_tls_0rtt': 'detail_web_tls_zero_rtt_label',
-        'internet_nl_web_https_tls_ocsp': 'detail_web_tls_ocsp_stapling_label',
-        'internet_nl_web_https_tls_keyexchangehash': 'detail_web_tls_kex_hash_func_label',
-        'internet_nl_web_rpki_exists': 'detail_web_rpki_exists_label',
-        'internet_nl_web_rpki_valid': 'detail_web_rpki_valid_label',
-        'internet_nl_web_ns_rpki_exists': 'detail_web_mail_rpki_ns_exists_label',
-        'internet_nl_web_ns_rpki_valid': 'detail_web_mail_rpki_ns_valid_label',
-
-        'internet_nl_web_rpki': 'test_siterpki_label',
-        'internet_nl_web_tls': 'test_sitetls_label',
-        'internet_nl_web_dnssec': 'test_sitednssec_label',
-        'internet_nl_web_ipv6': 'test_siteipv6_label',
-
-        'internet_nl_mail_dashboard_tls': 'test_mailtls_label',
-        'internet_nl_mail_dashboard_auth': 'test_mailauth_label',
-        'internet_nl_mail_dashboard_dnssec': 'test_maildnssec_label',
-        'internet_nl_mail_dashboard_ipv6': 'test_mailipv6_label',
-        'internet_nl_mail_dashboard_rpki': 'test_mailrpki_label',
-
-        "category_web_ipv6_name_server": 'results_domain_mail_ipv6_name_servers_label',
-        "category_web_ipv6_web_server": 'results_domain_ipv6_web_server_label',
-        "category_web_dnssec_dnssec": 'test_sitednssec_label',
-        "category_web_tls_http": 'results_domain_tls_https_label',
-        "category_web_tls_tls": 'results_domain_tls_tls_label',
-        "category_web_tls_certificate": 'results_domain_mail_tls_certificate_label',
-        "category_web_tls_dane": 'results_domain_mail_tls_dane_label',
-        "category_web_security_options_appsecpriv": 'results_domain_appsecpriv_http_headers_label',
-
-        'category_mail_ipv6_name_servers': 'results_domain_mail_ipv6_name_servers_label',
-        'category_mail_ipv6_mail_servers': 'results_mail_ipv6_mail_servers_label',
-        'category_mail_dnssec_email_address_domain': 'results_mail_dnssec_domain_label',
-        'category_mail_dnssec_mail_server_domain': 'results_mail_dnssec_mail_servers_label',
-        'category_mail_dashboard_auth_dmarc': 'results_mail_auth_dmarc_label',
-        'category_mail_dashboard_aut_dkim': 'results_mail_auth_dkim_label',
-        'category_mail_dashboard_aut_spf': 'results_mail_auth_spf_label',
-        'category_mail_starttls_tls': 'results_mail_tls_starttls_label',
-        'category_mail_starttls_certificate': 'results_domain_mail_tls_certificate_label',
-        'category_mail_starttls_dane': 'results_domain_mail_tls_dane_label',
-        'category_web_security_options_other': 'results_domain_appsecpriv_other_options_label',
-        'category_web_rpki_name_server': 'results_domain_mail_rpki_name_servers_label',
-        'category_web_rpki_web_server': 'results_domain_rpki_web_server_label',
-        'category_mail_rpki_name_server': 'results_domain_mail_rpki_name_servers_label',
-        'category_mail_rpki_name_mail_server': 'results_mail_rpki_mx_name_servers_label',
-        'category_mail_rpki_mail_server': 'results_mail_rpki_mail_servers_label',
-
-        'internet_nl_score': '% Score',
-        'internet_nl_score_report': 'Report',
-
+        "internet_nl_web_appsecpriv": "results_domain_appsecpriv_http_headers_label",
+        "internet_nl_web_appsecpriv_csp": "detail_web_appsecpriv_http_csp_label",
+        "internet_nl_web_appsecpriv_referrer_policy": "detail_web_appsecpriv_http_referrer_policy_label",
+        "internet_nl_web_appsecpriv_x_content_type_options": "detail_web_appsecpriv_http_x_content_type_label",
+        "internet_nl_web_appsecpriv_x_frame_options": "detail_web_appsecpriv_http_x_frame_label",
+        "internet_nl_web_appsecpriv_securitytxt": "detail_web_appsecpriv_http_securitytxt_label",
+        "internet_nl_web_https_cert_domain": "detail_web_tls_cert_hostmatch_label",
+        "internet_nl_web_https_http_redirect": "detail_web_tls_https_forced_label",
+        "internet_nl_web_https_cert_chain": "detail_web_tls_cert_trust_label",
+        "internet_nl_web_https_tls_version": "detail_web_tls_version_label",
+        "internet_nl_web_https_tls_clientreneg": "detail_web_tls_renegotiation_client_label",
+        "internet_nl_web_https_tls_ciphers": "detail_web_tls_ciphers_label",
+        "internet_nl_web_https_http_available": "detail_web_tls_https_exists_label",
+        "internet_nl_web_https_dane_exist": "detail_web_tls_dane_exists_label",
+        "internet_nl_web_https_http_compress": "detail_web_tls_http_compression_label",
+        "internet_nl_web_https_http_hsts": "detail_web_tls_https_hsts_label",
+        "internet_nl_web_https_tls_secreneg": "detail_web_tls_renegotiation_secure_label",
+        "internet_nl_web_https_dane_valid": "detail_web_tls_dane_valid_label",
+        "internet_nl_web_https_cert_pubkey": "detail_web_tls_cert_pubkey_label",
+        "internet_nl_web_https_cert_sig": "detail_web_tls_cert_signature_label",
+        "internet_nl_web_https_tls_compress": "detail_web_tls_compression_label",
+        "internet_nl_web_https_tls_keyexchange": "detail_web_tls_fs_params_label",
+        "internet_nl_web_dnssec_valid": "detail_web_dnssec_valid_label",
+        "internet_nl_web_dnssec_exist": "detail_web_dnssec_exists_label",
+        "internet_nl_web_ipv6_ws_similar": "detail_web_ipv6_web_ipv46_label",
+        "internet_nl_web_ipv6_ws_address": "detail_web_ipv6_web_aaaa_label",
+        "internet_nl_web_ipv6_ns_reach": "detail_web_mail_ipv6_ns_reach_label",
+        "internet_nl_web_ipv6_ws_reach": "detail_web_ipv6_web_reach_label",
+        "internet_nl_web_ipv6_ns_address": "detail_web_mail_ipv6_ns_aaaa_label",
+        "internet_nl_web_https_tls_cipherorder": "detail_web_tls_cipher_order_label",
+        "internet_nl_web_https_tls_0rtt": "detail_web_tls_zero_rtt_label",
+        "internet_nl_web_https_tls_ocsp": "detail_web_tls_ocsp_stapling_label",
+        "internet_nl_web_https_tls_keyexchangehash": "detail_web_tls_kex_hash_func_label",
+        "internet_nl_web_rpki_exists": "detail_web_rpki_exists_label",
+        "internet_nl_web_rpki_valid": "detail_web_rpki_valid_label",
+        "internet_nl_web_ns_rpki_exists": "detail_web_mail_rpki_ns_exists_label",
+        "internet_nl_web_ns_rpki_valid": "detail_web_mail_rpki_ns_valid_label",
+        "internet_nl_web_rpki": "test_siterpki_label",
+        "internet_nl_web_tls": "test_sitetls_label",
+        "internet_nl_web_dnssec": "test_sitednssec_label",
+        "internet_nl_web_ipv6": "test_siteipv6_label",
+        "internet_nl_mail_dashboard_tls": "test_mailtls_label",
+        "internet_nl_mail_dashboard_auth": "test_mailauth_label",
+        "internet_nl_mail_dashboard_dnssec": "test_maildnssec_label",
+        "internet_nl_mail_dashboard_ipv6": "test_mailipv6_label",
+        "internet_nl_mail_dashboard_rpki": "test_mailrpki_label",
+        "category_web_ipv6_name_server": "results_domain_mail_ipv6_name_servers_label",
+        "category_web_ipv6_web_server": "results_domain_ipv6_web_server_label",
+        "category_web_dnssec_dnssec": "test_sitednssec_label",
+        "category_web_tls_http": "results_domain_tls_https_label",
+        "category_web_tls_tls": "results_domain_tls_tls_label",
+        "category_web_tls_certificate": "results_domain_mail_tls_certificate_label",
+        "category_web_tls_dane": "results_domain_mail_tls_dane_label",
+        "category_web_security_options_appsecpriv": "results_domain_appsecpriv_http_headers_label",
+        "category_mail_ipv6_name_servers": "results_domain_mail_ipv6_name_servers_label",
+        "category_mail_ipv6_mail_servers": "results_mail_ipv6_mail_servers_label",
+        "category_mail_dnssec_email_address_domain": "results_mail_dnssec_domain_label",
+        "category_mail_dnssec_mail_server_domain": "results_mail_dnssec_mail_servers_label",
+        "category_mail_dashboard_auth_dmarc": "results_mail_auth_dmarc_label",
+        "category_mail_dashboard_aut_dkim": "results_mail_auth_dkim_label",
+        "category_mail_dashboard_aut_spf": "results_mail_auth_spf_label",
+        "category_mail_starttls_tls": "results_mail_tls_starttls_label",
+        "category_mail_starttls_certificate": "results_domain_mail_tls_certificate_label",
+        "category_mail_starttls_dane": "results_domain_mail_tls_dane_label",
+        "category_web_security_options_other": "results_domain_appsecpriv_other_options_label",
+        "category_web_rpki_name_server": "results_domain_mail_rpki_name_servers_label",
+        "category_web_rpki_web_server": "results_domain_rpki_web_server_label",
+        "category_mail_rpki_name_server": "results_domain_mail_rpki_name_servers_label",
+        "category_mail_rpki_name_mail_server": "results_mail_rpki_mx_name_servers_label",
+        "category_mail_rpki_mail_server": "results_mail_rpki_mail_servers_label",
+        "internet_nl_score": "% Score",
+        "internet_nl_score_report": "Report",
         # directly translated fields.
-        'internet_nl_mail_legacy_dmarc': 'DMARC',
-        'internet_nl_mail_legacy_dkim': 'DKIM',
-        'internet_nl_mail_legacy_spf': 'SPF',
-        'internet_nl_mail_legacy_dmarc_policy': 'DMARC policy',
-        'internet_nl_mail_legacy_spf_policy': 'SPF policy',
-        'internet_nl_mail_legacy_start_tls': 'STARTTLS',
-        'internet_nl_mail_legacy_start_tls_ncsc': 'STARTTLS NCSC',
-        'internet_nl_mail_legacy_dnssec_email_domain': 'DNSSEC e-mail domain',
-        'internet_nl_mail_legacy_dnssec_mx': 'DNSSEC MX',
-        'internet_nl_mail_legacy_dane': 'DANE',
-        'internet_nl_mail_legacy_category_ipv6': 'IPv6',
-        'internet_nl_mail_legacy_ipv6_nameserver': 'IPv6 nameserver',
-        'internet_nl_mail_legacy_ipv6_mailserver': 'IPv6 mailserver',
-        'internet_nl_mail_legacy_category': 'Extra Fields',
-
-        'internet_nl_web_legacy_dnssec': 'DNSSEC',
-        'internet_nl_web_legacy_tls_available': 'TLS available',
-        'internet_nl_web_legacy_tls_ncsc_web': 'TLS NCSC web',
-        'internet_nl_web_legacy_https_enforced': 'HTTPS redirect',
-        'internet_nl_web_legacy_hsts': 'HSTS',
-        'internet_nl_web_legacy_category_ipv6': 'IPv6',
-        'internet_nl_web_legacy_ipv6_nameserver': 'IPv6 nameserver',
-        'internet_nl_web_legacy_ipv6_webserver': 'IPv6 webserver',
-        'internet_nl_web_legacy_category': 'Extra Fields',
+        "internet_nl_mail_legacy_dmarc": "DMARC",
+        "internet_nl_mail_legacy_dkim": "DKIM",
+        "internet_nl_mail_legacy_spf": "SPF",
+        "internet_nl_mail_legacy_dmarc_policy": "DMARC policy",
+        "internet_nl_mail_legacy_spf_policy": "SPF policy",
+        "internet_nl_mail_legacy_start_tls": "STARTTLS",
+        "internet_nl_mail_legacy_start_tls_ncsc": "STARTTLS NCSC",
+        "internet_nl_mail_legacy_dnssec_email_domain": "DNSSEC e-mail domain",
+        "internet_nl_mail_legacy_dnssec_mx": "DNSSEC MX",
+        "internet_nl_mail_legacy_dane": "DANE",
+        "internet_nl_mail_legacy_category_ipv6": "IPv6",
+        "internet_nl_mail_legacy_ipv6_nameserver": "IPv6 nameserver",
+        "internet_nl_mail_legacy_ipv6_mailserver": "IPv6 mailserver",
+        "internet_nl_mail_legacy_category": "Extra Fields",
+        "internet_nl_web_legacy_dnssec": "DNSSEC",
+        "internet_nl_web_legacy_tls_available": "TLS available",
+        "internet_nl_web_legacy_tls_ncsc_web": "TLS NCSC web",
+        "internet_nl_web_legacy_https_enforced": "HTTPS redirect",
+        "internet_nl_web_legacy_hsts": "HSTS",
+        "internet_nl_web_legacy_category_ipv6": "IPv6",
+        "internet_nl_web_legacy_ipv6_nameserver": "IPv6 nameserver",
+        "internet_nl_web_legacy_ipv6_webserver": "IPv6 webserver",
+        "internet_nl_web_legacy_category": "Extra Fields",
         # Deleted on request
         # 'internet_nl_web_legacy_dane': 'DANE',
-
-        'internet_nl_web_legacy_tls_1_3': 'TLS 1.3 Support',
-        'internet_nl_mail_legacy_mail_sending_domain': 'E-mail sending domain',
-        'internet_nl_mail_legacy_mail_server_testable': 'Mail server testable',
-        'internet_nl_mail_legacy_mail_server_reachable': 'Mail server reachable',
-        'internet_nl_mail_legacy_domain_has_mx': 'Mail server has MX record',
-        'internet_nl_mail_legacy_tls_1_3': 'TLS 1.3 Support',
-
-        'legacy': 'Extra Fields',
-        'internet_nl_mail_dashboard_overall_score': 'Score',
-        'internet_nl_web_overall_score': 'Score',
-
-        'overall': "Score",
+        "internet_nl_web_legacy_tls_1_3": "TLS 1.3 Support",
+        "internet_nl_mail_legacy_mail_sending_domain": "E-mail sending domain",
+        "internet_nl_mail_legacy_mail_server_testable": "Mail server testable",
+        "internet_nl_mail_legacy_mail_server_reachable": "Mail server reachable",
+        "internet_nl_mail_legacy_domain_has_mx": "Mail server has MX record",
+        "internet_nl_mail_legacy_tls_1_3": "TLS 1.3 Support",
+        "legacy": "Extra Fields",
+        "internet_nl_mail_dashboard_overall_score": "Score",
+        "internet_nl_web_overall_score": "Score",
+        "overall": "Score",
         "ipv6": "Modern address (IPv6)",
         "dnssec": "DNSSEC",
         "tls": "Secure connection (HTTPS)",

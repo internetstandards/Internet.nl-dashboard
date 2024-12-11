@@ -6,14 +6,18 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('internet_nl_dashboard', '0005_auto_20190320_1454'),
+        ("internet_nl_dashboard", "0005_auto_20190320_1454"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='uploadlog',
-            name='status',
+            model_name="uploadlog",
+            name="status",
             field=models.CharField(
-                blank=True, help_text="If the upload was successful or not. Might contain 'success' or 'error'.", max_length=255, null=True),
+                blank=True,
+                help_text="If the upload was successful or not. Might contain 'success' or 'error'.",
+                max_length=255,
+                null=True,
+            ),
         ),
     ]

@@ -7,14 +7,15 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('internet_nl_dashboard', '0013_auto_20190326_1224'),
+        ("internet_nl_dashboard", "0013_auto_20190326_1224"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='accountinternetnlscan',
-            name='urllist',
-            field=models.ForeignKey(blank=True, null=True,
-                                    on_delete=django.db.models.deletion.CASCADE, to='internet_nl_dashboard.UrlList'),
+            model_name="accountinternetnlscan",
+            name="urllist",
+            field=models.ForeignKey(
+                blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, to="internet_nl_dashboard.UrlList"
+            ),
         ),
     ]

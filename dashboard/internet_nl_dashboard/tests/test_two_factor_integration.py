@@ -10,6 +10,6 @@ client = Client()
 
 
 def test_two_factor_integration(db) -> None:
-    """ The first page you visit when logged out should contain something that is used only in the theme.  """
-    response = client.get('/', follow=True)
+    """The first page you visit when logged out should contain something that is used only in the theme."""
+    response = client.get("/", follow=True)
     assert b"Internet Standards Platform" in response.content

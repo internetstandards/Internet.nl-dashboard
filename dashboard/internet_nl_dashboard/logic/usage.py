@@ -53,53 +53,53 @@ def dashboard_months(year) -> range:
 
 def usage_metrics():
     return {
-        'users': {
-            'total': User.objects.all().count(),
-            'logged_in_the_past_1_days': user_logged_in_past_n_days(1),
-            'logged_in_the_past_2_days': user_logged_in_past_n_days(2),
-            'logged_in_the_past_3_days': user_logged_in_past_n_days(3),
-            'logged_in_the_past_5_days': user_logged_in_past_n_days(5),
-            'logged_in_the_past_7_days': user_logged_in_past_n_days(7),
-            'logged_in_the_past_14_days': user_logged_in_past_n_days(14),
-            'logged_in_the_past_21_days': user_logged_in_past_n_days(21),
-            'logged_in_the_past_30_days': user_logged_in_past_n_days(30),
-            'logged_in_the_past_60_days': user_logged_in_past_n_days(60),
-            'logged_in_the_past_90_days': user_logged_in_past_n_days(90),
-            'logged_in_the_past_120_days': user_logged_in_past_n_days(120),
-            'logged_in_the_past_150_days': user_logged_in_past_n_days(150),
-            'logged_in_the_past_180_days': user_logged_in_past_n_days(180),
-            'logged_in_the_past_210_days': user_logged_in_past_n_days(210),
-            'logged_in_the_past_240_days': user_logged_in_past_n_days(240),
-            'logged_in_the_past_270_days': user_logged_in_past_n_days(270),
-            'logged_in_the_past_300_days': user_logged_in_past_n_days(300),
+        "users": {
+            "total": User.objects.all().count(),
+            "logged_in_the_past_1_days": user_logged_in_past_n_days(1),
+            "logged_in_the_past_2_days": user_logged_in_past_n_days(2),
+            "logged_in_the_past_3_days": user_logged_in_past_n_days(3),
+            "logged_in_the_past_5_days": user_logged_in_past_n_days(5),
+            "logged_in_the_past_7_days": user_logged_in_past_n_days(7),
+            "logged_in_the_past_14_days": user_logged_in_past_n_days(14),
+            "logged_in_the_past_21_days": user_logged_in_past_n_days(21),
+            "logged_in_the_past_30_days": user_logged_in_past_n_days(30),
+            "logged_in_the_past_60_days": user_logged_in_past_n_days(60),
+            "logged_in_the_past_90_days": user_logged_in_past_n_days(90),
+            "logged_in_the_past_120_days": user_logged_in_past_n_days(120),
+            "logged_in_the_past_150_days": user_logged_in_past_n_days(150),
+            "logged_in_the_past_180_days": user_logged_in_past_n_days(180),
+            "logged_in_the_past_210_days": user_logged_in_past_n_days(210),
+            "logged_in_the_past_240_days": user_logged_in_past_n_days(240),
+            "logged_in_the_past_270_days": user_logged_in_past_n_days(270),
+            "logged_in_the_past_300_days": user_logged_in_past_n_days(300),
         },
-        'scans': {
-            'total': AccountInternetNLScan.objects.all().count(),
-            'per_year': abstract_per_year(AccountInternetNLScan.objects.all(), 'started_on'),
-            'per_month': abstract_per_month(AccountInternetNLScan.objects.all(), 'started_on'),
+        "scans": {
+            "total": AccountInternetNLScan.objects.all().count(),
+            "per_year": abstract_per_year(AccountInternetNLScan.objects.all(), "started_on"),
+            "per_month": abstract_per_month(AccountInternetNLScan.objects.all(), "started_on"),
         },
-        'lists': {
-            'total': UrlList.objects.all().count(),
+        "lists": {
+            "total": UrlList.objects.all().count(),
         },
-        'domains': {
-            'total': Url.objects.all().count(),
+        "domains": {
+            "total": Url.objects.all().count(),
             # Expect this to lower over time, as these are only new unique domains.
-            'per_year': abstract_per_year(Url.objects.all(), 'created_on'),
-            'per_month': abstract_per_month(Url.objects.all(), 'created_on'),
+            "per_year": abstract_per_year(Url.objects.all(), "created_on"),
+            "per_month": abstract_per_month(Url.objects.all(), "created_on"),
         },
-        'metrics': {
-            'total': EndpointGenericScan.objects.all().count(),
+        "metrics": {
+            "total": EndpointGenericScan.objects.all().count(),
             # Expect this to lower over time too, as the first time new metrics are measured, then only updates
-            'last_scan_moment': {
-                'per_year': abstract_per_year(EndpointGenericScan.objects.all(), 'last_scan_moment'),
-                'per_month': abstract_per_month(EndpointGenericScan.objects.all(), 'last_scan_moment'),
+            "last_scan_moment": {
+                "per_year": abstract_per_year(EndpointGenericScan.objects.all(), "last_scan_moment"),
+                "per_month": abstract_per_month(EndpointGenericScan.objects.all(), "last_scan_moment"),
             },
-            'rating_determined_on': {
-                'per_year': abstract_per_year(EndpointGenericScan.objects.all(), 'rating_determined_on'),
-                'per_month': abstract_per_month(EndpointGenericScan.objects.all(), 'rating_determined_on'),
-            }
+            "rating_determined_on": {
+                "per_year": abstract_per_year(EndpointGenericScan.objects.all(), "rating_determined_on"),
+                "per_month": abstract_per_month(EndpointGenericScan.objects.all(), "rating_determined_on"),
+            },
         },
-        'actions': abstract_action_total()
+        "actions": abstract_action_total(),
     }
 
 
@@ -131,12 +131,12 @@ def abstract_per_month(query, datetime_field):
 
 
 def abstract_action_total():
-    verbs = list(set(Action.objects.all().values_list('verb', flat=True).order_by('verb')))
+    verbs = list(set(Action.objects.all().values_list("verb", flat=True).order_by("verb")))
     stats: Dict[Any, Any] = defaultdict(dict)
     for verb in verbs:
         stats[verb] = {
-            'total': Action.objects.all().filter(verb=verb).count(),
-            'per_year': abstract_per_year(Action.objects.all().filter(verb=verb), 'timestamp'),
-            'per_month': abstract_per_month(Action.objects.all().filter(verb=verb), 'timestamp')
+            "total": Action.objects.all().filter(verb=verb).count(),
+            "per_year": abstract_per_year(Action.objects.all().filter(verb=verb), "timestamp"),
+            "per_month": abstract_per_month(Action.objects.all().filter(verb=verb), "timestamp"),
         }
     return stats

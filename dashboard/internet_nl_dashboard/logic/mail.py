@@ -15,8 +15,12 @@ from django_mail_admin.models import Outbox
 from dashboard.celery import app
 from dashboard.internet_nl_dashboard.logic.mail_admin_templates import xget_template
 from dashboard.internet_nl_dashboard.logic.report import get_report_directly
-from dashboard.internet_nl_dashboard.logic.report_comparison import (compare_report_in_detail, filter_comparison_report,
-                                                                     key_calculation, render_comparison_view)
+from dashboard.internet_nl_dashboard.logic.report_comparison import (
+    compare_report_in_detail,
+    filter_comparison_report,
+    key_calculation,
+    render_comparison_view,
+)
 from dashboard.internet_nl_dashboard.models import AccountInternetNLScan, DashboardUser, UrlListReport
 from dashboard.settings import LANGUAGES
 
@@ -64,13 +68,15 @@ def email_configration_is_correct():
 def get_users_to_send_mail_to(scan: AccountInternetNLScan):
 
     # Only send mail to users that are active and of course have a mail address...
-    return User.objects.all().filter(
-        dashboarduser__account=scan.account,
-        dashboarduser__mail_preferred_mail_address__isnull=False,
-        dashboarduser__mail_send_mail_after_scan_finished=True,
-        is_active=True
-    ).exclude(
-        dashboarduser__mail_preferred_mail_address=""
+    return (
+        User.objects.all()
+        .filter(
+            dashboarduser__account=scan.account,
+            dashboarduser__mail_preferred_mail_address__isnull=False,
+            dashboarduser__mail_send_mail_after_scan_finished=True,
+            is_active=True,
+        )
+        .exclude(dashboarduser__mail_preferred_mail_address="")
     )
 
 
@@ -84,13 +90,13 @@ def send_scan_finished_mails(scan: AccountInternetNLScan) -> int:
     :return:
     """
     if not scan.report:
-        log.error(f'Tried to send a finished mail for a report that was not finished. Scan: {scan}')
+        log.error(f"Tried to send a finished mail for a report that was not finished. Scan: {scan}")
         return 0
 
     users = get_users_to_send_mail_to(scan)
 
     # remove calculation because textfields are slow while filtering. Have to retrieve the textfield later
-    report = UrlListReport.objects.all().filter(id=scan.report.id).order_by("-id").defer('calculation').first()
+    report = UrlListReport.objects.all().filter(id=scan.report.id).order_by("-id").defer("calculation").first()
 
     for user in users:
         log.debug("Sending finished mail to user %s", user.id)
@@ -121,12 +127,13 @@ def send_scan_finished_mails(scan: AccountInternetNLScan) -> int:
 
         # could be None, strictly speaking
         if scan.scan:
-            placeholders['scan_type'] = scan.scan.type \
-                if scan.scan.type == "web" else "all" if scan.scan.type == "all" else "mail"
+            placeholders["scan_type"] = (
+                scan.scan.type if scan.scan.type == "web" else "all" if scan.scan.type == "all" else "mail"
+            )
 
         if scan.started_on:
-            placeholders['scan_started_on'] = scan.started_on.isoformat()
-            placeholders['scan_duration'] = (datetime.now(timezone.utc) - scan.started_on).seconds
+            placeholders["scan_started_on"] = scan.started_on.isoformat()
+            placeholders["scan_duration"] = (datetime.now(timezone.utc) - scan.started_on).seconds
 
         previous = values_from_previous_report(
             report.id,
@@ -141,9 +148,9 @@ def send_scan_finished_mails(scan: AccountInternetNLScan) -> int:
             recipients=user.dashboarduser.mail_preferred_mail_address,  # List of email addresses also accepted
             template=xget_template(
                 template_name="scan_finished",
-                preferred_language=user.dashboarduser.mail_preferred_language.code.lower()
+                preferred_language=user.dashboarduser.mail_preferred_language.code.lower(),
             ),
-            variable_dict=placeholders
+            variable_dict=placeholders,
         )
 
     # number of mails sent is equal to users configured their account to receive mails.
@@ -180,38 +187,33 @@ def values_from_previous_report(report_id: int, previous_report: UrlListReport) 
     if "urls" not in first_report_data["calculation"] or "urls" not in second_report_data["calculation"]:
         return empty_response
 
-    comp = compare_report_in_detail(
-        key_calculation(first_report_data),
-        key_calculation(second_report_data)
-    )
+    comp = compare_report_in_detail(key_calculation(first_report_data), key_calculation(second_report_data))
 
     difference = datetime.now(timezone.utc) - previous_report.at_when
     days_between_current_and_previous_report = difference.days
 
-    summary = comp['summary']
-    comparison_is_empty = summary['neutral'] + summary['improvement'] + summary['regression'] < 1
+    summary = comp["summary"]
+    comparison_is_empty = summary["neutral"] + summary["improvement"] + summary["regression"] < 1
 
     return {
         # comparison reports:
         # The template system only knows strings, so the boolean is coded as string here
         "previous_report_available": True,
-        "previous_report_average_internet_nl_score": comp['old']['average_internet_nl_score'],
-        "current_report_average_internet_nl_score": comp['new']['average_internet_nl_score'],
+        "previous_report_average_internet_nl_score": comp["old"]["average_internet_nl_score"],
+        "current_report_average_internet_nl_score": comp["new"]["average_internet_nl_score"],
         "compared_report_id": previous_report.id,
-
         "comparison_is_empty": comparison_is_empty,
-        "improvement": summary['improvement'],
-        "regression": summary['regression'],
-        "neutral": summary['neutral'],
+        "improvement": summary["improvement"],
+        "regression": summary["regression"],
+        "neutral": summary["neutral"],
         "comparison_report_available": True,
-        "comparison_report_contains_improvement": summary['improvement'] > 0,
-        "comparison_report_contains_regression": summary['regression'] > 0,
-
+        "comparison_report_contains_improvement": summary["improvement"] > 0,
+        "comparison_report_contains_regression": summary["regression"] > 0,
         "days_between_current_and_previous_report": days_between_current_and_previous_report,
         "comparison_table_improvement": filter_comparison_report(deepcopy(comp), "improvement"),
         "comparison_table_regression": filter_comparison_report(deepcopy(comp), "regression"),
-        "domains_exclusive_in_current_report": sorted(comp['urls_exclusive_in_new_report']),
-        "domains_exclusive_in_other_report": sorted(comp['urls_exclusive_in_old_report']),
+        "domains_exclusive_in_current_report": sorted(comp["urls_exclusive_in_new_report"]),
+        "domains_exclusive_in_other_report": sorted(comp["urls_exclusive_in_old_report"]),
     }
 
 
@@ -222,37 +224,36 @@ def convert_to_email_safe_values(values: dict, mail_language: str = "en") -> dic
     # so we're nice here and try to use a code that we know in case this happens.
     # see issue INTERNET-NL-DASHBOARD-68
     if mail_language not in [language_code for language_code, name in LANGUAGES]:
-        mail_language = 'en'
+        mail_language = "en"
     log.debug("Mail language: %s", mail_language)
 
     return {
         "previous_report_available": str(values["previous_report_available"]),
         "previous_report_average_internet_nl_score": values["previous_report_average_internet_nl_score"],
         "compared_report_id": values["compared_report_id"],
-
         "comparison_is_empty": str(values["comparison_is_empty"]),
         "improvement": values["improvement"],
         "regression": values["regression"],
         "neutral": values["neutral"],
-
         "comparison_report_available": str(values["comparison_report_available"]),
         "comparison_report_contains_improvement": str(values["comparison_report_contains_improvement"]),
         "comparison_report_contains_regression": str(values["comparison_report_contains_regression"]),
-
         "days_between_current_and_previous_report": values["days_between_current_and_previous_report"],
-        "comparison_table_improvement": render_comparison_view(values["comparison_table_improvement"],
-                                                               impact="improvement", language=mail_language),
-        "comparison_table_regression": render_comparison_view(values["comparison_table_regression"],
-                                                              impact="regression", language=mail_language),
-        "domains_exclusive_in_current_report": ",".join(values['domains_exclusive_in_current_report']),
-        "domains_exclusive_in_other_report": ",".join(values['domains_exclusive_in_other_report']),
+        "comparison_table_improvement": render_comparison_view(
+            values["comparison_table_improvement"], impact="improvement", language=mail_language
+        ),
+        "comparison_table_regression": render_comparison_view(
+            values["comparison_table_regression"], impact="regression", language=mail_language
+        ),
+        "domains_exclusive_in_current_report": ",".join(values["domains_exclusive_in_current_report"]),
+        "domains_exclusive_in_other_report": ",".join(values["domains_exclusive_in_other_report"]),
     }
 
 
 def generate_unsubscribe_code() -> str:
     # https://pynative.com/python-generate-random-string/
     # secure random is not needed, would be ridiculous. A sleep(1) is enough to deter any attack
-    return ''.join(choice(string.ascii_letters + string.digits) for i in range(128))  # nosec
+    return "".join(choice(string.ascii_letters + string.digits) for i in range(128))  # nosec
 
 
 def unsubscribe(feed: str = "scan_finished", unsubscribe_code: str = ""):
@@ -262,8 +263,7 @@ def unsubscribe(feed: str = "scan_finished", unsubscribe_code: str = ""):
 
     if feed == "scan_finished":
         users = DashboardUser.objects.all().filter(
-            mail_after_mail_unsubscribe_code=unsubscribe_code,
-            mail_send_mail_after_scan_finished=True
+            mail_after_mail_unsubscribe_code=unsubscribe_code, mail_send_mail_after_scan_finished=True
         )
         for user in users:
             user.mail_send_mail_after_scan_finished = False
@@ -272,10 +272,10 @@ def unsubscribe(feed: str = "scan_finished", unsubscribe_code: str = ""):
             user.save()
 
     # always say that the user has been unsubscribed, even if there was no subscription
-    return {'unsubscribed': True}
+    return {"unsubscribed": True}
 
 
-@app.task(queue='storage', ignore_result=True)
+@app.task(queue="storage", ignore_result=True)
 def send_queued_mail():
     """
     To use this, add a periodic task. The signature is:
@@ -284,4 +284,4 @@ def send_queued_mail():
     Is added in the list of periodic tasks in the fixtures.
     :return:
     """
-    call_command('send_queued_mail', processes=1, log_level=2)
+    call_command("send_queued_mail", processes=1, log_level=2)

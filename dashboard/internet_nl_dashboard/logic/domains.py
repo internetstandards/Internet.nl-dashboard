@@ -1,4 +1,5 @@
 # SPDX-License-Identifier: Apache-2.0
+# pylint: disable=too-many-lines
 import logging
 import sys
 import time
@@ -21,8 +22,15 @@ from websecmap.scanners.scanner.dns_endpoints import compose_discover_task
 
 from dashboard.celery import app
 from dashboard.internet_nl_dashboard.logic import operation_response
-from dashboard.internet_nl_dashboard.models import (Account, AccountInternetNLScan, TaggedUrlInUrllist, UploadLog,
-                                                    UrlList, UrlListReport, determine_next_scan_moment)
+from dashboard.internet_nl_dashboard.models import (
+    Account,
+    AccountInternetNLScan,
+    TaggedUrlInUrllist,
+    UploadLog,
+    UrlList,
+    UrlListReport,
+    determine_next_scan_moment,
+)
 from dashboard.internet_nl_dashboard.scanners.scan_internet_nl_per_account import initialize_scan, update_state
 from dashboard.internet_nl_dashboard.views.download_spreadsheet import create_spreadsheet_download
 
@@ -42,9 +50,11 @@ def suggest_subdomains(domain: str, period: int = 370):
 
     # call SUBDOMAIN_SUGGESTION_SERVER_ADDRESS
     try:
-        response = requests.get(config.SUBDOMAIN_SUGGESTION_SERVER_ADDRESS,
-                                params={'domain': extract.domain, 'suffix': extract.suffix, 'period': period},
-                                timeout=10)
+        response = requests.get(
+            config.SUBDOMAIN_SUGGESTION_SERVER_ADDRESS,
+            params={"domain": extract.domain, "suffix": extract.suffix, "period": period},
+            timeout=10,
+        )
     except Exception:  # pylint: disable=broad-exception-caught
         log.exception("Failed to retrieve subdomain suggestions from  %s.", config.SUBDOMAIN_SUGGESTION_SERVER_ADDRESS)
         raise
@@ -53,8 +63,11 @@ def suggest_subdomains(domain: str, period: int = 370):
         return []
 
     if response.status_code != 200:
-        log.error("Failed to retrieve subdomain suggestions from: %s, status code: %s.",
-                  config.SUBDOMAIN_SUGGESTION_SERVER_ADDRESS, response.status_code)
+        log.error(
+            "Failed to retrieve subdomain suggestions from: %s, status code: %s.",
+            config.SUBDOMAIN_SUGGESTION_SERVER_ADDRESS,
+            response.status_code,
+        )
         raise ServerError("Failed to retrieve subdomain suggestions")
 
     return response.json()
@@ -64,35 +77,45 @@ def suggest_subdomains(domain: str, period: int = 370):
 def alter_url_in_urllist(account, data) -> Dict[str, Any]:
     # data = {'list_id': list.id, 'url_id': url.id, 'new_url_string': url.url}
 
-    expected_keys = ['list_id', 'url_id', 'new_url_string']
+    expected_keys = ["list_id", "url_id", "new_url_string"]
     if not keys_are_present_in_object(expected_keys, data):
         return operation_response(error=True, message="Missing keys in data.")
 
     # what was the old id we're changing?
-    old_url = Url.objects.all().filter(pk=data['url_id']).first()
+    old_url = Url.objects.all().filter(pk=data["url_id"]).first()
     if not old_url:
         return operation_response(error=True, message="The old url does not exist.")
 
-    if old_url.url == data['new_url_string']:
+    if old_url.url == data["new_url_string"]:
         # no changes, for c
-        return operation_response(success=True, message="Saved.", data={
-            'created': {'id': old_url.id, 'url': old_url.url, 'created_on': old_url.created_on,
-                        'has_mail_endpoint': 'unknown',
-                        'has_web_endpoint': 'unknown', 'subdomain': old_url.computed_subdomain,
-                        'domain': old_url.computed_domain, 'suffix': old_url.computed_suffix},
-        })
+        return operation_response(
+            success=True,
+            message="Saved.",
+            data={
+                "created": {
+                    "id": old_url.id,
+                    "url": old_url.url,
+                    "created_on": old_url.created_on,
+                    "has_mail_endpoint": "unknown",
+                    "has_web_endpoint": "unknown",
+                    "subdomain": old_url.computed_subdomain,
+                    "domain": old_url.computed_domain,
+                    "suffix": old_url.computed_suffix,
+                },
+            },
+        )
 
     # is this really a list?
-    urllist = UrlList.objects.all().filter(account=account, pk=data['list_id']).first()
+    urllist = UrlList.objects.all().filter(account=account, pk=data["list_id"]).first()
     if not urllist:
         return operation_response(error=True, message="List does not exist.")
 
     # is the url valid?
-    if not Url.is_valid_url(data['new_url_string']):
+    if not Url.is_valid_url(data["new_url_string"]):
         return operation_response(error=True, message="New url does not have the correct format.")
 
     # fetch the url, or create it if it doesn't exist.
-    new_url, created = get_url(data['new_url_string'])
+    new_url, created = get_url(data["new_url_string"])
 
     # don't throw away the url, only from the list. (don't call delete, as it will delete the record)
     urllist.urls.remove(old_url)
@@ -103,36 +126,58 @@ def alter_url_in_urllist(account, data) -> Dict[str, Any]:
     urllist.save()
 
     # somewhat inefficient to do 4 queries, yet, good enough
-    old_url_has_mail_endpoint = Endpoint.objects.all().filter(url=old_url, is_dead=False, protocol='dns_soa').exists()
-    old_url_has_web_endpoint = Endpoint.objects.all().filter(url=old_url, is_dead=False, protocol='dns_a_aaa').exists()
+    old_url_has_mail_endpoint = Endpoint.objects.all().filter(url=old_url, is_dead=False, protocol="dns_soa").exists()
+    old_url_has_web_endpoint = Endpoint.objects.all().filter(url=old_url, is_dead=False, protocol="dns_a_aaa").exists()
 
     if not created:
-        new_url_has_mail_endpoint = Endpoint.objects.all().filter(
-            url=new_url, is_dead=False, protocol='dns_soa').exists()
-        new_url_has_web_endpoint = Endpoint.objects.all().filter(
-            url=new_url, is_dead=False, protocol='dns_a_aaa').exists()
+        new_url_has_mail_endpoint = (
+            Endpoint.objects.all().filter(url=new_url, is_dead=False, protocol="dns_soa").exists()
+        )
+        new_url_has_web_endpoint = (
+            Endpoint.objects.all().filter(url=new_url, is_dead=False, protocol="dns_a_aaa").exists()
+        )
     else:
-        new_url_has_mail_endpoint = 'unknown'
-        new_url_has_web_endpoint = 'unknown'
+        new_url_has_mail_endpoint = "unknown"
+        new_url_has_web_endpoint = "unknown"
 
     new_fragments = tldextract.extract(new_url.url)
     old_fragments = tldextract.extract(old_url.url)
 
-    return operation_response(success=True, message="Saved.", data={
-        'created': {'id': new_url.id, 'url': new_url.url, 'created_on': new_url.created_on,
-                    'has_mail_endpoint': new_url_has_mail_endpoint,
-                    'has_web_endpoint': new_url_has_web_endpoint, 'subdomain': new_fragments.subdomain,
-                    'domain': new_fragments.domain, 'suffix': new_fragments.suffix},
-        'removed': {'id': old_url.id, 'url': old_url.url, 'created_on': old_url.created_on,
-                    'has_mail_endpoint': old_url_has_mail_endpoint,
-                    'has_web_endpoint': old_url_has_web_endpoint, 'subdomain': old_fragments.subdomain,
-                    'domain': old_fragments.domain, 'suffix': old_fragments.suffix},
-    })
+    return operation_response(
+        success=True,
+        message="Saved.",
+        data={
+            "created": {
+                "id": new_url.id,
+                "url": new_url.url,
+                "created_on": new_url.created_on,
+                "has_mail_endpoint": new_url_has_mail_endpoint,
+                "has_web_endpoint": new_url_has_web_endpoint,
+                "subdomain": new_fragments.subdomain,
+                "domain": new_fragments.domain,
+                "suffix": new_fragments.suffix,
+            },
+            "removed": {
+                "id": old_url.id,
+                "url": old_url.url,
+                "created_on": old_url.created_on,
+                "has_mail_endpoint": old_url_has_mail_endpoint,
+                "has_web_endpoint": old_url_has_web_endpoint,
+                "subdomain": old_fragments.subdomain,
+                "domain": old_fragments.domain,
+                "suffix": old_fragments.suffix,
+            },
+        },
+    )
 
 
 def scan_now(account, user_input) -> Dict[str, Any]:
-    urllist = UrlList.objects.all().filter(
-        account=account, id=user_input.get('id', -1), is_deleted=False).annotate(num_urls=Count('urls')).first()
+    urllist = (
+        UrlList.objects.all()
+        .filter(account=account, id=user_input.get("id", -1), is_deleted=False)
+        .annotate(num_urls=Count("urls"))
+        .first()
+    )
 
     if not urllist:
         return operation_response(error=True, message="List could not be found.")
@@ -186,43 +231,52 @@ def get_url(new_url_string: str):
 
 
 def create_list(account: Account, user_input: Dict) -> Dict[str, Any]:
-    expected_keys = ['id', 'name', 'enable_scans', 'scan_type', 'automated_scan_frequency', 'scheduled_next_scan',
-                     'automatically_share_new_reports', 'default_public_share_code_for_new_reports',
-                     'enable_report_sharing_page']
+    expected_keys = [
+        "id",
+        "name",
+        "enable_scans",
+        "scan_type",
+        "automated_scan_frequency",
+        "scheduled_next_scan",
+        "automatically_share_new_reports",
+        "default_public_share_code_for_new_reports",
+        "enable_report_sharing_page",
+    ]
     if sorted(user_input.keys()) != sorted(expected_keys):
         return operation_response(error=True, message="Missing settings.")
 
-    frequency = validate_list_automated_scan_frequency(user_input['automated_scan_frequency'])
+    frequency = validate_list_automated_scan_frequency(user_input["automated_scan_frequency"])
     data = {
-        'account': account,
-        'name': validate_list_name(user_input['name']),
-        'enable_scans': bool(user_input['enable_scans']),
-        'scan_type': validate_list_scan_type(user_input['scan_type']),
-        'automated_scan_frequency': frequency,
-        'scheduled_next_scan': determine_next_scan_moment(frequency),
-        'enable_report_sharing_page': bool(user_input.get('enable_report_sharing_page', '')),
-        'automatically_share_new_reports': bool(user_input.get('automatically_share_new_reports', '')),
-        'default_public_share_code_for_new_reports': user_input.get(
-            'default_public_share_code_for_new_reports', '')[:64]
+        "account": account,
+        "name": validate_list_name(user_input["name"]),
+        "enable_scans": bool(user_input["enable_scans"]),
+        "scan_type": validate_list_scan_type(user_input["scan_type"]),
+        "automated_scan_frequency": frequency,
+        "scheduled_next_scan": determine_next_scan_moment(frequency),
+        "enable_report_sharing_page": bool(user_input.get("enable_report_sharing_page", "")),
+        "automatically_share_new_reports": bool(user_input.get("automatically_share_new_reports", "")),
+        "default_public_share_code_for_new_reports": user_input.get("default_public_share_code_for_new_reports", "")[
+            :64
+        ],
     }
 
     urllist = UrlList(**data)
     urllist.save()
 
     # make sure the account is serializable.
-    data['account'] = account.id
+    data["account"] = account.id
 
     # adding the ID makes it possible to add new urls to a new list.
-    data['id'] = urllist.pk
+    data["id"] = urllist.pk
 
     # empty list, no warnings.
-    data['list_warnings'] = []
+    data["list_warnings"] = []
 
     # give a hint if it can be scanned:
-    data['scan_now_available'] = urllist.is_scan_now_available()
+    data["scan_now_available"] = urllist.is_scan_now_available()
 
     # Sprinkling an activity stream action.
-    action.send(account, verb='created list', target=urllist, public=False)
+    action.send(account, verb="created list", target=urllist, public=False)
 
     return operation_response(success=True, message="List created.", data=data)
 
@@ -239,7 +293,7 @@ def delete_list(account: Account, user_input: dict):
     :param user_input:
     :return:
     """
-    urllist = UrlList.objects.all().filter(account=account, id=user_input.get('id', -1), is_deleted=False).first()
+    urllist = UrlList.objects.all().filter(account=account, id=user_input.get("id", -1), is_deleted=False).first()
     if not urllist:
         return operation_response(error=True, message="List could not be deleted.")
 
@@ -249,7 +303,7 @@ def delete_list(account: Account, user_input: dict):
     urllist.save()
 
     # Sprinkling an activity stream action.
-    action.send(account, verb='deleted list', target=urllist, public=False)
+    action.send(account, verb="deleted list", target=urllist, public=False)
 
     return operation_response(success=True, message="List deleted.")
 
@@ -265,41 +319,48 @@ def get_scan_status_of_list(account: Account, list_id: int) -> Dict[str, Any]:
     """
 
     prefetch_last_scan = Prefetch(
-        'accountinternetnlscan_set',
-        queryset=AccountInternetNLScan.objects.order_by('-id').select_related('scan').only('scan_id', 'id',
-                                                                                           'finished_on', 'state',
-                                                                                           'urllist__id', 'urllist'),
-        to_attr='last_scan'
+        "accountinternetnlscan_set",
+        queryset=AccountInternetNLScan.objects.order_by("-id")
+        .select_related("scan")
+        .only("scan_id", "id", "finished_on", "state", "urllist__id", "urllist"),
+        to_attr="last_scan",
     )
 
     last_report_prefetch = Prefetch(
-        'urllistreport_set',
+        "urllistreport_set",
         # filter(pk=UrlListReport.objects.latest('id').pk).
-        queryset=UrlListReport.objects.order_by('-id').only('id', 'at_when', 'urllist__id', 'urllist'),
-        to_attr='last_report'
+        queryset=UrlListReport.objects.order_by("-id").only("id", "at_when", "urllist__id", "urllist"),
+        to_attr="last_report",
     )
 
-    urllist = UrlList.objects.all().filter(
-        account=account,
-        id=list_id,
-        is_deleted=False
-    ).prefetch_related(prefetch_last_scan, last_report_prefetch).first()
+    urllist = (
+        UrlList.objects.all()
+        .filter(account=account, id=list_id, is_deleted=False)
+        .prefetch_related(prefetch_last_scan, last_report_prefetch)
+        .first()
+    )
 
     if not urllist:
         return {}
 
-    data = {'last_scan_id': None, 'last_scan_state': None, 'last_scan_finished': None, 'last_report_id': None,
-            'last_report_date': None, 'scan_now_available': urllist.is_scan_now_available()}
+    data = {
+        "last_scan_id": None,
+        "last_scan_state": None,
+        "last_scan_finished": None,
+        "last_report_id": None,
+        "last_report_date": None,
+        "scan_now_available": urllist.is_scan_now_available(),
+    }
 
     if len(urllist.last_scan):  # type: ignore
         # Mypy does not understand to_attr. "UrlList" has no attribute "last_scan"
-        data['last_scan_id'] = urllist.last_scan[0].scan.id  # type: ignore
-        data['last_scan_state'] = urllist.last_scan[0].state  # type: ignore
-        data['last_scan_finished'] = urllist.last_scan[0].state in ["finished", "cancelled"]  # type: ignore
+        data["last_scan_id"] = urllist.last_scan[0].scan.id  # type: ignore
+        data["last_scan_state"] = urllist.last_scan[0].state  # type: ignore
+        data["last_scan_finished"] = urllist.last_scan[0].state in ["finished", "cancelled"]  # type: ignore
 
     if len(urllist.last_report):  # type: ignore
-        data['last_report_id'] = urllist.last_report[0].id  # type: ignore
-        data['last_report_date'] = urllist.last_report[0].at_when  # type: ignore
+        data["last_report_id"] = urllist.last_report[0].id  # type: ignore
+        data["last_report_date"] = urllist.last_report[0].at_when  # type: ignore
 
     return data
 
@@ -316,10 +377,10 @@ def cancel_scan(account: Account, scan_id: int):
     if not scan:
         return operation_response(error=True, message="scan not found")
 
-    if scan.state == 'finished':
+    if scan.state == "finished":
         return operation_response(success=True, message="scan already finished")
 
-    if scan.state == 'cancelled':
+    if scan.state == "cancelled":
         return operation_response(success=True, message="scan already cancelled")
 
     scan.finished_on = datetime.now(timezone.utc)
@@ -327,7 +388,7 @@ def cancel_scan(account: Account, scan_id: int):
     update_state("cancelled", scan.id)
 
     # Sprinkling an activity stream action.
-    action.send(account, verb='cancelled scan', target=scan, public=False)
+    action.send(account, verb="cancelled scan", target=scan, public=False)
 
     return operation_response(success=True, message="scan cancelled")
 
@@ -352,28 +413,30 @@ def update_list_settings(account: Account, user_input: Dict) -> Dict[str, Any]:
     :return:
     """
 
-    expected_keys = ['id', 'name', 'enable_scans', 'scan_type', 'automated_scan_frequency', 'scheduled_next_scan']
+    expected_keys = ["id", "name", "enable_scans", "scan_type", "automated_scan_frequency", "scheduled_next_scan"]
     if not keys_are_present_in_object(expected_keys, user_input):
         return operation_response(error=True, message="Missing settings.")
 
     prefetch_last_scan = Prefetch(
-        'accountinternetnlscan_set',
-        queryset=AccountInternetNLScan.objects.order_by('-id').select_related('scan'),
-        to_attr='last_scan'
+        "accountinternetnlscan_set",
+        queryset=AccountInternetNLScan.objects.order_by("-id").select_related("scan"),
+        to_attr="last_scan",
     )
 
     last_report_prefetch = Prefetch(
-        'urllistreport_set',
+        "urllistreport_set",
         # filter(pk=UrlListReport.objects.latest('id').pk).
-        queryset=UrlListReport.objects.order_by('-id').only('id', 'at_when', 'urllist__id'),
-        to_attr='last_report'
+        queryset=UrlListReport.objects.order_by("-id").only("id", "at_when", "urllist__id"),
+        to_attr="last_report",
     )
 
-    urllist: UrlList = UrlList.objects.all().filter(
-        account=account,
-        id=user_input['id'],
-        is_deleted=False
-    ).annotate(num_urls=Count('urls')).prefetch_related(prefetch_last_scan, last_report_prefetch).first()
+    urllist: UrlList = (
+        UrlList.objects.all()
+        .filter(account=account, id=user_input["id"], is_deleted=False)
+        .annotate(num_urls=Count("urls"))
+        .prefetch_related(prefetch_last_scan, last_report_prefetch)
+        .first()
+    )
 
     if not urllist:
         return operation_response(error=True, message="No list of urls found.")
@@ -381,54 +444,55 @@ def update_list_settings(account: Account, user_input: Dict) -> Dict[str, Any]:
     # Yes, you can try and set any value. Values that are not recognized do not result in errors / error messages,
     # instead they will be overwritten with the default. This means less interaction with users / less annoyance over
     # errors on such simple forms.
-    frequency = validate_list_automated_scan_frequency(user_input['automated_scan_frequency'])
+    frequency = validate_list_automated_scan_frequency(user_input["automated_scan_frequency"])
     data = {
-        'id': urllist.id,
-        'account': account,
-        'name': validate_list_name(user_input['name']),
-        'enable_scans': bool(user_input['enable_scans']),
-        'scan_type': validate_list_scan_type(user_input['scan_type']),
-        'automated_scan_frequency': frequency,
-        'scheduled_next_scan': determine_next_scan_moment(frequency),
-        'enable_report_sharing_page': bool(user_input.get('enable_report_sharing_page', '')),
-        'automatically_share_new_reports': bool(user_input.get('automatically_share_new_reports', '')),
-        'default_public_share_code_for_new_reports': user_input.get(
-            'default_public_share_code_for_new_reports', '')[:64]
+        "id": urllist.id,
+        "account": account,
+        "name": validate_list_name(user_input["name"]),
+        "enable_scans": bool(user_input["enable_scans"]),
+        "scan_type": validate_list_scan_type(user_input["scan_type"]),
+        "automated_scan_frequency": frequency,
+        "scheduled_next_scan": determine_next_scan_moment(frequency),
+        "enable_report_sharing_page": bool(user_input.get("enable_report_sharing_page", "")),
+        "automatically_share_new_reports": bool(user_input.get("automatically_share_new_reports", "")),
+        "default_public_share_code_for_new_reports": user_input.get("default_public_share_code_for_new_reports", "")[
+            :64
+        ],
     }
 
     updated_urllist = UrlList(**data)
     updated_urllist.save()
 
     # make sure the account is serializable, inject other data.
-    data['account'] = account.id
-    data['num_urls'] = urllist.num_urls
-    data['last_scan_id'] = None
-    data['last_scan_state'] = None
-    data['last_scan'] = None
-    data['last_scan_finished'] = None
-    data['last_report_id'] = None
-    data['last_report_date'] = None
+    data["account"] = account.id
+    data["num_urls"] = urllist.num_urls
+    data["last_scan_id"] = None
+    data["last_scan_state"] = None
+    data["last_scan"] = None
+    data["last_scan_finished"] = None
+    data["last_report_id"] = None
+    data["last_report_date"] = None
 
     if urllist.last_scan:
-        data['last_scan_id'] = urllist.last_scan[0].scan.id
-        data['last_scan_state'] = urllist.last_scan[0].state
-        data['last_scan'] = urllist.last_scan[0].started_on.isoformat()
-        data['last_scan_finished'] = urllist.last_scan[0].state in ["finished", "cancelled"]
+        data["last_scan_id"] = urllist.last_scan[0].scan.id
+        data["last_scan_state"] = urllist.last_scan[0].state
+        data["last_scan"] = urllist.last_scan[0].started_on.isoformat()
+        data["last_scan_finished"] = urllist.last_scan[0].state in ["finished", "cancelled"]
 
     if urllist.last_report:
-        data['last_report_id'] = urllist.last_report[0].id
-        data['last_report_date'] = urllist.last_report[0].at_when
+        data["last_report_id"] = urllist.last_report[0].id
+        data["last_report_date"] = urllist.last_report[0].at_when
 
-    data['scan_now_available'] = updated_urllist.is_scan_now_available()
+    data["scan_now_available"] = updated_urllist.is_scan_now_available()
 
     # list warnings (might do: make more generic, only if another list warning ever could occur.)
     list_warnings = []
     if urllist.num_urls > config.DASHBOARD_MAXIMUM_DOMAINS_PER_LIST:
-        list_warnings.append('WARNING_DOMAINS_IN_LIST_EXCEED_MAXIMUM_ALLOWED')
-    data['list_warnings'] = []
+        list_warnings.append("WARNING_DOMAINS_IN_LIST_EXCEED_MAXIMUM_ALLOWED")
+    data["list_warnings"] = []
 
     # Sprinkling an activity stream action.
-    action.send(account, verb='updated list', target=updated_urllist, public=False)
+    action.send(account, verb="updated list", target=updated_urllist, public=False)
 
     return operation_response(success=True, message="Updated list settings", data=data)
 
@@ -448,16 +512,17 @@ def validate_list_name(list_name):
 
 # todo: this can be a generic tuple check.
 def validate_list_automated_scan_frequency(automated_scan_frequency):
-    if (automated_scan_frequency, automated_scan_frequency) not in \
-            UrlList._meta.get_field('automated_scan_frequency').choices:
-        return UrlList._meta.get_field('automated_scan_frequency').default
+    if (automated_scan_frequency, automated_scan_frequency) not in UrlList._meta.get_field(
+        "automated_scan_frequency"
+    ).choices:
+        return UrlList._meta.get_field("automated_scan_frequency").default
     return automated_scan_frequency
 
 
 def validate_list_scan_type(scan_type):
     # if the option doesn't exist, return the first option as the fallback / default.
-    if (scan_type, scan_type) not in UrlList._meta.get_field('scan_type').choices:
-        return UrlList._meta.get_field('scan_type').default
+    if (scan_type, scan_type) not in UrlList._meta.get_field("scan_type").choices:
+        return UrlList._meta.get_field("scan_type").default
     return scan_type
 
 
@@ -494,12 +559,22 @@ def get_urllists_from_account(account: Account) -> Dict:
     """
 
     # Could that num_urls slows things down. Given that num_urls is overwritten when loading list data...
-    urllists = UrlList.objects.all().filter(
-        account=account,
-        is_deleted=False
-    ).annotate(num_urls=Count('urls')).order_by('name').only(
-        'id', 'name', 'enable_scans', 'scan_type', 'automated_scan_frequency', 'scheduled_next_scan',
-        'enable_report_sharing_page', 'default_public_share_code_for_new_reports', 'automatically_share_new_reports',
+    urllists = (
+        UrlList.objects.all()
+        .filter(account=account, is_deleted=False)
+        .annotate(num_urls=Count("urls"))
+        .order_by("name")
+        .only(
+            "id",
+            "name",
+            "enable_scans",
+            "scan_type",
+            "automated_scan_frequency",
+            "scheduled_next_scan",
+            "enable_report_sharing_page",
+            "default_public_share_code_for_new_reports",
+            "automatically_share_new_reports",
+        )
     )
 
     url_lists = []
@@ -509,57 +584,57 @@ def get_urllists_from_account(account: Account) -> Dict:
     for urllist in urllists:
 
         data = {
-            'id': urllist.id,
-            'name': urllist.name,
-            'enable_scans': urllist.enable_scans,
-            'scan_type': urllist.scan_type,
-            'automated_scan_frequency': urllist.automated_scan_frequency,
-            'scheduled_next_scan': urllist.scheduled_next_scan,
-            'scan_now_available': urllist.is_scan_now_available(),
-            'enable_report_sharing_page': urllist.enable_report_sharing_page,
-            'automatically_share_new_reports': urllist.automatically_share_new_reports,
-            'default_public_share_code_for_new_reports': urllist.default_public_share_code_for_new_reports,
-
-            'last_scan_id': None,
-            'last_scan_state': None,
-            'last_scan': None,
-            'last_scan_finished': None,
-
-            'last_report_id': None,
-            'last_report_date': None,
-
-            'list_warnings': [],
-
-            'num_urls': urllist.num_urls,
+            "id": urllist.id,
+            "name": urllist.name,
+            "enable_scans": urllist.enable_scans,
+            "scan_type": urllist.scan_type,
+            "automated_scan_frequency": urllist.automated_scan_frequency,
+            "scheduled_next_scan": urllist.scheduled_next_scan,
+            "scan_now_available": urllist.is_scan_now_available(),
+            "enable_report_sharing_page": urllist.enable_report_sharing_page,
+            "automatically_share_new_reports": urllist.automatically_share_new_reports,
+            "default_public_share_code_for_new_reports": urllist.default_public_share_code_for_new_reports,
+            "last_scan_id": None,
+            "last_scan_state": None,
+            "last_scan": None,
+            "last_scan_finished": None,
+            "last_report_id": None,
+            "last_report_date": None,
+            "list_warnings": [],
+            "num_urls": urllist.num_urls,
         }
 
         # this will create a warning if the number of domains in the list > max_domains
         # This is placed outside the loop to save a database query per time this is needed.
         if urllist.num_urls > max_domains:
-            data['list_warnings'].append('WARNING_DOMAINS_IN_LIST_EXCEED_MAXIMUM_ALLOWED')
+            data["list_warnings"].append("WARNING_DOMAINS_IN_LIST_EXCEED_MAXIMUM_ALLOWED")
 
-        last_scan = AccountInternetNLScan.objects.all().filter(urllist=urllist).select_related('scan').only(
-            'scan__id', 'state', 'started_on'
-        ).last()
+        last_scan = (
+            AccountInternetNLScan.objects.all()
+            .filter(urllist=urllist)
+            .select_related("scan")
+            .only("scan__id", "state", "started_on")
+            .last()
+        )
         if last_scan and last_scan.scan and last_scan.started_on:
-            data['last_scan_id'] = last_scan.scan.id
-            data['last_scan_state'] = last_scan.state
-            data['last_scan'] = last_scan.started_on.isoformat()
-            data['last_scan_finished'] = last_scan.state in ["finished", "cancelled"]
+            data["last_scan_id"] = last_scan.scan.id
+            data["last_scan_state"] = last_scan.state
+            data["last_scan"] = last_scan.started_on.isoformat()
+            data["last_scan_finished"] = last_scan.state in ["finished", "cancelled"]
 
         # Selecting the whole object is extremely slow as the reports are very large, therefore we use .only to limit
         # the number of fields returned. Then the prefetch is pretty fast again.
-        last_report = UrlListReport.objects.all().filter(urllist=urllist).only('id', 'at_when').last()
+        last_report = UrlListReport.objects.all().filter(urllist=urllist).only("id", "at_when").last()
         if last_report:
-            data['last_report_id'] = last_report.id
-            data['last_report_date'] = last_report.at_when.isoformat()
+            data["last_report_id"] = last_report.id
+            data["last_report_date"] = last_report.at_when.isoformat()
 
         url_lists.append(data)
 
     # Sprinkling an activity stream action.
-    action.send(account, verb='retrieved domain lists', public=False)
+    action.send(account, verb="retrieved domain lists", public=False)
 
-    return {'lists': url_lists, 'maximum_domains_per_list': max_domains}
+    return {"lists": url_lists, "maximum_domains_per_list": max_domains}
 
 
 def get_urllist_content(account: Account, urllist_id: int) -> dict:
@@ -572,33 +647,35 @@ def get_urllist_content(account: Account, urllist_id: int) -> dict:
     :return:
     """
     # This prefetch changes a 1000 ms nested query into a 150 ms query.
-    prefetch = Prefetch('endpoint_set',
-                        queryset=Endpoint.objects.filter(protocol__in=['dns_soa', 'dns_a_aaaa'], is_dead=False),
-                        to_attr='relevant_endpoints')
+    prefetch = Prefetch(
+        "endpoint_set",
+        queryset=Endpoint.objects.filter(protocol__in=["dns_soa", "dns_a_aaaa"], is_dead=False),
+        to_attr="relevant_endpoints",
+    )
 
     prefetch_tags = Prefetch(
-        'taggedurlinurllist_set',
-        queryset=TaggedUrlInUrllist.objects.all().filter(urllist=urllist_id).prefetch_related('tags'),
-        to_attr='url_tags'
+        "taggedurlinurllist_set",
+        queryset=TaggedUrlInUrllist.objects.all().filter(urllist=urllist_id).prefetch_related("tags"),
+        to_attr="url_tags",
     )
 
     # This ordering makes sure all subdomains are near the domains with the right extension.
-    urls = Url.objects.all().filter(
-        urls_in_dashboard_list_2__account=account,
-        urls_in_dashboard_list_2__id=urllist_id
-    ).order_by('computed_domain', 'computed_suffix', 'computed_subdomain').prefetch_related(
-        prefetch,
-        prefetch_tags
-    ).all()
+    urls = (
+        Url.objects.all()
+        .filter(urls_in_dashboard_list_2__account=account, urls_in_dashboard_list_2__id=urllist_id)
+        .order_by("computed_domain", "computed_suffix", "computed_subdomain")
+        .prefetch_related(prefetch, prefetch_tags)
+        .all()
+    )
 
     """ It's very possible that the urrlist_id is not matching with the account. The query will just return
     nothing. Only of both matches it will return something we can work with. """
-    response: Dict[str, Any] = {'urllist_id': urllist_id, 'urls': []}
+    response: Dict[str, Any] = {"urllist_id": urllist_id, "urls": []}
 
     """ This is just a simple iteration, all sorting and logic is placed in the vue as that is much more flexible. """
     for url in urls:
-        has_mail_endpoint = len([x for x in url.relevant_endpoints if x.protocol == 'dns_soa']) > 0
-        has_web_endpoint = len([x for x in url.relevant_endpoints if x.protocol == 'dns_a_aaaa']) > 0
+        has_mail_endpoint = len([x for x in url.relevant_endpoints if x.protocol == "dns_soa"]) > 0
+        has_web_endpoint = len([x for x in url.relevant_endpoints if x.protocol == "dns_a_aaaa"]) > 0
 
         # this is terrible code... as it appears prefetching tags is bit complex with queries in
         # queries with n-to-n on n-to-n and such.
@@ -608,22 +685,24 @@ def get_urllist_content(account: Account, urllist_id: int) -> dict:
         # tags = list(has_tags.tags.names()) if has_tags else []
         # log.warning(url.url_tags)
         tags = []
-        for tag1 in [x.tags.values_list('name') for x in url.url_tags]:
+        for tag1 in [x.tags.values_list("name") for x in url.url_tags]:
             for tag2 in tag1:
                 tags.extend(iter(tag2))
 
-        response['urls'].append({
-            'id': url.id,
-            'url': url.url,
-            'subdomain': url.computed_subdomain,
-            'domain': url.computed_domain,
-            'suffix': url.computed_suffix,
-            'created_on': url.created_on,
-            'resolves': not url.not_resolvable,
-            'has_mail_endpoint': has_mail_endpoint,
-            'has_web_endpoint': has_web_endpoint,
-            'tags': tags,
-        })
+        response["urls"].append(
+            {
+                "id": url.id,
+                "url": url.url,
+                "subdomain": url.computed_subdomain,
+                "domain": url.computed_domain,
+                "suffix": url.computed_suffix,
+                "created_on": url.created_on,
+                "resolves": not url.not_resolvable,
+                "has_mail_endpoint": has_mail_endpoint,
+                "has_web_endpoint": has_web_endpoint,
+                "tags": tags,
+            }
+        )
 
     return response
 
@@ -706,8 +785,8 @@ def add_domains_from_raw_user_data(account: Account, user_input: Dict[str, Any])
     """
 
     # how could we validate user_input a better way? Using a validator object?
-    list_id: int = int(user_input.get('list_id', -1))
-    unfiltered_urls: str = user_input.get('urls', [])
+    list_id: int = int(user_input.get("list_id", -1))
+    unfiltered_urls: str = user_input.get("urls", [])
 
     # these are random unfiltered strings and the method expects keys...
     # in this case we'll run an extra retrieve_possible_urls_from_unfiltered_input so there is already some filtering.
@@ -721,8 +800,13 @@ def add_domains_from_raw_user_data(account: Account, user_input: Dict[str, Any])
     return operation_response(success=True, message="add_domains_valid_urls_added", data=result)
 
 
-def save_urllist_content_by_name(account: Account, urllist_name: str, urls: Dict[str, Dict[str, list]],
-                                 uploadlog_id: int = None, pending_message: str = None) -> dict:
+def save_urllist_content_by_name(
+    account: Account,
+    urllist_name: str,
+    urls: Dict[str, Dict[str, list]],
+    uploadlog_id: int = None,
+    pending_message: str = None,
+) -> dict:
     """
     This 'by name' variant is a best guess when a spreadsheet upload with list names is used.
 
@@ -742,8 +826,13 @@ def save_urllist_content_by_name(account: Account, urllist_name: str, urls: Dict
     return save_urllist_content_by_id(account, urllist.id, urls, uploadlog_id, pending_message)
 
 
-def save_urllist_content_by_id(account: Account, urllist_id: id, unfiltered_urls: Dict[str, Dict[str, list]],
-                               uploadlog_id: int = None, pending_message: str = None) -> dict:
+def save_urllist_content_by_id(
+    account: Account,
+    urllist_id: id,
+    unfiltered_urls: Dict[str, Dict[str, list]],
+    uploadlog_id: int = None,
+    pending_message: str = None,
+) -> dict:
     urllist = UrlList.objects.all().filter(account=account, id=urllist_id, is_deleted=False).first()
 
     if not urllist:
@@ -753,33 +842,43 @@ def save_urllist_content_by_id(account: Account, urllist_id: id, unfiltered_urls
     urls, duplicates_removed = retrieve_possible_urls_from_unfiltered_input(", ".join(unfiltered_urls.keys()))
     cleaned_urls: Dict[str, List[str]] = clean_urls(urls)  # type: ignore
 
-    proposed_number_of_urls = urllist.urls.all().count() + len(cleaned_urls['correct'])
-    if proposed_number_of_urls > int(constance_cached_value('DASHBOARD_MAXIMUM_DOMAINS_PER_LIST')):
+    proposed_number_of_urls = urllist.urls.all().count() + len(cleaned_urls["correct"])
+    if proposed_number_of_urls > int(constance_cached_value("DASHBOARD_MAXIMUM_DOMAINS_PER_LIST")):
         return operation_response(error=True, message="too_many_domains")
 
-    if cleaned_urls['correct']:
+    if cleaned_urls["correct"]:
         # this operation takes a while, to speed it up urls are added async.
-        counters = _add_to_urls_to_urllist(account, urllist, urls=cleaned_urls['correct'],
-                                           urls_with_tags_mapping=unfiltered_urls,
-                                           uploadlog_id=uploadlog_id, pending_message=pending_message)
+        counters = _add_to_urls_to_urllist(
+            account,
+            urllist,
+            urls=cleaned_urls["correct"],
+            urls_with_tags_mapping=unfiltered_urls,
+            uploadlog_id=uploadlog_id,
+            pending_message=pending_message,
+        )
     else:
-        counters = {'added_to_list': 0, 'already_in_list': 0}
+        counters = {"added_to_list": 0, "already_in_list": 0}
 
-    update_spreadsheet_upload_(uploadlog_id, "[2/3] Processing",
-                               f"{pending_message} Added {counters['added_to_list']} to {urllist.name}. "
-                               f"{counters['already_in_list']} already  list.", percentage=0)
+    update_spreadsheet_upload_(
+        uploadlog_id,
+        "[2/3] Processing",
+        f"{pending_message} Added {counters['added_to_list']} to {urllist.name}. "
+        f"{counters['already_in_list']} already  list.",
+        percentage=0,
+    )
 
     return {
-        'incorrect_urls': cleaned_urls['incorrect'],
-        'added_to_list': counters['added_to_list'],
-        'already_in_list': counters['already_in_list'],
-        'duplicates_removed': duplicates_removed,
+        "incorrect_urls": cleaned_urls["incorrect"],
+        "added_to_list": counters["added_to_list"],
+        "already_in_list": counters["already_in_list"],
+        "duplicates_removed": duplicates_removed,
     }
 
 
 @app.task(ignore_result=True)
-def update_spreadsheet_upload_(upload_id: int, status: str = "pending", message: str = "",
-                               percentage: int = -1) -> None:
+def update_spreadsheet_upload_(
+    upload_id: int, status: str = "pending", message: str = "", percentage: int = -1
+) -> None:
     # double to prevent circulair import. This is not nice and should be removed.
     # user feedback is important on large uploads, as it may take a few minutes to hours it's nice to
     # get some feedback on how much stuff has been processed (if possible).
@@ -800,17 +899,19 @@ def sleep():
     time.sleep(2)
 
 
-def _add_to_urls_to_urllist(  # pylint: disable=too-many-arguments
-        account: Account,
-        current_list: UrlList,
-        urls: List[str],
-        urls_with_tags_mapping: Dict[str, Dict[str, list]] = None,
-        uploadlog_id: int = None,
-        pending_message: str = None
+def _add_to_urls_to_urllist(  # pylint: disable=too-many-positional-arguments too-many-arguments
+    account: Account,
+    current_list: UrlList,
+    urls: List[str],
+    urls_with_tags_mapping: Dict[str, Dict[str, list]] = None,
+    uploadlog_id: int = None,
+    pending_message: str = None,
 ) -> Dict[str, Any]:
-    already_existing_urls = UrlList.objects.all().filter(
-        account=account, id=current_list.id, urls__url__in=urls
-    ).values_list('urls__url', flat=True)
+    already_existing_urls = (
+        UrlList.objects.all()
+        .filter(account=account, id=current_list.id, urls__url__in=urls)
+        .values_list("urls__url", flat=True)
+    )
 
     new_urls = list(set(urls) - set(already_existing_urls))
 
@@ -822,15 +923,18 @@ def _add_to_urls_to_urllist(  # pylint: disable=too-many-arguments
     tasks = []
     for position, url in enumerate(sorted(new_urls)):
         tasks.append(
-            group(add_new_url_to_list_async.si(url, current_list.id, urls_with_tags_mapping)
-                  # discovering endpoints is not a hard requirements, this is done before a scan starts anyway
-                  # and will only slow down creating the list.
-                  # | discover_endpoints.s()
-                  | update_spreadsheet_upload_.si(uploadlog_id, "[3/3] Processing",
-                                                  f"{pending_message}. Added: {url} to {current_list.name}.",
-                                                  percentage=round(100 * position / len(new_urls), 0)
-                                                  )
-                  )
+            group(
+                add_new_url_to_list_async.si(url, current_list.id, urls_with_tags_mapping)
+                # discovering endpoints is not a hard requirements, this is done before a scan starts anyway
+                # and will only slow down creating the list.
+                # | discover_endpoints.s()
+                | update_spreadsheet_upload_.si(
+                    uploadlog_id,
+                    "[3/3] Processing",
+                    f"{pending_message}. Added: {url} to {current_list.name}.",
+                    percentage=round(100 * position / len(new_urls), 0),
+                )
+            )
         )
 
     # This might be performed earlier than above tasks in the queue
@@ -838,10 +942,9 @@ def _add_to_urls_to_urllist(  # pylint: disable=too-many-arguments
         tasks.append(
             group(
                 # simulate the time it takes to add something...
-                sleep.si() |
-                update_spreadsheet_upload_.si(
-                    uploadlog_id, "[3/3] Processing",
-                    f"[3/3] Processing completed for list \"{current_list.name}\".", 100
+                sleep.si()
+                | update_spreadsheet_upload_.si(
+                    uploadlog_id, "[3/3] Processing", f'[3/3] Processing completed for list "{current_list.name}".', 100
                 )
             )
         )
@@ -857,8 +960,8 @@ def _add_to_urls_to_urllist(  # pylint: disable=too-many-arguments
             task.apply_async()
 
     return {
-        'added_to_list': len(new_urls),
-        'already_in_list': len(already_existing_urls),
+        "added_to_list": len(new_urls),
+        "already_in_list": len(already_existing_urls),
     }
 
 
@@ -880,7 +983,7 @@ def add_new_url_to_list_async(url: str, current_list_id: int, urls_with_tags_map
 @app.task(queue="storage", ignore_result=True)
 def discover_endpoints(url_id):
     # always try to find a few dns endpoints...
-    compose_discover_task(urls_filter={'pk': url_id}).apply_async()
+    compose_discover_task(urls_filter={"pk": url_id}).apply_async()
 
 
 def add_tags_to_urls_in_urllist(existing_url: Url, current_list: UrlList, tags: List[str]) -> None:
@@ -891,29 +994,33 @@ def add_tags_to_urls_in_urllist(existing_url: Url, current_list: UrlList, tags: 
 
 
 def _add_to_urls_to_urllist_nicer(account: Account, current_list: UrlList, urls: List[str]) -> Dict[str, List[str]]:
-    counters: Dict[str, List[str]] = {'added_to_list': [], 'already_in_list': [], 'added_to_list_already_in_db': [],
-                                      'added_to_list_new_in_db': []}
+    counters: Dict[str, List[str]] = {
+        "added_to_list": [],
+        "already_in_list": [],
+        "added_to_list_already_in_db": [],
+        "added_to_list_new_in_db": [],
+    }
 
     for url in urls:
 
         if UrlList.objects.all().filter(account=account, id=current_list.id, urls__url__iexact=url).exists():
-            counters['already_in_list'].append(url)
+            counters["already_in_list"].append(url)
             continue
 
         # if url already in database, we only need to add it to the list:
         if existing_url := Url.objects.all().filter(url=url).first():
             current_list.urls.add(existing_url)
-            counters['added_to_list'].append(url)
-            counters['added_to_list_already_in_db'].append(url)
+            counters["added_to_list"].append(url)
+            counters["added_to_list_already_in_db"].append(url)
         else:
             new_url = Url.add(url)
 
             # always try to find a few dns endpoints...
-            compose_discover_task(urls_filter={'pk': new_url.id}).apply_async()
+            compose_discover_task(urls_filter={"pk": new_url.id}).apply_async()
 
             current_list.urls.add(new_url)
-            counters['added_to_list'].append(url)
-            counters['added_to_list_new_in_db'].append(url)
+            counters["added_to_list"].append(url)
+            counters["added_to_list_new_in_db"].append(url)
 
     return counters
 
@@ -928,16 +1035,16 @@ def clean_urls(urls: List[str]) -> Dict[str, List[str]]:
     :return:
     """
 
-    result: Dict[str, List[Union[str, int]]] = {'incorrect': [], 'correct': []}
+    result: Dict[str, List[Union[str, int]]] = {"incorrect": [], "correct": []}
 
     for url in urls:
         # all urls in the system must be lowercase (if applicable to used character)
         url = url.lower()
 
         if not Url.is_valid_url(url):
-            result['incorrect'].append(url)
+            result["incorrect"].append(url)
         else:
-            result['correct'].append(url)
+            result["correct"].append(url)
 
     return result
 
@@ -946,7 +1053,7 @@ def get_or_create_list_by_name(account, name: str, scan_type: str = "web") -> Ur
     if existing_list := UrlList.objects.all().filter(account=account, name=name, is_deleted=False).first():
         return existing_list
 
-    urllist = UrlList(**{'name': name, 'account': account, 'scan_type': scan_type})
+    urllist = UrlList(**{"name": name, "account": account, "scan_type": scan_type})
     urllist.save()
     return urllist
 
@@ -964,10 +1071,11 @@ def delete_url_from_urllist(account: Account, urllist_id: int, url_id: int) -> b
 
     # make sure that the url is in this list and for the current account
     # we don't want other users to be able to delete urls of other lists.
-    url_is_in_list = Url.objects.all().filter(
-        urls_in_dashboard_list_2__account=account,
-        urls_in_dashboard_list_2__id=urllist_id,
-        id=url_id).first()
+    url_is_in_list = (
+        Url.objects.all()
+        .filter(urls_in_dashboard_list_2__account=account, urls_in_dashboard_list_2__id=urllist_id, id=url_id)
+        .first()
+    )
 
     if not url_is_in_list:
         return False
@@ -979,10 +1087,11 @@ def delete_url_from_urllist(account: Account, urllist_id: int, url_id: int) -> b
 
 
 def download_as_spreadsheet(account: Account, urllist_id: int, file_type: str = "xlsx") -> Any:
-    urls = TaggedUrlInUrllist.objects.all().filter(
-        urllist__account=account,
-        urllist__pk=urllist_id
-    ).order_by('url__computed_domain', 'url__computed_subdomain')
+    urls = (
+        TaggedUrlInUrllist.objects.all()
+        .filter(urllist__account=account, urllist__pk=urllist_id)
+        .order_by("url__computed_domain", "url__computed_subdomain")
+    )
 
     if not urls:
         return JsonResponse({})
@@ -992,7 +1101,7 @@ def download_as_spreadsheet(account: Account, urllist_id: int, file_type: str = 
     data += [["List(s)", "Domain(s)", "Tags"]]
 
     for url in urls.all():
-        data += [[url.urllist.name, url.url.url, ", ".join(url.tags.values_list('name', flat=True))]]
+        data += [[url.urllist.name, url.url.url, ", ".join(url.tags.values_list("name", flat=True))]]
 
     book = p.get_book(bookdict={"Domains": data})
 

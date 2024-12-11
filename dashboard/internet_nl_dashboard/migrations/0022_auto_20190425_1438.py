@@ -6,18 +6,18 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('internet_nl_dashboard', '0021_auto_20190425_0910'),
+        ("internet_nl_dashboard", "0021_auto_20190425_0910"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='urllist',
-            name='deleted_on',
+            model_name="urllist",
+            name="deleted_on",
             field=models.DateTimeField(null=True),
         ),
         migrations.AddField(
-            model_name='urllist',
-            name='is_deleted',
+            model_name="urllist",
+            name="is_deleted",
             field=models.BooleanField(default=False),
         ),
     ]

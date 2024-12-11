@@ -6,14 +6,17 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('internet_nl_dashboard', '0043_auto_20201006_1309'),
+        ("internet_nl_dashboard", "0043_auto_20201006_1309"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='dashboarduser',
-            name='mail_after_mail_unsubscribe_code',
+            model_name="dashboarduser",
+            name="mail_after_mail_unsubscribe_code",
             field=models.CharField(
-                default='', help_text='This is autofilled when sending an e-mail. The user can use this code to set mail_send_mail_after_scan_finished to false without logging in.', max_length=255),
+                default="",
+                help_text="This is autofilled when sending an e-mail. The user can use this code to set mail_send_mail_after_scan_finished to false without logging in.",
+                max_length=255,
+            ),
         ),
     ]

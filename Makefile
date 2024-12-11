@@ -132,6 +132,7 @@ pylama: ${pysrc} ${app}
 	# check code quality
 	${env} pylama ${pysrcdirs} --skip "**/migrations/*"
 
+
 shellcheck: ${shsrc}
 	# shell script checks (if installed)
 	if command -v shellcheck &>/dev/null && ! test -z "${shsrc}";then ${env} shellcheck ${shsrc}; fi
@@ -143,6 +144,7 @@ autofix fix: ${pysrc} ${app} ## automatic fix of trivial code quality issues
 	${env} autoflake -ri --remove-all-unused-imports ${pysrcdirs}
 	# sort imports
 	${env} isort -rc ${pysrcdirs}
+	black .
 	# do a check after autofixing to show remaining problems
 	${MAKE} check
 

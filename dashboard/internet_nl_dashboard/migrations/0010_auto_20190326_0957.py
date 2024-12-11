@@ -6,14 +6,15 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('internet_nl_dashboard', '0009_accountinternetnlscan'),
+        ("internet_nl_dashboard", "0009_accountinternetnlscan"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='account',
-            name='internet_nl_api_password',
+            model_name="account",
+            name="internet_nl_api_password",
             field=models.BinaryField(
-                blank=True, help_text='New values will automatically be encrypted.', max_length=255, null=True),
+                blank=True, help_text="New values will automatically be encrypted.", max_length=255, null=True
+            ),
         ),
     ]

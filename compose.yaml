@@ -1,0 +1,124 @@
+services:
+  backend:
+    image: ${DOCKER_IMAGE_DASHBOARD:-${DOCKER_REGISTRY:-internetstandards}/dashboard:${RELEASE:-latest}}
+    build: .
+    command: dashboard_prdserver --migrate
+    # TODO: check if needed: --security-opt seccomp=unconfined
+    environment:
+      SECRET_KEY_FILE: /etc/django_keys/secret_key
+      FIELD_ENCRYPTION_KEY_FILE: /etc/django_keys/field_encryption_key
+      ALLOWED_HOSTS: "*"
+      UWSGI_HARAKIRI: 3600
+      DJANGO_DATABASE: production
+      DB_ENGINE: postgresql_psycopg2
+      DB_HOST: database
+      WORKER_ROLE: default
+      BROKER: redis://broker:6379/0
+      SENTRY_DSN:
+      DASHBOARD_FRONTEND_URL:
+    networks:
+      dashboard:
+    volumes:
+      - dashboard-frontend-uploads:/source/dashboard/uploads
+      - django-keys:/etc/django_keys/
+    healthcheck:
+      interval: 60s
+
+  frontend:
+    image: ${DOCKER_IMAGE_DASHBOARD_STATIC:-${DOCKER_REGISTRY:-internetstandards}/dashboard-static:${RELEASE:-latest}}
+    build: https://github.com/internetstandards/Internet.nl-dashboard-frontend.git
+    networks:
+      dashboard:
+    healthcheck:
+      interval: 60s
+    volumes:
+      - dashboard-frontend-uploads:/source/dashboard/uploads
+
+  worker: &worker
+    image: ${DOCKER_IMAGE_DASHBOARD:-${DOCKER_REGISTRY:-internetstandards}/dashboard:${RELEASE:-latest}}
+    build: .
+    command: celery_dashboard worker --queues storage,celery,isolated,kickoff,kickoff1,kickoff2,kickoff3,kickoff4,database_deprecate,database_deprecate3,database,database3
+    environment: &worker-environment
+      SECRET_KEY_FILE: /etc/django_keys/secret_key
+      FIELD_ENCRYPTION_KEY_FILE: /etc/django_keys/field_encryption_key
+      DJANGO_DATABASE: production
+      DB_ENGINE: postgresql_psycopg2
+      DB_HOST: database
+      WORKER_ROLE: default_ipv4
+      BROKER: redis://broker:6379/0
+      SENTRY_DSN:
+    networks:
+      dashboard:
+    healthcheck:
+      interval: 60s
+    volumes:
+      - django-keys:/etc/django_keys/
+      - dashboard-frontend-uploads:/source/dashboard/uploads
+
+  worker-reporting:
+    <<: *worker
+    command: celery_dashboard worker --queues reporting
+    environment:
+      <<: *worker-environment
+      WORKER_ROLE: reporting
+
+  worker-scanning:
+    <<: *worker
+    command: celery_dashboard worker --queues ipv4,internet
+    environment:
+      <<: *worker-environment
+      WORKER_ROLE: default_ipv4
+
+  scheduler:
+    <<: *worker
+    image: ${DOCKER_IMAGE_DASHBOARD:-${DOCKER_REGISTRY:-internetstandards}/dashboard:${RELEASE:-latest}}
+    build: .
+    command: celery_dashboard beat -l info --pidfile=/var/tmp/celerybeat.pid
+
+  webserver:
+    image: caddy
+    configs:
+      - source: caddyfile
+        target: /etc/caddy/Caddyfile
+    ports:
+      - 127.0.0.1:8000:8000
+    networks:
+      dashboard:
+
+  database:
+    image: postgres:12
+    environment:
+      POSTGRES_DB: dashboard
+      POSTGRES_USER: dashboard
+      POSTGRES_PASSWORD: dashboard
+    networks:
+      dashboard:
+    volumes:
+      - database:/var/lib/postgresql/data
+    healthcheck:
+      interval: 60s
+    stop_grace_period: 60s
+
+  broker:
+    image: redis
+    healthcheck:
+      interval: 60s
+    networks:
+      dashboard:
+
+configs:
+  caddyfile:
+    content: |
+      :8000 {
+        @paths path /account/* /admin/* /data/* /jet/* /logout/* /mail/* /session/* /static/* /upload/* /security.txt /.well-known/security.txt
+        reverse_proxy @paths backend:8000
+        reverse_proxy /* frontend:80
+      }
+
+volumes:
+  dashboard-frontend-uploads:
+  database:
+  django-keys:
+
+networks:
+  dashboard:

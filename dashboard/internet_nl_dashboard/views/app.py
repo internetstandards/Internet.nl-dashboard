@@ -21,8 +21,10 @@ def config_content():
             # in the future we'll support this
             "signup": {
                 "enabled": configuration["SHOW_SIGNUP_FORM"],
-            }
-        }
+            },
+            "layout": configuration["SITE_LAYOUT_NAME"],
+            "supported_languages": configuration["SUPPORTED_LANGUAGES"],
+        },
     }
 
 

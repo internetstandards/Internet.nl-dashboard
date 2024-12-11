@@ -18,7 +18,7 @@ django-extensions
 django-debug-toolbar
 django-debug-toolbar-request-history
 pytest-mock
-websecmap @ git+https://gitlab.com/internet-cleanup-foundation/web-security-map@9833a47f52e6c39b5b02789cccf99cf49ee97ca9
+websecmap @ git+https://gitlab.com/internet-cleanup-foundation/web-security-map@01ced89aa3f21e91adce97babbbd3094473f053d
 # use the version with relaxed attr requirements
 pytest-docker @ git+https://github.com/avast/pytest-docker@519b155009b6f3570c01f1f56e7c4e6ce3c5c760
 
@@ -48,6 +48,7 @@ vulture
 pylint
 pylint-django
 ruff
+black
 
 types-redis
 types-freezegun

@@ -15,23 +15,45 @@ from openpyxl.styles import Font, PatternFill
 from websecmap.reporting.diskreport import retrieve_report
 
 from dashboard.internet_nl_dashboard.logic import FIELD_TO_CATEGORY_MAP  # pylint: disable=duplicate-code
-from dashboard.internet_nl_dashboard.logic import (MAIL_AUTH_CATEGORY, MAIL_AUTH_FIELDS, MAIL_DNSSEC_CATEGORY,
-                                                   MAIL_DNSSEC_FIELDS, MAIL_IPV6_CATEGORY, MAIL_IPV6_FIELDS,
-                                                   MAIL_LEGACY_FIELDS, MAIL_OVERALL_FIELDS, MAIL_RPKI_CATEGORY,
-                                                   MAIL_RPKI_FIELDS, MAIL_TLS_CATEGORY, MAIL_TLS_CERTIFICATE_FIELDS,
-                                                   MAIL_TLS_DANE_FIELDS, MAIL_TLS_TLS_FIELDS, WEB_APPSECPRIV_CATEGORY,
-                                                   WEB_APPSECPRIV_FIELDS, WEB_DNSSEC_CATEGORY, WEB_DNSSEC_FIELDS,
-                                                   WEB_IPV6_CATEGORY, WEB_IPV6_FIELDS, WEB_LEGACY_CATEGORY,
-                                                   WEB_LEGACY_FIELDS, WEB_OVERALL_FIELDS, WEB_RPKI_CATEGORY,
-                                                   WEB_RPKI_FIELDS, WEB_TLS_CATEGORY, WEB_TLS_CERTIFICATE_FIELDS,
-                                                   WEB_TLS_DANE_FIELDS, WEB_TLS_HTTP_FIELDS, WEB_TLS_TLS_FIELDS)
+from dashboard.internet_nl_dashboard.logic import (
+    MAIL_AUTH_CATEGORY,
+    MAIL_AUTH_FIELDS,
+    MAIL_DNSSEC_CATEGORY,
+    MAIL_DNSSEC_FIELDS,
+    MAIL_IPV6_CATEGORY,
+    MAIL_IPV6_FIELDS,
+    MAIL_LEGACY_FIELDS,
+    MAIL_OVERALL_FIELDS,
+    MAIL_RPKI_CATEGORY,
+    MAIL_RPKI_FIELDS,
+    MAIL_TLS_CATEGORY,
+    MAIL_TLS_CERTIFICATE_FIELDS,
+    MAIL_TLS_DANE_FIELDS,
+    MAIL_TLS_TLS_FIELDS,
+    WEB_APPSECPRIV_CATEGORY,
+    WEB_APPSECPRIV_FIELDS,
+    WEB_DNSSEC_CATEGORY,
+    WEB_DNSSEC_FIELDS,
+    WEB_IPV6_CATEGORY,
+    WEB_IPV6_FIELDS,
+    WEB_LEGACY_CATEGORY,
+    WEB_LEGACY_FIELDS,
+    WEB_OVERALL_FIELDS,
+    WEB_RPKI_CATEGORY,
+    WEB_RPKI_FIELDS,
+    WEB_TLS_CATEGORY,
+    WEB_TLS_CERTIFICATE_FIELDS,
+    WEB_TLS_DANE_FIELDS,
+    WEB_TLS_HTTP_FIELDS,
+    WEB_TLS_TLS_FIELDS,
+)
 from dashboard.internet_nl_dashboard.logic.internet_nl_translations import get_po_as_dictionary_v2, translate_field
 from dashboard.internet_nl_dashboard.models import Account, TaggedUrlInUrllist, Url, UrlListReport
 
 log = logging.getLogger(__package__)
 
 # todo: read the preferred language of the user and use the translations matching this user...
-po_file_as_dictionary = get_po_as_dictionary_v2('en')
+po_file_as_dictionary = get_po_as_dictionary_v2("en")
 
 """
 Creates spreadsheets containing report data.
@@ -47,39 +69,31 @@ Done: write some tests for these methods, once they are more table.
 
 SANE_COLUMN_ORDER = {
     # scanner
-    'dns_a_aaaa': {
-        'overall': WEB_OVERALL_FIELDS,
-
-        'ipv6': WEB_IPV6_CATEGORY + WEB_IPV6_FIELDS,
-
-        'dnssec': WEB_DNSSEC_CATEGORY + WEB_DNSSEC_FIELDS,
-
-        'tls': WEB_TLS_CATEGORY + WEB_TLS_HTTP_FIELDS + WEB_TLS_TLS_FIELDS + WEB_TLS_CERTIFICATE_FIELDS +
-        WEB_TLS_DANE_FIELDS,
-
+    "dns_a_aaaa": {
+        "overall": WEB_OVERALL_FIELDS,
+        "ipv6": WEB_IPV6_CATEGORY + WEB_IPV6_FIELDS,
+        "dnssec": WEB_DNSSEC_CATEGORY + WEB_DNSSEC_FIELDS,
+        "tls": WEB_TLS_CATEGORY
+        + WEB_TLS_HTTP_FIELDS
+        + WEB_TLS_TLS_FIELDS
+        + WEB_TLS_CERTIFICATE_FIELDS
+        + WEB_TLS_DANE_FIELDS,
         # Added 24th of May 2019
-        'appsecpriv': WEB_APPSECPRIV_CATEGORY + WEB_APPSECPRIV_FIELDS,
-
-        'rpki': WEB_RPKI_CATEGORY + WEB_RPKI_FIELDS,
-
-        'legacy': WEB_LEGACY_CATEGORY + WEB_LEGACY_FIELDS
+        "appsecpriv": WEB_APPSECPRIV_CATEGORY + WEB_APPSECPRIV_FIELDS,
+        "rpki": WEB_RPKI_CATEGORY + WEB_RPKI_FIELDS,
+        "legacy": WEB_LEGACY_CATEGORY + WEB_LEGACY_FIELDS,
     },
-    'dns_soa': {
+    "dns_soa": {
         # any grouping, every group has a empty column between them. The label is not used.
-        'overall': MAIL_OVERALL_FIELDS,
-        'ipv6': MAIL_IPV6_CATEGORY + MAIL_IPV6_FIELDS,
-
-        'dnssec': MAIL_DNSSEC_CATEGORY + MAIL_DNSSEC_FIELDS,
-
-        'auth': MAIL_AUTH_CATEGORY + MAIL_AUTH_FIELDS,
-
+        "overall": MAIL_OVERALL_FIELDS,
+        "ipv6": MAIL_IPV6_CATEGORY + MAIL_IPV6_FIELDS,
+        "dnssec": MAIL_DNSSEC_CATEGORY + MAIL_DNSSEC_FIELDS,
+        "auth": MAIL_AUTH_CATEGORY + MAIL_AUTH_FIELDS,
         # perhaps split these into multiple groups.
-        'tls': MAIL_TLS_CATEGORY + MAIL_TLS_TLS_FIELDS + MAIL_TLS_CERTIFICATE_FIELDS + MAIL_TLS_DANE_FIELDS,
-
-        'rpki': MAIL_RPKI_CATEGORY + MAIL_RPKI_FIELDS,
-
+        "tls": MAIL_TLS_CATEGORY + MAIL_TLS_TLS_FIELDS + MAIL_TLS_CERTIFICATE_FIELDS + MAIL_TLS_DANE_FIELDS,
+        "rpki": MAIL_RPKI_CATEGORY + MAIL_RPKI_FIELDS,
         # #358 MAIL_LEGACY_CATEGORY is useless
-        'legacy': MAIL_LEGACY_FIELDS
+        "legacy": MAIL_LEGACY_FIELDS,
     },
 }
 
@@ -97,24 +111,24 @@ def get_tags_from_urllist_urls(account: Account, urllist_id: int) -> Dict[str, L
     # This might significantly slow down an export, and this might be a separate process is we're going to process
     # a ton of huge lists in the future.
     prefetch_tags = Prefetch(
-        'taggedurlinurllist_set',
-        queryset=TaggedUrlInUrllist.objects.all().filter(urllist=urllist_id).prefetch_related('tags'),
-        to_attr='url_tags'
+        "taggedurlinurllist_set",
+        queryset=TaggedUrlInUrllist.objects.all().filter(urllist=urllist_id).prefetch_related("tags"),
+        to_attr="url_tags",
     )
 
     # This ordering makes sure all subdomains are near the domains with the right extension.
-    urls = Url.objects.all().filter(
-        urls_in_dashboard_list_2__account=account,
-        urls_in_dashboard_list_2__id=urllist_id
-    ).prefetch_related(
-        prefetch_tags
-    ).all()
+    urls = (
+        Url.objects.all()
+        .filter(urls_in_dashboard_list_2__account=account, urls_in_dashboard_list_2__id=urllist_id)
+        .prefetch_related(prefetch_tags)
+        .all()
+    )
 
     data = {}
 
     for url in urls:
         tags = []
-        for tag1 in [x.tags.values_list('name') for x in url.url_tags]:
+        for tag1 in [x.tags.values_list("name") for x in url.url_tags]:
             for tag2 in tag1:
                 tags.extend(iter(tag2))
         data[url.url] = tags
@@ -124,9 +138,9 @@ def get_tags_from_urllist_urls(account: Account, urllist_id: int) -> Dict[str, L
 
 def create_spreadsheet(account: Account, report_id: int):
     # Fails softly, without exceptions if there is nothing yet.
-    report = UrlListReport.objects.all().filter(
-        urllist__account=account,
-        pk=report_id).select_related('urllist').first()
+    report = (
+        UrlListReport.objects.all().filter(urllist__account=account, pk=report_id).select_related("urllist").first()
+    )
 
     if not report:
         return None, None
@@ -138,7 +152,7 @@ def create_spreadsheet(account: Account, report_id: int):
     # so when exporting they need to be retrieved one by one, which takes a lot of time.
     url_tag_mapping = get_tags_from_urllist_urls(account, report.urllist.id)
 
-    protocol = 'dns_soa' if report.report_type == 'mail' else 'dns_a_aaaa'
+    protocol = "dns_soa" if report.report_type == "mail" else "dns_a_aaaa"
 
     # results is a matrix / 2-d array / array with arrays.
     data: List[List[Any]] = []
@@ -154,11 +168,14 @@ def create_spreadsheet(account: Account, report_id: int):
     data += [category_headers(protocol)]
     data += [subcategory_headers(protocol)]
     data += [headers(protocol)]
-    data += urllistreport_to_spreadsheet_data(category_name=report.urllist.name, urls=urls, protocol=protocol,
-                                              tags=url_tag_mapping)
+    data += urllistreport_to_spreadsheet_data(
+        category_name=report.urllist.name, urls=urls, protocol=protocol, tags=url_tag_mapping
+    )
 
-    filename = "internet nl dashboard report " \
-               f"{report.pk} {report.urllist.name} {report.urllist.scan_type} {report.at_when.date()}"
+    filename = (
+        "internet nl dashboard report "
+        f"{report.pk} {report.urllist.name} {report.urllist.scan_type} {report.at_when.date()}"
+    )
 
     # The sheet is created into memory and then passed to the caller. They may save it, or serve it, etc...
     # http://docs.pyexcel.org/en/latest/tutorial06.html?highlight=memory
@@ -187,79 +204,144 @@ def upgrade_excel_spreadsheet(spreadsheet_data):
         # Add statistic rows:
         worksheet.insert_rows(0, amount=9)
 
-        worksheet['B1'] = "Total"
-        worksheet['B2'] = "Passed"
-        worksheet['B3'] = "Info"
-        worksheet['B4'] = "Warning"
-        worksheet['B5'] = "Failed"
-        worksheet['B6'] = "Not tested"
-        worksheet['B7'] = "Error"
-        worksheet['B8'] = "Test not applicable (mail only)"
-        worksheet['B9'] = "Percentage passed"
+        worksheet["B1"] = "Total"
+        worksheet["B2"] = "Passed"
+        worksheet["B3"] = "Info"
+        worksheet["B4"] = "Warning"
+        worksheet["B5"] = "Failed"
+        worksheet["B6"] = "Not tested"
+        worksheet["B7"] = "Error"
+        worksheet["B8"] = "Test not applicable (mail only)"
+        worksheet["B9"] = "Percentage passed"
 
         # one to one match on the values, so they can be filtered
-        worksheet['I1'] = "<>"
-        worksheet['I2'] = "passed"
-        worksheet['I3'] = "info"
-        worksheet['I4'] = "warning"
-        worksheet['I5'] = "failed"
-        worksheet['I6'] = "not_tested"
-        worksheet['I7'] = "error"
-        worksheet['I8'] = "not_applicable"
+        worksheet["I1"] = "<>"
+        worksheet["I2"] = "passed"
+        worksheet["I3"] = "info"
+        worksheet["I4"] = "warning"
+        worksheet["I5"] = "failed"
+        worksheet["I6"] = "not_tested"
+        worksheet["I7"] = "error"
+        worksheet["I8"] = "not_applicable"
 
         # bold totals:
         for i in range(1, 10):
-            worksheet[f'B{i}'].font = Font(bold=True)
+            worksheet[f"B{i}"].font = Font(bold=True)
 
         data_columns = [
-            'J', 'K', 'L', "M", "N", 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z',
-            'AA', 'AB', 'AC', 'AD', 'AE', 'AF', 'AG', 'AH', 'AI', 'AJ', 'AK', 'AL', 'AM', 'AN', 'AO',
-            'AP', 'AQ', 'AR', 'AS', 'AT', 'AU', 'AV', 'AW', 'AX', 'AY', 'AZ', 'BA', 'BB', 'BC', 'BD',
-            'BE', 'BF', 'BG', 'BH', 'BI', 'BJ', 'BK', "BL", "BM", "BN", "BO", "BP", "BQ", "BR", "BS",
-            "BT", "BU", "BV", "BW", "BX", "BY", "BZ", "CA", "CB",
+            "J",
+            "K",
+            "L",
+            "M",
+            "N",
+            "O",
+            "P",
+            "Q",
+            "R",
+            "S",
+            "T",
+            "U",
+            "V",
+            "W",
+            "X",
+            "Y",
+            "Z",
+            "AA",
+            "AB",
+            "AC",
+            "AD",
+            "AE",
+            "AF",
+            "AG",
+            "AH",
+            "AI",
+            "AJ",
+            "AK",
+            "AL",
+            "AM",
+            "AN",
+            "AO",
+            "AP",
+            "AQ",
+            "AR",
+            "AS",
+            "AT",
+            "AU",
+            "AV",
+            "AW",
+            "AX",
+            "AY",
+            "AZ",
+            "BA",
+            "BB",
+            "BC",
+            "BD",
+            "BE",
+            "BF",
+            "BG",
+            "BH",
+            "BI",
+            "BJ",
+            "BK",
+            "BL",
+            "BM",
+            "BN",
+            "BO",
+            "BP",
+            "BQ",
+            "BR",
+            "BS",
+            "BT",
+            "BU",
+            "BV",
+            "BW",
+            "BX",
+            "BY",
+            "BZ",
+            "CA",
+            "CB",
         ]
 
         # add some statistics
         for cell in data_columns:
             # if header, then aggregate
-            if worksheet[f'{cell}12'].value:
+            if worksheet[f"{cell}12"].value:
                 _extracted_from_upgrade_excel_spreadsheet_57(cell, lines, worksheet)
         # make headers bold
-        worksheet['A12'].font = Font(bold=True)  # List
-        worksheet['B12'].font = Font(bold=True)  # Url
-        worksheet['C12'].font = Font(bold=True)  # Subdomain
-        worksheet['D12'].font = Font(bold=True)  # Domain
-        worksheet['E12'].font = Font(bold=True)  # Suffix
-        worksheet['F12'].font = Font(bold=True)  # Tags
-        worksheet['G12'].font = Font(bold=True)  # InStats
-        worksheet['H11'].font = Font(bold=True)  # overall
-        worksheet['H12'].font = Font(bold=True)  # % Score
-        worksheet['I12'].font = Font(bold=True)  # Report
+        worksheet["A12"].font = Font(bold=True)  # List
+        worksheet["B12"].font = Font(bold=True)  # Url
+        worksheet["C12"].font = Font(bold=True)  # Subdomain
+        worksheet["D12"].font = Font(bold=True)  # Domain
+        worksheet["E12"].font = Font(bold=True)  # Suffix
+        worksheet["F12"].font = Font(bold=True)  # Tags
+        worksheet["G12"].font = Font(bold=True)  # InStats
+        worksheet["H11"].font = Font(bold=True)  # overall
+        worksheet["H12"].font = Font(bold=True)  # % Score
+        worksheet["I12"].font = Font(bold=True)  # Report
 
         for cell in data_columns:
-            worksheet[f'{cell}11'].font = Font(bold=True)
-            worksheet[f'{cell}12'].font = Font(bold=True)
-            worksheet[f'{cell}13'].font = Font(bold=True)
+            worksheet[f"{cell}11"].font = Font(bold=True)
+            worksheet[f"{cell}12"].font = Font(bold=True)
+            worksheet[f"{cell}13"].font = Font(bold=True)
 
         # Freeze pane to make navigation easier.
-        worksheet.freeze_panes = worksheet['K14']
+        worksheet.freeze_panes = worksheet["K14"]
 
         # there is probably a feature that puts this in a single conditional value.
         conditional_rules = {
-            "passed": PatternFill(start_color='B7FFC8', end_color='B7FFC8', fill_type='solid'),
-            "failed": PatternFill(start_color='FFB7B7', end_color='FFB7B7', fill_type='solid'),
-            "warning": PatternFill(start_color='FFD9B7', end_color='FFD9B7', fill_type='solid'),
-            "info": PatternFill(start_color='B7E3FF', end_color='B7E3FF', fill_type='solid'),
-            "good_not_tested": PatternFill(start_color='99FFFF', end_color='C0C0C0', fill_type='solid'),
-            "not_tested": PatternFill(start_color='99FFFF', end_color='DBDBDB', fill_type='solid'),
+            "passed": PatternFill(start_color="B7FFC8", end_color="B7FFC8", fill_type="solid"),
+            "failed": PatternFill(start_color="FFB7B7", end_color="FFB7B7", fill_type="solid"),
+            "warning": PatternFill(start_color="FFD9B7", end_color="FFD9B7", fill_type="solid"),
+            "info": PatternFill(start_color="B7E3FF", end_color="B7E3FF", fill_type="solid"),
+            "good_not_tested": PatternFill(start_color="99FFFF", end_color="C0C0C0", fill_type="solid"),
+            "not_tested": PatternFill(start_color="99FFFF", end_color="DBDBDB", fill_type="solid"),
         }
 
         # Set the measurements to green/red depending on value using conditional formatting.
         # There is no true/false, but we can color based on value.
         for grade, pattern in conditional_rules.items():
             worksheet.conditional_formatting.add(
-                f'F13:CD{lines}',
-                CellIsRule(operator='=', formula=[f'"{grade}"'], stopIfTrue=True, fill=pattern)
+                f"F13:CD{lines}", CellIsRule(operator="=", formula=[f'"{grade}"'], stopIfTrue=True, fill=pattern)
             )
 
         workbook.save(tmp.name)
@@ -272,69 +354,73 @@ def _extracted_from_upgrade_excel_spreadsheet_57(cell, lines, worksheet):
     # There is a max of 5000 domains per scan. So we set this to something lower.
     # There is no good support of headers versus data, which makes working with excel a drama
     # If you ever read this code, and want a good spreadsheet editor: try Apple Numbers. It's fantastic.
-    worksheet[f'{cell}1'] = f'=COUNTA({cell}13:{cell}{lines})'
+    worksheet[f"{cell}1"] = f"=COUNTA({cell}13:{cell}{lines})"
     # todo: also support other values
-    worksheet[f'{cell}2'] = f'=COUNTIF({cell}13:{cell}{lines}, "passed")'
-    worksheet[f'{cell}3'] = f'=COUNTIF({cell}13:{cell}{lines}, "info")'
-    worksheet[f'{cell}4'] = f'=COUNTIF({cell}13:{cell}{lines}, "warning")'
-    worksheet[f'{cell}5'] = f'=COUNTIF({cell}13:{cell}{lines}, "failed")'
-    worksheet[f'{cell}6'] = f'=COUNTIF({cell}13:{cell}{lines}, "not_tested")'
-    worksheet[f'{cell}7'] = f'=' \
-        f'COUNTIF({cell}13:{cell}{lines}, "error")+' \
-        f'COUNTIF({cell}13:{cell}{lines}, "unreachable")+' \
-        f'COUNTIF({cell}13:{cell}{lines}, "untestable")+' \
+    worksheet[f"{cell}2"] = f'=COUNTIF({cell}13:{cell}{lines}, "passed")'
+    worksheet[f"{cell}3"] = f'=COUNTIF({cell}13:{cell}{lines}, "info")'
+    worksheet[f"{cell}4"] = f'=COUNTIF({cell}13:{cell}{lines}, "warning")'
+    worksheet[f"{cell}5"] = f'=COUNTIF({cell}13:{cell}{lines}, "failed")'
+    worksheet[f"{cell}6"] = f'=COUNTIF({cell}13:{cell}{lines}, "not_tested")'
+    worksheet[f"{cell}7"] = (
+        f"="
+        f'COUNTIF({cell}13:{cell}{lines}, "error")+'
+        f'COUNTIF({cell}13:{cell}{lines}, "unreachable")+'
+        f'COUNTIF({cell}13:{cell}{lines}, "untestable")+'
         f'COUNTIF({cell}13:{cell}{lines}, "not_testable")'
-    worksheet[f'{cell}8'] = f'=' \
-        f'COUNTIF({cell}13:{cell}{lines}, "no_mx")+' \
-        f'COUNTIF({cell}13:{cell}{lines}, "not_applicable")'
+    )
+    worksheet[f"{cell}8"] = (
+        f"=" f'COUNTIF({cell}13:{cell}{lines}, "no_mx")+' f'COUNTIF({cell}13:{cell}{lines}, "not_applicable")'
+    )
     # Not applicable and not testable are subtracted from the total.
     # See https://github.com/internetstandards/Internet.nl-dashboard/issues/68
     # Rounding's num digits is NOT the number of digits behind the comma, but the total number of digits.
     # todo: we should use the calculations in report.py. And there include the "missing" / empty stuff IF
     # that is missing.
     #                   IF(     H1=0,0,ROUND(     H2÷     H1, 4))
-    worksheet[f'{cell}9'] = f'=IF({cell}1=0,0,ROUND({cell}2/{cell}1, 4))'
-    worksheet[f'{cell}9'].number_format = '0.00%'
+    worksheet[f"{cell}9"] = f"=IF({cell}1=0,0,ROUND({cell}2/{cell}1, 4))"
+    worksheet[f"{cell}9"].number_format = "0.00%"
 
 
-def category_headers(protocol: str = 'dns_soa'):
-    sheet_headers: List[str] = ['', '', '', '', '', '', '']
+def category_headers(protocol: str = "dns_soa"):
+    sheet_headers: List[str] = ["", "", "", "", "", "", ""]
     for group in SANE_COLUMN_ORDER[protocol]:
         sheet_headers += [translate_field(group, translation_dictionary=po_file_as_dictionary)]
 
         for _ in range(len(SANE_COLUMN_ORDER[protocol][group]) - 1):
-            sheet_headers += ['']
+            sheet_headers += [""]
 
         # add empty thing after each group to make distinction per group clearer
-        sheet_headers += ['']
+        sheet_headers += [""]
 
     return sheet_headers
 
 
-def subcategory_headers(protocol: str = 'dns_soa'):
-    sheet_headers = ['', '', '', '', '', '', '']
+def subcategory_headers(protocol: str = "dns_soa"):
+    sheet_headers = ["", "", "", "", "", "", ""]
     for group in SANE_COLUMN_ORDER[protocol]:
         sheet_headers += SANE_COLUMN_ORDER[protocol][group]
         # add empty thing after each group to make distinction per group clearer
-        sheet_headers += ['']
+        sheet_headers += [""]
 
     # translate them:
-    return [translate_field(FIELD_TO_CATEGORY_MAP.get(header, ''),
-                            translation_dictionary=po_file_as_dictionary) for header in sheet_headers]
+    return [
+        translate_field(FIELD_TO_CATEGORY_MAP.get(header, ""), translation_dictionary=po_file_as_dictionary)
+        for header in sheet_headers
+    ]
 
 
-def headers(protocol: str = 'dns_soa'):
-    sheet_headers = ['List', 'Url', "Subdomain", "Domain", "Suffix", 'Tags', 'InStats']
+def headers(protocol: str = "dns_soa"):
+    sheet_headers = ["List", "Url", "Subdomain", "Domain", "Suffix", "Tags", "InStats"]
     for group in SANE_COLUMN_ORDER[protocol]:
         sheet_headers += SANE_COLUMN_ORDER[protocol][group]
         # add empty thing after each group to make distinction per group clearer
-        sheet_headers += ['']
+        sheet_headers += [""]
 
     # translate them:
     return [translate_field(header, translation_dictionary=po_file_as_dictionary) for header in sheet_headers]
 
 
-def formula_row(function: str, protocol: str = 'dns_soa'):
+def formula_row(function: str, protocol: str = "dns_soa"):
     data = []
 
     my_headers = headers(protocol)
@@ -342,7 +428,7 @@ def formula_row(function: str, protocol: str = 'dns_soa'):
 
     empty_headers = []
     for i in range(total):
-        if my_headers[i] == '':
+        if my_headers[i] == "":
             empty_headers.append(i)
 
     # log.debug(empty_headers)
@@ -351,9 +437,9 @@ def formula_row(function: str, protocol: str = 'dns_soa'):
     index = 0
     for column_name in itertools.islice(iter_all_strings(), total):
         if index in empty_headers:
-            data.append('')
+            data.append("")
         else:
-            data.append(function % {'column_name': column_name})
+            data.append(function % {"column_name": column_name})
 
         index += 1
 
@@ -361,39 +447,40 @@ def formula_row(function: str, protocol: str = 'dns_soa'):
 
 
 def urllistreport_to_spreadsheet_data(
-        category_name: str, urls: List[Any], protocol: str = 'dns_soa', tags: Dict[str, List[str]] = None
+    category_name: str, urls: List[Any], protocol: str = "dns_soa", tags: Dict[str, List[str]] = None
 ):
     data = []
     for url in urls:
-        extract = tldextract.extract(url['url'])
+        extract = tldextract.extract(url["url"])
 
-        url_tags = ', '.join(tags.get(url['url'], []))
+        url_tags = ", ".join(tags.get(url["url"], []))
 
-        if len(url['endpoints']) == 1:
+        if len(url["endpoints"]) == 1:
             # we can just put the whole result in one, which is nicer to look at.
-            for endpoint in url['endpoints']:
-                if endpoint['protocol'] != protocol:
+            for endpoint in url["endpoints"]:
+                if endpoint["protocol"] != protocol:
                     continue
-                keyed_ratings = endpoint['ratings_by_type']
+                keyed_ratings = endpoint["ratings_by_type"]
                 data.append(
-                    [category_name, url['url'], extract.subdomain, extract.domain, extract.suffix, url_tags, 'TRUE'] +
-                    keyed_values_as_boolean(keyed_ratings, protocol)
+                    [category_name, url["url"], extract.subdomain, extract.domain, extract.suffix, url_tags, "TRUE"]
+                    + keyed_values_as_boolean(keyed_ratings, protocol)
                 )
         else:
-            data.append([category_name, url['url'], extract.subdomain,
-                        extract.domain, extract.suffix, url_tags, 'TRUE'])
+            data.append(
+                [category_name, url["url"], extract.subdomain, extract.domain, extract.suffix, url_tags, "TRUE"]
+            )
 
-            for endpoint in url['endpoints']:
-                if endpoint['protocol'] != protocol:
+            for endpoint in url["endpoints"]:
+                if endpoint["protocol"] != protocol:
                     continue
-                keyed_ratings = endpoint['ratings_by_type']
-                data.append(['', '', '', '', '', '', ''] + keyed_values_as_boolean(keyed_ratings, protocol))
+                keyed_ratings = endpoint["ratings_by_type"]
+                data.append(["", "", "", "", "", "", ""] + keyed_values_as_boolean(keyed_ratings, protocol))
 
     # log.debug(data)
     return data
 
 
-def keyed_values_as_boolean(keyed_ratings: Dict[str, Dict[str, Union[str, int]]], protocol: str = 'dns_soa'):
+def keyed_values_as_boolean(keyed_ratings: Dict[str, Dict[str, Union[str, int]]], protocol: str = "dns_soa"):
     """
     Keyed rating:
     {'internet_nl_mail_auth_dkim_exist': {'comply_or_explain_explained_on': '',
@@ -427,30 +514,30 @@ def keyed_values_as_boolean(keyed_ratings: Dict[str, Dict[str, Union[str, int]]]
         for issue_name in SANE_COLUMN_ORDER[protocol][group]:
             values.append(some_value(issue_name, keyed_ratings))
 
-            if issue_name == 'internet_nl_score_report':
+            if issue_name == "internet_nl_score_report":
                 # add empty column
                 values.append(" ")
 
         # add empty thing after each group to make distinction per group clearer
         # overall group already adds an extra value (url), so we don't need this.
         if group != "overall":
-            values += ['']
+            values += [""]
 
     return values
 
 
 def some_value(issue_name: str, keyed_ratings: Dict[str, Dict[str, Union[str, int]]]) -> Union[str, int]:
 
-    if issue_name == 'internet_nl_score':
+    if issue_name == "internet_nl_score":
         # Handle the special case of the score column.
         # explanation":"75 https://batch.internet.nl/mail/portaal.digimelding.nl/289480/",
         # Not steadily convertable to a percentage, so printing it as an integer instead.
-        score = keyed_ratings[issue_name]['internet_nl_score']
+        score = keyed_ratings[issue_name]["internet_nl_score"]
         return score if score == "error" else int(score)
 
-    if issue_name == 'internet_nl_score_report':
+    if issue_name == "internet_nl_score_report":
         # fake column to give the column a title per #205, also makes the report more explicit.
-        return keyed_ratings['internet_nl_score']['internet_nl_url']
+        return keyed_ratings["internet_nl_score"]["internet_nl_url"]
 
     # the issue name might not exist, the 'ok' value might not exist. In those cases replace it with a ?
     value = keyed_ratings.get(issue_name, None)
@@ -458,8 +545,8 @@ def some_value(issue_name: str, keyed_ratings: Dict[str, Dict[str, Union[str, in
         return "?"
 
     # api v2, tls1.3 update
-    if value.get('test_result', False):
-        test_value = value.get('test_result', '?')
+    if value.get("test_result", False):
+        test_value = value.get("test_result", "?")
         # per 205, translate not_testable to untestable. This is cosmetic as the 'not_testable' is
         # everywhere in the software and is just renamed, and will probably be renamed a few times
         # more in the future.
@@ -469,12 +556,12 @@ def some_value(issue_name: str, keyed_ratings: Dict[str, Dict[str, Union[str, in
 
     # unknown columns and data will be empty.
     if "simple_verdict" not in value:
-        return ''
+        return ""
 
     # backward compatible with api v1 reports unreachable
     mapping: Dict[str, str] = {
-        'not_testable': 'untestable',
-        'not_applicable': 'not_applicable',
-        'error_in_test': 'error'
+        "not_testable": "untestable",
+        "not_applicable": "not_applicable",
+        "error_in_test": "error",
     }
-    return mapping.get(str(value['simple_verdict']), "?")
+    return mapping.get(str(value["simple_verdict"]), "?")

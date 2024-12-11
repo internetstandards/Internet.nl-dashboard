@@ -44,7 +44,7 @@ def create_spreadsheet_download(file_name: str, spreadsheet_data: Any, file_type
     }
 
     if file_type == "xlsx-openpyxl":
-        with open(spreadsheet_data.name, 'rb') as file_handle:
+        with open(spreadsheet_data.name, "rb") as file_handle:
             output: HttpResponse = HttpResponse(file_handle.read())
         file_type = "xlsx"
     else:

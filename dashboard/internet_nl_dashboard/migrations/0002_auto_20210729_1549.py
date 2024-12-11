@@ -6,26 +6,33 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('internet_nl_dashboard', '0001_squashed_0045_auto_20201027_1039'),
+        ("internet_nl_dashboard", "0001_squashed_0045_auto_20201027_1039"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='urllistreport',
-            name='is_publicly_shared',
+            model_name="urllistreport",
+            name="is_publicly_shared",
             field=models.BooleanField(
-                default=False, help_text='Sharing can be disabled and re-enabled where the report code and the share code (password) stay the same.'),
+                default=False,
+                help_text="Sharing can be disabled and re-enabled where the report code and the share code (password) stay the same.",
+            ),
         ),
         migrations.AddField(
-            model_name='urllistreport',
-            name='public_report_code',
-            field=models.CharField(blank=True, default='',
-                                   help_text='a unique code that used to identify this report', max_length=64),
-        ),
-        migrations.AddField(
-            model_name='urllistreport',
-            name='public_share_code',
+            model_name="urllistreport",
+            name="public_report_code",
             field=models.CharField(
-                blank=True, default='', help_text='An unencrypted share code that can be seen by all users in an account. Can be modified by all.', max_length=64),
+                blank=True, default="", help_text="a unique code that used to identify this report", max_length=64
+            ),
+        ),
+        migrations.AddField(
+            model_name="urllistreport",
+            name="public_share_code",
+            field=models.CharField(
+                blank=True,
+                default="",
+                help_text="An unencrypted share code that can be seen by all users in an account. Can be modified by all.",
+                max_length=64,
+            ),
         ),
     ]

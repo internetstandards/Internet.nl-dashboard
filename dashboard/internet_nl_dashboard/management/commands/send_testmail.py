@@ -9,9 +9,10 @@ class Command(BaseCommand):
         mail.send(
             sender=config.EMAIL_NOTIFICATION_SENDER,
             recipients=config.EMAIL_TEST_RECIPIENT,
-            subject='Dashboard test e-mail',
-            message='This is a test email from the dashboard.',
+            subject="Dashboard test e-mail",
+            message="This is a test email from the dashboard.",
             priority=models.PRIORITY.now,
-            html_message='This is a test email from the dashboard <strong>hi</strong>!',
+            html_message="This is a test email from the dashboard <strong>hi</strong>!",
         )
+
     print("Mail sent!")

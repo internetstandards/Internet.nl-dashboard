@@ -12,8 +12,8 @@ log = logging.getLogger(__package__)
 
 def reusable_run_from_argv(argv):
     """Replace python with celery process with given arguments."""
-    appname = __name__.split('.', 1)[0] + '.celery:app'
-    appname_arguments = ['-A', appname]
+    appname = __name__.split(".", 1)[0] + ".celery:app"
+    appname_arguments = ["-A", appname]
 
     log.info(argv[1])
     log.info(argv[1:2] + appname_arguments + argv[2:])
@@ -26,6 +26,7 @@ def reusable_run_from_argv(argv):
 
 class Command(BaseCommand):  # pylint: disable=abstract-method
     """Celery command wrapper."""
+
     help = __doc__
 
     # disable (MySQL) check on startup

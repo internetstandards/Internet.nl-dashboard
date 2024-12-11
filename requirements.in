@@ -9,7 +9,7 @@
 # - no version pinning, unless it is required and explained
 
 # to update websecmap, update the SHA hash and run: make update_requirement_websecmap
-websecmap @ git+https://gitlab.com/internet-cleanup-foundation/web-security-map@9833a47f52e6c39b5b02789cccf99cf49ee97ca9
+websecmap @ git+https://gitlab.com/internet-cleanup-foundation/web-security-map@01ced89aa3f21e91adce97babbbd3094473f053d
 
 django-otp
 django-two-factor-auth>1.15
@@ -53,6 +53,7 @@ openpyxl==3.0.10
 
 # password change forms, saml oauth and more
 django-allauth
+
 
 # Scanner dep needed to parse SNI: when performing raw host requests the cert hostname also needs to be correct
 # see: https://toolbelt.readthedocs.io/en/latest/adapters.html#hostheaderssladapter

@@ -15,25 +15,39 @@ class Migration(migrations.Migration):
 
     operations = [
         migrations.CreateModel(
-            name='Account',
+            name="Account",
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('name', models.CharField(blank=True, max_length=120, null=True)),
-                ('enable_logins', models.BooleanField(blank=True, default=False,
-                                                      help_text='Inactive accounts cannot be logged-in to.', null=True)),
-                ('internet_nl_api_username', models.CharField(blank=True,
-                                                              help_text='Internet.nl API Username', max_length=255, null=True)),
-                ('internet_nl_api_password', models.CharField(blank=True,
-                                                              help_text='Will be encrypted.', max_length=255, null=True)),
+                ("id", models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
+                ("name", models.CharField(blank=True, max_length=120, null=True)),
+                (
+                    "enable_logins",
+                    models.BooleanField(
+                        blank=True, default=False, help_text="Inactive accounts cannot be logged-in to.", null=True
+                    ),
+                ),
+                (
+                    "internet_nl_api_username",
+                    models.CharField(blank=True, help_text="Internet.nl API Username", max_length=255, null=True),
+                ),
+                (
+                    "internet_nl_api_password",
+                    models.CharField(blank=True, help_text="Will be encrypted.", max_length=255, null=True),
+                ),
             ],
         ),
         migrations.CreateModel(
-            name='DashboardUser',
+            name="DashboardUser",
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('notes', models.TextField(blank=True, max_length=800, null=True)),
-                ('account', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='internet_nl_dashboard.Account')),
-                ('user', models.OneToOneField(on_delete=django.db.models.deletion.CASCADE, to=settings.AUTH_USER_MODEL)),
+                ("id", models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
+                ("notes", models.TextField(blank=True, max_length=800, null=True)),
+                (
+                    "account",
+                    models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to="internet_nl_dashboard.Account"),
+                ),
+                (
+                    "user",
+                    models.OneToOneField(on_delete=django.db.models.deletion.CASCADE, to=settings.AUTH_USER_MODEL),
+                ),
             ],
         ),
     ]

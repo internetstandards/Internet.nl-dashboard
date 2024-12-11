@@ -9,9 +9,13 @@ from django.shortcuts import render
 from django.views.decorators.http import require_http_methods
 from websecmap.app.common import JSEncoder
 
-from dashboard.internet_nl_dashboard.logic.spreadsheet import (get_upload_history, import_step_2,
-                                                               log_spreadsheet_upload, save_file,
-                                                               upload_domain_spreadsheet_to_list)
+from dashboard.internet_nl_dashboard.logic.spreadsheet import (
+    get_upload_history,
+    import_step_2,
+    log_spreadsheet_upload,
+    save_file,
+    upload_domain_spreadsheet_to_list,
+)
 from dashboard.internet_nl_dashboard.views import LOGIN_URL, get_account, get_dashboarduser
 
 log = logging.getLogger(__package__)
@@ -20,11 +24,15 @@ log = logging.getLogger(__package__)
 @login_required(login_url=LOGIN_URL)
 def upload(request) -> HttpResponse:
 
-    response: HttpResponse = render(request, 'internet_nl_dashboard/templates/internet_nl_dashboard/upload.html', {
-        'menu_item_addressmanager': "current",
-        'max_lists': int(config.DASHBOARD_MAXIMUM_LISTS_PER_SPREADSHEET),
-        'max_urls':  int(config.DASHBOARD_MAXIMUM_DOMAINS_PER_SPREADSHEET)
-    })
+    response: HttpResponse = render(
+        request,
+        "internet_nl_dashboard/templates/internet_nl_dashboard/upload.html",
+        {
+            "menu_item_addressmanager": "current",
+            "max_lists": int(config.DASHBOARD_MAXIMUM_LISTS_PER_SPREADSHEET),
+            "max_urls": int(config.DASHBOARD_MAXIMUM_DOMAINS_PER_SPREADSHEET),
+        },
+    )
 
     return response
 
@@ -42,18 +50,18 @@ def upload_spreadsheet(request) -> HttpResponse:
     user = get_dashboarduser(request)
 
     # happens when no file is sent
-    if 'file' not in request.FILES:
+    if "file" not in request.FILES:
         return response
 
     # a request of 25k domains will take 12 seconds, which is already too long for interaction.
     # so all steps are now parallelized.
-    if request.method == 'POST' and request.FILES['file']:
+    if request.method == "POST" and request.FILES["file"]:
         log.debug("Saving file")
-        file = save_file(request.FILES['file'])
+        file = save_file(request.FILES["file"])
         upload_data = log_spreadsheet_upload(
-            user=user, file=file, status='[1/3] Initializing', message="[1/3] Initializing upload..."
+            user=user, file=file, status="[1/3] Initializing", message="[1/3] Initializing upload..."
         )
-        uploadlog_id = upload_data['id']
+        uploadlog_id = upload_data["id"]
 
         group(import_step_2.si(user.id, file, uploadlog_id)).apply_async()
 
@@ -75,9 +83,8 @@ def upload_history(request) -> JsonResponse:
 @require_http_methods(["POST"])
 def upload_list_(request, list_id):
     # params = get_json_body(request)
-    return JsonResponse(upload_domain_spreadsheet_to_list(
-        get_account(request),
-        get_dashboarduser(request),
-        list_id,
-        request.FILES.get('file', None)
-    ))
+    return JsonResponse(
+        upload_domain_spreadsheet_to_list(
+            get_account(request), get_dashboarduser(request), list_id, request.FILES.get("file", None)
+        )
+    )

@@ -6,13 +6,13 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('internet_nl_dashboard', '0037_auto_20191121_1408'),
+        ("internet_nl_dashboard", "0037_auto_20191121_1408"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='accountinternetnlscan',
-            name='state_changed_on',
+            model_name="accountinternetnlscan",
+            name="state_changed_on",
             field=models.DateTimeField(blank=True, null=True),
         ),
     ]

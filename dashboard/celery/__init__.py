@@ -21,8 +21,9 @@ log = logging.getLogger(__package__)
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "dashboard.settings")
 
 # autodiscover all celery tasks in tasks.py files inside websecmap modules
-app.autodiscover_tasks([app for app in settings.INSTALLED_APPS
-                        if app.startswith('dashboard') or app.startswith('websecmap')])
+app.autodiscover_tasks(
+    [app for app in settings.INSTALLED_APPS if app.startswith("dashboard") or app.startswith("websecmap")]
+)
 
 # http://docs.celeryproject.org/en/master/whatsnew-4.0.html?highlight=priority#redis-priorities-reversed
 # http://docs.celeryproject.org/en/master/history/whatsnew-3.0.html?highlight=priority
@@ -31,9 +32,9 @@ app.autodiscover_tasks([app for app in settings.INSTALLED_APPS
 # https://github.com/celery/celery/blob/f83b072fba7831f60106c81472e3477608baf289/docs/whatsnew-4.0.rst#redis-priorities-reversed
 # contrary to 'documentation' in release notes the redis priorities do not seem aligned with rabbitmq
 app.conf.broker_transport_options = {
-    'priority_steps': [1, 5, 9],
+    "priority_steps": [1, 5, 9],
 }
-if 'redis://' in app.conf.broker_url:
+if "redis://" in app.conf.broker_url:
     PRIO_HIGH = 1
     PRIO_NORMAL = 5
     PRIO_LOW = 9
@@ -44,8 +45,8 @@ else:
 
 # lookup table for routing keys for different IP versions
 IP_VERSION_QUEUE = {
-    4: 'scanners.ipv4',
-    6: 'scanners.ipv6',
+    4: "scanners.ipv4",
+    6: "scanners.ipv6",
 }
 
 
@@ -77,21 +78,24 @@ def status():
     active = inspect.active()
     reserved = inspect.reserved()
     active_queues = inspect.active_queues()
-    workers = [{
-        'name': worker_name,
-        'queues': [q['name'] for q in active_queues.get(worker_name, [])],
-        'tasks_processed': sum(worker_stats['total'].values()),
-        'tasks_active': len(active.get(worker_name, [])),
-        'tasks_reserved': len(reserved.get(worker_name, [])),
-        'prefetch_count': worker_stats['prefetch_count'],
-        'concurrency': worker_stats['pool']['max-concurrency'],
-    } for worker_name, worker_stats in stats.items()]
+    workers = [
+        {
+            "name": worker_name,
+            "queues": [q["name"] for q in active_queues.get(worker_name, [])],
+            "tasks_processed": sum(worker_stats["total"].values()),
+            "tasks_active": len(active.get(worker_name, [])),
+            "tasks_reserved": len(reserved.get(worker_name, [])),
+            "prefetch_count": worker_stats["prefetch_count"],
+            "concurrency": worker_stats["pool"]["max-concurrency"],
+        }
+        for worker_name, worker_stats in stats.items()
+    ]
 
     # todo: fix Returning Any from function declared to return "SupportsLessThan"
-    workers = sorted(workers, key=lambda k: (k['name']), reverse=False)  # type: ignore
+    workers = sorted(workers, key=lambda k: (k["name"]), reverse=False)  # type: ignore
 
-    if 'redis://' in app.conf.broker_url:
-        queue_names = [q.name for q in QUEUES_MATCHING_ROLES['queuemonitor']]
+    if "redis://" in app.conf.broker_url:
+        queue_names = [q.name for q in QUEUES_MATCHING_ROLES["queuemonitor"]]
 
         # on localhost and remote workers there is no event loop. This causes an exception.
         # Inspired on https://github.com/tornadoweb/tornado/issues/2352 and
@@ -103,6 +107,7 @@ def status():
         # 'solves': RuntimeError: There is no current event loop in thread 'Thread-3'.
         try:
             import asyncio  # pylint: disable=import-outside-toplevel
+
             asyncio.set_event_loop(asyncio.new_event_loop())
         except BaseException:  # pylint: disable=broad-except
             # an eventloop already exists.
@@ -118,21 +123,17 @@ def status():
             log.error("Could not connect to flower to retrieve queue stats.")
             log.exception(runtime_error)
 
-        queues = [{'name': x['name'], 'tasks_pending': x['messages']} for x in queue_stats]
+        queues = [{"name": x["name"], "tasks_pending": x["messages"]} for x in queue_stats]
     else:
-        raise NotImplementedError('Currently only Redis is supported!')
+        raise NotImplementedError("Currently only Redis is supported!")
 
     # todo: fix Returning Any from function declared to return "SupportsLessThan"
-    queues = sorted(queues, key=lambda k: (k['name']), reverse=False)  # type: ignore
+    queues = sorted(queues, key=lambda k: (k["name"]), reverse=False)  # type: ignore
 
     alerts = []
     if not workers:
-        alerts.append('No active workers!')
+        alerts.append("No active workers!")
     if len(workers) > 9000:
-        alerts.append('Number of workers is OVER 9000!!!!1111')
+        alerts.append("Number of workers is OVER 9000!!!!1111")
 
-    return {
-        'alerts': alerts,
-        'workers': workers,
-        'queues': queues
-    }
+    return {"alerts": alerts, "workers": workers, "queues": queues}

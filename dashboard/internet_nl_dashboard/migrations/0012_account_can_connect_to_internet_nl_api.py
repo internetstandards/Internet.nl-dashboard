@@ -6,13 +6,13 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('internet_nl_dashboard', '0011_auto_20190326_1013'),
+        ("internet_nl_dashboard", "0011_auto_20190326_1013"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='account',
-            name='can_connect_to_internet_nl_api',
+            model_name="account",
+            name="can_connect_to_internet_nl_api",
             field=models.BooleanField(default=False),
         ),
     ]

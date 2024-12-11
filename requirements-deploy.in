@@ -3,7 +3,7 @@
 # make sure there are no version conflicts with requirements.txt
 -c requirements.txt
 
-websecmap[deploy] @ git+https://gitlab.com/internet-cleanup-foundation/web-security-map@9833a47f52e6c39b5b02789cccf99cf49ee97ca9
+websecmap[deploy] @ git+https://gitlab.com/internet-cleanup-foundation/web-security-map@01ced89aa3f21e91adce97babbbd3094473f053d
 
 # include (security) version constraints for non primary dependencies
 -c security-constraints.in
@@ -16,4 +16,5 @@ django-uwsgi
 # see: https://toolbelt.readthedocs.io/en/latest/adapters.html#hostheaderssladapter
 # using unreleased version from github which has better support for SNI server_hostname which prevents connection
 # resets on some servers
+
 requests_toolbelt @ git+https://github.com/requests/toolbelt@c73ad2c204a2e0cd5617a836ac536d5e06778ab0

@@ -3,25 +3,26 @@
 import datetime
 
 from django.db import migrations, models
-from django.utils.timezone import utc
 
 
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('internet_nl_dashboard', '0025_auto_20190430_1021'),
+        ("internet_nl_dashboard", "0025_auto_20190430_1021"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='urllist',
-            name='last_manual_scan',
+            model_name="urllist",
+            name="last_manual_scan",
             field=models.DateTimeField(null=True),
         ),
         migrations.AlterField(
-            model_name='urllist',
-            name='scheduled_next_scan',
-            field=models.DateTimeField(default=datetime.datetime(2019, 4, 29, 14, 52, 12, 15679, tzinfo=utc),
-                                       help_text='An indication at what moment the scan will be started. The scan can take a while, thus this does not tell you when a scan will be finished. All dates in the past will be scanned and updated.'),
+            model_name="urllist",
+            name="scheduled_next_scan",
+            field=models.DateTimeField(
+                default=datetime.datetime(2019, 4, 29, 14, 52, 12, 15679, tzinfo=datetime.timezone.utc),
+                help_text="An indication at what moment the scan will be started. The scan can take a while, thus this does not tell you when a scan will be finished. All dates in the past will be scanned and updated.",
+            ),
         ),
     ]

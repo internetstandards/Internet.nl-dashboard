@@ -9,7 +9,7 @@ from django.shortcuts import redirect
 from dashboard.internet_nl_dashboard.models import Account, DashboardUser
 
 log = logging.getLogger(__package__)
-LOGIN_URL = '/account/login/'
+LOGIN_URL = "/account/login/"
 
 """
 Todo: csrf via API calls...
@@ -20,7 +20,7 @@ Todo: csrf via API calls...
 
 def logout_view(request) -> HttpResponse:
     logout(request)
-    return redirect('/')
+    return redirect("/")
 
 
 def get_account(request) -> Account:
@@ -40,7 +40,7 @@ def empty_response() -> JsonResponse:
 
 
 def error_response(message: str) -> JsonResponse:
-    return JsonResponse({'status': 'error', 'message': message})
+    return JsonResponse({"status": "error", "message": message})
 
 
 def get_json_body(request):

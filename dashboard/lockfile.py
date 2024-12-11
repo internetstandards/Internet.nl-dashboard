@@ -8,8 +8,8 @@ from dashboard.internet_nl_dashboard import log
 
 def renew_lock(process_name: str) -> bool:
     lockfile = f"{settings.LOCKFILE_DIR}{process_name}.lock"
-    with open(lockfile, 'wt', encoding="UTF-8") as handle:
-        return handle.write('locked') > 1
+    with open(lockfile, "wt", encoding="UTF-8") as handle:
+        return handle.write("locked") > 1
 
 
 def remove_lock(process_name: str) -> None:

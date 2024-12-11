@@ -6,14 +6,16 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('internet_nl_dashboard', '0011_auto_20211004_1419'),
+        ("internet_nl_dashboard", "0011_auto_20211004_1419"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='urllistreport',
-            name='is_shared_on_homepage',
+            model_name="urllistreport",
+            name="is_shared_on_homepage",
             field=models.BooleanField(
-                default=False, help_text='A public report can also be shared on the homepage with a link. Can only be shared on the homepage if the report is publicly shared. This is currently admin only.'),
+                default=False,
+                help_text="A public report can also be shared on the homepage with a link. Can only be shared on the homepage if the report is publicly shared. This is currently admin only.",
+            ),
         ),
     ]

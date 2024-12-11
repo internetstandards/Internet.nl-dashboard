@@ -22,9 +22,19 @@ log = logging.getLogger(__package__)
 def process_application(request):
     data = get_json_body(request)
 
-    required_fields = ["access", "name", "email", "mobile_phone_number", "organization_name", "nature_of_organization",
-                       "chamber_of_commerce_number", "reason_for_application", "intended_usage_frequency",
-                       "terms_of_use", "captcha"]
+    required_fields = [
+        "access",
+        "name",
+        "email",
+        "mobile_phone_number",
+        "organization_name",
+        "nature_of_organization",
+        "chamber_of_commerce_number",
+        "reason_for_application",
+        "intended_usage_frequency",
+        "terms_of_use",
+        "captcha",
+    ]
 
     form_data = data.get("form_data", {})
 
@@ -73,7 +83,7 @@ The Dashboard Team<br>
         recipients=email_addresses,
         subject=email_subject,
         # how to set the reply to: https://github.com/Bearle/django_mail_admin/blob/master/docs/usage.rst#L148
-        headers={'Reply-to': form_data.get('email', config.EMAIL_NOTIFICATION_SENDER)},
+        headers={"Reply-to": form_data.get("email", config.EMAIL_NOTIFICATION_SENDER)},
         message=email_content.replace("<br>", ""),
         priority=models.PRIORITY.now,
         html_message=email_content,
@@ -85,7 +95,7 @@ def send_signup_received_mail_to_requester(form_data):
 
     # perform some validation that this looks like a valid mail address
     # https://stackoverflow.com/questions/8022530/how-to-check-for-valid-email-address
-    if not re.fullmatch(r"[^@]+@[^@]+\.[^@]+", form_data['email']):
+    if not re.fullmatch(r"[^@]+@[^@]+\.[^@]+", form_data["email"]):
         return
 
     # also set some sort of rate limit in case someone smart wants to send 1000's of mails quickly.
@@ -93,10 +103,7 @@ def send_signup_received_mail_to_requester(form_data):
     # the backoffice team will see a mail coming in every request, so don't add those addresses here...
     mail.send(
         sender=config.EMAIL_NOTIFICATION_SENDER_FOR_SIGNUP,
-        recipients=form_data['email'],  # List of email addresses also accepted
-        template=xget_template(
-            template_name="signup_thank_you",
-            preferred_language="nl"
-        ),
-        variable_dict=form_data
+        recipients=form_data["email"],  # List of email addresses also accepted
+        template=xget_template(template_name="signup_thank_you", preferred_language="nl"),
+        variable_dict=form_data,
     )

@@ -7,25 +7,26 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('scanners', '0072_auto_20200506_1313'),
-        ('internet_nl_dashboard', '0039_accountinternetnlscan_report'),
+        ("scanners", "0072_auto_20200506_1313"),
+        ("internet_nl_dashboard", "0039_accountinternetnlscan_report"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='accountinternetnlscan',
-            name='finished_on',
+            model_name="accountinternetnlscan",
+            name="finished_on",
             field=models.DateTimeField(blank=True, null=True),
         ),
         migrations.AddField(
-            model_name='accountinternetnlscan',
-            name='started_on',
+            model_name="accountinternetnlscan",
+            name="started_on",
             field=models.DateTimeField(blank=True, null=True),
         ),
         migrations.AlterField(
-            model_name='accountinternetnlscan',
-            name='scan',
-            field=models.ForeignKey(null=True, on_delete=django.db.models.deletion.CASCADE,
-                                    to='scanners.InternetNLV2Scan'),
+            model_name="accountinternetnlscan",
+            name="scan",
+            field=models.ForeignKey(
+                null=True, on_delete=django.db.models.deletion.CASCADE, to="scanners.InternetNLV2Scan"
+            ),
         ),
     ]

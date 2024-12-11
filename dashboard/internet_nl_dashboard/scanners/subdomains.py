@@ -28,7 +28,7 @@ def request_scan(account: Account, urllist_id: int):
         update_state(scan.id, "requested")
         return scan_status(account, urllist_id)
 
-    if last_scan.state in ['requested', 'scanning']:
+    if last_scan.state in ["requested", "scanning"]:
         return scan_status(account, urllist_id)
 
     scan = SubdomainDiscoveryScan()
@@ -48,9 +48,14 @@ def scan_status(account: Account, urllist_id: int):
     if not scan:
         return operation_response(error=True, message="not_scanned_at_all")
 
-    return {'success': True, 'error': False, 'state': scan.state, 'state_message': scan.state_message,
-            'state_changed_on': scan.state_changed_on,
-            'domains_discovered': json.loads(scan.domains_discovered) if scan.domains_discovered else {}}
+    return {
+        "success": True,
+        "error": False,
+        "state": scan.state,
+        "state_message": scan.state_message,
+        "state_changed_on": scan.state_changed_on,
+        "domains_discovered": json.loads(scan.domains_discovered) if scan.domains_discovered else {},
+    }
 
 
 # Process

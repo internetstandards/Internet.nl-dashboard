@@ -5,37 +5,56 @@ from django.contrib.auth.models import User
 from django_mail_admin.models import EmailTemplate, Log, Outbox, OutgoingEmail, TemplateVariable
 from websecmap.scanners.models import InternetNLV2Scan
 
-from dashboard.internet_nl_dashboard.logic.mail import (email_configration_is_correct, generate_unsubscribe_code,
-                                                        get_users_to_send_mail_to, send_scan_finished_mails,
-                                                        unsubscribe)
+from dashboard.internet_nl_dashboard.logic.mail import (
+    email_configration_is_correct,
+    generate_unsubscribe_code,
+    get_users_to_send_mail_to,
+    send_scan_finished_mails,
+    unsubscribe,
+)
 from dashboard.internet_nl_dashboard.models import Account, AccountInternetNLScan, DashboardUser, UrlList, UrlListReport
 
 
 def setup_test():
-    user = User(**{'first_name': 'test', 'last_name': 'test', 'username': 'test', 'is_active': True})
+    user = User(**{"first_name": "test", "last_name": "test", "username": "test", "is_active": True})
     user.save()
 
-    account = Account(**{'name': 'test'})
+    account = Account(**{"name": "test"})
     account.save()
 
     # use a language that is not supported, so the system will fall back to english...
-    dashboarduser = DashboardUser(**{'mail_preferred_mail_address': 'info@example.com', 'mail_preferred_language': 'af',
-                                     'mail_send_mail_after_scan_finished': True, 'account': account, 'user': user})
+    dashboarduser = DashboardUser(
+        **{
+            "mail_preferred_mail_address": "info@example.com",
+            "mail_preferred_language": "af",
+            "mail_send_mail_after_scan_finished": True,
+            "account": account,
+            "user": user,
+        }
+    )
     dashboarduser.save()
 
-    urllist = UrlList(**{'name': '', 'account': account})
+    urllist = UrlList(**{"name": "", "account": account})
     urllist.save()
 
-    urllistreport = UrlListReport(**{'urllist': urllist, 'average_internet_nl_score': 42.42,
-                                     'at_when': datetime.now(timezone.utc)})
+    urllistreport = UrlListReport(
+        **{"urllist": urllist, "average_internet_nl_score": 42.42, "at_when": datetime.now(timezone.utc)}
+    )
     urllistreport.save()
 
-    internetnlv2scan = InternetNLV2Scan(**{'type': 'web', 'scan_id': '123', 'state': 'finished'})
+    internetnlv2scan = InternetNLV2Scan(**{"type": "web", "scan_id": "123", "state": "finished"})
     internetnlv2scan.save()
 
     accountinternetnlscan = AccountInternetNLScan(
-        **{'account': account, 'scan': internetnlv2scan, 'urllist': urllist, 'started_on': datetime.now(timezone.utc),
-           'report': urllistreport, 'finished_on': datetime.now(timezone.utc) + timedelta(hours=2)})
+        **{
+            "account": account,
+            "scan": internetnlv2scan,
+            "urllist": urllist,
+            "started_on": datetime.now(timezone.utc),
+            "report": urllistreport,
+            "finished_on": datetime.now(timezone.utc) + timedelta(hours=2),
+        }
+    )
     accountinternetnlscan.save()
 
     # first template:
@@ -57,12 +76,12 @@ def test_send_scan_finished_mails(db) -> None:
     sent_mail = OutgoingEmail.objects.all().first()
 
     # default address
-    assert sent_mail.from_email == "noreply@example.com"
+    assert sent_mail.from_email == "noreply@localhost"
     assert sent_mail.to == ["info@example.com"]
     assert sent_mail.template == EmailTemplate.objects.get(name="scan_finished_en")
 
     # values are saved as TemplateVariable
-    templatevariable = TemplateVariable.objects.all().filter(name='report_average_internet_nl_score').first()
+    templatevariable = TemplateVariable.objects.all().filter(name="report_average_internet_nl_score").first()
     assert templatevariable.name == "report_average_internet_nl_score"
     assert templatevariable.value == "42.42"
     assert templatevariable.email == sent_mail
@@ -73,13 +92,13 @@ def test_send_scan_finished_mails(db) -> None:
     assert len(dbu.mail_after_mail_unsubscribe_code) == 128
 
     # fail a unsubscription
-    unsubscribe('scan_finished', "fake code!")
+    unsubscribe("scan_finished", "fake code!")
     dbu = DashboardUser.objects.all().first()
     assert dbu.mail_send_mail_after_scan_finished is True
     assert len(dbu.mail_after_mail_unsubscribe_code) == 128
 
     # unsubscribe from the feed
-    unsubscribe('scan_finished', dbu.mail_after_mail_unsubscribe_code)
+    unsubscribe("scan_finished", dbu.mail_after_mail_unsubscribe_code)
     dbu = DashboardUser.objects.all().first()
     assert len(dbu.mail_after_mail_unsubscribe_code) == 0
     assert dbu.mail_send_mail_after_scan_finished is False
@@ -152,25 +171,25 @@ def test_email_configration_is_correct(db):
 
 
 def test_urllistreport_get_previous_report(db):
-    account = Account(**{'name': 'test'})
+    account = Account(**{"name": "test"})
     account.save()
 
-    u = UrlList(**{'name': '', 'account': account})
+    u = UrlList(**{"name": "", "account": account})
     u.save()
 
-    urllistreport1 = UrlListReport(**{'urllist': u, 'average_internet_nl_score': 1, 'at_when': datetime(2020, 5, 1)})
+    urllistreport1 = UrlListReport(**{"urllist": u, "average_internet_nl_score": 1, "at_when": datetime(2020, 5, 1)})
     urllistreport1.save()
 
-    urllistreport2 = UrlListReport(**{'urllist': u, 'average_internet_nl_score': 1, 'at_when': datetime(2020, 5, 2)})
+    urllistreport2 = UrlListReport(**{"urllist": u, "average_internet_nl_score": 1, "at_when": datetime(2020, 5, 2)})
     urllistreport2.save()
 
-    urllistreport3 = UrlListReport(**{'urllist': u, 'average_internet_nl_score': 1, 'at_when': datetime(2020, 5, 3)})
+    urllistreport3 = UrlListReport(**{"urllist": u, "average_internet_nl_score": 1, "at_when": datetime(2020, 5, 3)})
     urllistreport3.save()
 
-    urllistreport4 = UrlListReport(**{'urllist': u, 'average_internet_nl_score': 1, 'at_when': datetime(2020, 5, 4)})
+    urllistreport4 = UrlListReport(**{"urllist": u, "average_internet_nl_score": 1, "at_when": datetime(2020, 5, 4)})
     urllistreport4.save()
 
-    urllistreport5 = UrlListReport(**{'urllist': u, 'average_internet_nl_score': 1, 'at_when': datetime(2020, 5, 5)})
+    urllistreport5 = UrlListReport(**{"urllist": u, "average_internet_nl_score": 1, "at_when": datetime(2020, 5, 5)})
     urllistreport5.save()
 
     assert urllistreport5.get_previous_report_from_this_list() == urllistreport4

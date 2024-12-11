@@ -10,8 +10,7 @@ log = logging.getLogger(__package__)
 
 class CustomAccountModelForm(forms.ModelForm):
     new_password = forms.CharField(
-        help_text='Changing this value will set a new password for this account.',
-        required=False
+        help_text="Changing this value will set a new password for this account.", required=False
     )
 
     def save(self, commit=True):
@@ -21,4 +20,4 @@ class CustomAccountModelForm(forms.ModelForm):
 
     class Meta:
         model = Account
-        fields = '__all__'
+        fields = "__all__"

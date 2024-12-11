@@ -10,7 +10,7 @@ log = logging.getLogger(__package__)
 
 
 class Command(BaseCommand):
-    help = 'Upgrades reports to early 2020 style, which is faster and more complete.'
+    help = "Upgrades reports to early 2020 style, which is faster and more complete."
 
     def handle(self, *args, **options):
         add_share_codes_to_reports()

@@ -25,22 +25,14 @@ class Account(models.Model):
     An account is the entity that start scans. Multiple people can manage the account.
     """
 
-    name = models.CharField(
-        max_length=120,
-        blank=True,
-        null=True,
-        help_text=""
-    )
+    name = models.CharField(max_length=120, blank=True, null=True, help_text="")
 
     enable_scans = models.BooleanField(
         default=True,
     )
 
     internet_nl_api_username = models.CharField(
-        max_length=255,
-        blank=True,
-        null=True,
-        help_text="Internet.nl API Username"
+        max_length=255, blank=True, null=True, help_text="Internet.nl API Username"
     )
 
     # BinaryFields become MemoryView objects in postgres, which handle differently than normal strings.
@@ -48,21 +40,16 @@ class Account(models.Model):
     # bytes are stored as a string, while ugly, it might just function better and more consistent.
     # https://code.djangoproject.com/ticket/27813
     internet_nl_api_password = models.TextField(
-        blank=True,
-        null=True,
-        help_text="New values will automatically be encrypted.",
-        editable=True
+        blank=True, null=True, help_text="New values will automatically be encrypted.", editable=True
     )
 
-    can_connect_to_internet_nl_api = models.BooleanField(
-        default=False
-    )
+    can_connect_to_internet_nl_api = models.BooleanField(default=False)
 
     report_settings = JSONField(
         help_text="This stores reporting preferences: what fields are shown in the UI and so on (if any other)."
-                  "This field can be edited on the report page.",
+        "This field can be edited on the report page.",
         null=True,
-        blank=True
+        blank=True,
     )
 
     """
@@ -83,7 +70,7 @@ class Account(models.Model):
                 config.CREDENTIAL_CHECK_URL,
                 auth=HTTPBasicAuth(username, password),
                 # a massive timeout for a large file.
-                timeout=(5, 5)
+                timeout=(5, 5),
             )
 
             # Any status code means the account is not valid.
@@ -97,12 +84,12 @@ class Account(models.Model):
     def decrypt_password(self):
 
         if not self.internet_nl_api_password:
-            raise ValueError('Password was not set.')
+            raise ValueError("Password was not set.")
 
         fernet = Fernet(settings.FIELD_ENCRYPTION_KEY)
         # Convert the string back to bytes again is not beautiful. But it's a bit more reliable than
         # storing the encrypted password in 'bytes', which somewhere goes wrong.
-        return fernet.decrypt(bytes(self.internet_nl_api_password[2:-1], encoding='UTF-8')).decode('utf-8')
+        return fernet.decrypt(bytes(self.internet_nl_api_password[2:-1], encoding="UTF-8")).decode("utf-8")
 
     def __str__(self):
         return f"{self.name}"
@@ -114,10 +101,8 @@ class DashboardUser(models.Model):
     one to one relation with an extended model.
     An additional benefit/feature is that we can easily switch what user is connected to what account.
     """
-    user = models.OneToOneField(
-        User,
-        on_delete=models.CASCADE
-    )
+
+    user = models.OneToOneField(User, on_delete=models.CASCADE)
 
     account = models.ForeignKey(
         Account,
@@ -126,15 +111,15 @@ class DashboardUser(models.Model):
 
     mail_preferred_mail_address = models.EmailField(
         help_text="This address can deviate from the account mail address for password resets and other account"
-                  " features.",
+        " features.",
         null=True,
-        blank=True
+        blank=True,
     )
-    mail_preferred_language = CountryField(default='EN')
+    mail_preferred_language = CountryField(default="EN")
 
     mail_send_mail_after_scan_finished = models.BooleanField(
         default=False,
-        help_text="After a scan is finished, an e-mail is sent informing the user that a report is ready."
+        help_text="After a scan is finished, an e-mail is sent informing the user that a report is ready.",
     )
 
     mail_after_mail_unsubscribe_code = models.CharField(
@@ -142,7 +127,7 @@ class DashboardUser(models.Model):
         default="",
         blank=True,
         help_text="This is autofilled when sending an e-mail. The user can use this code to set "
-                  "mail_send_mail_after_scan_finished to false without logging in."
+        "mail_send_mail_after_scan_finished to false without logging in.",
     )
 
     notes = models.TextField(
@@ -162,21 +147,12 @@ class UrlList(models.Model):
     """
 
     name = models.CharField(
-        max_length=120,
-        help_text="Name of the UrlList, for example name of the organization in it."
+        max_length=120, help_text="Name of the UrlList, for example name of the organization in it."
     )
 
-    account = models.ForeignKey(
-        Account,
-        on_delete=models.CASCADE,
-        help_text="Who owns and manages this urllist."
-    )
+    account = models.ForeignKey(Account, on_delete=models.CASCADE, help_text="Who owns and manages this urllist.")
 
-    urls = models.ManyToManyField(
-        through="TaggedUrlInUrllist",
-        to=Url,
-        related_name='urls_in_dashboard_list_2'
-    )
+    urls = models.ManyToManyField(through="TaggedUrlInUrllist", to=Url, related_name="urls_in_dashboard_list_2")
 
     enable_scans = models.BooleanField(
         default=True,
@@ -185,49 +161,43 @@ class UrlList(models.Model):
     scan_type = models.CharField(
         max_length=4,
         choices=(
-            ('web', 'web'),
-            ('mail', 'mail'),
-            ('all', 'all'),
+            ("web", "web"),
+            ("mail", "mail"),
+            ("all", "all"),
         ),
-        default='web',
+        default="web",
     )
 
     automated_scan_frequency = models.CharField(
         max_length=30,
         choices=(
-            ('disabled', 'disabled'),
-            ('every half year', 'every half year'),
-            ('at the start of every quarter', 'at the start of every quarter'),
-            ('every 1st day of the month', 'every 1st day of the month'),
-            ('twice per month', 'twice per month'),
+            ("disabled", "disabled"),
+            ("every half year", "every half year"),
+            ("at the start of every quarter", "at the start of every quarter"),
+            ("every 1st day of the month", "every 1st day of the month"),
+            ("twice per month", "twice per month"),
         ),
-        default='disabled',
-        help_text="At what moment should the scan start?"
+        default="disabled",
+        help_text="At what moment should the scan start?",
     )
 
     scheduled_next_scan = models.DateTimeField(
         help_text="An indication at what moment the scan will be started. The scan can take a while, thus this does "
-                  "not tell you when a scan will be finished. All dates in the past will be scanned and updated.",
-        default=datetime(2030, 1, 1, 1, 1, 1, 601526, tzinfo=timezone.utc)
+        "not tell you when a scan will be finished. All dates in the past will be scanned and updated.",
+        default=datetime(2030, 1, 1, 1, 1, 1, 601526, tzinfo=timezone.utc),
     )
 
     is_deleted = models.BooleanField(
         default=False,
     )
 
-    deleted_on = models.DateTimeField(
-        null=True,
-        blank=True
-    )
+    deleted_on = models.DateTimeField(null=True, blank=True)
 
-    last_manual_scan = models.DateTimeField(
-        null=True,
-        blank=True
-    )
+    last_manual_scan = models.DateTimeField(null=True, blank=True)
 
     enable_report_sharing_page = models.BooleanField(
         default=False,
-        help_text="When true there will be page under the list-id that shows all reports that are shared publicly."
+        help_text="When true there will be page under the list-id that shows all reports that are shared publicly.",
     )
 
     # will be available under: /public/account-id/list-id/latest
@@ -237,17 +207,17 @@ class UrlList(models.Model):
     #   and                    /public/account-id/list-name-slug/report-id
     automatically_share_new_reports = models.BooleanField(
         help_text="Sharing can be disabled and re-enabled where the report code and the share code (password) "
-                  "stay the same. Sharing means that all new reports will be made public under a set of standard urls.",
-        default=False
+        "stay the same. Sharing means that all new reports will be made public under a set of standard urls.",
+        default=False,
     )
 
     default_public_share_code_for_new_reports = models.CharField(
         max_length=64,
         help_text="An unencrypted share code that can be seen by all users in an account. Can be modified by all. "
-                  "New reports get this code set automatically. You can change this per report. An empty field "
-                  "means no share code and the report is accessible publicly.",
+        "New reports get this code set automatically. You can change this per report. An empty field "
+        "means no share code and the report is accessible publicly.",
         blank=True,
-        default=""
+        default="",
     )
 
     def __str__(self):
@@ -255,14 +225,14 @@ class UrlList(models.Model):
 
     def is_due_for_scanning(self) -> bool:
         # when disabled, will not be scanned automatically anymore.
-        if self.automated_scan_frequency == 'disabled':
+        if self.automated_scan_frequency == "disabled":
             return False
 
         return datetime.now(timezone.utc) > self.scheduled_next_scan
 
     def renew_scan_moment(self) -> None:
         self.scheduled_next_scan = determine_next_scan_moment(self.automated_scan_frequency)
-        self.save(update_fields=['scheduled_next_scan'])
+        self.save(update_fields=["scheduled_next_scan"])
 
     # @pysnooper.snoop()
     def is_scan_now_available(self) -> bool:
@@ -300,7 +270,7 @@ class UrlList(models.Model):
         # finished_on = last_scan.scan.finished_on \
         #     if last_scan.scan.finished_on else datetime.now(timezone.utc) - timedelta(days=30)
         # and finished_on < yesterday
-        if last_scan.state in ['finished', 'cancelled']:
+        if last_scan.state in ["finished", "cancelled"]:
             # log.debug("Sc an now available: last scan finished over 24 hours ago on list %s" % self)
             return True
 
@@ -315,9 +285,7 @@ class TaggedUrlInUrllist(models.Model):
 
     class Meta:
         db_table = "internet_nl_dashboard_urllist_x_tagged_url"
-        unique_together = [
-            ['urllist', 'url']
-        ]
+        unique_together = [["urllist", "url"]]
 
 
 class SubdomainDiscoveryScan(models.Model):
@@ -330,16 +298,12 @@ class SubdomainDiscoveryScan(models.Model):
 
     Flow: requested -> scanning -> finished|error|cancelled
     """
+
     urllist = models.ForeignKey(UrlList, on_delete=models.CASCADE)
     state = models.CharField(
-        max_length=20,
-        default="requested",
-        help_text="Name of the UrlList, for example name of the organization in it."
+        max_length=20, default="requested", help_text="Name of the UrlList, for example name of the organization in it."
     )
-    state_changed_on = models.DateTimeField(
-        blank=True,
-        null=True
-    )
+    state_changed_on = models.DateTimeField(blank=True, null=True)
     state_message = models.CharField(max_length=200, blank=True)
     # Archive what subdomains have been discovered and have been added to the list. This can be an enormous
     # list. It's handy for inspection purposes.
@@ -356,38 +320,38 @@ def determine_next_scan_moment(preference: str) -> datetime:
     now = datetime.now(timezone.utc)
     returned = datetime(year=now.year, month=1, day=1, tzinfo=timezone.utc)
 
-    if preference == 'disabled':
+    if preference == "disabled":
         # far, far in the future, so it will not be scanned and probably will be re-calculated. 24 years...
         return now + timedelta(days=9000)
 
     # months are base 1: january = 1 etc.
-    if preference == 'every half year':
+    if preference == "every half year":
         # every half year: first upcoming 1 july or 1 january
         return returned.replace(month=7) if now.month in [1, 2, 3, 4, 5, 6] else returned.replace(year=now.year + 1)
 
-    if preference == 'at the start of every quarter':
+    if preference == "at the start of every quarter":
         # at the start of every quarter: 1 january, 1 april, 1 juli, 1 october
         pick = {
-            1: {'year': now.year, 'month': 4},
-            2: {'year': now.year, 'month': 4},
-            3: {'year': now.year, 'month': 4},
-            4: {'year': now.year, 'month': 7},
-            5: {'year': now.year, 'month': 7},
-            6: {'year': now.year, 'month': 7},
-            7: {'year': now.year, 'month': 10},
-            8: {'year': now.year, 'month': 10},
-            9: {'year': now.year, 'month': 10},
-            10: {'year': now.year + 1, 'month': 1},
-            11: {'year': now.year + 1, 'month': 1},
-            12: {'year': now.year + 1, 'month': 1},
+            1: {"year": now.year, "month": 4},
+            2: {"year": now.year, "month": 4},
+            3: {"year": now.year, "month": 4},
+            4: {"year": now.year, "month": 7},
+            5: {"year": now.year, "month": 7},
+            6: {"year": now.year, "month": 7},
+            7: {"year": now.year, "month": 10},
+            8: {"year": now.year, "month": 10},
+            9: {"year": now.year, "month": 10},
+            10: {"year": now.year + 1, "month": 1},
+            11: {"year": now.year + 1, "month": 1},
+            12: {"year": now.year + 1, "month": 1},
         }
-        return returned.replace(year=pick[now.month]['year'], month=pick[now.month]['month'])
+        return returned.replace(year=pick[now.month]["year"], month=pick[now.month]["month"])
 
-    if preference == 'every 1st day of the month':
+    if preference == "every 1st day of the month":
         # every 1st day of the month: 1 january, 1 february, etc.
         return returned.replace(year=now.year + 1) if now.month == 12 else returned.replace(month=now.month + 1)
 
-    if preference == 'twice per month':
+    if preference == "twice per month":
         # twice per month: 1 january, 1 january + 2 weeks, 1 february, 1 february + 2 weeks, etc
         # since the 14'th day never causes a month or year rollover, we can simply schedule for the 15th day.
         # note: range is not used because range is _to_ a certain moment.
@@ -397,7 +361,7 @@ def determine_next_scan_moment(preference: str) -> datetime:
         # otherwise exactly the same as the 1st day of every month
         return returned.replace(year=now.year + 1) if now.month == 12 else returned.replace(month=now.month + 1)
 
-    raise ValueError(f'String {preference} could not be translated to a scan moment.')
+    raise ValueError(f"String {preference} could not be translated to a scan moment.")
 
 
 class UploadLog(models.Model):
@@ -406,21 +370,21 @@ class UploadLog(models.Model):
         blank=True,
         null=True,
         help_text="The original filename of the file that has been uploaded. Django appends a random string if the "
-                  "file already exists. This is a reconstruction of the original filename and may not be 100% accurate."
+        "file already exists. This is a reconstruction of the original filename and may not be 100% accurate.",
     )
 
     internal_filename = models.CharField(
         max_length=255,
         blank=True,
         null=True,
-        help_text="Generated filename by Django. This can be used to find specific files for debugging purposes."
+        help_text="Generated filename by Django. This can be used to find specific files for debugging purposes.",
     )
 
     status = models.CharField(
         max_length=255,
         blank=True,
         null=True,
-        help_text="If the upload was successful or not. Might contain 'success' or 'error'."
+        help_text="If the upload was successful or not. Might contain 'success' or 'error'.",
     )
 
     message = models.CharField(
@@ -428,34 +392,24 @@ class UploadLog(models.Model):
         blank=True,
         null=True,
         help_text="This message gives more specific information about what happened. For example, it might be the "
-                  "case that a file has been rejected because it had the wrong filetype etc."
+        "case that a file has been rejected because it had the wrong filetype etc.",
     )
 
-    upload_date = models.DateTimeField(
-        blank=True,
-        null=True
-    )
+    upload_date = models.DateTimeField(blank=True, null=True)
 
     filesize = models.PositiveIntegerField(
         default=0,
         blank=False,
         null=False,
-        help_text="Gives an indication if your local file has changed (different size). The size is in bytes."
+        help_text="Gives an indication if your local file has changed (different size). The size is in bytes.",
     )
 
     user = models.ForeignKey(
-        DashboardUser,
-        on_delete=models.CASCADE,
-        help_text="What user performed this upload.",
-        blank=True,
-        null=True
+        DashboardUser, on_delete=models.CASCADE, help_text="What user performed this upload.", blank=True, null=True
     )
 
     percentage = models.PositiveIntegerField(
-        default=0,
-        blank=True,
-        null=True,
-        help_text="The percentage of domains added in the upload."
+        default=0, blank=True, null=True, help_text="The percentage of domains added in the upload."
     )
 
 
@@ -481,23 +435,24 @@ class UrlListReport(SeriesOfUrlsReportMixin):  # pylint: disable=too-many-ancest
     Also this should not know too much about different scanners. In OO fashion, it should ask a
     scanner to explain why something is the way it is (over time).
     """
+
     urllist = models.ForeignKey(UrlList, on_delete=models.CASCADE)
 
     average_internet_nl_score = models.FloatField(
         help_text="Internet.nl scores are retrieved in point. The calculation done for that is complex and "
-                  "subject to change over time. Therefore it is impossible to re-calculate that score here."
-                  "Instead the score is stored as a given.",
+        "subject to change over time. Therefore it is impossible to re-calculate that score here."
+        "Instead the score is stored as a given.",
         default=0,
     )
 
     # the urllist might change type of scan, or perform both web and mail scan. So store the type of report here.
     # This is web or mail. todo: persist through the application, change responses.
-    report_type = models.CharField(default='web', max_length=10)
+    report_type = models.CharField(default="web", max_length=10)
 
     is_publicly_shared = models.BooleanField(
         help_text="Sharing can be disabled and re-enabled where the report code and the share code (password) "
-                  "stay the same.",
-        default=False
+        "stay the same.",
+        default=False,
     )
     public_report_code = models.CharField(
         max_length=64,
@@ -505,26 +460,24 @@ class UrlListReport(SeriesOfUrlsReportMixin):  # pylint: disable=too-many-ancest
         # not unique in database, but enforced in software. Codes of deleted reports might be reused.
         unique=False,
         blank=True,
-        default=""
+        default="",
     )
     public_share_code = models.CharField(
         max_length=64,
         help_text="An unencrypted share code that can be seen by all users in an account. Can be modified by all.",
         blank=True,
-        default=""
+        default="",
     )
 
     is_shared_on_homepage = models.BooleanField(
         help_text="A public report can also be shared on the homepage with a link. Can only be shared on the homepage "
-                  "if the report is publicly shared. This is currently admin only.",
-        default=False
+        "if the report is publicly shared. This is currently admin only.",
+        default=False,
     )
 
     class Meta:
         get_latest_by = "at_when"
-        index_together = [
-            ["at_when", "id"],
-        ]
+        indexes = [models.Index(fields=["at_when", "id"])]
 
     def save(self, *args, **kwargs):
         # the public share code is a random string string that should be unique and non-guessable
@@ -541,11 +494,13 @@ class UrlListReport(SeriesOfUrlsReportMixin):  # pylint: disable=too-many-ancest
         :return:
         """
         try:
-            return UrlListReport.objects.all().filter(
-                urllist=self.urllist,
-                report_type=self.report_type,
-                at_when__lt=self.at_when
-            ).exclude(id=self.id).defer('calculation').latest()
+            return (
+                UrlListReport.objects.all()
+                .filter(urllist=self.urllist, report_type=self.report_type, at_when__lt=self.at_when)
+                .exclude(id=self.id)
+                .defer("calculation")
+                .latest()
+            )
         except UrlListReport.DoesNotExist:
             return None
 
@@ -564,9 +519,8 @@ class AccountInternetNLScan(models.Model):
     scan = models.ForeignKey(
         InternetNLV2Scan,
         on_delete=models.CASCADE,
-
         # When there is no scan registered at internet.nl, but the scan has to show up as requested
-        null=True
+        null=True,
     )
 
     urllist = models.ForeignKey(
@@ -575,27 +529,13 @@ class AccountInternetNLScan(models.Model):
     )
 
     # The current state of the scan.
-    state = models.CharField(
-        max_length=255,
-        blank=True,
-        default="",
-        help_text="The current state"
-    )
+    state = models.CharField(max_length=255, blank=True, default="", help_text="The current state")
 
-    started_on = models.DateTimeField(
-        blank=True,
-        null=True
-    )
+    started_on = models.DateTimeField(blank=True, null=True)
 
-    finished_on = models.DateTimeField(
-        blank=True,
-        null=True
-    )
+    finished_on = models.DateTimeField(blank=True, null=True)
 
-    state_changed_on = models.DateTimeField(
-        blank=True,
-        null=True
-    )
+    state_changed_on = models.DateTimeField(blank=True, null=True)
 
     report = models.ForeignKey(
         UrlListReport,
@@ -603,7 +543,7 @@ class AccountInternetNLScan(models.Model):
         blank=True,
         on_delete=models.SET_NULL,
         help_text="After a scan has finished, a report is created. This points to that report so no guessing "
-                  "is needed to figure out what report belongs to what scan."
+        "is needed to figure out what report belongs to what scan.",
     )
 
     @property
@@ -621,13 +561,7 @@ class AccountInternetNLScanLog(models.Model):
     )
 
     state = models.CharField(
-        max_length=255,
-        blank=True,
-        default="",
-        help_text="The state that was registered at a certain moment in time."
+        max_length=255, blank=True, default="", help_text="The state that was registered at a certain moment in time."
     )
 
-    at_when = models.DateTimeField(
-        blank=True,
-        null=True
-    )
+    at_when = models.DateTimeField(blank=True, null=True)
