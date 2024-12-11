@@ -471,9 +471,7 @@ X_FRAME_OPTIONS = "SAMEORIGIN"
 CORS_ALLOWED_ORIGINS = [
     os.environ.get("CORS_ALLOWED_ACCEPT_DOMAIN", "https://acc.dashboard.internet.nl"),
     os.environ.get("CORS_ALLOWED_DOMAIN", "https://dashboard.internet.nl"),
-    "http://localhost:8080",
-    "http://127.0.0.1:8080",
-    "http://127.0.0.1:8081",
+    "http://localhost:5173",
 ]
 
 # as soon as this is set, the vue post stuff doesn't work anymore.
@@ -511,11 +509,9 @@ STORAGES = {
 # required from django 4.0
 CSRF_TRUSTED_ORIGINS = [
     "http://localhost",
-    "http://localhost",
     "http://127.0.0.1",
     "http://::1",
-    "http://localhost:8080",
-    "http://localhost:8081",
+    "http://localhost:5173",
     os.environ.get("CSRF_TRUSTED_ORIGINS_DEFAULT_DOMAIN", "https://internet.nl"),
     os.environ.get("CSRF_TRUSTED_ORIGINS_WILDCARD_DOMAIN", "https://*.internet.nl"),
 ]
