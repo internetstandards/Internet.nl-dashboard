@@ -292,7 +292,8 @@ def test_retrieve_possible_urls_from_unfiltered_input_speed() -> None:
 
     time = timeit.timeit(lambda: retrieve_possible_urls_from_unfiltered_input(data), number=25)
     # some slower machines... It's < 0.1 on a dev machine
-    assert time < 0.5
+    # It's 0.55 on github actions.
+    assert time < 1
 
     domains, _ = retrieve_possible_urls_from_unfiltered_input(data)
     assert len(domains) == 1000
