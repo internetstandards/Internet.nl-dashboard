@@ -58,26 +58,6 @@ CONSTANCE_CONFIG = {
         "organization name. The maximum length is 40 characters.",
         str,
     ),
-    "SCANNER_NAMESERVERS": (
-        [
-            "193.17.47.1",
-            "185.43.135.1",
-            "193.110.81.0",
-            "185.253.5.0",
-            "9.9.9.9",
-            "149.112.112.112",
-            "2001:148f:ffff::1",
-            "2001:148f:fffe::1",
-            "2a0f:fc80::",
-            "2a0f:fc81::",
-            "2620:fe::fe",
-            "2620:fe::9",
-        ],
-        "Nameservers used during scans (dns endpoints and subdomains). This string is loaded as JSON, but not validated"
-        " due to limitations of this settings library. Be careful when editing(!). "
-        "This information is cached and loaded only once every 10 minutes.",
-        "json",
-    ),
     "CREDENTIAL_CHECK_URL": (
         "http://localhost:8080/api/",
         "The url where internet.nl api credentials are checked. This is usually the bare INTERNET_NL_API_URL endpoint. "
@@ -279,7 +259,6 @@ CONSTANCE_CONFIG_FIELDSETS = OrderedDict(
                 "SCAN_AT_ALL",
                 "INTERNET_NL_API_URL",
                 "INTERNET_NL_SCAN_TRACKING_NAME",
-                "SCANNER_NAMESERVERS",
                 "CREDENTIAL_CHECK_URL",
             ),
         ),
