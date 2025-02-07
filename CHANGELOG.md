@@ -4,6 +4,20 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## V5.0.0 - t.b.d.
+Subdomain suggestions
+
+### Added
+- Subdomain suggestions using the [CTLSSA tool](https://github.com/internetstandards/Internet.nl-ct-log-subdomain-suggestions-api/) (#434)
+- Extensive installation guide, [these quick instructions](https://github.com/internetstandards/Internet.nl-dashboard/blob/main/docs/render/markdown/1_installation.md) (#495)
+- Added German and French translations via DeepL + translations warnings (these will contain imperfections)
+
+### Changed
+- Major javascript front-end updates to remove vulnerabilities and being able to stay up to date
+- Various layout fixes to improve experience of the dashboard on mobile (#472)
+- Reworked the translations to support AI translations
+
+
 ## V4.4.0 - 22 july 2024
 Maintenance release to reduce the amount of disk space used.
 
