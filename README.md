@@ -244,6 +244,33 @@ The dependency on Web Security Map is version pinned by a Git SHA in the Websecm
 
 ## FAQ / Troubleshooting
 
+
+### Updating translations
+Works best on a clean commit.
+
+```python
+dashboard update_translations_from_internet_nl 
+```
+
+This will update two PO files and Three JS files, the following:
+```sh
+git status
+```
+
+```text
+Changes not staged for commit:
+  (use "git add <file>..." to update what will be committed)
+  (use "git restore <file>..." to discard changes in working directory)
+	modified:   dashboard/internet_nl_dashboard/locale/en/LC_MESSAGES/django.po
+	modified:   dashboard/internet_nl_dashboard/locale/nl/LC_MESSAGES/django.po
+	modified:   dashboard/internet_nl_dashboard/static/js/translations/internet_nl.en.js
+	modified:   dashboard/internet_nl_dashboard/static/js/translations/internet_nl.js
+	modified:   dashboard/internet_nl_dashboard/static/js/translations/internet_nl.nl.js
+```
+
+The .js files can be used for inspiration in the internet.nl dashboard.
+
+
 ### Missing xcode (mac users)
 During installation mac users might get the following error, due to not having xcode installed or updated.
 
