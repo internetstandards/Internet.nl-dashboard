@@ -13,7 +13,7 @@ Subdomain suggestions
 - Added German and French translations via DeepL + translations warnings (these will contain imperfections)
 
 ### Changed
-- Major javascript front-end updates to remove vulnerabilities and being able to stay up to date
+- Major javascript front-end rework to remove vulnerabilities and being able to stay up to date
 - Various layout fixes to improve experience of the dashboard on mobile (#472)
 - Reworked the translations to support AI translations
 
