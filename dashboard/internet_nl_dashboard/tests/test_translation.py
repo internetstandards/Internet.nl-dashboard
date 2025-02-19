@@ -8,7 +8,6 @@ from unittest import mock
 from requests import Response
 
 from dashboard.internet_nl_dashboard.logic.internet_nl_translations import (
-    convert_vue_i18n_format,
     get_locale_content,
     get_po_as_dictionary_v2,
     load_as_po_file,
@@ -49,9 +48,6 @@ def test_convert_vue_i18n_format(db, tmpdir) -> None:
 
     list_po_content = load_as_po_file(content)
     assert len(list_po_content) > 10
-
-    formatted = convert_vue_i18n_format("nl", list_po_content)
-    assert len(formatted) > 1000
 
     # create the expected directory structure
     # doesn't understand parents=true, even though it's python 3.6... LocalPath is a mute version of the system one?
