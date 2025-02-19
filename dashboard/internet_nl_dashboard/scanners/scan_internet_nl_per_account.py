@@ -152,7 +152,7 @@ def check_running_dashboard_scans(**kwargs) -> Task:
                 .only("id")
             )
 
-        log.debug(f"Checking the state of scan {scans}.")
+        log.debug(f"Checking the state of scan {[scan.id for scan in scans]}.")
         tasks = [progress_running_scan(scan.id) for scan in scans]
 
         # All transactional state stuff is done now, so remove the lock
