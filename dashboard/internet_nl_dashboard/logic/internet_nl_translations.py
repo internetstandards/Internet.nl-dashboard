@@ -1,6 +1,7 @@
 # SPDX-License-Identifier: Apache-2.0
 import logging
 import os
+import json
 import tempfile
 from pathlib import Path
 from typing import Any, Dict, List, Union
@@ -63,11 +64,13 @@ def convert_internet_nl_content_to_vue():
 
         # support a per-language kind of file, in case we're going to do dynamic loading of languages.
         vue_i18n_content: str = convert_vue_i18n_format(locale, structured_content)
+        json_content = convert_json_format(locale, structured_content)
         combined_vue_i18n_content += vue_i18n_content
-        store_vue_i18n_file(f"internet_nl.{locale}", vue_i18n_content)
+        store_vue_i18n_file(f"internet_nl.{locale}.js", vue_i18n_content)
+        store_vue_i18n_file(f"internet_nl.{locale}.json", json.dumps(json_content, indent=2))
 
     # the locales are easiest stored together. This makes language switching a lot easier.
-    store_vue_i18n_file("internet_nl", combined_vue_i18n_content)
+    store_vue_i18n_file("internet_nl.js", combined_vue_i18n_content)
 
 
 def get_locale_content(locale: str) -> bytes:
@@ -125,6 +128,21 @@ def load_as_po_file(raw_content: bytes) -> List[Any]:
         file.write(raw_content)
         file.flush()
         return polib.pofile(file.name)
+
+
+
+def convert_json_format(locale: str, po_content: Any) -> dict:
+    content = {}
+
+    for entry in po_content:
+        # to save a boatload of data, we're not storing the 'content' from the pages of internet.nl
+        # we'll just have to point to this content.
+        if entry.msgid.endswith("content"):
+            continue
+
+        content[_js_safe_msgid(entry.msgid)] = _js_safe_msgstr(entry.msgstr)
+
+    return content
 
 
 def convert_vue_i18n_format(locale: str, po_content: Any) -> str:
@@ -258,7 +276,7 @@ def store_vue_i18n_file(filename: str, content: str) -> None:
     :param content:
     :return:
     """
-    with open(f"{VUE_I18N_OUTPUT_PATH}{filename}.js", "w", encoding="UTF-8") as file:
+    with open(f"{VUE_I18N_OUTPUT_PATH}{filename}", "w", encoding="UTF-8") as file:
         file.write(content)
 
 
