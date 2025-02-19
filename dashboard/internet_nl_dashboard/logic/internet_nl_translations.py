@@ -279,7 +279,7 @@ def _js_safe_msgid(text):
 
 def _js_safe_msgstr(msgstr):
     # a poor mans escape for single quotes.
-    msgstr = msgstr.replace("'", "\\'")
+    # msgstr = msgstr.replace("'", "\\'")
     html = markdown.markdown(msgstr)
     one_line_html = html.replace("\n", "")
 
