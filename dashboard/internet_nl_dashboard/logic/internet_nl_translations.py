@@ -5,6 +5,7 @@ import json
 import tempfile
 from pathlib import Path
 from typing import Any, Dict, List, Union
+from functools import lru_cache
 
 import markdown
 import polib
@@ -67,14 +68,18 @@ def convert_internet_nl_content_to_vue():
         json_content = convert_json_format(locale, structured_content)
         combined_vue_i18n_content += vue_i18n_content
         store_vue_i18n_file(f"internet_nl.{locale}.js", vue_i18n_content)
-        store_vue_i18n_file(f"internet_nl.{locale}.json", json.dumps(json_content, indent=2))
+        # ensure ascii escaped some of the nice unicode characters and emojis.
+        store_vue_i18n_file(f"internet_nl.{locale}.json", json.dumps(json_content, indent=2, ensure_ascii=False))
 
     # the locales are easiest stored together. This makes language switching a lot easier.
     store_vue_i18n_file("internet_nl.js", combined_vue_i18n_content)
 
 
+@lru_cache(maxsize=None)
 def get_locale_content(locale: str) -> bytes:
     """
+    Use LRU cache as this script is not run for long times and basically returns the same stuff per run.
+
     A simple download and return response function.
 
     Input files:
@@ -140,9 +145,40 @@ def convert_json_format(locale: str, po_content: Any) -> dict:
         if entry.msgid.endswith("content"):
             continue
 
-        content[_js_safe_msgid(entry.msgid)] = _js_safe_msgstr(entry.msgstr)
+        message_id = _js_safe_msgid(entry.msgid)
+        content[message_id] = _js_safe_msgstr(entry.msgstr)
+
+        # todo: split tech table key into multiple keys so translations can be performed
+        # tech table is pipe seperated implicit translated, like this:
+        # "detail_mail_ipv6_mx_aaaa_tech_table": "Mail server (MX)|IPv6 address|IPv4 address",
+        # so we will make a translation like this:
+        # "detail_mail_ipv6_mx_aaaa_tech_table_mail_server_mx": "Mail server (MX)",
+        # "detail_mail_ipv6_mx_aaaa_tech_table_ipv6_address": "IPv6 address",
+        # "detail_mail_ipv6_mx_aaaa_tech_table_ipv4_address": "IPv4 address"
+        # MAAR je moet de keys van de ENGELSE vertaling gebruiken :)
+        if message_id.endswith("_tech_table"):
+            submessage_titles = dirty_workaround_to_still_get_tech_table_titles_in_english(message_id)
+            submessages = entry.msgstr.split("|")
+            print(f"titles: {submessage_titles}, values: {submessages}")
+            for submessage_title, submessage in zip(submessage_titles, submessages):
+                content[f"{message_id}_{_js_safe_msgid(submessage_title)}"] = _js_safe_msgstr(submessage)
 
     return content
+
+def dirty_workaround_to_still_get_tech_table_titles_in_english(message_id: str):
+    # this prevents some parameterized calls and even more spagetti. This is the 'lunch' version.
+    # given that all translations will be json in the future, this approach is somewhat 'ok'
+    # always has to be english.
+    raw_content: bytes = get_locale_content('en')
+    # with lru cache it's fast enough :)
+    structured_content = load_as_po_file(raw_content)
+
+    for entry in structured_content:
+        # print(entry.msgid)
+        if _js_safe_msgid(entry.msgid) == message_id:
+            return entry.msgstr.split("|")
+
+    return []
 
 
 def convert_vue_i18n_format(locale: str, po_content: Any) -> str:
