@@ -1,26 +1,24 @@
 # SPDX-License-Identifier: Apache-2.0
+import json
 import logging
 import os
 import tempfile
+from functools import lru_cache
 from pathlib import Path
-from typing import Any, Dict, List, Union
+from typing import Any, Dict, List
 
 import markdown
 import polib
 import requests
 from django.utils.text import slugify
 
-# Todo: refactor this to languages from settings.py
 SUPPORTED_LOCALES: List[str] = ["nl", "en"]
 
 log = logging.getLogger(__package__)
 
-# .parent = logic; .parent.parent = internet_nl_dashboard;
 DASHBOARD_APP_DIRECTORY = Path(__file__).parent.parent
 VUE_I18N_OUTPUT_PATH = f"{DASHBOARD_APP_DIRECTORY}/static/js/translations/"
 DJANGO_I18N_OUTPUT_PATH = f"{DASHBOARD_APP_DIRECTORY}/locale/"
-# log.debug(f"VUE_I18N_OUTPUT_PATH: {VUE_I18N_OUTPUT_PATH}")
-# log.debug(f"DJANGO_I18N_OUTPUT_PATH: {DJANGO_I18N_OUTPUT_PATH}")
 
 
 def convert_internet_nl_content_to_vue():
@@ -51,27 +49,20 @@ def convert_internet_nl_content_to_vue():
 
     :return: None
     """
-
-    translated_locales: List[Dict[str, Union[str, List[Any]]]] = []
-    combined_vue_i18n_content = ""
-
     for locale in SUPPORTED_LOCALES:
         raw_content: bytes = get_locale_content(locale)
         store_as_django_locale(locale, raw_content)
-        structured_content = load_as_po_file(raw_content)
-        translated_locales.append({"locale": locale, "content": structured_content})
 
         # support a per-language kind of file, in case we're going to do dynamic loading of languages.
-        vue_i18n_content: str = convert_vue_i18n_format(locale, structured_content)
-        combined_vue_i18n_content += vue_i18n_content
-        store_vue_i18n_file(f"internet_nl.{locale}", vue_i18n_content)
-
-    # the locales are easiest stored together. This makes language switching a lot easier.
-    store_vue_i18n_file("internet_nl", combined_vue_i18n_content)
+        json_content = convert_json_format(load_as_po_file(raw_content))
+        store_vue_i18n_file(f"internet_nl.{locale}.json", json.dumps(json_content, indent=2, ensure_ascii=False))
 
 
+@lru_cache(maxsize=None)
 def get_locale_content(locale: str) -> bytes:
     """
+    Use LRU cache as this script is not run for long times and basically returns the same stuff per run.
+
     A simple download and return response function.
 
     Input files:
@@ -127,37 +118,8 @@ def load_as_po_file(raw_content: bytes) -> List[Any]:
         return polib.pofile(file.name)
 
 
-def convert_vue_i18n_format(locale: str, po_content: Any) -> str:
-    """
-    done: will markdown be parsed to html in this method? Or should we do that on the fly, everywhere...
-          It seems the logical place will be to parse it here. Otherwise the rest of the application becomes more
-          complex. Using markdown will have the benefit of the output being a single html string with proper
-          formatting.
-
-    todo: change parameters {{ param }} to hello: '%{msg} world'
-          see: http://kazupon.github.io/vue-i18n/guide/formatting.html#list-formatting
-          The change is very large we don't need to do that, as we don't need those sentences.
-
-    The content is added to the 'internet_nl' key, like this:
-
-    const internet_nl_messages = {
-        en: {
-            internet_nl: {
-                key: 'value',
-                key: 'value'
-
-            },
-        },
-    }
-
-    There is a slight challenge that translations in vue are based on javascript properties, meaning, no quotes.
-
-    :return:
-    """
-
-    content: str = _vue_format_start()
-
-    content += _vue_format_locale_start(locale)
+def convert_json_format(po_content: Any) -> dict:
+    content = {}
 
     for entry in po_content:
         # to save a boatload of data, we're not storing the 'content' from the pages of internet.nl
@@ -165,11 +127,40 @@ def convert_vue_i18n_format(locale: str, po_content: Any) -> str:
         if entry.msgid.endswith("content"):
             continue
 
-        content += f"            {_js_safe_msgid(entry.msgid)}: '{_js_safe_msgstr(entry.msgstr)}',\n"
-    content += _vue_format_locale_end()
-    content += _vue_format_end()
+        message_id = _js_safe_msgid(entry.msgid)
+        content[message_id] = _json_safe_msgstr(entry.msgstr)
+
+        # todo: split tech table key into multiple keys so translations can be performed
+        # tech table is pipe seperated implicit translated, like this:
+        # "detail_mail_ipv6_mx_aaaa_tech_table": "Mail server (MX)|IPv6 address|IPv4 address",
+        # so we will make a translation like this:
+        # "detail_mail_ipv6_mx_aaaa_tech_table_mail_server_mx": "Mail server (MX)",
+        # "detail_mail_ipv6_mx_aaaa_tech_table_ipv6_address": "IPv6 address",
+        # "detail_mail_ipv6_mx_aaaa_tech_table_ipv4_address": "IPv4 address"
+        # MAAR je moet de keys van de ENGELSE vertaling gebruiken :)
+        if message_id.endswith("_tech_table"):
+            submessage_titles = dirty_workaround_to_still_get_tech_table_titles_in_english(message_id)
+            submessages = entry.msgstr.split("|")
+            for submessage_title, submessage in zip(submessage_titles, submessages):
+                content[f"{message_id}_{_js_safe_msgid(submessage_title)}"] = _json_safe_msgstr(submessage)
 
     return content
+
+
+def dirty_workaround_to_still_get_tech_table_titles_in_english(message_id: str):
+    # this prevents some parameterized calls and even more spagetti. This is the 'lunch' version.
+    # given that all translations will be json in the future, this approach is somewhat 'ok'
+    # always has to be english.
+    raw_content: bytes = get_locale_content("en")
+    # with lru cache it's fast enough :)
+    structured_content = load_as_po_file(raw_content)
+
+    for entry in structured_content:
+        # print(entry.msgid)
+        if _js_safe_msgid(entry.msgid) == message_id:
+            return entry.msgstr.split("|")
+
+    return []
 
 
 def get_po_as_dictionary(file):
@@ -198,27 +189,6 @@ def get_po_as_dictionary_v2(language="en"):
         ) from error
 
 
-def _vue_format_start() -> str:
-    return """const internet_nl_messages = {
-"""
-
-
-def _vue_format_locale_start(locale) -> str:
-    return f"""    {locale}: {{
-        internet_nl: {{
-"""
-
-
-def _vue_format_locale_end() -> str:
-    return """        },
-    },
-"""
-
-
-def _vue_format_end() -> str:
-    return """};"""
-
-
 def _js_safe_msgid(text):
     return slugify(text).replace("-", "_")
 
@@ -226,6 +196,10 @@ def _js_safe_msgid(text):
 def _js_safe_msgstr(msgstr):
     # a poor mans escape for single quotes.
     msgstr = msgstr.replace("'", "\\'")
+    return _json_safe_msgstr(msgstr)
+
+
+def _json_safe_msgstr(msgstr):
     html = markdown.markdown(msgstr)
     one_line_html = html.replace("\n", "")
 
@@ -258,7 +232,7 @@ def store_vue_i18n_file(filename: str, content: str) -> None:
     :param content:
     :return:
     """
-    with open(f"{VUE_I18N_OUTPUT_PATH}{filename}.js", "w", encoding="UTF-8") as file:
+    with open(f"{VUE_I18N_OUTPUT_PATH}{filename}", "w", encoding="UTF-8") as file:
         file.write(content)
 
 

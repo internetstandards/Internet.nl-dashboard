@@ -1,5 +1,5 @@
-For quick installation: Follow [these quick instructions](https://github.com/internetstandards/Internet.nl-dashboard/blob/50/docs/render/markdown/1_installation.md) 
-and watch [this 6 minute video](https://github.com/internetstandards/Internet.nl-dashboard/tree/50/docs/input/internet.nl%20dashboard%20installation%20video%20small.mp4).
+For quick installation: Follow [these quick instructions](https://github.com/internetstandards/Internet.nl-dashboard/blob/main/docs/render/markdown/1_installation.md) 
+and watch [this 6 minute video](https://github.com/internetstandards/Internet.nl-dashboard/tree/main/docs/input/internet.nl%20dashboard%20installation%20video%20small.mp4).
 
 # Internet.nl Dashboard
 The internet.nl dashboard allows you to visualize batch scans from the internet.nl API. It allows:
@@ -18,8 +18,8 @@ The internet.nl dashboard allows you to visualize batch scans from the internet.
 
 ## Setup / installation
 
-For quick installation: Follow [these quick instructions](https://github.com/internetstandards/Internet.nl-dashboard/blob/50/docs/render/markdown/1_installation.md) 
-and watch [this 6 minute video](https://github.com/internetstandards/Internet.nl-dashboard/tree/50/docs/input/internet.nl%20dashboard%20installation%20video%20small.mp4).
+For quick installation: Follow [these quick instructions](https://github.com/internetstandards/Internet.nl-dashboard/blob/main/docs/render/markdown/1_installation.md) 
+and watch [this 6 minute video](https://github.com/internetstandards/Internet.nl-dashboard/tree/main/docs/input/internet.nl%20dashboard%20installation%20video%20small.mp4).
 
 
 ## Screenshots
@@ -243,6 +243,33 @@ The dependency on Web Security Map is version pinned by a Git SHA in the Websecm
     make update_requirement_websecmap
 
 ## FAQ / Troubleshooting
+
+
+### Updating translations
+Works best on a clean commit.
+
+```python
+dashboard update_translations_from_internet_nl 
+```
+
+This will update two PO files and Three JS files, the following:
+```sh
+git status
+```
+
+```text
+Changes not staged for commit:
+  (use "git add <file>..." to update what will be committed)
+  (use "git restore <file>..." to discard changes in working directory)
+	modified:   dashboard/internet_nl_dashboard/locale/en/LC_MESSAGES/django.po
+	modified:   dashboard/internet_nl_dashboard/locale/nl/LC_MESSAGES/django.po
+	modified:   dashboard/internet_nl_dashboard/static/js/translations/internet_nl.en.js
+	modified:   dashboard/internet_nl_dashboard/static/js/translations/internet_nl.js
+	modified:   dashboard/internet_nl_dashboard/static/js/translations/internet_nl.nl.js
+```
+
+The .js files can be used for inspiration in the internet.nl dashboard.
+
 
 ### Missing xcode (mac users)
 During installation mac users might get the following error, due to not having xcode installed or updated.

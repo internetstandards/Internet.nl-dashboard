@@ -7,6 +7,8 @@ CONSTANCE_ADDITIONAL_FIELDS = {
     "json": ["django.forms.fields.JSONField", {"required": False}],
 }
 
+# A bunch of below settings are duplicates from web security map. In future versions they should just be imported
+# from that project. Please do not remove them, they are marked with a warning and a to do to deduplicate them.
 CONSTANCE_CONFIG = {
     # general settings
     "DASHBOARD_FRONTEND_URL": (
@@ -41,11 +43,13 @@ CONSTANCE_CONFIG = {
         str,
     ),
     # scan settings
+    # This is a setting duplicated from Web Security Map, todo: deduplicate this setting
     "SCAN_AT_ALL": (
         True,
         "This enables or disabled all scans. Note that scans that are picked up will still be processed.",
         bool,
     ),
+    # This is a setting duplicated from Web Security Map, todo: deduplicate this setting
     "INTERNET_NL_API_URL": (
         "http://localhost:8080/api/batch/v2",
         'The internet address for the Internet.nl API installation. This is commonly called a "batch server".',
@@ -58,6 +62,7 @@ CONSTANCE_CONFIG = {
         "organization name. The maximum length is 40 characters.",
         str,
     ),
+    # This is a setting duplicated from Web Security Map, todo: deduplicate this setting
     "SCANNER_NAMESERVERS": (
         [
             "193.17.47.1",
@@ -111,17 +116,20 @@ CONSTANCE_CONFIG = {
         str,
     ),
     # security.txt
+    # This is a setting duplicated from Web Security Map, todo: deduplicate this setting
     "SECURITY_TXT_IS_REDIRECTED": (
         False,
         "Security.txt is used to allow security researchers to report vulnerabilities. This can be either set to a "
         "redirect to an existing security.txt or configured with your own security.txt policy.",
         bool,
     ),
+    # This is a setting duplicated from Web Security Map, todo: deduplicate this setting
     "SECURITY_TXT_REDIRECT_URL": (
         "http://localhost:8000/.well-known/security.txt",
         "The url where the security.txt files redirect to. This is usually an external site.",
         str,
     ),
+    # This is a setting duplicated from Web Security Map, todo: deduplicate this setting
     "SECURITY_TXT_CONTENT": (
         "",
         "The content of the security.txt file, located at .well-known/security.txt. Only "
@@ -168,6 +176,7 @@ CONSTANCE_CONFIG = {
     "SCAN_TIMEOUT_MINUTES_SENDING_MAIL": (1440, "timeout for phase SENDING_MAIL", int),
     "SCAN_TIMEOUT_MINUTES_SERVER_ERROR": (1440, "timeout for phase SERVER_ERROR", int),
     # other stuff
+    # This is a setting duplicated from Web Security Map, todo: deduplicate this setting
     "INTERNET_NL_API_USERNAME": (
         "dummy",
         "Username for the internet.nl API. This option is ignored as every account uses their own credentials. Keep "
@@ -175,62 +184,73 @@ CONSTANCE_CONFIG = {
         str,
     ),
     # this is defaulting to dummy as otherwise the scanner wil give an error that no credential has been configured.
+    # This is a setting duplicated from Web Security Map, todo: deduplicate this setting
     "INTERNET_NL_API_PASSWORD": (
         "dummy",
         "Username for the internet.nl API. This option is ignored as every account uses their own credentials. Keep "
         "this value set to dummy for legacy reasons.",
         str,
     ),
+    # This is a setting duplicated from Web Security Map, todo: deduplicate this setting
     "INTERNET_NL_MAXIMUM_URLS": (
         1000,
         "The maximum amount of domains per scan, not relevant for dashboard, only for websecmap.",
         int,
     ),
+    # This is a setting duplicated from Web Security Map, todo: deduplicate this setting
     "SCANNER_LOG_PLANNED_SCANS": (
         False,
         "Used when debugging, logs all changes to planned scans to a separate table. Causes millions of records a day",
         bool,
     ),
+    # This is a setting duplicated from Web Security Map, todo: deduplicate this setting
     "SCANNER_AUTO_PURGE_FINISHED_SCANS": (
         True,
         "Removes the scan record from the planned scan table, which reduces the amount of data stored.",
         bool,
     ),
+    # This is a setting duplicated from Web Security Map, todo: deduplicate this setting
     "CONNECTIVITY_TEST_DOMAIN": (
         "internet.nl",
         "A server that is reachable over IPv4. This is used by a worker to determine what kind of scans it can do. "
         "Enter an address that you own or manage.",
         str,
     ),
+    # This is a setting duplicated from Web Security Map, todo: deduplicate this setting
     "IPV6_TEST_DOMAIN": (
         "internet.nl",
         "A server that is reachable over IPv6. This is used by a worker to determine "
         "what kind of scans it can do. Enter an address that you own or manage.",
         str,
     ),
+    # This is a setting duplicated from Web Security Map, todo: deduplicate this setting
     "INTERNET_NL_ADD_CALCULATED_RESULTS_WEBSECMAP": (
         False,
         "Add calculated results for web security map. This is used only for installations by the "
         "Internet Cleanup Foundation.",
         bool,
     ),
+    # This is a setting duplicated from Web Security Map, todo: deduplicate this setting
     "INTERNET_NL_ADD_CALCULATED_RESULTS_FORUM_STANDAARDISATIE": (
         False,
         "Add calculated results for forum standaardisatie, the internet.nl dashboard. These calculations are created "
         "on top of the internet.nl metrics. These are used for official publications. You probably do not need these.",
         bool,
     ),
+    # This is a setting duplicated from Web Security Map, todo: deduplicate this setting
     "INTERNET_NL_ADD_CALCULATED_RESULTS_VNG_V6": (
         False,
         "Add calculated results for VNG, obsoleted IPv6 derived conclusions. No need to enable these and will be "
         "removed in a future release.",
         bool,
     ),
+    # This is a setting duplicated from Web Security Map, todo: deduplicate this setting
     "INTERNET_NL_WEB_ONLY_TOP_LEVEL": (
         False,
         "Do not send in subdomains. To reduce the number of tests while still getting an impression on a broader scope",
         bool,
     ),
+    # This is a setting duplicated from Web Security Map, todo: deduplicate this setting
     "PROJECT_WEBSITE": ("", "", str),
     "SUBDOMAIN_SUGGESTION_ENABLED": (
         False,
