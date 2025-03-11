@@ -24,7 +24,7 @@ from dashboard.internet_nl_dashboard.logic.domains import (
 )
 from dashboard.internet_nl_dashboard.logic.suggestions import suggest_subdomains
 from dashboard.internet_nl_dashboard.views import LOGIN_URL, get_account, get_json_body
-
+from websecmap.scanners.scanner.dns_endpoints import has_a_or_aaaa, has_soa
 
 @login_required(login_url=LOGIN_URL)
 def suggest_subdomains_(request) -> JsonResponse:
@@ -50,8 +50,35 @@ def suggest_subdomains_(request) -> JsonResponse:
         suggestions.remove(domain)
         suggestions.insert(0, domain)
 
+    # perform some AAAA/MX record lookups, so a user can select some things.
+    # but take into account that too many lookups take time and thus over 20 will result in an "unknown"
+    # perhaps this should be scanned from ctlssa?
+    # this will increase loading time a lot, but creates better suggestions for smaller domains.
+    # perhaps using a different dns server or lower timeouts will help performance.
+    domains_with_dns_status = []
+    if len(suggestions) < 30:
+        for domain in suggestions:
+            has_website = has_a_or_aaaa(domain)
+            has_email = has_soa(domain)
+            domains_with_dns_status.append(
+                {
+                    "domain": domain,
+                    "has_website": has_website,
+                    "has_email": has_email,
+                }
+            )
+    else:
+        domains_with_dns_status.extend(
+            {
+                "domain": domain,
+                "has_website": "unknown",
+                "has_email": "unknown",
+            }
+            for domain in suggestions
+        )
+
     try:
-        result = JsonResponse(suggestions, encoder=JSEncoder, safe=False)
+        result = JsonResponse(domains_with_dns_status, encoder=JSEncoder, safe=False)
     except ValueError:
         result = HttpResponseBadRequest("Invalid input")
     except Exception:  # pylint: disable=broad-exception-caught
