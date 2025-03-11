@@ -35,14 +35,20 @@ def suggest_subdomains_(request) -> JsonResponse:
 
     suggestions = suggest_subdomains(domain, period)
     # already add the domain, so the frontend doesn't have to.
-    suggestions = [f"{sug}.{domain}" for sug in suggestions]
+    if suggestions:
+        suggestions = [domain] + [f"{sug}.{domain}" for sug in suggestions]
 
     # remove domains already in this list, this is very fast and even with a list of 10k domains a user won't notice it.
     if account and urllist_id:
         existing_urls = Url.objects.all().filter(
             urls_in_dashboard_list_2__account=account, urls_in_dashboard_list_2__id=urllist_id
         ).values_list("url", flat=True)
-        suggestions = list(set(suggestions) - set(existing_urls))
+        suggestions = sorted(list(set(suggestions) - set(existing_urls)))
+
+    # if the domain is still suggested, add it in FRONT of the list:
+    if domain in suggestions:
+        suggestions.remove(domain)
+        suggestions.insert(0, domain)
 
     try:
         result = JsonResponse(suggestions, encoder=JSEncoder, safe=False)
