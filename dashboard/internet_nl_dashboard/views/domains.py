@@ -5,6 +5,7 @@ from django.contrib.auth.decorators import login_required
 from django.http import HttpResponseBadRequest, HttpResponseServerError, JsonResponse
 from django.views.decorators.http import require_http_methods
 from websecmap.app.common import JSEncoder
+from websecmap.organizations.models import Url
 
 from dashboard.internet_nl_dashboard.logic.domains import (
     add_domains_from_raw_user_data,
@@ -29,9 +30,22 @@ from dashboard.internet_nl_dashboard.views import LOGIN_URL, get_account, get_js
 def suggest_subdomains_(request) -> JsonResponse:
     domain = request.GET.get("domain", "")
     period = request.GET.get("period", 370)
+    account = get_account(request)
+    urllist_id = request.GET.get("urllist_id", None)
+
+    suggestions = suggest_subdomains(domain, period)
+    # already add the domain, so the frontend doesn't have to.
+    suggestions = [f"{sug}.{domain}" for sug in suggestions]
+
+    # remove domains already in this list, this is very fast and even with a list of 10k domains a user won't notice it.
+    if account and urllist_id:
+        existing_urls = Url.objects.all().filter(
+            urls_in_dashboard_list_2__account=account, urls_in_dashboard_list_2__id=urllist_id
+        ).values_list("url", flat=True)
+        suggestions = list(set(suggestions) - set(existing_urls))
 
     try:
-        result = JsonResponse(suggest_subdomains(domain, period), encoder=JSEncoder, safe=False)
+        result = JsonResponse(suggestions, encoder=JSEncoder, safe=False)
     except ValueError:
         result = HttpResponseBadRequest("Invalid input")
     except Exception:  # pylint: disable=broad-exception-caught
