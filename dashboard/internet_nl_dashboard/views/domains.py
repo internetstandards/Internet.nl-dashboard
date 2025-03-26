@@ -6,6 +6,7 @@ from django.http import HttpResponseBadRequest, HttpResponseServerError, JsonRes
 from django.views.decorators.http import require_http_methods
 from websecmap.app.common import JSEncoder
 from websecmap.organizations.models import Url
+from websecmap.scanners.scanner.dns_endpoints import has_a_or_aaaa, has_soa
 
 from dashboard.internet_nl_dashboard.logic.domains import (
     add_domains_from_raw_user_data,
@@ -24,7 +25,7 @@ from dashboard.internet_nl_dashboard.logic.domains import (
 )
 from dashboard.internet_nl_dashboard.logic.suggestions import suggest_subdomains
 from dashboard.internet_nl_dashboard.views import LOGIN_URL, get_account, get_json_body
-from websecmap.scanners.scanner.dns_endpoints import has_a_or_aaaa, has_soa
+
 
 @login_required(login_url=LOGIN_URL)
 def suggest_subdomains_(request) -> JsonResponse:
@@ -40,9 +41,11 @@ def suggest_subdomains_(request) -> JsonResponse:
 
     # remove domains already in this list, this is very fast and even with a list of 10k domains a user won't notice it.
     if account and urllist_id:
-        existing_urls = Url.objects.all().filter(
-            urls_in_dashboard_list_2__account=account, urls_in_dashboard_list_2__id=urllist_id
-        ).values_list("url", flat=True)
+        existing_urls = (
+            Url.objects.all()
+            .filter(urls_in_dashboard_list_2__account=account, urls_in_dashboard_list_2__id=urllist_id)
+            .values_list("url", flat=True)
+        )
         suggestions = sorted(list(set(suggestions) - set(existing_urls)))
 
     # if the domain is still suggested, add it in FRONT of the list:

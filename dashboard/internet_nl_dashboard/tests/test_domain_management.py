@@ -27,7 +27,7 @@ from dashboard.internet_nl_dashboard.logic.domains import (
     save_urllist_content_by_name,
     suggest_subdomains,
 )
-from dashboard.internet_nl_dashboard.models import Account
+from dashboard.internet_nl_dashboard.models import Account, DashboardUser
 
 
 @responses.activate
@@ -50,6 +50,7 @@ def test_suggest_subdomains(db, caplog):
 
 @responses.activate
 def test_suggest_subdomains_http(db, client):
+    # config.SUBDOMAIN_SUGGESTION_SERVER_ADDRESS, will answer with 'test': test.nl and test.test.nl are valid...
     responses.add(responses.GET, "http://localhost:8001/?domain=test&suffix=nl&period=370", json=["test"], status=200)
     responses.add(responses.GET, "http://localhost:8001/?domain=notexisting&suffix=nl&period=370", json=[], status=404)
     responses.add(responses.GET, "http://localhost:8001/?domain=broken&suffix=nl&period=370", json=[], status=500)
@@ -59,11 +60,23 @@ def test_suggest_subdomains_http(db, client):
     ), "unauthenticated request should result in login redirect"
 
     user = User.objects.create(username="test")
+    account = Account.objects.create(name="testaccount")
+    DashboardUser.objects.create(user=user, account=account)
     client.force_login(user)
 
     response = client.get("/data/urllist/suggest-subdomains/", {"domain": "test.nl"})
-    print(response)
-    assert response.json() == ["test"]
+    answer = response.json()
+    assert answer in [
+        [
+            {"domain": "test.nl", "has_email": True, "has_website": True},
+            {"domain": "test.test.nl", "has_email": True, "has_website": True},
+        ],
+        # no internet connection / not resolving...
+        [
+            {"domain": "test.nl", "has_email": False, "has_website": False},
+            {"domain": "test.test.nl", "has_email": False, "has_website": False},
+        ],
+    ]
 
 
 @override_config(DASHBOARD_MAXIMUM_DOMAINS_PER_LIST=5000)
