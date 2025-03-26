@@ -232,7 +232,9 @@ def store_vue_i18n_file(filename: str, content: str) -> None:
     :param content:
     :return:
     """
-    with open(f"{VUE_I18N_OUTPUT_PATH}{filename}", "w", encoding="UTF-8") as file:
+    output_filename = f"{VUE_I18N_OUTPUT_PATH}{filename}"
+    print(f"Storing vue i18n file: {output_filename}")
+    with open(output_filename, "w", encoding="UTF-8") as file:
         file.write(content)
 
 

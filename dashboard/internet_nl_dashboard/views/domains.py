@@ -5,6 +5,8 @@ from django.contrib.auth.decorators import login_required
 from django.http import HttpResponseBadRequest, HttpResponseServerError, JsonResponse
 from django.views.decorators.http import require_http_methods
 from websecmap.app.common import JSEncoder
+from websecmap.organizations.models import Url
+from websecmap.scanners.scanner.dns_endpoints import has_a_or_aaaa, has_soa
 
 from dashboard.internet_nl_dashboard.logic.domains import (
     add_domains_from_raw_user_data,
@@ -29,9 +31,57 @@ from dashboard.internet_nl_dashboard.views import LOGIN_URL, get_account, get_js
 def suggest_subdomains_(request) -> JsonResponse:
     domain = request.GET.get("domain", "")
     period = request.GET.get("period", 370)
+    account = get_account(request)
+    urllist_id = request.GET.get("urllist_id", None)
+
+    suggestions = suggest_subdomains(domain, period)
+    # already add the domain, so the frontend doesn't have to.
+    if suggestions:
+        suggestions = [domain] + [f"{sug}.{domain}" for sug in suggestions]
+
+    # remove domains already in this list, this is very fast and even with a list of 10k domains a user won't notice it.
+    if account and urllist_id:
+        existing_urls = (
+            Url.objects.all()
+            .filter(urls_in_dashboard_list_2__account=account, urls_in_dashboard_list_2__id=urllist_id)
+            .values_list("url", flat=True)
+        )
+        suggestions = sorted(list(set(suggestions) - set(existing_urls)))
+
+    # if the domain is still suggested, add it in FRONT of the list:
+    if domain in suggestions:
+        suggestions.remove(domain)
+        suggestions.insert(0, domain)
+
+    # perform some AAAA/MX record lookups, so a user can select some things.
+    # but take into account that too many lookups take time and thus over 20 will result in an "unknown"
+    # perhaps this should be scanned from ctlssa?
+    # this will increase loading time a lot, but creates better suggestions for smaller domains.
+    # perhaps using a different dns server or lower timeouts will help performance.
+    domains_with_dns_status = []
+    if len(suggestions) < 30:
+        for domain in suggestions:
+            has_website = has_a_or_aaaa(domain)
+            has_email = has_soa(domain)
+            domains_with_dns_status.append(
+                {
+                    "domain": domain,
+                    "has_website": has_website,
+                    "has_email": has_email,
+                }
+            )
+    else:
+        domains_with_dns_status.extend(
+            {
+                "domain": domain,
+                "has_website": "unknown",
+                "has_email": "unknown",
+            }
+            for domain in suggestions
+        )
 
     try:
-        result = JsonResponse(suggest_subdomains(domain, period), encoder=JSEncoder, safe=False)
+        result = JsonResponse(domains_with_dns_status, encoder=JSEncoder, safe=False)
     except ValueError:
         result = HttpResponseBadRequest("Invalid input")
     except Exception:  # pylint: disable=broad-exception-caught
