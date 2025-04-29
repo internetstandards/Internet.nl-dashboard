@@ -192,6 +192,25 @@ After a scan has finished a report will be ready.
 
 ![image](installation/scan_scan_monitor.png)
 
+## Using a custom domain
+
+You probably want to run the dashboard on your own domain. To allow this domain to be used in the front-end,
+you need to set the following (environment) variables with the host you need:
+
+For example:
+
+CSRF_TRUSTED_ORIGINS_DEFAULT_DOMAIN: [https://example.com](https://example.com)
+CSRF_TRUSTED_ORIGINS_WILDCARD_DOMAIN: [https://](https://)
+
+```
+*
+```
+
+.example.com
+CORS_ALLOWED_DOMAIN: [https://example.com](https://example.com)
+
+You can set these in the docker compose file in main/compose.yaml. Do so in the path: /services/backend/environment.
+
 ## Advanced configuration
 
 ### Setting up e-mail notification after scanning

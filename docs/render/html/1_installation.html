@@ -227,10 +227,20 @@ cannot be used anymore.</p>
 <p>After a scan has finished a report will be ready.</p>
 <img alt="_images/scan_scan_monitor.png" src="_images/scan_scan_monitor.png" />
 </section>
+<section id="using-a-custom-domain">
+<h2><span class="section-number">1.4. </span><span class="sectnum">1.4 </span>Using a custom domain<a class="headerlink" href="#using-a-custom-domain" title="Link to this heading">¶</a></h2>
+<p>You probably want to run the dashboard on your own domain. To allow this domain to be used in the front-end,
+you need to set the following (environment) variables with the host you need:</p>
+<p>For example:</p>
+<p>CSRF_TRUSTED_ORIGINS_DEFAULT_DOMAIN: <a class="reference external" href="https://example.com">https://example.com</a>
+CSRF_TRUSTED_ORIGINS_WILDCARD_DOMAIN: <a class="reference external" href="https://">https://</a><a href="#id1"><span class="problematic" id="id2">*</span></a>.example.com
+CORS_ALLOWED_DOMAIN: <a class="reference external" href="https://example.com">https://example.com</a></p>
+<p>You can set these in the docker compose file in main/compose.yaml. Do so in the path: /services/backend/environment.</p>
+</section>
 <section id="advanced-configuration">
-<h2><span class="section-number">1.4. </span><span class="sectnum">1.4 </span>Advanced configuration<a class="headerlink" href="#advanced-configuration" title="Link to this heading">¶</a></h2>
+<h2><span class="section-number">1.5. </span><span class="sectnum">1.5 </span>Advanced configuration<a class="headerlink" href="#advanced-configuration" title="Link to this heading">¶</a></h2>
 <section id="setting-up-e-mail-notification-after-scanning">
-<h3><span class="section-number">1.4.1. </span><span class="sectnum">1.4.1 </span>Setting up e-mail notification after scanning<a class="headerlink" href="#setting-up-e-mail-notification-after-scanning" title="Link to this heading">¶</a></h3>
+<h3><span class="section-number">1.5.1. </span><span class="sectnum">1.5.1 </span>Setting up e-mail notification after scanning<a class="headerlink" href="#setting-up-e-mail-notification-after-scanning" title="Link to this heading">¶</a></h3>
 <p>After a scan completes it’s possible to receive an e-mail. An SMTP server has to be configured in the admin interface,
 here: <a class="reference external" href="http://localhost:8000/admin/django_mail_admin/outbox/">http://localhost:8000/admin/django_mail_admin/outbox/</a></p>
 <ol class="arabic simple">
@@ -245,7 +255,7 @@ templates is English and several templates are pre-installed to be customized. F
 check the <span class="xref std std-ref">email templates</span> chapter.</p>
 </section>
 <section id="setting-up-subdomain-suggestions">
-<h3><span class="section-number">1.4.2. </span><span class="sectnum">1.4.2 </span>Setting up subdomain suggestions<a class="headerlink" href="#setting-up-subdomain-suggestions" title="Link to this heading">¶</a></h3>
+<h3><span class="section-number">1.5.2. </span><span class="sectnum">1.5.2 </span>Setting up subdomain suggestions<a class="headerlink" href="#setting-up-subdomain-suggestions" title="Link to this heading">¶</a></h3>
 <p>It’s possible to use subdomain suggestions when managing lists of urls. The exact instructions for running and installing
 this feature are to be documented.</p>
 <p>In the admin interface on <a class="reference external" href="http://localhost:8000/admin/constance/config/">http://localhost:8000/admin/constance/config/</a> you will find the possibility to use subdomain
@@ -256,9 +266,9 @@ suggestions via a separate installation of the CTLSSA tool.</p>
 </section>
 </section>
 <section id="background-information">
-<h2><span class="section-number">1.5. </span><span class="sectnum">1.5 </span>Background information<a class="headerlink" href="#background-information" title="Link to this heading">¶</a></h2>
+<h2><span class="section-number">1.6. </span><span class="sectnum">1.6 </span>Background information<a class="headerlink" href="#background-information" title="Link to this heading">¶</a></h2>
 <section id="application-component-overview">
-<h3><span class="section-number">1.5.1. </span><span class="sectnum">1.5.1 </span>Application component overview<a class="headerlink" href="#application-component-overview" title="Link to this heading">¶</a></h3>
+<h3><span class="section-number">1.6.1. </span><span class="sectnum">1.6.1 </span>Application component overview<a class="headerlink" href="#application-component-overview" title="Link to this heading">¶</a></h3>
 <p>The dashboard contains of three application components: dockerfile, backend and frontend.</p>
 <p>The dockerfile will setup a complete dashboard with sample users and sample configuration. This is one command and
 should be run on a system that runs docker, colima or another similar tool.</p>
@@ -269,7 +279,7 @@ redirects or interaction via JSON calls.</p>
 ‘actual’ website for day to day use.</p>
 </section>
 <section id="creating-your-own-unique-look-and-feel">
-<h3><span class="section-number">1.5.2. </span><span class="sectnum">1.5.2 </span>Creating your own unique look and feel<a class="headerlink" href="#creating-your-own-unique-look-and-feel" title="Link to this heading">¶</a></h3>
+<h3><span class="section-number">1.6.2. </span><span class="sectnum">1.6.2 </span>Creating your own unique look and feel<a class="headerlink" href="#creating-your-own-unique-look-and-feel" title="Link to this heading">¶</a></h3>
 <p>The included default layout is an unbranded version of internet.nl, using the internet.nl styling. Only the logo’s
 and references have been disabled. The setting for using your own template is called ‘SITE_LAYOUT_NAME’ and is exposed
 to the backend and frontend. The dashboard has not been optimized for custom branding yet, so your mileage to implement
@@ -310,8 +320,9 @@ this for your organization may vary.</p>
 <li class="toctree-l2"><a class="reference internal" href="#overview">1.1. <span class="sectnum">1.1 </span>Overview</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#installation">1.2. <span class="sectnum">1.2 </span>Installation</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#performing-your-first-scan">1.3. <span class="sectnum">1.3 </span>Performing your first scan</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#advanced-configuration">1.4. <span class="sectnum">1.4 </span>Advanced configuration</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#background-information">1.5. <span class="sectnum">1.5 </span>Background information</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#using-a-custom-domain">1.4. <span class="sectnum">1.4 </span>Using a custom domain</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#advanced-configuration">1.5. <span class="sectnum">1.5 </span>Advanced configuration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#background-information">1.6. <span class="sectnum">1.6 </span>Background information</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="2_user_management.html">2. <span class="sectnum">2 </span>Dashboard User Management</a></li>

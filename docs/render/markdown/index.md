@@ -6,6 +6,7 @@
   * [Overview](1_installation.md#overview)
   * [Installation](1_installation.md#installation)
   * [Performing your first scan](1_installation.md#performing-your-first-scan)
+  * [Using a custom domain](1_installation.md#using-a-custom-domain)
   * [Advanced configuration](1_installation.md#advanced-configuration)
   * [Background information](1_installation.md#background-information)
 * [Dashboard User Management](2_user_management.md)
