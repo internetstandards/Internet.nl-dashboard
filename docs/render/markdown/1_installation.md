@@ -20,13 +20,15 @@ For general and paid support with installations, updates and managing installati
 ### What do you need
 
 * A computer with git and docker installed
-  * 8 cores and 16 gigabyte of ram or more recommended
+  * 4 cores and 8 gigabyte of ram recommended
 * Access to the command shell to perform installations commands
 * Credential access to a running internet.nl API instance
   * This can be the official internet.nl instance
   * For information about running a batch instance,
   * See: [https://github.com/internetstandards/Internet.nl/blob/main/documentation/README.md](https://github.com/internetstandards/Internet.nl/blob/main/documentation/README.md)
 * Optional: a domain name and SMTP settings
+
+On this machine you need to be running docker, orbstack or something like that.
 
 PageBreak
 
@@ -35,39 +37,22 @@ PageBreak
 Installation is mostly configuration work inside the dashboard. Some of the below steps will be automated when 5.0
 is released.
 
-### Running the dashboard (during development of 5.0)
+### Running the dashboard
 
 In the command shell, perform the following commands.
 
 ```default
 git clone https://github.com/internetstandards/Internet.nl-dashboard/
 cd Internet.nl-dashboard
-git checkout 50
 docker compose up --build
 ```
 
-After a short while your dashboard instance will be ready at :8000.
+After a short while your dashboard instance will be ready at [http://localhost:8000](http://localhost:8000)
 
-You can start and restart the application by running `docker compose up --build`, use control+c to stop.
+Note that on local environments the web application will not work well with the Apple Safari browser due to
+CSRF security policies that come out of the box. Please use another browser for testing purposes.
 
-### Running the dashboard (when 5.0 is released)
-
-Download the version you want to run. These can be downloaded from the releases page, here:
-[https://github.com/internetstandards/Internet.nl-dashboard/releases](https://github.com/internetstandards/Internet.nl-dashboard/releases)
-
-Releases from version 5.0 and over support docker compose. You can also download a release
-from the command line, with the following command:
-
-```default
-mkdir dashboard && cd dashboard
-wget https://github.com/internetstandards/Internet.nl-dashboard/archive/refs/tags/v5.0.tar.gz
-tar -zxvf v5.0.tar.gz
-docker compose up --build
-```
-
-After a short while your dashboard instance will be ready at :8000.
-
-You can start and restart the application by running `docker compose up --build`, use control+c to stop.
+For production environments we recommend running a reverse proxy to this port. Examples include nginx or apache.
 
 ### Load up default configuration
 
@@ -87,22 +72,38 @@ docker exec -ti internetnl-dashboard-backend-1 dashboard loaddata dashboard_prod
 docker exec -ti internetnl-dashboard-backend-1 dashboard loaddata dashboard_production_default_scan_policy
 ```
 
+If you also want an example lists to get started, run the following command.
+
+```shell
+docker exec -ti internetnl-dashboard-backend-1 dashboard loaddata dashboard_production_example_list
+```
+
 ### Setting up the first user
+
+After setting up the first user administration can be performed via the administrative interface.
 
 Create a new user:
 
 `docker exec -ti internetnl-dashboard-backend-1 dashboard createsuperuser`
 
-Associate that user to the default account, assuming the createsuperuser made user id 1:
+Then connect the superuser to a dashboard account. Superusers can join any account through the front-end or admin interface:
+`docker exec -ti internetnl-dashboard-backend-1 dashboard connect_superusers`
 
-`docker exec -ti internetnl-dashboard-database-1 psql --user dashboard -c "update internet_nl_dashboard_dashboarduser set account_id=1 where user_id=1;"`
+### Logging in
 
 Now you can login at [http://localhost:8000/admin/](http://localhost:8000/admin/), or the same path under your server url.
 
-If you get an error that a certain user already exists, this might not be your first attempt to install the dashboard
-via this method. The docker installation method shares the same database.
-Make sure to associate the newly created super user also is connected to an account. This can be performed with SQL and
-via the admin portal.
+The account of this user connects to the default internet.nl development scanning instance on [http://localhost:8080](http://localhost:8080) with
+default credentials internetnl / internetnl. You will have to change the *account* credentials to the internet.nl API.
+These are *not* the user credentials for the dashboard.
+
+For testing purposes a development installation of the internet.nl API should be enough. This is documented here:
+
+[https://github.com/internetstandards/Internet.nl/blob/main/documentation/Docker-getting-started.md](https://github.com/internetstandards/Internet.nl/blob/main/documentation/Docker-getting-started.md)
+
+Setting up a complete batch instance of internet.nl is detailed here:
+
+[https://github.com/internetstandards/Internet.nl/blob/main/documentation/Docker-deployment-batch.md](https://github.com/internetstandards/Internet.nl/blob/main/documentation/Docker-deployment-batch.md)
 
 PageBreak
 
@@ -137,6 +138,13 @@ docker exec -ti internetnl-dashboard-backend-1 dashboard constance set CREDENTIA
 docker exec -ti internetnl-dashboard-backend-1 dashboard constance set INTERNET_NL_SCAN_TRACKING_NAME "My Dashboard Instance"
 ```
 
+Examples of these settings for internet.nl servers are:
+
+> - DASHBOARD_FRONTEND_URL [https://dashboard.internet.nl](https://dashboard.internet.nl)
+> - INTERNET_NL_API_URL [https://batch.internet.nl/api/batch/v2](https://batch.internet.nl/api/batch/v2)
+> - CREDENTIAL_CHECK_URL [https://batch.internet.nl/api/batch/v2/requests](https://batch.internet.nl/api/batch/v2/requests)
+> - INTERNET_NL_SCAN_TRACKING_NAME “My Internet.nl Dashboard”
+> - EMAIL_DASHBOARD_ADDRESS [https://dashboard.internet.nl](https://dashboard.internet.nl)
 1. Setup the API credentials for the account.
 
 > 1. Go to the account management page
@@ -188,7 +196,8 @@ After a scan has finished a report will be ready.
 
 ### Setting up e-mail notification after scanning
 
-After a scan completes it’s possible to receive an e-mail. An SMTP server has to be configured.
+After a scan completes it’s possible to receive an e-mail. An SMTP server has to be configured in the admin interface,
+here: [http://localhost:8000/admin/django_mail_admin/outbox/](http://localhost:8000/admin/django_mail_admin/outbox/)
 
 1. Visit the admin interface on `/admin/` and log in.
 2. In the sidebar click “📨 Outboxes”
@@ -201,6 +210,19 @@ After a scan completes it’s possible to receive an e-mail. An SMTP server has 
 The e-mails that are being sent are stored as templates in the “📨 E-Mail Templates” section. The default language for
 templates is English and several templates are pre-installed to be customized. For more information about these templates
 check the email templates chapter.
+
+### Setting up subdomain suggestions
+
+It’s possible to use subdomain suggestions when managing lists of urls. The exact instructions for running and installing
+this feature are to be documented.
+
+In the admin interface on [http://localhost:8000/admin/constance/config/](http://localhost:8000/admin/constance/config/) you will find the possibility to use subdomain
+suggestions via a separate installation of the CTLSSA tool.
+
+The CTLSSA tool can be found here and run via docker:
+[https://github.com/internetstandards/Internet.nl-ct-log-subdomain-suggestions-api/](https://github.com/internetstandards/Internet.nl-ct-log-subdomain-suggestions-api/)
+
+In the internet.nl dashboard settings, point the SUBDOMAIN_SUGGESTION_SERVER_ADDRESS setting to the CTLSSA instance.
 
 PageBreak
 
