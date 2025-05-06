@@ -400,7 +400,7 @@ jh2==5.0.4
     #   -c requirements.txt
     #   urllib3-future
     #   websecmap
-jinja2==3.1.4
+jinja2==3.1.5
     # via
     #   rst2pdf
     #   sphinx
