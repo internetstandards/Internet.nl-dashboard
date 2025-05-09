@@ -52,6 +52,4 @@ RUN echo "VERSION='$VERSION'" >> /source/dashboard/__version__.py
 
 EXPOSE 8000
 
-ENTRYPOINT [ "/usr/local/bin/dashboard" ]
-
-CMD [ "dashboard_prdserver" ]
+CMD ["dashboard", "dashboard_prdserver --migrate" ]

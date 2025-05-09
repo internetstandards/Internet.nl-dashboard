@@ -13,6 +13,9 @@ from .settings_constance import CONSTANCE_CONFIG_FIELDSETS  # noqa  # pylint: di
 from .settings_constance import CONSTANCE_ADDITIONAL_FIELDS, CONSTANCE_BACKEND, CONSTANCE_CONFIG
 from .settings_jet import JET_SIDE_MENU_COMPACT, JET_SIDE_MENU_ITEMS  # noqa  # pylint: disable=unused-import
 from .settings_util import get_field_encryption_key_from_file_or_env, get_secret_key_from_file_or_env
+from dotenv import load_dotenv
+load_dotenv()
+
 
 # import all of this and don't auto-lint it away because there are no references here.
 # most code refers to these settings.
@@ -104,6 +107,8 @@ INSTALLED_APPS = [
     "allauth",
     "allauth.account",
     "allauth.socialaccount",
+    "allauth.socialaccount.providers.openid_connect",
+    "allauth.usersessions",
 ]
 
 # django activity stream wants a site-id:
@@ -542,6 +547,23 @@ AUTHENTICATION_BACKENDS = [
 #         }
 #     }
 # }
+
+SOCIALACCOUNT_ADAPTER = "dashboard.adapter.OIDCGroupRestrictionAdapter"
+SOCIALACCOUNT_PROVIDERS = {
+    "openid_connect": {
+        "APPS": [
+            {
+                "provider_id": os.environ.get("OIDC_PROVIDER_ID", "my-oidc"),
+                "name": os.environ.get("OIDC_PROVIDER_NAME", "OIDC"),
+                "client_id": os.environ.get("OIDC_CLIENT_ID", ""),
+                "secret": os.environ.get("OIDC_CLIENT_SECRET", ""),
+                "settings": {
+                    "server_url": os.environ.get("OIDC_SERVER_URL", ""),
+                },
+            },
+        ]
+    }
+}
 
 # make sure these imports don't get removed by linting tools
 __all__ = ["CONSTANCE_CONFIG", "CONSTANCE_BACKEND", "CONSTANCE_ADDITIONAL_FIELDS", "CONSTANCE_CONFIG_FIELDSETS"]
