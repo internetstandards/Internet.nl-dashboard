@@ -1,0 +1,3 @@
+[submodule "Internet.nl-dashboard-frontend"]
+	path = Internet.nl-dashboard-frontend
+	url = https://github.com/internetstandards/Internet.nl-dashboard-frontend.git

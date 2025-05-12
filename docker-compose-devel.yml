@@ -23,7 +23,7 @@ services:
       retries: 5
 
   frontend:
-    image: localhost/frontend:latest
+    build: Internet.nl-dashboard-frontend
     healthcheck:
       interval: 60s
   backend:
@@ -45,7 +45,12 @@ services:
         condition: service_healthy
     volumes:
       - ./:/source
-    command: "sleep infinity"
+    command:
+      - sh
+      - -c
+      - |
+        dashboard migrate
+        dashboard runserver 0.0.0:8000
 
   webserver:
     image: caddy
