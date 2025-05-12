@@ -96,6 +96,7 @@ frontend_urls = [
     #     password_reset_from_key_done,
     #     name="account_reset_password_from_key_done",
     # ),
+    path("accounts/", include("allauth.urls")),
 ]
 
 urlpatterns = frontend_urls.copy()

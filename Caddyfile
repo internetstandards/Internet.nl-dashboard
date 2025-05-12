@@ -1,0 +1,10 @@
+:8000 {
+    # The frontend is fixed to login on /acount/login.
+    # For OIDC we want all logins to go to /accounts/login... 
+    @account_login path /account/login /account/login/
+    rewrite @account_login /accounts/login
+    
+    @paths path /accounts/login /accounts/* /account/* /admin/* /data/* /jet/* /logout/* /mail/* /session/* /static/* /upload/* /security.txt /.well-known/security.txt
+    reverse_proxy @paths backend:8000
+    reverse_proxy /* frontend:80
+}

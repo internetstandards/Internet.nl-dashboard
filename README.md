@@ -352,3 +352,43 @@ in
 Probably line 36...
 
 `/Users/stitch/Library/Caches/virtualenvs/internet.nl-dashboard/lib/python3.10/site-packages/pkg_resources/_vendor/packaging/`
+
+### Localhost development with OIDC
+
+Here is how you can use this repository for localhost development including OIDC authentication.
+
+#### Create **.env*
+
+Please copy the provided **.sample.env** to **.env** and fill in the appropriate Client-ID and Client-Secret.
+
+```
+OIDC_CLIENT_ID=dashboard
+OIDC_CLIENT_SECRET=<client_secret>
+OIDC_SERVER_URL=<oidc_server_url>
+OIDC_PROVIDER_ID=my-oidc
+OIDC_PROVIDER_NAME=OIDC
+```
+
+#### build "frontend"
+
+The frontend is a react application that nmust be build separately, here is how you can do that:
+
+**Get the frontend code...**
+
+The dashboard frontend is a seperate GIT repository that is declared a submodule.
+
+```
+git submodule update --init --recursive
+```
+
+**Build the containers...**
+
+```
+docker compose -f docker-compose-devel.yml build
+```
+
+**Start the containers...**
+
+```
+docker compose -f docker-compose-devel.yml up -d
+```
