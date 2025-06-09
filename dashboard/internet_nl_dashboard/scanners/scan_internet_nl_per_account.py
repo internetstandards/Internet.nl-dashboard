@@ -13,7 +13,7 @@ from django.db.models import Q
 from websecmap.app.constance import constance_cached_value
 from websecmap.organizations.models import Url
 from websecmap.reporting.diskreport import retrieve_report, store_report
-from websecmap.reporting.report import recreate_url_reports
+from websecmap.reporting.report import recreate_url_report
 from websecmap.scanners.models import InternetNLV2Scan
 from websecmap.scanners.scanner import add_model_filter, dns_endpoints, internet_nl_websecmap
 from websecmap.scanners.scanner.internet_nl import InternetNLApiSettings
@@ -456,6 +456,10 @@ def copy_state_from_websecmap_scan(scan_id: int):
     update_state(new_state, scan.id)
 
 
+def recreate_url_reports(urls: List[int], today_mode: bool = False) -> List[Task]:
+    return [(recreate_url_report.si(url_id, today_mode)) for url_id in urls]
+
+
 def creating_report(scan_id: int):
     update_state("creating report", scan_id)
 
@@ -468,7 +472,8 @@ def creating_report(scan_id: int):
     # at the moment the function is actually called. If you need accurate time in the function, make sure the
     # function calls 'timezone.now()' when the function is run.
     return (
-        group(recreate_url_reports(list(scan.urllist.urls.all().values_list("id", flat=True))))
+        # most recent websecmap only creates one url report, unless you tell it not to...
+        group(recreate_url_reports(list(scan.urllist.urls.all().values_list("id", flat=True)), False))
         | create_dashboard_report.si(scan.id)
         | connect_urllistreport_to_accountinternetnlscan.s(scan.id)
         | upgrade_report_with_statistics.s()

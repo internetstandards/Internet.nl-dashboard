@@ -460,7 +460,7 @@ def urllistreport_to_spreadsheet_data(
             for endpoint in url["endpoints"]:
                 if endpoint["protocol"] != protocol:
                     continue
-                keyed_ratings = endpoint["ratings_by_type"]
+                keyed_ratings = endpoint["ratings"]
                 data.append(
                     [category_name, url["url"], extract.subdomain, extract.domain, extract.suffix, url_tags, "TRUE"]
                     + keyed_values_as_boolean(keyed_ratings, protocol)
@@ -473,7 +473,7 @@ def urllistreport_to_spreadsheet_data(
             for endpoint in url["endpoints"]:
                 if endpoint["protocol"] != protocol:
                     continue
-                keyed_ratings = endpoint["ratings_by_type"]
+                keyed_ratings = endpoint["ratings"]
                 data.append(["", "", "", "", "", "", ""] + keyed_values_as_boolean(keyed_ratings, protocol))
 
     # log.debug(data)

@@ -468,7 +468,7 @@ def optimize_calculation_and_add_statistics(calculation: Dict[str, Any]):
 
     # this makes all scores directly accessible, for easy display
     # It will also remove the ratings as a list, as that contains a lot of data too (which takes costly parse time)
-    add_keyed_ratings(calculation)
+    # add_keyed_ratings(calculation)
 
     # This adds some calculations over ratings
     add_statistics_over_ratings(calculation)
@@ -509,7 +509,7 @@ def remove_comply_or_explain(calculation: Dict[str, Any]):
             del endpoint["explained_medium"]
             del endpoint["explained_low"]
 
-            for rating in endpoint["ratings"]:
+            for _, rating in endpoint["ratings"].items():
                 del rating["is_explained"]
                 del rating["comply_or_explain_explanation"]
                 del rating["comply_or_explain_explained_on"]
@@ -540,23 +540,6 @@ def remove_comply_or_explain(calculation: Dict[str, Any]):
     return calculation
 
 
-def add_keyed_ratings(calculation: Dict[str, Any]):
-    """
-    This creates issues that are directly accessible by keyword, instead of iterating over a list and finding them.
-    This is much faster when showing a report of course. Issues are never duplicated anyway, so not doing this was
-    probably a design omission.
-
-    :param report:
-    :return:
-    """
-
-    for url in calculation["urls"]:
-        for endpoint in url["endpoints"]:
-            endpoint["ratings_by_type"] = {}
-            for rating in endpoint["ratings"]:
-                endpoint["ratings_by_type"][rating["type"]] = rating
-
-
 def clean_up_not_required_data_to_speed_up_report_on_client(calculation: Dict[str, Any]):
     """
     Loading in JSON objects in the client takes (a lot of) time. The larger the object, the more time.
@@ -568,25 +551,25 @@ def clean_up_not_required_data_to_speed_up_report_on_client(calculation: Dict[st
 
     for url in calculation["urls"]:
         for endpoint in url["endpoints"]:
-            for rating_key in endpoint["ratings_by_type"]:
+            for rating_key, _ in endpoint["ratings"].items():
                 # clean up fields we don't need, to make the report show even quicker
                 # a lot of stuff from web sec map is nice, but not really useful for us at this moment.
                 # perhaps later
 
                 # These values are used in add_statistics_over_ratings and. Only OK is used in the spreadsheet
                 # export (which could also be pre-generated).
-                del endpoint["ratings_by_type"][rating_key]["high"]  # high is used in add_statistics_over_ratings
-                del endpoint["ratings_by_type"][rating_key]["medium"]  # only 'ok' is used in spreadsheet export.
-                del endpoint["ratings_by_type"][rating_key]["low"]  # only 'ok' is used in spreadsheet export.
-                del endpoint["ratings_by_type"][rating_key]["not_testable"]  # only 'ok' is used in spreadsheet export.
-                del endpoint["ratings_by_type"][rating_key]["not_applicable"]  # only 'ok' is used in spreadsheet export
-                del endpoint["ratings_by_type"][rating_key]["error_in_test"]  # only 'ok' is used in spreadsheet export
-                del endpoint["ratings_by_type"][rating_key]["last_scan"]  # not used in front end
+                del endpoint["ratings"][rating_key]["high"]  # high is used in add_statistics_over_ratings
+                del endpoint["ratings"][rating_key]["medium"]  # only 'ok' is used in spreadsheet export.
+                del endpoint["ratings"][rating_key]["low"]  # only 'ok' is used in spreadsheet export.
+                del endpoint["ratings"][rating_key]["not_testable"]  # only 'ok' is used in spreadsheet export.
+                del endpoint["ratings"][rating_key]["not_applicable"]  # only 'ok' is used in spreadsheet export
+                del endpoint["ratings"][rating_key]["error_in_test"]  # only 'ok' is used in spreadsheet export
+                del endpoint["ratings"][rating_key]["last_scan"]  # not used in front end
 
                 # the since field can be unix timestamp, which is less data
                 try:
-                    endpoint["ratings_by_type"][rating_key]["since"] = datetime.fromisoformat(
-                        endpoint["ratings_by_type"][rating_key]["since"]
+                    endpoint["ratings"][rating_key]["since"] = datetime.fromisoformat(
+                        endpoint["ratings"][rating_key]["since"]
                     ).timestamp()
                 except ValueError:
                     # then don't update it.
@@ -594,16 +577,12 @@ def clean_up_not_required_data_to_speed_up_report_on_client(calculation: Dict[st
 
                 # Because of the 'ad hoc' reports, it's valuable to show when a measurement was performed
                 # as a report can contain metrics from various moments in time (due to re-scans on measurement errors)
-                # del endpoint['ratings_by_type'][rating_key]['since']
-                # del endpoint['ratings_by_type'][rating_key]['last_scan']
-                del endpoint["ratings_by_type"][rating_key]["explanation"]
+                # del endpoint['ratings'][rating_key]['since']
+                # del endpoint['ratings'][rating_key]['last_scan']
+                del endpoint["ratings"][rating_key]["explanation"]
 
-                del endpoint["ratings_by_type"][rating_key]["type"]  # is already in the key
-                del endpoint["ratings_by_type"][rating_key]["scan_type"]  # is already in the key
-
-            # remove the original rating, as that slows parsing on the client down significantly.
-            # with significantly == Vue will parse it, and for a 500 url list this will take 5 seconds.
-            del endpoint["ratings"]
+                del endpoint["ratings"][rating_key]["type"]  # is already in the key
+                del endpoint["ratings"][rating_key]["scan_type"]  # is already in the key
 
         del url["total_endpoints"]
         del url["high_endpoints"]
@@ -654,7 +633,7 @@ def add_simple_verdicts(calculation: Dict[str, Any]):
 
     for url in calculation["urls"]:
         for endpoint in url["endpoints"]:
-            for rating in endpoint["ratings"]:
+            for _, rating in endpoint["ratings"].items():
                 rating["simple_progression"] = progression_table.get(rating.get("test_result", ""), 0)
 
 
@@ -672,8 +651,8 @@ def split_score_and_url(calculation: Dict[str, Any]):
             scan = 0
             since = ""
             last_scan = ""
-            for rating in endpoint["ratings"]:
-                if rating["type"] in ["internet_nl_web_overall_score", "internet_nl_mail_dashboard_overall_score"]:
+            for scan_type, rating in endpoint["ratings"].items():
+                if scan_type in ["internet_nl_web_overall_score", "internet_nl_mail_dashboard_overall_score"]:
                     # explanation	"78 https://batch.interne…zuiderzeeland.nl/886818/"
                     explanation = rating["explanation"].split(" ")  # type: ignore
                     if explanation[0] == "error":
@@ -688,27 +667,25 @@ def split_score_and_url(calculation: Dict[str, Any]):
             # Now that we had all ratings, add a single value for the score, so we don't have to switch between
             # web or mail, which is severely annoying.
             # there is only one rating per set endpoint. So this is safe
-            endpoint["ratings"].append(
-                {
-                    "type": "internet_nl_score",
-                    "scan_type": "internet_nl_score",
-                    "internet_nl_score": score,
-                    "internet_nl_url": url,
-                    # to comply with the rating structure
-                    "high": 0,
-                    "medium": 1,  # make sure to match simple verdicts as defined above.
-                    "low": 0,
-                    "ok": 0,
-                    "not_testable": False,
-                    "not_applicable": False,
-                    "error_in_test": False,
-                    "test_result": score,
-                    "scan": scan,
-                    "since": since,
-                    "last_scan": last_scan,
-                    "explanation": "",
-                }
-            )
+            endpoint["ratings"]["internet_nl_score"] = {
+                "type": "internet_nl_score",
+                "scan_type": "internet_nl_score",
+                "internet_nl_score": score,
+                "internet_nl_url": url,
+                # to comply with the rating structure
+                "high": 0,
+                "medium": 1,  # make sure to match simple verdicts as defined above.
+                "low": 0,
+                "ok": 0,
+                "not_testable": False,
+                "not_applicable": False,
+                "error_in_test": False,
+                "test_result": score,
+                "scan": scan,
+                "since": since,
+                "last_scan": last_scan,
+                "explanation": "",
+            }
 
 
 def add_statistics_over_ratings(calculation: Dict[str, Any]):
@@ -721,7 +698,7 @@ def add_statistics_over_ratings(calculation: Dict[str, Any]):
 
     for url in calculation["urls"]:
         for endpoint in url["endpoints"]:
-            possible_issues += endpoint["ratings_by_type"].keys()
+            possible_issues += endpoint["ratings"].keys()
     possible_issues = list(set(possible_issues))
 
     # prepare the stats dict to have less expensive operations in the 3x nested loop
@@ -742,7 +719,7 @@ def add_statistics_over_ratings(calculation: Dict[str, Any]):
     for issue in possible_issues:
         for url in calculation["urls"]:
             for endpoint in url["endpoints"]:
-                rating = endpoint["ratings_by_type"].get(issue, None)
+                rating = endpoint["ratings"].get(issue, None)
                 if not rating:
                     continue
                 calculation["statistics_per_issue_type"][issue]["high"] += rating["high"]

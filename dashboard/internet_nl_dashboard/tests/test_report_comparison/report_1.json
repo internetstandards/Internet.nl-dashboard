@@ -23,7 +23,7 @@
             "medium": 8,
             "low": 4,
             "ok": 9,
-            "ratings_by_type": {
+            "ratings": {
               "internet_nl_web_legacy_ipv6_webserver": {
                 "ok": 0,
                 "translation": "failed",
@@ -467,7 +467,7 @@
             "medium": 0,
             "low": 0,
             "ok": 47,
-            "ratings_by_type": {
+            "ratings": {
               "internet_nl_web_legacy_ipv6_webserver": {
                 "ok": 1,
                 "translation": "passed",

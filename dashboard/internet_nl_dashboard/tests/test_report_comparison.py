@@ -20,7 +20,7 @@ def test_key_report(current_path):
 
     assert (
         calculation["calculation"]["urls_by_url"]["acc.dashboard.internet.nl"]["endpoints_by_key"]["dns_a_aaaa/0 IPv0"][
-            "ratings_by_type"
+            "ratings"
         ]["internet_nl_web_legacy_ipv6_webserver"]["test_result"]
         == "failed"
     )
@@ -189,13 +189,12 @@ def test_compare_report_detail_differences():
             "urls_by_url": {
                 "www.internet.nl": {
                     "url": "www.internet.nl",
-                    "ratings": [],
+                    "ratings": {},
                     "endpoints_by_key": {
                         "dns_a_aaaa/0 IPv0": {
                             "id": 1,
                             "concat": "dns_a_aaaa/0 IPv0",
-                            "ratings": [],
-                            "ratings_by_type": {
+                            "ratings": {
                                 "internet_nl_web_https_tls_version": {
                                     "test_result": "passed",
                                     "simple_progression": 400,
@@ -218,13 +217,12 @@ def test_compare_report_detail_differences():
                 # This will create a neutral rating.
                 "extradomain.internet.nl": {
                     "url": "extradomain.internet.nl",
-                    "ratings": [],
+                    "ratings": {},
                     "endpoints_by_key": {
                         "dns_a_aaaa/0 IPv0": {
                             "id": 1,
                             "concat": "dns_a_aaaa/0 IPv0",
-                            "ratings": [],
-                            "ratings_by_type": {
+                            "ratings": {
                                 "internet_nl_web_https_tls_version": {
                                     "test_result": "passed",
                                     "simple_progression": 400,
@@ -257,13 +255,12 @@ def test_compare_report_detail_differences():
             "urls_by_url": {
                 "www.internet.nl": {
                     "url": "www.internet.nl",
-                    "ratings": [],
+                    "ratings": {},
                     "endpoints_by_key": {
                         "dns_a_aaaa/0 IPv0": {
                             "id": 2,
                             "concat": "dns_a_aaaa/0 IPv0",
-                            "ratings": [],
-                            "ratings_by_type": {
+                            "ratings": {
                                 "internet_nl_web_https_tls_version": {
                                     "test_result": "failed",
                                     "simple_progression": 100,

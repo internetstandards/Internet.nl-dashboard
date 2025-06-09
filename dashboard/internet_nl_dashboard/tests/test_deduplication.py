@@ -44,12 +44,24 @@ def test_per_acount_scanner(db) -> None:
     assert Url.objects.all().count() == 4
 
     # with duplicate endpoints, where the endpoints themselves are unique for the url.
-    ep1, _ = Endpoint.objects.get_or_create(url=url1, protocol="dns_a_aaaa", port=0, ip_version=0, is_dead=False)
-    ep2, _ = Endpoint.objects.get_or_create(url=url2, protocol="dns_a_aaaa", port=0, ip_version=0, is_dead=False)
-    ep3, _ = Endpoint.objects.get_or_create(url=url3, protocol="dns_a_aaaa", port=0, ip_version=0, is_dead=False)
-    ep4, _ = Endpoint.objects.get_or_create(url=url1, protocol="dns_soa", port=0, ip_version=0, is_dead=False)
-    ep5, _ = Endpoint.objects.get_or_create(url=url2, protocol="dns_soa", port=0, ip_version=0, is_dead=False)
-    ep6, _ = Endpoint.objects.get_or_create(url=url4, protocol="unaffected", port=0, ip_version=0, is_dead=False)
+    ep1, _ = Endpoint.objects.get_or_create(
+        url=url1, protocol="dns_a_aaaa", port=0, ip_version=0, is_dead=False, discovered_on=datetime.now(timezone.utc)
+    )
+    ep2, _ = Endpoint.objects.get_or_create(
+        url=url2, protocol="dns_a_aaaa", port=0, ip_version=0, is_dead=False, discovered_on=datetime.now(timezone.utc)
+    )
+    ep3, _ = Endpoint.objects.get_or_create(
+        url=url3, protocol="dns_a_aaaa", port=0, ip_version=0, is_dead=False, discovered_on=datetime.now(timezone.utc)
+    )
+    ep4, _ = Endpoint.objects.get_or_create(
+        url=url1, protocol="dns_soa", port=0, ip_version=0, is_dead=False, discovered_on=datetime.now(timezone.utc)
+    )
+    ep5, _ = Endpoint.objects.get_or_create(
+        url=url2, protocol="dns_soa", port=0, ip_version=0, is_dead=False, discovered_on=datetime.now(timezone.utc)
+    )
+    ep6, _ = Endpoint.objects.get_or_create(
+        url=url4, protocol="unaffected", port=0, ip_version=0, is_dead=False, discovered_on=datetime.now(timezone.utc)
+    )
 
     # make sure there are five endpoints:
     assert Endpoint.objects.all().count() == 6
