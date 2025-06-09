@@ -4,25 +4,30 @@
 #
 #    pip-compile --output-file=requirements-deploy.txt requirements-deploy.in
 #
-aiohappyeyeballs==2.4.3
+aiohappyeyeballs==2.6.1
     # via
     #   -c requirements.txt
     #   aiohttp
     #   websecmap
-aiohttp==3.10.10
+aiohttp==3.12.10
     # via
     #   -c requirements.txt
     #   geoip2
     #   websecmap
-aiosignal==1.3.1
+aiosignal==1.3.2
     # via
     #   -c requirements.txt
     #   aiohttp
     #   websecmap
-amqp==5.2.0
+amqp==5.3.1
     # via
     #   -c requirements.txt
     #   kombu
+    #   websecmap
+annotated-types==0.7.0
+    # via
+    #   -c requirements.txt
+    #   pydantic
     #   websecmap
 argh==0.31.3
     # via
@@ -35,18 +40,18 @@ asgiref==3.8.1
     #   django-cors-headers
     #   django-countries
     #   websecmap
-async-timeout==4.0.3
+async-timeout==5.0.1
     # via
     #   -c requirements.txt
     #   aiohttp
     #   redis
     #   websecmap
-attrs==24.2.0
+attrs==25.3.0
     # via
     #   -c requirements.txt
     #   aiohttp
     #   websecmap
-beautifulsoup4==4.12.3
+beautifulsoup4==4.13.4
     # via
     #   -c requirements.txt
     #   bs4
@@ -56,15 +61,26 @@ billiard==4.2.1
     #   -c requirements.txt
     #   celery
     #   websecmap
+boto3==1.38.32
+    # via
+    #   -c requirements.txt
+    #   django-storages
+    #   websecmap
+botocore==1.38.32
+    # via
+    #   -c requirements.txt
+    #   boto3
+    #   s3transfer
+    #   websecmap
 bs4==0.0.2
     # via
     #   -c requirements.txt
     #   websecmap
-cachetools==5.5.0
+cachetools==6.0.0
     # via
     #   -c requirements.txt
     #   websecmap
-celery[gevent,redis]==5.4.0
+celery[gevent,redis]==5.5.3
     # via
     #   -c requirements.txt
     #   celery-statsd
@@ -75,7 +91,7 @@ celery-statsd==1.0.0
     # via
     #   -c requirements.txt
     #   websecmap
-certifi==2024.8.30
+certifi==2025.4.26
     # via
     #   -c requirements.txt
     #   -c security-constraints.in
@@ -92,13 +108,13 @@ chardet==5.2.0
     #   -c requirements.txt
     #   pyexcel
     #   websecmap
-charset-normalizer==3.4.0
+charset-normalizer==3.4.2
     # via
     #   -c requirements.txt
     #   niquests
     #   requests
     #   websecmap
-click==8.1.7
+click==8.2.1
     # via
     #   -c requirements.txt
     #   celery
@@ -130,18 +146,22 @@ cron-descriptor==1.4.5
     #   -c requirements.txt
     #   django-celery-beat
     #   websecmap
-cryptography==43.0.3
+cryptography==45.0.3
     # via
     #   -c requirements.txt
     #   -c security-constraints.in
     #   pyopenssl
     #   websecmap
-decorator==5.1.1
+datadog==0.51.0
+    # via
+    #   -c requirements.txt
+    #   websecmap
+decorator==5.2.1
     # via
     #   -c requirements.txt
     #   retry
     #   websecmap
-deepdiff==8.0.1
+deepdiff==8.5.0
     # via
     #   -c requirements.txt
     #   websecmap
@@ -155,24 +175,30 @@ diff-match-patch==20241021
     #   -c requirements.txt
     #   django-import-export
     #   websecmap
-django==4.2.16
+django==4.2.22
     # via
     #   -c requirements.txt
     #   -c security-constraints.in
     #   django-celery-beat
     #   django-colorful
     #   django-cors-headers
+    #   django-dramatiq
     #   django-excel
     #   django-filter
     #   django-import-export
     #   django-jet-reboot
     #   django-leaflet
+    #   django-ninja
+    #   django-storages
     #   django-taggit
     #   django-timezone-field
-    #   djangorestframework
     #   jsonfield
     #   websecmap
-django-celery-beat==2.7.0
+django-advanced-filters==2.0.0
+    # via
+    #   -c requirements.txt
+    #   websecmap
+django-celery-beat==2.8.1
     # via
     #   -c requirements.txt
     #   websecmap
@@ -180,11 +206,11 @@ django-colorful==1.3
     # via
     #   -c requirements.txt
     #   websecmap
-django-constance==4.1.3
+django-constance==4.3.2
     # via
     #   -c requirements.txt
     #   websecmap
-django-cors-headers==4.6.0
+django-cors-headers==4.7.0
     # via
     #   -c requirements.txt
     #   websecmap
@@ -192,15 +218,19 @@ django-countries==7.6.1
     # via
     #   -c requirements.txt
     #   websecmap
+django-dramatiq==0.13.0
+    # via
+    #   -c requirements.txt
+    #   websecmap
 django-excel==0.0.10
     # via
     #   -c requirements.txt
     #   websecmap
-django-filter==24.3
+django-filter==25.1
     # via
     #   -c requirements.txt
     #   websecmap
-django-import-export==4.2.1
+django-import-export==4.3.7
     # via
     #   -c requirements.txt
     #   websecmap
@@ -208,11 +238,15 @@ django-jet-reboot==1.3.10
     # via
     #   -c requirements.txt
     #   websecmap
-django-leaflet==0.31.0
+django-leaflet==0.32.0
     # via
     #   -c requirements.txt
     #   websecmap
 django-nested-admin==4.1.1
+    # via
+    #   -c requirements.txt
+    #   websecmap
+django-ninja==1.4.3
     # via
     #   -c requirements.txt
     #   websecmap
@@ -224,22 +258,23 @@ django-statsd-mozilla==0.4.0
     # via
     #   -c requirements.txt
     #   websecmap
+django-storages[s3]==1.14.6
+    # via
+    #   -c requirements.txt
+    #   websecmap
 django-taggit==6.1.0
     # via
     #   -c requirements.txt
     #   websecmap
-django-timezone-field==7.0
+django-timezone-field==7.1
     # via
     #   -c requirements.txt
     #   django-celery-beat
     #   websecmap
 django-uwsgi==0.2.2
     # via
-    #   -r requirements-deploy.in
-    #   websecmap
-djangorestframework==3.15.2
-    # via
     #   -c requirements.txt
+    #   -r requirements-deploy.in
     #   websecmap
 dnspython==2.7.0
     # via
@@ -250,12 +285,17 @@ dnsrecon==0.10.1
     # via
     #   -c requirements.txt
     #   websecmap
+dramatiq[redis]==1.18.0
+    # via
+    #   -c requirements.txt
+    #   django-dramatiq
+    #   websecmap
 et-xmlfile==2.0.0
     # via
     #   -c requirements.txt
     #   openpyxl
     #   websecmap
-filelock==3.16.1
+filelock==3.18.0
     # via
     #   -c requirements.txt
     #   tldextract
@@ -264,17 +304,17 @@ flower==2.0.1
     # via
     #   -c requirements.txt
     #   websecmap
-frozenlist==1.5.0
+frozenlist==1.6.2
     # via
     #   -c requirements.txt
     #   aiohttp
     #   aiosignal
     #   websecmap
-geoip2==4.8.0
+geoip2==5.1.0
     # via
     #   -c requirements.txt
     #   websecmap
-gevent==24.11.1
+gevent==25.5.1
     # via
     #   -c requirements.txt
     #   celery
@@ -287,17 +327,17 @@ googlemaps==4.10.0
     # via
     #   -c requirements.txt
     #   websecmap
-greenlet==3.1.1
+greenlet==3.2.3
     # via
     #   -c requirements.txt
     #   gevent
     #   websecmap
-h11==0.14.0
+h11==0.16.0
     # via
     #   -c requirements.txt
     #   urllib3-future
     #   websecmap
-humanize==4.11.0
+humanize==4.12.3
     # via
     #   -c requirements.txt
     #   flower
@@ -305,7 +345,6 @@ humanize==4.11.0
 idna==3.10
     # via
     #   -c requirements.txt
-    #   niquests
     #   requests
     #   tldextract
     #   websecmap
@@ -314,53 +353,54 @@ iso3166==2.1.1
     # via
     #   -c requirements.txt
     #   websecmap
-jh2==5.0.4
+jh2==5.0.9
     # via
     #   -c requirements.txt
     #   urllib3-future
+    #   websecmap
+jmespath==1.0.1
+    # via
+    #   -c requirements.txt
+    #   boto3
+    #   botocore
     #   websecmap
 jsonfield==3.1.0
     # via
     #   -c requirements.txt
     #   websecmap
-kiss-headers==2.4.3
-    # via
-    #   -c requirements.txt
-    #   niquests
-    #   websecmap
-kombu==5.4.2
+kombu[redis]==5.5.4
     # via
     #   -c requirements.txt
     #   celery
     #   websecmap
-lml==0.1.0
+lml==0.2.0
     # via
     #   -c requirements.txt
     #   pyexcel
     #   pyexcel-io
     #   websecmap
-lxml==5.3.0
+lxml==5.4.0
     # via
     #   -c requirements.txt
     #   -c security-constraints.in
     #   dnsrecon
     #   websecmap
-markdown==3.7
+markdown==3.8
     # via
     #   -c requirements.txt
     #   websecmap
-maxminddb==2.6.2
+maxminddb==2.7.0
     # via
     #   -c requirements.txt
     #   geoip2
     #   websecmap
-multidict==6.1.0
+multidict==6.4.4
     # via
     #   -c requirements.txt
     #   aiohttp
     #   websecmap
     #   yarl
-mysqlclient==2.2.5
+mysqlclient==2.2.7
     # via
     #   -c requirements.txt
     #   websecmap
@@ -369,11 +409,11 @@ netaddr==1.3.0
     #   -c requirements.txt
     #   dnsrecon
     #   websecmap
-niquests==3.10.2
+niquests==3.14.1
     # via
     #   -c requirements.txt
     #   websecmap
-numpy==2.1.3
+numpy==2.2.6
     # via
     #   -c requirements.txt
     #   rdp
@@ -389,38 +429,45 @@ openpyxl==3.0.10
     #   -c requirements.txt
     #   pyexcel-xlsx
     #   websecmap
-orderly-set==5.2.2
+orderly-set==5.4.1
     # via
     #   -c requirements.txt
     #   deepdiff
     #   websecmap
-orjson==3.10.11
+orjson==3.10.18
     # via
     #   -c requirements.txt
     #   websecmap
-osm2geojson==0.2.5
+osm2geojson==0.2.6
     # via
     #   -c requirements.txt
     #   websecmap
-pillow==11.0.0
+packaging==25.0
+    # via
+    #   -c requirements.txt
+    #   kombu
+    #   websecmap
+pillow==11.2.1
     # via
     #   -c requirements.txt
     #   -c security-constraints.in
     #   python-resize-image
     #   websecmap
-prometheus-client==0.21.0
+prometheus-client==0.22.1
     # via
     #   -c requirements.txt
+    #   dramatiq
     #   flower
     #   websecmap
-prompt-toolkit==3.0.48
+prompt-toolkit==3.0.51
     # via
     #   -c requirements.txt
     #   click-repl
     #   websecmap
-propcache==0.2.0
+propcache==0.3.1
     # via
     #   -c requirements.txt
+    #   aiohttp
     #   websecmap
     #   yarl
 psycopg2-binary==2.9.10
@@ -436,6 +483,16 @@ pycparser==2.22
     # via
     #   -c requirements.txt
     #   cffi
+    #   websecmap
+pydantic==2.11.5
+    # via
+    #   -c requirements.txt
+    #   django-ninja
+    #   websecmap
+pydantic-core==2.33.2
+    # via
+    #   -c requirements.txt
+    #   pydantic
     #   websecmap
 pyexcel==0.6.7
     # via
@@ -465,7 +522,7 @@ pyexcel-webio==0.1.4
     #   -c requirements.txt
     #   django-excel
     #   websecmap
-pyexcel-xls==0.7.0
+pyexcel-xls==0.7.1
     # via
     #   -c requirements.txt
     #   websecmap
@@ -473,7 +530,7 @@ pyexcel-xlsx==0.6.0
     # via
     #   -c requirements.txt
     #   websecmap
-pyopenssl==24.2.1
+pyopenssl==25.1.0
     # via
     #   -c requirements.txt
     #   websecmap
@@ -485,6 +542,7 @@ python-crontab==3.2.0
 python-dateutil==2.9.0.post0
     # via
     #   -c requirements.txt
+    #   botocore
     #   celery
     #   python-crontab
     #   websecmap
@@ -505,7 +563,7 @@ python-resize-image==1.1.20
     # via
     #   -c requirements.txt
     #   websecmap
-pytz==2024.2
+pytz==2025.2
     # via
     #   -c requirements.txt
     #   flower
@@ -514,7 +572,7 @@ pyyaml==6.0.2
     # via
     #   -c requirements.txt
     #   websecmap
-qh3==1.2.1
+qh3==1.5.2
     # via
     #   -c requirements.txt
     #   urllib3-future
@@ -523,14 +581,16 @@ rdp==0.8
     # via
     #   -c requirements.txt
     #   websecmap
-redis==5.2.0
+redis==5.2.1
     # via
     #   -c requirements.txt
-    #   celery
+    #   dramatiq
+    #   kombu
     #   websecmap
 requests==2.32.3
     # via
     #   -c requirements.txt
+    #   datadog
     #   django-proxy
     #   geoip2
     #   googlemaps
@@ -554,31 +614,37 @@ retry==0.9.2
     # via
     #   -c requirements.txt
     #   websecmap
-sentry-sdk==2.18.0
+s3transfer==0.13.0
+    # via
+    #   -c requirements.txt
+    #   boto3
+    #   websecmap
+sentry-sdk==2.29.1
     # via
     #   -c requirements.txt
     #   websecmap
-shapely==2.0.6
+shapely==2.1.1
     # via
     #   -c requirements.txt
     #   osm2geojson
     #   websecmap
-simplejson==3.19.3
+simplejson==3.20.1
     # via
     #   -c requirements.txt
+    #   django-advanced-filters
     #   websecmap
-six==1.16.0
+six==1.17.0
     # via
     #   -c requirements.txt
     #   celery-statsd
     #   python-dateutil
     #   websecmap
-soupsieve==2.6
+soupsieve==2.7
     # via
     #   -c requirements.txt
     #   beautifulsoup4
     #   websecmap
-sqlparse==0.5.1
+sqlparse==0.5.3
     # via
     #   -c requirements.txt
     #   -c security-constraints.in
@@ -590,11 +656,7 @@ statsd==4.0.0
     #   celery-statsd
     #   django-statsd-mozilla
     #   websecmap
-statshog==1.0.6
-    # via
-    #   -c requirements.txt
-    #   websecmap
-tablib==3.7.0
+tablib==3.8.0
     # via
     #   -c requirements.txt
     #   django-import-export
@@ -604,7 +666,7 @@ tabulate==0.9.0
     #   -c requirements.txt
     #   pyexcel-text
     #   websecmap
-tenacity==9.0.0
+tenacity==9.1.2
     # via
     #   -c requirements.txt
     #   websecmap
@@ -613,46 +675,57 @@ texttable==1.7.0
     #   -c requirements.txt
     #   pyexcel
     #   websecmap
-tldextract==5.1.3
+tldextract==5.3.0
     # via
     #   -c requirements.txt
     #   websecmap
-tornado==6.4.1
+tornado==6.5.1
     # via
     #   -c requirements.txt
     #   flower
     #   websecmap
-typing-extensions==4.12.2
+typing-extensions==4.14.0
     # via
     #   -c requirements.txt
     #   asgiref
+    #   beautifulsoup4
     #   django-countries
     #   multidict
+    #   pydantic
+    #   pydantic-core
+    #   pyopenssl
+    #   typing-inspection
     #   websecmap
-tzdata==2024.2
+typing-inspection==0.4.1
     # via
     #   -c requirements.txt
-    #   celery
+    #   pydantic
+    #   websecmap
+tzdata==2025.2
+    # via
+    #   -c requirements.txt
     #   django-celery-beat
     #   kombu
     #   websecmap
 urllib3==1.26.20
     # via
     #   -c requirements.txt
+    #   botocore
     #   requests
     #   sentry-sdk
     #   websecmap
-urllib3-future==2.11.910
+urllib3-future==2.12.922
     # via
     #   -c requirements.txt
     #   niquests
     #   websecmap
-uwsgi==2.0.28
+uwsgi==2.0.30
     # via
+    #   -c requirements.txt
     #   -c security-constraints.in
     #   -r requirements-deploy.in
     #   websecmap
-validators==0.34.0
+validators==0.35.0
     # via
     #   -c requirements.txt
     #   websecmap
@@ -663,7 +736,7 @@ vine==5.1.0
     #   celery
     #   kombu
     #   websecmap
-wassima==1.1.5
+wassima==1.2.2
     # via
     #   -c requirements.txt
     #   niquests
@@ -673,7 +746,7 @@ wcwidth==0.2.13
     #   -c requirements.txt
     #   prompt-toolkit
     #   websecmap
-websecmap[deploy] @ git+https://gitlab.com/internet-cleanup-foundation/web-security-map@01ced89aa3f21e91adce97babbbd3094473f053d
+websecmap[deploy] @ git+https://gitlab.com/internet-cleanup-foundation/web-security-map@3d0518c31392c8bcfbabab58b2092d5317af1dc3
     # via
     #   -c requirements.txt
     #   -r requirements-deploy.in
@@ -691,7 +764,7 @@ xlwt==1.3.0
     #   -c requirements.txt
     #   pyexcel-xls
     #   websecmap
-yarl==1.17.1
+yarl==1.20.0
     # via
     #   -c requirements.txt
     #   aiohttp
@@ -701,7 +774,7 @@ zope-event==5.0
     #   -c requirements.txt
     #   gevent
     #   websecmap
-zope-interface==7.1.1
+zope-interface==7.2
     # via
     #   -c requirements.txt
     #   gevent

@@ -1,6 +1,7 @@
 # SPDX-License-Identifier: Apache-2.0
 import os
 from datetime import timedelta
+from pathlib import Path
 
 import sentry_sdk
 from corsheaders.defaults import default_headers
@@ -83,7 +84,7 @@ INSTALLED_APPS = [
     "websecmap.scanners",  # Endpoint, EndpointGenericScan, UrlGenericScan
     "websecmap.reporting",  # Various reporting functions (might be not needed)
     "websecmap.map",  # because some scanners are intertwined with map configurations. That needs to go.
-    "websecmap.game",
+    # "websecmap.game",
     # Custom Apps
     # These apps overwrite whatever is declared above, for example the user information.
     # Yet, it does not overwrite management commands.
@@ -104,6 +105,8 @@ INSTALLED_APPS = [
     "allauth",
     "allauth.account",
     "allauth.socialaccount",
+    # wsm:
+    # "storages",
 ]
 
 # django activity stream wants a site-id:
@@ -242,7 +245,7 @@ if DEBUG:
 else:
     STATIC_ROOT = os.environ.get("STATIC_ROOT", "/srv/dashboard/static/")  # noqa
 
-MEDIA_ROOT = os.environ.get("MEDIA_ROOT", f"{os.path.abspath(os.path.dirname(__file__))}/uploads/")
+MEDIA_ROOT = Path(os.environ.get("MEDIA_ROOT", Path(__file__).parent / "uploads"))
 UPLOAD_ROOT: str = os.environ.get("MEDIA_ROOT", f"{os.path.abspath(os.path.dirname(__file__))}/uploads/")
 
 # Two factor auth
@@ -501,6 +504,9 @@ STORAGES = {
     "staticfiles": {
         "BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage",
     },
+    "screenshots": {
+        "BACKEND": "django.core.files.storage.FileSystemStorage",
+    },
     "paper_trail": {"BACKEND": "django.core.files.storage.FileSystemStorage", "OPTIONS": {"base_url": MEDIA_URL}},
 }
 
@@ -514,7 +520,7 @@ CSRF_TRUSTED_ORIGINS = [
     os.environ.get("CSRF_TRUSTED_ORIGINS_WILDCARD_DOMAIN", "https://*.internet.nl"),
 ]
 
-REPORT_STORAGE_DIR = os.environ.get("REPORT_STORAGE_DIR", f"{MEDIA_ROOT}diskreports/")
+REPORT_STORAGE_DIR = Path(os.environ.get("REPORT_STORAGE_DIR", MEDIA_ROOT / "diskreports"))
 
 # todo: should be handled better, this is a fix to know for sure reports can be written to disk...
 # check diskreport dir, todo: move to django file field

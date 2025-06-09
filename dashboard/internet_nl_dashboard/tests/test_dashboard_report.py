@@ -11,12 +11,12 @@ def test_sum_internet_nl_scores_over_rating():
                 "endpoints": [
                     {
                         "id": 4959,
-                        "ratings": [
-                            {
+                        "ratings": {
+                            "internet_nl_web_overall_score": {
                                 "type": "internet_nl_web_overall_score",
                                 "explanation": "80 https://batch.internet.nl/site/acc.dashboard.internet.nl/200719/",
                             }
-                        ],
+                        },
                     }
                 ],
             },
@@ -25,12 +25,12 @@ def test_sum_internet_nl_scores_over_rating():
                 "endpoints": [
                     {
                         "id": 4959,
-                        "ratings": [
-                            {
+                        "ratings": {
+                            "internet_nl_web_overall_score": {
                                 "type": "internet_nl_web_overall_score",
                                 "explanation": "20 https://batch.internet.nl/site/acc.dashboard.internet.nl/200719/",
                             }
-                        ],
+                        },
                     }
                 ],
             },
@@ -48,12 +48,12 @@ def test_sum_internet_nl_scores_over_rating():
                 "endpoints": [
                     {
                         "id": 4959,
-                        "ratings": [
-                            {
+                        "ratings": {
+                            "internet_nl_web_overall_score": {
                                 "type": "internet_nl_web_overall_score",
                                 "explanation": "error https://batch.internet.nl/site/acc.dashboard.internet.nl/200719/",
                             }
-                        ],
+                        },
                     }
                 ],
             },
@@ -62,12 +62,12 @@ def test_sum_internet_nl_scores_over_rating():
                 "endpoints": [
                     {
                         "id": 4959,
-                        "ratings": [
-                            {
+                        "ratings": {
+                            "internet_nl_web_overall_score": {
                                 "type": "internet_nl_web_overall_score",
                                 "explanation": "20 https://batch.internet.nl/site/acc.dashboard.internet.nl/200719/",
                             }
-                        ],
+                        },
                     }
                 ],
             },

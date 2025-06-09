@@ -129,7 +129,7 @@ def compare_report_in_detail(new_report, old_report) -> Dict[str, Any]:
             ['acc.dashboard.internet.nl']
                 ['endpoints_by_key']
                     ['dns_a_aaaa/0 IPv0']
-                        ['ratings_by_type']
+                        ['ratings']
                             ['internet_nl_web_legacy_ipv6_webserver']
                                 ['test_result']
 
@@ -276,20 +276,20 @@ def compare_report_in_detail(new_report, old_report) -> Dict[str, Any]:
             old_endpoint_data = old_url_data.get("endpoints_by_key", {}).get(endpoint_key, {})
 
             # Our base is the 'new' domain. A scan might have failed in either case...
-            if new_endpoint_data.get("ratings_by_type", None):
+            if new_endpoint_data.get("ratings", None):
                 data["new"] = {
-                    "report": new_endpoint_data["ratings_by_type"]["internet_nl_score"]["internet_nl_url"],
-                    "score": new_endpoint_data["ratings_by_type"]["internet_nl_score"]["internet_nl_score"],
+                    "report": new_endpoint_data["ratings"]["internet_nl_score"]["internet_nl_url"],
+                    "score": new_endpoint_data["ratings"]["internet_nl_score"]["internet_nl_score"],
                 }
-            if old_endpoint_data.get("ratings_by_type", {}).get("internet_nl_score", {}).get("internet_nl_url", {}):
+            if old_endpoint_data.get("ratings", {}).get("internet_nl_score", {}).get("internet_nl_url", {}):
                 data["old"] = {
-                    "report": old_endpoint_data["ratings_by_type"]["internet_nl_score"]["internet_nl_url"],
-                    "score": old_endpoint_data["ratings_by_type"]["internet_nl_score"]["internet_nl_score"],
+                    "report": old_endpoint_data["ratings"]["internet_nl_score"]["internet_nl_url"],
+                    "score": old_endpoint_data["ratings"]["internet_nl_score"]["internet_nl_score"],
                 }
 
             data["changes"] = determine_changes_in_ratings(
-                new_endpoint_data.get("ratings_by_type", {}),
-                old_endpoint_data.get("ratings_by_type", {}),
+                new_endpoint_data.get("ratings", {}),
+                old_endpoint_data.get("ratings", {}),
             )
 
         comparison_report["comparison"][url_key] = data
@@ -405,11 +405,11 @@ def key_calculation(report_data):
             "urls": [
                 {
                   "url": "acc.dashboard.internet.nl",
-                  "ratings": [],
+                  "ratings": {},
                   "endpoints": [
                     {
                       "concat": "dns_a_aaaa/0 IPv0",
-                      "ratings_by_type": {
+                      "ratings": {
                         "internet_nl_web_legacy_ipv6_webserver": {
                           "test_result": "failed"
                         },
@@ -418,12 +418,12 @@ def key_calculation(report_data):
             "urls_by_url": {
                 "acc.dashboard.internet.nl": {
                   "url": "acc.dashboard.internet.nl",
-                  "ratings": [],
+                  "ratings": {},
                   "endpoints_by_key": {
                     "dns_a_aaaa/0 IPv0": [
                     {
                       "concat": "dns_a_aaaa/0 IPv0",
-                      "ratings_by_type": {
+                      "ratings": {
                         "internet_nl_web_legacy_ipv6_webserver": {
                           "test_result": "failed"
                         },
