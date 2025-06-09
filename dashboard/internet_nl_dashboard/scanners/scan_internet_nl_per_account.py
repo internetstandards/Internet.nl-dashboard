@@ -21,7 +21,10 @@ from websecmap.scanners.scanner.internet_nl import InternetNLApiSettings
 from dashboard.celery import app
 from dashboard.internet_nl_dashboard.logic.mail import email_configration_is_correct, send_scan_finished_mails
 from dashboard.internet_nl_dashboard.logic.report import optimize_calculation_and_add_statistics
-from dashboard.internet_nl_dashboard.logic.urllist_dashboard_report import create_dashboard_report
+from dashboard.internet_nl_dashboard.logic.urllist_dashboard_report import (
+    create_dashboard_report,
+    create_dashboard_report_at,
+)
 from dashboard.internet_nl_dashboard.models import (
     AccountInternetNLScan,
     AccountInternetNLScanLog,
@@ -599,6 +602,35 @@ def connect_urllistreport_to_accountinternetnlscan(urllistreport_id: int, scan_i
         urllistreport.save()
 
     return int(urllistreport.id)
+
+
+def overwrite_all_reports():
+    # when there is a need to overwrite all reports because the structure has changed:
+    scans = AccountInternetNLScan.objects.all().filter(state="finished")
+    for scan in scans:
+        overwrite_report(scan)
+
+
+def overwrite_report(scan: AccountInternetNLScan) -> None:
+    if not scan.report:
+        log.debug("Scan %s has no report to overwrite. Skipping.", scan)
+        return
+
+    old_report_moment = scan.report.at_when
+    if not old_report_moment:
+        log.debug("No report moment found for scan %s. Skipping.", scan)
+        return
+
+    # remove the old report, we don't store duplicates:
+    scan.report.delete()
+
+    # create new report and associate it.
+    urllistreport_id = create_dashboard_report_at(scan.urllist, old_report_moment)
+    connect_urllistreport_to_accountinternetnlscan(urllistreport_id, scan.id)
+    upgrade_report_with_statistics(urllistreport_id)
+    upgrade_report_with_unscannable_urls(urllistreport_id, scan.id)
+
+    log.debug("Done!")
 
 
 @app.task(queue="storage")
