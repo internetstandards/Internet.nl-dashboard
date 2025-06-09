@@ -459,6 +459,7 @@ def copy_state_from_websecmap_scan(scan_id: int):
     update_state(new_state, scan.id)
 
 
+@app.task(queue="reporting", ignore_result=True)
 def recreate_url_reports(urls: List[int], today_mode: bool = False) -> List[Task]:
     return [(recreate_url_report.si(url_id, today_mode)) for url_id in urls]
 
