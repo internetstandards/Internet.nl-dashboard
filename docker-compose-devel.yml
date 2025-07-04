@@ -1,0 +1,63 @@
+version: '3'
+services:
+  db:
+    image: postgres:12
+    environment:
+      POSTGRES_DB: dashboard
+      POSTGRES_USER: dashboard
+      POSTGRES_PASSWORD: dashboard
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  broker:
+    image: redis
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  frontend:
+    build: Internet.nl-dashboard-frontend
+    healthcheck:
+      interval: 60s
+  backend:
+    build: .
+    environment:
+      SECRET_KEY: '1'
+      FIELD_ENCRYPTION_KEY: '1'
+      DEBUG: '1'
+      DJANGO_DATABASE: production
+      DB_ENGINE: postgresql_psycopg2
+      DB_HOST: db
+      BROKER: redis://broker:6379/0
+    expose:
+      - 8000
+    depends_on:
+      db:
+        condition: service_healthy
+      broker:
+        condition: service_healthy
+    volumes:
+      - ./:/source
+    command:
+      - sh
+      - -c
+      - |
+        dashboard migrate
+        dashboard runserver 0.0.0:8000
+
+  webserver:
+    image: caddy
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile
+    ports:
+      - 127.0.0.1:8000:8000
+    links:
+      - frontend
+      - backend
