@@ -432,6 +432,7 @@ class AccountInternetNLScanAdmin(ImportExportModelAdmin, admin.ModelAdmin):
         "urllist",
         "started_on",
         "finished_on",
+        "report",
     )
 
     list_filter = ["account", "urllist", "state", "started_on", "finished_on"][::-1]

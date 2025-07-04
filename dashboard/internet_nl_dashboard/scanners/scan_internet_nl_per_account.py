@@ -13,7 +13,7 @@ from django.db.models import Q
 from websecmap.app.constance import constance_cached_value
 from websecmap.organizations.models import Url
 from websecmap.reporting.diskreport import retrieve_report, store_report
-from websecmap.reporting.report import recreate_url_reports
+from websecmap.reporting.report import recreate_url_report
 from websecmap.scanners.models import InternetNLV2Scan
 from websecmap.scanners.scanner import add_model_filter, dns_endpoints, internet_nl_websecmap
 from websecmap.scanners.scanner.internet_nl import InternetNLApiSettings
@@ -21,7 +21,10 @@ from websecmap.scanners.scanner.internet_nl import InternetNLApiSettings
 from dashboard.celery import app
 from dashboard.internet_nl_dashboard.logic.mail import email_configration_is_correct, send_scan_finished_mails
 from dashboard.internet_nl_dashboard.logic.report import optimize_calculation_and_add_statistics
-from dashboard.internet_nl_dashboard.logic.urllist_dashboard_report import create_dashboard_report
+from dashboard.internet_nl_dashboard.logic.urllist_dashboard_report import (
+    create_dashboard_report,
+    create_dashboard_report_at,
+)
 from dashboard.internet_nl_dashboard.models import (
     AccountInternetNLScan,
     AccountInternetNLScanLog,
@@ -456,6 +459,12 @@ def copy_state_from_websecmap_scan(scan_id: int):
     update_state(new_state, scan.id)
 
 
+@app.task(queue="reporting", ignore_result=True)
+def recreate_url_reports(urls: List[int], today_mode: bool = False) -> List[Task]:
+    # ...
+    return [(recreate_url_report.si(url_id, today_mode)) for url_id in urls]
+
+
 def creating_report(scan_id: int):
     update_state("creating report", scan_id)
 
@@ -468,7 +477,8 @@ def creating_report(scan_id: int):
     # at the moment the function is actually called. If you need accurate time in the function, make sure the
     # function calls 'timezone.now()' when the function is run.
     return (
-        group(recreate_url_reports(list(scan.urllist.urls.all().values_list("id", flat=True))))
+        # most recent websecmap only creates one url report, unless you tell it not to...
+        group(recreate_url_reports(list(scan.urllist.urls.all().values_list("id", flat=True)), False))
         | create_dashboard_report.si(scan.id)
         | connect_urllistreport_to_accountinternetnlscan.s(scan.id)
         | upgrade_report_with_statistics.s()
@@ -594,6 +604,35 @@ def connect_urllistreport_to_accountinternetnlscan(urllistreport_id: int, scan_i
         urllistreport.save()
 
     return int(urllistreport.id)
+
+
+def overwrite_all_reports():
+    # when there is a need to overwrite all reports because the structure has changed:
+    scans = AccountInternetNLScan.objects.all().filter(state="finished")
+    for scan in scans:
+        overwrite_report(scan)
+
+
+def overwrite_report(scan: AccountInternetNLScan) -> None:
+    if not scan.report:
+        log.debug("Scan %s has no report to overwrite. Skipping.", scan)
+        return
+
+    old_report_moment = scan.report.at_when
+    if not old_report_moment:
+        log.debug("No report moment found for scan %s. Skipping.", scan)
+        return
+
+    # remove the old report, we don't store duplicates:
+    scan.report.delete()
+
+    # create new report and associate it.
+    urllistreport_id = create_dashboard_report_at(scan.urllist, old_report_moment)
+    connect_urllistreport_to_accountinternetnlscan(urllistreport_id, scan.id)
+    upgrade_report_with_statistics(urllistreport_id)
+    upgrade_report_with_unscannable_urls(urllistreport_id, scan.id)
+
+    log.debug("Done!")
 
 
 @app.task(queue="storage")

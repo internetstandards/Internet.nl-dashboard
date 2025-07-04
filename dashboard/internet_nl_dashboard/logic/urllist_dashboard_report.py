@@ -276,8 +276,8 @@ def sum_internet_nl_scores_over_rating(url_ratings: Dict[str, Any]) -> float:
 
     for url in url_ratings.get("urls", []):
         for endpoint in url.get("endpoints", []):
-            for rating in endpoint.get("ratings", []):
-                if rating.get("type", "") in score_fields:
+            for scan_type, rating in endpoint.get("ratings", {}).items():
+                if scan_type in score_fields:
                     # explanation":"75 https://batch.internet.nl/mail/portaal.digimelding.nl/289480/",
                     log.debug(f"Explanation: {rating['explanation']}")
                     value = rating["explanation"].split(" ")

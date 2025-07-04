@@ -10,7 +10,6 @@ from websecmap.organizations.models import Url
 from websecmap.reporting.diskreport import retrieve_report, store_report
 
 from dashboard.internet_nl_dashboard.logic.report import (
-    add_keyed_ratings,
     add_percentages_to_statistics,
     add_statistics_over_ratings,
     remove_comply_or_explain,
@@ -113,8 +112,8 @@ def test_report_upgrade(db, monkeypatch) -> None:
                         "port": 0,
                         "protocol": "dns_a_aaaa",
                         "v4": False,
-                        "ratings": [
-                            {
+                        "ratings": {
+                            "internet_nl_web_ipv6_ws_address": {
                                 "type": "internet_nl_web_ipv6_ws_address",
                                 "explanation": "Test internet_nl_web_ipv6_ws_address resulted in failed.",
                                 "since": "2020-01-15T13:00:01.116013+00:00",
@@ -134,7 +133,7 @@ def test_report_upgrade(db, monkeypatch) -> None:
                                 "scan": 114575,
                                 "scan_type": "internet_nl_web_ipv6_ws_address",
                             },
-                            {
+                            "internet_nl_web_dnssec_valid": {
                                 "type": "internet_nl_web_dnssec_valid",
                                 "explanation": "Test internet_nl_web_dnssec_valid resulted in failed.",
                                 "since": "2020-01-15T13:00:00.684906+00:00",
@@ -154,7 +153,7 @@ def test_report_upgrade(db, monkeypatch) -> None:
                                 "scan": 114556,
                                 "scan_type": "internet_nl_web_dnssec_valid",
                             },
-                        ],
+                        },
                         "high": 19,
                         "medium": 4,
                         "low": 3,
@@ -213,12 +212,15 @@ def test_report_upgrade(db, monkeypatch) -> None:
     # First check if we are removing the comply_or_explain keys, mainly to save data:
     remove_comply_or_explain(fake_calculation)
     assert "explained_endpoint_issues_high" not in fake_calculation["urls"][0]
-    assert "comply_or_explain_explanation" not in fake_calculation["urls"][0]["endpoints"][0]["ratings"][0]
+    assert (
+        "comply_or_explain_explanation"
+        not in fake_calculation["urls"][0]["endpoints"][0]["ratings"]["internet_nl_web_dnssec_valid"]
+    )
 
     # Now add ratings based on keys, which makes direct access possible:
-    add_keyed_ratings(fake_calculation)
-    assert "ratings_by_type" in fake_calculation["urls"][0]["endpoints"][0]
-    assert "internet_nl_web_ipv6_ws_address" in fake_calculation["urls"][0]["endpoints"][0]["ratings_by_type"]
+    # add_keyed_ratings(fake_calculation)
+    assert "ratings" in fake_calculation["urls"][0]["endpoints"][0]
+    assert "internet_nl_web_ipv6_ws_address" in fake_calculation["urls"][0]["endpoints"][0]["ratings"]
 
     # Add graph statistics, so the graphs can be instantly created based on report data
     add_statistics_over_ratings(fake_calculation)

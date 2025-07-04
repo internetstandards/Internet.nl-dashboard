@@ -178,12 +178,6 @@ run-broker:  ## only run broker
 test_integration: ${app}  ## perform integration test suite
 	DB_NAME=test.sqlite3 ${env} pytest -vv -k 'integration' ${testargs}
 
-testcase: ${app}
-	# run specific testcase
-	# example: make test_testcase testargs=test_openstreetmaps
-	DJANGO_SETTINGS_MODULE=${app_name}.settings DB_NAME=test.sqlite3 \
-		${env} pytest --nomigrations -s -vvv -k ${case}
-
 test_datasets: ${app}
 	${env} /bin/sh -ec "find ${app_name}/ -path '*/fixtures/*.yaml' -print0 | \
 		xargs -0n1 basename -s .yaml | uniq | \
