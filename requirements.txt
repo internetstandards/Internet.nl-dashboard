@@ -620,5 +620,6 @@ zope-interface==7.2
     #   gevent
     #   websecmap
 
+python-dotenv
 # The following packages are considered to be unsafe in a requirements file:
 # setuptools
