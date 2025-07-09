@@ -71,9 +71,16 @@ requirements: requirements.txt requirements-dev.txt requirements-deploy.txt
 # perform 'pip freeze' on first class requirements in .in files.
 requirements.txt: requirements.in | ${uv}
 	${uv} pip compile ${pip_compile_args} --custom-compile-command="make requirements" --no-strip-extras --output-file $@ $<
+	# fix bug where uv pip compile writes celery[gevent, redis]==5.5.3 instead of celery[gevent,redis]==5.5.3 (without space)
+	sed -Ei 's/, /,/' $@
+
+requirements-deploy.txt: requirements.in | ${uv}
+	${uv} pip compile ${pip_compile_args} --custom-compile-command="make requirements" --no-strip-extras --output-file $@ $<
+	sed -Ei 's/, /,/' $@
 
 requirements-dev.txt: requirements-dev.in requirements.in | ${uv}
 	${uv} pip compile ${pip_compile_args} --custom-compile-command="make requirements" --no-strip-extras --output-file $@ $<
+	sed -Ei 's/, /,/' $@
 
 pip-sync: | ${python}
 	# synchronizes the .venv with the state of requirements.txt
