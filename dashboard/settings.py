@@ -90,6 +90,8 @@ INSTALLED_APPS = [
     "websecmap.scanners",  # Endpoint, EndpointGenericScan, UrlGenericScan
     "websecmap.reporting",  # Various reporting functions (might be not needed)
     "websecmap.map",  # because some scanners are intertwined with map configurations. That needs to go.
+    # this wants to exist when changing periodic tasks.
+    "websecmap.scanners_screenshot",
     "websecmap.scanners_internetnl_dns_endpoints",
     "websecmap.scanners_internetnl_web",
     "websecmap.scanners_internetnl_mail",
@@ -483,7 +485,7 @@ X_FRAME_OPTIONS = "SAMEORIGIN"
 CORS_ALLOWED_ORIGINS = [
     os.environ.get("CORS_ALLOWED_ACCEPT_DOMAIN", "https://acc.dashboard.internet.nl"),
     os.environ.get("CORS_ALLOWED_DOMAIN", "https://dashboard.internet.nl"),
-    "http://localhost:5173",
+    "http://localhost:5173", "http://localhost:5174",
 ]
 
 # as soon as this is set, the vue post stuff doesn't work anymore.
@@ -527,6 +529,7 @@ CSRF_TRUSTED_ORIGINS = [
     "http://127.0.0.1",
     "http://::1",
     "http://localhost:5173",
+    "http://localhost:5174",
     os.environ.get("CSRF_TRUSTED_ORIGINS_DEFAULT_DOMAIN", "https://internet.nl"),
     os.environ.get("CSRF_TRUSTED_ORIGINS_WILDCARD_DOMAIN", "https://*.internet.nl"),
 ]
