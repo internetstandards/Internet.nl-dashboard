@@ -64,3 +64,9 @@ requests_toolbelt @ git+https://github.com/requests/toolbelt@c73ad2c204a2e0cd561
 # still used in dashboard...
 deepdiff
 markdown
+
+# OIDC connector
+# https://github.com/internetstandards/Internet.nl-dashboard/pull/582/files
+python-dotenv
+# openid-connect requires jwt, but this dependency is not clear
+PyJWT

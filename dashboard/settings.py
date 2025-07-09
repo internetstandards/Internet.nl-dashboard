@@ -5,6 +5,7 @@ from pathlib import Path
 
 import sentry_sdk
 from corsheaders.defaults import default_headers
+from dotenv import load_dotenv
 from sentry_sdk.integrations.celery import CeleryIntegration
 from sentry_sdk.integrations.django import DjangoIntegration
 from sentry_sdk.integrations.redis import RedisIntegration
@@ -14,7 +15,7 @@ from .settings_constance import CONSTANCE_CONFIG_FIELDSETS  # noqa  # pylint: di
 from .settings_constance import CONSTANCE_ADDITIONAL_FIELDS, CONSTANCE_BACKEND, CONSTANCE_CONFIG
 from .settings_jet import JET_SIDE_MENU_COMPACT, JET_SIDE_MENU_ITEMS  # noqa  # pylint: disable=unused-import
 from .settings_util import get_field_encryption_key_from_file_or_env, get_secret_key_from_file_or_env
-from dotenv import load_dotenv
+
 load_dotenv()
 
 
@@ -485,7 +486,8 @@ X_FRAME_OPTIONS = "SAMEORIGIN"
 CORS_ALLOWED_ORIGINS = [
     os.environ.get("CORS_ALLOWED_ACCEPT_DOMAIN", "https://acc.dashboard.internet.nl"),
     os.environ.get("CORS_ALLOWED_DOMAIN", "https://dashboard.internet.nl"),
-    "http://localhost:5173", "http://localhost:5174",
+    "http://localhost:5173",
+    "http://localhost:5174",
 ]
 
 # as soon as this is set, the vue post stuff doesn't work anymore.
@@ -563,7 +565,7 @@ AUTHENTICATION_BACKENDS = [
 #     }
 # }
 
-SOCIALACCOUNT_ADAPTER = "dashboard.adapter.OIDCGroupRestrictionAdapter"
+SOCIALACCOUNT_ADAPTER = "dashboard.allauth.oidcadapter.OIDCGroupRestrictionAdapter"
 SOCIALACCOUNT_PROVIDERS = {
     "openid_connect": {
         "APPS": [
