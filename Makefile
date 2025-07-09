@@ -250,14 +250,6 @@ ${uv}:
 
 # work around not having nix flake with uv in build.
 python: ${python}
-${python} ${uv}:
-	@if ! command -v python3 &>/dev/null;then \
-		echo "Python 3 is not available. Please refer to installation instructions in README.md"; \
-	fi
-	# create virtualenv
-	python3.10 -mvenv ${VIRTUAL_ENV}
-	# ensure a recent version of pip is used to avoid errors with installing
-	${VIRTUAL_ENV}/bin/pip install --upgrade "uv"
 
 mypy: ${app} ## Check for type issues with mypy
 	${python} -m mypy --check dashboard
