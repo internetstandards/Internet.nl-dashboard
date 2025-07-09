@@ -60,3 +60,7 @@ django-allauth
 # using unreleased version from github which has better support for SNI server_hostname which prevents connection
 # resets on some servers
 requests_toolbelt @ git+https://github.com/requests/toolbelt@c73ad2c204a2e0cd5617a836ac536d5e06778ab0
+
+# still used in dashboard...
+deepdiff
+markdown

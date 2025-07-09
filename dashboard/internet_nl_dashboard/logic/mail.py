@@ -90,7 +90,7 @@ def send_scan_finished_mails(scan: AccountInternetNLScan) -> int:
     :return:
     """
     if not scan.report:
-        log.error(f"Tried to send a finished mail for a report that was not finished. Scan: {scan}")
+        log.error("Tried to send a finished mail for a report that was not finished. Scan: %s", scan)
         return 0
 
     users = get_users_to_send_mail_to(scan)

@@ -20,8 +20,9 @@ from import_export import resources
 from import_export.admin import ImportExportModelAdmin
 from jet.admin import CompactInline
 from websecmap.organizations.models import Url
-from websecmap.scanners.admin import InternetNLV2ScanAdmin
-from websecmap.scanners.models import Endpoint, InternetNLV2Scan, InternetNLV2StateLog
+from websecmap.scanners.models import Endpoint
+from websecmap.scanners_internetnl_web.admin import InternetNLV2ScanAdmin
+from websecmap.scanners_internetnl_web.models import InternetNLV2Scan, InternetNLV2StateLog
 
 from dashboard.internet_nl_dashboard import models
 from dashboard.internet_nl_dashboard.forms import CustomAccountModelForm
@@ -467,9 +468,9 @@ class AccountInternetNLScanAdmin(ImportExportModelAdmin, admin.ModelAdmin):
     def progress_scan(self, request, queryset):
         log.debug("Attempting to progress scan.")
         for scan in queryset:
-            log.debug(f"Progressing scan {scan}.")
+            log.debug("Progressing scan %s.", scan)
             tasks = progress_running_scan(scan.id)
-            log.debug(f"Created task {tasks}.")
+            log.debug("Created task %s.", tasks)
             tasks.apply_async()
         self.message_user(request, "Attempting to progress scans (async).")
 
@@ -482,7 +483,7 @@ class AccountInternetNLScanAdmin(ImportExportModelAdmin, admin.ModelAdmin):
             if scan.finished:
                 sent += 1
                 send_scan_finished_mails(scan.id)
-        self.message_user(request, f"A total of {sent} mails have been sent.")
+        self.message_user(request, "A total of %s mails have been sent.", sent)
 
     send_finish_mail.short_description = "Queue finished mail (finished only)"  # type: ignore
     actions.append("send_finish_mail")

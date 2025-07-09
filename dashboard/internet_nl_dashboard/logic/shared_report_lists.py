@@ -27,7 +27,7 @@ def get_publicly_shared_lists_per_account_and_list_id(account_id: int, urllist_i
 
 def get_publicly_shared_lists_per_account(account_id, urllist_id: Optional[int] = None) -> List[dict]:
 
-    log.debug(f"get_publicly_shared_lists_per_account account_id: {account_id}")
+    log.debug("get_publicly_shared_lists_per_account account_id: %s", account_id)
 
     report_prefetch = Prefetch(
         "urllistreport_set",

@@ -81,12 +81,12 @@ def ad_hoc_report_create(account: Account, report_id: int, tags: List[str], at_w
     if at_when:
         report.at_when = at_when
 
-    log.debug(f"Creating ad-hoc report with tags: {tags}, yielding in {len(urls)} urls.")
+    log.debug("Creating ad-hoc report with tags: %s, yielding in %s urls.", tags, len(urls))
 
     # Get all relevant urls at this moment from the report... how do you know when the list changes?
     urls = relevant_urls_at_timepoint(urls, report.at_when)
 
-    log.debug(f"At thiis moment in time: {report.at_when}, there are {len(urls)} urls.")
+    log.debug("At this moment in time: %s, there are %s urls.", report.at_when, len(urls))
 
     # todo: probably add relevant endpoints at time point, otherwise very old stuff or new stuff will be added.
     calculation = create_calculation_on_urls(urls, when=report.at_when, scan_type=report.report_type)
@@ -373,7 +373,7 @@ def get_report_directly(report_id):
     # since this is stored on disk now, get this separately. Use this in the old flow as if nothing has changed.
     report["calculation"] = retrieve_report(report_id, "UrlListReport")
     if not report["calculation"]:
-        log.warning(f"Report {report_id} has no calculation, returning empty json.")
+        log.warning("Report %s has no calculation, returning empty json.", report_id)
 
     return dump_report_to_json(report)
 

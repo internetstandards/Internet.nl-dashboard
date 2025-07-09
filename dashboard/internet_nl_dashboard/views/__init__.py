@@ -1,7 +1,8 @@
 # SPDX-License-Identifier: Apache-2.0
-import json
 import logging
+from typing import Any
 
+import orjson
 from django.contrib.auth import logout
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import redirect
@@ -46,8 +47,13 @@ def error_response(message: str) -> JsonResponse:
 def get_json_body(request):
 
     try:
-        user_input = json.loads(request.body)
-    except json.JSONDecodeError:
+        user_input = orjson.loads(request.body)
+    except orjson.JSONDecodeError:
         user_input = {}
 
     return user_input
+
+
+# pylint disable=http-response-with-content-type-json
+def json_response(data: dict[Any, Any] | list[Any]) -> HttpResponse:
+    return HttpResponse(orjson.dumps(data), content_type="application/json", status=200)

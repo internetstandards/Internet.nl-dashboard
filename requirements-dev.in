@@ -71,3 +71,8 @@ requests_toolbelt @ git+https://github.com/requests/toolbelt@c73ad2c204a2e0cd561
 
 # requests testing
 responses
+
+django-browser-reload
+
+moto[s3]
+pytest-xdist

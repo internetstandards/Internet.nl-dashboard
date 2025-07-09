@@ -67,7 +67,7 @@ bs4==0.0.2
     # via websecmap
 cachetools==6.0.0
     # via websecmap
-celery[gevent, redis]==5.5.3
+celery[gevent,redis]==5.5.3
     # via
     #   celery-statsd
     #   django-celery-beat
@@ -131,6 +131,8 @@ decorator==5.2.1
     #   ipython
     #   retry
     #   websecmap
+deepdiff==8.5.0
+    # via -r requirements.in
 defusedxml==0.7.1
     # via
     #   odfpy
@@ -227,7 +229,7 @@ dnspython==2.7.0
     #   websecmap
 dnsrecon==0.10.1
     # via websecmap
-dramatiq[prometheus, redis]==1.18.0
+dramatiq[prometheus,redis]==1.18.0
     # via
     #   django-dramatiq
     #   websecmap
@@ -309,6 +311,8 @@ lxml==5.4.0
     #   -c security-constraints.in
     #   dnsrecon
     #   websecmap
+markdown==3.8.2
+    # via -r requirements.in
 matplotlib-inline==0.1.7
     # via
     #   ipython
@@ -345,6 +349,8 @@ openpyxl==3.0.10
     #   -r requirements.in
     #   pyexcel-xlsx
     #   websecmap
+orderly-set==5.4.1
+    # via deepdiff
 orjson==3.10.18
     # via websecmap
 osm2geojson==0.2.6

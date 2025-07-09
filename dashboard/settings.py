@@ -53,7 +53,11 @@ if DEBUG:
 
 ALLOWED_HOSTS = os.environ.get("ALLOWED_HOSTS", "localhost,127.0.0.1,::1").split(",")
 
+
+AUTORELOAD_BROWSER = bool(os.environ.get("AUTORELOAD_BROWSER", DEBUG))
+
 # Application definition
+
 
 INSTALLED_APPS = [
     # Constance
@@ -82,11 +86,13 @@ INSTALLED_APPS = [
     # Web Security Map (todo: minimize the subset)
     # The reason (model) why it's included is in the comments.
     "websecmap.app",  # Job
-    "websecmap.api",
     "websecmap.organizations",  # Url
     "websecmap.scanners",  # Endpoint, EndpointGenericScan, UrlGenericScan
     "websecmap.reporting",  # Various reporting functions (might be not needed)
     "websecmap.map",  # because some scanners are intertwined with map configurations. That needs to go.
+    "websecmap.scanners_internetnl_dns_endpoints",
+    "websecmap.scanners_internetnl_web",
+    "websecmap.scanners_internetnl_mail",
     # "websecmap.game",
     # Custom Apps
     # These apps overwrite whatever is declared above, for example the user information.

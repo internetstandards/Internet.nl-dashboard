@@ -179,7 +179,7 @@ def get_po_as_dictionary_v2(language="en"):
 
     po_file_location = f"{DJANGO_I18N_OUTPUT_PATH}{language}/LC_MESSAGES/django.po"
     try:
-        log.debug(f"Loading locale file: {po_file_location}")
+        log.debug("Loading locale file: %s", po_file_location)
         return get_po_as_dictionary(po_file_location)
     except OSError as error:
         raise SystemError(
@@ -408,5 +408,5 @@ def translate_field(field_label, translation_dictionary: Dict[str, str]):
     except KeyError:
         # This can happen when something is already translated and the translations overwrite the original values.
         # When the re-translation is applied, the fields have been replaced by the translations and thus cannot be found
-        log.debug(f"Could not find a translation for {field_label}, returning the label as is.")
+        log.debug("Could not find a translation for %s, returning the label as is.", field_label)
         return field_label

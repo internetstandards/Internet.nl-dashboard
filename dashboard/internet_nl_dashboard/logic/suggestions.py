@@ -1,6 +1,6 @@
 import requests
-import tldextract
 from constance import config
+from websecmap import tldextract
 
 from dashboard.internet_nl_dashboard.logic.domains import log
 

@@ -15,7 +15,7 @@ from requests.auth import HTTPBasicAuth
 from taggit.managers import TaggableManager
 from websecmap.organizations.models import Url
 from websecmap.reporting.models import SeriesOfUrlsReportMixin
-from websecmap.scanners.models import InternetNLV2Scan
+from websecmap.scanners_internetnl_web.models import InternetNLV2Scan
 
 log = logging.getLogger(__package__)
 
