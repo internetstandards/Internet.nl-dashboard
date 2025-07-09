@@ -5,16 +5,7 @@ app_name = dashboard
 docker_image_name = internetstandards/dashboard
 
 # configure virtualenv to be created in OS specific cache directory
-ifeq ($(shell uname -s),Darwin)
-# macOS cache location
-CACHEDIR ?= ~/Library/Caches
-else
-# User customized cache location or Linux default
-XDG_CACHE_HOME ?= ~/.cache
-CACHEDIR ?= ${XDG_CACHE_HOME}
-endif
-VIRTUAL_ENV ?= ${CACHEDIR}/virtualenvs/$(notdir ${PWD})
-$(info Virtualenv path: ${VIRTUAL_ENV})
+VIRTUAL_ENV = .venv
 
 # variables for environment
 bin = ${VIRTUAL_ENV}/bin
