@@ -21,7 +21,7 @@ bin = ${VIRTUAL_ENV}/bin
 env = PATH=${bin}:$$PATH
 
 # shortcuts for common used binaries
-uv = uv # provided by flake.nix
+uv = VIRTUAL_ENV=${VIRTUAL_ENV} uv # provided by flake.nix
 python = ${bin}/python3.10
 python3 = ${bin}/python3.10
 pip = ${bin}/pip
@@ -251,7 +251,7 @@ autoreload_browser ?=
 
 ${python} ${VIRTUAL_ENV}:
 	# create virtualenv, Python version is determined by pyproject.toml requires-python
-	${uv} venv ${VIRTUAL_ENV}
+	${uv} venv
 
 ${uv}:
 
