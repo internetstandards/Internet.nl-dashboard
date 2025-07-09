@@ -9,7 +9,6 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-
         # see same fix in websecmap. Just duplicate the index and move on.
         migrations.AddIndex(
             model_name="urllistreport",
@@ -18,7 +17,6 @@ class Migration(migrations.Migration):
                 name="internet_nl_at_when_f55fb9_idx",
             ),
         ),
-
         # migrations.RenameIndex(
         #     model_name="urllistreport",
         #     new_name="internet_nl_at_when_f55fb9_idx",
