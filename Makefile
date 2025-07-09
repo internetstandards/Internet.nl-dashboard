@@ -242,7 +242,7 @@ autoreload_browser ?=
 
 ${python} ${VIRTUAL_ENV}:
 	# create virtualenv, Python version is determined by pyproject.toml requires-python
-	${uv} venv ${VIRTUAL_ENV}
+	${uv} venv --python 3.10 ${VIRTUAL_ENV}
 
 ${uv}:
 
