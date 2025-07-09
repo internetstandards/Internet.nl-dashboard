@@ -8,7 +8,9 @@ class Migration(migrations.Migration):
 
     dependencies = [
         ("internet_nl_dashboard", "0015_rename_urllistreport_at_when_id_internet_nl_at_when_f55fb9_idx"),
-        ("scanners_internetnl_web", "0002_internetnlscaninspection"),
+        # references 0002_internetnlscaninspection, which does not exist in scanners_internetnl_web
+        # this is an old proxymodel.
+        # ("scanners_internetnl_web", "0002_internetnlscaninspection"),
     ]
 
     operations = [
