@@ -9,7 +9,7 @@
 # - no version pinning, unless it is required and explained
 
 # to update websecmap, update the SHA hash and run: make update_requirement_websecmap
-websecmap @ git+https://gitlab.com/internet-cleanup-foundation/web-security-map@3d0518c31392c8bcfbabab58b2092d5317af1dc3
+websecmap @ git+https://gitlab.com/internet-cleanup-foundation/web-security-map@52e3aaaa823d4ab0586a22c5b8a5fed05df36951
 
 django-otp
 django-two-factor-auth>1.15
@@ -48,7 +48,7 @@ phonenumbers
 # An error was not yet corrected:
 # https://github.com/pyexcel/pyexcel-xlsx/issues/52
 pyexcel==0.6.7
-pyexcel-xlsx==0.6.0
+# pyexcel-xlsx==0.6.0
 openpyxl==3.0.10
 
 # password change forms, saml oauth and more
