@@ -126,10 +126,10 @@ def create_dashboard_report(scan_id: int):
 
     scan = AccountInternetNLScan.objects.all().filter(id=scan_id).first()
     if not scan:
-        log.warning(f"Trying to creating_report with unknown scan: {scan_id}.")
+        log.warning("Trying to creating_report with unknown scan: %s.", scan_id)
         return []
 
-    log.debug(f"Creating dashboard report for urllist {scan.urllist}.")
+    log.debug("Creating dashboard report for urllist %s.", scan.urllist)
 
     # the time when a urlreport is created is rounded up to the end of a minute. This means that you'll never get
     # the latest results. It should not happen with scans that happened today, but it does. Therefore, we move
@@ -181,15 +181,15 @@ def rate_urllist_on_moment(
     if not when:
         when = datetime.now(timezone.utc)
 
-    log.info(f"Creating report for urllist {urllist} on {when}")
+    log.info("Creating report for urllist %s on %s", urllist, when)
 
     if UrlListReport.objects.all().filter(urllist=urllist, at_when=when).exists():
-        log.debug(f"UrllistReport already exists for {urllist} on {when}. Not overwriting.")
+        log.debug("UrllistReport already exists for %s on %s. Not overwriting.", urllist, when)
         existing_report = UrlListReport.objects.all().filter(urllist=urllist, at_when=when).first()
         return int(existing_report.id)
 
     urls = relevant_urls_at_timepoint_urllist(urllist=urllist, when=when)
-    log.debug(f"Found {len(urls)} to be relevant at this moment.")
+    log.debug("Found %s to be relevant at this moment.", len(urls))
 
     calculation = create_calculation_on_urls(urls, when, scan_type=scan_type)
 
@@ -202,10 +202,12 @@ def rate_urllist_on_moment(
 
     if prevent_duplicates:
         if not DeepDiff(last.calculation, calculation, ignore_order=True, report_repetition=True):
-            log.info(f"The report for {urllist} on {when} is the same as the report from {last.at_when}. Not saving.")
+            log.info(
+                "The report for %s on %s is the same as the report from %s. Not saving.", urllist, when, last.at_when
+            )
             return int(last.id)
 
-    log.info(f"The calculation for {urllist} on {when} has changed, so we're saving this rating.")
+    log.info("The calculation for %s on %s has changed, so we're saving this rating.", urllist, when)
 
     # remove urls and name from scores object, so it can be used as initialization parameters (saves lines)
     # this is by reference, meaning that the calculation will be affected if we don't work on a clone.
@@ -279,7 +281,7 @@ def sum_internet_nl_scores_over_rating(url_ratings: Dict[str, Any]) -> float:
             for scan_type, rating in endpoint.get("ratings", {}).items():
                 if scan_type in score_fields:
                     # explanation":"75 https://batch.internet.nl/mail/portaal.digimelding.nl/289480/",
-                    log.debug(f"Explanation: {rating['explanation']}")
+                    log.debug("Explanation: %s", rating["explanation"])
                     value = rating["explanation"].split(" ")
 
                     # in case the internet.nl api fails for a domain, all scanned values are set to error.

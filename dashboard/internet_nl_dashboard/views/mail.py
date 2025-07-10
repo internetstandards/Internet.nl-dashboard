@@ -1,8 +1,7 @@
 # SPDX-License-Identifier: Apache-2.0
-from django.http import JsonResponse
-from websecmap.app.common import JSEncoder
 
 from dashboard.internet_nl_dashboard.logic import mail
+from dashboard.internet_nl_dashboard.views import json_response
 
 
 def unsubscribe_(request, feed, unsubscribe_code):
@@ -14,4 +13,4 @@ def unsubscribe_(request, feed, unsubscribe_code):
     :param unsubscribe_code:
     :return:
     """
-    return JsonResponse(mail.unsubscribe(feed, unsubscribe_code), encoder=JSEncoder, safe=True)
+    return json_response(mail.unsubscribe(feed, unsubscribe_code))

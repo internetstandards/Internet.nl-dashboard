@@ -6,12 +6,12 @@ from tempfile import NamedTemporaryFile
 from typing import Any, Dict, List, Union
 
 import pyexcel as p
-import tldextract
 from django.db.models import Prefetch
 from django.utils.text import slugify
 from openpyxl import load_workbook
 from openpyxl.formatting.rule import CellIsRule
 from openpyxl.styles import Font, PatternFill
+from websecmap import tldextract
 from websecmap.reporting.diskreport import retrieve_report
 
 from dashboard.internet_nl_dashboard.logic import FIELD_TO_CATEGORY_MAP  # pylint: disable=duplicate-code
@@ -191,7 +191,7 @@ def upgrade_excel_spreadsheet(spreadsheet_data):
     lines = "1000000"
 
     with NamedTemporaryFile(suffix=".xlsx", delete=False) as tmp:
-        log.debug(f"Saving temp outout to {tmp.name}")
+        log.debug("Saving temp outout to %s", tmp.name)
         spreadsheet_data.save_as(array=spreadsheet_data, filename=tmp.name)
 
         workbook = load_workbook(tmp.name)

@@ -5,7 +5,6 @@ from typing import Optional
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse, JsonResponse
 from django.views.decorators.csrf import csrf_exempt
-from websecmap.app.common import JSEncoder
 
 from dashboard.internet_nl_dashboard.logic.mail import values_from_previous_report
 from dashboard.internet_nl_dashboard.logic.report import (
@@ -29,7 +28,7 @@ from dashboard.internet_nl_dashboard.logic.shared_report_lists import (
     get_publicly_shared_lists_per_account_and_list_id,
 )
 from dashboard.internet_nl_dashboard.models import UrlListReport
-from dashboard.internet_nl_dashboard.views import LOGIN_URL, get_account, get_json_body
+from dashboard.internet_nl_dashboard.views import LOGIN_URL, get_account, get_json_body, json_response
 
 
 @login_required(login_url=LOGIN_URL)
@@ -44,14 +43,12 @@ def get_report_(request, report_id) -> HttpResponse:
 
 @login_required(login_url=LOGIN_URL)
 def get_report_differences_compared_to_current_list_(request, report_id):
-    return JsonResponse(
-        get_report_differences_compared_to_current_list(get_account(request), report_id), encoder=JSEncoder, safe=True
-    )
+    return json_response(get_report_differences_compared_to_current_list(get_account(request), report_id))
 
 
 @login_required(login_url=LOGIN_URL)
 def get_previous_report_(request, urllist_id, at_when):
-    return JsonResponse(get_previous_report(get_account(request), urllist_id, at_when), encoder=JSEncoder, safe=False)
+    return json_response(get_previous_report(get_account(request), urllist_id, at_when))
 
 
 @login_required(login_url=LOGIN_URL)
@@ -82,14 +79,12 @@ def save_ad_hoc_tagged_report_(request, report_id: int):
 
 @login_required(login_url=LOGIN_URL)
 def get_recent_reports_(request) -> JsonResponse:
-    return JsonResponse(get_recent_reports(get_account(request)), encoder=JSEncoder, safe=False)
+    return json_response(get_recent_reports(get_account(request)))
 
 
 @login_required(login_url=LOGIN_URL)
 def get_urllist_report_graph_data_(request, urllist_ids, report_type: str = "web") -> JsonResponse:
-    return JsonResponse(
-        get_urllist_timeline_graph(get_account(request), urllist_ids, report_type), encoder=JSEncoder, safe=False
-    )
+    return json_response(get_urllist_timeline_graph(get_account(request), urllist_ids, report_type))
 
 
 # No login required: reports via this method are public
@@ -106,7 +101,7 @@ def get_shared_report_(request, report_code: str) -> HttpResponse:
 
 @csrf_exempt
 def get_public_reports_(request) -> JsonResponse:
-    return JsonResponse(get_public_reports(), encoder=JSEncoder, safe=False)
+    return json_response(get_public_reports())
 
 
 @login_required(login_url=LOGIN_URL)

@@ -1,9 +1,10 @@
+import logging
+
 from allauth.socialaccount.adapter import DefaultSocialAccountAdapter
 from django.core.exceptions import PermissionDenied
 
-import logging
-
 log = logging.getLogger(__package__)
+
 
 class OIDCGroupRestrictionAdapter(DefaultSocialAccountAdapter):
 
@@ -13,11 +14,11 @@ class OIDCGroupRestrictionAdapter(DefaultSocialAccountAdapter):
 
         groups = sociallogin.account.extra_data.get("groups", [])
         for group in groups:
-            log.info(f"Checking Group: {group}...")
+            log.info("Checking Group: %s...", group)
             if group == "/mygroup":
                 log.info("YES ! User is in the required group.")
                 return super().pre_social_login(request, sociallogin)
 
-        log.debug(f"{sociallogin.serialize()}")
+        log.debug("%s", sociallogin.serialize())
 
         raise PermissionDenied("You are not a member of the required group.")

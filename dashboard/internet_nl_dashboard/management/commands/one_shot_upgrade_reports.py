@@ -23,7 +23,7 @@ class Command(BaseCommand):
 
             # see if the report is not upgraded:
             if "explained_high" not in report.calculation:
-                log.debug(f"Report {report} was already upgraded.")
+                log.debug("Report %s was already upgraded.", report)
                 continue
 
             upgrade_report_with_statistics(report)
@@ -33,4 +33,4 @@ class Command(BaseCommand):
             scan = AccountInternetNLScan.objects.all().filter(urllist=report.urllist).last()
             upgrade_report_with_unscannable_urls(report, scan)
 
-            log.debug(f"Report {report} upgraded.")
+            log.debug("Report %s upgraded.", report)

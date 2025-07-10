@@ -96,7 +96,7 @@ def is_valid_mimetype(file: str) -> bool:
 
     if mimetype in SPREADSHEET_MIME_TYPES:
         return True
-    log.debug(f"{mimetype} is not a valid mime type.")
+    log.debug("%s is not a valid mime type.", mimetype)
     return False
 
 
@@ -373,7 +373,7 @@ def get_data_from_spreadsheet(
 
     log.debug("Checking url data per list inside the spreadsheet")
     for urllist, urls in domain_lists.items():
-        log.debug(f"Checking url data for {urllist}")
+        log.debug("Checking url data for %s", urllist)
         possible_urls, _ = retrieve_possible_urls_from_unfiltered_input(", ".join(urls))
         url_check = clean_urls(possible_urls)
 

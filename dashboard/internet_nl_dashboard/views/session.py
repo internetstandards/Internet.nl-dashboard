@@ -7,8 +7,8 @@ from django.http import JsonResponse
 from django_otp.plugins.otp_totp.models import TOTPDevice
 
 from dashboard.internet_nl_dashboard.logic import operation_response
-from dashboard.internet_nl_dashboard.views import get_json_body
 from dashboard.internet_nl_dashboard.models import Account, DashboardUser
+from dashboard.internet_nl_dashboard.views import get_json_body
 
 """
 Uses django sessions to keep users logged in, so no trickery with JWT is needed.
@@ -94,7 +94,7 @@ def session_status_(request):
 
     account, _ = Account.objects.get_or_create(name="users")
     dashboarduser, _ = DashboardUser.objects.get_or_create(user=request.user, account=account)
-        
+
     return {
         "is_authenticated": request.user.is_authenticated,
         "is_superuser": request.user.is_superuser,
@@ -107,9 +107,9 @@ def session_status(request):
     try:
         return JsonResponse(session_status_(request))
     except Exception as e:
-        log.error(f"Error in session_status: {str(e)}")
+        log.error("Error in session_status: %s", str(e))
         return JsonResponse({"error": f"Forbidden: {str(e)}"}, status=403)
-    
+
 
 def session_logout(request):
     return JsonResponse(session_logout_(request))

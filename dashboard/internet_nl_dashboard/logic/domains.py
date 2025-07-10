@@ -9,16 +9,16 @@ from typing import Any, Dict, List, Set, Tuple, Union
 
 import pyexcel as p
 import requests
-import tldextract
 from actstream import action
 from celery import group
 from constance import config
 from django.db.models import Count, Prefetch
 from django.http import JsonResponse
+from websecmap import tldextract
 from websecmap.app.constance import constance_cached_value
 from websecmap.organizations.models import Url
 from websecmap.scanners.models import Endpoint
-from websecmap.scanners.scanner.dns_endpoints import compose_discover_task
+from websecmap.scanners_internetnl_dns_endpoints.tasks import compose_discover_task
 
 from dashboard.celery import app
 from dashboard.internet_nl_dashboard.logic import operation_response

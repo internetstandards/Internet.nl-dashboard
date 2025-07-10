@@ -3,8 +3,8 @@ from datetime import datetime, timezone
 from typing import List
 
 from celery import group
-from websecmap.scanners.scanner.dns_endpoints import has_a_or_aaaa, has_soa
 from websecmap.scanners.scanner.subdomains import certificate_transparency_scan
+from websecmap.scanners_internetnl_dns_endpoints.tasks import has_a_or_aaaa, has_soa
 
 from dashboard.celery import app
 from dashboard.internet_nl_dashboard import log

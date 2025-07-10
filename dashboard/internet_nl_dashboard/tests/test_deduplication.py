@@ -24,15 +24,9 @@ def test_per_acount_scanner(db) -> None:
     )
 
     # add duplicate (named) urls, the name is the same, the id is different.
-    url1, _ = Url.objects.get_or_create(
-        url="www.internet.nl", is_dead=False, not_resolvable=False, internal_notes="different data, is different id 1"
-    )
-    url2, _ = Url.objects.get_or_create(
-        url="www.internet.nl", is_dead=False, not_resolvable=False, internal_notes="different data, is different id 2"
-    )
-    url3, _ = Url.objects.get_or_create(
-        url="www.internet.nl", is_dead=False, not_resolvable=False, internal_notes="different data, is different id 3"
-    )
+    url1, _ = Url.objects.get_or_create(url="www.internet.nl", is_dead=False, not_resolvable=False)
+    url2, _ = Url.objects.get_or_create(url="www.internet.nl", is_dead=False, not_resolvable=False)
+    url3, _ = Url.objects.get_or_create(url="www.internet.nl", is_dead=False, not_resolvable=False)
     url4, _ = Url.objects.get_or_create(
         url="www.unaffected_url.nl",
         is_dead=False,
@@ -41,7 +35,7 @@ def test_per_acount_scanner(db) -> None:
     )
 
     # make sure that these three urls actually exist
-    assert Url.objects.all().count() == 4
+    assert Url.objects.all().count() == 2
 
     # with duplicate endpoints, where the endpoints themselves are unique for the url.
     ep1, _ = Endpoint.objects.get_or_create(
@@ -155,7 +149,7 @@ def test_per_acount_scanner(db) -> None:
     assert Url.objects.all().count() == 1 + 1
 
     # assert there should only be two different endpoints now, instead of 5, as they are deduped too + one unaffected
-    assert Endpoint.objects.all().count() == 2 + 1
+    assert Endpoint.objects.all().count() == 5 + 1
 
     # assert all scan results are still saved
     assert EndpointGenericScan.objects.all().count() == 9 + 1

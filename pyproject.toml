@@ -74,3 +74,27 @@ target-version = "py310"
 [tool.ruff.lint.mccabe]
 # Unlike Flake8, default to a complexity level of 10.
 max-complexity = 10
+
+
+[tool.pylint]
+# https://github.com/ijl/orjson/issues/248
+extension-pkg-whitelist = ["orjson"]
+
+[tool.pylint.format]
+# unused-argument disabled because of kwargs called consistently from the scanning framework
+# fixme disable because documentation matters
+# ingore basically everything in pylint as we come from not the best codebase. So just start somewhere. As we've
+# experienced that unused_variable caused a serious issue, that one is mandatory.
+# you can pick these off one by one
+# no-self-use: Useless option value for '--disable', 'no-self-use' was moved to an optional extension
+# http-response-with-content-type-json: ORjson does NOT work with djangos response type, it makes everything slower.
+disable="missing-module-docstring,missing-class-docstring,missing-function-docstring,fixme,pointless-string-statement,no-name-in-module,duplicate-code,wrong-import-order,unused-argument,too-many-ancestors,too-many-statements,too-many-locals,too-many-nested-blocks,too-many-branches,too-few-public-methods,no-member,import-error,too-many-arguments,invalid-name,ungrouped-imports,protected-access,too-many-return-statements,too-many-instance-attributes,unsupported-binary-operation,abstract-method,too-many-lines,attribute-defined-outside-init,consider-using-with,broad-except,imported-auth-user,too-many-positional-arguments,http-response-with-content-type-json"
+max-line-length = 120
+extension-pkg-whitelist = "pydantic"
+ignore = "tests,migrations"
+# reports are very slow and hurt the development cycle
+reports = false
+output-format = "colorized"
+jobs = 0
+load-plugins = "pylint_django"
+django-settings-module = "dashboard.settings"

@@ -179,7 +179,7 @@ def get_po_as_dictionary_v2(language="en"):
 
     po_file_location = f"{DJANGO_I18N_OUTPUT_PATH}{language}/LC_MESSAGES/django.po"
     try:
-        log.debug(f"Loading locale file: {po_file_location}")
+        log.debug("Loading locale file: %s", po_file_location)
         return get_po_as_dictionary(po_file_location)
     except OSError as error:
         raise SystemError(
@@ -279,6 +279,7 @@ def translate_field(field_label, translation_dictionary: Dict[str, str]):
         "internet_nl_mail_starttls_tls_cipherorder": "detail_mail_tls_cipher_order_label",
         "internet_nl_mail_starttls_tls_keyexchangehash": "detail_mail_tls_kex_hash_func_label",
         "internet_nl_mail_starttls_tls_0rtt": "detail_mail_tls_zero_rtt_label",
+        "internet_nl_mail_starttls_tls_caa": "detail_mail_tls_caa_label",
         "internet_nl_mail_rpki_exists": "detail_mail_rpki_exists_label",
         "internet_nl_mail_rpki_valid": "detail_mail_rpki_valid_label",
         "internet_nl_mail_ns_rpki_exists": "detail_web_mail_rpki_ns_exists_label",
@@ -318,6 +319,7 @@ def translate_field(field_label, translation_dictionary: Dict[str, str]):
         "internet_nl_web_https_tls_cipherorder": "detail_web_tls_cipher_order_label",
         "internet_nl_web_https_tls_0rtt": "detail_web_tls_zero_rtt_label",
         "internet_nl_web_https_tls_ocsp": "detail_web_tls_ocsp_stapling_label",
+        "internet_nl_web_https_tls_caa": "detail_web_tls_caa_label",
         "internet_nl_web_https_tls_keyexchangehash": "detail_web_tls_kex_hash_func_label",
         "internet_nl_web_rpki_exists": "detail_web_rpki_exists_label",
         "internet_nl_web_rpki_valid": "detail_web_rpki_valid_label",
@@ -408,5 +410,5 @@ def translate_field(field_label, translation_dictionary: Dict[str, str]):
     except KeyError:
         # This can happen when something is already translated and the translations overwrite the original values.
         # When the re-translation is applied, the fields have been replaced by the translations and thus cannot be found
-        log.debug(f"Could not find a translation for {field_label}, returning the label as is.")
+        log.debug("Could not find a translation for %s, returning the label as is.", field_label)
         return field_label

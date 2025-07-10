@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timezone
 
 from django.test import Client
 from freezegun import freeze_time
@@ -20,7 +20,10 @@ def test_get_publicly_shared_lists_per_account(db):
         account = Account.objects.create(name="share_account")
         urllist = UrlList.objects.create(name="share_url_list", account=account, enable_report_sharing_page=True)
         urllistreport = UrlListReport.objects.create(
-            urllist=urllist, report_type="web", at_when=datetime(2020, 1, 1), is_publicly_shared=True
+            urllist=urllist,
+            report_type="web",
+            at_when=datetime(2020, 1, 1, tzinfo=timezone.utc),
+            is_publicly_shared=True,
         )
 
         expected_response = [

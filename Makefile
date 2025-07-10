@@ -5,22 +5,14 @@ app_name = dashboard
 docker_image_name = internetstandards/dashboard
 
 # configure virtualenv to be created in OS specific cache directory
-ifeq ($(shell uname -s),Darwin)
-# macOS cache location
-CACHEDIR ?= ~/Library/Caches
-else
-# User customized cache location or Linux default
-XDG_CACHE_HOME ?= ~/.cache
-CACHEDIR ?= ${XDG_CACHE_HOME}
-endif
-VIRTUAL_ENV ?= ${CACHEDIR}/virtualenvs/$(notdir ${PWD})
-$(info Virtualenv path: ${VIRTUAL_ENV})
+VIRTUAL_ENV = .venv
 
 # variables for environment
 bin = ${VIRTUAL_ENV}/bin
-env = PATH=${bin}:$$PATH
+env = PATH=${bin}:$$PATH DYLD_LIBRARY_PATH=${DYLD_LIBRARY_PATH}
 
 # shortcuts for common used binaries
+uv = VIRTUAL_ENV=${VIRTUAL_ENV} uv # provided by flake.nix
 python = ${bin}/python3.10
 python3 = ${bin}/python3.10
 pip = ${bin}/pip
@@ -55,25 +47,45 @@ setup: ${app}	## setup development environment and application
 	fi)
 
 # install application and all its (python) dependencies
-${app}: ${VIRTUAL_ENV}/.requirements.installed | ${python}
-	${python} setup.py develop --no-deps
-	@touch $@
+${app}: ${VIRTUAL_ENV}/.requirements.installed | ${uv}
+	# install project and its dependencies
+	uv pip install --no-deps --editable .
+	@test -f $@ && touch $@  # update timestamp, do not create empty file
 
-${VIRTUAL_ENV}/.requirements.installed: requirements.txt requirements-dev.txt | environment_dependencies ${pip-sync}
-	${pip-sync} $^
-	@touch $@
+
+${VIRTUAL_ENV}/.requirements.installed: requirements.txt requirements-dev.txt | ${uv} ${python}
+	uv pip sync $^
+	@touch $@  # update timestamp
 
 # perform 'pip freeze' on first class requirements in .in files.
 requirements: requirements.txt requirements-dev.txt requirements-deploy.txt
 # perform 'pip freeze' on first class requirements in .in files.
-requirements.txt: requirements.in security-constraints.in | ${pip-compile}
-	${pip-compile} ${pip_compile_args} --resolver=backtracking --output-file $@ $<
+requirements.txt: requirements.in | ${uv}
+	${uv} pip compile ${pip_compile_args} --custom-compile-command="make requirements" --no-strip-extras --output-file $@ $<
+	# fix bug where uv pip compile writes celery[gevent, redis]==5.5.3 instead of celery[gevent,redis]==5.5.3 (without space)
+	sed -Ei 's/, /,/' $@
 
-requirements-dev.txt: requirements-dev.in requirements.in security-constraints.in | ${pip-compile}
-	${pip-compile} ${pip_compile_args} --resolver=backtracking --output-file $@ $<
+requirements-deploy.txt: requirements.in | ${uv}
+	${uv} pip compile ${pip_compile_args} --custom-compile-command="make requirements" --no-strip-extras --output-file $@ $<
+	sed -Ei 's/, /,/' $@
 
-requirements-deploy.txt: requirements-deploy.in requirements.in security-constraints.in | ${pip-compile}
-	${pip-compile} ${pip_compile_args} --resolver=backtracking --output-file $@ $<
+requirements-dev.txt: requirements-dev.in requirements.in | ${uv}
+	${uv} pip compile ${pip_compile_args} --custom-compile-command="make requirements" --no-strip-extras --output-file $@ $<
+	sed -Ei 's/, /,/' $@
+
+pip-sync: | ${python}
+	# synchronizes the .venv with the state of requirements.txt
+	${uv} pip sync requirements.txt requirements-dev.txt
+
+
+upgrade_package: | ${uv} ## upgrade a single Python package in requirements.txt
+	@if [ -z "${package}" ];then echo "Usage: make upgrade_package package=package-name"; exit 1; fi
+	${uv} pip compile requirements.in --upgrade-package ${package} > requirements.txt
+
+upgrade_dev_package: | ${uv} ## upgrade a single Python package in requirments-dev.txt
+	@if [ -z "${package}" ];then echo "Usage: make upgrade_dev_package package=package-name"; exit 1; fi
+	${uv} pip compile requirements-dev.in --upgrade-package ${package} > requirements-dev.txt
+
 
 update_requirements: pip_compile_args=--upgrade --resolver=backtracking
 update_requirements: _mark_outdated requirements.txt requirements-dev.txt requirements-deploy.txt _commit_update
@@ -220,20 +232,22 @@ clean_virtualenv:  ## cleanup virtualenv and installed app/dependencies
 
 mrproper: clean clean_virtualenv ## thorough cleanup, also removes virtualenv
 
+run-autoreload-browser: run
+run-autoreload-browser: autoreload_browser=1
+
+autoreload_browser ?=
+
+
 ## Base requirements
 
-${pip-compile} ${pip-sync}: | ${pip}
-	${pip} install "pip-tools>=5.5.0"
+${python} ${VIRTUAL_ENV}:
+	# create virtualenv, Python version is determined by pyproject.toml requires-python
+	${uv} venv --python 3.10 ${VIRTUAL_ENV}
 
+${uv}:
+
+# work around not having nix flake with uv in build.
 python: ${python}
-${python} ${pip}:
-	@if ! command -v python3 &>/dev/null;then \
-		echo "Python 3 is not available. Please refer to installation instructions in README.md"; \
-	fi
-	# create virtualenv
-	python3.10 -mvenv ${VIRTUAL_ENV}
-	# ensure a recent version of pip is used to avoid errors with intalling
-	${VIRTUAL_ENV}/bin/pip install --upgrade "pip>=19.1.1"
 
 mypy: ${app} ## Check for type issues with mypy
 	${python} -m mypy --check dashboard

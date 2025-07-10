@@ -37,4 +37,4 @@ class Command(BaseCommand):
 
         scan.state = options["state"]
         update_state(options["state"], scan.id)
-        log.info(f"Scan {scan} is set to {options['state']}.")
+        log.info("Scan %s is set to %s.", scan, options["state"])

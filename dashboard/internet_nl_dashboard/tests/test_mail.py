@@ -3,7 +3,7 @@ from datetime import datetime, timedelta, timezone
 
 from django.contrib.auth.models import User
 from django_mail_admin.models import EmailTemplate, Log, Outbox, OutgoingEmail, TemplateVariable
-from websecmap.scanners.models import InternetNLV2Scan
+from websecmap.scanners_internetnl_web.models import InternetNLV2Scan
 
 from dashboard.internet_nl_dashboard.logic.mail import (
     email_configration_is_correct,
@@ -177,19 +177,29 @@ def test_urllistreport_get_previous_report(db):
     u = UrlList(**{"name": "", "account": account})
     u.save()
 
-    urllistreport1 = UrlListReport(**{"urllist": u, "average_internet_nl_score": 1, "at_when": datetime(2020, 5, 1)})
+    urllistreport1 = UrlListReport(
+        **{"urllist": u, "average_internet_nl_score": 1, "at_when": datetime(2020, 5, 1, tzinfo=timezone.utc)}
+    )
     urllistreport1.save()
 
-    urllistreport2 = UrlListReport(**{"urllist": u, "average_internet_nl_score": 1, "at_when": datetime(2020, 5, 2)})
+    urllistreport2 = UrlListReport(
+        **{"urllist": u, "average_internet_nl_score": 1, "at_when": datetime(2020, 5, 2, tzinfo=timezone.utc)}
+    )
     urllistreport2.save()
 
-    urllistreport3 = UrlListReport(**{"urllist": u, "average_internet_nl_score": 1, "at_when": datetime(2020, 5, 3)})
+    urllistreport3 = UrlListReport(
+        **{"urllist": u, "average_internet_nl_score": 1, "at_when": datetime(2020, 5, 3, tzinfo=timezone.utc)}
+    )
     urllistreport3.save()
 
-    urllistreport4 = UrlListReport(**{"urllist": u, "average_internet_nl_score": 1, "at_when": datetime(2020, 5, 4)})
+    urllistreport4 = UrlListReport(
+        **{"urllist": u, "average_internet_nl_score": 1, "at_when": datetime(2020, 5, 4, tzinfo=timezone.utc)}
+    )
     urllistreport4.save()
 
-    urllistreport5 = UrlListReport(**{"urllist": u, "average_internet_nl_score": 1, "at_when": datetime(2020, 5, 5)})
+    urllistreport5 = UrlListReport(
+        **{"urllist": u, "average_internet_nl_score": 1, "at_when": datetime(2020, 5, 5, tzinfo=timezone.utc)}
+    )
     urllistreport5.save()
 
     assert urllistreport5.get_previous_report_from_this_list() == urllistreport4

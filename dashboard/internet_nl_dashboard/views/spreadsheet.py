@@ -7,7 +7,6 @@ from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render
 from django.views.decorators.http import require_http_methods
-from websecmap.app.common import JSEncoder
 
 from dashboard.internet_nl_dashboard.logic.spreadsheet import (
     get_upload_history,
@@ -16,7 +15,7 @@ from dashboard.internet_nl_dashboard.logic.spreadsheet import (
     save_file,
     upload_domain_spreadsheet_to_list,
 )
-from dashboard.internet_nl_dashboard.views import LOGIN_URL, get_account, get_dashboarduser
+from dashboard.internet_nl_dashboard.views import LOGIN_URL, get_account, get_dashboarduser, json_response
 
 log = logging.getLogger(__package__)
 
@@ -72,11 +71,11 @@ def upload_spreadsheet(request) -> HttpResponse:
 
 
 @login_required(login_url=LOGIN_URL)
-def upload_history(request) -> JsonResponse:
+def upload_history(request) -> HttpResponse:
     account = get_account(request)
 
     # list of dicts: In order to allow non-dict objects to be serialized set the safe parameter to False.
-    return JsonResponse(get_upload_history(account), encoder=JSEncoder, safe=False)
+    return json_response(get_upload_history(account))
 
 
 @login_required(login_url=LOGIN_URL)
