@@ -30,6 +30,9 @@
               # required for running dev environment
               redis
 
+              # libmagic
+              file
+
               # additional tools
               shellcheck
               basedpyright
@@ -45,6 +48,8 @@
               MYSQLCLIENT_LDFLAGS = "-L${pkgs.libmysqlclient.dev}/lib";
               PROJECT_WEBSITE = "http://localhost:8000";
               LD_LIBRARY_PATH= "${pkgs.stdenv.cc.cc.lib}/lib/";
+              # make libmagic findable for Python packages in venv
+              DYLD_LIBRARY_PATH="${pkgs.file}/lib";
               # somehow the pylama warning can't be silenced from pyproject.tojml [tool.pytest.ini_options]
               PYTHONWARNINGS=''
                   error::RuntimeWarning,

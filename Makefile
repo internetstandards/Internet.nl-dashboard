@@ -9,7 +9,7 @@ VIRTUAL_ENV = .venv
 
 # variables for environment
 bin = ${VIRTUAL_ENV}/bin
-env = PATH=${bin}:$$PATH
+env = PATH=${bin}:$$PATH DYLD_LIBRARY_PATH=${DYLD_LIBRARY_PATH}
 
 # shortcuts for common used binaries
 uv = VIRTUAL_ENV=${VIRTUAL_ENV} uv # provided by flake.nix
