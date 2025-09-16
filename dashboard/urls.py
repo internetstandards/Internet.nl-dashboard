@@ -72,7 +72,7 @@ frontend_urls = [
         "accounts/password/change/",
         login_required(
             allauth_views.PasswordChangeView.as_view(
-                success_url="/#/account/authentication/?password_change_success=true"
+                success_url="/account/authentication/?password_change_success=true"
             )
         ),
         name="account_change_password",

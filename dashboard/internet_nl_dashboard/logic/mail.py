@@ -41,18 +41,18 @@ Email text:     Hi {{recipient}}!<br>
                 {{report_average_internet_nl_score}}. <br>
                 <br>
                 View the report at this link: <br>
-                <a href="https://dashboard.internet.nl/spa/#/report/{{report_id}}">
-                        https://dashboard.internet.nl/spa/#/report/{{report_id}}</a>/<br>
+                <a href="https://dashboard.internet.nl/report/{{report_id}}">
+                        https://dashboard.internet.nl/report/{{report_id}}</a>/<br>
                 <br>
                 Regards,<br>
                 internet.nl<br>
                 <br>
                 <br>
                 [
-                <a href="http://localhost:8000/spa/#/unsubscribe?feed=scan_finished&unsubscribe_code=
+                <a href="http://localhost:8000/unsubscribe?feed=scan_finished&unsubscribe_code=
                 {{unsubscribe_code}}">unsubscribe</a>
                 -
-                <a href="http://localhost:8000/spa/#/preferences">preferences</a>
+                <a href="http://localhost:8000/preferences">preferences</a>
                  ]
 """
 
