@@ -13,7 +13,9 @@ from django.contrib.auth.models import User
 from websecmap.organizations.models import Url
 
 from dashboard.internet_nl_dashboard.logic.domains import (
+    DeleteUrlListInputSchema,
     ServerError,
+    UrlListContentResponseSchema,
     add_domains_from_raw_user_data,
     clean_urls,
     delete_list,
@@ -324,12 +326,12 @@ def test_urllists(db, redis_server) -> None:
     list_2 = get_or_create_list_by_name(account, "test list 2")
     assert list_1 != list_2
 
-    list_content = get_urllist_content(account=account, urllist_id=list_1.pk)
-    assert len(list_content["urls"]) == 0
+    list_content: UrlListContentResponseSchema = get_urllist_content(account=account, urllist_id=list_1.pk)
+    assert len(list_content.urls) == 0
 
     """ We made two lists, so we expect to see two lists returned """
     lists = get_urllists_from_account(account=account)
-    assert len(lists) == 2
+    assert len(lists.lists) == 2
 
     """ Should be no problem to add the same urls, it just has not so much effect. """
     added = save_urllist_content_by_name(
@@ -347,7 +349,7 @@ def test_urllists(db, redis_server) -> None:
     assert already["added_to_list"] == 0 and already["already_in_list"] == 3 and len(already["incorrect_urls"]) == 0
 
     list_content = get_urllist_content(account=account, urllist_id=list_1.pk)
-    assert len(list_content["urls"]) == 3
+    assert len(list_content.urls) == 3
 
     """ Garbage urls should be filtered out and can be displayed as erroneous """
     # Impossible to filter out garbage domains, as the tld and domain is checked along the way... and some parts
@@ -359,7 +361,7 @@ def test_urllists(db, redis_server) -> None:
 
     """ Check if really nothing was added """
     list_content = get_urllist_content(account=account, urllist_id=list_1.pk)
-    assert len(list_content["urls"]) == 3
+    assert len(list_content.urls) == 3
 
     # make sure the url gets deleted from the urllist and not from the database
     urls_in_database = Url.objects.all().count()
@@ -374,21 +376,23 @@ def test_urllists(db, redis_server) -> None:
 
     assert url_got_removed_from_list is True
     list_content = get_urllist_content(account=account, urllist_id=list_1.pk)
-    assert len(list_content["urls"]) == 2
+    assert len(list_content.urls) == 2
 
     """ Delete the entire list, we'll get nothing back, only an empty response. """
-    operation_response = delete_list(account=account, user_input={"id": list_1.id})
+    result = delete_list(account=account, data=DeleteUrlListInputSchema(id=list_1.id))
+    operation_response = result.dict()
 
     # it deletes two urls and the list itself, makes 3
     assert operation_response["success"] is True
     list_content = get_urllist_content(account=account, urllist_id=list_1.pk)
 
     # deletion is administrative, so the urls are still connected.
-    assert len(list_content["urls"]) == 2
+    assert len(list_content.urls) == 2
 
     account2, created = Account.objects.all().get_or_create(name="test 2")
     """ You cannot delete things from another account """
-    operation_response = delete_list(account=account2, user_input={"id": list_1.id})
+    result = delete_list(account=account2, data=DeleteUrlListInputSchema(id=list_1.id))
+    operation_response = result.dict()
     assert operation_response["success"] is False
 
     """ A new list will not be created if there are no urls for it..."""
@@ -399,7 +403,7 @@ def test_urllists(db, redis_server) -> None:
     added = save_urllist_content_by_name(account, "should be empty", {"iuygvb.uighblkj": {"tags": []}})
 
     list_content = get_urllist_content(account=account, urllist_id=9001)
-    assert len(list_content["urls"]) == 0
+    assert len(list_content.urls) == 0
 
     # list can be renamed
     renamed = rename_list(account=account, list_id=list_2.pk, new_name="A new name")

@@ -3,14 +3,14 @@
 from django.contrib.auth.decorators import user_passes_test
 from django.contrib.auth.models import User
 from django.http import HttpResponse, JsonResponse
-from ninja import NinjaAPI, Schema
+from ninja import Router, Schema
 
 from dashboard.internet_nl_dashboard.logic import OperationResponseSchema, operation_response
 from dashboard.internet_nl_dashboard.models import Account, AccountInternetNLScan, DashboardUser, UrlList
 from dashboard.internet_nl_dashboard.views import get_account
 from dashboard.settings import LOGIN_URL
 
-api = NinjaAPI()
+router = Router(tags=["powertools"])
 
 
 def is_powertool_user(user):
@@ -40,7 +40,7 @@ class ImpersonateAccountSchema(Schema):
     selected_account_id: int = False
 
 
-@api.post("/set_account", response={200: OperationResponseSchema})
+@router.post("/set_account", response={200: OperationResponseSchema})
 @user_passes_test(is_powertool_user, login_url=LOGIN_URL)
 def set_account(request, data: ImpersonateAccountSchema) -> HttpResponse:
     if not data.selected_account_id:
@@ -60,7 +60,7 @@ def set_account(request, data: ImpersonateAccountSchema) -> HttpResponse:
     )
 
 
-@api.get("/get_accounts")
+@router.get("/get_accounts")
 @user_passes_test(is_powertool_user, login_url=LOGIN_URL)
 def get_accounts(request) -> HttpResponse:
     myaccount = get_account(request)
@@ -107,7 +107,7 @@ class CredentialCheckResponseSchema(Schema):
     can_connect_to_internet_nl_api: bool = False
 
 
-@api.post("/check_api_credentials", response={200: CredentialCheckResponseSchema})
+@router.post("/check_api_credentials", response={200: CredentialCheckResponseSchema})
 @user_passes_test(is_powertool_user, login_url=LOGIN_URL)
 def check_api_credentials(request, data: CredentialCheckSchema) -> HttpResponse:
     return JsonResponse(
@@ -128,7 +128,7 @@ class InstantAccountAndUserCreationSchema(Schema):
     new_account_internet_nl_api_password: str = ""
 
 
-@api.post("/save_instant_account_and_user", response={200: OperationResponseSchema})
+@router.post("/save_instant_account_and_user", response={200: OperationResponseSchema})
 @user_passes_test(is_powertool_user, login_url=LOGIN_URL)
 def save_instant_account_and_user(request, data: InstantAccountAndUserCreationSchema) -> HttpResponse:
     """

@@ -10,7 +10,7 @@ class OperationResponseSchema(Schema):
     error: bool = False
     message: str = ""
     state: str = ""
-    data: dict = {}
+    data: dict | None = {}
     timestamp: datetime = None
 
 

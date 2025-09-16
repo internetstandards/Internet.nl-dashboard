@@ -1,13 +1,19 @@
 # SPDX-License-Identifier: Apache-2.0
-from typing import List
-
 from django.contrib.auth.decorators import login_required
-from django.http import HttpResponse, HttpResponseBadRequest, HttpResponseServerError, JsonResponse
+from django.http import HttpResponseBadRequest, HttpResponseServerError, JsonResponse
 from django.views.decorators.http import require_http_methods
+from ninja import Router
 from websecmap.organizations.models import Url
 from websecmap.scanners_internetnl_dns_endpoints.tasks import has_a_or_aaaa, has_soa
 
+from dashboard.internet_nl_dashboard.logic import OperationResponseSchema
 from dashboard.internet_nl_dashboard.logic.domains import (
+    CreateListResponseSchema,
+    CreateUrlListInputSchema,
+    DeleteUrlListInputSchema,
+    UrlListContentResponseSchema,
+    UrlListScanStatusResponseSchema,
+    UrlListsResponseSchema,
     add_domains_from_raw_user_data,
     alter_url_in_urllist,
     cancel_scan,
@@ -18,12 +24,13 @@ from dashboard.internet_nl_dashboard.logic.domains import (
     get_scan_status_of_list,
     get_urllist_content,
     get_urllists_from_account,
-    save_urllist_content_by_name,
     scan_now,
     update_list_settings,
 )
 from dashboard.internet_nl_dashboard.logic.suggestions import suggest_subdomains
 from dashboard.internet_nl_dashboard.views import LOGIN_URL, get_account, get_json_body, json_response
+
+router = Router(tags=["urllists"])
 
 
 @login_required(login_url=LOGIN_URL)
@@ -89,24 +96,34 @@ def suggest_subdomains_(request) -> JsonResponse:
     return result
 
 
+@router.get("/get", response={200: UrlListsResponseSchema})
 @login_required(login_url=LOGIN_URL)
-def get_lists(request) -> HttpResponse:
-    return json_response(get_urllists_from_account(account=get_account(request)))
+def get_lists(request):
+    return get_urllists_from_account(account=get_account(request))
 
 
+@router.post("/create", response={200: CreateListResponseSchema})
 @login_required(login_url=LOGIN_URL)
-def get_urllist_content_(request, urllist_id: int) -> HttpResponse:
-    return json_response(get_urllist_content(account=get_account(request), urllist_id=urllist_id))
+def create_list_api(request, data: CreateUrlListInputSchema):
+    return create_list(get_account(request), data)
 
 
+@router.get("/get_content/{urllist_id}", response={200: UrlListContentResponseSchema})
 @login_required(login_url=LOGIN_URL)
-def get_scan_status_of_list_(request, urllist_id: int) -> HttpResponse:
-    return json_response(get_scan_status_of_list(account=get_account(request), list_id=urllist_id))
+def get_urllist_content_(request, urllist_id: int):
+    return get_urllist_content(account=get_account(request), urllist_id=urllist_id)
 
 
+@router.get("/scan_status/{urllist_id}", response={200: UrlListScanStatusResponseSchema})
 @login_required(login_url=LOGIN_URL)
-def save_list_content(request, urllist_name: str, urls: List[str]) -> HttpResponse:
-    return json_response(save_urllist_content_by_name(get_account(request), urllist_name, urls))
+def get_scan_status_of_list_(request, urllist_id: int):
+    return get_scan_status_of_list(account=get_account(request), list_id=urllist_id)
+
+
+# unused
+# @login_required(login_url=LOGIN_URL)
+# def save_list_content(request, urllist_name: str, urls: List[str]) -> HttpResponse:
+#     return json_response(save_urllist_content_by_name(get_account(request), urllist_name, urls))
 
 
 @login_required(login_url=LOGIN_URL)
@@ -114,14 +131,24 @@ def update_list_settings_(request):
     return json_response(update_list_settings(get_account(request), get_json_body(request)))
 
 
-@login_required(login_url=LOGIN_URL)
-def create_list_(request):
-    return json_response(create_list(get_account(request), get_json_body(request)))
+# @login_required(login_url=LOGIN_URL)
+# def create_list_(request):
+#     body = get_json_body(request)
+#     data = CreateUrlListInputSchema(**body) if isinstance(body, dict) else CreateUrlListInputSchema(**{})
+#     result = create_list(get_account(request), data)
+#     return json_response(result.dict())
 
 
+@router.post("/delete", response={200: OperationResponseSchema})
 @login_required(login_url=LOGIN_URL)
-def delete_list_(request):
-    return json_response(delete_list(get_account(request), get_json_body(request)))
+def delete_list_api(request, data: DeleteUrlListInputSchema):
+    return delete_list(get_account(request), data)
+
+
+# @login_required(login_url=LOGIN_URL)
+# def delete_list_(request):
+#     result = delete_list(get_account(request), DeleteUrlListInputSchema(id=get_json_body(request).get("id", -1)))
+#     return json_response(result.dict())
 
 
 @login_required(login_url=LOGIN_URL)

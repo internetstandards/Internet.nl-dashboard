@@ -2,6 +2,7 @@
 from constance import config
 from django.shortcuts import redirect
 from django.urls import path, register_converter
+from ninja import NinjaAPI
 from websecmap.map.views import security_txt
 
 # We have to import the signals somewhere..?!
@@ -39,6 +40,10 @@ class SpreadsheetFileTypeConverter:
         return f"{value}"
 
 
+api = NinjaAPI(title="Internet.nl Dashboard API", version="1.0.0")
+api.add_router("/powertools", powertools.router)
+api.add_router("/urllists", domains.router)
+
 register_converter(SpreadsheetFileTypeConverter, "spreadsheet_filetype")
 
 
@@ -47,13 +52,15 @@ urlpatterns = [
     path("data/config/", app.config),
     path("logout/", logout_view),
     # domain management
-    path("data/urllists/get/", domains.get_lists),
-    path("data/urllist_content/get/<int:urllist_id>/", domains.get_urllist_content_),
-    path("data/urllist/save_list_content/", domains.save_list_content),
-    path("data/urllist/update_list_settings/", domains.update_list_settings_),
+    path("data/", api.urls),
     path("data/urllist/get_scan_status_of_list/<int:urllist_id>/", domains.get_scan_status_of_list_),
-    path("data/urllist/create_list/", domains.create_list_),
-    path("data/urllist/delete/", domains.delete_list_),
+    # seems to be unused, makes sense...
+    # path("data/urllist/save_list_content/", domains.save_list_content),
+    path("data/urllist/update_list_settings/", domains.update_list_settings_),
+    # path("data/urllist/create_list/", domains.create_list_),
+    # if you call a method that does not exist, you will get a
+    # ninja.errors.ConfigError: Router@'/powertools' has already been attached to API Internet.nl Dashboard API:1.0.0
+    # path("data/urllist/delete/", domains.delete_list_),
     path("data/urllist/scan_now/", domains.scan_now_),
     path("data/urllist/discover-subdomains/<int:urllist_id>/", subdomains.request_subdomain_discovery_scan_),
     path("data/urllist/discover-subdomains-status/<int:urllist_id>/", subdomains.subdomain_discovery_scan_status_),
@@ -132,6 +139,4 @@ urlpatterns = [
     # name='login'),
     path("security.txt", security_txt, name="security_txt"),
     path(".well-known/security.txt", security_txt, name="well_known_security_txt"),
-    # ninjapi stuff
-    path("data/powertools/", powertools.api.urls),
 ]
