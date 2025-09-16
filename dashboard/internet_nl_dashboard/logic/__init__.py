@@ -2,6 +2,17 @@
 from datetime import datetime, timezone
 from typing import Any, Dict, Optional
 
+from ninja import Schema
+
+
+class OperationResponseSchema(Schema):
+    success: bool = False
+    error: bool = False
+    message: str = ""
+    state: str = ""
+    data: dict = {}
+    timestamp: datetime = None
+
 
 def operation_response(
     error: bool = False, success: bool = False, message: str = "", data: Optional[Dict[Any, Any]] = None

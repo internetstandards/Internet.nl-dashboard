@@ -45,11 +45,6 @@ register_converter(SpreadsheetFileTypeConverter, "spreadsheet_filetype")
 urlpatterns = [
     path("", lambda request: redirect(config.DASHBOARD_FRONTEND_URL)),
     path("data/config/", app.config),
-    # The SPA is not reachable anymore.
-    # path('spa/', powertools.spa),
-    path("data/powertools/get_accounts/", powertools.get_accounts),
-    path("data/powertools/set_account/", powertools.set_account),
-    path("data/powertools/save_instant_account/", powertools.save_instant_account),
     path("logout/", logout_view),
     # domain management
     path("data/urllists/get/", domains.get_lists),
@@ -137,4 +132,6 @@ urlpatterns = [
     # name='login'),
     path("security.txt", security_txt, name="security_txt"),
     path(".well-known/security.txt", security_txt, name="well_known_security_txt"),
+    # ninjapi stuff
+    path("data/powertools/", powertools.api.urls),
 ]

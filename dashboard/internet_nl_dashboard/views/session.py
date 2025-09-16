@@ -93,7 +93,8 @@ def session_status_(request):
         }
 
     account, _ = Account.objects.get_or_create(name="users")
-    dashboarduser, _ = DashboardUser.objects.get_or_create(user=request.user, account=account)
+    # got a unique constraint when creating a user in another account. A user may be in one account only.
+    dashboarduser, _ = DashboardUser.objects.get_or_create(user=request.user, defaults={"account": account})
 
     return {
         "is_authenticated": request.user.is_authenticated,
@@ -104,11 +105,12 @@ def session_status_(request):
 
 
 def session_status(request):
-    try:
-        return JsonResponse(session_status_(request))
-    except Exception as e:
-        log.error("Error in session_status: %s", str(e))
-        return JsonResponse({"error": f"Forbidden: {str(e)}"}, status=403)
+    return JsonResponse(session_status_(request))
+    # try:
+    #     return JsonResponse(session_status_(request))
+    # except Exception as e:
+    #     log.error("Error in session_status: %s", str(e))
+    #     return JsonResponse({"error": f"Forbidden: {str(e)}"}, status=403)
 
 
 def session_logout(request):

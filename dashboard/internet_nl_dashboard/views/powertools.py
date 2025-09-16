@@ -1,12 +1,16 @@
 # SPDX-License-Identifier: Apache-2.0
+
 from django.contrib.auth.decorators import user_passes_test
 from django.contrib.auth.models import User
 from django.http import HttpResponse, JsonResponse
+from ninja import NinjaAPI, Schema
 
-from dashboard.internet_nl_dashboard.logic import operation_response
+from dashboard.internet_nl_dashboard.logic import OperationResponseSchema, operation_response
 from dashboard.internet_nl_dashboard.models import Account, AccountInternetNLScan, DashboardUser, UrlList
-from dashboard.internet_nl_dashboard.views import get_account, get_json_body
+from dashboard.internet_nl_dashboard.views import get_account
 from dashboard.settings import LOGIN_URL
+
+api = NinjaAPI()
 
 
 def is_powertool_user(user):
@@ -32,12 +36,14 @@ def is_powertool_user(user):
     return False
 
 
-@user_passes_test(is_powertool_user, login_url=LOGIN_URL)
-def set_account(request) -> HttpResponse:
-    request_data = get_json_body(request)
-    selected_account_id: int = request_data["id"]
+class ImpersonateAccountSchema(Schema):
+    selected_account_id: int = False
 
-    if not selected_account_id:
+
+@api.post("/set_account", response={200: OperationResponseSchema})
+@user_passes_test(is_powertool_user, login_url=LOGIN_URL)
+def set_account(request, data: ImpersonateAccountSchema) -> HttpResponse:
+    if not data.selected_account_id:
         return JsonResponse(operation_response(error=True, message="No account supplied."))
 
     dashboard_user = DashboardUser.objects.all().filter(user=request.user).first()
@@ -46,7 +52,7 @@ def set_account(request) -> HttpResponse:
     if not dashboard_user:
         dashboard_user = DashboardUser(**{"account": Account.objects.all().first(), "user": request.user})
 
-    dashboard_user.account = Account.objects.get(id=selected_account_id)
+    dashboard_user.account = Account.objects.get(id=data.selected_account_id)
     dashboard_user.save()
 
     return JsonResponse(
@@ -54,6 +60,7 @@ def set_account(request) -> HttpResponse:
     )
 
 
+@api.get("/get_accounts")
 @user_passes_test(is_powertool_user, login_url=LOGIN_URL)
 def get_accounts(request) -> HttpResponse:
     myaccount = get_account(request)
@@ -91,41 +98,89 @@ def get_accounts(request) -> HttpResponse:
     return JsonResponse({"current_account": current_account, "accounts": account_data})
 
 
+class CredentialCheckSchema(Schema):
+    new_account_internet_nl_api_username: str = ""
+    new_account_internet_nl_api_password: str = ""
+
+
+class CredentialCheckResponseSchema(Schema):
+    can_connect_to_internet_nl_api: bool = False
+
+
+@api.post("/check_api_credentials", response={200: CredentialCheckResponseSchema})
 @user_passes_test(is_powertool_user, login_url=LOGIN_URL)
-def save_instant_account(request) -> HttpResponse:
-    request = get_json_body(request)
-    username = request["username"]
-    password = request["password"]
-
-    if User.objects.all().filter(username=username).exists():
-        return JsonResponse(operation_response(error=True, message=f"User with username '{username}' already exists."))
-
-    if Account.objects.all().filter(name=username).exists():
-        return JsonResponse(
-            operation_response(error=True, message=f"Account with username {username}' already exists.")
-        )
-
-    # Extremely arbitrary password requirements. Just to make sure a password has been filled in.
-    if len(password) < 5:
-        return JsonResponse(operation_response(error=True, message="Password not filled in or not long enough."))
-
-    # all seems fine, let's add the user
-    user = User(**{"username": username})
-    user.set_password(password)
-    user.is_active = True
-    user.save()
-
-    account = Account(
-        **{
-            "name": username,
-            "internet_nl_api_username": username,
-            "internet_nl_api_password": Account.encrypt_password(password),
-            "can_connect_to_internet_nl_api": Account.connect_to_internet_nl_api(username, password),
+def check_api_credentials(request, data: CredentialCheckSchema) -> HttpResponse:
+    return JsonResponse(
+        {
+            "can_connect_to_internet_nl_api": Account.connect_to_internet_nl_api(
+                data.new_account_internet_nl_api_username, data.new_account_internet_nl_api_password
+            ),
         }
     )
-    account.save()
+
+
+class InstantAccountAndUserCreationSchema(Schema):
+    new_username: str = ""
+    new_password: str = ""
+    use_existing_account_id: int | None = None
+    new_account_name: str = ""
+    new_account_internet_nl_api_username: str = ""
+    new_account_internet_nl_api_password: str = ""
+
+
+@api.post("/save_instant_account_and_user", response={200: OperationResponseSchema})
+@user_passes_test(is_powertool_user, login_url=LOGIN_URL)
+def save_instant_account_and_user(request, data: InstantAccountAndUserCreationSchema) -> HttpResponse:
+    """
+    More elaborate version of save_instant_account, where an admin can create an account and a user separately.
+    It becomes more common that multiple users share the same account.
+    """
+
+    if not data.new_username:
+        return JsonResponse(operation_response(error=True, message="error_no_username_supplied"))
+
+    if User.objects.all().filter(username=data.new_username).exists():
+        return JsonResponse(operation_response(error=True, message="error_username_already_exists"))
+
+    if Account.objects.all().filter(name=data.new_username).exists():
+        return JsonResponse(operation_response(error=True, message="error_account_name_already_exists"))
+
+    # Extremely arbitrary password requirements. Just to make sure a password has been filled in.
+    if len(data.new_password) < 12:
+        return JsonResponse(operation_response(error=True, message="error_password_too_short"))
+
+    if data.use_existing_account_id:
+        account = Account.objects.filter(id=data.use_existing_account_id).first()
+        if not account:
+            return JsonResponse(operation_response(error=True, message="error_account_not_found"))
+    else:
+
+        if not data.new_account_name:
+            return JsonResponse(operation_response(error=True, message="error_no_account_name_supplied"))
+
+        account = Account(
+            **{
+                "name": data.new_account_name,
+                "internet_nl_api_username": data.new_account_internet_nl_api_username,
+                "internet_nl_api_password": Account.encrypt_password(data.new_account_internet_nl_api_password),
+                "can_connect_to_internet_nl_api": Account.connect_to_internet_nl_api(
+                    data.new_account_internet_nl_api_username, data.new_account_internet_nl_api_password
+                ),
+            }
+        )
+        account.save()
+
+    # all seems fine, let's add the user
+    user = User(**{"username": data.new_username})
+    user.set_password(data.new_password)
+    user.is_active = True
+    user.save()
 
     dashboarduser = DashboardUser(**{"user": user, "account": account})
     dashboarduser.save()
 
-    return JsonResponse(operation_response(success=True, message=f"Account and user with name '{username}' created!"))
+    return JsonResponse(
+        operation_response(
+            success=True, message=f"User {data.new_username} created and added to account {account.name}."
+        )
+    )
