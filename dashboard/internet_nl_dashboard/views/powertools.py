@@ -44,7 +44,7 @@ class ImpersonateAccountSchema(Schema):
 @user_passes_test(is_powertool_user, login_url=LOGIN_URL)
 def set_account(request, data: ImpersonateAccountSchema) -> HttpResponse:
     if not data.selected_account_id:
-        return JsonResponse(operation_response(error=True, message="No account supplied."))
+        return JsonResponse(operation_response(error=True, message="No account supplied.").dict())
 
     dashboard_user = DashboardUser.objects.all().filter(user=request.user).first()
 
@@ -56,7 +56,9 @@ def set_account(request, data: ImpersonateAccountSchema) -> HttpResponse:
     dashboard_user.save()
 
     return JsonResponse(
-        operation_response(success=True, message="switched_account", data={"account_name": dashboard_user.account.name})
+        operation_response(
+            success=True, message="switched_account", data={"account_name": dashboard_user.account.name}
+        ).dict()
     )
 
 
@@ -137,26 +139,26 @@ def save_instant_account_and_user(request, data: InstantAccountAndUserCreationSc
     """
 
     if not data.new_username:
-        return JsonResponse(operation_response(error=True, message="error_no_username_supplied"))
+        return JsonResponse(operation_response(error=True, message="error_no_username_supplied").dict())
 
     if User.objects.all().filter(username=data.new_username).exists():
-        return JsonResponse(operation_response(error=True, message="error_username_already_exists"))
+        return JsonResponse(operation_response(error=True, message="error_username_already_exists").dict())
 
     if Account.objects.all().filter(name=data.new_username).exists():
-        return JsonResponse(operation_response(error=True, message="error_account_name_already_exists"))
+        return JsonResponse(operation_response(error=True, message="error_account_name_already_exists").dict())
 
     # Extremely arbitrary password requirements. Just to make sure a password has been filled in.
     if len(data.new_password) < 12:
-        return JsonResponse(operation_response(error=True, message="error_password_too_short"))
+        return JsonResponse(operation_response(error=True, message="error_password_too_short").dict())
 
     if data.use_existing_account_id:
         account = Account.objects.filter(id=data.use_existing_account_id).first()
         if not account:
-            return JsonResponse(operation_response(error=True, message="error_account_not_found"))
+            return JsonResponse(operation_response(error=True, message="error_account_not_found").dict())
     else:
 
         if not data.new_account_name:
-            return JsonResponse(operation_response(error=True, message="error_no_account_name_supplied"))
+            return JsonResponse(operation_response(error=True, message="error_no_account_name_supplied").dict())
 
         account = Account(
             **{

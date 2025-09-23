@@ -58,7 +58,7 @@ def test_suggest_subdomains_http(db, client):
     responses.add(responses.GET, "http://localhost:8001/?domain=broken&suffix=nl&period=370", json=[], status=500)
 
     assert (
-        client.get("/data/urllist/suggest-subdomains/", {"domain": "test.nl"}).status_code == 302
+        client.get("/data/urllist/suggest-subdomains", {"domain": "test.nl"}).status_code == 302
     ), "unauthenticated request should result in login redirect"
 
     user = User.objects.create(username="test")
@@ -66,7 +66,7 @@ def test_suggest_subdomains_http(db, client):
     DashboardUser.objects.create(user=user, account=account)
     client.force_login(user)
 
-    response = client.get("/data/urllist/suggest-subdomains/", {"domain": "test.nl"})
+    response = client.get("/data/urllist/suggest-subdomains", {"domain": "test.nl"})
     answer = response.json()
     assert answer in [
         [
@@ -100,7 +100,7 @@ def test_add_domains_from_raw_user_data(db, current_path, redis_server):
     list_1 = get_or_create_list_by_name(account, "test list 1")
 
     # you can't go past the DASHBOARD_MAXIMUM_DOMAINS_PER_LIST
-    response = add_domains_from_raw_user_data(account, {"list_id": list_1.id, "urls": ", ".join(domains[:6000])})
+    response = add_domains_from_raw_user_data(account, {"list_id": list_1.id, "urls": ", ".join(domains[:6000])}).dict()
 
     assert response["error"] is True
     assert response["message"] == "too_many_domains"
@@ -109,7 +109,7 @@ def test_add_domains_from_raw_user_data(db, current_path, redis_server):
     new_url = Url.objects.all().create(url="nu.nl")
     list_1.urls.add(new_url)
 
-    response = add_domains_from_raw_user_data(account, {"list_id": list_1.id, "urls": ", ".join(domains[:100])})
+    response = add_domains_from_raw_user_data(account, {"list_id": list_1.id, "urls": ", ".join(domains[:100])}).dict()
 
     assert response["success"] is True
     assert response["data"] == {

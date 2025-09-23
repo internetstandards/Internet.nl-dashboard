@@ -20,8 +20,6 @@ from dashboard.internet_nl_dashboard.views import (
     session,
     signup,
     spreadsheet,
-    subdomains,
-    tags,
     usage,
     user,
 )
@@ -42,7 +40,11 @@ class SpreadsheetFileTypeConverter:
 
 api = NinjaAPI(title="Internet.nl Dashboard API", version="1.0.0")
 api.add_router("/powertools", powertools.router)
-api.add_router("/urllists", domains.router)
+api.add_router("/urllist", domains.router)
+# Mount user settings operations under the urllist router, so paths become /data/urllist/user/...
+api.add_router("/user", user.router)
+# Mount account operations under /data/account/...
+api.add_router("/account", account.router)
 
 register_converter(SpreadsheetFileTypeConverter, "spreadsheet_filetype")
 
@@ -53,38 +55,40 @@ urlpatterns = [
     path("logout/", logout_view),
     # domain management
     path("data/", api.urls),
-    path("data/urllist/get_scan_status_of_list/<int:urllist_id>/", domains.get_scan_status_of_list_),
+    # Migrated: path("data/urllist/get_scan_status_of_list/<int:urllist_id>/", domains.get_scan_status_of_list_),
     # seems to be unused, makes sense...
     # path("data/urllist/save_list_content/", domains.save_list_content),
-    path("data/urllist/update_list_settings/", domains.update_list_settings_),
+    # migrated: path("data/urllist/update_list_settings/", domains.update_list_settings_),
     # path("data/urllist/create_list/", domains.create_list_),
     # if you call a method that does not exist, you will get a
     # ninja.errors.ConfigError: Router@'/powertools' has already been attached to API Internet.nl Dashboard API:1.0.0
     # path("data/urllist/delete/", domains.delete_list_),
-    path("data/urllist/scan_now/", domains.scan_now_),
-    path("data/urllist/discover-subdomains/<int:urllist_id>/", subdomains.request_subdomain_discovery_scan_),
-    path("data/urllist/discover-subdomains-status/<int:urllist_id>/", subdomains.subdomain_discovery_scan_status_),
-    path("data/urllist/url/save/", domains.alter_url_in_urllist_),
-    path("data/urllist/url/add/", domains.add_urls_to_urllist),
-    path("data/urllist/url/delete/", domains.delete_url_from_urllist_),
-    path("data/urllist/download/", domains.download_list_),
+    # Migrated: path("data/urllist/scan_now/", domains.scan_now_),
+    # Migrated: path("data/urllist/url/save/", domains.alter_url_in_urllist_),
+    # Migrated: path("data/urllist/url/add/", domains.add_urls_to_urllist),
+    # Migrated: path("data/urllist/url/delete/", domains.delete_url_from_urllist_),
+    # Migrated: path("data/urllist/download/", domains.download_list_),
+    # Migrated: path("data/urllist/suggest-subdomains/", domains.suggest_subdomains_),
+    # Migrated: path("data/urllist/tag/add/", tags.add_tag_),
+    # Migrated: path("data/urllist/tag/remove/", tags.remove_tag_),
+    # Migrated: path("data/urllist/tag/list/<int:urllist_id>/", tags.tags_in_urllist_),
     path("data/urllist/upload/<int:list_id>/", spreadsheet.upload_list_),
-    path("data/urllist/suggest-subdomains/", domains.suggest_subdomains_),
-    path("data/urllist/tag/add/", tags.add_tag_),
-    path("data/urllist/tag/remove/", tags.remove_tag_),
-    path("data/urllist/tag/list/<int:urllist_id>/", tags.tags_in_urllist_),
+    # Migrated: path("data/urllist/discover-subdomains/<int:urllist_id>/",
+    #   subdomains.request_subdomain_discovery_scan_),
+    # Migrated: path("data/urllist/discover-subdomains-status/<int:urllist_id>/",
+    #   subdomains.subdomain_discovery_scan_status_),
     # account management:
-    path("data/account/report_settings/get/", account.get_report_settings_),
-    path("data/account/report_settings/save/", account.save_report_settings_),
-    path("data/user/get/", user.get_user_settings_),
-    path("data/user/save/", user.save_user_settings_),
+    # Migrated: path("data/account/report_settings/get/", account.get_report_settings_),
+    # Migrated: path("data/account/report_settings/save/", account.save_report_settings_),
+    # Migrated: path("data/user/get/", user.get_user_settings_),
+    # Migrated: path("data/user/save/", user.save_user_settings_),
     # uploads of domains
     path("upload/", spreadsheet.upload),
     path("data/upload-spreadsheet/", spreadsheet.upload_spreadsheet),
     path("data/upload-history/", spreadsheet.upload_history),
     # scans / scan monitor
     path("data/scan-monitor/", scan_monitor.running_scans),
-    path("data/scan/cancel/", domains.cancel_scan_),
+    path("data/scan/cancel/", scan_monitor.cancel_scan_),
     path("data/report/get/<int:report_id>/", report.get_report_),
     path("data/report/shared/<str:report_code>/", report.get_shared_report_),
     path("data/report/public/", report.get_public_reports_),

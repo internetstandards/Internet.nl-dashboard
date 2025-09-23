@@ -10,21 +10,21 @@ class OperationResponseSchema(Schema):
     error: bool = False
     message: str = ""
     state: str = ""
-    data: dict | None = {}
-    timestamp: datetime = None
+    data: Optional[Dict[Any, Any]] = None
+    timestamp: datetime | None = None
 
 
 def operation_response(
     error: bool = False, success: bool = False, message: str = "", data: Optional[Dict[Any, Any]] = None
-) -> Dict[str, Any]:
-    return {
-        "error": error,
-        "success": success,
-        "message": message,
-        "state": "error" if error else "success",
-        "data": data,
-        "timestamp": datetime.now(timezone.utc),
-    }
+) -> OperationResponseSchema:
+    return OperationResponseSchema(
+        error=error,
+        success=success,
+        message=message,
+        state="error" if error else "success",
+        data=data,
+        timestamp=datetime.now(timezone.utc),
+    )
 
 
 # WARNING! ORDERING IS RELEVANT!

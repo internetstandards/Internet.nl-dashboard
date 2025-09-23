@@ -40,17 +40,17 @@ def process_application(request):
 
     for field in required_fields:
         if field not in form_data:
-            return JsonResponse(operation_response(error=True, message="incomplete_form_submitted"))
+            return JsonResponse(operation_response(error=True, message="incomplete_form_submitted").dict())
 
     if form_data.get("captcha") not in [42, "42"]:
-        return JsonResponse(operation_response(error=True, message="incorrect_captcha"))
+        return JsonResponse(operation_response(error=True, message="incorrect_captcha").dict())
 
     sleep(1)
 
     # prevent abuse case where millions of requests are made, who would even bother.
     one_hour_ago = datetime.now(timezone.utc) - timedelta(hours=1)
     if Log.objects.all().filter(date__gt=one_hour_ago).count() > 50:
-        return JsonResponse(operation_response(success=True, message="access_requested"))
+        return JsonResponse(operation_response(success=True, message="access_requested").dict())
 
     # sending mail can take a while, so don't wait for it.
     send_backoffice_mail_async.s(form_data).apply_async()
@@ -59,7 +59,7 @@ def process_application(request):
     # the mail is always in dutch, as we don't ask for a language
     send_signup_received_mail_to_requester.s(form_data).apply_async()
 
-    return JsonResponse(operation_response(success=True, message="access_requested"))
+    return JsonResponse(operation_response(success=True, message="access_requested").dict())
 
 
 @app.task(queue="storage", ignore_result=True)

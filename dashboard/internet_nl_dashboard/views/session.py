@@ -114,8 +114,10 @@ def session_status(request):
 
 
 def session_logout(request):
-    return JsonResponse(session_logout_(request))
+    resp = session_logout_(request)
+    return JsonResponse(resp.dict() if hasattr(resp, "dict") else resp)
 
 
 def session_login(request):
-    return JsonResponse(session_login_(request))
+    resp = session_login_(request)
+    return JsonResponse(resp.dict() if hasattr(resp, "dict") else resp)

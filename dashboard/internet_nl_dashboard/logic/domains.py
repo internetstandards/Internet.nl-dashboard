@@ -90,6 +90,27 @@ class UrlListScanStatusResponseSchema(Schema):
     scan_now_available: bool = False
 
 
+# Specialized schemas for alter_url_in_urllist
+class UrlChangeItemSchema(Schema):
+    id: int
+    url: str
+    created_on: datetime
+    has_mail_endpoint: bool | str
+    has_web_endpoint: bool | str
+    subdomain: str
+    domain: str
+    suffix: str
+
+
+class AlterUrlDataSchema(Schema):
+    created: UrlChangeItemSchema
+    removed: UrlChangeItemSchema | None = None
+
+
+class AlterUrlResponseSchema(OperationResponseSchema):
+    data: AlterUrlDataSchema | None = None
+
+
 class CreateListResponseSchema(OperationResponseSchema):
     data: UrlListSummarySchema | None = None
 
@@ -108,6 +129,28 @@ class CreateUrlListInputSchema(Schema):
 
 class DeleteUrlListInputSchema(Schema):
     id: int
+
+
+class DeleteUrlFromListInputSchema(Schema):
+    urllist_id: int
+    url_id: int
+
+
+class DownloadSpreadsheetInputSchema(Schema):
+    urllist_id: int
+    file_type: str = "xlsx"
+
+
+class SuggestedSubdomainsInputSchema(Schema):
+    domain: str = ""
+    period: int = 370
+    urllist_id: int | None = None
+
+
+class SuggestedDomainSchema(Schema):
+    domain: str
+    has_website: bool | str
+    has_email: bool | str
 
 
 log = logging.getLogger(__package__)
@@ -150,45 +193,50 @@ def suggest_subdomains(domain: str, period: int = 370):
 
 
 # todo: write test
-def alter_url_in_urllist(account, data) -> Dict[str, Any]:
+def alter_url_in_urllist(account, data) -> AlterUrlResponseSchema:
     # data = {'list_id': list.id, 'url_id': url.id, 'new_url_string': url.url}
+
+    now = datetime.now(timezone.utc)
 
     expected_keys = ["list_id", "url_id", "new_url_string"]
     if not keys_are_present_in_object(expected_keys, data):
-        return operation_response(error=True, message="Missing keys in data.")
+        return AlterUrlResponseSchema(error=True, message="Missing keys in data.", state="error", timestamp=now)
 
     # what was the old id we're changing?
     old_url = Url.objects.all().filter(pk=data["url_id"]).first()
     if not old_url:
-        return operation_response(error=True, message="The old url does not exist.")
+        return AlterUrlResponseSchema(error=True, message="The old url does not exist.", state="error", timestamp=now)
 
     if old_url.url == data["new_url_string"]:
-        # no changes, for c
-        return operation_response(
+        # no changes, but return a created item for UI consistency
+        created_item = UrlChangeItemSchema(
+            id=old_url.id,
+            url=old_url.url,
+            created_on=old_url.created_on,
+            has_mail_endpoint="unknown",
+            has_web_endpoint="unknown",
+            subdomain=old_url.computed_subdomain,
+            domain=old_url.computed_domain,
+            suffix=old_url.computed_suffix,
+        )
+        return AlterUrlResponseSchema(
             success=True,
             message="Saved.",
-            data={
-                "created": {
-                    "id": old_url.id,
-                    "url": old_url.url,
-                    "created_on": old_url.created_on,
-                    "has_mail_endpoint": "unknown",
-                    "has_web_endpoint": "unknown",
-                    "subdomain": old_url.computed_subdomain,
-                    "domain": old_url.computed_domain,
-                    "suffix": old_url.computed_suffix,
-                },
-            },
+            state="success",
+            data=AlterUrlDataSchema(created=created_item, removed=None),
+            timestamp=now,
         )
 
     # is this really a list?
     urllist = UrlList.objects.all().filter(account=account, pk=data["list_id"]).first()
     if not urllist:
-        return operation_response(error=True, message="List does not exist.")
+        return AlterUrlResponseSchema(error=True, message="List does not exist.", state="error", timestamp=now)
 
     # is the url valid?
     if not Url.is_valid_url(data["new_url_string"]):
-        return operation_response(error=True, message="New url does not have the correct format.")
+        return AlterUrlResponseSchema(
+            error=True, message="New url does not have the correct format.", state="error", timestamp=now
+        )
 
     # fetch the url, or create it if it doesn't exist.
     new_url, created = get_url(data["new_url_string"])
@@ -219,35 +267,38 @@ def alter_url_in_urllist(account, data) -> Dict[str, Any]:
     new_fragments = tldextract.extract(new_url.url)
     old_fragments = tldextract.extract(old_url.url)
 
-    return operation_response(
+    created_item = UrlChangeItemSchema(
+        id=new_url.id,
+        url=new_url.url,
+        created_on=new_url.created_on,
+        has_mail_endpoint=new_url_has_mail_endpoint,
+        has_web_endpoint=new_url_has_web_endpoint,
+        subdomain=new_fragments.subdomain,
+        domain=new_fragments.domain,
+        suffix=new_fragments.suffix,
+    )
+
+    removed_item = UrlChangeItemSchema(
+        id=old_url.id,
+        url=old_url.url,
+        created_on=old_url.created_on,
+        has_mail_endpoint=old_url_has_mail_endpoint,
+        has_web_endpoint=old_url_has_web_endpoint,
+        subdomain=old_fragments.subdomain,
+        domain=old_fragments.domain,
+        suffix=old_fragments.suffix,
+    )
+
+    return AlterUrlResponseSchema(
         success=True,
         message="Saved.",
-        data={
-            "created": {
-                "id": new_url.id,
-                "url": new_url.url,
-                "created_on": new_url.created_on,
-                "has_mail_endpoint": new_url_has_mail_endpoint,
-                "has_web_endpoint": new_url_has_web_endpoint,
-                "subdomain": new_fragments.subdomain,
-                "domain": new_fragments.domain,
-                "suffix": new_fragments.suffix,
-            },
-            "removed": {
-                "id": old_url.id,
-                "url": old_url.url,
-                "created_on": old_url.created_on,
-                "has_mail_endpoint": old_url_has_mail_endpoint,
-                "has_web_endpoint": old_url_has_web_endpoint,
-                "subdomain": old_fragments.subdomain,
-                "domain": old_fragments.domain,
-                "suffix": old_fragments.suffix,
-            },
-        },
+        state="success",
+        data=AlterUrlDataSchema(created=created_item, removed=removed_item),
+        timestamp=now,
     )
 
 
-def scan_now(account, user_input) -> Dict[str, Any]:
+def scan_now(account, user_input) -> OperationResponseSchema:
     urllist = (
         UrlList.objects.all()
         .filter(account=account, id=user_input.get("id", -1), is_deleted=False)
@@ -375,7 +426,7 @@ def delete_list(account: Account, data: DeleteUrlListInputSchema) -> OperationRe
     """
     urllist = UrlList.objects.all().filter(account=account, id=data.id, is_deleted=False).first()
     if not urllist:
-        return OperationResponseSchema(**operation_response(error=True, message="List could not be deleted."))
+        return operation_response(error=True, message="List could not be deleted.")
 
     urllist.is_deleted = True
     urllist.enable_scans = False
@@ -385,7 +436,7 @@ def delete_list(account: Account, data: DeleteUrlListInputSchema) -> OperationRe
     # Sprinkling an activity stream action.
     action.send(account, verb="deleted list", target=urllist, public=False)
 
-    return OperationResponseSchema(**operation_response(success=True, message="List deleted."))
+    return operation_response(success=True, message="List deleted.")
 
 
 def get_scan_status_of_list(account: Account, list_id: int) -> UrlListScanStatusResponseSchema:
@@ -475,7 +526,7 @@ def cancel_scan(account: Account, scan_id: int):
 
 
 # @pysnooper.snoop()
-def update_list_settings(account: Account, user_input: Dict) -> Dict[str, Any]:
+def update_list_settings(account: Account, user_input: Dict) -> CreateListResponseSchema | OperationResponseSchema:
     """
 
     This cannot update the urls, as that would increase complexity too much.
@@ -844,7 +895,7 @@ def retrieve_possible_urls_from_unfiltered_input(unfiltered_input: str) -> Tuple
     return sorted(has_tld), duplicates_removed
 
 
-def add_domains_from_raw_user_data(account: Account, user_input: Dict[str, Any]) -> Dict:
+def add_domains_from_raw_user_data(account: Account, user_input: Dict[str, Any]) -> OperationResponseSchema:
     """
     This is the 'id' version of save_urllist. It is a bit stricter as in that it requires the list to exist.
 
@@ -869,7 +920,7 @@ def add_domains_from_raw_user_data(account: Account, user_input: Dict[str, Any])
     # does this remove tags of existing urls?
     result = save_urllist_content_by_id(account, list_id, {url: {"tags": []} for url in urls})
     if "error" in result:
-        return result
+        return OperationResponseSchema(**result)
 
     return operation_response(success=True, message="add_domains_valid_urls_added", data=result)
 
@@ -910,7 +961,7 @@ def save_urllist_content_by_id(
     urllist = UrlList.objects.all().filter(account=account, id=urllist_id, is_deleted=False).first()
 
     if not urllist:
-        return operation_response(error=True, message="add_domains_list_does_not_exist")
+        return {"error": True, "message": "add_domains_list_does_not_exist"}
 
     # this is extremely fast for 10k domains.
     urls, duplicates_removed = retrieve_possible_urls_from_unfiltered_input(", ".join(unfiltered_urls.keys()))
@@ -918,7 +969,7 @@ def save_urllist_content_by_id(
 
     proposed_number_of_urls = urllist.urls.all().count() + len(cleaned_urls["correct"])
     if proposed_number_of_urls > int(constance_cached_value("DASHBOARD_MAXIMUM_DOMAINS_PER_LIST")):
-        return operation_response(error=True, message="too_many_domains")
+        return {"error": True, "message": "too_many_domains"}
 
     if cleaned_urls["correct"]:
         # this operation takes a while, to speed it up urls are added async.
