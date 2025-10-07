@@ -582,5 +582,13 @@ SOCIALACCOUNT_PROVIDERS = {
     }
 }
 
+# WSM settings
+NETWORK_SUPPORTS_IPV4 = os.environ.get("NETWORK_SUPPORTS_IPV4", True)
+NETWORK_SUPPORTS_IPV6 = os.environ.get("NETWORK_SUPPORTS_IPV6", False)
+
+# Since Django 5.2, it's a good warning for beginning developers, it's noise if you're around for a while
+# https://adamj.eu/tech/2025/06/27/django-hide-development-server-warning/
+os.environ["DJANGO_RUNSERVER_HIDE_WARNING"] = "true"
+
 # make sure these imports don't get removed by linting tools
 __all__ = ["CONSTANCE_CONFIG", "CONSTANCE_BACKEND", "CONSTANCE_ADDITIONAL_FIELDS", "CONSTANCE_CONFIG_FIELDSETS"]

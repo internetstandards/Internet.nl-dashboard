@@ -2,26 +2,31 @@
 import logging
 
 from django.contrib.auth.decorators import login_required
-from django.http import HttpResponse
+from ninja import Router
 
-from dashboard.internet_nl_dashboard.logic.domains import cancel_scan
-from dashboard.internet_nl_dashboard.logic.scan_monitor import get_scan_monitor_data
-from dashboard.internet_nl_dashboard.views import LOGIN_URL, get_account, get_json_body, json_response
+from dashboard.internet_nl_dashboard.logic import OperationResponseSchema
+from dashboard.internet_nl_dashboard.logic.scan_monitor import (
+    CancelScanInputSchema,
+    ScanMonitorItemSchema,
+    cancel_scan,
+    get_scan_monitor_data,
+)
+from dashboard.internet_nl_dashboard.views import LOGIN_URL, get_account
 
 log = logging.getLogger(__package__)
 
+router = Router(tags=["scan"])
 
+
+@router.get("/monitor", response={200: list[ScanMonitorItemSchema]})
 @login_required(login_url=LOGIN_URL)
-def running_scans(request) -> HttpResponse:
+def running_scans(request):
     account = get_account(request)
-
-    # list of dicts: In order to allow non-dict objects to be serialized set the safe parameter to False.
-    return json_response(get_scan_monitor_data(account))
+    return get_scan_monitor_data(account)
 
 
+@router.post("/cancel", response={200: OperationResponseSchema})
 @login_required(login_url=LOGIN_URL)
-def cancel_scan_(request):
+def cancel_scan_api(request, data: CancelScanInputSchema):
     account = get_account(request)
-    request = get_json_body(request)
-    response = cancel_scan(account, request.get("id"))
-    return json_response(response)
+    return cancel_scan(account, data.id)

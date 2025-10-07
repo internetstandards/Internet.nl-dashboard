@@ -2,10 +2,12 @@
 import logging
 from typing import Any
 
+import django_excel as excel
 import orjson
 from django.contrib.auth import logout
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import redirect
+from django.utils.text import slugify
 
 from dashboard.internet_nl_dashboard.models import Account, DashboardUser
 
@@ -57,3 +59,29 @@ def get_json_body(request):
 # pylint disable=http-response-with-content-type-json
 def json_response(data: dict[Any, Any] | list[Any]) -> HttpResponse:
     return HttpResponse(orjson.dumps(data), content_type="application/json", status=200)
+
+
+def create_spreadsheet_download(file_name: str, spreadsheet_data: Any, file_type: str = "xlsx") -> HttpResponse:
+
+    if file_type not in ["xlsx", "ods", "csv", "xlsx-openpyxl"] or not spreadsheet_data or not file_name:
+        return JsonResponse({})
+
+    content_types = {
+        "csv": "text/csv",
+        "ods": "application/vnd.oasis.opendocument.spreadsheet",
+        "xlsx": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        "xlsx-openpyxl": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    }
+
+    if file_type == "xlsx-openpyxl":
+        with open(spreadsheet_data.name, "rb") as file_handle:
+            output: HttpResponse = HttpResponse(file_handle.read())
+        file_type = "xlsx"
+    else:
+        # Simple xls files and such
+        output = excel.make_response(spreadsheet_data, file_type)
+
+    output["Content-Disposition"] = f"attachment; filename={slugify(file_name)}.{file_type}"
+    output["Content-type"] = content_types[file_type]
+
+    return output

@@ -5,13 +5,12 @@ from django.urls import path, register_converter
 from ninja import NinjaAPI
 from websecmap.map.views import security_txt
 
-# We have to import the signals somewhere..?!
+# We have to import the signals somewhere?!
 import dashboard.internet_nl_dashboard.signals  # noqa  # pylint: disable=unused-import
 from dashboard.internet_nl_dashboard.views import (
     account,
     app,
     domains,
-    download_spreadsheet,
     logout_view,
     mail,
     powertools,
@@ -20,9 +19,15 @@ from dashboard.internet_nl_dashboard.views import (
     session,
     signup,
     spreadsheet,
-    usage,
     user,
 )
+
+"""
+Side effects:
+
+If you call a method that does not exist, you will get a ninja.errors.ConfigError:
+    Router@'/...' has already been attached to ...:1.0.0
+"""
 
 
 class SpreadsheetFileTypeConverter:
@@ -39,108 +44,30 @@ class SpreadsheetFileTypeConverter:
 
 
 api = NinjaAPI(title="Internet.nl Dashboard API", version="1.0.0")
-api.add_router("/powertools", powertools.router)
-api.add_router("/urllist", domains.router)
-# Mount user settings operations under the urllist router, so paths become /data/urllist/user/...
+api.add_router("/signup", signup.router)
 api.add_router("/user", user.router)
-# Mount account operations under /data/account/...
 api.add_router("/account", account.router)
+api.add_router("/urllist", domains.router)
+api.add_router("/spreadsheet", spreadsheet.router)
+api.add_router("/scan", scan_monitor.router)
+api.add_router("/report", report.router)
+api.add_router("/powertools", powertools.router)
+api.add_router("/config", app.router)
+api.add_router("/session", session.router)
 
+# todo: where was this used, is it still relevant?
 register_converter(SpreadsheetFileTypeConverter, "spreadsheet_filetype")
-
 
 urlpatterns = [
     path("", lambda request: redirect(config.DASHBOARD_FRONTEND_URL)),
-    path("data/config/", app.config),
     path("logout/", logout_view),
-    # domain management
     path("data/", api.urls),
-    # Migrated: path("data/urllist/get_scan_status_of_list/<int:urllist_id>/", domains.get_scan_status_of_list_),
-    # seems to be unused, makes sense...
-    # path("data/urllist/save_list_content/", domains.save_list_content),
-    # migrated: path("data/urllist/update_list_settings/", domains.update_list_settings_),
-    # path("data/urllist/create_list/", domains.create_list_),
-    # if you call a method that does not exist, you will get a
-    # ninja.errors.ConfigError: Router@'/powertools' has already been attached to API Internet.nl Dashboard API:1.0.0
-    # path("data/urllist/delete/", domains.delete_list_),
-    # Migrated: path("data/urllist/scan_now/", domains.scan_now_),
-    # Migrated: path("data/urllist/url/save/", domains.alter_url_in_urllist_),
-    # Migrated: path("data/urllist/url/add/", domains.add_urls_to_urllist),
-    # Migrated: path("data/urllist/url/delete/", domains.delete_url_from_urllist_),
-    # Migrated: path("data/urllist/download/", domains.download_list_),
-    # Migrated: path("data/urllist/suggest-subdomains/", domains.suggest_subdomains_),
-    # Migrated: path("data/urllist/tag/add/", tags.add_tag_),
-    # Migrated: path("data/urllist/tag/remove/", tags.remove_tag_),
-    # Migrated: path("data/urllist/tag/list/<int:urllist_id>/", tags.tags_in_urllist_),
-    path("data/urllist/upload/<int:list_id>/", spreadsheet.upload_list_),
-    # Migrated: path("data/urllist/discover-subdomains/<int:urllist_id>/",
-    #   subdomains.request_subdomain_discovery_scan_),
-    # Migrated: path("data/urllist/discover-subdomains-status/<int:urllist_id>/",
-    #   subdomains.subdomain_discovery_scan_status_),
-    # account management:
-    # Migrated: path("data/account/report_settings/get/", account.get_report_settings_),
-    # Migrated: path("data/account/report_settings/save/", account.save_report_settings_),
-    # Migrated: path("data/user/get/", user.get_user_settings_),
-    # Migrated: path("data/user/save/", user.save_user_settings_),
-    # uploads of domains
+    # dedicated upload-success that is used to handle uploads, this is not really integrated in the API.
+    # This is used when the separate upload-button is used that selects one file, instead of drag and drop uploading
     path("upload/", spreadsheet.upload),
-    path("data/upload-spreadsheet/", spreadsheet.upload_spreadsheet),
-    path("data/upload-history/", spreadsheet.upload_history),
-    # scans / scan monitor
-    path("data/scan-monitor/", scan_monitor.running_scans),
-    path("data/scan/cancel/", scan_monitor.cancel_scan_),
-    path("data/report/get/<int:report_id>/", report.get_report_),
-    path("data/report/shared/<str:report_code>/", report.get_shared_report_),
-    path("data/report/public/", report.get_public_reports_),
-    path("data/report/ad_hoc/<int:report_id>/", report.get_ad_hoc_tagged_report_),
-    path("data/report/ad_hoc_save/<int:report_id>/", report.save_ad_hoc_tagged_report_),
-    path(
-        "data/report/get_improvements_and_regressions/<int:report_id>/",
-        report.improvement_regressions_compared_to_previous_report_,
-    ),
-    path("data/report/share/share/", report.x_share),
-    path("data/report/share/unshare/", report.x_unshare),
-    path("data/report/share/update_share_code/", report.x_update_share_code),
-    path("data/report/share/update_report_code/", report.x_update_report_code),
-    path("data/report/public/account/<int:account_id>/lists/all/", report.get_publicly_shared_lists_per_account_),
-    path(
-        "data/report/public/account/<int:account_id>/lists/<int:urllist_id>/",
-        report.get_publicly_shared_lists_per_account_and_list_id_,
-    ),
-    path("data/report/public/lists/<int:urllist_id>/latest/", report.get_latest_report_id_from_list),
-    path(
-        "data/report/public/lists/<int:urllist_id>/latest/<str:report_type>/",
-        report.get_latest_report_id_from_list_and_type_,
-    ),
-    path(
-        "data/report/differences_compared_to_current_list/<int:report_id>/",
-        report.get_report_differences_compared_to_current_list_,
-    ),
-    path("data/report/get_previous/<int:urllist_id>/<str:at_when>/", report.get_previous_report_),
-    path("data/report/recent/", report.get_recent_reports_),
-    path(
-        "data/report/urllist_timeline_graph/<str:urllist_ids>/<str:report_type>/", report.get_urllist_report_graph_data_
-    ),
-    path(
-        "data/download-spreadsheet/<int:report_id>/<spreadsheet_filetype:file_type>/",
-        download_spreadsheet.download_spreadsheet,
-    ),
-    path("data/usage/", usage.usage_),
+    # excluding this to have a nicer unsub path in mails
     path("mail/unsubscribe/<str:feed>/<str:unsubscribe_code>/", mail.unsubscribe_),
-    path("data/signup/", signup.process_application),
-    # session management
-    # logging in via javascript is not possible, because the CSRF is tied to the session cookie.
-    # The session cookie cannot be requested by javascript, and we're not going to use JWT because
-    # the second factor part is also django only, and not implmented as REST methods.
-    # So there is currently no way to move to rest based auth _including_ second factor authentication.
-    # of course except OAUTH, but there is no knowledge for that yet.
-    path("session/login/", session.session_login),
-    path("session/logout/", session.session_logout),
-    path("session/status/", session.session_status),
-    # Would you enable the below login form, you will bypass all second factor authentication. Therefore do not enable
-    # this url (!)
-    # url(r'^login/$', auth_views.LoginView.as_view(template_name='internet_nl_dashboard/registration/login.html'),
-    # name='login'),
-    path("security.txt", security_txt, name="security_txt"),
     path(".well-known/security.txt", security_txt, name="well_known_security_txt"),
+    # Enabling the below path will bypass all second factor authentication, do not enable this path:
+    # url(r'^/$', auth_views.LoginView.as_view(template_name='internet_nl_dashboard/registration/login.html')),
 ]

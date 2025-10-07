@@ -6,6 +6,7 @@ from django.http import HttpResponse, JsonResponse
 from ninja import Router, Schema
 
 from dashboard.internet_nl_dashboard.logic import OperationResponseSchema, operation_response
+from dashboard.internet_nl_dashboard.logic.usage import UsageMetricsSchema, usage_metrics
 from dashboard.internet_nl_dashboard.models import Account, AccountInternetNLScan, DashboardUser, UrlList
 from dashboard.internet_nl_dashboard.views import get_account
 from dashboard.settings import LOGIN_URL
@@ -186,3 +187,9 @@ def save_instant_account_and_user(request, data: InstantAccountAndUserCreationSc
             success=True, message=f"User {data.new_username} created and added to account {account.name}."
         )
     )
+
+
+@router.get("/usage", response={200: UsageMetricsSchema})
+@user_passes_test(is_powertool_user, login_url=LOGIN_URL)
+def usage_api(request) -> UsageMetricsSchema:
+    return usage_metrics()

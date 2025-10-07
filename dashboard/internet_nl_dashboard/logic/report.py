@@ -11,6 +11,7 @@ from uuid import uuid4
 
 from actstream import action
 from django.db.models import Model, Prefetch
+from ninja import Schema
 from websecmap.organizations.models import Url
 from websecmap.reporting.diskreport import location_on_disk, retrieve_report, store_report
 from websecmap.reporting.report import relevant_urls_at_timepoint
@@ -23,10 +24,212 @@ from dashboard.internet_nl_dashboard.logic.urllist_dashboard_report import (
 )
 from dashboard.internet_nl_dashboard.models import Account, UrlList, UrlListReport
 
+
+class RatingCalculationSchema(Schema):
+    evidence: str
+    meaning: Dict[str, Any]
+    since: float
+    ok: int = 0
+    translation: str = ""
+    technical_details: str = ""
+    # test_result can be a string (e.g., "failed") or an "int" (e.g., "79")
+    test_result: str = "45"
+    scan: int
+    # todo: document how progressions work, what do these integers mean...
+    simple_progression: int | None = None
+    # Fields specific to the Internet.nl score entry
+    internet_nl_score: int | None = None
+    internet_nl_url: str | None = None
+
+
+class StatisticsCalculationSchema(Schema):
+    high: int
+    medium: int
+    low: int
+    ok: int
+    not_ok: int
+    not_testable: int
+    not_applicable: int
+    error_in_test: int
+    pct_high: float
+    pct_medium: float
+    pct_low: float
+    pct_not_applicable: float
+    pct_not_testable: float
+    pct_error_in_test: float
+    pct_ok: float
+    pct_not_ok: float
+
+
+class EndpointCalculationSchema(Schema):
+    id: int
+    # example: "dns_a_aaaa/0 IPv0"
+    concat: str
+    ip: int
+    ip_version: int
+    port: int
+    protocol: str
+    v4: bool
+    # Per-endpoint statistics
+    high: int
+    medium: int
+    low: int
+    ok: int
+    # A dynamic map of rating name -> rating payload
+    ratings_by_type: Dict[str, RatingCalculationSchema]
+
+
+class UrlCalculationItemSchema(Schema):
+    url: str
+    # Dynamic map of rating name -> rating payload
+    ratings: Dict[str, RatingCalculationSchema]
+    endpoints: List[EndpointCalculationSchema]
+
+    total_issues: int
+    high: int
+    medium: int
+    low: int
+    ok: int
+    endpoint_ok: int
+
+
+class CalculationSchema(Schema):
+    urls: List[UrlCalculationItemSchema]
+    high: int
+    medium: int
+    low: int
+    ok: int
+
+    total_urls: int
+    high_urls: int
+    medium_urls: int
+    low_urls: int
+    ok_urls: int
+
+    total_endpoints: int
+    high_endpoints: int
+    medium_endpoints: int
+    low_endpoints: int
+    ok_endpoints: int
+
+    total_url_issues: int
+    total_endpoint_issues: int
+
+    url_issues_high: int
+    url_issues_medium: int
+    url_issues_low: int
+    url_ok: int
+
+    endpoint_issues_high: int
+    endpoint_issues_medium: int
+    endpoint_issues_low: int
+    endpoint_ok: int
+
+    name: str
+
+    # this is the same set of field names as ratings.
+    statistics_per_issue_type: Dict[str, StatisticsCalculationSchema]
+
+
+class ReportSchema(Schema):
+    id: int
+    urllist_id: int
+    urllist_name: str
+    average_internet_nl_score: float
+    total_urls: int
+    is_publicly_shared: bool
+    at_when: datetime
+    # Detailed calculation structure as defined above.
+    calculation: CalculationSchema
+    report_type: str
+    public_report_code: str
+    public_share_code: str
+
+
+class SharedReportAuthRequiredSchema(Schema):
+    authentication_required: bool = True
+    public_report_code: str
+    id: str
+    urllist_name: str
+    at_when: str
+
+
+class SharedReportInputSchema(Schema):
+    share_code: str
+
+
+class ReportVsListDifferenceSchema(Schema):
+    number_of_urls_in_urllist: int
+    number_of_urls_in_report: int
+    in_urllist_but_not_in_report: str
+    in_report_but_not_in_urllist: str
+    both_are_equal: bool
+
+
+class RecentReportItemSchema(Schema):
+    id: int
+    report: int
+    # mask that there is a mail_dashboard variant.
+    type: str
+    number_of_urls: int
+    list_name: str
+    # at_when is emitted as ISO string by get_recent_reports
+    at_when: str
+    urllist_id: int
+    urllist_scan_type: str
+
+
+class PublicReportItemSchema(Schema):
+    # Public reports displayed on the homepage
+    at_when: str
+    average_internet_nl_score: float
+    report_type: str
+    urllist_name: str
+    total_urls: int
+    public_report_code: str
+
+
+class ShareInputSchema(Schema):
+    report_id: int
+    public_share_code: str
+
+
+class UnshareInputSchema(Schema):
+    report_id: int
+
+
+class UpdateShareCodeInputSchema(Schema):
+    report_id: int
+    public_share_code: str
+
+
+class UpdateReportCodeInputSchema(Schema):
+    report_id: int
+
+
+class SaveAdHocTaggedReportInputSchema(Schema):
+    tags: List[str] = []
+    custom_date: Optional[str] = None
+    custom_time: Optional[str] = None
+
+
+class UrlListTimelineDataPointSchema(Schema):
+    date: str
+    urls: int
+    average_internet_nl_score: float
+    report: int
+
+
+class UrlListTimelineSeriesSchema(Schema):
+    id: int
+    name: str
+    data: List[UrlListTimelineDataPointSchema]
+
+
 log = logging.getLogger(__name__)
 
 
-def get_recent_reports(account: Account) -> List[Dict[str, Any]]:
+def get_recent_reports(account: Account) -> list[RecentReportItemSchema]:
     # loading the calculation takes some time. In this case we don't need the calculation and as such we defer it.
     # also show the reports from deleted lists... urllist__is_deleted=False
     reports = (
@@ -37,22 +240,18 @@ def get_recent_reports(account: Account) -> List[Dict[str, Any]]:
         .defer("calculation")
     )
 
-    return create_report_response(reports)
-
-
-def create_report_response(reports) -> List[Dict[str, Any]]:
     return [
-        {
-            "id": report.id,
-            "report": report.id,
+        RecentReportItemSchema(
+            id=report.id,
+            report=report.id,
             # mask that there is a mail_dashboard variant.
-            "type": report.report_type,
-            "number_of_urls": report.total_urls,
-            "list_name": report.urllist.name,
-            "at_when": report.at_when.isoformat(),
-            "urllist_id": report.urllist.id,
-            "urllist_scan_type": report.urllist.scan_type,
-        }
+            type=report.report_type,
+            number_of_urls=report.total_urls,
+            list_name=report.urllist.name,
+            at_when=report.at_when.isoformat(),
+            urllist_id=report.urllist.id,
+            urllist_scan_type=report.urllist.scan_type,
+        )
         for report in reports
     ]
 
@@ -132,7 +331,9 @@ def ad_hoc_tagged_report(account: Account, report_id: int, tags: List[str], at_w
     )
 
 
-def get_urllist_timeline_graph(account: Account, urllist_ids: str, report_type: str = "web"):
+def get_urllist_timeline_graph(
+    account: Account, urllist_ids: str, report_type: str = "web"
+) -> list[UrlListTimelineSeriesSchema]:
     """
     This is the data for a line / bar chart that shows information on the average internet.nl score.
     There can be multiple reports selected,
@@ -216,7 +417,7 @@ def get_urllist_timeline_graph(account: Account, urllist_ids: str, report_type: 
     return ordered_lists
 
 
-def get_report(account: Account, report_id: int) -> str:
+def get_report(account: Account, report_id: int) -> ReportSchema:
     log.debug("Retrieve report data")
     # it's okay if the list is deleted. Still be able to see reports from the past
     # urllist__is_deleted=False,
@@ -245,6 +446,8 @@ def get_report(account: Account, report_id: int) -> str:
     log_report_access_async.apply_async([report_id, account.id])
     calculation_raw = retrieve_report_raw(report_id, "UrlListReport")
 
+    # what we do not want is to convert the calculation to json as that is CPU intensive for no
+    # reason at all. So While we will return a GetReportSchema, this is created in a string.
     log.debug("Dumping report to json")
     data = f"{dump_report_to_text_resembling_json(report, calculation_raw)}"
     log.debug("Returning the report")
@@ -268,18 +471,30 @@ def log_report_access_async(report_id: int, account_id: int):
     action.send(account, verb="viewed report", target=log_report, public=False)
 
 
-def get_public_reports():
-    return list(
+def get_public_reports() -> list[PublicReportItemSchema]:
+    # todo: it feels like a waste to convert dicts to objects that cast back to dicts...
+    reports = (
         UrlListReport.objects.all()
         .filter(is_publicly_shared=True, is_shared_on_homepage=True)
-        .values(
-            "at_when", "average_internet_nl_score", "report_type", "urllist__name", "total_urls", "public_report_code"
-        )
+        .select_related("urllist")
+        .defer("calculation")
         .order_by("-at_when")
     )
+    return [
+        PublicReportItemSchema(
+            at_when=report.at_when.isoformat(),
+            average_internet_nl_score=report.average_internet_nl_score,
+            report_type=report.report_type,
+            urllist_name=report.urllist.name,
+            total_urls=report.total_urls,
+            public_report_code=report.public_report_code,
+        )
+        for report in reports
+    ]
 
 
-def get_shared_report(report_code: str, share_code: str = ""):
+def get_shared_report(report_code: str, share_code: str = "") -> ReportSchema | SharedReportAuthRequiredSchema | str:
+    # adding str, because of optimization to not return json, but to return a string
     # Check if report_code exists. If so see if a share code is required.
     report = (
         UrlListReport.objects.all()
@@ -393,7 +608,7 @@ def dump_report_to_json(report):
     }
 
 
-def get_report_differences_compared_to_current_list(account: Account, report_id: int):
+def get_report_differences_compared_to_current_list(account: Account, report_id: int) -> ReportVsListDifferenceSchema:
     """
     This method gives insight into the report, compared to the list the report originates from.
 
@@ -439,10 +654,10 @@ def get_report_differences_compared_to_current_list(account: Account, report_id:
         "both_are_equal": both_are_equal,
     }
 
-    return content_comparison
+    return ReportVsListDifferenceSchema(**content_comparison)
 
 
-def get_previous_report(account: Account, urllist_id, at_when):
+def get_previous_report(account: Account, urllist_id, at_when) -> ReportSchema:
     report = (
         UrlListReport.objects.all()
         .filter(urllist_id=urllist_id, urllist__account=account, urllist__is_deleted=False, at_when__lt=at_when)

@@ -32,8 +32,8 @@ from dashboard.internet_nl_dashboard.models import (
     UrlListReport,
     determine_next_scan_moment,
 )
-from dashboard.internet_nl_dashboard.scanners.scan_internet_nl_per_account import initialize_scan, update_state
-from dashboard.internet_nl_dashboard.views.download_spreadsheet import create_spreadsheet_download
+from dashboard.internet_nl_dashboard.scanners.scan_internet_nl_per_account import initialize_scan
+from dashboard.internet_nl_dashboard.views import create_spreadsheet_download
 
 
 class UrlListSummarySchema(Schema):
@@ -495,34 +495,6 @@ def get_scan_status_of_list(account: Account, list_id: int) -> UrlListScanStatus
         data["last_report_date"] = urllist.last_report[0].at_when  # type: ignore
 
     return UrlListScanStatusResponseSchema(**data)
-
-
-def cancel_scan(account: Account, scan_id: int):
-    """
-    :param account: Account
-    :param scan_id: AccountInternetNLScan ID
-    :return:
-    """
-
-    scan = AccountInternetNLScan.objects.all().filter(account=account, pk=scan_id).first()
-
-    if not scan:
-        return operation_response(error=True, message="scan not found")
-
-    if scan.state == "finished":
-        return operation_response(success=True, message="scan already finished")
-
-    if scan.state == "cancelled":
-        return operation_response(success=True, message="scan already cancelled")
-
-    scan.finished_on = datetime.now(timezone.utc)
-    scan.save()
-    update_state("cancelled", scan.id)
-
-    # Sprinkling an activity stream action.
-    action.send(account, verb="cancelled scan", target=scan, public=False)
-
-    return operation_response(success=True, message="scan cancelled")
 
 
 # @pysnooper.snoop()

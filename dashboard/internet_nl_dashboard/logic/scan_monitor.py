@@ -1,13 +1,45 @@
 # SPDX-License-Identifier: Apache-2.0
 from datetime import datetime, timezone
-from typing import Any, Dict, List, Union
+from typing import Any
 
+from actstream import action
 from constance import config
+from ninja import Schema
 
+from dashboard.internet_nl_dashboard.logic import OperationResponseSchema, operation_response
 from dashboard.internet_nl_dashboard.models import Account, AccountInternetNLScan, AccountInternetNLScanLog
+from dashboard.internet_nl_dashboard.scanners.scan_internet_nl_per_account import update_state
 
 
-def get_scan_monitor_data(account: Account) -> List[Dict[str, Union[str, int, bool, None]]]:
+class ScanLogEntrySchema(Schema):
+    at_when: datetime = None
+    state: str = ""
+
+
+class ScanMonitorItemSchema(Schema):
+    id: int
+    state: str
+    type: str
+    last_check: datetime | None
+    started: bool
+    started_on: datetime
+    finished: bool
+    finished_on: datetime
+    status_url: str
+    message: str
+    success: bool
+    list_name: str
+    list_id: int
+    runtime: int
+    last_report_id: int
+    log: list[ScanLogEntrySchema] = []
+
+
+class CancelScanInputSchema(Schema):
+    id: int
+
+
+def get_scan_monitor_data(account: Account) -> list[ScanMonitorItemSchema]:
     latest_30_scans = (
         AccountInternetNLScan.objects.all()
         .filter(account=account, urllist__is_deleted=False)
@@ -65,7 +97,7 @@ def get_scan_monitor_data(account: Account) -> List[Dict[str, Union[str, int, bo
     return response
 
 
-def prepare_scan_data_for_display(scan: Any):
+def prepare_scan_data_for_display(scan: Any) -> ScanMonitorItemSchema:
     last_report_id = None
     if scan.state == "finished" and scan.report is not None:
         last_report_id = scan.report.id
@@ -80,37 +112,66 @@ def prepare_scan_data_for_display(scan: Any):
         runtime = moment - scan.started_on
         runtime_seconds = int(runtime.total_seconds() * 1000)
 
-    logs = AccountInternetNLScanLog.objects.all().filter(scan=scan).only("at_when", "state").order_by("-at_when")
-    log_messages = [{"at_when": log.at_when, "state": log.state} for log in logs]
+    logs_qs = AccountInternetNLScanLog.objects.all().filter(scan=scan).only("at_when", "state").order_by("-at_when")
+    log_messages = [ScanLogEntrySchema(at_when=log.at_when, state=log.state) for log in logs_qs]
 
-    data = {
-        "id": scan.id,
-        "state": scan.state,
+    # Start with defaults and then enrich if related objects are present
+    item = ScanMonitorItemSchema(
+        id=scan.id,
+        state=scan.state,
         # mask that there is a mail_dashboard variant.
-        "type": "",
-        "last_check": None,
-        "started": True,
-        "started_on": scan.started_on,
-        "finished": scan.finished,
-        "finished_on": scan.finished_on,
-        "status_url": "",
-        "message": scan.state,
-        "success": scan.finished,
-        "list": "",
-        "list_id": 0,
-        "runtime": runtime_seconds,
-        "last_report_id": last_report_id,
-        "log": log_messages,
-    }
+        type="",
+        last_check=None,
+        started=True,
+        started_on=scan.started_on,
+        finished=scan.finished,
+        finished_on=scan.finished_on,
+        status_url="",
+        message=scan.state,
+        success=scan.finished,
+        list_name="",
+        list_id=0,
+        runtime=runtime_seconds,
+        last_report_id=last_report_id,
+        log=log_messages,
+    )
 
     if scan.scan:
         # mask that there is a mail_dashboard variant.
-        data["type"] = "web" if scan.scan.type == "web" else "all" if scan.scan.type == "all" else "mail"
-        data["last_check"] = scan.scan.last_state_check
-        data["status_url"] = f"{config.INTERNET_NL_API_URL}"
-        data["status_url"] += f"/requests/{scan.scan.scan_id}"
-    if scan.urllist:
-        data["list"] = scan.urllist.name
-        data["list_id"] = scan.urllist.id
+        item.type = "web" if scan.scan.type == "web" else "all" if scan.scan.type == "all" else "mail"
+        item.last_check = scan.scan.last_state_check
+        item.status_url = f"{config.INTERNET_NL_API_URL}/requests/{scan.scan.scan_id}"
 
-    return data
+    if scan.urllist:
+        item.list_name = scan.urllist.name
+        item.list_id = scan.urllist.id
+
+    return item
+
+
+def cancel_scan(account: Account, scan_id: int) -> OperationResponseSchema:
+    """
+    :param account: Account
+    :param scan_id: AccountInternetNLScan ID
+    :return:
+    """
+
+    scan = AccountInternetNLScan.objects.all().filter(account=account, pk=scan_id).first()
+
+    if not scan:
+        return operation_response(error=True, message="scan not found")
+
+    if scan.state == "finished":
+        return operation_response(success=True, message="scan already finished")
+
+    if scan.state == "cancelled":
+        return operation_response(success=True, message="scan already cancelled")
+
+    scan.finished_on = datetime.now(timezone.utc)
+    scan.save()
+    update_state("cancelled", scan.id)
+
+    # Sprinkling an activity stream action.
+    action.send(account, verb="cancelled scan", target=scan, public=False)
+
+    return operation_response(success=True, message="scan cancelled")

@@ -5,12 +5,14 @@ import time
 from copy import deepcopy
 from datetime import datetime, timezone
 from random import choice
+from typing import Any, List
 
 from constance import config
 from django.contrib.auth.models import User
 from django.core.management import call_command
 from django_mail_admin import mail
 from django_mail_admin.models import Outbox
+from ninja import Schema
 
 from dashboard.celery import app
 from dashboard.internet_nl_dashboard.logic.mail_admin_templates import xget_template
@@ -155,6 +157,25 @@ def send_scan_finished_mails(scan: AccountInternetNLScan) -> int:
 
     # number of mails sent is equal to users configured their account to receive mails.
     return len(users)
+
+
+class ImprovementRegressionSummarySchema(Schema):
+    previous_report_available: bool
+    previous_report_average_internet_nl_score: float
+    current_report_average_internet_nl_score: float
+    compared_report_id: int
+    comparison_is_empty: bool
+    improvement: int
+    regression: int
+    neutral: int
+    comparison_report_available: bool
+    comparison_report_contains_improvement: bool
+    comparison_report_contains_regression: bool
+    days_between_current_and_previous_report: int
+    comparison_table_improvement: List[Any]
+    comparison_table_regression: List[Any]
+    domains_exclusive_in_current_report: List[str]
+    domains_exclusive_in_other_report: List[str]
 
 
 def values_from_previous_report(report_id: int, previous_report: UrlListReport) -> dict:

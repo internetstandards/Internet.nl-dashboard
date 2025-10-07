@@ -31,6 +31,7 @@ from actstream import action
 from constance import config
 from django.conf import settings
 from django.core.files.storage import FileSystemStorage
+from ninja import Schema
 from websecmap.celery import app
 from xlrd import XLRDError
 
@@ -210,17 +211,27 @@ def get_data(file: str) -> Dict[str, Dict[str, Dict[str, list]]]:
     return data
 
 
-def get_upload_history(account: Account) -> List:
+class UploadHistoryItemSchema(Schema):
+    original_filename: str | None
+    message: str | None
+    upload_date: str
+    filesize: int
+    percentage: int | None
+
+
+def get_upload_history(account: Account) -> list[UploadHistoryItemSchema]:
     # limit amount of history due to frequent updates
     uploads = UploadLog.objects.all().filter(user__account=account).order_by("-pk")[:30]
     return [
-        {
-            "original_filename": upload.original_filename,
-            "message": upload.message,
-            "upload_date": upload.upload_date,
-            "filesize": upload.filesize,
-            "percentage": upload.percentage,
-        }
+        UploadHistoryItemSchema(
+            original_filename=upload.original_filename,
+            message=upload.message,
+            upload_date=(
+                upload.upload_date.isoformat() if hasattr(upload.upload_date, "isoformat") else str(upload.upload_date)
+            ),
+            filesize=upload.filesize,
+            percentage=upload.percentage,
+        )
         for upload in uploads
     ]
 

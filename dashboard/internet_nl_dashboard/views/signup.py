@@ -3,54 +3,57 @@ import logging
 import re
 from datetime import datetime, timedelta, timezone
 from time import sleep
+from typing import Any
 
 from constance import config
-from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from django_mail_admin import mail, models
 from django_mail_admin.models import Log
+from ninja import Router, Schema
 
 from dashboard.celery import app
-from dashboard.internet_nl_dashboard.logic import operation_response
+from dashboard.internet_nl_dashboard.logic import OperationResponseSchema, operation_response
 from dashboard.internet_nl_dashboard.logic.mail_admin_templates import xget_template
-from dashboard.internet_nl_dashboard.views import get_json_body
 
 log = logging.getLogger(__package__)
 
+# Ninja router for signup endpoints
+router = Router(tags=["signup"])
 
+
+class SignupFormDataSchema(Schema):
+    access: str
+    name: str
+    email: str
+    mobile_phone_number: str
+    organization_name: str
+    nature_of_organization: str
+    chamber_of_commerce_number: str
+    reason_for_application: str
+    intended_usage_frequency: str
+    terms_of_use: Any
+    captcha: int | str
+
+
+class ProcessApplicationInputSchema(Schema):
+    # Keep backward-compatible structure: {"form_data": {...}}
+    form_data: SignupFormDataSchema
+
+
+@router.post("/", response={200: OperationResponseSchema})
 @csrf_exempt
-def process_application(request):
-    data = get_json_body(request)
-
-    required_fields = [
-        "access",
-        "name",
-        "email",
-        "mobile_phone_number",
-        "organization_name",
-        "nature_of_organization",
-        "chamber_of_commerce_number",
-        "reason_for_application",
-        "intended_usage_frequency",
-        "terms_of_use",
-        "captcha",
-    ]
-
-    form_data = data.get("form_data", {})
-
-    for field in required_fields:
-        if field not in form_data:
-            return JsonResponse(operation_response(error=True, message="incomplete_form_submitted").dict())
+def process_application(request, data: ProcessApplicationInputSchema):
+    form_data = data.form_data.dict()
 
     if form_data.get("captcha") not in [42, "42"]:
-        return JsonResponse(operation_response(error=True, message="incorrect_captcha").dict())
+        return operation_response(error=True, message="incorrect_captcha")
 
     sleep(1)
 
     # prevent abuse case where millions of requests are made, who would even bother.
     one_hour_ago = datetime.now(timezone.utc) - timedelta(hours=1)
     if Log.objects.all().filter(date__gt=one_hour_ago).count() > 50:
-        return JsonResponse(operation_response(success=True, message="access_requested").dict())
+        return operation_response(success=True, message="access_requested")
 
     # sending mail can take a while, so don't wait for it.
     send_backoffice_mail_async.s(form_data).apply_async()
@@ -59,7 +62,7 @@ def process_application(request):
     # the mail is always in dutch, as we don't ask for a language
     send_signup_received_mail_to_requester.s(form_data).apply_async()
 
-    return JsonResponse(operation_response(success=True, message="access_requested").dict())
+    return operation_response(success=True, message="access_requested")
 
 
 @app.task(queue="storage", ignore_result=True)

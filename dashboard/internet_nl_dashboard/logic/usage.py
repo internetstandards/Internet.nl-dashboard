@@ -28,6 +28,7 @@ from typing import Any, Dict
 
 from actstream.models import Action
 from django.contrib.auth.models import User
+from ninja import Schema
 from websecmap.organizations.models import Url
 from websecmap.scanners.models import EndpointGenericScan
 
@@ -35,6 +36,15 @@ from dashboard.internet_nl_dashboard.models import AccountInternetNLScan, UrlLis
 
 # DASHBOARD_EPOCH = datetime(2019, 6, 1, tzinfo=timezone.utc)
 DASHBOARD_EPOCH = datetime(2023, 1, 1, tzinfo=timezone.utc)
+
+
+class UsageMetricsSchema(Schema):
+    users: Dict[str, int]
+    scans: Dict[str, Any]
+    lists: Dict[str, int]
+    domains: Dict[str, Any]
+    metrics: Dict[str, Any]
+    actions: Dict[str, Any]
 
 
 def dashboard_years() -> range:
