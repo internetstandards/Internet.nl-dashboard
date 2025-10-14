@@ -8,7 +8,7 @@ from websecmap.app.constance import get_all_values
 ONE_HOUR = 60 * 60
 
 # Ninja router for config endpoints
-router = Router(tags=["config"])
+router = Router(tags=["Application Configuration"])
 
 
 class SubdomainSuggestionSchema(Schema):

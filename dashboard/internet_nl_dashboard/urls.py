@@ -20,6 +20,7 @@ from dashboard.internet_nl_dashboard.views import (
     signup,
     spreadsheet,
     user,
+    public_report
 )
 
 """
@@ -51,6 +52,7 @@ api.add_router("/urllist", domains.router)
 api.add_router("/spreadsheet", spreadsheet.router)
 api.add_router("/scan", scan_monitor.router)
 api.add_router("/report", report.router)
+api.add_router("/public", public_report.router)
 api.add_router("/powertools", powertools.router)
 api.add_router("/config", app.router)
 api.add_router("/session", session.router)

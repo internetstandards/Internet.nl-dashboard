@@ -18,11 +18,12 @@ from dashboard.internet_nl_dashboard.logic.spreadsheet import (
     upload_domain_spreadsheet_to_list,
 )
 from dashboard.internet_nl_dashboard.views import LOGIN_URL, get_account, get_dashboarduser
+from ninja.security import django_auth
 
 log = logging.getLogger(__package__)
 
 # Ninja router for spreadsheet/upload endpoints
-router = Router(tags=["spreadsheet"])
+router = Router(tags=["urllist/Spreadsheet Domain Management"], auth=django_auth)
 
 
 @login_required(login_url=LOGIN_URL)
@@ -42,7 +43,6 @@ def upload(request) -> HttpResponse:
 
 
 @router.post("/upload-spreadsheet")
-@login_required(login_url=LOGIN_URL)
 def upload_spreadsheet(request) -> HttpResponse:
     # Instead of some json message, give a full page, so the classic uploader also functions pretty well.
     # todo: Or should this be a redirect, so the 'reload' page does not try to resend the form...
@@ -77,14 +77,12 @@ def upload_spreadsheet(request) -> HttpResponse:
 
 
 @router.get("/upload-history", response={200: list[UploadHistoryItemSchema]})
-@login_required(login_url=LOGIN_URL)
 def upload_history(request):
     account = get_account(request)
     return get_upload_history(account)
 
 
 @router.post("/urllist/upload/{list_id}")
-@login_required(login_url=LOGIN_URL)
 @require_http_methods(["POST"])
 def upload_list_(request, list_id: int):
     # params = get_json_body(request)

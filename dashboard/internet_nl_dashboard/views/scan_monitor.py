@@ -15,7 +15,7 @@ from dashboard.internet_nl_dashboard.views import get_account
 
 log = logging.getLogger(__package__)
 
-router = Router(tags=["scan"], auth=django_auth)
+router = Router(tags=["Scanning"], auth=django_auth)
 
 
 @router.get("/monitor", response={200: list[ScanMonitorItemSchema]})

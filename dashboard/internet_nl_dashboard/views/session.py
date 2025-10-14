@@ -132,7 +132,7 @@ def session_login(request):
 
 
 # Ninja router for session management (excluding login)
-router = Router(tags=["session"])
+router = Router(tags=["Session Management"])
 
 
 class SessionStatusSchema(Schema):

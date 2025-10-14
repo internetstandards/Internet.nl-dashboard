@@ -10,8 +10,9 @@ from dashboard.internet_nl_dashboard.logic.usage import UsageMetricsSchema, usag
 from dashboard.internet_nl_dashboard.models import Account, AccountInternetNLScan, DashboardUser, UrlList
 from dashboard.internet_nl_dashboard.views import get_account
 from dashboard.settings import LOGIN_URL
+from ninja.security import django_auth
 
-router = Router(tags=["powertools"])
+router = Router(tags=["Powertools"], auth=django_auth)
 
 
 def is_powertool_user(user):
