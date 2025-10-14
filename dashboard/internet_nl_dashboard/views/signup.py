@@ -22,7 +22,7 @@ router = Router(tags=["signup"])
 
 
 class SignupFormDataSchema(Schema):
-    access: str
+    access: list[str]
     name: str
     email: str
     mobile_phone_number: str
@@ -40,7 +40,7 @@ class ProcessApplicationInputSchema(Schema):
     form_data: SignupFormDataSchema
 
 
-@router.post("/", response={200: OperationResponseSchema})
+@router.post("", response={200: OperationResponseSchema})
 @csrf_exempt
 def process_application(request, data: ProcessApplicationInputSchema):
     form_data = data.form_data.dict()

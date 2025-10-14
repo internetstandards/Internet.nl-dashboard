@@ -1,8 +1,8 @@
 # SPDX-License-Identifier: Apache-2.0
-from django.contrib.auth.decorators import login_required
 from ninja import Query, Router
 from websecmap.organizations.models import Url
 from websecmap.scanners_internetnl_dns_endpoints.tasks import has_a_or_aaaa, has_soa
+from ninja.security import django_auth
 
 from dashboard.internet_nl_dashboard.logic import OperationResponseSchema, operation_response
 from dashboard.internet_nl_dashboard.logic.domains import (
@@ -30,11 +30,12 @@ from dashboard.internet_nl_dashboard.logic.domains import (
     update_list_settings,
 )
 from dashboard.internet_nl_dashboard.logic.suggestions import suggest_subdomains
-from dashboard.internet_nl_dashboard.views import LOGIN_URL, get_account, get_json_body
+from dashboard.internet_nl_dashboard.views import get_account, get_json_body
 from dashboard.internet_nl_dashboard.views import subdomains as subdomains_views
 from dashboard.internet_nl_dashboard.views import tags as tags_views
 
-router = Router(tags=["urllist"])
+# django_auth replaces @login_required on every call
+router = Router(tags=["urllist"], auth=django_auth)
 # Mount tag operations under the urllist router, so paths become /data/urllist/tag/...
 router.add_router("/tag", tags_views.router)
 # Mount subdomain discovery operations under the urllist router, so paths become /data/urllist/discover-subdomains/...
@@ -42,7 +43,6 @@ router.add_router("/discover-subdomains", subdomains_views.router)
 
 
 @router.get("/suggest-subdomains", response={200: list[SuggestedDomainSchema]})
-@login_required(login_url=LOGIN_URL)
 def suggest_subdomains_api(request, data: Query[SuggestedSubdomainsInputSchema]):
     account = get_account(request)
 
@@ -96,25 +96,21 @@ def suggest_subdomains_api(request, data: Query[SuggestedSubdomainsInputSchema])
 
 
 @router.get("/get", response={200: UrlListsResponseSchema})
-@login_required(login_url=LOGIN_URL)
 def get_lists(request):
     return get_urllists_from_account(account=get_account(request))
 
 
 @router.post("/create", response={200: CreateListResponseSchema})
-@login_required(login_url=LOGIN_URL)
 def create_list_api(request, data: CreateUrlListInputSchema):
     return create_list(get_account(request), data)
 
 
 @router.get("/get_content/{urllist_id}", response={200: UrlListContentResponseSchema})
-@login_required(login_url=LOGIN_URL)
 def get_urllist_content_(request, urllist_id: int):
     return get_urllist_content(account=get_account(request), urllist_id=urllist_id)
 
 
 @router.get("/scan_status/{urllist_id}", response={200: UrlListScanStatusResponseSchema})
-@login_required(login_url=LOGIN_URL)
 def get_scan_status_of_list_(request, urllist_id: int):
     return get_scan_status_of_list(account=get_account(request), list_id=urllist_id)
 
@@ -125,13 +121,11 @@ def get_scan_status_of_list_(request, urllist_id: int):
 #     return json_response(save_urllist_content_by_name(get_account(request), urllist_name, urls))
 
 
-@router.get("/update_list_settings", response={200: CreateListResponseSchema | OperationResponseSchema})
-@login_required(login_url=LOGIN_URL)
+@router.post("/update_list_settings", response={200: CreateListResponseSchema | OperationResponseSchema})
 def update_list_settings_(request):
     return update_list_settings(get_account(request), get_json_body(request))
 
 
-# @login_required(login_url=LOGIN_URL)
 # def create_list_(request):
 #     body = get_json_body(request)
 #     data = CreateUrlListInputSchema(**body) if isinstance(body, dict) else CreateUrlListInputSchema(**{})
@@ -140,25 +134,21 @@ def update_list_settings_(request):
 
 
 @router.post("/delete", response={200: OperationResponseSchema})
-@login_required(login_url=LOGIN_URL)
 def delete_list_api(request, data: DeleteUrlListInputSchema):
     return delete_list(get_account(request), data)
 
 
-# @login_required(login_url=LOGIN_URL)
 # def delete_list_(request):
 #     result = delete_list(get_account(request), DeleteUrlListInputSchema(id=get_json_body(request).get("id", -1)))
 #     return json_response(result.dict())
 
 
 @router.post("/url/update", response={200: AlterUrlResponseSchema})
-@login_required(login_url=LOGIN_URL)
 def alter_url_in_urllist_(request):
     return alter_url_in_urllist(get_account(request), get_json_body(request))
 
 
 @router.post("/url/add", response={200: OperationResponseSchema})
-@login_required(login_url=LOGIN_URL)
 def add_urls_to_urllist(request):
     # todo: the response data is not well defined, so you'll be missing statistics... define this in the Schema...
     #  or doesn't this contain statistics?
@@ -166,7 +156,6 @@ def add_urls_to_urllist(request):
 
 
 @router.delete("/url/delete", response={200: OperationResponseSchema})
-@login_required(login_url=LOGIN_URL)
 def delete_url_from_urllist_(request, data: DeleteUrlFromListInputSchema):
     account = get_account(request)
     item_deleted = delete_url_from_urllist(account, data.urllist_id, data.url_id)
@@ -174,13 +163,11 @@ def delete_url_from_urllist_(request, data: DeleteUrlFromListInputSchema):
 
 
 @router.post("/scan-now", response={200: OperationResponseSchema})
-@login_required(login_url=LOGIN_URL)
 def scan_now_(request) -> OperationResponseSchema:
     return scan_now(get_account(request), get_json_body(request))
 
 
 # todo: django ninja does not support file downloads in the schema, which is odd
 @router.post("/download")
-@login_required(login_url=LOGIN_URL)
 def download_list_api(request, data: DownloadSpreadsheetInputSchema):
     return download_as_spreadsheet(get_account(request), data.urllist_id, data.file_type)

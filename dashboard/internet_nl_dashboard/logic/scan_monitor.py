@@ -24,14 +24,14 @@ class ScanMonitorItemSchema(Schema):
     started: bool
     started_on: datetime
     finished: bool
-    finished_on: datetime
+    finished_on: datetime | None
     status_url: str
     message: str
     success: bool
     list_name: str
     list_id: int
     runtime: int
-    last_report_id: int
+    last_report_id: int | None
     log: list[ScanLogEntrySchema] = []
 
 
