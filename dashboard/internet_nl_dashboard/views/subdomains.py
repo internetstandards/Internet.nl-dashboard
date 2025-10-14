@@ -10,7 +10,7 @@ from dashboard.internet_nl_dashboard.views import LOGIN_URL, get_account
 log = logging.getLogger(__package__)
 
 # Ninja router for subdomain discovery operations
-router = Router(tags=["urllist/discover-subdomains"])
+router = Router(tags=["Url Lists / Discover Subdomains"])
 
 
 @router.post("/{urllist_id}")

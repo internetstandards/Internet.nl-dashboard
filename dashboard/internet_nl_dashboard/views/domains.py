@@ -35,7 +35,7 @@ from dashboard.internet_nl_dashboard.views import subdomains as subdomains_views
 from dashboard.internet_nl_dashboard.views import tags as tags_views
 
 # django_auth replaces @login_required on every call
-router = Router(tags=["urllist"], auth=django_auth)
+router = Router(tags=["Url Lists"], auth=django_auth)
 # Mount tag operations under the urllist router, so paths become /data/urllist/tag/...
 router.add_router("/tag", tags_views.router)
 # Mount subdomain discovery operations under the urllist router, so paths become /data/urllist/discover-subdomains/...

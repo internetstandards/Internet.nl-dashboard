@@ -7,7 +7,7 @@ from dashboard.internet_nl_dashboard.logic import OperationResponseSchema, opera
 from dashboard.internet_nl_dashboard.logic.tags import add_tag, remove_tag, tags_in_urllist
 from dashboard.internet_nl_dashboard.views import LOGIN_URL, get_account
 
-router = Router(tags=["urllist/tags"])
+router = Router(tags=["Url Lists / Tags"])
 
 
 class TagChangeInputSchema(Schema):

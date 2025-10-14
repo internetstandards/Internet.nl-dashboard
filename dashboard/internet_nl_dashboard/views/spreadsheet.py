@@ -23,7 +23,7 @@ from dashboard.internet_nl_dashboard.views import LOGIN_URL, get_account, get_da
 log = logging.getLogger(__package__)
 
 # Ninja router for spreadsheet/upload endpoints
-router = Router(tags=["urllist/Spreadsheet Domain Management"], auth=django_auth)
+router = Router(tags=["Url Lists / Bulk Domain Management"], auth=django_auth)
 
 
 @login_required(login_url=LOGIN_URL)

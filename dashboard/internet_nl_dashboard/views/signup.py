@@ -18,7 +18,7 @@ from dashboard.internet_nl_dashboard.logic.mail_admin_templates import xget_temp
 log = logging.getLogger(__package__)
 
 # Ninja router for signup endpoints
-router = Router(tags=["signup"])
+router = Router(tags=["Signup"])
 
 
 class SignupFormDataSchema(Schema):
