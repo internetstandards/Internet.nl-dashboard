@@ -1,8 +1,8 @@
 # SPDX-License-Identifier: Apache-2.0
 from ninja import Query, Router
+from ninja.security import django_auth
 from websecmap.organizations.models import Url
 from websecmap.scanners_internetnl_dns_endpoints.tasks import has_a_or_aaaa, has_soa
-from ninja.security import django_auth
 
 from dashboard.internet_nl_dashboard.logic import OperationResponseSchema, operation_response
 from dashboard.internet_nl_dashboard.logic.domains import (

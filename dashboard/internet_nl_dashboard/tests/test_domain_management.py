@@ -58,7 +58,7 @@ def test_suggest_subdomains_http(db, client):
     responses.add(responses.GET, "http://localhost:8001/?domain=broken&suffix=nl&period=370", json=[], status=500)
 
     assert (
-        client.get("/data/urllist/suggest-subdomains", {"domain": "test.nl"}).status_code == 302
+        client.get("/data/urllist/suggest-subdomains", {"domain": "test.nl"}).status_code == 401
     ), "unauthenticated request should result in login redirect"
 
     user = User.objects.create(username="test")

@@ -3,8 +3,8 @@ from datetime import datetime
 from typing import Optional
 
 from django.http import HttpResponse
-from ninja.security import django_auth
 from ninja import Router
+from ninja.security import django_auth
 
 from dashboard.internet_nl_dashboard.logic import OperationResponseSchema
 from dashboard.internet_nl_dashboard.logic.mail import ImprovementRegressionSummarySchema, values_from_previous_report
@@ -31,7 +31,6 @@ from dashboard.internet_nl_dashboard.logic.report import (
     update_share_code,
 )
 from dashboard.internet_nl_dashboard.logic.report_to_spreadsheet import create_spreadsheet, upgrade_excel_spreadsheet
-
 from dashboard.internet_nl_dashboard.models import UrlListReport
 from dashboard.internet_nl_dashboard.views import create_spreadsheet_download, get_account, get_json_body
 
@@ -96,7 +95,6 @@ def get_recent_reports_api(request):
 @router.get("/urllist_timeline_graph/{urllist_ids}/{report_type}", response={200: list[UrlListTimelineSeriesSchema]})
 def get_urllist_timeline_graph_api(request, urllist_ids: str, report_type: str):
     return get_urllist_timeline_graph(get_account(request), urllist_ids, report_type)
-
 
 
 @router.post("/share/share", response={200: OperationResponseSchema})

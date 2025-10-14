@@ -14,13 +14,13 @@ from dashboard.internet_nl_dashboard.views import (
     logout_view,
     mail,
     powertools,
+    public_report,
     report,
     scan_monitor,
     session,
     signup,
     spreadsheet,
     user,
-    public_report
 )
 
 """

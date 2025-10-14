@@ -8,6 +8,7 @@ from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render
 from django.views.decorators.http import require_http_methods
 from ninja import Router
+from ninja.security import django_auth
 
 from dashboard.internet_nl_dashboard.logic.spreadsheet import (
     UploadHistoryItemSchema,
@@ -18,7 +19,6 @@ from dashboard.internet_nl_dashboard.logic.spreadsheet import (
     upload_domain_spreadsheet_to_list,
 )
 from dashboard.internet_nl_dashboard.views import LOGIN_URL, get_account, get_dashboarduser
-from ninja.security import django_auth
 
 log = logging.getLogger(__package__)
 

@@ -12,7 +12,7 @@ def test_get_publicly_shared_lists_per_account(db):
 
         # todo: perhaps mandate that a list-id is given, and perhaps that the list id has to be a guid.
         # no content no crash
-        response = c.get("/data/report/public/account/1/lists/all")
+        response = c.get("/data/public/account/1/lists/all")
         assert response.content == b"[]"
 
         # create a list with some reports
@@ -52,7 +52,7 @@ def test_get_publicly_shared_lists_per_account(db):
             }
         ]
 
-        response = c.get(f"/data/report/public/account/{account.id}/lists/all")
+        response = c.get(f"/data/public/account/{account.id}/lists/all")
 
         # remove randomness:
         assert response.status_code == 200
@@ -62,14 +62,14 @@ def test_get_publicly_shared_lists_per_account(db):
         assert json_data == expected_response
 
         # non existing list:
-        response = c.get(f"/data/report/public/account/{account.id}/lists/781263187")
+        response = c.get(f"/data/public/account/{account.id}/lists/781263187")
         assert response.content == b"[]"
 
         # non existing account:
-        response = c.get(f"/data/report/public/account/781263187/lists/{urllist.id}")
+        response = c.get(f"/data/public/account/781263187/lists/{urllist.id}")
         assert response.content == b"[]"
 
-        response = c.get(f"/data/report/public/account/{account.id}/lists/{urllist.id}")
+        response = c.get(f"/data/public/account/{account.id}/lists/{urllist.id}")
         json_data = response.json()
         json_data[0]["reports"][0]["public_report_code"] = ""
         assert json_data == expected_response

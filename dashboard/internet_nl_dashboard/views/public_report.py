@@ -22,6 +22,8 @@ from dashboard.internet_nl_dashboard.logic.shared_report_lists import (
 router = Router(tags=["Public Reports"])
 
 # No login required: reports via this method are public
+
+
 @router.post("/shared/{report_code}", response={200: ReportSchema | SharedReportAuthRequiredSchema})
 @csrf_exempt
 def get_shared_report_api(request, report_code: str, data: SharedReportInputSchema) -> HttpResponse:
@@ -40,6 +42,7 @@ def get_shared_report_api(request, report_code: str, data: SharedReportInputSche
 )
 def get_public_reports_api(request):
     return get_public_reports()
+
 
 @router.get("/account/{account_id}/lists/all", response={200: list[PubliclySharedListResponseSchema]})
 def get_publicly_shared_lists_per_account_api(request, account_id: int):

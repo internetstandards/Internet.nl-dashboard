@@ -4,13 +4,13 @@ from django.contrib.auth.decorators import user_passes_test
 from django.contrib.auth.models import User
 from django.http import HttpResponse, JsonResponse
 from ninja import Router, Schema
+from ninja.security import django_auth
 
 from dashboard.internet_nl_dashboard.logic import OperationResponseSchema, operation_response
 from dashboard.internet_nl_dashboard.logic.usage import UsageMetricsSchema, usage_metrics
 from dashboard.internet_nl_dashboard.models import Account, AccountInternetNLScan, DashboardUser, UrlList
 from dashboard.internet_nl_dashboard.views import get_account
 from dashboard.settings import LOGIN_URL
-from ninja.security import django_auth
 
 router = Router(tags=["Powertools"], auth=django_auth)
 

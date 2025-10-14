@@ -1,5 +1,4 @@
 # SPDX-License-Identifier: Apache-2.0
-from django.contrib.auth.decorators import login_required
 from ninja import Router
 from ninja.security import django_auth
 
@@ -10,7 +9,7 @@ from dashboard.internet_nl_dashboard.logic.user import (
     get_user_settings,
     save_user_settings,
 )
-from dashboard.internet_nl_dashboard.views import LOGIN_URL, get_dashboarduser
+from dashboard.internet_nl_dashboard.views import get_dashboarduser
 
 router = Router(tags=["User"], auth=django_auth)  # Mounted under the urllist router
 

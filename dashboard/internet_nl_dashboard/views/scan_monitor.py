@@ -1,8 +1,8 @@
 # SPDX-License-Identifier: Apache-2.0
 import logging
-from ninja.security import django_auth
 
 from ninja import Router
+from ninja.security import django_auth
 
 from dashboard.internet_nl_dashboard.logic import OperationResponseSchema
 from dashboard.internet_nl_dashboard.logic.scan_monitor import (

@@ -1,11 +1,10 @@
 # SPDX-License-Identifier: Apache-2.0
-from django.contrib.auth.decorators import login_required
 from ninja import Router
 from ninja.security import django_auth
 
 from dashboard.internet_nl_dashboard.logic import OperationResponseSchema
 from dashboard.internet_nl_dashboard.logic.account import get_report_settings, save_report_settings
-from dashboard.internet_nl_dashboard.views import LOGIN_URL, get_account, get_json_body
+from dashboard.internet_nl_dashboard.views import get_account, get_json_body
 
 router = Router(tags=["Account (organization)"], auth=django_auth)  # Mounted in urls.py at /data/account
 
