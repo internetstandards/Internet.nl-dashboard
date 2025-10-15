@@ -1,41 +1,80 @@
 # SPDX-License-Identifier: Apache-2.0
 import logging
+from typing import Optional
 
 from django import forms
 from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
+from ninja import Schema
 
-from dashboard.internet_nl_dashboard.logic import operation_response
+from dashboard.internet_nl_dashboard.logic import OperationResponseSchema, operation_response
 from dashboard.internet_nl_dashboard.logic.domains import keys_are_present_in_object
 from dashboard.settings import LANGUAGES
 
 log = logging.getLogger(__package__)
 
 
-def get_user_settings(dashboarduser_id):
+class UserSettingsSchema(Schema):
+    first_name: str
+    last_name: str
+    date_joined: Optional[str] = None
+    last_login: Optional[str] = None
+    account_id: int
+    account_name: str
+    mail_preferred_mail_address: Optional[str] = None
+    mail_preferred_language: str
+    mail_send_mail_after_scan_finished: bool
+
+
+class SaveUserSettingsInputSchema(Schema):
+    first_name: str
+    last_name: str
+    mail_preferred_mail_address: Optional[str] = None
+    mail_preferred_language: str
+    mail_send_mail_after_scan_finished: bool
+
+
+def get_user_settings(dashboarduser_id) -> UserSettingsSchema:
 
     # one to one relation, error-friendly query using first.
     user = User.objects.all().filter(dashboarduser=dashboarduser_id).first()
 
     if not user:
-        return {}
+        # Return an empty schema to keep response type consistent
+        return UserSettingsSchema(
+            first_name="",
+            last_name="",
+            date_joined=None,
+            last_login=None,
+            account_id=-1,
+            account_name="",
+            mail_preferred_mail_address=None,
+            mail_preferred_language="en",
+            mail_send_mail_after_scan_finished=False,
+        )
 
     data = {
         "first_name": user.first_name,
         "last_name": user.last_name,
+        # Explicitly hide timestamps in API as per previous behavior
         "date_joined": None,
         "last_login": None,
         "account_id": user.dashboarduser.account.id,
         "account_name": user.dashboarduser.account.name,
         "mail_preferred_mail_address": user.dashboarduser.mail_preferred_mail_address,
-        "mail_preferred_language": user.dashboarduser.mail_preferred_language.code.lower(),
+        # Ensure language is a lowercased string code for API
+        "mail_preferred_language": (
+            user.dashboarduser.mail_preferred_language.code.lower()
+            if hasattr(user.dashboarduser.mail_preferred_language, "code")
+            else str(user.dashboarduser.mail_preferred_language).lower()
+        ),
         "mail_send_mail_after_scan_finished": user.dashboarduser.mail_send_mail_after_scan_finished,
     }
 
-    return data
+    return UserSettingsSchema(**data)
 
 
-def save_user_settings(dashboarduser_id, data):
+def save_user_settings(dashboarduser_id, data: SaveUserSettingsInputSchema | dict) -> OperationResponseSchema:
 
     user = User.objects.all().filter(dashboarduser=dashboarduser_id).first()
 
@@ -51,6 +90,10 @@ def save_user_settings(dashboarduser_id, data):
     - mail_send_mail_after_scan_finished
     """
 
+    # Convert schema to dict if needed
+    if hasattr(data, "dict"):
+        data = data.dict()
+
     expected_keys = [
         "first_name",
         "last_name",
@@ -62,9 +105,6 @@ def save_user_settings(dashboarduser_id, data):
         return operation_response(error=True, message="save_user_settings_error_incomplete_data")
 
     # validate data. Even if it's correct for the model (like any language), that's not what we'd accept.
-    # this breaks the 'form-style' logic. Perhaps we'd move to django rest framework to optimize this.
-    # Otoh there's no time for that now. Assuming the form is entered well this is no direct issue now.
-    # I'm currently slowly developing a framework. But as long as it's just a few forms and pages it's fine.
     if data["mail_preferred_language"] not in [language_code for language_code, name in LANGUAGES]:
         return operation_response(error=True, message="save_user_settings_error_form_unsupported_language")
 

@@ -114,7 +114,7 @@ Allows an unsubscribe from a specific feed of mails. This code can be used witho
 url this code is used for is for example:
 
 ```default
-{{dashboard_address}}/spa/#/unsubscribe?feed=scan_finished&unsubscribe_code={{unsubscribe_code}}
+{{dashboard_address}}/unsubscribe?feed=scan_finished&unsubscribe_code={{unsubscribe_code}}
 ```
 
 - {{recipient}}
@@ -134,7 +134,7 @@ The name of the domain list that is being scanned.
 The mail is about a report. Using this number a link can be built to the report. For example:
 
 ```default
-{{dashboard_address}}/spa/#/report/{{report_id}}
+{{dashboard_address}}/report/{{report_id}}
 ```
 
 - {{report_average_internet_nl_score}}
@@ -184,7 +184,7 @@ The average score of the previous report. This is used for easy overall comparis
 The id of the previous report, can be used to build a link with a comparison, such as:
 
 ```default
-{{dashboard_address}}/spa/#/report/{{report_id}}/{{compared_report_id}}
+{{dashboard_address}}/report/{{report_id}}/{{compared_report_id}}
 ```
 
 - {{comparison_is_empty}}
@@ -262,8 +262,8 @@ Hi {{recipient}},<br>
 The {{scan_type}} scan on '{{list_name}}' has finished and your report is ready. The average internet.nl score in this report is {{report_average_internet_nl_score}}%. <br>
 <br>
 View the report at this link: <br>
-<a href="{{dashboard_address}}/spa/#/report/{{report_id}}">
-        {{dashboard_address}}/spa/#/report/{{report_id}}/</a><br>
+<a href="{{dashboard_address}}/report/{{report_id}}">
+        {{dashboard_address}}/report/{{report_id}}/</a><br>
 
 
 {% if previous_report_available == "False" %}
@@ -282,7 +282,7 @@ A previous report, #{{compared_report_id}}, is available but contains no changes
 <h3>Changes compared to previous report</h3>
 Below a summary is given compared to the previous report, #{{compared_report_id}}. The previous report was made {{days_between_current_and_previous_report}} days ago and had an average score of {{previous_report_average_internet_nl_score}}%.<br>
 <br>
-You can view the comparison in detail on the dashboard at <a href="{{dashboard_address}}/spa/#/report/{{report_id}}/{{compared_report_id}}">{{dashboard_address}}/spa/#/report/{{report_id}}/{{compared_report_id}}</a><br>
+You can view the comparison in detail on the dashboard at <a href="{{dashboard_address}}/report/{{report_id}}/{{compared_report_id}}">{{dashboard_address}}/report/{{report_id}}/{{compared_report_id}}</a><br>
 <br>
 <h4>Summary of changes:</h4>
 <table>
@@ -347,9 +347,9 @@ Regards,<br>
 The internet.nl dashboard<br>
 <br>
 [
-<a href="{{dashboard_address}}/spa/#/unsubscribe?feed=scan_finished&unsubscribe_code={{unsubscribe_code}}">unsubscribe</a>
+<a href="{{dashboard_address}}/unsubscribe?feed=scan_finished&unsubscribe_code={{unsubscribe_code}}">unsubscribe</a>
 -
-<a href="{{dashboard_address}}/spa/#/account">preferences</a>
+<a href="{{dashboard_address}}/account">preferences</a>
  ]
 
 <style>

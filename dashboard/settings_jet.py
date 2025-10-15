@@ -27,8 +27,6 @@ JET_SIDE_MENU_ITEMS = [
             {"name": "scanners.internetnlscaninspection", "label": "Scan Inspections"},
             {"name": "internet_nl_dashboard.accountinternetnlscan"},
             {"name": "internet_nl_dashboard.accountinternetnlscanlog"},
-            {"name": "scanners.internetnlv2scan", "label": "Internet.nl Scans Tasks"},
-            {"name": "scanners.internetnlv2statelog", "label": "Internet.nl Scans Log"},
             {"name": "internet_nl_dashboard.subdomaindiscoveryscan", "label": "Subdomain Discovery"},
         ],
     },

@@ -1,19 +1,30 @@
 # SPDX-License-Identifier: Apache-2.0
 import logging
 
-from django.contrib.auth.decorators import login_required
-from django.http import JsonResponse
-from websecmap.app.common import JSEncoder
+from ninja import Router
+from ninja.security import django_auth
 
-from dashboard.internet_nl_dashboard.logic.scan_monitor import get_scan_monitor_data
-from dashboard.internet_nl_dashboard.views import LOGIN_URL, get_account
+from dashboard.internet_nl_dashboard.logic import OperationResponseSchema
+from dashboard.internet_nl_dashboard.logic.scan_monitor import (
+    CancelScanInputSchema,
+    ScanMonitorItemSchema,
+    cancel_scan,
+    get_scan_monitor_data,
+)
+from dashboard.internet_nl_dashboard.views import get_account
 
 log = logging.getLogger(__package__)
 
+router = Router(tags=["Scanning"], auth=django_auth)
 
-@login_required(login_url=LOGIN_URL)
-def running_scans(request) -> JsonResponse:
+
+@router.get("/monitor", response={200: list[ScanMonitorItemSchema]})
+def running_scans(request):
     account = get_account(request)
+    return get_scan_monitor_data(account)
 
-    # list of dicts: In order to allow non-dict objects to be serialized set the safe parameter to False.
-    return JsonResponse(get_scan_monitor_data(account), encoder=JSEncoder, safe=False)
+
+@router.post("/cancel", response={200: OperationResponseSchema})
+def cancel_scan_api(request, data: CancelScanInputSchema):
+    account = get_account(request)
+    return cancel_scan(account, data.id)

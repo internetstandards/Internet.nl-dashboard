@@ -5,6 +5,7 @@ from pathlib import Path
 
 import sentry_sdk
 from corsheaders.defaults import default_headers
+from dotenv import load_dotenv
 from sentry_sdk.integrations.celery import CeleryIntegration
 from sentry_sdk.integrations.django import DjangoIntegration
 from sentry_sdk.integrations.redis import RedisIntegration
@@ -14,7 +15,7 @@ from .settings_constance import CONSTANCE_CONFIG_FIELDSETS  # noqa  # pylint: di
 from .settings_constance import CONSTANCE_ADDITIONAL_FIELDS, CONSTANCE_BACKEND, CONSTANCE_CONFIG
 from .settings_jet import JET_SIDE_MENU_COMPACT, JET_SIDE_MENU_ITEMS  # noqa  # pylint: disable=unused-import
 from .settings_util import get_field_encryption_key_from_file_or_env, get_secret_key_from_file_or_env
-from dotenv import load_dotenv
+
 load_dotenv()
 
 
@@ -53,7 +54,11 @@ if DEBUG:
 
 ALLOWED_HOSTS = os.environ.get("ALLOWED_HOSTS", "localhost,127.0.0.1,::1").split(",")
 
+
+AUTORELOAD_BROWSER = bool(os.environ.get("AUTORELOAD_BROWSER", DEBUG))
+
 # Application definition
+
 
 INSTALLED_APPS = [
     # Constance
@@ -82,11 +87,15 @@ INSTALLED_APPS = [
     # Web Security Map (todo: minimize the subset)
     # The reason (model) why it's included is in the comments.
     "websecmap.app",  # Job
-    "websecmap.api",
     "websecmap.organizations",  # Url
     "websecmap.scanners",  # Endpoint, EndpointGenericScan, UrlGenericScan
     "websecmap.reporting",  # Various reporting functions (might be not needed)
     "websecmap.map",  # because some scanners are intertwined with map configurations. That needs to go.
+    # this wants to exist when changing periodic tasks.
+    "websecmap.scanners_screenshot",
+    "websecmap.scanners_internetnl_dns_endpoints",
+    "websecmap.scanners_internetnl_web",
+    "websecmap.scanners_internetnl_mail",
     # "websecmap.game",
     # Custom Apps
     # These apps overwrite whatever is declared above, for example the user information.
@@ -478,6 +487,7 @@ CORS_ALLOWED_ORIGINS = [
     os.environ.get("CORS_ALLOWED_ACCEPT_DOMAIN", "https://acc.dashboard.internet.nl"),
     os.environ.get("CORS_ALLOWED_DOMAIN", "https://dashboard.internet.nl"),
     "http://localhost:5173",
+    "http://localhost:5174",
 ]
 
 # as soon as this is set, the vue post stuff doesn't work anymore.
@@ -521,6 +531,7 @@ CSRF_TRUSTED_ORIGINS = [
     "http://127.0.0.1",
     "http://::1",
     "http://localhost:5173",
+    "http://localhost:5174",
     os.environ.get("CSRF_TRUSTED_ORIGINS_DEFAULT_DOMAIN", "https://internet.nl"),
     os.environ.get("CSRF_TRUSTED_ORIGINS_WILDCARD_DOMAIN", "https://*.internet.nl"),
 ]
@@ -554,7 +565,7 @@ AUTHENTICATION_BACKENDS = [
 #     }
 # }
 
-SOCIALACCOUNT_ADAPTER = "dashboard.adapter.OIDCGroupRestrictionAdapter"
+SOCIALACCOUNT_ADAPTER = "dashboard.allauth.oidcadapter.OIDCGroupRestrictionAdapter"
 SOCIALACCOUNT_PROVIDERS = {
     "openid_connect": {
         "APPS": [
@@ -570,6 +581,14 @@ SOCIALACCOUNT_PROVIDERS = {
         ]
     }
 }
+
+# WSM settings
+NETWORK_SUPPORTS_IPV4 = os.environ.get("NETWORK_SUPPORTS_IPV4", True)
+NETWORK_SUPPORTS_IPV6 = os.environ.get("NETWORK_SUPPORTS_IPV6", False)
+
+# Since Django 5.2, it's a good warning for beginning developers, it's noise if you're around for a while
+# https://adamj.eu/tech/2025/06/27/django-hide-development-server-warning/
+os.environ["DJANGO_RUNSERVER_HIDE_WARNING"] = "true"
 
 # make sure these imports don't get removed by linting tools
 __all__ = ["CONSTANCE_CONFIG", "CONSTANCE_BACKEND", "CONSTANCE_ADDITIONAL_FIELDS", "CONSTANCE_CONFIG_FIELDSETS"]

@@ -14,9 +14,11 @@ from websecmap.app.constance import constance_cached_value
 from websecmap.organizations.models import Url
 from websecmap.reporting.diskreport import retrieve_report, store_report
 from websecmap.reporting.report import recreate_url_report
-from websecmap.scanners.models import InternetNLV2Scan
-from websecmap.scanners.scanner import add_model_filter, dns_endpoints, internet_nl_websecmap
-from websecmap.scanners.scanner.internet_nl import InternetNLApiSettings
+from websecmap.scanners.scanner import add_model_filter
+from websecmap.scanners_internetnl_dns_endpoints import tasks as dns_endpoints
+from websecmap.scanners_internetnl_web import steps as internet_nl_websecmap
+from websecmap.scanners_internetnl_web.api import InternetNLApiSettings
+from websecmap.scanners_internetnl_web.models import InternetNLV2Scan
 
 from dashboard.celery import app
 from dashboard.internet_nl_dashboard.logic.mail import email_configration_is_correct, send_scan_finished_mails
@@ -56,13 +58,13 @@ log = logging.getLogger(__name__)
 def create_api_settings(v2_scan_id: InternetNLV2Scan) -> Dict[str, Union[str, int]]:
     scan = InternetNLV2Scan.objects.all().filter(id=v2_scan_id).first()
     if not scan:
-        log.error(f"Did not find an internetnLV2scan with id {v2_scan_id}")
+        log.error("Did not find an internetnLV2scan with id %s", v2_scan_id)
         return InternetNLApiSettings().__dict__  # type: ignore
 
     # figure out which AccountInternetNLScan object uses this scan. Retrieve the credentials from that account.
     account_scan = AccountInternetNLScan.objects.all().filter(scan=scan).first()
     if not account_scan:
-        log.error(f"Could not find accountscan from scan {scan}")
+        log.error("Could not find accountscan from scan %s", scan)
         return InternetNLApiSettings().__dict__  # type: ignore
 
     apisettings = InternetNLApiSettings()
@@ -155,7 +157,7 @@ def check_running_dashboard_scans(**kwargs) -> Task:
                 .only("id")
             )
 
-        log.debug(f"Checking the state of scan {[scan.id for scan in scans]}.")
+        log.debug("Checking the state of scan %s.", [scan.id for scan in scans])
         tasks = [progress_running_scan(scan.id) for scan in scans]
 
         # All transactional state stuff is done now, so remove the lock
@@ -255,7 +257,7 @@ def recover_and_retry(scan_id: int):
 
     scan = AccountInternetNLScan.objects.all().filter(id=scan_id).first()
     if not scan:
-        log.warning(f"Trying to recover_and_retry with unknown scan: {scan_id}.")
+        log.warning("Trying to recover_and_retry with unknown scan: %s.", scan_id)
         return group([])
 
     valid_states = [
@@ -286,11 +288,13 @@ def recover_and_retry(scan_id: int):
         log.error("Trying to recover from a scan that has no log history.")
         return group([])
 
-    log.warning(f"No valid rollback state for scan {scan_id}.")
+    log.warning("No valid rollback state for scan %s.", scan_id)
 
     log.debug(
-        f"AccountInternetNLScan scan #{scan.id} is rolled back to retry from "
-        f"'{scan.state}' to '{latest_valid.state}'."
+        "AccountInternetNLScan scan #%s is rolled back to retry from %s to '%s'.",
+        scan.id,
+        scan.state,
+        latest_valid.state,
     )
 
     if scan.state in error_states:
@@ -307,7 +311,7 @@ def recover_and_retry(scan_id: int):
 
 def handle_unknown_state(scan_id):
     # probably nothing to be done...
-    log.warning(f"Scan {scan_id} is in unknown state. It will not progress.")
+    log.warning("Scan %s is in unknown state. It will not progress.", scan_id)
     return group([])
 
 
@@ -318,7 +322,7 @@ def discovering_endpoints(scan_id: int):
 
     scan = AccountInternetNLScan.objects.all().filter(id=scan_id).first()
     if not scan:
-        log.warning(f"Trying to discovering_endpoints with unknown scan: {scan_id}.")
+        log.warning("Trying to discovering_endpoints with unknown scan: %s.", scan_id)
         return group([])
 
     return dns_endpoints.compose_discover_task(
@@ -329,7 +333,7 @@ def discovering_endpoints(scan_id: int):
 def retrieving_scannable_urls(scan_id: int):
     scan = AccountInternetNLScan.objects.all().filter(id=scan_id).first()
     if not scan or not scan.scan:
-        log.warning(f"Trying to retrieving_scannable_urls with unknown scan: {scan_id}.")
+        log.warning("Trying to retrieving_scannable_urls with unknown scan: %s.", scan_id)
         return group([])
 
     # This step tries to prevent API calls with an empty list of urls.
@@ -350,7 +354,7 @@ def registering_scan_at_internet_nl(scan_id: int):
 
     scan = AccountInternetNLScan.objects.all().filter(id=scan_id).first()
     if not scan or not scan.scan:
-        log.warning(f"Trying to registering_scan_at_internet_nl with unknown scan: {scan_id}.")
+        log.warning("Trying to registering_scan_at_internet_nl with unknown scan: %s.", scan_id)
         return group([])
 
     # mail = websecmap, mail_dashboard = internet.nl dashboard, web is the same on both. Mail here is a fallback
@@ -391,7 +395,7 @@ def running_scan(scan_id: int):
 
     scan = AccountInternetNLScan.objects.all().filter(id=scan_id).first()
     if not scan or not scan.scan:
-        log.warning(f"Trying to running_scan with unknown scan: {scan_id}.")
+        log.warning("Trying to running_scan with unknown scan: %s.", scan_id)
         return group([])
 
     return chain(internet_nl_websecmap.progress_running_scan(scan.scan.id) | copy_state_from_websecmap_scan.si(scan.id))
@@ -401,7 +405,7 @@ def continue_running_scan(scan_id: int):
     # Used to progress in error situations.
     scan = AccountInternetNLScan.objects.all().filter(id=scan_id).first()
     if not scan or not scan.scan:
-        log.warning(f"Trying to continue_running_scan with unknown scan: {scan_id}.")
+        log.warning("Trying to continue_running_scan with unknown scan: %s.", scan_id)
         return group([])
 
     return chain(internet_nl_websecmap.progress_running_scan(scan.scan.id) | copy_state_from_websecmap_scan.si(scan.id))
@@ -412,7 +416,7 @@ def storing_scan_results(scan_id: int):
 
     scan = AccountInternetNLScan.objects.all().filter(id=scan_id).first()
     if not scan or not scan.scan:
-        log.warning(f"Trying to storing_scan_results with unknown scan: {scan_id}.")
+        log.warning("Trying to storing_scan_results with unknown scan: %s.", scan_id)
         return group([])
 
     return chain(internet_nl_websecmap.progress_running_scan(scan.scan.id) | copy_state_from_websecmap_scan.si(scan.id))
@@ -423,7 +427,7 @@ def processing_scan_results(scan_id: int):
 
     scan = AccountInternetNLScan.objects.all().filter(id=scan_id).first()
     if not scan or not scan.scan:
-        log.warning(f"Trying to processing_scan_results with unknown scan: {scan_id}.")
+        log.warning("Trying to processing_scan_results with unknown scan: %s.", scan_id)
         return group([])
 
     return chain(internet_nl_websecmap.progress_running_scan(scan.scan.id) | copy_state_from_websecmap_scan.si(scan.id))
@@ -438,7 +442,7 @@ def copy_state_from_websecmap_scan(scan_id: int):
     up_to_date_scan_information = InternetNLV2Scan.objects.all().get(id=scan.scan.pk)
     current_state = up_to_date_scan_information.state
 
-    log.debug(f"Copying state from websecmap, current state: '{current_state}'. ")
+    log.debug("Copying state from websecmap, current state: '%s'. ", current_state)
 
     # conflicting state, make sure it's ignored
     if current_state == "requested":
@@ -470,7 +474,7 @@ def creating_report(scan_id: int):
 
     scan = AccountInternetNLScan.objects.all().filter(id=scan_id).first()
     if not scan:
-        log.warning(f"Trying to creating_report with unknown scan: {scan_id}.")
+        log.warning("Trying to creating_report with unknown scan: %s.", scan_id)
         return group([])
 
     # Note that calling 'timezone.now()' at canvas creation time, means that you'll have a date in the past
@@ -492,7 +496,7 @@ def sending_mail(scan_id: int):
 
     scan = AccountInternetNLScan.objects.all().filter(id=scan_id).first()
     if not scan:
-        log.warning(f"Trying to sending_mail with unknown scan: {scan_id}.")
+        log.warning("Trying to sending_mail with unknown scan: %s.", scan_id)
         return group([])
 
     return send_after_scan_mail.si(scan.id) | update_state.s(scan.id)
@@ -501,7 +505,7 @@ def sending_mail(scan_id: int):
 def finishing_scan(scan_id: int):
     scan = AccountInternetNLScan.objects.all().filter(id=scan_id).first()
     if not scan:
-        log.warning(f"Trying to finishing_scan with unknown scan: {scan_id}.")
+        log.warning("Trying to finishing_scan with unknown scan: %s.", scan_id)
         return group([])
 
     # No further actions, so not setting "finishing scan" as a state, but set it to "scan finished" directly.
@@ -524,7 +528,7 @@ def monitor_timeout(scan_id: int):
 
     scan = AccountInternetNLScan.objects.all().filter(id=scan_id).first()
     if not scan:
-        log.warning(f"Trying to monitor_timeout with unknown scan: {scan_id}.")
+        log.warning("Trying to monitor_timeout with unknown scan: %s.", scan_id)
         return group([])
 
     # Warning: timeouts are only useful when crashes happened, otherwise its just a capacity issue which timeouts
@@ -641,7 +645,7 @@ def upgrade_report_with_statistics(urllistreport_id: int) -> int:
     if not urllistreport:
         return -1
 
-    log.debug(f"Creating statistics over urllistreport {urllistreport}.")
+    log.debug("Creating statistics over urllistreport %s.", urllistreport)
     calculation = retrieve_report(urllistreport_id, "UrlListReport")
     store_report(urllistreport_id, "UrlListReport", optimize_calculation_and_add_statistics(calculation))
 

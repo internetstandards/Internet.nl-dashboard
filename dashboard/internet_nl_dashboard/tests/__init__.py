@@ -1,7 +1,8 @@
 from datetime import datetime, timezone
 
 from websecmap.organizations.models import Url
-from websecmap.scanners.models import Endpoint, EndpointGenericScan, InternetNLV2Scan
+from websecmap.scanners.models import Endpoint, EndpointGenericScan
+from websecmap.scanners_internetnl_web.models import InternetNLV2Scan
 
 from dashboard.internet_nl_dashboard.logic.urllist_dashboard_report import rate_urllists_now
 from dashboard.internet_nl_dashboard.models import Account, AccountInternetNLScan, UrlList

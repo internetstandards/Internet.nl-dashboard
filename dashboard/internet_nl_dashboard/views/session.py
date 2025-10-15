@@ -5,10 +5,11 @@ from time import sleep
 from django.contrib.auth import authenticate, login, logout
 from django.http import JsonResponse
 from django_otp.plugins.otp_totp.models import TOTPDevice
+from ninja import Router, Schema
 
-from dashboard.internet_nl_dashboard.logic import operation_response
-from dashboard.internet_nl_dashboard.views import get_json_body
+from dashboard.internet_nl_dashboard.logic import OperationResponseSchema, operation_response
 from dashboard.internet_nl_dashboard.models import Account, DashboardUser
+from dashboard.internet_nl_dashboard.views import get_json_body
 
 """
 Uses django sessions to keep users logged in, so no trickery with JWT is needed.
@@ -30,6 +31,13 @@ def session_login_(request):
     :param request:
     :return:
     """
+
+    # logging in via javascript is not possible, because the CSRF is tied to the session cookie.
+    # The session cookie cannot be requested by javascript, and we're not going to use JWT because
+    # the second factor part is also django only, and not implemented as REST methods.
+    # So there is currently no way to move to rest based auth _including_ second factor authentication.
+    # of course except OAUTH, but there is no knowledge for that yet.
+
     # taken from: https://stackoverflow.com/questions/11891322/setting-up-a-user-login-in-python-django-using-json-and-
     if request.method != "POST":
         sleep(2)
@@ -93,8 +101,9 @@ def session_status_(request):
         }
 
     account, _ = Account.objects.get_or_create(name="users")
-    dashboarduser, _ = DashboardUser.objects.get_or_create(user=request.user, account=account)
-        
+    # got a unique constraint when creating a user in another account. A user may be in one account only.
+    dashboarduser, _ = DashboardUser.objects.get_or_create(user=request.user, defaults={"account": account})
+
     return {
         "is_authenticated": request.user.is_authenticated,
         "is_superuser": request.user.is_superuser,
@@ -104,16 +113,53 @@ def session_status_(request):
 
 
 def session_status(request):
-    try:
-        return JsonResponse(session_status_(request))
-    except Exception as e:
-        log.error(f"Error in session_status: {str(e)}")
-        return JsonResponse({"error": f"Forbidden: {str(e)}"}, status=403)
-    
+    return JsonResponse(session_status_(request))
+    # try:
+    #     return JsonResponse(session_status_(request))
+    # except Exception as e:
+    #     log.error("Error in session_status: %s", str(e))
+    #     return JsonResponse({"error": f"Forbidden: {str(e)}"}, status=403)
+
 
 def session_logout(request):
-    return JsonResponse(session_logout_(request))
+    resp = session_logout_(request)
+    return JsonResponse(resp.dict() if hasattr(resp, "dict") else resp)
 
 
 def session_login(request):
-    return JsonResponse(session_login_(request))
+    resp = session_login_(request)
+    return JsonResponse(resp.dict() if hasattr(resp, "dict") else resp)
+
+
+# Ninja router for session management (excluding login)
+router = Router(tags=["Session Management"])
+
+
+class SessionStatusSchema(Schema):
+    is_authenticated: bool
+    is_superuser: bool
+    second_factor_enabled: bool | None = False
+    account_name: str
+    account_id: int | None = None
+
+
+@router.get("/status", response={200: SessionStatusSchema})
+def session_status_api(request) -> SessionStatusSchema:
+    data = session_status_(request)
+    # Ensure it fits the schema
+    return SessionStatusSchema(
+        is_authenticated=bool(data.get("is_authenticated", False)),
+        is_superuser=bool(data.get("is_superuser", False)),
+        second_factor_enabled=(
+            bool(data.get("second_factor_enabled", False)) if "second_factor_enabled" in data else False
+        ),
+        account_name=str(data.get("account_name", "")),
+        account_id=data.get("account_id"),
+    )
+
+
+@router.get("/logout", response={200: OperationResponseSchema})
+def session_logout_api(request) -> OperationResponseSchema:
+    # Reuse existing logic function
+    resp = session_logout_(request)
+    return resp

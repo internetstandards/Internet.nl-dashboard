@@ -10,11 +10,9 @@ including both the websecmap and dashboard tasks.
 import logging
 import os
 
-import flower.utils.broker
 from celery import Task
 from django.conf import settings
 from websecmap.celery import app
-from websecmap.celery.worker import QUEUES_MATCHING_ROLES
 
 log = logging.getLogger(__package__)
 
@@ -95,7 +93,7 @@ def status():
     workers = sorted(workers, key=lambda k: (k["name"]), reverse=False)  # type: ignore
 
     if "redis://" in app.conf.broker_url:
-        queue_names = [q.name for q in QUEUES_MATCHING_ROLES["queuemonitor"]]
+        # queue_names = [q.name for q in QUEUES_MATCHING_ROLES["queuemonitor"]]
 
         # on localhost and remote workers there is no event loop. This causes an exception.
         # Inspired on https://github.com/tornadoweb/tornado/issues/2352 and
@@ -116,9 +114,10 @@ def status():
         # use flower to not reinvent the wheel on querying queue statistics
         queue_stats = []
         try:
-            broker = flower.utils.broker.Broker(app.conf.broker_url, broker_options=app.conf.broker_transport_options)
+            # broker = flower.utils.broker.Broker(app.conf.broker_url, broker_options=app.conf.broker_transport_options)
             # todo: Instance of 'Broker' has no 'queues' member (no-member)
-            queue_stats = broker.queues(queue_names).result()  # pylint: disable=no-member
+            # queue_stats = broker.queues(queue_names).result()  # pylint: disable=no-member
+            pass
         except RuntimeError as runtime_error:
             log.error("Could not connect to flower to retrieve queue stats.")
             log.exception(runtime_error)

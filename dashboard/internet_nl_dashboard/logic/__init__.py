@@ -2,18 +2,29 @@
 from datetime import datetime, timezone
 from typing import Any, Dict, Optional
 
+from ninja import Schema
+
+
+class OperationResponseSchema(Schema):
+    success: bool = False
+    error: bool = False
+    message: str = ""
+    state: str = ""
+    data: Optional[Dict[Any, Any]] = None
+    timestamp: datetime | None = None
+
 
 def operation_response(
     error: bool = False, success: bool = False, message: str = "", data: Optional[Dict[Any, Any]] = None
-) -> Dict[str, Any]:
-    return {
-        "error": error,
-        "success": success,
-        "message": message,
-        "state": "error" if error else "success",
-        "data": data,
-        "timestamp": datetime.now(timezone.utc),
-    }
+) -> OperationResponseSchema:
+    return OperationResponseSchema(
+        error=error,
+        success=success,
+        message=message,
+        state="error" if error else "success",
+        data=data,
+        timestamp=datetime.now(timezone.utc),
+    )
 
 
 # WARNING! ORDERING IS RELEVANT!
@@ -73,6 +84,8 @@ WEB_TLS_CERTIFICATE_FIELDS = [
     "internet_nl_web_https_cert_pubkey",
     "internet_nl_web_https_cert_sig",
     "internet_nl_web_https_cert_domain",
+    # just like in the front end
+    "internet_nl_web_https_tls_caa",
 ]
 
 WEB_TLS_DANE_FIELDS = [
@@ -180,6 +193,8 @@ MAIL_TLS_CERTIFICATE_FIELDS = [
     "internet_nl_mail_starttls_cert_pubkey",
     "internet_nl_mail_starttls_cert_sig",
     "internet_nl_mail_starttls_cert_domain",
+    # just like in the front end
+    "internet_nl_mail_starttls_tls_caa",
 ]
 
 MAIL_TLS_DANE_FIELDS = [
@@ -274,6 +289,7 @@ FIELD_TO_CATEGORY_MAP = {
     "internet_nl_web_https_cert_pubkey": "category_web_tls_certificate",
     "internet_nl_web_https_cert_sig": "category_web_tls_certificate",
     "internet_nl_web_https_cert_domain": "category_web_tls_certificate",
+    "internet_nl_web_https_tls_caa": "category_web_tls_certificate",
     "internet_nl_web_https_dane_exist": "category_web_tls_dane",
     "internet_nl_web_https_dane_valid": "category_web_tls_dane",
     "internet_nl_web_appsecpriv_x_frame_options": "category_web_security_options_appsecpriv",
@@ -312,6 +328,7 @@ FIELD_TO_CATEGORY_MAP = {
     "internet_nl_mail_starttls_cert_pubkey": "category_mail_starttls_certificate",
     "internet_nl_mail_starttls_cert_sig": "category_mail_starttls_certificate",
     "internet_nl_mail_starttls_cert_domain": "category_mail_starttls_certificate",
+    "internet_nl_mail_starttls_tls_caa": "category_mail_starttls_certificate",
     "internet_nl_mail_starttls_dane_exist": "category_mail_starttls_dane",
     "internet_nl_mail_starttls_dane_valid": "category_mail_starttls_dane",
     "internet_nl_mail_starttls_dane_rollover": "category_mail_starttls_dane",

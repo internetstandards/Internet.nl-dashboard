@@ -9,19 +9,20 @@ from typing import Any, Dict, List, Set, Tuple, Union
 
 import pyexcel as p
 import requests
-import tldextract
 from actstream import action
 from celery import group
 from constance import config
 from django.db.models import Count, Prefetch
 from django.http import JsonResponse
+from ninja import Schema
+from websecmap import tldextract
 from websecmap.app.constance import constance_cached_value
 from websecmap.organizations.models import Url
 from websecmap.scanners.models import Endpoint
-from websecmap.scanners.scanner.dns_endpoints import compose_discover_task
+from websecmap.scanners_internetnl_dns_endpoints.tasks import compose_discover_task
 
 from dashboard.celery import app
-from dashboard.internet_nl_dashboard.logic import operation_response
+from dashboard.internet_nl_dashboard.logic import OperationResponseSchema, operation_response
 from dashboard.internet_nl_dashboard.models import (
     Account,
     AccountInternetNLScan,
@@ -31,8 +32,126 @@ from dashboard.internet_nl_dashboard.models import (
     UrlListReport,
     determine_next_scan_moment,
 )
-from dashboard.internet_nl_dashboard.scanners.scan_internet_nl_per_account import initialize_scan, update_state
-from dashboard.internet_nl_dashboard.views.download_spreadsheet import create_spreadsheet_download
+from dashboard.internet_nl_dashboard.scanners.scan_internet_nl_per_account import initialize_scan
+from dashboard.internet_nl_dashboard.views import create_spreadsheet_download
+
+
+class UrlListSummarySchema(Schema):
+    id: int
+    name: str
+    enable_scans: bool
+    scan_type: str
+    automated_scan_frequency: str
+    scheduled_next_scan: datetime | None = None
+    scan_now_available: bool
+    enable_report_sharing_page: bool
+    automatically_share_new_reports: bool
+    default_public_share_code_for_new_reports: str = ""
+    last_scan_id: int | None = None
+    last_scan_state: str | None = None
+    # Note: get_urllists_from_account returns ISO formatted strings for dates
+    last_scan: str | None = None
+    last_scan_finished: bool | None = None
+    last_report_id: int | None = None
+    last_report_date: str | None = None
+    list_warnings: list[str] = []
+    num_urls: int
+
+
+class UrlListsResponseSchema(Schema):
+    lists: list[UrlListSummarySchema]
+    maximum_domains_per_list: int
+
+
+class UrlItemSchema(Schema):
+    id: int
+    url: str
+    subdomain: str
+    domain: str
+    suffix: str
+    created_on: datetime
+    resolves: bool
+    has_mail_endpoint: bool
+    has_web_endpoint: bool
+    tags: list[str]
+
+
+class UrlListContentResponseSchema(Schema):
+    urllist_id: int
+    urls: list[UrlItemSchema]
+
+
+class UrlListScanStatusResponseSchema(Schema):
+    last_scan_id: int | None = None
+    last_scan_state: str | None = None
+    last_scan_finished: bool | None = None
+    last_report_id: int | None = None
+    last_report_date: datetime | None = None
+    scan_now_available: bool = False
+
+
+# Specialized schemas for alter_url_in_urllist
+class UrlChangeItemSchema(Schema):
+    id: int
+    url: str
+    created_on: datetime
+    has_mail_endpoint: bool | str
+    has_web_endpoint: bool | str
+    subdomain: str
+    domain: str
+    suffix: str
+
+
+class AlterUrlDataSchema(Schema):
+    created: UrlChangeItemSchema
+    removed: UrlChangeItemSchema | None = None
+
+
+class AlterUrlResponseSchema(OperationResponseSchema):
+    data: AlterUrlDataSchema | None = None
+
+
+class CreateListResponseSchema(OperationResponseSchema):
+    data: UrlListSummarySchema | None = None
+
+
+class CreateUrlListInputSchema(Schema):
+    id: int
+    name: str
+    enable_scans: bool
+    scan_type: str
+    automated_scan_frequency: str
+    scheduled_next_scan: datetime | None = None
+    automatically_share_new_reports: bool
+    default_public_share_code_for_new_reports: str = ""
+    enable_report_sharing_page: bool
+
+
+class DeleteUrlListInputSchema(Schema):
+    id: int
+
+
+class DeleteUrlFromListInputSchema(Schema):
+    urllist_id: int
+    url_id: int
+
+
+class DownloadSpreadsheetInputSchema(Schema):
+    urllist_id: int
+    file_type: str = "xlsx"
+
+
+class SuggestedSubdomainsInputSchema(Schema):
+    domain: str = ""
+    period: int = 370
+    urllist_id: int | None = None
+
+
+class SuggestedDomainSchema(Schema):
+    domain: str
+    has_website: bool | str
+    has_email: bool | str
+
 
 log = logging.getLogger(__package__)
 
@@ -74,45 +193,50 @@ def suggest_subdomains(domain: str, period: int = 370):
 
 
 # todo: write test
-def alter_url_in_urllist(account, data) -> Dict[str, Any]:
+def alter_url_in_urllist(account, data) -> AlterUrlResponseSchema:
     # data = {'list_id': list.id, 'url_id': url.id, 'new_url_string': url.url}
+
+    now = datetime.now(timezone.utc)
 
     expected_keys = ["list_id", "url_id", "new_url_string"]
     if not keys_are_present_in_object(expected_keys, data):
-        return operation_response(error=True, message="Missing keys in data.")
+        return AlterUrlResponseSchema(error=True, message="Missing keys in data.", state="error", timestamp=now)
 
     # what was the old id we're changing?
     old_url = Url.objects.all().filter(pk=data["url_id"]).first()
     if not old_url:
-        return operation_response(error=True, message="The old url does not exist.")
+        return AlterUrlResponseSchema(error=True, message="The old url does not exist.", state="error", timestamp=now)
 
     if old_url.url == data["new_url_string"]:
-        # no changes, for c
-        return operation_response(
+        # no changes, but return a created item for UI consistency
+        created_item = UrlChangeItemSchema(
+            id=old_url.id,
+            url=old_url.url,
+            created_on=old_url.created_on,
+            has_mail_endpoint="unknown",
+            has_web_endpoint="unknown",
+            subdomain=old_url.computed_subdomain,
+            domain=old_url.computed_domain,
+            suffix=old_url.computed_suffix,
+        )
+        return AlterUrlResponseSchema(
             success=True,
             message="Saved.",
-            data={
-                "created": {
-                    "id": old_url.id,
-                    "url": old_url.url,
-                    "created_on": old_url.created_on,
-                    "has_mail_endpoint": "unknown",
-                    "has_web_endpoint": "unknown",
-                    "subdomain": old_url.computed_subdomain,
-                    "domain": old_url.computed_domain,
-                    "suffix": old_url.computed_suffix,
-                },
-            },
+            state="success",
+            data=AlterUrlDataSchema(created=created_item, removed=None),
+            timestamp=now,
         )
 
     # is this really a list?
     urllist = UrlList.objects.all().filter(account=account, pk=data["list_id"]).first()
     if not urllist:
-        return operation_response(error=True, message="List does not exist.")
+        return AlterUrlResponseSchema(error=True, message="List does not exist.", state="error", timestamp=now)
 
     # is the url valid?
     if not Url.is_valid_url(data["new_url_string"]):
-        return operation_response(error=True, message="New url does not have the correct format.")
+        return AlterUrlResponseSchema(
+            error=True, message="New url does not have the correct format.", state="error", timestamp=now
+        )
 
     # fetch the url, or create it if it doesn't exist.
     new_url, created = get_url(data["new_url_string"])
@@ -143,35 +267,38 @@ def alter_url_in_urllist(account, data) -> Dict[str, Any]:
     new_fragments = tldextract.extract(new_url.url)
     old_fragments = tldextract.extract(old_url.url)
 
-    return operation_response(
+    created_item = UrlChangeItemSchema(
+        id=new_url.id,
+        url=new_url.url,
+        created_on=new_url.created_on,
+        has_mail_endpoint=new_url_has_mail_endpoint,
+        has_web_endpoint=new_url_has_web_endpoint,
+        subdomain=new_fragments.subdomain,
+        domain=new_fragments.domain,
+        suffix=new_fragments.suffix,
+    )
+
+    removed_item = UrlChangeItemSchema(
+        id=old_url.id,
+        url=old_url.url,
+        created_on=old_url.created_on,
+        has_mail_endpoint=old_url_has_mail_endpoint,
+        has_web_endpoint=old_url_has_web_endpoint,
+        subdomain=old_fragments.subdomain,
+        domain=old_fragments.domain,
+        suffix=old_fragments.suffix,
+    )
+
+    return AlterUrlResponseSchema(
         success=True,
         message="Saved.",
-        data={
-            "created": {
-                "id": new_url.id,
-                "url": new_url.url,
-                "created_on": new_url.created_on,
-                "has_mail_endpoint": new_url_has_mail_endpoint,
-                "has_web_endpoint": new_url_has_web_endpoint,
-                "subdomain": new_fragments.subdomain,
-                "domain": new_fragments.domain,
-                "suffix": new_fragments.suffix,
-            },
-            "removed": {
-                "id": old_url.id,
-                "url": old_url.url,
-                "created_on": old_url.created_on,
-                "has_mail_endpoint": old_url_has_mail_endpoint,
-                "has_web_endpoint": old_url_has_web_endpoint,
-                "subdomain": old_fragments.subdomain,
-                "domain": old_fragments.domain,
-                "suffix": old_fragments.suffix,
-            },
-        },
+        state="success",
+        data=AlterUrlDataSchema(created=created_item, removed=removed_item),
+        timestamp=now,
     )
 
 
-def scan_now(account, user_input) -> Dict[str, Any]:
+def scan_now(account, user_input) -> OperationResponseSchema:
     urllist = (
         UrlList.objects.all()
         .filter(account=account, id=user_input.get("id", -1), is_deleted=False)
@@ -230,58 +357,62 @@ def get_url(new_url_string: str):
     return url, True
 
 
-def create_list(account: Account, user_input: Dict) -> Dict[str, Any]:
-    expected_keys = [
-        "id",
-        "name",
-        "enable_scans",
-        "scan_type",
-        "automated_scan_frequency",
-        "scheduled_next_scan",
-        "automatically_share_new_reports",
-        "default_public_share_code_for_new_reports",
-        "enable_report_sharing_page",
-    ]
-    if sorted(user_input.keys()) != sorted(expected_keys):
-        return operation_response(error=True, message="Missing settings.")
-
-    frequency = validate_list_automated_scan_frequency(user_input["automated_scan_frequency"])
-    data = {
+def create_list(account: Account, data: CreateUrlListInputSchema) -> CreateListResponseSchema:
+    frequency = validate_list_automated_scan_frequency(data.automated_scan_frequency)
+    create_kwargs = {
         "account": account,
-        "name": validate_list_name(user_input["name"]),
-        "enable_scans": bool(user_input["enable_scans"]),
-        "scan_type": validate_list_scan_type(user_input["scan_type"]),
+        "name": validate_list_name(data.name),
+        "enable_scans": bool(data.enable_scans),
+        "scan_type": validate_list_scan_type(data.scan_type),
         "automated_scan_frequency": frequency,
+        # Always determine the next scan moment from frequency; ignore user provided value
         "scheduled_next_scan": determine_next_scan_moment(frequency),
-        "enable_report_sharing_page": bool(user_input.get("enable_report_sharing_page", "")),
-        "automatically_share_new_reports": bool(user_input.get("automatically_share_new_reports", "")),
-        "default_public_share_code_for_new_reports": user_input.get("default_public_share_code_for_new_reports", "")[
-            :64
-        ],
+        "enable_report_sharing_page": bool(getattr(data, "enable_report_sharing_page", False)),
+        "automatically_share_new_reports": bool(getattr(data, "automatically_share_new_reports", False)),
+        "default_public_share_code_for_new_reports": (data.default_public_share_code_for_new_reports or "")[:64],
     }
 
-    urllist = UrlList(**data)
+    urllist = UrlList(**create_kwargs)
     urllist.save()
 
-    # make sure the account is serializable.
-    data["account"] = account.id
-
-    # adding the ID makes it possible to add new urls to a new list.
-    data["id"] = urllist.pk
-
-    # empty list, no warnings.
-    data["list_warnings"] = []
-
-    # give a hint if it can be scanned:
-    data["scan_now_available"] = urllist.is_scan_now_available()
+    # Build a UrlListSummarySchema for the newly created list
+    list_summary = UrlListSummarySchema(
+        id=urllist.pk,
+        name=urllist.name,
+        enable_scans=urllist.enable_scans,
+        scan_type=urllist.scan_type,
+        automated_scan_frequency=urllist.automated_scan_frequency,
+        scheduled_next_scan=urllist.scheduled_next_scan,
+        scan_now_available=urllist.is_scan_now_available(),
+        enable_report_sharing_page=urllist.enable_report_sharing_page,
+        automatically_share_new_reports=urllist.automatically_share_new_reports,
+        default_public_share_code_for_new_reports=urllist.default_public_share_code_for_new_reports,
+        last_scan_id=None,
+        last_scan_state=None,
+        last_scan=None,
+        last_scan_finished=None,
+        last_report_id=None,
+        last_report_date=None,
+        list_warnings=[],
+        num_urls=0,
+    )
 
     # Sprinkling an activity stream action.
     action.send(account, verb="created list", target=urllist, public=False)
 
-    return operation_response(success=True, message="List created.", data=data)
+    # todo: abstract state and timestamp, just like in the old operation_response code.
+    #  or... use rest status codes, like 200 and 400.
+    return CreateListResponseSchema(
+        success=True,
+        error=False,
+        message="List created.",
+        state="success",
+        data=list_summary,
+        timestamp=datetime.now(timezone.utc),
+    )
 
 
-def delete_list(account: Account, user_input: dict):
+def delete_list(account: Account, data: DeleteUrlListInputSchema) -> OperationResponseSchema:
     """
     The first assumption was that a list is not precious or special, and that it can be quickly re-created with an
     import from excel or a csv paste in the web interface. Yet this assumption is wrong. It's valuable to keep the list
@@ -290,10 +421,10 @@ def delete_list(account: Account, user_input: dict):
     To do that, the is_deleted columns have been introduced.
 
     :param account:
-    :param user_input:
-    :return:
+    :param data: DeleteUrlListInputSchema containing the list id.
+    :return: OperationResponseSchema
     """
-    urllist = UrlList.objects.all().filter(account=account, id=user_input.get("id", -1), is_deleted=False).first()
+    urllist = UrlList.objects.all().filter(account=account, id=data.id, is_deleted=False).first()
     if not urllist:
         return operation_response(error=True, message="List could not be deleted.")
 
@@ -308,7 +439,7 @@ def delete_list(account: Account, user_input: dict):
     return operation_response(success=True, message="List deleted.")
 
 
-def get_scan_status_of_list(account: Account, list_id: int) -> Dict[str, Any]:
+def get_scan_status_of_list(account: Account, list_id: int) -> UrlListScanStatusResponseSchema:
     """
     Gets the latest report and the scanning status of a list, this is meant as a small status monitor per list.
     This updates the "can scan" buttons and updates the link to the latest report. It does not propagate user changes.
@@ -341,7 +472,8 @@ def get_scan_status_of_list(account: Account, list_id: int) -> Dict[str, Any]:
     )
 
     if not urllist:
-        return {}
+        # Return an empty schema with defaults when the list is not found for this account
+        return UrlListScanStatusResponseSchema()
 
     data = {
         "last_scan_id": None,
@@ -362,39 +494,11 @@ def get_scan_status_of_list(account: Account, list_id: int) -> Dict[str, Any]:
         data["last_report_id"] = urllist.last_report[0].id  # type: ignore
         data["last_report_date"] = urllist.last_report[0].at_when  # type: ignore
 
-    return data
-
-
-def cancel_scan(account: Account, scan_id: int):
-    """
-    :param account: Account
-    :param scan_id: AccountInternetNLScan ID
-    :return:
-    """
-
-    scan = AccountInternetNLScan.objects.all().filter(account=account, pk=scan_id).first()
-
-    if not scan:
-        return operation_response(error=True, message="scan not found")
-
-    if scan.state == "finished":
-        return operation_response(success=True, message="scan already finished")
-
-    if scan.state == "cancelled":
-        return operation_response(success=True, message="scan already cancelled")
-
-    scan.finished_on = datetime.now(timezone.utc)
-    scan.save()
-    update_state("cancelled", scan.id)
-
-    # Sprinkling an activity stream action.
-    action.send(account, verb="cancelled scan", target=scan, public=False)
-
-    return operation_response(success=True, message="scan cancelled")
+    return UrlListScanStatusResponseSchema(**data)
 
 
 # @pysnooper.snoop()
-def update_list_settings(account: Account, user_input: Dict) -> Dict[str, Any]:
+def update_list_settings(account: Account, user_input: Dict) -> CreateListResponseSchema | OperationResponseSchema:
     """
 
     This cannot update the urls, as that would increase complexity too much.
@@ -542,7 +646,7 @@ def rename_list(account: Account, list_id: int, new_name: str) -> bool:
     return True
 
 
-def get_urllists_from_account(account: Account) -> Dict:
+def get_urllists_from_account(account: Account) -> UrlListsResponseSchema:
     """
     These are lists with some metadata. The metadata is used to give an indication how many urls etc (#52) are
     included. Note that this does not return the entire set of urls, given that URLS may be in the thousands.
@@ -634,17 +738,16 @@ def get_urllists_from_account(account: Account) -> Dict:
     # Sprinkling an activity stream action.
     action.send(account, verb="retrieved domain lists", public=False)
 
-    return {"lists": url_lists, "maximum_domains_per_list": max_domains}
+    return UrlListsResponseSchema(lists=url_lists, maximum_domains_per_list=max_domains)
 
 
-def get_urllist_content(account: Account, urllist_id: int) -> dict:
+def get_urllist_content(account: Account, urllist_id: int) -> UrlListContentResponseSchema:
     """
-    This will retrieve the contents of an urllist. The amount of urls can be in the thousands, and have to be displayed
-    properly.
+    Retrieve the contents of an urllist and return it as a Ninja schema.
 
-    :param account:
-    :param urllist_name:
-    :return:
+    :param account: Account owning the list
+    :param urllist_id: ID of the UrlList to retrieve
+    :return: UrlListContentResponseSchema
     """
     # This prefetch changes a 1000 ms nested query into a 150 ms query.
     prefetch = Prefetch(
@@ -668,43 +771,37 @@ def get_urllist_content(account: Account, urllist_id: int) -> dict:
         .all()
     )
 
-    """ It's very possible that the urrlist_id is not matching with the account. The query will just return
-    nothing. Only of both matches it will return something we can work with. """
-    response: Dict[str, Any] = {"urllist_id": urllist_id, "urls": []}
+    # It's very possible that the urllist_id is not matching with the account. The query will just return
+    # nothing. Only if both match it will return something we can work with.
+    url_items: list[UrlItemSchema] = []
 
-    """ This is just a simple iteration, all sorting and logic is placed in the vue as that is much more flexible. """
+    # This is just a simple iteration, all sorting and logic is placed in the vue as that is much more flexible.
     for url in urls:
         has_mail_endpoint = len([x for x in url.relevant_endpoints if x.protocol == "dns_soa"]) > 0
         has_web_endpoint = len([x for x in url.relevant_endpoints if x.protocol == "dns_a_aaaa"]) > 0
 
-        # this is terrible code... as it appears prefetching tags is bit complex with queries in
-        # queries with n-to-n on n-to-n and such.
-        # and thus the result is similarly complex. This is done in the hope the number
-        # of queries will be reduced.
-        # has_tags = TaggedUrlInUrllist.objects.all().filter(url=url, urllist=urllist_id).only('id').first()
-        # tags = list(has_tags.tags.names()) if has_tags else []
-        # log.warning(url.url_tags)
-        tags = []
+        # Prefetched tags collection building
+        tags: list[str] = []
         for tag1 in [x.tags.values_list("name") for x in url.url_tags]:
             for tag2 in tag1:
                 tags.extend(iter(tag2))
 
-        response["urls"].append(
-            {
-                "id": url.id,
-                "url": url.url,
-                "subdomain": url.computed_subdomain,
-                "domain": url.computed_domain,
-                "suffix": url.computed_suffix,
-                "created_on": url.created_on,
-                "resolves": not url.not_resolvable,
-                "has_mail_endpoint": has_mail_endpoint,
-                "has_web_endpoint": has_web_endpoint,
-                "tags": tags,
-            }
+        url_items.append(
+            UrlItemSchema(
+                id=url.id,
+                url=url.url,
+                subdomain=url.computed_subdomain,
+                domain=url.computed_domain,
+                suffix=url.computed_suffix,
+                created_on=url.created_on,
+                resolves=not url.not_resolvable,
+                has_mail_endpoint=has_mail_endpoint,
+                has_web_endpoint=has_web_endpoint,
+                tags=tags,
+            )
         )
 
-    return response
+    return UrlListContentResponseSchema(urllist_id=urllist_id, urls=url_items)
 
 
 def retrieve_possible_urls_from_unfiltered_input(unfiltered_input: str) -> Tuple[List[str], int]:
@@ -770,7 +867,7 @@ def retrieve_possible_urls_from_unfiltered_input(unfiltered_input: str) -> Tuple
     return sorted(has_tld), duplicates_removed
 
 
-def add_domains_from_raw_user_data(account: Account, user_input: Dict[str, Any]) -> Dict:
+def add_domains_from_raw_user_data(account: Account, user_input: Dict[str, Any]) -> OperationResponseSchema:
     """
     This is the 'id' version of save_urllist. It is a bit stricter as in that it requires the list to exist.
 
@@ -795,7 +892,7 @@ def add_domains_from_raw_user_data(account: Account, user_input: Dict[str, Any])
     # does this remove tags of existing urls?
     result = save_urllist_content_by_id(account, list_id, {url: {"tags": []} for url in urls})
     if "error" in result:
-        return result
+        return OperationResponseSchema(**result)
 
     return operation_response(success=True, message="add_domains_valid_urls_added", data=result)
 
@@ -836,7 +933,7 @@ def save_urllist_content_by_id(
     urllist = UrlList.objects.all().filter(account=account, id=urllist_id, is_deleted=False).first()
 
     if not urllist:
-        return operation_response(error=True, message="add_domains_list_does_not_exist")
+        return {"error": True, "message": "add_domains_list_does_not_exist"}
 
     # this is extremely fast for 10k domains.
     urls, duplicates_removed = retrieve_possible_urls_from_unfiltered_input(", ".join(unfiltered_urls.keys()))
@@ -844,7 +941,7 @@ def save_urllist_content_by_id(
 
     proposed_number_of_urls = urllist.urls.all().count() + len(cleaned_urls["correct"])
     if proposed_number_of_urls > int(constance_cached_value("DASHBOARD_MAXIMUM_DOMAINS_PER_LIST")):
-        return operation_response(error=True, message="too_many_domains")
+        return {"error": True, "message": "too_many_domains"}
 
     if cleaned_urls["correct"]:
         # this operation takes a while, to speed it up urls are added async.

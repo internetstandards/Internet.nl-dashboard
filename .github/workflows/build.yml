@@ -33,6 +33,8 @@ jobs:
         uses: supercharge/redis-github-action@1.5.0
         with:
           redis-version: ${{ matrix.redis-version }}
+      - name: install uv
+        run: pip install uv
       - name: setup
         run: make setup
       - name: qa

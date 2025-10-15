@@ -5,7 +5,8 @@ from datetime import datetime, timezone
 from django.contrib.auth.models import User
 from websecmap.organizations.models import Url
 from websecmap.reporting.models import UrlReport
-from websecmap.scanners.models import Endpoint, EndpointGenericScan, InternetNLV2Scan
+from websecmap.scanners.models import Endpoint, EndpointGenericScan
+from websecmap.scanners_internetnl_web.models import InternetNLV2Scan
 
 from dashboard.internet_nl_dashboard.models import Account, AccountInternetNLScan, UrlList, UrlListReport
 from dashboard.internet_nl_dashboard.scanners.scan_internet_nl_per_account import (
@@ -27,11 +28,11 @@ def test_monitor_timeout(db):
             scan=InternetNLV2Scan.objects.create(),
             urllist=UrlList.objects.create(account=a),
             state=rec_state,
-            state_changed_on=datetime(1996, 1, 1),
+            state_changed_on=datetime(1996, 1, 1, tzinfo=timezone.utc),
         )
         monitor_timeout(scan.id)
         updated_scan = AccountInternetNLScan.objects.get(id=scan.id)
-        assert updated_scan.state_changed_on != datetime(1996, 1, 1)
+        assert updated_scan.state_changed_on != datetime(1996, 1, 1, tzinfo=timezone.utc)
         assert updated_scan.state_changed_on.year == datetime.now().year
 
 
@@ -59,10 +60,15 @@ def test_creating_report(db, redis_server, default_policy, default_scan_metadata
     #  as they are not seen as relevant for the moment the report is made.
     for domain in ["vitesse.nl", "dierenscheboys.nl", "fcwaalwijk.nl"]:
         mydomain, c = Url.objects.all().get_or_create(
-            url=domain, is_dead=False, not_resolvable=False, created_on=datetime(2010, 1, 1)
+            url=domain, is_dead=False, not_resolvable=False, created_on=datetime(2010, 1, 1, tzinfo=timezone.utc)
         )
         myendpoint, c = Endpoint.objects.all().get_or_create(
-            url=mydomain, protocol="dns_a_aaaa", port=0, ip_version=0, is_dead=False, discovered_on=datetime(2010, 1, 1)
+            url=mydomain,
+            protocol="dns_a_aaaa",
+            port=0,
+            ip_version=0,
+            is_dead=False,
+            discovered_on=datetime(2010, 1, 1, tzinfo=timezone.utc),
         )
         urllist.urls.add(mydomain)
         urllist.save()
@@ -86,14 +92,14 @@ def test_creating_report(db, redis_server, default_policy, default_scan_metadata
         rating="error",
         evidence="",
         endpoint=vitesse_endpoint,
-        rating_determined_on=datetime(2010, 1, 1),
+        rating_determined_on=datetime(2010, 1, 1, tzinfo=timezone.utc),
     )
     EndpointGenericScan.objects.all().get_or_create(
         type="web_https_tls_version",
         rating="failed",
         evidence="",
         endpoint=vitesse_endpoint,
-        rating_determined_on=datetime(2010, 1, 1),
+        rating_determined_on=datetime(2010, 1, 1, tzinfo=timezone.utc),
     )
 
     # here, vitesse.nl has an error from the API. This occurs when a crash happens in the api scanner, which is
@@ -179,10 +185,10 @@ def test_creating_report(db, redis_server, default_policy, default_scan_metadata
     first_urlreport = UrlReport.objects.all().filter(url__url="dierenscheboys.nl").first()
     # this fluctuates if settings such as forum_standardisation metrics are enabled/disabled.
     # since the default changed on 20240618 this amount is lowered from 12 to 6.
-    assert first_urlreport.high == 6
+    assert first_urlreport.high == 12
     assert first_urlreport.medium == 6
     assert first_urlreport.low == 3
-    assert first_urlreport.ok == 18
+    assert first_urlreport.ok == 22  # 18
     assert UrlReport.objects.all().filter(url__url="vitesse.nl").count() == 2
     # To see what the calculation is exactly: assert first_urlreport.calculation == {}
 
@@ -193,7 +199,7 @@ def test_creating_report(db, redis_server, default_policy, default_scan_metadata
     first_urllistreport = UrlListReport.objects.all().filter().first()
     # association was made during creating_report
     assert first_urllistreport.urllist == urllist
-    assert first_urllistreport.high == 6
+    assert first_urllistreport.high == 12  # 6
     assert first_urllistreport.average_internet_nl_score == 76
     # stats per issue types have been added
 

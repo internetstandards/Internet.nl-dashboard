@@ -469,7 +469,9 @@ class Migration(migrations.Migration):
                 (
                     "scan",
                     models.ForeignKey(
-                        null=True, on_delete=django.db.models.deletion.CASCADE, to="scanners.internetnlv2scan"
+                        null=True,
+                        on_delete=django.db.models.deletion.CASCADE,
+                        to="scanners_internetnl_web.internetnlv2scan",
                     ),
                 ),
                 (

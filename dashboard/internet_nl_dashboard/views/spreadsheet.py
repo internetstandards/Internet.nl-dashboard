@@ -7,9 +7,11 @@ from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render
 from django.views.decorators.http import require_http_methods
-from websecmap.app.common import JSEncoder
+from ninja import Router
+from ninja.security import django_auth
 
 from dashboard.internet_nl_dashboard.logic.spreadsheet import (
+    UploadHistoryItemSchema,
     get_upload_history,
     import_step_2,
     log_spreadsheet_upload,
@@ -19,6 +21,9 @@ from dashboard.internet_nl_dashboard.logic.spreadsheet import (
 from dashboard.internet_nl_dashboard.views import LOGIN_URL, get_account, get_dashboarduser
 
 log = logging.getLogger(__package__)
+
+# Ninja router for spreadsheet/upload endpoints
+router = Router(tags=["Url Lists / Bulk Domain Management"], auth=django_auth)
 
 
 @login_required(login_url=LOGIN_URL)
@@ -37,7 +42,7 @@ def upload(request) -> HttpResponse:
     return response
 
 
-@login_required(login_url=LOGIN_URL)
+@router.post("/upload-spreadsheet")
 def upload_spreadsheet(request) -> HttpResponse:
     # Instead of some json message, give a full page, so the classic uploader also functions pretty well.
     # todo: Or should this be a redirect, so the 'reload' page does not try to resend the form...
@@ -71,17 +76,15 @@ def upload_spreadsheet(request) -> HttpResponse:
     return response
 
 
-@login_required(login_url=LOGIN_URL)
-def upload_history(request) -> JsonResponse:
+@router.get("/upload-history", response={200: list[UploadHistoryItemSchema]})
+def upload_history(request):
     account = get_account(request)
-
-    # list of dicts: In order to allow non-dict objects to be serialized set the safe parameter to False.
-    return JsonResponse(get_upload_history(account), encoder=JSEncoder, safe=False)
+    return get_upload_history(account)
 
 
-@login_required(login_url=LOGIN_URL)
+@router.post("/urllist/upload/{list_id}")
 @require_http_methods(["POST"])
-def upload_list_(request, list_id):
+def upload_list_(request, list_id: int):
     # params = get_json_body(request)
     return JsonResponse(
         upload_domain_spreadsheet_to_list(

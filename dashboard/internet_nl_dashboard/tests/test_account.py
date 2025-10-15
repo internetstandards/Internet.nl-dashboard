@@ -15,6 +15,6 @@ def test_urllists(db) -> None:
         }
     }
     save_report_settings(account, settings)
-    retrieved_settings = get_report_settings(account)
+    retrieved_settings = get_report_settings(account).dict()
 
     assert retrieved_settings["data"] == settings["filters"]

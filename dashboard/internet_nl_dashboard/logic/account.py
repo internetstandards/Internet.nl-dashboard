@@ -13,5 +13,5 @@ def get_report_settings(account):
     return operation_response(
         success=True,
         message="settings.restored_from_database",
-        data=account.report_settings if account.report_settings else {},
+        data=account.report_settings or {},
     )
