@@ -18,13 +18,12 @@ RUN apt-get update && apt-get install -y \
 
 # Install Python dependencies
 COPY requirements.txt /source/
-COPY requirements-deploy.txt /source/
-RUN pip-sync requirements.txt requirements-deploy.txt
+RUN pip-sync requirements.txt
 
 # Install Application
 COPY setup.py README.md /source/
 COPY dashboard/ /source/dashboard/
-RUN pip install --no-deps -e .[deploy]
+RUN pip install --no-deps -e .
 
 RUN ln -s /pyenv/bin/dashboard /usr/local/bin/
 
