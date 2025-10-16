@@ -3,8 +3,8 @@ from datetime import datetime, timezone
 from typing import List
 
 from celery import group
-from websecmap.scanners.scanner.subdomains import certificate_transparency_scan
-from websecmap.scanners_internetnl_dns_endpoints.tasks import has_a_or_aaaa, has_soa
+from websecmap.scanners.scanner.subdomains import certificate_transparency_scan, get_nameservers
+from websecmap.scanners_internet_nl_dns_endpoints.tasks import has_a_or_aaaa, has_soa
 
 from dashboard.celery import app
 from dashboard.internet_nl_dashboard import log
@@ -136,14 +136,16 @@ def discover_subdomains_ctlogs_sectigo(toplevel_domains) -> List[str]:
 
 
 def add_discovered_subdomains(scan, urllist, domains_to_check: List[str]):
+    nameservers = get_nameservers()
+
     urls_to_add = []
     # This can take a while because it's synchronous. Done that way to see what urls have been added.
     for domain in domains_to_check:
         # don't know which one is saved here, so just testing for both mail and mail_dashboard
-        if urllist.scan_type in ["mail", "mail_dashboard", "all"] and has_soa(domain):
+        if urllist.scan_type in ["mail", "mail_dashboard", "all"] and has_soa(domain, nameservers):
             urls_to_add.append(domain)
 
-        if urllist.scan_type in ["web", "all"] and has_a_or_aaaa(domain):
+        if urllist.scan_type in ["web", "all"] and has_a_or_aaaa(domain, nameservers):
             urls_to_add.append(domain)
 
     # could have been both mail or web in case of all...

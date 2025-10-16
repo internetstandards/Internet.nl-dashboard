@@ -121,6 +121,8 @@ INSTALLED_APPS = [
     "allauth.usersessions",
     # wsm:
     # "storages",
+    "websecmap.dramatiq.CustomDjangoDramatiqConfig.CustomDjangoDramatiqConfig",
+
 ]
 
 # django activity stream wants a site-id:
@@ -336,6 +338,61 @@ LOGGING = {
         },
     },
 }
+
+DRAMATIQ_BROKER = {
+    "BROKER": "dramatiq.brokers.redis.RedisBroker",
+    "OPTIONS": (
+        {
+            "url": os.environ.get("DRAMATIQ_BROKER_URL", "redis://localhost:6379/0"),
+        }
+    ),
+    "MIDDLEWARE": [
+        # allow using 'pipeline' or '|' for task composition
+        "dramatiq.middleware.Pipelines",
+        # enable retries
+        "dramatiq.middleware.Retries",
+        # enable age limits
+        "dramatiq.middleware.AgeLimit",
+        # "dramatiq.middleware.TimeLimit",
+        "dramatiq.middleware.Callbacks",
+        "dramatiq.middleware.GroupCallbacks",
+        # additional logging for workers
+        "websecmap.dramatiq.middleware.Logging",
+        "websecmap.dramatiq.middleware.StoreFailures",
+    ]
+    + (
+        # enable prometheus exporter unless we run in direct mode
+        [
+            "websecmap.dramatiq.middleware.Prometheus",
+        ]
+    ),
+}
+DRAMATIQ_RESULT_BACKEND = {
+    "BACKEND": "dramatiq.results.backends.RedisBackend",
+    "BACKEND_OPTIONS": (
+        {
+            "url": os.environ.get(
+                "RESULT_BACKEND",
+                os.environ.get(
+                    "DRAMATIQ_RESULT_BACKEND", os.environ.get("DRAMATIQ_BROKER_URL", "redis://localhost:6379/1")
+                ),
+            ),
+        }
+    ),
+    # by default store results for 1 hour
+    "MIDDLEWARE_OPTIONS": {"store_results": False, "result_ttl": 60 * 60 * 1000},
+}
+DRAMATIQ_RATE_LIMITER_BACKEND = {
+    "BACKEND": (
+        "dramatiq.rate_limits.backends.RedisBackend"
+    ),
+    "BACKEND_OPTIONS": (
+        {"url": os.environ.get("DRAMATIQ_BROKER_URL", "redis://localhost:6379/2")}
+    ),
+}
+
+DRAMATIQ_AUTODISCOVER_MODULES = ["tasks"]
+DRAMATIQ_IGNORED_MODULES = ("django_uwsgi.tasks",)
 
 # settings to get WebSecMap to work:
 # Celery 4.0 settings

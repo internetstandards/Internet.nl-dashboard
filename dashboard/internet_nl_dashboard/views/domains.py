@@ -2,7 +2,7 @@
 from ninja import Query, Router
 from ninja.security import django_auth
 from websecmap.organizations.models import Url
-from websecmap.scanners_internetnl_dns_endpoints.tasks import has_a_or_aaaa, has_soa
+from websecmap.scanners_internet_nl_dns_endpoints.tasks import get_nameservers, has_a_or_aaaa, has_soa
 
 from dashboard.internet_nl_dashboard.logic import OperationResponseSchema, operation_response
 from dashboard.internet_nl_dashboard.logic.domains import (
@@ -71,10 +71,11 @@ def suggest_subdomains_api(request, data: Query[SuggestedSubdomainsInputSchema])
     # this will increase loading time a lot, but creates better suggestions for smaller domains.
     # perhaps using a different dns server or lower timeouts will help performance.
     domains_with_dns_status: list[dict] = []
+    nameservers = get_nameservers()
     if len(suggestions) < 30:
         for d in suggestions:
-            has_website = has_a_or_aaaa(d)
-            has_email = has_soa(d)
+            has_website = has_a_or_aaaa(d, nameservers)
+            has_email = has_soa(d, nameservers)
             domains_with_dns_status.append(
                 {
                     "domain": d,
