@@ -86,7 +86,7 @@ services:
       dashboard:
 
   database:
-    image: postgres:12
+    image: postgres:14
     environment:
       POSTGRES_DB: dashboard
       POSTGRES_USER: dashboard
