@@ -11683,186 +11683,6 @@
   },
   {
     "model": "reporting.scanpolicy",
-    "pk": 955,
-    "fields": {
-      "total_issues": 0,
-      "high": 0,
-      "medium": 0,
-      "low": 0,
-      "ok": 1,
-      "not_applicable": 0,
-      "not_testable": 0,
-      "error_in_test": 0,
-      "scan_type": "internet_nl_web_ipv6",
-      "conclusion": "passed",
-      "explanation": "",
-      "annotation": ""
-    }
-  },
-  {
-    "model": "reporting.scanpolicy",
-    "pk": 956,
-    "fields": {
-      "total_issues": 0,
-      "high": 1,
-      "medium": 0,
-      "low": 0,
-      "ok": 0,
-      "not_applicable": 0,
-      "not_testable": 0,
-      "error_in_test": 0,
-      "scan_type": "internet_nl_web_ipv6",
-      "conclusion": "failed",
-      "explanation": "",
-      "annotation": ""
-    }
-  },
-  {
-    "model": "reporting.scanpolicy",
-    "pk": 957,
-    "fields": {
-      "total_issues": 0,
-      "high": 0,
-      "medium": 0,
-      "low": 0,
-      "ok": 0,
-      "not_applicable": 0,
-      "not_testable": 0,
-      "error_in_test": 1,
-      "scan_type": "internet_nl_web_ipv6",
-      "conclusion": "error",
-      "explanation": "",
-      "annotation": ""
-    }
-  },
-  {
-    "model": "reporting.scanpolicy",
-    "pk": 958,
-    "fields": {
-      "total_issues": 0,
-      "high": 0,
-      "medium": 0,
-      "low": 0,
-      "ok": 1,
-      "not_applicable": 0,
-      "not_testable": 0,
-      "error_in_test": 0,
-      "scan_type": "internet_nl_web_dnssec",
-      "conclusion": "passed",
-      "explanation": "",
-      "annotation": ""
-    }
-  },
-  {
-    "model": "reporting.scanpolicy",
-    "pk": 959,
-    "fields": {
-      "total_issues": 0,
-      "high": 1,
-      "medium": 0,
-      "low": 0,
-      "ok": 0,
-      "not_applicable": 0,
-      "not_testable": 0,
-      "error_in_test": 0,
-      "scan_type": "internet_nl_web_dnssec",
-      "conclusion": "failed",
-      "explanation": "",
-      "annotation": ""
-    }
-  },
-  {
-    "model": "reporting.scanpolicy",
-    "pk": 960,
-    "fields": {
-      "total_issues": 0,
-      "high": 0,
-      "medium": 0,
-      "low": 0,
-      "ok": 0,
-      "not_applicable": 0,
-      "not_testable": 0,
-      "error_in_test": 1,
-      "scan_type": "internet_nl_web_dnssec",
-      "conclusion": "error",
-      "explanation": "",
-      "annotation": ""
-    }
-  },
-  {
-    "model": "reporting.scanpolicy",
-    "pk": 961,
-    "fields": {
-      "total_issues": 0,
-      "high": 0,
-      "medium": 0,
-      "low": 0,
-      "ok": 1,
-      "not_applicable": 0,
-      "not_testable": 0,
-      "error_in_test": 0,
-      "scan_type": "internet_nl_web_tls",
-      "conclusion": "passed",
-      "explanation": "",
-      "annotation": ""
-    }
-  },
-  {
-    "model": "reporting.scanpolicy",
-    "pk": 962,
-    "fields": {
-      "total_issues": 0,
-      "high": 1,
-      "medium": 0,
-      "low": 0,
-      "ok": 0,
-      "not_applicable": 0,
-      "not_testable": 0,
-      "error_in_test": 0,
-      "scan_type": "internet_nl_web_tls",
-      "conclusion": "failed",
-      "explanation": "",
-      "annotation": ""
-    }
-  },
-  {
-    "model": "reporting.scanpolicy",
-    "pk": 963,
-    "fields": {
-      "total_issues": 0,
-      "high": 0,
-      "medium": 0,
-      "low": 0,
-      "ok": 0,
-      "not_applicable": 0,
-      "not_testable": 0,
-      "error_in_test": 1,
-      "scan_type": "internet_nl_web_tls",
-      "conclusion": "error",
-      "explanation": "",
-      "annotation": ""
-    }
-  },
-  {
-    "model": "reporting.scanpolicy",
-    "pk": 964,
-    "fields": {
-      "total_issues": 0,
-      "high": 0,
-      "medium": 0,
-      "low": 0,
-      "ok": 1,
-      "not_applicable": 0,
-      "not_testable": 0,
-      "error_in_test": 0,
-      "scan_type": "internet_nl_web_appsecpriv",
-      "conclusion": "passed",
-      "explanation": "",
-      "annotation": ""
-    }
-  },
-  {
-    "model": "reporting.scanpolicy",
     "pk": 965,
     "fields": {
       "total_issues": 0,
@@ -11875,24 +11695,6 @@
       "error_in_test": 0,
       "scan_type": "internet_nl_web_appsecpriv",
       "conclusion": "failed",
-      "explanation": "",
-      "annotation": ""
-    }
-  },
-  {
-    "model": "reporting.scanpolicy",
-    "pk": 966,
-    "fields": {
-      "total_issues": 0,
-      "high": 0,
-      "medium": 0,
-      "low": 0,
-      "ok": 0,
-      "not_applicable": 0,
-      "not_testable": 0,
-      "error_in_test": 1,
-      "scan_type": "internet_nl_web_appsecpriv",
-      "conclusion": "error",
       "explanation": "",
       "annotation": ""
     }
@@ -12223,24 +12025,6 @@
   },
   {
     "model": "reporting.scanpolicy",
-    "pk": 995,
-    "fields": {
-      "total_issues": 0,
-      "high": 0,
-      "medium": 0,
-      "low": 0,
-      "ok": 0,
-      "not_applicable": 0,
-      "not_testable": 1,
-      "error_in_test": 0,
-      "scan_type": "internet_nl_mail_starttls_tls_version",
-      "conclusion": "not_testable",
-      "explanation": "",
-      "annotation": "Missing policy added automatically. Please set up any explanation and scoring if needed."
-    }
-  },
-  {
-    "model": "reporting.scanpolicy",
     "pk": 996,
     "fields": {
       "total_issues": 0,
@@ -12260,24 +12044,6 @@
   {
     "model": "reporting.scanpolicy",
     "pk": 997,
-    "fields": {
-      "total_issues": 0,
-      "high": 0,
-      "medium": 0,
-      "low": 0,
-      "ok": 0,
-      "not_applicable": 0,
-      "not_testable": 1,
-      "error_in_test": 0,
-      "scan_type": "internet_nl_mail_starttls_cert_domain",
-      "conclusion": "not_testable",
-      "explanation": "",
-      "annotation": "Missing policy added automatically. Please set up any explanation and scoring if needed."
-    }
-  },
-  {
-    "model": "reporting.scanpolicy",
-    "pk": 998,
     "fields": {
       "total_issues": 0,
       "high": 0,
@@ -12342,24 +12108,6 @@
       "not_testable": 1,
       "error_in_test": 0,
       "scan_type": "internet_nl_mail_starttls_tls_secreneg",
-      "conclusion": "not_testable",
-      "explanation": "",
-      "annotation": "Missing policy added automatically. Please set up any explanation and scoring if needed."
-    }
-  },
-  {
-    "model": "reporting.scanpolicy",
-    "pk": 1002,
-    "fields": {
-      "total_issues": 0,
-      "high": 0,
-      "medium": 0,
-      "low": 0,
-      "ok": 0,
-      "not_applicable": 0,
-      "not_testable": 1,
-      "error_in_test": 0,
-      "scan_type": "internet_nl_mail_starttls_tls_version",
       "conclusion": "not_testable",
       "explanation": "",
       "annotation": "Missing policy added automatically. Please set up any explanation and scoring if needed."
@@ -12439,24 +12187,6 @@
   },
   {
     "model": "reporting.scanpolicy",
-    "pk": 1007,
-    "fields": {
-      "total_issues": 0,
-      "high": 0,
-      "medium": 0,
-      "low": 0,
-      "ok": 0,
-      "not_applicable": 0,
-      "not_testable": 1,
-      "error_in_test": 0,
-      "scan_type": "internet_nl_mail_starttls_dane_rollover",
-      "conclusion": "not_testable",
-      "explanation": "",
-      "annotation": "Missing policy added automatically. Please set up any explanation and scoring if needed."
-    }
-  },
-  {
-    "model": "reporting.scanpolicy",
     "pk": 1008,
     "fields": {
       "total_issues": 0,
@@ -12505,24 +12235,6 @@
       "error_in_test": 0,
       "scan_type": "internet_nl_web_appsecpriv_x_frame_options",
       "conclusion": "failed",
-      "explanation": "",
-      "annotation": "Missing policy added automatically. Please set up any explanation and scoring if needed."
-    }
-  },
-  {
-    "model": "reporting.scanpolicy",
-    "pk": 1011,
-    "fields": {
-      "total_issues": 0,
-      "high": 0,
-      "medium": 0,
-      "low": 0,
-      "ok": 0,
-      "not_applicable": 0,
-      "not_testable": 1,
-      "error_in_test": 0,
-      "scan_type": "internet_nl_mail_starttls_tls_compress",
-      "conclusion": "not_testable",
       "explanation": "",
       "annotation": "Missing policy added automatically. Please set up any explanation and scoring if needed."
     }

@@ -66,6 +66,7 @@ class Migration(migrations.Migration):
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
         ("scanners", "0072_auto_20200506_1313"),
         ("organizations", "0053_url_do_not_find_subdomains"),
+        ("scanners_internet_nl_web", "0001_initial"),
     ]
 
     operations = [
