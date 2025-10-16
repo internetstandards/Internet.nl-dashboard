@@ -15,10 +15,10 @@ from websecmap.organizations.models import Url
 from websecmap.reporting.diskreport import retrieve_report, store_report
 from websecmap.reporting.report import recreate_url_report
 from websecmap.scanners.scanner import add_model_filter
-from websecmap.scanners_internetnl_dns_endpoints import tasks as dns_endpoints
-from websecmap.scanners_internetnl_web import steps as internet_nl_websecmap
-from websecmap.scanners_internetnl_web.api import InternetNLApiSettings
-from websecmap.scanners_internetnl_web.models import InternetNLV2Scan
+from websecmap.scanners_internet_nl_dns_endpoints import tasks as dns_endpoints
+from websecmap.scanners_internet_nl_web import steps as internet_nl_websecmap
+from websecmap.scanners_internet_nl_web.api import InternetNLApiSettings
+from websecmap.scanners_internet_nl_web.models import InternetNLV2Scan
 
 from dashboard.celery import app
 from dashboard.internet_nl_dashboard.logic.mail import email_configration_is_correct, send_scan_finished_mails

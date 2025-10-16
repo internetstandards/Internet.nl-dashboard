@@ -21,8 +21,8 @@ from import_export.admin import ImportExportModelAdmin
 from jet.admin import CompactInline
 from websecmap.organizations.models import Url
 from websecmap.scanners.models import Endpoint
-from websecmap.scanners_internetnl_web.admin import InternetNLV2ScanAdmin
-from websecmap.scanners_internetnl_web.models import InternetNLV2Scan, InternetNLV2StateLog
+from websecmap.scanners_internet_nl_web.admin import InternetNLV2ScanAdmin
+from websecmap.scanners_internet_nl_web.models import InternetNLV2Scan, InternetNLV2StateLog
 
 from dashboard.internet_nl_dashboard import models
 from dashboard.internet_nl_dashboard.forms import CustomAccountModelForm
