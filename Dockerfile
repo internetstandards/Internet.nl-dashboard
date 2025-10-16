@@ -51,4 +51,4 @@ RUN echo "VERSION='$VERSION'" >> /source/dashboard/__version__.py
 
 EXPOSE 8000
 
-CMD ["dashboard", "dashboard_prdserver --migrate" ]
+CMD ["dashboard", "dashboard_prdserver", "--migrate" ]
