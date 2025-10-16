@@ -34,17 +34,11 @@ def requirements(extra=None):
     return requirements
 
 
-for x in requirements(extra="deploy"):
-    print(x)
-
 setup(
     name="dashboard",
     version=get_version(),
     packages=find_packages(),
     install_requires=requirements(),
-    extras_require={
-        "deploy": requirements(extra="deploy"),
-    },
     entry_points={
         "console_scripts": [
             "dashboard = dashboard.manage:main",

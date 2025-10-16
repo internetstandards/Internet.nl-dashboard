@@ -58,15 +58,11 @@ ${VIRTUAL_ENV}/.requirements.installed: requirements.txt requirements-dev.txt | 
 	@touch $@  # update timestamp
 
 # perform 'pip freeze' on first class requirements in .in files.
-requirements: requirements.txt requirements-dev.txt requirements-deploy.txt
+requirements: requirements.txt requirements-dev.txt
 # perform 'pip freeze' on first class requirements in .in files.
 requirements.txt: requirements.in | ${uv}
 	${uv} pip compile ${pip_compile_args} --custom-compile-command="make requirements" --no-strip-extras --output-file $@ $<
 	# fix bug where uv pip compile writes celery[gevent, redis]==5.5.3 instead of celery[gevent,redis]==5.5.3 (without space)
-	sed -Ei 's/, /,/' $@
-
-requirements-deploy.txt: requirements.in | ${uv}
-	${uv} pip compile ${pip_compile_args} --custom-compile-command="make requirements" --no-strip-extras --output-file $@ $<
 	sed -Ei 's/, /,/' $@
 
 requirements-dev.txt: requirements-dev.in requirements.in | ${uv}
@@ -88,7 +84,7 @@ upgrade_dev_package: | ${uv} ## upgrade a single Python package in requirments-d
 
 
 update_requirements: pip_compile_args=--upgrade --resolver=backtracking
-update_requirements: _mark_outdated requirements.txt requirements-dev.txt requirements-deploy.txt _commit_update
+update_requirements: _mark_outdated requirements.txt requirements-dev.txt _commit_update
 
 _mark_outdated:
 	touch requirements*.in
@@ -99,7 +95,7 @@ update_requirement_websecmap: _update_websecmap_sha requirements.txt _commit_upd
 _update_websecmap_sha:
 	sha=$(shell git ls-remote -q git@gitlab.com:internet-cleanup-foundation/web-security-map.git master|cut -f1); \
 	if grep $$sha requirements.in >/dev/null; then echo -e "\nNo update for you, current sha for websecmap in requirements.in is the same as master on Gitlab.\n"; exit 1;fi; \
-	sed -E -i "s/web-security-map@[a-zA-Z0-9]{40}/web-security-map@$$sha/" requirements.in requirements-deploy.in
+	sed -E -i "s/web-security-map@[a-zA-Z0-9]{40}/web-security-map@$$sha/" requirements.in
 
 _commit_update: requirements.txt
 	git add requirements*.txt requirements*.in
@@ -161,9 +157,9 @@ autofix fix: ${pysrc} ${app} ## automatic fix of trivial code quality issues
 	${MAKE} check
 
 ## Running
-# run: ${app}  ## run complete application stack (frontend, worker, broker)
+run: ${app}  ## run complete application stack (frontend, worker, broker)
 # 	# start server (this can take a while)
-# 	DEBUG=1 NETWORK_SUPPORTS_IPV6=1 ${env} ${app} devserver
+	DEBUG=1 NETWORK_SUPPORTS_IPV6=1 ${env} ${app} devserver
 
 run-frontend: ${app}  ## only run frontend component
 	DEBUG=1 NETWORK_SUPPORTS_IPV6=1 ${env} ${app} runserver
