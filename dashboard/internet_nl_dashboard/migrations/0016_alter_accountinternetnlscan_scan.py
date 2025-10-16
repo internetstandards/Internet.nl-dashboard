@@ -8,9 +8,9 @@ class Migration(migrations.Migration):
 
     dependencies = [
         ("internet_nl_dashboard", "0015_rename_urllistreport_at_when_id_internet_nl_at_when_f55fb9_idx"),
-        # references 0002_internetnlscaninspection, which does not exist in scanners_internetnl_web
+        # references 0002_internetnlscaninspection, which does not exist in scanners_internet_nl_web
         # this is an old proxymodel.
-        # ("scanners_internetnl_web", "0002_internetnlscaninspection"),
+        # ("scanners_internet_nl_web", "0002_internetnlscaninspection"),
     ]
 
     operations = [
@@ -18,7 +18,7 @@ class Migration(migrations.Migration):
             model_name="accountinternetnlscan",
             name="scan",
             field=models.ForeignKey(
-                null=True, on_delete=django.db.models.deletion.CASCADE, to="scanners_internetnl_web.internetnlv2scan"
+                null=True, on_delete=django.db.models.deletion.CASCADE, to="scanners_internet_nl_web.internetnlv2scan"
             ),
         ),
     ]

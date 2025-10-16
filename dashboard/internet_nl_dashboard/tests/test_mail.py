@@ -3,7 +3,7 @@ from datetime import datetime, timedelta, timezone
 
 from django.contrib.auth.models import User
 from django_mail_admin.models import EmailTemplate, Log, Outbox, OutgoingEmail, TemplateVariable
-from websecmap.scanners_internetnl_web.models import InternetNLV2Scan
+from websecmap.scanners_internet_nl_web.models import InternetNLV2Scan
 
 from dashboard.internet_nl_dashboard.logic.mail import (
     email_configration_is_correct,

@@ -19,7 +19,7 @@ from websecmap import tldextract
 from websecmap.app.constance import constance_cached_value
 from websecmap.organizations.models import Url
 from websecmap.scanners.models import Endpoint
-from websecmap.scanners_internetnl_dns_endpoints.tasks import compose_discover_task
+from websecmap.scanners_internet_nl_dns_endpoints.tasks import compose_discover_task
 
 from dashboard.celery import app
 from dashboard.internet_nl_dashboard.logic import OperationResponseSchema, operation_response

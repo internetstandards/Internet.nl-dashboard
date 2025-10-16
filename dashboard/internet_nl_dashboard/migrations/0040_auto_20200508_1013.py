@@ -26,7 +26,7 @@ class Migration(migrations.Migration):
             model_name="accountinternetnlscan",
             name="scan",
             field=models.ForeignKey(
-                null=True, on_delete=django.db.models.deletion.CASCADE, to="scanners_internetnl_web.internetnlv2scan"
+                null=True, on_delete=django.db.models.deletion.CASCADE, to="scanners_internet_nl_web.internetnlv2scan"
             ),
         ),
     ]

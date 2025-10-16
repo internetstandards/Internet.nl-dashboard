@@ -93,9 +93,9 @@ INSTALLED_APPS = [
     "websecmap.map",  # because some scanners are intertwined with map configurations. That needs to go.
     # this wants to exist when changing periodic tasks.
     "websecmap.scanners_screenshot",
-    "websecmap.scanners_internetnl_dns_endpoints",
-    "websecmap.scanners_internetnl_web",
-    "websecmap.scanners_internetnl_mail",
+    "websecmap.scanners_internet_nl_dns_endpoints",
+    "websecmap.scanners_internet_nl_web",
+    "websecmap.scanners_internet_nl_mail",
     # "websecmap.game",
     # Custom Apps
     # These apps overwrite whatever is declared above, for example the user information.
