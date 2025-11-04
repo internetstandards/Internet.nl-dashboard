@@ -466,14 +466,7 @@ class Migration(migrations.Migration):
                     "account",
                     models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to="internet_nl_dashboard.account"),
                 ),
-                (
-                    "scan",
-                    models.ForeignKey(
-                        null=True,
-                        on_delete=django.db.models.deletion.CASCADE,
-                        to="scanners_internet_nl_web.internetnlv2scan",
-                    ),
-                ),
+                ("scan", models.IntegerField(db_column="scan_id", null=True)),
                 (
                     "urllist",
                     models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to="internet_nl_dashboard.urllist"),
