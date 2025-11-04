@@ -452,7 +452,10 @@ def get_scan_status_of_list(account: Account, list_id: int) -> UrlListScanStatus
     prefetch_last_scan = Prefetch(
         "accountinternetnlscan_set",
         queryset=AccountInternetNLScan.objects.order_by("-id")
-        .select_related("scan")
+        # Using this select-releated will load gigabytes of data inside the model, with all json-fields parsed, which
+        # will also take a lot of time. We don't need it. Since django 5.2 it appears that this field is still
+        # loaded even though no fields are mentioned in "only".
+        # .select_related("scan")
         .only("scan_id", "id", "finished_on", "state", "urllist__id", "urllist"),
         to_attr="last_scan",
     )
