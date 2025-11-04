@@ -1,0 +1,206 @@
+[
+  {
+    "model": "reporting.scanpolicy",
+    "fields": {
+      "total_issues": 0,
+      "high": 1,
+      "medium": 0,
+      "low": 0,
+      "ok": 0,
+      "not_applicable": 0,
+      "not_testable": 0,
+      "error_in_test": 0,
+      "scan_type": "internet_nl_web_https_tls_caa",
+      "conclusion": "failed",
+      "explanation": "",
+      "annotation": ""
+    }
+  },
+  {
+    "model": "reporting.scanpolicy",
+    "fields": {
+      "total_issues": 0,
+      "high": 0,
+      "medium": 1,
+      "low": 0,
+      "ok": 0,
+      "not_applicable": 0,
+      "not_testable": 0,
+      "error_in_test": 0,
+      "scan_type": "internet_nl_web_https_tls_caa",
+      "conclusion": "warning",
+      "explanation": "",
+      "annotation": ""
+    }
+  },
+  {
+    "model": "reporting.scanpolicy",
+    "fields": {
+      "total_issues": 0,
+      "high": 0,
+      "medium": 0,
+      "low": 1,
+      "ok": 0,
+      "not_applicable": 0,
+      "not_testable": 0,
+      "error_in_test": 0,
+      "scan_type": "internet_nl_web_https_tls_caa",
+      "conclusion": "info",
+      "explanation": "",
+      "annotation": ""
+    }
+  },
+  {
+    "model": "reporting.scanpolicy",
+    "fields": {
+      "total_issues": 0,
+      "high": 0,
+      "medium": 0,
+      "low": 0,
+      "ok": 1,
+      "not_applicable": 0,
+      "not_testable": 0,
+      "error_in_test": 0,
+      "scan_type": "internet_nl_web_https_tls_caa",
+      "conclusion": "passed",
+      "explanation": "",
+      "annotation": ""
+    }
+  },
+  {
+    "model": "reporting.scanpolicy",
+    "fields": {
+      "total_issues": 0,
+      "high": 0,
+      "medium": 0,
+      "low": 0,
+      "ok": 0,
+      "not_applicable": 0,
+      "not_testable": 1,
+      "error_in_test": 0,
+      "scan_type": "internet_nl_web_https_tls_caa",
+      "conclusion": "not_tested",
+      "explanation": "",
+      "annotation": ""
+    }
+  },
+  {
+    "model": "reporting.scanpolicy",
+    "fields": {
+      "total_issues": 0,
+      "high": 0,
+      "medium": 0,
+      "low": 0,
+      "ok": 0,
+      "not_applicable": 0,
+      "not_testable": 0,
+      "error_in_test": 1,
+      "scan_type": "internet_nl_web_https_tls_caa",
+      "conclusion": "error",
+      "explanation": "",
+      "annotation": ""
+    }
+  },
+  {
+    "model": "reporting.scanpolicy",
+    "fields": {
+      "total_issues": 0,
+      "high": 1,
+      "medium": 0,
+      "low": 0,
+      "ok": 0,
+      "not_applicable": 0,
+      "not_testable": 0,
+      "error_in_test": 0,
+      "scan_type": "internet_nl_mail_starttls_tls_caa",
+      "conclusion": "failed",
+      "explanation": "",
+      "annotation": ""
+    }
+  },
+  {
+    "model": "reporting.scanpolicy",
+    "fields": {
+      "total_issues": 0,
+      "high": 0,
+      "medium": 1,
+      "low": 0,
+      "ok": 0,
+      "not_applicable": 0,
+      "not_testable": 0,
+      "error_in_test": 0,
+      "scan_type": "internet_nl_mail_starttls_tls_caa",
+      "conclusion": "warning",
+      "explanation": "",
+      "annotation": ""
+    }
+  },
+  {
+    "model": "reporting.scanpolicy",
+    "fields": {
+      "total_issues": 0,
+      "high": 0,
+      "medium": 0,
+      "low": 1,
+      "ok": 0,
+      "not_applicable": 0,
+      "not_testable": 0,
+      "error_in_test": 0,
+      "scan_type": "internet_nl_mail_starttls_tls_caa",
+      "conclusion": "info",
+      "explanation": "",
+      "annotation": ""
+    }
+  },
+  {
+    "model": "reporting.scanpolicy",
+    "fields": {
+      "total_issues": 0,
+      "high": 0,
+      "medium": 0,
+      "low": 0,
+      "ok": 1,
+      "not_applicable": 0,
+      "not_testable": 0,
+      "error_in_test": 0,
+      "scan_type": "internet_nl_mail_starttls_tls_caa",
+      "conclusion": "passed",
+      "explanation": "",
+      "annotation": ""
+    }
+  },
+  {
+    "model": "reporting.scanpolicy",
+    "fields": {
+      "total_issues": 0,
+      "high": 0,
+      "medium": 0,
+      "low": 0,
+      "ok": 0,
+      "not_applicable": 0,
+      "not_testable": 1,
+      "error_in_test": 0,
+      "scan_type": "internet_nl_mail_starttls_tls_caa",
+      "conclusion": "not_tested",
+      "explanation": "",
+      "annotation": ""
+    }
+  },
+  {
+    "model": "reporting.scanpolicy",
+    "fields": {
+      "total_issues": 0,
+      "high": 0,
+      "medium": 0,
+      "low": 0,
+      "ok": 0,
+      "not_applicable": 0,
+      "not_testable": 0,
+      "error_in_test": 1,
+      "scan_type": "internet_nl_mail_starttls_tls_caa",
+      "conclusion": "error",
+      "explanation": "",
+      "annotation": ""
+    }
+  }
+]
