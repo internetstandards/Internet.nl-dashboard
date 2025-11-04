@@ -122,7 +122,6 @@ INSTALLED_APPS = [
     # wsm:
     # "storages",
     "websecmap.dramatiq.CustomDjangoDramatiqConfig.CustomDjangoDramatiqConfig",
-
 ]
 
 # django activity stream wants a site-id:
@@ -383,12 +382,8 @@ DRAMATIQ_RESULT_BACKEND = {
     "MIDDLEWARE_OPTIONS": {"store_results": False, "result_ttl": 60 * 60 * 1000},
 }
 DRAMATIQ_RATE_LIMITER_BACKEND = {
-    "BACKEND": (
-        "dramatiq.rate_limits.backends.RedisBackend"
-    ),
-    "BACKEND_OPTIONS": (
-        {"url": os.environ.get("DRAMATIQ_BROKER_URL", "redis://localhost:6379/2")}
-    ),
+    "BACKEND": ("dramatiq.rate_limits.backends.RedisBackend"),
+    "BACKEND_OPTIONS": ({"url": os.environ.get("DRAMATIQ_BROKER_URL", "redis://localhost:6379/2")}),
 }
 
 DRAMATIQ_AUTODISCOVER_MODULES = ["tasks"]
