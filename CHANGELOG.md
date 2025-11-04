@@ -4,6 +4,21 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## V5.1.0 - tbd
+Intermediate and bugfix release to add CAA support. Due to a complex dependency upgrade, a few manual steps need to be 
+performed when installing this update. Please read the *TWO* upgrade instruction links below. Note that you need to update
+the report format, otherwise your machine will go out of memory(!).
+
+### Added
+- Support for new CAA check (#564)
+- All frontend calls are now documented in /data/docs, do not yet use this API until after the refactor to the Dutch governmental API standard.
+
+### Changed
+- Upgrade instructions for this version: https://github.com/internetstandards/Internet.nl-dashboard/issues/607
+- Report format changed, perform upgrade instructions as mentioned here: https://github.com/internetstandards/Internet.nl-dashboard/issues/588
+- - Updated a series of dependencies, such as Django to 5.2 (#563)
+- - Unique constraints are enforced on scan policies
+
 ## V5.0.0 - 28 april 2025
 
 ### Added
