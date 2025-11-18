@@ -565,8 +565,15 @@ create_modeladmin(InternetNLV2ScanAdminNew, name="internetNlScanInspection", mod
 class AccountInternetNLScanLogAdmin(ImportExportModelAdmin, admin.ModelAdmin):
     paginator = TooManyRecordsPaginator
 
-    list_display = ("id", "scan", "state", "at_when")
-    list_filter = ["scan", "state", "at_when"][::-1]
+    # prevent fetching report files: See sentry issue 7037647108
+    def get_queryset(self, request):
+        qs = super().get_queryset(request)
+        return qs.select_related("scan", "scan__urllist", "scan__account").only(
+            "id", "state", "at_when", "scan", "scan__id", "scan__urllist__name", "scan__account__name"
+        )
+
+    list_display = ("id", "scan__id", "scan__urllist__name", "scan__account__name", "state", "at_when")
+    list_filter = ["scan", "state", "at_when", "scan__account__name"][::-1]
     search_fields = ("scan__urllist__name", "scan__account__name")
     fields = list_display
 
