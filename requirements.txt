@@ -44,7 +44,7 @@ bs4==0.0.2
     # via websecmap
 cachetools==6.2.2
     # via websecmap
-celery[gevent,msgpack, redis, zstd]==5.5.3
+celery[gevent,msgpack,redis,zstd]==5.5.3
     # via
     #   celery-statsd
     #   django-celery-beat

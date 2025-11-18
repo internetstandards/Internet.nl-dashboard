@@ -45,8 +45,9 @@ bandit
 mypy
 django-stubs
 vulture
-pylint
-pylint-django
+# on 4: module 'pylint.interfaces' has no attribute 'IAstroidChecker'
+pylint==3.3.7
+pylint-django==2.6.1
 ruff
 black
 

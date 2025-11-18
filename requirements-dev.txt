@@ -37,7 +37,7 @@ asgiref==3.10.0
     #   django-browser-reload
     #   django-cors-headers
     #   django-countries
-astroid==4.0.2
+astroid==3.3.11
     # via pylint
 asttokens==3.0.1
     # via
@@ -407,7 +407,7 @@ iso3166==2.1.1
     # via
     #   -c requirements.txt
     #   websecmap
-isort==7.0.0
+isort==5.13.2
     # via
     #   -r requirements-dev.in
     #   pylint
@@ -662,12 +662,12 @@ pygments==2.19.2
     #   sphinx
 pylama==8.4.1
     # via -r requirements-dev.in
-pylint==4.0.3
+pylint==3.3.7
     # via
     #   -r requirements-dev.in
     #   pylint-django
     #   pylint-plugin-utils
-pylint-django==2.5.2
+pylint-django==2.6.1
     # via -r requirements-dev.in
 pylint-plugin-utils==0.9.0
     # via pylint-django
