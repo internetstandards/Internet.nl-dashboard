@@ -6,10 +6,7 @@ from django.db import migrations, models
 
 class Migration(migrations.Migration):
 
-    dependencies = [
-        ("internet_nl_dashboard", "0017_alter_accountinternetnlscan_scan_fk"),
-        ("scanners_internet_nl_web", "0002_internetnlscaninspection"),
-    ]
+    dependencies = [("internet_nl_dashboard", "0017_alter_accountinternetnlscan_scan_fk")]
 
     operations = [
         migrations.AlterField(
