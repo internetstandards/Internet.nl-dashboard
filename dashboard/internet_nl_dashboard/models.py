@@ -388,7 +388,7 @@ class UploadLog(models.Model):
     )
 
     message = models.CharField(
-        max_length=255,
+        max_length=1024,
         blank=True,
         null=True,
         help_text="This message gives more specific information about what happened. For example, it might be the "

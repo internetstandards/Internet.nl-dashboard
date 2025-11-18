@@ -990,7 +990,7 @@ def update_spreadsheet_upload_(
         uploads.percentage = percentage
 
     uploads.status = status
-    uploads.message = message
+    uploads.message = message[:1024]
     uploads.save()
 
 

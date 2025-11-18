@@ -244,7 +244,7 @@ def update_spreadsheet_upload(upload_id: int, status: str = "pending", message: 
         return
 
     uploads.status = status
-    uploads.message = message
+    uploads.message = message[:1024]
     uploads.save()
 
 
