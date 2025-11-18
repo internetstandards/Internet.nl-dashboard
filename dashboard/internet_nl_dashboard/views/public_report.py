@@ -33,6 +33,14 @@ def get_shared_report_api(request, report_code: str, data: SharedReportInputSche
     )
 
 
+# no code :)
+@router.get("/shared/{report_code}", response={200: list[ReportSchema] | SharedReportAuthRequiredSchema})
+def get_shared_report_api(request, report_code: str) -> HttpResponse:
+    return HttpResponse(  # pylint: disable=http-response-with-content-type-json
+        get_shared_report(report_code, ""), content_type="application/json"
+    )
+
+
 @router.get(
     "",
     response={200: list[PublicReportItemSchema]},
