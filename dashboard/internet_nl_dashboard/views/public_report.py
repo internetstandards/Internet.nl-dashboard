@@ -26,10 +26,18 @@ router = Router(tags=["Public Reports"])
 
 @router.post("/shared/{report_code}", response={200: ReportSchema | SharedReportAuthRequiredSchema})
 @csrf_exempt
-def get_shared_report_api(request, report_code: str, data: SharedReportInputSchema) -> HttpResponse:
+def get_shared_report_api_with_code(request, report_code: str, data: SharedReportInputSchema) -> HttpResponse:
     # Explicitly NOT use jsonresponse as this loads the json data into an encoder which is extremely slow on large files
     return HttpResponse(  # pylint: disable=http-response-with-content-type-json
         get_shared_report(report_code, data.share_code), content_type="application/json"
+    )
+
+
+# no code :)
+@router.get("/shared/{report_code}", response={200: list[ReportSchema] | SharedReportAuthRequiredSchema})
+def get_shared_report_api(request, report_code: str) -> HttpResponse:
+    return HttpResponse(  # pylint: disable=http-response-with-content-type-json
+        get_shared_report(report_code, ""), content_type="application/json"
     )
 
 
