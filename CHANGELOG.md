@@ -4,27 +4,31 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## V5.1.0 - tbd
+## V5.1.0 - 18 november 2025
 Intermediate and bugfix release to add CAA support. Due to a complex dependency upgrade, a few manual steps need to be 
 performed when installing this update. Please read the *TWO* upgrade instruction links below. Note that you need to update
-the report format, otherwise your machine will go out of memory(!). This release requires postgresql 14.
+the report format; otherwise your machine will go out of memory(!). This release requires postgresql 14, preferably 18.
 
 ### Added
-- Support for new CAA check (#564)
-- All frontend calls are now documented in /data/docs, do not yet use this API until after the refactor to the Dutch governmental API standard https://gitdocumentatie.logius.nl/publicatie/api/adr/2.0.2/.
-- Preliminary support for OIDC authentication
+- Support for new CAA check #564
+- All frontend calls are now documented in /data/docs, do not yet use this API until after the refactor to the Dutch governmental API standard https://gitdocumentatie.logius.nl/publicatie/api/adr/2.0.2/. #616
+- Preliminary support for OIDC authentication #578
 
 ### Changed
 - Upgrade instructions for this version: https://github.com/internetstandards/Internet.nl-dashboard/issues/607
-- Improve user creation form for administrators
-- Report format changed, perform upgrade instructions as mentioned here: https://github.com/internetstandards/Internet.nl-dashboard/issues/588
-- - Updated a series of dependencies, such as Django to 5.2 (#563)
+- Improve the user creation form for administrators #551 #367
+- Report format changed, perform upgrade instructions as mentioned here: https://github.com/internetstandards/Internet.nl-dashboard/issues/588 #588
+- - Updated a series of dependencies, such as Django to 5.2 #563
 - - Unique constraints are enforced on scan policies
 
 ### Bugfixes
 - Fixed a redirecting issue after login #596
 - Fixed an issue where a spreadsheet upload creating too many lists would fail #611
 - Fixed an issue where scan tracking info was too long so scans would not register #613
+- Fixed a missing translation #547
+- Extend the result table to show all columns on TLS checks #603
+- Fix XSS in scan monitor #618 (note that server headers prevented this from being exploited)
+
 
 ## V5.0.0 - 28 april 2025
 
@@ -67,7 +71,7 @@ Version 4.3.0 targets to support creating lists and viewing reports up to 10.000
 - Improved interaction of uploading spreadsheets with domain
 - Excel spreadsheets are now formatted > 5000 rows
 - Improved a11y
-- Some changes on the signup form and e-mail, sending a mail to whom signed up
+- Some changes on the signup form and e-mail, sending an e-mail to whom signed up
 - The results table in the report is now much higher
 - Footer links have changed
 - API 2.4.0 support
