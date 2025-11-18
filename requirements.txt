@@ -44,7 +44,7 @@ bs4==0.0.2
     # via websecmap
 cachetools==6.0.0
     # via websecmap
-celery[gevent,msgpack,redis,zstd]==5.5.3
+celery[gevent,msgpack, redis, zstd]==5.5.3
     # via
     #   celery-statsd
     #   django-celery-beat
@@ -513,7 +513,7 @@ wassima==1.2.2
     # via niquests
 wcwidth==0.2.13
     # via prompt-toolkit
-websecmap @ git+https://gitlab.com/internet-cleanup-foundation/web-security-map@6f46c08a8d4c5d1ecaa7d019299b66897e57734a
+websecmap @ git+https://gitlab.com/internet-cleanup-foundation/web-security-map@3aa1c95b241c80a0c513c1db04909f8e824e0385
     # via -r requirements.in
 wikidata==0.8.1
     # via websecmap
