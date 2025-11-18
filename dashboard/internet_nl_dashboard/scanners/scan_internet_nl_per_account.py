@@ -372,13 +372,15 @@ def registering_scan_at_internet_nl(scan_id: int):
         # add the configured tracking name:
         "origin": constance_cached_value("INTERNET_NL_SCAN_TRACKING_NAME")[:40],  # + 6
         # lists:
-        "list": {  # + 4
-            "id": scan.urllist.id,  # 6 chars + 2
-            "name": scan.urllist.name[:80],  # 60 + 4
-            "interval": scan.urllist.automated_scan_frequency,  # 30 chars + 8
-            "account": {  # + 6
-                "id": scan.urllist.account.id,  # 6 chars + 2
-                "name": scan.urllist.account.name[:50],  # 40 + 4
+        # cut off names of account and list to make sure tracking info fits within the limit of the API
+        # We're sending id's anyway, so the rest is convenience.
+        "list": {
+            "id": scan.urllist.id,
+            "name": scan.urllist.name[:20],
+            "interval": scan.urllist.automated_scan_frequency,
+            "account": {
+                "id": scan.urllist.account.id,
+                "name": scan.urllist.account.name[:20],
             },
         },
     }

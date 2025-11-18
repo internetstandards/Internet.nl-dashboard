@@ -23,7 +23,8 @@ the report format, otherwise your machine will go out of memory(!). This release
 
 ### Bugfixes
 - Fixed a redirecting issue after login #596
-- Fixed an issue where a spreadsheet upload with too many list would fail #611
+- Fixed an issue where a spreadsheet upload creating too many lists would fail #611
+- Fixed an issue where scan tracking info was too long so scans would not register #613
 
 ## V5.0.0 - 28 april 2025
 
