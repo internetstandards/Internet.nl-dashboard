@@ -52,6 +52,7 @@ api.add_router("/urllists", urllists.router)
 api.add_router("/scans", scans.router)
 api.add_router("/reports", reports.router)
 api.add_router("/public-reports", public_reports.router)
+api.add_router("/mail", mail.router)
 api.add_router("/admin", admin.router)
 
 # todo: where was this used, is it still relevant?
@@ -64,7 +65,8 @@ urlpatterns = [
     # dedicated upload-success that is used to handle uploads, this is not really integrated in the API.
     # This is used when the separate upload-button is used that selects one file, instead of drag and drop uploading
     path("upload/", spreadsheet.upload),
-    # excluding this to have a nicer unsub path in mails
+    # excluding this to have a nicer unsub path in mails. This needs to be a direct path. This old path is used
+    # for legacy reasons: sent mails in older inboxes that trigger an unsub.
     path("mail/unsubscribe/<str:feed>/<str:unsubscribe_code>/", mail.unsubscribe_),
     path(".well-known/security.txt", security_txt, name="well_known_security_txt"),
     # Enabling the below path will bypass all second factor authentication, do not enable this path:
