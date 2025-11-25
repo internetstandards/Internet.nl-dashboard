@@ -1,19 +1,27 @@
 # SPDX-License-Identifier: Apache-2.0
-from ninja import Query, Router
+"""
+Purposes of this file / pattern:
+- Factor out "request" and the derived "account" from the views, as working with requests is janky/ugly in tests.
+- Order the operations on url lists in the documentation and move operations around without moving large chunks of code.
+
+Url Lists: lists with urls that should be tested for standard compliance. It can contain domains and subdomains.
+"""
+
+from typing import Annotated
+
+from ninja import Query, Router, Schema
 from ninja.security import django_auth
-from websecmap.organizations.models import Url
-from websecmap.scanners_internet_nl_dns_endpoints.tasks import get_nameservers, has_a_or_aaaa, has_soa
+from pydantic import StringConstraints
 
 from dashboard.internet_nl_dashboard.logic import OperationResponseSchema, operation_response
 from dashboard.internet_nl_dashboard.logic.domains import (
     AlterUrlResponseSchema,
     CreateListResponseSchema,
     CreateUrlListInputSchema,
-    DeleteUrlFromListInputSchema,
-    DeleteUrlListInputSchema,
     DownloadSpreadsheetInputSchema,
     SuggestedDomainSchema,
     SuggestedSubdomainsInputSchema,
+    UpdateListSettingsInputSchema,
     UrlListContentResponseSchema,
     UrlListScanStatusResponseSchema,
     UrlListsResponseSchema,
@@ -27,148 +35,120 @@ from dashboard.internet_nl_dashboard.logic.domains import (
     get_urllist_content,
     get_urllists_from_account,
     scan_now,
+    suggest_subdomains_for_list,
     update_list_settings,
 )
-from dashboard.internet_nl_dashboard.logic.suggestions import suggest_subdomains
-from dashboard.internet_nl_dashboard.views import get_account, get_json_body
+from dashboard.internet_nl_dashboard.logic.tags import add_tag, remove_tag, tags_in_urllist
+from dashboard.internet_nl_dashboard.views import get_account
 from dashboard.internet_nl_dashboard.views import subdomains as subdomains_views
-from dashboard.internet_nl_dashboard.views import tags as tags_views
+
+
+class TagInputSchema(Schema):
+    tag: Annotated[str, StringConstraints(max_length=40)]
+
+
+class UpdateUrlInputSchema(Schema):
+    new_url_string: Annotated[str, StringConstraints(max_length=255)]
+
+
+class AddUrlsInputSchema(Schema):
+    urls: list[Annotated[str, StringConstraints(max_length=255)]]
+
 
 # django_auth replaces @login_required on every call
 router = Router(tags=["Url Lists"], auth=django_auth)
-# Mount tag operations under the urllist router, so paths become /data/urllist/tag/...
-router.add_router("/tag", tags_views.router)
+
 # Mount subdomain discovery operations under the urllist router, so paths become /data/urllist/discover-subdomains/...
 router.add_router("/discover-subdomains", subdomains_views.router)
 
 
-@router.get("/suggest-subdomains", response={200: list[SuggestedDomainSchema]})
-def suggest_subdomains_api(request, data: Query[SuggestedSubdomainsInputSchema]):
-    account = get_account(request)
-
-    suggestions = suggest_subdomains(data.domain, data.period)
-    # already add the domain, so the frontend doesn't have to.
-    if suggestions:
-        suggestions = [data.domain] + [f"{sug}.{data.domain}" for sug in suggestions]
-
-    # remove domains already in this list, this is very fast and even with a list of 10k domains a user won't notice it.
-    if account and data.urllist_id:
-        existing_urls = (
-            Url.objects.all()
-            .filter(urls_in_dashboard_list_2__account=account, urls_in_dashboard_list_2__id=data.urllist_id)
-            .values_list("url", flat=True)
-        )
-        suggestions = sorted(list(set(suggestions) - set(existing_urls)))
-
-    # if the domain is still suggested, add it in FRONT of the list:
-    if data.domain in suggestions:
-        suggestions.remove(data.domain)
-        suggestions.insert(0, data.domain)
-
-    # perform some AAAA/MX record lookups, so a user can select some things.
-    # but take into account that too many lookups take time and thus over 20 will result in an "unknown"
-    # perhaps this should be scanned from ctlssa?
-    # this will increase loading time a lot, but creates better suggestions for smaller domains.
-    # perhaps using a different dns server or lower timeouts will help performance.
-    domains_with_dns_status: list[dict] = []
-    nameservers = get_nameservers()
-    if len(suggestions) < 30:
-        for d in suggestions:
-            has_website = has_a_or_aaaa(d, nameservers)
-            has_email = has_soa(d, nameservers)
-            domains_with_dns_status.append(
-                {
-                    "domain": d,
-                    "has_website": has_website,
-                    "has_email": has_email,
-                }
-            )
-    else:
-        domains_with_dns_status.extend(
-            {
-                "domain": d,
-                "has_website": "unknown",
-                "has_email": "unknown",
-            }
-            for d in suggestions
-        )
-
-    return domains_with_dns_status
-
-
-@router.get("/get", response={200: UrlListsResponseSchema})
-def get_lists(request):
+@router.get("/", response={200: UrlListsResponseSchema})
+def get_lists_operation(request):
     return get_urllists_from_account(account=get_account(request))
 
 
-@router.post("/create", response={200: CreateListResponseSchema})
-def create_list_api(request, data: CreateUrlListInputSchema):
+@router.post("/", response={201: CreateListResponseSchema})
+def create_list_operation(request, data: CreateUrlListInputSchema):
     return create_list(get_account(request), data)
 
 
-@router.get("/get_content/{urllist_id}", response={200: UrlListContentResponseSchema})
-def get_urllist_content_(request, urllist_id: int):
-    return get_urllist_content(account=get_account(request), urllist_id=urllist_id)
+@router.delete("/{urllist_id}", response={200: OperationResponseSchema})
+def delete_list_operation(request, urllist_id: int):
+    return delete_list(get_account(request), urllist_id)
 
 
-@router.get("/scan_status/{urllist_id}", response={200: UrlListScanStatusResponseSchema})
-def get_scan_status_of_list_(request, urllist_id: int):
+@router.put("/{urllist_id}", response={201: CreateListResponseSchema, 200: OperationResponseSchema})
+def update_list_settings_operation(request, urllist_id: int, data: UpdateListSettingsInputSchema):
+    # enforce path id to avoid body tampering
+    data.id = urllist_id
+    return update_list_settings(get_account(request), data)
+
+
+@router.get("/{urllist_id}/scans", response={200: UrlListScanStatusResponseSchema})
+def get_scan_status_of_list_operation(request, urllist_id: int):
     return get_scan_status_of_list(account=get_account(request), list_id=urllist_id)
 
 
-# unused
-# @login_required(login_url=LOGIN_URL)
-# def save_list_content(request, urllist_name: str, urls: List[str]) -> HttpResponse:
-#     return json_response(save_urllist_content_by_name(get_account(request), urllist_name, urls))
+@router.post("/{urllist_id}/scans", response={201: OperationResponseSchema})
+def create_scan_operation(request, urllist_id: int) -> OperationResponseSchema:
+    return scan_now(get_account(request), urllist_id)
 
 
-@router.post("/update_list_settings", response={200: CreateListResponseSchema | OperationResponseSchema})
-def update_list_settings_(request):
-    return update_list_settings(get_account(request), get_json_body(request))
+@router.get("/{urllist_id}/suggestions", response={200: list[SuggestedDomainSchema]})
+def suggest_subdomains_operation(request, urllist_id: int, data: Query[SuggestedSubdomainsInputSchema]):
+    return suggest_subdomains_for_list(get_account(request), urllist_id, data.domain, data.period)
 
 
-# def create_list_(request):
-#     body = get_json_body(request)
-#     data = CreateUrlListInputSchema(**body) if isinstance(body, dict) else CreateUrlListInputSchema(**{})
-#     result = create_list(get_account(request), data)
-#     return json_response(result.dict())
+@router.get("/{urllist_id}/spreadsheets")
+def download_list_operation(request, urllist_id: int, data: DownloadSpreadsheetInputSchema):
+    # django ninja does not support file downloads in the schema, which is odd
+    return download_as_spreadsheet(get_account(request), urllist_id, data.file_type)
 
 
-@router.post("/delete", response={200: OperationResponseSchema})
-def delete_list_api(request, data: DeleteUrlListInputSchema):
-    return delete_list(get_account(request), data)
+@router.get("/{urllist_id}/tags", response={200: list[str]})
+def tags_in_urllist_operation(request, urllist_id: int):
+    return tags_in_urllist(account=get_account(request), urllist_id=urllist_id)
 
 
-# def delete_list_(request):
-#     result = delete_list(get_account(request), DeleteUrlListInputSchema(id=get_json_body(request).get("id", -1)))
-#     return json_response(result.dict())
+@router.get("/{urllist_id}/urls", response={200: UrlListContentResponseSchema})
+def get_urllist_content_operation(request, urllist_id: int):
+    return get_urllist_content(account=get_account(request), urllist_id=urllist_id)
 
 
-@router.post("/url/update", response={200: AlterUrlResponseSchema})
-def alter_url_in_urllist_(request):
-    return alter_url_in_urllist(get_account(request), get_json_body(request))
+@router.post("/{urllist_id}/urls", response={201: OperationResponseSchema})
+def add_urls_to_urllist_operation(request, urllist_id: int, data: AddUrlsInputSchema):
+    return add_domains_from_raw_user_data(get_account(request), urllist_id, data.urls)
 
 
-@router.post("/url/add", response={200: OperationResponseSchema})
-def add_urls_to_urllist(request):
-    # todo: the response data is not well defined, so you'll be missing statistics... define this in the Schema...
-    #  or doesn't this contain statistics?
-    return add_domains_from_raw_user_data(get_account(request), get_json_body(request))
+@router.put("/{urllist_id}/urls/{url_id}", response={200: AlterUrlResponseSchema})
+def alter_url_in_urllist_operation(request, urllist_id: int, url_id: int, data: UpdateUrlInputSchema):
+    return alter_url_in_urllist(get_account(request), urllist_id, url_id, data.new_url_string)
 
 
-@router.delete("/url/delete", response={200: OperationResponseSchema})
-def delete_url_from_urllist_(request, data: DeleteUrlFromListInputSchema):
+@router.post("/{urllist_id}/urls/{url_id}/tags", response={201: OperationResponseSchema})
+def add_tag_operation(request, urllist_id: int, url_id: int, data: TagInputSchema):
+    add_tag(
+        account=get_account(request),
+        urllist_id=urllist_id,
+        url_ids=[url_id],
+        tag=data.tag,
+    )
+    return operation_response(success=True)
+
+
+@router.delete("/{urllist_id}/urls/{url_id}/tags/{tag}", response={200: OperationResponseSchema})
+def remove_tag_operation(request, urllist_id: int, url_id: int, tag: str):
+    remove_tag(
+        account=get_account(request),
+        urllist_id=urllist_id,
+        url_ids=[url_id],
+        tag=tag,
+    )
+    return operation_response(success=True)
+
+
+@router.delete("/{urllist_id}/urls/{url_id}", response={200: OperationResponseSchema})
+def delete_url_from_urllist_operation(request, urllist_id: int, url_id: int):
     account = get_account(request)
-    item_deleted = delete_url_from_urllist(account, data.urllist_id, data.url_id)
+    item_deleted = delete_url_from_urllist(account, urllist_id, url_id)
     return operation_response(success=bool(item_deleted), message="url_deleted" if item_deleted else "url_not_deleted")
-
-
-@router.post("/scan-now", response={200: OperationResponseSchema})
-def scan_now_(request) -> OperationResponseSchema:
-    return scan_now(get_account(request), get_json_body(request))
-
-
-# todo: django ninja does not support file downloads in the schema, which is odd
-@router.post("/download")
-def download_list_api(request, data: DownloadSpreadsheetInputSchema):
-    return download_as_spreadsheet(get_account(request), data.urllist_id, data.file_type)
