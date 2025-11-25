@@ -8,19 +8,18 @@ from websecmap.map.views import security_txt
 # We have to import the signals somewhere?!
 import dashboard.internet_nl_dashboard.signals  # noqa  # pylint: disable=unused-import
 from dashboard.internet_nl_dashboard.views import (
-    account,
+    admin,
     app,
-    domains,
     logout_view,
     mail,
-    powertools,
-    public_report,
-    report,
-    scan_monitor,
+    public_reports,
+    reports,
+    scans,
     session,
+    settings,
     signup,
     spreadsheet,
-    user,
+    urllists,
 )
 
 """
@@ -45,17 +44,15 @@ class SpreadsheetFileTypeConverter:
 
 
 api = NinjaAPI(title="Internet.nl Dashboard API", version="1.0.0")
-api.add_router("/signup", signup.router)
-api.add_router("/user", user.router)
-api.add_router("/account", account.router)
-api.add_router("/urllists", domains.router)
-api.add_router("/spreadsheet", spreadsheet.router)
-api.add_router("/scan", scan_monitor.router)
-api.add_router("/report", report.router)
-api.add_router("/public", public_report.router)
-api.add_router("/powertools", powertools.router)
 api.add_router("/config", app.router)
+api.add_router("/signup", signup.router)
 api.add_router("/session", session.router)
+api.add_router("/settings", settings.router)
+api.add_router("/urllists", urllists.router)
+api.add_router("/scans", scans.router)
+api.add_router("/reports", reports.router)
+api.add_router("/public-reports", public_reports.router)
+api.add_router("/admin", admin.router)
 
 # todo: where was this used, is it still relevant?
 register_converter(SpreadsheetFileTypeConverter, "spreadsheet_filetype")

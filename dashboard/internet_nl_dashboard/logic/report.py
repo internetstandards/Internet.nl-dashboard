@@ -189,22 +189,8 @@ class PublicReportItemSchema(Schema):
     public_report_code: str
 
 
-class ShareInputSchema(Schema):
-    report_id: int
+class ShareCodeSchema(Schema):
     public_share_code: str
-
-
-class UnshareInputSchema(Schema):
-    report_id: int
-
-
-class UpdateShareCodeInputSchema(Schema):
-    report_id: int
-    public_share_code: str
-
-
-class UpdateReportCodeInputSchema(Schema):
-    report_id: int
 
 
 class SaveAdHocTaggedReportInputSchema(Schema):
@@ -227,6 +213,20 @@ class UrlListTimelineSeriesSchema(Schema):
 
 
 log = logging.getLogger(__name__)
+
+
+def parse_ad_hoc_input(data: SaveAdHocTaggedReportInputSchema) -> tuple[list[str], Optional[datetime]]:
+    tags = data.tags or []
+    try:
+        at_when: Optional[datetime] = (
+            datetime.fromisoformat(f"{data.custom_date} {data.custom_time}")
+            if data.custom_date and data.custom_time
+            else None
+        )
+    except ValueError:
+        at_when = None
+
+    return tags, at_when
 
 
 def get_recent_reports(account: Account) -> list[RecentReportItemSchema]:
@@ -655,20 +655,6 @@ def get_report_differences_compared_to_current_list(account: Account, report_id:
     }
 
     return ReportVsListDifferenceSchema(**content_comparison)
-
-
-def get_previous_report(account: Account, urllist_id, at_when) -> ReportSchema:
-    report = (
-        UrlListReport.objects.all()
-        .filter(urllist_id=urllist_id, urllist__account=account, urllist__is_deleted=False, at_when__lt=at_when)
-        .order_by("-at_when")
-        .values("pk")
-        .first()
-    )
-    if not report:
-        return {}
-
-    return get_report(account, report["pk"])[0]
 
 
 def optimize_calculation_and_add_statistics(calculation: Dict[str, Any]):

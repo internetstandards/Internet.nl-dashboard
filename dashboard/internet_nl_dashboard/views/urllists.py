@@ -9,7 +9,8 @@ Url Lists: lists with urls that should be tested for standard compliance. It can
 
 from typing import Annotated
 
-from ninja import Query, Router, Schema
+from ninja import File, Query, Router, Schema
+from ninja.files import UploadedFile
 from ninja.security import django_auth
 from pydantic import StringConstraints
 
@@ -38,9 +39,15 @@ from dashboard.internet_nl_dashboard.logic.domains import (
     suggest_subdomains_for_list,
     update_list_settings,
 )
+from dashboard.internet_nl_dashboard.logic.spreadsheet import upload_domain_spreadsheet_to_list
+from dashboard.internet_nl_dashboard.logic.spreadsheets import (
+    UploadHistoryItemSchema,
+    start_spreadsheet_upload,
+    upload_history_for_account,
+)
 from dashboard.internet_nl_dashboard.logic.tags import add_tag, remove_tag, tags_in_urllist
-from dashboard.internet_nl_dashboard.views import get_account
-from dashboard.internet_nl_dashboard.views import subdomains as subdomains_views
+from dashboard.internet_nl_dashboard.scanners.subdomains import request_scan, scan_status
+from dashboard.internet_nl_dashboard.views import get_account, get_dashboarduser
 
 
 class TagInputSchema(Schema):
@@ -58,9 +65,6 @@ class AddUrlsInputSchema(Schema):
 # django_auth replaces @login_required on every call
 router = Router(tags=["Url Lists"], auth=django_auth)
 
-# Mount subdomain discovery operations under the urllist router, so paths become /data/urllist/discover-subdomains/...
-router.add_router("/discover-subdomains", subdomains_views.router)
-
 
 @router.get("/", response={200: UrlListsResponseSchema})
 def get_lists_operation(request):
@@ -70,6 +74,18 @@ def get_lists_operation(request):
 @router.post("/", response={201: CreateListResponseSchema})
 def create_list_operation(request, data: CreateUrlListInputSchema):
     return create_list(get_account(request), data)
+
+
+@router.get("/import-spreadsheets", response={200: list[UploadHistoryItemSchema]})
+def upload_history(request):
+    account = get_account(request)
+    return upload_history_for_account(account)
+
+
+@router.post("/import-spreadsheets", response={200: OperationResponseSchema})
+def upload_spreadsheet(request, file: UploadedFile = File(...)) -> OperationResponseSchema:
+    user = get_dashboarduser(request)
+    return start_spreadsheet_upload(user, file)
 
 
 @router.delete("/{urllist_id}", response={200: OperationResponseSchema})
@@ -94,15 +110,30 @@ def create_scan_operation(request, urllist_id: int) -> OperationResponseSchema:
     return scan_now(get_account(request), urllist_id)
 
 
-@router.get("/{urllist_id}/suggestions", response={200: list[SuggestedDomainSchema]})
+@router.get("/{urllist_id}/url-suggestions", response={200: list[SuggestedDomainSchema]})
 def suggest_subdomains_operation(request, urllist_id: int, data: Query[SuggestedSubdomainsInputSchema]):
     return suggest_subdomains_for_list(get_account(request), urllist_id, data.domain, data.period)
+
+
+@router.post("/{urllist_id}/www-subdomain-disovery")
+def request_subdomain_discovery_scan_api(request, urllist_id: int):
+    return request_scan(get_account(request), urllist_id)
+
+
+@router.get("/{urllist_id}/www-subdomain-discovery")
+def subdomain_discovery_scan_status_api(request, urllist_id: int):
+    return scan_status(get_account(request), urllist_id)
 
 
 @router.get("/{urllist_id}/spreadsheets")
 def download_list_operation(request, urllist_id: int, data: DownloadSpreadsheetInputSchema):
     # django ninja does not support file downloads in the schema, which is odd
     return download_as_spreadsheet(get_account(request), urllist_id, data.file_type)
+
+
+@router.post("/{urllist_id}/spreadsheets/")
+def upload_list_operation(request, urllist_id: int, file: UploadedFile = File(...)) -> OperationResponseSchema:
+    return upload_domain_spreadsheet_to_list(get_account(request), get_dashboarduser(request), urllist_id, file)
 
 
 @router.get("/{urllist_id}/tags", response={200: list[str]})
