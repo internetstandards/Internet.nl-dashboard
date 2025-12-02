@@ -51,7 +51,7 @@ class SpreadsheetFileTypeConverter:
 class ORJSONRenderer(BaseRenderer):
     media_type = "application/json"
 
-    def render(self, request, data, *, response_status):
+    def render(self, request, data, *, response_status):  # noqa (unused variable response_status), matches api
         return orjson.dumps(data)
 
 
