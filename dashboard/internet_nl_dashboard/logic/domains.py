@@ -132,10 +132,6 @@ class CreateUrlListInputSchema(Schema):
     enable_report_sharing_page: bool
 
 
-class DownloadSpreadsheetInputSchema(Schema):
-    file_type: str = "xlsx"
-
-
 class SuggestedSubdomainsInputSchema(Schema):
     domain: str = ""
     period: int = 370

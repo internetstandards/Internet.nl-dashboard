@@ -11,12 +11,10 @@ from dashboard.internet_nl_dashboard.logic.report import (
     ReportVsListDifferenceSchema,
     SaveAdHocTaggedReportInputSchema,
     ShareCodeSchema,
-    UrlListTimelineSeriesSchema,
     ad_hoc_tagged_report,
     get_recent_reports,
     get_report,
     get_report_differences_compared_to_current_list,
-    get_urllist_timeline_graph,
     parse_ad_hoc_input,
     save_ad_hoc_tagged_report,
     share,
@@ -44,12 +42,15 @@ def get_report_operation(request, report_id: int) -> HttpResponse:
     )
 
 
-@router.get("/{report_id}/differences_compared_to_current_list", response={200: ReportVsListDifferenceSchema})
+@router.get(
+    "/{report_id}/differences",
+    response={200: ReportVsListDifferenceSchema},
+)
 def get_report_differences_compared_to_current_list_operation(request, report_id: int):
     return get_report_differences_compared_to_current_list(get_account(request), report_id)
 
 
-@router.get("/{report_id}/improvements_and_regressions", response={200: ImprovementRegressionSummarySchema})
+@router.get("/{report_id}/improvements-and-regressions", response={200: ImprovementRegressionSummarySchema})
 def improvement_regressions_compared_to_previous_report_operation(request, report_id: int):
     account = get_account(request)
     report = UrlListReport.objects.all().filter(id=report_id, urllist__account=account).first()
@@ -85,7 +86,7 @@ def share_operation(request, report_id: int, data: ShareCodeSchema):
     return share(get_account(request), report_id, data.public_share_code)
 
 
-@router.put("/{report_id}/report-code", response={200: OperationResponseSchema})
+@router.put("/{report_id}/share/report-code", response={200: OperationResponseSchema})
 def update_report_code_operation(request, report_id: int):
     return update_report_code(get_account(request), report_id)
 
@@ -95,7 +96,7 @@ def unshare_operation(request, report_id: int):
     return unshare(get_account(request), report_id)
 
 
-@router.put("/{report_id}/share/code", response={200: OperationResponseSchema})
+@router.put("/{report_id}/share/share-code", response={200: OperationResponseSchema})
 def update_share_code_operation(request, report_id: int, data: ShareCodeSchema):
     return update_share_code(get_account(request), report_id, data.public_share_code)
 
@@ -113,11 +114,6 @@ def get_ad_hoc_tagged_report_operation(request, report_id: int, data: SaveAdHocT
 def save_ad_hoc_tagged_report_operation(request, report_id: int, data: SaveAdHocTaggedReportInputSchema):
     tags, at_when = parse_ad_hoc_input(data)
     return save_ad_hoc_tagged_report(get_account(request), report_id, tags, at_when)
-
-
-@router.get("/urllist_timeline_graph/{urllist_ids}/{report_type}", response={200: list[UrlListTimelineSeriesSchema]})
-def get_urllist_timeline_graph_operation(request, urllist_ids: str, report_type: str):
-    return get_urllist_timeline_graph(get_account(request), urllist_ids, report_type)
 
 
 # # todo: route seems not to be used anymore.

@@ -7,6 +7,7 @@ Purposes of this file / pattern:
 Url Lists: lists with urls that should be tested for standard compliance. It can contain domains and subdomains.
 """
 
+import logging
 from typing import Annotated
 
 from ninja import File, Query, Router, Schema
@@ -19,7 +20,6 @@ from dashboard.internet_nl_dashboard.logic.domains import (
     AlterUrlResponseSchema,
     CreateListResponseSchema,
     CreateUrlListInputSchema,
-    DownloadSpreadsheetInputSchema,
     SuggestedDomainSchema,
     SuggestedSubdomainsInputSchema,
     UpdateListSettingsInputSchema,
@@ -39,6 +39,7 @@ from dashboard.internet_nl_dashboard.logic.domains import (
     suggest_subdomains_for_list,
     update_list_settings,
 )
+from dashboard.internet_nl_dashboard.logic.report import UrlListTimelineSeriesSchema, get_urllist_timeline_graph
 from dashboard.internet_nl_dashboard.logic.spreadsheet import upload_domain_spreadsheet_to_list
 from dashboard.internet_nl_dashboard.logic.spreadsheets import (
     UploadHistoryItemSchema,
@@ -48,6 +49,8 @@ from dashboard.internet_nl_dashboard.logic.spreadsheets import (
 from dashboard.internet_nl_dashboard.logic.tags import add_tag, remove_tag, tags_in_urllist
 from dashboard.internet_nl_dashboard.scanners.subdomains import request_scan, scan_status
 from dashboard.internet_nl_dashboard.views import get_account, get_dashboarduser
+
+log = logging.getLogger(__package__)
 
 
 class TagInputSchema(Schema):
@@ -115,20 +118,20 @@ def suggest_subdomains_operation(request, urllist_id: int, data: Query[Suggested
     return suggest_subdomains_for_list(get_account(request), urllist_id, data.domain, data.period)
 
 
-@router.post("/{urllist_id}/www-subdomain-disovery")
+@router.post("/{urllist_id}/www-subdomain-discovery", response={200: OperationResponseSchema})
 def request_subdomain_discovery_scan_api(request, urllist_id: int):
     return request_scan(get_account(request), urllist_id)
 
 
-@router.get("/{urllist_id}/www-subdomain-discovery")
+@router.get("/{urllist_id}/www-subdomain-discovery", response={200: OperationResponseSchema})
 def subdomain_discovery_scan_status_api(request, urllist_id: int):
     return scan_status(get_account(request), urllist_id)
 
 
-@router.get("/{urllist_id}/spreadsheets")
-def download_list_operation(request, urllist_id: int, data: DownloadSpreadsheetInputSchema):
+@router.post("/{urllist_id}/spreadsheets/{file_type}", response={200: UploadedFile})
+def download_list_operation(request, urllist_id: int, file_type: str):
     # django ninja does not support file downloads in the schema, which is odd
-    return download_as_spreadsheet(get_account(request), urllist_id, data.file_type)
+    return download_as_spreadsheet(get_account(request), urllist_id, file_type)
 
 
 @router.post("/{urllist_id}/spreadsheets")
@@ -183,3 +186,8 @@ def delete_url_from_urllist_operation(request, urllist_id: int, url_id: int):
     account = get_account(request)
     item_deleted = delete_url_from_urllist(account, urllist_id, url_id)
     return operation_response(success=bool(item_deleted), message="url_deleted" if item_deleted else "url_not_deleted")
+
+
+@router.get("/{urllist_ids_csv}/timeline-graph/{report_type}", response={200: list[UrlListTimelineSeriesSchema]})
+def get_urllist_timeline_graph_operation(request, urllist_ids_csv: str, report_type: str):
+    return get_urllist_timeline_graph(get_account(request), urllist_ids_csv, report_type)

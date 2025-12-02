@@ -78,8 +78,7 @@ def save_file(myfile) -> str:
     # https://docs.djangoproject.com/en/2.1/ref/files/storage/
     file_system_storage = FileSystemStorage(location=settings.MEDIA_ROOT)
     filename = file_system_storage.save(myfile.name, myfile)
-    file = settings.MEDIA_ROOT + "/" + filename
-    return file
+    return f"{settings.MEDIA_ROOT}/{filename}"
 
 
 # make sure the file is of a spreadsheet type

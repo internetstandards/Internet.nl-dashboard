@@ -1,4 +1,6 @@
 # SPDX-License-Identifier: Apache-2.0
+import logging
+
 from django.http import HttpResponse
 from django.views.decorators.csrf import csrf_exempt
 from ninja import Router
@@ -20,6 +22,8 @@ from dashboard.internet_nl_dashboard.logic.shared_report_lists import (
     get_publicly_shared_lists_per_account_and_list_id,
 )
 
+log = logging.getLogger(__package__)
+
 # No login required: reports via this method are public
 router = Router(tags=["Public Reports"])
 
@@ -37,10 +41,11 @@ def get_public_reports_operation(request):
 
 @router.get(
     "/{report_code}",
-    response={200: list[ReportSchema], 401: SharedReportAuthRequiredSchema, 404: OperationResponseSchema},
+    response={200: list[ReportSchema], 201: SharedReportAuthRequiredSchema, 404: OperationResponseSchema},
 )
 def get_shared_report_api(request, report_code: str) -> HttpResponse:
     # no code :)
+    log.debug(report_code)
     payload = get_shared_report(report_code, "")
     if payload == []:
         return HttpResponse(
@@ -49,7 +54,7 @@ def get_shared_report_api(request, report_code: str) -> HttpResponse:
             status=404,
         )
     if isinstance(payload, str) and '"authentication_required": true' in payload:
-        return HttpResponse(payload, content_type="application/json", status=401)
+        return HttpResponse(payload, content_type="application/json", status=201)
     return HttpResponse(payload, content_type="application/json")
 
 
@@ -57,7 +62,7 @@ def get_shared_report_api(request, report_code: str) -> HttpResponse:
     "/{report_code}",
     response={
         200: ReportSchema | SharedReportAuthRequiredSchema,
-        401: SharedReportAuthRequiredSchema,
+        201: SharedReportAuthRequiredSchema,
         404: OperationResponseSchema,
     },
 )
@@ -72,7 +77,7 @@ def get_shared_report_api_with_code(request, report_code: str, data: SharedRepor
             status=404,
         )
     if isinstance(payload, str) and '"authentication_required": true' in payload:
-        return HttpResponse(payload, content_type="application/json", status=401)
+        return HttpResponse(payload, content_type="application/json", status=201)
     return HttpResponse(payload, content_type="application/json")
 
 
