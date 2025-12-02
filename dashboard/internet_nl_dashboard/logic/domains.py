@@ -19,7 +19,12 @@ from websecmap import tldextract
 from websecmap.app.constance import constance_cached_value
 from websecmap.organizations.models import Url
 from websecmap.scanners.models import Endpoint
-from websecmap.scanners_internet_nl_dns_endpoints.tasks import compose_discover_task
+from websecmap.scanners_internet_nl_dns_endpoints.tasks import (
+    compose_discover_task,
+    get_nameservers,
+    has_a_or_aaaa,
+    has_soa,
+)
 
 from dashboard.celery import app
 from dashboard.internet_nl_dashboard.logic import OperationResponseSchema, operation_response
@@ -127,30 +132,27 @@ class CreateUrlListInputSchema(Schema):
     enable_report_sharing_page: bool
 
 
-class DeleteUrlListInputSchema(Schema):
-    id: int
-
-
-class DeleteUrlFromListInputSchema(Schema):
-    urllist_id: int
-    url_id: int
-
-
-class DownloadSpreadsheetInputSchema(Schema):
-    urllist_id: int
-    file_type: str = "xlsx"
-
-
 class SuggestedSubdomainsInputSchema(Schema):
     domain: str = ""
     period: int = 370
-    urllist_id: int | None = None
 
 
 class SuggestedDomainSchema(Schema):
     domain: str
     has_website: bool | str
     has_email: bool | str
+
+
+class UpdateListSettingsInputSchema(Schema):
+    id: int
+    name: str
+    enable_scans: bool
+    scan_type: str
+    automated_scan_frequency: str
+    scheduled_next_scan: datetime | None = None
+    enable_report_sharing_page: bool | None = None
+    automatically_share_new_reports: bool | None = None
+    default_public_share_code_for_new_reports: str | None = None
 
 
 log = logging.getLogger(__package__)
@@ -192,22 +194,67 @@ def suggest_subdomains(domain: str, period: int = 370):
     return response.json()
 
 
-# todo: write test
-def alter_url_in_urllist(account, data) -> AlterUrlResponseSchema:
-    # data = {'list_id': list.id, 'url_id': url.id, 'new_url_string': url.url}
+def suggest_subdomains_for_list(
+    account: Account, urllist_id: int, domain: str, period: int = 370
+) -> list[dict[str, Any]]:
+    suggestions = suggest_subdomains(domain, period)
+    # already add the domain, so the frontend doesn't have to.
+    if suggestions:
+        suggestions = [domain] + [f"{sug}.{domain}" for sug in suggestions]
 
+    # todo: using this method an authenticated user can figure out which domains are already in a list, this is not
+    # a really high risk, but it's not nice.
+    # remove domains already in this list, this is very fast and even with a list of 10k domains a user won't notice it.
+    if account and urllist_id:
+        existing_urls = (
+            Url.objects.all()
+            .filter(urls_in_dashboard_list_2__account=account, urls_in_dashboard_list_2__id=urllist_id)
+            .values_list("url", flat=True)
+        )
+        suggestions = sorted(list(set(suggestions) - set(existing_urls)))
+
+    # if the domain is still suggested, add it in FRONT of the list:
+    if domain in suggestions:
+        suggestions.remove(domain)
+        suggestions.insert(0, domain)
+
+    # perform some AAAA/MX record lookups, so a user can select some things.
+    domains_with_dns_status: list[dict[str, Any]] = []
+    nameservers = get_nameservers()
+    if len(suggestions) < 30:
+        for d in suggestions:
+            has_website = has_a_or_aaaa(d, nameservers)
+            has_email = has_soa(d, nameservers)
+            domains_with_dns_status.append(
+                {
+                    "domain": d,
+                    "has_website": has_website,
+                    "has_email": has_email,
+                }
+            )
+    else:
+        domains_with_dns_status.extend(
+            {
+                "domain": d,
+                "has_website": "unknown",
+                "has_email": "unknown",
+            }
+            for d in suggestions
+        )
+
+    return domains_with_dns_status
+
+
+# todo: write test
+def alter_url_in_urllist(account, urllist_id: int, url_id: int, new_url_string: str) -> AlterUrlResponseSchema:
     now = datetime.now(timezone.utc)
 
-    expected_keys = ["list_id", "url_id", "new_url_string"]
-    if not keys_are_present_in_object(expected_keys, data):
-        return AlterUrlResponseSchema(error=True, message="Missing keys in data.", state="error", timestamp=now)
-
     # what was the old id we're changing?
-    old_url = Url.objects.all().filter(pk=data["url_id"]).first()
+    old_url = Url.objects.all().filter(pk=url_id).first()
     if not old_url:
         return AlterUrlResponseSchema(error=True, message="The old url does not exist.", state="error", timestamp=now)
 
-    if old_url.url == data["new_url_string"]:
+    if old_url.url == new_url_string:
         # no changes, but return a created item for UI consistency
         created_item = UrlChangeItemSchema(
             id=old_url.id,
@@ -228,18 +275,18 @@ def alter_url_in_urllist(account, data) -> AlterUrlResponseSchema:
         )
 
     # is this really a list?
-    urllist = UrlList.objects.all().filter(account=account, pk=data["list_id"]).first()
+    urllist = UrlList.objects.all().filter(account=account, pk=urllist_id).first()
     if not urllist:
         return AlterUrlResponseSchema(error=True, message="List does not exist.", state="error", timestamp=now)
 
     # is the url valid?
-    if not Url.is_valid_url(data["new_url_string"]):
+    if not Url.is_valid_url(new_url_string):
         return AlterUrlResponseSchema(
             error=True, message="New url does not have the correct format.", state="error", timestamp=now
         )
 
     # fetch the url, or create it if it doesn't exist.
-    new_url, created = get_url(data["new_url_string"])
+    new_url, created = get_url(new_url_string)
 
     # don't throw away the url, only from the list. (don't call delete, as it will delete the record)
     urllist.urls.remove(old_url)
@@ -298,10 +345,10 @@ def alter_url_in_urllist(account, data) -> AlterUrlResponseSchema:
     )
 
 
-def scan_now(account, user_input) -> OperationResponseSchema:
+def scan_now(account, urllist_id: int) -> OperationResponseSchema:
     urllist = (
         UrlList.objects.all()
-        .filter(account=account, id=user_input.get("id", -1), is_deleted=False)
+        .filter(account=account, id=urllist_id, is_deleted=False)
         .annotate(num_urls=Count("urls"))
         .first()
     )
@@ -412,7 +459,7 @@ def create_list(account: Account, data: CreateUrlListInputSchema) -> CreateListR
     )
 
 
-def delete_list(account: Account, data: DeleteUrlListInputSchema) -> OperationResponseSchema:
+def delete_list(account: Account, urllist_id: int) -> OperationResponseSchema:
     """
     The first assumption was that a list is not precious or special, and that it can be quickly re-created with an
     import from excel or a csv paste in the web interface. Yet this assumption is wrong. It's valuable to keep the list
@@ -421,10 +468,10 @@ def delete_list(account: Account, data: DeleteUrlListInputSchema) -> OperationRe
     To do that, the is_deleted columns have been introduced.
 
     :param account:
-    :param data: DeleteUrlListInputSchema containing the list id.
+    :param urllist_id: Identifier of the list to delete.
     :return: OperationResponseSchema
     """
-    urllist = UrlList.objects.all().filter(account=account, id=data.id, is_deleted=False).first()
+    urllist = UrlList.objects.all().filter(account=account, id=urllist_id, is_deleted=False).first()
     if not urllist:
         return operation_response(error=True, message="List could not be deleted.")
 
@@ -501,7 +548,9 @@ def get_scan_status_of_list(account: Account, list_id: int) -> UrlListScanStatus
 
 
 # @pysnooper.snoop()
-def update_list_settings(account: Account, user_input: Dict) -> CreateListResponseSchema | OperationResponseSchema:
+def update_list_settings(
+    account: Account, user_input: UpdateListSettingsInputSchema
+) -> CreateListResponseSchema | OperationResponseSchema:
     """
 
     This cannot update the urls, as that would increase complexity too much.
@@ -520,10 +569,6 @@ def update_list_settings(account: Account, user_input: Dict) -> CreateListRespon
     :return:
     """
 
-    expected_keys = ["id", "name", "enable_scans", "scan_type", "automated_scan_frequency", "scheduled_next_scan"]
-    if not keys_are_present_in_object(expected_keys, user_input):
-        return operation_response(error=True, message="Missing settings.")
-
     prefetch_last_scan = Prefetch(
         "accountinternetnlscan_set",
         queryset=AccountInternetNLScan.objects.order_by("-id").select_related("scan"),
@@ -537,9 +582,11 @@ def update_list_settings(account: Account, user_input: Dict) -> CreateListRespon
         to_attr="last_report",
     )
 
+    user_input_dict = user_input.dict()
+
     urllist: UrlList = (
         UrlList.objects.all()
-        .filter(account=account, id=user_input["id"], is_deleted=False)
+        .filter(account=account, id=user_input_dict["id"], is_deleted=False)
         .annotate(num_urls=Count("urls"))
         .prefetch_related(prefetch_last_scan, last_report_prefetch)
         .first()
@@ -551,20 +598,20 @@ def update_list_settings(account: Account, user_input: Dict) -> CreateListRespon
     # Yes, you can try and set any value. Values that are not recognized do not result in errors / error messages,
     # instead they will be overwritten with the default. This means less interaction with users / less annoyance over
     # errors on such simple forms.
-    frequency = validate_list_automated_scan_frequency(user_input["automated_scan_frequency"])
+    frequency = validate_list_automated_scan_frequency(user_input_dict["automated_scan_frequency"])
     data = {
         "id": urllist.id,
         "account": account,
-        "name": validate_list_name(user_input["name"]),
-        "enable_scans": bool(user_input["enable_scans"]),
-        "scan_type": validate_list_scan_type(user_input["scan_type"]),
+        "name": validate_list_name(user_input_dict["name"]),
+        "enable_scans": bool(user_input_dict["enable_scans"]),
+        "scan_type": validate_list_scan_type(user_input_dict["scan_type"]),
         "automated_scan_frequency": frequency,
         "scheduled_next_scan": determine_next_scan_moment(frequency),
-        "enable_report_sharing_page": bool(user_input.get("enable_report_sharing_page", "")),
-        "automatically_share_new_reports": bool(user_input.get("automatically_share_new_reports", "")),
-        "default_public_share_code_for_new_reports": user_input.get("default_public_share_code_for_new_reports", "")[
-            :64
-        ],
+        "enable_report_sharing_page": bool(user_input_dict.get("enable_report_sharing_page", "")),
+        "automatically_share_new_reports": bool(user_input_dict.get("automatically_share_new_reports", "")),
+        "default_public_share_code_for_new_reports": user_input_dict.get(
+            "default_public_share_code_for_new_reports", ""
+        )[:64],
     }
 
     updated_urllist = UrlList(**data)
@@ -870,7 +917,7 @@ def retrieve_possible_urls_from_unfiltered_input(unfiltered_input: str) -> Tuple
     return sorted(has_tld), duplicates_removed
 
 
-def add_domains_from_raw_user_data(account: Account, user_input: Dict[str, Any]) -> OperationResponseSchema:
+def add_domains_from_raw_user_data(account: Account, urllist_id: int, urls: list[str]) -> OperationResponseSchema:
     """
     This is the 'id' version of save_urllist. It is a bit stricter as in that it requires the list to exist.
 
@@ -878,22 +925,16 @@ def add_domains_from_raw_user_data(account: Account, user_input: Dict[str, Any])
     can be shared with multiple accounts, and only requires one scan).
 
     Used in the web / ajax frontend and uses operation responses.
-
-    :param account:
-    :param user_input:
-    :return:
     """
 
-    # how could we validate user_input a better way? Using a validator object?
-    list_id: int = int(user_input.get("list_id", -1))
-    unfiltered_urls: str = user_input.get("urls", [])
+    unfiltered_urls: str = " ".join(urls or [])
 
     # these are random unfiltered strings and the method expects keys...
     # in this case we'll run an extra retrieve_possible_urls_from_unfiltered_input so there is already some filtering.
     urls, _ = retrieve_possible_urls_from_unfiltered_input(unfiltered_urls)
 
     # does this remove tags of existing urls?
-    result = save_urllist_content_by_id(account, list_id, {url: {"tags": []} for url in urls})
+    result = save_urllist_content_by_id(account, urllist_id, {url: {"tags": []} for url in urls})
     if "error" in result:
         return OperationResponseSchema(**result)
 

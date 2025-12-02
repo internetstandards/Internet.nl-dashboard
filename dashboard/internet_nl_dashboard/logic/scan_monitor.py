@@ -35,10 +35,6 @@ class ScanMonitorItemSchema(Schema):
     log: list[ScanLogEntrySchema] = []
 
 
-class CancelScanInputSchema(Schema):
-    id: int
-
-
 def get_scan_monitor_data(account: Account) -> list[ScanMonitorItemSchema]:
     latest_30_scans = (
         AccountInternetNLScan.objects.all()

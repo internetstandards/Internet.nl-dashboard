@@ -115,7 +115,7 @@ def abstract_per_year(query, datetime_field):
         kwargs = {
             f"{datetime_field}__year": year,
         }
-        stats[year] = query.filter(**kwargs).count()
+        stats[str(year)] = query.filter(**kwargs).count()
     return stats
 
 
@@ -127,7 +127,7 @@ def abstract_per_month(query, datetime_field):
                 f"{datetime_field}__year": year,
                 f"{datetime_field}__month": month,
             }
-            stats[year][month] = query.filter(**kwargs).count()
+            stats[str(year)][str(month)] = query.filter(**kwargs).count()
     return stats
 
 

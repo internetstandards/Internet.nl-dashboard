@@ -13,7 +13,6 @@ from django.contrib.auth.models import User
 from websecmap.organizations.models import Url
 
 from dashboard.internet_nl_dashboard.logic.domains import (
-    DeleteUrlListInputSchema,
     ServerError,
     UrlListContentResponseSchema,
     add_domains_from_raw_user_data,
@@ -58,7 +57,7 @@ def test_suggest_subdomains_http(db, client):
     responses.add(responses.GET, "http://localhost:8001/?domain=broken&suffix=nl&period=370", json=[], status=500)
 
     assert (
-        client.get("/data/urllist/suggest-subdomains", {"domain": "test.nl"}).status_code == 401
+        client.get("/api/v1/urllists/1/url-suggestions", {"domain": "test.nl"}).status_code == 401
     ), "unauthenticated request should result in login redirect"
 
     user = User.objects.create(username="test")
@@ -66,7 +65,7 @@ def test_suggest_subdomains_http(db, client):
     DashboardUser.objects.create(user=user, account=account)
     client.force_login(user)
 
-    response = client.get("/data/urllist/suggest-subdomains", {"domain": "test.nl"})
+    response = client.get("/api/v1/urllists/1/url-suggestions", {"domain": "test.nl"})
     answer = response.json()
     assert answer in [
         [
@@ -100,7 +99,7 @@ def test_add_domains_from_raw_user_data(db, current_path, redis_server):
     list_1 = get_or_create_list_by_name(account, "test list 1")
 
     # you can't go past the DASHBOARD_MAXIMUM_DOMAINS_PER_LIST
-    response = add_domains_from_raw_user_data(account, {"list_id": list_1.id, "urls": ", ".join(domains[:6000])}).dict()
+    response = add_domains_from_raw_user_data(account, list_1.id, domains[:6000]).dict()
 
     assert response["error"] is True
     assert response["message"] == "too_many_domains"
@@ -109,7 +108,7 @@ def test_add_domains_from_raw_user_data(db, current_path, redis_server):
     new_url = Url.objects.all().create(url="nu.nl")
     list_1.urls.add(new_url)
 
-    response = add_domains_from_raw_user_data(account, {"list_id": list_1.id, "urls": ", ".join(domains[:100])}).dict()
+    response = add_domains_from_raw_user_data(account, list_1.id, domains[:100]).dict()
 
     assert response["success"] is True
     assert response["data"] == {
@@ -379,7 +378,7 @@ def test_urllists(db, redis_server) -> None:
     assert len(list_content.urls) == 2
 
     """ Delete the entire list, we'll get nothing back, only an empty response. """
-    result = delete_list(account=account, data=DeleteUrlListInputSchema(id=list_1.id))
+    result = delete_list(account=account, urllist_id=list_1.id)
     operation_response = result.dict()
 
     # it deletes two urls and the list itself, makes 3
@@ -391,7 +390,7 @@ def test_urllists(db, redis_server) -> None:
 
     account2, created = Account.objects.all().get_or_create(name="test 2")
     """ You cannot delete things from another account """
-    result = delete_list(account=account2, data=DeleteUrlListInputSchema(id=list_1.id))
+    result = delete_list(account=account2, urllist_id=list_1.id)
     operation_response = result.dict()
     assert operation_response["success"] is False
 

@@ -63,7 +63,7 @@ def config_content() -> ConfigContentSchema:
     )
 
 
-@router.get("/", response={200: ConfigContentSchema})
+@router.get("", response={200: ConfigContentSchema})
 @cache_page(ONE_HOUR)
 def config_api(request) -> JsonResponse:
     return JsonResponse(config_content().dict(), status=200, safe=False)

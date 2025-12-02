@@ -31,6 +31,7 @@ from actstream import action
 from constance import config
 from django.conf import settings
 from django.core.files.storage import FileSystemStorage
+from django.core.files.uploadedfile import UploadedFile
 from ninja import Schema
 from websecmap.celery import app
 from xlrd import XLRDError
@@ -77,8 +78,7 @@ def save_file(myfile) -> str:
     # https://docs.djangoproject.com/en/2.1/ref/files/storage/
     file_system_storage = FileSystemStorage(location=settings.MEDIA_ROOT)
     filename = file_system_storage.save(myfile.name, myfile)
-    file = settings.MEDIA_ROOT + "/" + filename
-    return file
+    return f"{settings.MEDIA_ROOT}/{filename}"
 
 
 # make sure the file is of a spreadsheet type
@@ -448,7 +448,7 @@ def import_step_2(user: int, file: str, uploadlog_id: int):
     return
 
 
-def upload_domain_spreadsheet_to_list(account: Account, user: DashboardUser, urllist_id: int, file: str):
+def upload_domain_spreadsheet_to_list(account: Account, user: DashboardUser, urllist_id: int, file: UploadedFile):
     # todo: perform this in two steps, and step two asynchronously as it may take a long time to add a long list of
     # domains...
     file = save_file(file)

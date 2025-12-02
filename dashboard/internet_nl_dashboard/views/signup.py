@@ -40,7 +40,7 @@ class ProcessApplicationInputSchema(Schema):
     form_data: SignupFormDataSchema
 
 
-@router.post("", response={200: OperationResponseSchema})
+@router.post("", response={200: OperationResponseSchema, 400: OperationResponseSchema})
 @csrf_exempt
 def process_application(request, data: ProcessApplicationInputSchema):
     form_data = data.form_data.dict()
@@ -50,7 +50,7 @@ def process_application(request, data: ProcessApplicationInputSchema):
 
     sleep(1)
 
-    # prevent abuse case where millions of requests are made, who would even bother.
+    # prevent abuse-case where millions of requests are made, who would even bother.
     one_hour_ago = datetime.now(timezone.utc) - timedelta(hours=1)
     if Log.objects.all().filter(date__gt=one_hour_ago).count() > 50:
         return operation_response(success=True, message="access_requested")
@@ -58,8 +58,8 @@ def process_application(request, data: ProcessApplicationInputSchema):
     # sending mail can take a while, so don't wait for it.
     send_backoffice_mail_async.s(form_data).apply_async()
 
-    # also send a mail to the requester, this is a templated mail with some parameters
-    # the mail is always in dutch, as we don't ask for a language
+    # also send an e-mail to the requester, this is a templated e-mail with some parameters
+    # the mail is always in Dutch, as we don't ask for a language
     send_signup_received_mail_to_requester.s(form_data).apply_async()
 
     return operation_response(success=True, message="access_requested")
