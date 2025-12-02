@@ -502,8 +502,9 @@ OPEN_API_VERSION = "1.0.0"
 OPEN_API_TITLE = os.environ.get("OPEN_API_TITLE", "Internet.nl Dashboard API")
 OPEN_API_CONTACT_ORGANIZATION = os.environ.get("OPEN_API_CONTACT_ORGANIZATION", "Internet.nl API Support")
 OPEN_API_CONTACT_EMAIL = os.environ.get("OPEN_API_CONTACT_EMAIL", "vraag@internet.nl")
-OPEN_API_CONTACT_URL = os.environ.get("OPEN_API_CONTACT_URL", "https://github.com/internetstandards/Internet.nl-dashboard/")
-
+OPEN_API_CONTACT_URL = os.environ.get(
+    "OPEN_API_CONTACT_URL", "https://github.com/internetstandards/Internet.nl-dashboard/"
+)
 
 
 # Supported languages.

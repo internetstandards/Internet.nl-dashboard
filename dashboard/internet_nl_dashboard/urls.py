@@ -1,12 +1,12 @@
 # SPDX-License-Identifier: Apache-2.0
 import orjson
 from constance import config
+from django.conf import settings as django_settings
 from django.shortcuts import redirect
 from django.urls import path, register_converter
 from ninja import NinjaAPI
 from ninja.renderers import BaseRenderer
 from websecmap.map.views import security_txt
-from django.conf import settings as django_settings
 
 # We have to import the signals somewhere?!
 import dashboard.internet_nl_dashboard.signals  # noqa  # pylint: disable=unused-import
@@ -62,17 +62,37 @@ api = NinjaAPI(
             "contact": {
                 "name": django_settings.OPEN_API_CONTACT_ORGANIZATION,
                 "email": django_settings.OPEN_API_CONTACT_EMAIL,
-                "url": django_settings.OPEN_API_CONTACT_URL
+                "url": django_settings.OPEN_API_CONTACT_URL,
             },
         },
-        # Makeshift alternative for specifying headers everywhere.
-        "headers": {
-            "API-Version": django_settings.OPEN_API_VERSION
-        }
     },
     version=django_settings.OPEN_API_VERSION,
-    renderer=ORJSONRenderer()
+    renderer=ORJSONRenderer(),
 )
+
+# Inject API-Version header into the generated OpenAPI schema for all responses.
+# This workaround is generated code.
+_orig_get_openapi_schema = api.get_openapi_schema
+
+
+def _get_openapi_schema_with_version_header(**kwargs):
+    schema = _orig_get_openapi_schema()
+    components = schema.setdefault("components", {})
+    headers = components.setdefault("headers", {})
+    headers["API-Version"] = {
+        "description": f"Semantic version of the {django_settings.OPEN_API_TITLE}",
+        "schema": {"type": "string", "example": django_settings.OPEN_API_VERSION},
+    }
+    for path_item in schema.get("paths", {}).values():
+        for operation in path_item.values():
+            responses = operation.get("responses", {})
+            for response in responses.values():
+                response_headers = response.setdefault("headers", {})
+                response_headers["API-Version"] = {"$ref": "#/components/headers/API-Version"}
+    return schema
+
+
+api.get_openapi_schema = _get_openapi_schema_with_version_header
 
 
 # ADR wants the version to be returned in every response. This cannot be described in django ninja.
@@ -83,6 +103,7 @@ def version_header(func):
         response = func(request, *args, **kwargs)
         response["API-Version"] = django_settings.OPEN_API_VERSION
         return response
+
     return wrapper
 
 
@@ -98,6 +119,7 @@ api.add_router("/reports", reports.router)
 api.add_router("/public-reports", public_reports.router)
 api.add_router("/mail", mail.router)
 api.add_router("/admin", admin.router)
+
 
 # todo: where was this used, is it still relevant?
 register_converter(SpreadsheetFileTypeConverter, "spreadsheet_filetype")

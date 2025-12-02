@@ -29,4 +29,6 @@ def unsubscribe_(request, feed, unsubscribe_code):
 def unsubscribe_api(request, feed: str, unsubscribe_code: str):
     # Exposed primarily to document the existing unsubscribe path in OpenAPI; the URL path remains unchanged.
     result = mail.unsubscribe(feed, unsubscribe_code)
-    return OperationResponseSchema(success=not result.get("error", False), error=result.get("error", False), message=result.get("message", ""))
+    return OperationResponseSchema(
+        success=not result.get("error", False), error=result.get("error", False), message=result.get("message", "")
+    )

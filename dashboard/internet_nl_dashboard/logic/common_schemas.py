@@ -8,5 +8,3 @@ class ErrorResponseSchema(Schema):
 
 class SuccessResponseSchema(Schema):
     """Empty success envelope for cases where no payload is needed."""
-
-    pass
