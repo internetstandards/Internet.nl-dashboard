@@ -1,9 +1,12 @@
 # SPDX-License-Identifier: Apache-2.0
+import orjson
 from constance import config
 from django.shortcuts import redirect
 from django.urls import path, register_converter
 from ninja import NinjaAPI
+from ninja.renderers import BaseRenderer
 from websecmap.map.views import security_txt
+from django.conf import settings as django_settings
 
 # We have to import the signals somewhere?!
 import dashboard.internet_nl_dashboard.signals  # noqa  # pylint: disable=unused-import
@@ -43,7 +46,48 @@ class SpreadsheetFileTypeConverter:
         return f"{value}"
 
 
-api = NinjaAPI(title="Internet.nl Dashboard API", version="1.0.0")
+# Orjson means increased speed, why doesn't django-ninja use this as the default?
+# https://django-ninja.dev/guides/response/response-renderers/
+class ORJSONRenderer(BaseRenderer):
+    media_type = "application/json"
+
+    def render(self, request, data, *, response_status):
+        return orjson.dumps(data)
+
+
+api = NinjaAPI(
+    title=django_settings.OPEN_API_TITLE,
+    openapi_extra={
+        "info": {
+            "contact": {
+                "name": django_settings.OPEN_API_CONTACT_ORGANIZATION,
+                "email": django_settings.OPEN_API_CONTACT_EMAIL,
+                "url": django_settings.OPEN_API_CONTACT_URL
+            },
+        },
+        # Makeshift alternative for specifying headers everywhere.
+        "headers": {
+            "API-Version": django_settings.OPEN_API_VERSION
+        }
+    },
+    version=django_settings.OPEN_API_VERSION,
+    renderer=ORJSONRenderer()
+)
+
+
+# ADR wants the version to be returned in every response. This cannot be described in django ninja.
+# the X-prefix has not been recommended since 2012
+# https://developer.overheid.nl/kennisbank/apis/api-design-rules/hoe-te-voldoen/version-header
+def version_header(func):
+    def wrapper(request, *args, **kwargs):
+        response = func(request, *args, **kwargs)
+        response["API-Version"] = django_settings.OPEN_API_VERSION
+        return response
+    return wrapper
+
+
+api.add_decorator(version_header, mode="view")
+
 api.add_router("/config", app.router)
 api.add_router("/signup", signup.router)
 api.add_router("/session", session.router)
@@ -61,7 +105,7 @@ register_converter(SpreadsheetFileTypeConverter, "spreadsheet_filetype")
 urlpatterns = [
     path("", lambda request: redirect(config.DASHBOARD_FRONTEND_URL)),
     path("logout/", logout_view),
-    path("data/", api.urls),
+    path("api/v1/", api.urls),
     # dedicated upload-success that is used to handle uploads, this is not really integrated in the API.
     # This is used when the separate upload-button is used that selects one file, instead of drag and drop uploading
     path("upload/", spreadsheet.upload),

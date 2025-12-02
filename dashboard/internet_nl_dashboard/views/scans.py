@@ -13,7 +13,7 @@ log = logging.getLogger(__package__)
 router = Router(tags=["Scans"], auth=django_auth)
 
 
-@router.get("/", response={200: list[ScanMonitorItemSchema]})
+@router.get("", response={200: list[ScanMonitorItemSchema]})
 def running_scans(request):
     account = get_account(request)
     return get_scan_monitor_data(account)

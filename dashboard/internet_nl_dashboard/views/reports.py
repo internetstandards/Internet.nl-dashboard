@@ -31,12 +31,12 @@ from dashboard.internet_nl_dashboard.views import create_spreadsheet_download, g
 router = Router(tags=["Reports"], auth=django_auth)
 
 
-@router.get("/", response={200: list[RecentReportItemSchema]})
+@router.get("", response={200: list[RecentReportItemSchema]})
 def get_recent_reports_operation(request):
     return get_recent_reports(get_account(request))
 
 
-@router.get("/{report_id}/", response={200: list[ReportSchema]})
+@router.get("/{report_id}", response={200: list[ReportSchema]})
 def get_report_operation(request, report_id: int) -> HttpResponse:
     # Explicitly NOT use jsonresponse as this loads the json data into an encoder which is extremely slow on large files
     return HttpResponse(  # pylint: disable=http-response-with-content-type-json

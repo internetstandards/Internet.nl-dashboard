@@ -66,12 +66,12 @@ class AddUrlsInputSchema(Schema):
 router = Router(tags=["Url Lists"], auth=django_auth)
 
 
-@router.get("/", response={200: UrlListsResponseSchema})
+@router.get("", response={200: UrlListsResponseSchema})
 def get_lists_operation(request):
     return get_urllists_from_account(account=get_account(request))
 
 
-@router.post("/", response={201: CreateListResponseSchema})
+@router.post("", response={201: CreateListResponseSchema})
 def create_list_operation(request, data: CreateUrlListInputSchema):
     return create_list(get_account(request), data)
 
@@ -131,7 +131,7 @@ def download_list_operation(request, urllist_id: int, data: DownloadSpreadsheetI
     return download_as_spreadsheet(get_account(request), urllist_id, data.file_type)
 
 
-@router.post("/{urllist_id}/spreadsheets/")
+@router.post("/{urllist_id}/spreadsheets")
 def upload_list_operation(request, urllist_id: int, file: UploadedFile = File(...)) -> OperationResponseSchema:
     return upload_domain_spreadsheet_to_list(get_account(request), get_dashboarduser(request), urllist_id, file)
 

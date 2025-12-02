@@ -496,7 +496,15 @@ SENTRY_ORGANIZATION = os.environ.get("SENTRY_ORGANIZATION", "internet-cleanup-fo
 SENTRY_PROJECT = os.environ.get("SENTRY_PROJECT", "internet-nl-dashboard")
 SENTRY_PROJECT_URL = f"https://sentry.io/{SENTRY_ORGANIZATION}/{SENTRY_PROJECT}"
 
-# Copied from internet.nl
+
+# Open API settings, please refer to CHANGELOG_API.md for changes.
+OPEN_API_VERSION = "1.0.0"
+OPEN_API_TITLE = os.environ.get("OPEN_API_TITLE", "Internet.nl Dashboard API")
+OPEN_API_CONTACT_ORGANIZATION = os.environ.get("OPEN_API_CONTACT_ORGANIZATION", "Internet.nl API Support")
+OPEN_API_CONTACT_EMAIL = os.environ.get("OPEN_API_CONTACT_EMAIL", "vraag@internet.nl")
+OPEN_API_CONTACT_URL = os.environ.get("OPEN_API_CONTACT_URL", "https://github.com/internetstandards/Internet.nl-dashboard/")
+
+
 
 # Supported languages.
 # NOTE: Make sure that a DNS record for each language exists.
