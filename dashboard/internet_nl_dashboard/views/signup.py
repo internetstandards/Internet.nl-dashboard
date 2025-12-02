@@ -12,7 +12,7 @@ from django_mail_admin.models import Log
 from ninja import Router, Schema
 
 from dashboard.celery import app
-from dashboard.internet_nl_dashboard.logic.common_schemas import ErrorResponseSchema, SuccessResponseSchema
+from dashboard.internet_nl_dashboard.logic import OperationResponseSchema, operation_response
 from dashboard.internet_nl_dashboard.logic.mail_admin_templates import xget_template
 
 log = logging.getLogger(__package__)
@@ -40,29 +40,29 @@ class ProcessApplicationInputSchema(Schema):
     form_data: SignupFormDataSchema
 
 
-@router.post("", response={200: SuccessResponseSchema, 400: ErrorResponseSchema})
+@router.post("", response={200: OperationResponseSchema, 400: OperationResponseSchema})
 @csrf_exempt
 def process_application(request, data: ProcessApplicationInputSchema):
     form_data = data.form_data.dict()
 
     if form_data.get("captcha") not in [42, "42"]:
-        return ErrorResponseSchema(message="incorrect_captcha"), 400
+        return operation_response(error=True, message="incorrect_captcha")
 
     sleep(1)
 
-    # prevent abuse case where millions of requests are made, who would even bother.
+    # prevent abuse-case where millions of requests are made, who would even bother.
     one_hour_ago = datetime.now(timezone.utc) - timedelta(hours=1)
     if Log.objects.all().filter(date__gt=one_hour_ago).count() > 50:
-        return SuccessResponseSchema(), 200
+        return operation_response(success=True, message="access_requested")
 
     # sending mail can take a while, so don't wait for it.
     send_backoffice_mail_async.s(form_data).apply_async()
 
-    # also send a mail to the requester, this is a templated mail with some parameters
-    # the mail is always in dutch, as we don't ask for a language
+    # also send an e-mail to the requester, this is a templated e-mail with some parameters
+    # the mail is always in Dutch, as we don't ask for a language
     send_signup_received_mail_to_requester.s(form_data).apply_async()
 
-    return SuccessResponseSchema(), 200
+    return operation_response(success=True, message="access_requested")
 
 
 @app.task(queue="storage", ignore_result=True)
