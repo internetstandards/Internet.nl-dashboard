@@ -613,13 +613,20 @@ def connect_urllistreport_to_accountinternetnlscan(urllistreport_id: int, scan_i
 
 
 def overwrite_all_reports():
-    # when there is a need to overwrite all reports because the structure has changed:
-    scans = AccountInternetNLScan.objects.all().filter(state="finished")
+    # when there is a need to overwrite all reports because the structure has changed
+    scans = AccountInternetNLScan.objects.all().filter(state="finished").order_by("id")
     for scan in scans:
-        overwrite_report(scan)
+        # for maximum rebuild speed:
+        overwrite_report.si(scan.id).apply_async()
 
 
-def overwrite_report(scan: AccountInternetNLScan) -> None:
+@app.task(queue="storage")
+def overwrite_report(scan_id: int) -> None:
+    scan = AccountInternetNLScan.objects.all().filter(id=scan_id).first()
+    if not scan:
+        log.debug("Scan %s does not exist. Skipping.", scan)
+        return
+
     if not scan.report:
         log.debug("Scan %s has no report to overwrite. Skipping.", scan)
         return
@@ -629,16 +636,23 @@ def overwrite_report(scan: AccountInternetNLScan) -> None:
         log.debug("No report moment found for scan %s. Skipping.", scan)
         return
 
-    # remove the old report, we don't store duplicates:
-    scan.report.delete()
+    try:
+        # remove the old report, we don't store duplicates:
+        scan.report.delete()
+        # create new report and associate it.
+        urllistreport_id = create_dashboard_report_at(scan.urllist, old_report_moment, scan.scan.type)
+        connect_urllistreport_to_accountinternetnlscan(urllistreport_id, scan.id)
+        upgrade_report_with_statistics(urllistreport_id)
+        upgrade_report_with_unscannable_urls(urllistreport_id, scan.id)
 
-    # create new report and associate it.
-    urllistreport_id = create_dashboard_report_at(scan.urllist, old_report_moment)
-    connect_urllistreport_to_accountinternetnlscan(urllistreport_id, scan.id)
-    upgrade_report_with_statistics(urllistreport_id)
-    upgrade_report_with_unscannable_urls(urllistreport_id, scan.id)
-
-    log.debug("Done!")
+        log.debug("Done!")
+    except AttributeError:
+        # very few have this error in very old reports, not worthwhile to fix.
+        log.exception("Failed to overwrite report for scan, AttributError %s.", scan)
+    except KeyError:
+        log.exception("Failed to overwrite report for scan, KeyError %s.", scan)
+    except Exception:  # pylint: disable=broad-except
+        log.exception("Failed to overwrite report for scan, Other Error %s.", scan)
 
 
 @app.task(queue="storage")
