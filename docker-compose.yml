@@ -1,7 +1,7 @@
 version: '3'
 services:
   db:
-    image: postgres:11
+    image: postgres:18
     environment:
       POSTGRES_DB: dashboard
       POSTGRES_USER: dashboard
