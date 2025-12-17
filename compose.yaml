@@ -94,7 +94,7 @@ services:
     networks:
       dashboard:
     volumes:
-      - database:/var/lib/postgresql/data
+      - database:/var/lib/postgresql
     healthcheck:
       interval: 60s
     stop_grace_period: 60s
@@ -110,7 +110,7 @@ configs:
   caddyfile:
     content: |
       :8000 {
-        @paths path /account/* /admin/* /data/* /jet/* /logout/* /mail/* /session/* /static/* /upload/* /security.txt /.well-known/security.txt
+        @paths path /account/* /admin/* /data/* /api/v1/* /api/v2/* /jet/* /logout/* /mail/* /session/* /static/* /upload/* /security.txt /.well-known/security.txt
         reverse_proxy @paths backend:8000
         reverse_proxy /* frontend:80
       }
