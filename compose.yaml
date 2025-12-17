@@ -94,7 +94,7 @@ services:
     networks:
       dashboard:
     volumes:
-      - database:/var/lib/postgresql/data
+      - database:/var/lib/postgresql
     healthcheck:
       interval: 60s
     stop_grace_period: 60s
