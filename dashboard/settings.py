@@ -116,9 +116,16 @@ INSTALLED_APPS = [
     # allauth
     "allauth",
     "allauth.account",
+    "allauth.usersessions",
+    "allauth.mfa",
     "allauth.socialaccount",
     "allauth.socialaccount.providers.openid_connect",
-    "allauth.usersessions",
+    "allauth.socialaccount.providers.google",
+    "allauth.socialaccount.providers.github",
+    "allauth.socialaccount.providers.linkedin_oauth2",
+    "allauth.socialaccount.providers.openid",
+    "allauth.socialaccount.providers.saml",
+
     # wsm:
     # "storages",
     "websecmap.dramatiq.CustomDjangoDramatiqConfig.CustomDjangoDramatiqConfig",
@@ -533,6 +540,9 @@ if DEBUG:
     # 25 megs for importing reports from live situations
     DATA_UPLOAD_MAX_MEMORY_SIZE = 26214400
 
+    # when developing, show the sent emails in the console:
+    EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
+
 """
 Django Jet 3:
 From Django 3.0 the default value of the X_FRAME_OPTIONS setting was changed from SAMEORIGIN to DENY. This can
@@ -612,20 +622,12 @@ AUTHENTICATION_BACKENDS = [
     "allauth.account.auth_backends.AuthenticationBackend",
 ]
 
-# https://docs.allauth.org/en/latest/installation/quickstart.html
-# SOCIALACCOUNT_PROVIDERS = {
-#     'google': {
-#         # For each OAuth based provider, either add a ``SocialApp``
-#         # (``socialaccount`` app) containing the required client
-#         # credentials, or list them here:
-#         'APP': {
-#             'client_id': '123',
-#             'secret': '456',
-#             'key': ''
-#         }
-#     }
-# }
 
+# This is required to disable regular signups. The adapter will prevent the signup form to show.
+# instead it will show "Sign Up Closed" with a sorry message.
+ACCOUNT_ADAPTER = "dashboard.allauth.oidcadapter.AccountAdapter"
+
+# https://docs.allauth.org/en/latest/socialaccount/provider_configuration.html
 SOCIALACCOUNT_ADAPTER = "dashboard.allauth.oidcadapter.OIDCGroupRestrictionAdapter"
 SOCIALACCOUNT_PROVIDERS = {
     "openid_connect": {
@@ -640,8 +642,29 @@ SOCIALACCOUNT_PROVIDERS = {
                 },
             },
         ]
-    }
+    },
+    "github": {
+        "VERIFIED_EMAIL": True
+    },
 }
+
+
+ACCOUNT_SIGNUP_FIELDS = ["email*", "password1*", "password2*"]
+
+ACCOUNT_LOGIN_METHODS = {
+    "email",
+}
+ACCOUNT_EMAIL_VERIFICATION = "mandatory"
+ACCOUNT_EMAIL_VERIFICATION_BY_CODE_ENABLED = True
+
+MFA_SUPPORTED_TYPES = [
+    "webauthn",
+    "totp",
+    "recovery_codes",
+]
+MFA_PASSKEY_LOGIN_ENABLED = True
+MFA_PASSKEY_SIGNUP_ENABLED = True
+
 
 # WSM settings
 NETWORK_SUPPORTS_IPV4 = os.environ.get("NETWORK_SUPPORTS_IPV4", True)

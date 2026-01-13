@@ -8,6 +8,9 @@ from ninja import NinjaAPI
 from ninja.renderers import BaseRenderer
 from websecmap.map.views import security_txt
 
+from django.urls import include, path
+from django.views.generic.base import TemplateView
+
 # We have to import the signals somewhere?!
 import dashboard.internet_nl_dashboard.signals  # noqa  # pylint: disable=unused-import
 from dashboard.internet_nl_dashboard.views import (

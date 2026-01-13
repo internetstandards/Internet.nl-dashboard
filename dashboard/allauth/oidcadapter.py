@@ -1,9 +1,19 @@
 import logging
 
+from allauth.account.adapter import DefaultAccountAdapter
 from allauth.socialaccount.adapter import DefaultSocialAccountAdapter
 from django.core.exceptions import PermissionDenied
+from django.urls import reverse
 
 log = logging.getLogger(__package__)
+
+
+# We do not want to support the "signup" flow at all, this is a manual process.
+# This requires some work with the adapter saying no to account signups, but we DO need to support account signups
+# from openid. See this thread why we need this approach. https://codeberg.org/allauth/django-allauth/issues/345
+class AccountAdapter(DefaultAccountAdapter):
+    def is_open_for_signup(self, request):
+        return request.path.rstrip("/") != reverse("account_signup").rstrip("/")
 
 
 class OIDCGroupRestrictionAdapter(DefaultSocialAccountAdapter):
