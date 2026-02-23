@@ -65,8 +65,10 @@ frontend_urls = [
         ),
         name="account_change_password",
     ),
-    path("accounts/", include("allauth.urls")),
-    path("", include("allauth.idp.urls")),
+    path("_allauth/", include("allauth.headless.urls")),
+    # todo: how to get idp urls working. Does this just work inside the API?
+    # path("accounts/", include("allauth.urls")),
+    # path("", include("allauth.idp.urls")),
 ]
 
 urlpatterns = frontend_urls.copy()

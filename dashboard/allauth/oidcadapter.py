@@ -3,7 +3,6 @@ import logging
 from allauth.account.adapter import DefaultAccountAdapter
 from allauth.socialaccount.adapter import DefaultSocialAccountAdapter
 from django.core.exceptions import PermissionDenied
-from django.urls import reverse
 
 log = logging.getLogger(__package__)
 
@@ -13,7 +12,20 @@ log = logging.getLogger(__package__)
 # from openid. See this thread why we need this approach. https://codeberg.org/allauth/django-allauth/issues/345
 class AccountAdapter(DefaultAccountAdapter):
     def is_open_for_signup(self, request):
-        return request.path.rstrip("/") != reverse("account_signup").rstrip("/")
+        match = getattr(request, "resolver_match", None)
+        if not match:
+            return True
+
+        # Close direct local signups, but allow social/OIDC signups.
+        if match.url_name in {"account_signup", "account_signup_by_passkey"}:
+            return False
+        if (
+            match.url_name == "signup"
+            and "headless" in match.namespaces
+            and "account" in match.namespaces
+        ):
+            return False
+        return True
 
 
 class OIDCGroupRestrictionAdapter(DefaultSocialAccountAdapter):

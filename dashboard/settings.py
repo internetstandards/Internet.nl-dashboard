@@ -116,13 +116,12 @@ INSTALLED_APPS = [
     # allauth
     "allauth",
     "allauth.account",
+    "allauth.headless",
     "allauth.usersessions",
     "allauth.mfa",
+    "allauth.mfa.webauthn",
     "allauth.socialaccount",
     "allauth.socialaccount.providers.openid_connect",
-    "allauth.socialaccount.providers.google",
-    "allauth.socialaccount.providers.github",
-    "allauth.socialaccount.providers.linkedin_oauth2",
     "allauth.socialaccount.providers.openid",
     "allauth.socialaccount.providers.saml",
 
@@ -649,23 +648,6 @@ SOCIALACCOUNT_PROVIDERS = {
 }
 
 
-ACCOUNT_SIGNUP_FIELDS = ["email*", "password1*", "password2*"]
-
-ACCOUNT_LOGIN_METHODS = {
-    "email",
-}
-ACCOUNT_EMAIL_VERIFICATION = "mandatory"
-ACCOUNT_EMAIL_VERIFICATION_BY_CODE_ENABLED = True
-
-MFA_SUPPORTED_TYPES = [
-    "webauthn",
-    "totp",
-    "recovery_codes",
-]
-MFA_PASSKEY_LOGIN_ENABLED = True
-MFA_PASSKEY_SIGNUP_ENABLED = True
-
-
 # WSM settings
 NETWORK_SUPPORTS_IPV4 = os.environ.get("NETWORK_SUPPORTS_IPV4", True)
 NETWORK_SUPPORTS_IPV6 = os.environ.get("NETWORK_SUPPORTS_IPV6", False)
@@ -676,3 +658,51 @@ os.environ["DJANGO_RUNSERVER_HIDE_WARNING"] = "true"
 
 # make sure these imports don't get removed by linting tools
 __all__ = ["CONSTANCE_CONFIG", "CONSTANCE_BACKEND", "CONSTANCE_ADDITIONAL_FIELDS", "CONSTANCE_CONFIG_FIELDSETS"]
+
+#######
+# BEGIN allauth
+
+ACCOUNT_SIGNUP_ALLOWED = False
+
+# Registration happens via a dedicated registration form and process. It is not supported
+# in the frontend yet.
+ACCOUNT_ALLOW_REGISTRATION = False
+
+# users have to verify their mail, even though they received a mail on it.
+# This might have to be disabled to make more sense and a more streamlined onboarding.
+ACCOUNT_EMAIL_VERIFICATION = "mandatory"
+
+# Mail address can only be used once. Can this be guessed in the auth attempt?
+ACCOUNT_UNIQUE_EMAIL = True
+
+MFA_SUPPORTED_TYPES = [
+    "webauthn",
+    "totp",
+    "recovery_codes",
+]
+
+ACCOUNT_SIGNUP_FIELDS = ["email*", "username*", "password1*", "password2*"]
+
+MFA_PASSKEY_LOGIN_ENABLED = True
+MFA_PASSKEY_SIGNUP_ENABLED = True
+
+ACCOUNT_LOGIN_METHODS = {
+    "username",
+}
+ACCOUNT_EMAIL_VERIFICATION_BY_CODE_ENABLED = True
+
+# all defaults, but these keys need to be present. Not including the hostname should work.
+HEADLESS_FRONTEND_URLS = {
+    "account_confirm_email": "/account/verify-email/{key}",
+    "account_reset_password": "/account/password/reset",
+    "account_reset_password_from_key": "/account/password/reset/key/{key}",
+    "account_signup": "/account/signup",
+    # Fallback in case the state containing the `next` URL is lost and the handshake
+    # with the third-party provider fails.
+    "socialaccount_login_error": "/account/provider/callback",
+}
+
+HEADLESS_ONLY = True
+
+# END allauth
+#######
