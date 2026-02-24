@@ -15,7 +15,10 @@ class Migration(migrations.Migration):
             model_name="accountinternetnlscan",
             name="urllist",
             field=models.ForeignKey(
-                blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, to="internet_nl_dashboard.UrlList"
+                blank=True,
+                null=True,
+                on_delete=django.db.models.deletion.CASCADE,
+                to="internet_nl_dashboard.UrlList",
             ),
         ),
     ]

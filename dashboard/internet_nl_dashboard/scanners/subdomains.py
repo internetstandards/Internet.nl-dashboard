@@ -54,7 +54,7 @@ def scan_status(account: Account, urllist_id: int):
         "state": scan.state,
         "state_message": scan.state_message,
         "state_changed_on": scan.state_changed_on,
-        "domains_discovered": json.loads(scan.domains_discovered) if scan.domains_discovered else {},
+        "domains_discovered": (json.loads(scan.domains_discovered) if scan.domains_discovered else {}),
     }
 
 

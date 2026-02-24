@@ -16,7 +16,14 @@ from dashboard.internet_nl_dashboard.models import Account, AccountInternetNLSca
 
 
 def setup_test():
-    user = User(**{"first_name": "test", "last_name": "test", "username": "test", "is_active": True})
+    user = User(
+        **{
+            "first_name": "test",
+            "last_name": "test",
+            "username": "test",
+            "is_active": True,
+        }
+    )
     user.save()
 
     account = Account(**{"name": "test"})
@@ -38,7 +45,11 @@ def setup_test():
     urllist.save()
 
     urllistreport = UrlListReport(
-        **{"urllist": urllist, "average_internet_nl_score": 42.42, "at_when": datetime.now(timezone.utc)}
+        **{
+            "urllist": urllist,
+            "average_internet_nl_score": 42.42,
+            "at_when": datetime.now(timezone.utc),
+        }
     )
     urllistreport.save()
 
@@ -178,27 +189,47 @@ def test_urllistreport_get_previous_report(db):
     u.save()
 
     urllistreport1 = UrlListReport(
-        **{"urllist": u, "average_internet_nl_score": 1, "at_when": datetime(2020, 5, 1, tzinfo=timezone.utc)}
+        **{
+            "urllist": u,
+            "average_internet_nl_score": 1,
+            "at_when": datetime(2020, 5, 1, tzinfo=timezone.utc),
+        }
     )
     urllistreport1.save()
 
     urllistreport2 = UrlListReport(
-        **{"urllist": u, "average_internet_nl_score": 1, "at_when": datetime(2020, 5, 2, tzinfo=timezone.utc)}
+        **{
+            "urllist": u,
+            "average_internet_nl_score": 1,
+            "at_when": datetime(2020, 5, 2, tzinfo=timezone.utc),
+        }
     )
     urllistreport2.save()
 
     urllistreport3 = UrlListReport(
-        **{"urllist": u, "average_internet_nl_score": 1, "at_when": datetime(2020, 5, 3, tzinfo=timezone.utc)}
+        **{
+            "urllist": u,
+            "average_internet_nl_score": 1,
+            "at_when": datetime(2020, 5, 3, tzinfo=timezone.utc),
+        }
     )
     urllistreport3.save()
 
     urllistreport4 = UrlListReport(
-        **{"urllist": u, "average_internet_nl_score": 1, "at_when": datetime(2020, 5, 4, tzinfo=timezone.utc)}
+        **{
+            "urllist": u,
+            "average_internet_nl_score": 1,
+            "at_when": datetime(2020, 5, 4, tzinfo=timezone.utc),
+        }
     )
     urllistreport4.save()
 
     urllistreport5 = UrlListReport(
-        **{"urllist": u, "average_internet_nl_score": 1, "at_when": datetime(2020, 5, 5, tzinfo=timezone.utc)}
+        **{
+            "urllist": u,
+            "average_internet_nl_score": 1,
+            "at_when": datetime(2020, 5, 5, tzinfo=timezone.utc),
+        }
     )
     urllistreport5.save()
 

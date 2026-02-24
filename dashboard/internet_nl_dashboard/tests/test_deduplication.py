@@ -39,22 +39,52 @@ def test_per_acount_scanner(db) -> None:
 
     # with duplicate endpoints, where the endpoints themselves are unique for the url.
     ep1, _ = Endpoint.objects.get_or_create(
-        url=url1, protocol="dns_a_aaaa", port=0, ip_version=0, is_dead=False, discovered_on=datetime.now(timezone.utc)
+        url=url1,
+        protocol="dns_a_aaaa",
+        port=0,
+        ip_version=0,
+        is_dead=False,
+        discovered_on=datetime.now(timezone.utc),
     )
     ep2, _ = Endpoint.objects.get_or_create(
-        url=url2, protocol="dns_a_aaaa", port=0, ip_version=0, is_dead=False, discovered_on=datetime.now(timezone.utc)
+        url=url2,
+        protocol="dns_a_aaaa",
+        port=0,
+        ip_version=0,
+        is_dead=False,
+        discovered_on=datetime.now(timezone.utc),
     )
     ep3, _ = Endpoint.objects.get_or_create(
-        url=url3, protocol="dns_a_aaaa", port=0, ip_version=0, is_dead=False, discovered_on=datetime.now(timezone.utc)
+        url=url3,
+        protocol="dns_a_aaaa",
+        port=0,
+        ip_version=0,
+        is_dead=False,
+        discovered_on=datetime.now(timezone.utc),
     )
     ep4, _ = Endpoint.objects.get_or_create(
-        url=url1, protocol="dns_soa", port=0, ip_version=0, is_dead=False, discovered_on=datetime.now(timezone.utc)
+        url=url1,
+        protocol="dns_soa",
+        port=0,
+        ip_version=0,
+        is_dead=False,
+        discovered_on=datetime.now(timezone.utc),
     )
     ep5, _ = Endpoint.objects.get_or_create(
-        url=url2, protocol="dns_soa", port=0, ip_version=0, is_dead=False, discovered_on=datetime.now(timezone.utc)
+        url=url2,
+        protocol="dns_soa",
+        port=0,
+        ip_version=0,
+        is_dead=False,
+        discovered_on=datetime.now(timezone.utc),
     )
     ep6, _ = Endpoint.objects.get_or_create(
-        url=url4, protocol="unaffected", port=0, ip_version=0, is_dead=False, discovered_on=datetime.now(timezone.utc)
+        url=url4,
+        protocol="unaffected",
+        port=0,
+        ip_version=0,
+        is_dead=False,
+        discovered_on=datetime.now(timezone.utc),
     )
 
     # make sure there are five endpoints:
@@ -62,39 +92,69 @@ def test_per_acount_scanner(db) -> None:
 
     # and duplicate scan results
     egs1, _ = EndpointGenericScan.objects.get_or_create(
-        endpoint=ep1, type="testscan 1", rating="1", rating_determined_on=datetime.now(timezone.utc)
+        endpoint=ep1,
+        type="testscan 1",
+        rating="1",
+        rating_determined_on=datetime.now(timezone.utc),
     )
     egs2, _ = EndpointGenericScan.objects.get_or_create(
-        endpoint=ep1, type="testscan 2", rating="2", rating_determined_on=datetime.now(timezone.utc)
+        endpoint=ep1,
+        type="testscan 2",
+        rating="2",
+        rating_determined_on=datetime.now(timezone.utc),
     )
     egs3, _ = EndpointGenericScan.objects.get_or_create(
-        endpoint=ep1, type="testscan 3", rating="3", rating_determined_on=datetime.now(timezone.utc)
+        endpoint=ep1,
+        type="testscan 3",
+        rating="3",
+        rating_determined_on=datetime.now(timezone.utc),
     )
 
     egs4, _ = EndpointGenericScan.objects.get_or_create(
-        endpoint=ep2, type="testscan 4", rating="4", rating_determined_on=datetime.now(timezone.utc)
+        endpoint=ep2,
+        type="testscan 4",
+        rating="4",
+        rating_determined_on=datetime.now(timezone.utc),
     )
     egs5, _ = EndpointGenericScan.objects.get_or_create(
-        endpoint=ep2, type="testscan 5", rating="5", rating_determined_on=datetime.now(timezone.utc)
+        endpoint=ep2,
+        type="testscan 5",
+        rating="5",
+        rating_determined_on=datetime.now(timezone.utc),
     )
 
     egs6, _ = EndpointGenericScan.objects.get_or_create(
-        endpoint=ep3, type="testscan 6", rating="6", rating_determined_on=datetime.now(timezone.utc)
+        endpoint=ep3,
+        type="testscan 6",
+        rating="6",
+        rating_determined_on=datetime.now(timezone.utc),
     )
 
     # some with the same data:
     egs7, _ = EndpointGenericScan.objects.get_or_create(
-        endpoint=ep4, type="testscan 1", rating="1", rating_determined_on=datetime.now(timezone.utc)
+        endpoint=ep4,
+        type="testscan 1",
+        rating="1",
+        rating_determined_on=datetime.now(timezone.utc),
     )
     egs8, _ = EndpointGenericScan.objects.get_or_create(
-        endpoint=ep4, type="testscan 2", rating="2", rating_determined_on=datetime.now(timezone.utc)
+        endpoint=ep4,
+        type="testscan 2",
+        rating="2",
+        rating_determined_on=datetime.now(timezone.utc),
     )
     egs9, _ = EndpointGenericScan.objects.get_or_create(
-        endpoint=ep4, type="testscan 3", rating="3", rating_determined_on=datetime.now(timezone.utc)
+        endpoint=ep4,
+        type="testscan 3",
+        rating="3",
+        rating_determined_on=datetime.now(timezone.utc),
     )
 
     egs10, _ = EndpointGenericScan.objects.get_or_create(
-        endpoint=ep6, type="unaffected", rating="3", rating_determined_on=datetime.now(timezone.utc)
+        endpoint=ep6,
+        type="unaffected",
+        rating="3",
+        rating_determined_on=datetime.now(timezone.utc),
     )
 
     assert EndpointGenericScan.objects.all().count() == 10

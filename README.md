@@ -367,6 +367,7 @@ OIDC_CLIENT_SECRET=<client_secret>
 OIDC_SERVER_URL=<oidc_server_url>
 OIDC_PROVIDER_ID=my-oidc
 OIDC_PROVIDER_NAME=OIDC
+OIDC_ALLOWED_GROUPS=/mygroup,/mygroup/subgroup
 ```
 
 #### build "frontend"

@@ -14,7 +14,15 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name="SubdomainDiscoveryScan",
             fields=[
-                ("id", models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
+                (
+                    "id",
+                    models.AutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
                 (
                     "state",
                     models.CharField(
@@ -28,7 +36,10 @@ class Migration(migrations.Migration):
                 ("domains_discovered", models.TextField()),
                 (
                     "urllist",
-                    models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to="internet_nl_dashboard.urllist"),
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        to="internet_nl_dashboard.urllist",
+                    ),
                 ),
             ],
         ),

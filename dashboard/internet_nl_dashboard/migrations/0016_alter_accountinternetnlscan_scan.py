@@ -6,7 +6,10 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ("internet_nl_dashboard", "0015_rename_urllistreport_at_when_id_internet_nl_at_when_f55fb9_idx"),
+        (
+            "internet_nl_dashboard",
+            "0015_rename_urllistreport_at_when_id_internet_nl_at_when_f55fb9_idx",
+        ),
     ]
 
     operations = []

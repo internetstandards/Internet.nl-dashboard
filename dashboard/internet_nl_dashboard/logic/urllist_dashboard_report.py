@@ -168,7 +168,10 @@ def rate_urllists_now(urllists: List[UrlList], prevent_duplicates: bool = True, 
 
 @app.task(queue="storage")
 def rate_urllist_on_moment(
-    urllist: UrlList, when: Optional[datetime] = None, prevent_duplicates: bool = True, scan_type: str = "web"
+    urllist: UrlList,
+    when: Optional[datetime] = None,
+    prevent_duplicates: bool = True,
+    scan_type: str = "web",
 ) -> int:
     """
     :param urllist:
@@ -203,11 +206,18 @@ def rate_urllist_on_moment(
     if prevent_duplicates:
         if not DeepDiff(last.calculation, calculation, ignore_order=True, report_repetition=True):
             log.info(
-                "The report for %s on %s is the same as the report from %s. Not saving.", urllist, when, last.at_when
+                "The report for %s on %s is the same as the report from %s. Not saving.",
+                urllist,
+                when,
+                last.at_when,
             )
             return int(last.id)
 
-    log.info("The calculation for %s on %s has changed, so we're saving this rating.", urllist, when)
+    log.info(
+        "The calculation for %s on %s has changed, so we're saving this rating.",
+        urllist,
+        when,
+    )
 
     # remove urls and name from scores object, so it can be used as initialization parameters (saves lines)
     # this is by reference, meaning that the calculation will be affected if we don't work on a clone.
@@ -242,7 +252,11 @@ def create_calculation_on_urls(urls: List[Url], when: datetime, scan_type: str) 
         # Some endpoint types use the same ratings, such as dns_soa and dns_mx... This means that not
         # all endpoints will be removed for internet.nl. We need the following endpoints per scan:
         # -> note: urllist stores web/mail, they mean: web and mail_dashboard.
-        endpoint_types_per_scan = {"web": "dns_a_aaaa", "mail": "dns_soa", "mail_dashboard": "dns_soa"}
+        endpoint_types_per_scan = {
+            "web": "dns_a_aaaa",
+            "mail": "dns_soa",
+            "mail_dashboard": "dns_soa",
+        }
         calculation = only_include_endpoint_protocols(calculation, [endpoint_types_per_scan[scan_type]])
 
         # This already overrides endpoint statistics, use the calculation you get from this.
@@ -274,7 +288,10 @@ def sum_internet_nl_scores_over_rating(url_ratings: Dict[str, Any]) -> float:
     score = 0
     number_of_scores = 0
 
-    score_fields = ["internet_nl_mail_dashboard_overall_score", "internet_nl_web_overall_score"]
+    score_fields = [
+        "internet_nl_mail_dashboard_overall_score",
+        "internet_nl_web_overall_score",
+    ]
 
     for url in url_ratings.get("urls", []):
         for endpoint in url.get("endpoints", []):

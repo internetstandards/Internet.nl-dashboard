@@ -55,7 +55,10 @@ class Migration(migrations.Migration):
         ("internet_nl_dashboard", "0041_auto_20200513_1351"),
         ("internet_nl_dashboard", "0042_auto_20200530_1735"),
         ("internet_nl_dashboard", "0043_auto_20201006_1309"),
-        ("internet_nl_dashboard", "0044_dashboarduser_mail_after_mail_unsubscribe_code"),
+        (
+            "internet_nl_dashboard",
+            "0044_dashboarduser_mail_after_mail_unsubscribe_code",
+        ),
         ("internet_nl_dashboard", "0045_auto_20201027_1039"),
     ]
 
@@ -72,15 +75,32 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name="Account",
             fields=[
-                ("id", models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
+                (
+                    "id",
+                    models.AutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
                 ("name", models.CharField(blank=True, max_length=120, null=True)),
                 (
                     "internet_nl_api_username",
-                    models.CharField(blank=True, help_text="Internet.nl API Username", max_length=255, null=True),
+                    models.CharField(
+                        blank=True,
+                        help_text="Internet.nl API Username",
+                        max_length=255,
+                        null=True,
+                    ),
                 ),
                 (
                     "internet_nl_api_password",
-                    models.TextField(blank=True, help_text="New values will automatically be encrypted.", null=True),
+                    models.TextField(
+                        blank=True,
+                        help_text="New values will automatically be encrypted.",
+                        null=True,
+                    ),
                 ),
                 ("enable_scans", models.BooleanField(default=True)),
                 ("can_connect_to_internet_nl_api", models.BooleanField(default=False)),
@@ -97,17 +117,34 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name="DashboardUser",
             fields=[
-                ("id", models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
+                (
+                    "id",
+                    models.AutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
                 ("notes", models.TextField(blank=True, max_length=800, null=True)),
                 (
                     "account",
-                    models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to="internet_nl_dashboard.account"),
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        to="internet_nl_dashboard.account",
+                    ),
                 ),
                 (
                     "user",
-                    models.OneToOneField(on_delete=django.db.models.deletion.CASCADE, to=settings.AUTH_USER_MODEL),
+                    models.OneToOneField(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        to=settings.AUTH_USER_MODEL,
+                    ),
                 ),
-                ("mail_preferred_language", django_countries.fields.CountryField(default="EN", max_length=2)),
+                (
+                    "mail_preferred_language",
+                    django_countries.fields.CountryField(default="EN", max_length=2),
+                ),
                 (
                     "mail_preferred_mail_address",
                     models.EmailField(
@@ -138,7 +175,15 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name="UploadLog",
             fields=[
-                ("id", models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
+                (
+                    "id",
+                    models.AutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
                 (
                     "original_filename",
                     models.CharField(
@@ -198,11 +243,20 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name="UrlList",
             fields=[
-                ("id", models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
+                (
+                    "id",
+                    models.AutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
                 (
                     "name",
                     models.CharField(
-                        help_text="Name of the UrlList, for example name of the organization in it.", max_length=120
+                        help_text="Name of the UrlList, for example name of the organization in it.",
+                        max_length=120,
                     ),
                 ),
                 (
@@ -215,12 +269,20 @@ class Migration(migrations.Migration):
                 ),
                 (
                     "urls",
-                    models.ManyToManyField(blank=True, related_name="urls_in_dashboard_list", to="organizations.Url"),
+                    models.ManyToManyField(
+                        blank=True,
+                        related_name="urls_in_dashboard_list",
+                        to="organizations.Url",
+                    ),
                 ),
                 ("enable_scans", models.BooleanField(default=True)),
                 (
                     "scan_type",
-                    models.CharField(choices=[("web", "web"), ("mail", "mail")], default="web", max_length=4),
+                    models.CharField(
+                        choices=[("web", "web"), ("mail", "mail")],
+                        default="web",
+                        max_length=4,
+                    ),
                 ),
                 (
                     "automated_scan_frequency",
@@ -228,8 +290,14 @@ class Migration(migrations.Migration):
                         choices=[
                             ("disabled", "disabled"),
                             ("every half year", "every half year"),
-                            ("at the start of every quarter", "at the start of every quarter"),
-                            ("every 1st day of the month", "every 1st day of the month"),
+                            (
+                                "at the start of every quarter",
+                                "at the start of every quarter",
+                            ),
+                            (
+                                "every 1st day of the month",
+                                "every 1st day of the month",
+                            ),
                             ("twice per month", "twice per month"),
                         ],
                         default="disabled",
@@ -252,50 +320,98 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name="UrlListReport",
             fields=[
-                ("id", models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
+                (
+                    "id",
+                    models.AutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
                 ("total_issues", models.IntegerField(default=0)),
                 ("high", models.IntegerField(default=0)),
                 ("medium", models.IntegerField(default=0)),
                 ("low", models.IntegerField(default=0)),
                 ("ok", models.IntegerField(default=0)),
-                ("total_urls", models.IntegerField(default=0, help_text="Amount of urls for this organization.")),
+                (
+                    "total_urls",
+                    models.IntegerField(default=0, help_text="Amount of urls for this organization."),
+                ),
                 (
                     "high_urls",
-                    models.IntegerField(default=0, help_text="Amount of urls with (1 or more) high risk issues."),
+                    models.IntegerField(
+                        default=0,
+                        help_text="Amount of urls with (1 or more) high risk issues.",
+                    ),
                 ),
                 (
                     "medium_urls",
-                    models.IntegerField(default=0, help_text="Amount of urls with (1 or more) medium risk issues."),
+                    models.IntegerField(
+                        default=0,
+                        help_text="Amount of urls with (1 or more) medium risk issues.",
+                    ),
                 ),
                 (
                     "low_urls",
-                    models.IntegerField(default=0, help_text="Amount of urls with (1 or more) low risk issues."),
+                    models.IntegerField(
+                        default=0,
+                        help_text="Amount of urls with (1 or more) low risk issues.",
+                    ),
                 ),
-                ("ok_urls", models.IntegerField(default=0, help_text="Amount of urls with zero issues.")),
-                ("total_endpoints", models.IntegerField(default=0, help_text="Amount of endpoints for this url.")),
+                (
+                    "ok_urls",
+                    models.IntegerField(default=0, help_text="Amount of urls with zero issues."),
+                ),
+                (
+                    "total_endpoints",
+                    models.IntegerField(default=0, help_text="Amount of endpoints for this url."),
+                ),
                 (
                     "high_endpoints",
-                    models.IntegerField(default=0, help_text="Amount of endpoints with (1 or more) high risk issues."),
+                    models.IntegerField(
+                        default=0,
+                        help_text="Amount of endpoints with (1 or more) high risk issues.",
+                    ),
                 ),
                 (
                     "medium_endpoints",
                     models.IntegerField(
-                        default=0, help_text="Amount of endpoints with (1 or more) medium risk issues."
+                        default=0,
+                        help_text="Amount of endpoints with (1 or more) medium risk issues.",
                     ),
                 ),
                 (
                     "low_endpoints",
-                    models.IntegerField(default=0, help_text="Amount of endpoints with (1 or more) low risk issues."),
+                    models.IntegerField(
+                        default=0,
+                        help_text="Amount of endpoints with (1 or more) low risk issues.",
+                    ),
                 ),
-                ("ok_endpoints", models.IntegerField(default=0, help_text="Amount of endpoints with zero issues.")),
-                ("total_url_issues", models.IntegerField(default=0, help_text="Total amount of issues on url level.")),
-                ("url_issues_high", models.IntegerField(default=0, help_text="Number of high issues on url level.")),
+                (
+                    "ok_endpoints",
+                    models.IntegerField(default=0, help_text="Amount of endpoints with zero issues."),
+                ),
+                (
+                    "total_url_issues",
+                    models.IntegerField(default=0, help_text="Total amount of issues on url level."),
+                ),
+                (
+                    "url_issues_high",
+                    models.IntegerField(default=0, help_text="Number of high issues on url level."),
+                ),
                 (
                     "url_issues_medium",
                     models.IntegerField(default=0, help_text="Number of medium issues on url level."),
                 ),
-                ("url_issues_low", models.IntegerField(default=0, help_text="Number of low issues on url level.")),
-                ("url_ok", models.IntegerField(default=0, help_text="Zero issues on these urls.")),
+                (
+                    "url_issues_low",
+                    models.IntegerField(default=0, help_text="Number of low issues on url level."),
+                ),
+                (
+                    "url_ok",
+                    models.IntegerField(default=0, help_text="Zero issues on these urls."),
+                ),
                 (
                     "total_endpoint_issues",
                     models.IntegerField(
@@ -305,37 +421,59 @@ class Migration(migrations.Migration):
                 ),
                 (
                     "endpoint_issues_high",
-                    models.IntegerField(default=0, help_text="Total amount of high risk issues on this endpoint."),
+                    models.IntegerField(
+                        default=0,
+                        help_text="Total amount of high risk issues on this endpoint.",
+                    ),
                 ),
                 (
                     "endpoint_issues_medium",
-                    models.IntegerField(default=0, help_text="Total amount of medium risk issues on this endpoint."),
+                    models.IntegerField(
+                        default=0,
+                        help_text="Total amount of medium risk issues on this endpoint.",
+                    ),
                 ),
                 (
                     "endpoint_issues_low",
-                    models.IntegerField(default=0, help_text="Total amount of low risk issues on this endpoint"),
+                    models.IntegerField(
+                        default=0,
+                        help_text="Total amount of low risk issues on this endpoint",
+                    ),
                 ),
                 (
                     "endpoint_ok",
                     models.IntegerField(
-                        default=0, help_text="Amount of measurements that resulted in an OK score on this endpoint."
+                        default=0,
+                        help_text="Amount of measurements that resulted in an OK score on this endpoint.",
                     ),
                 ),
                 (
                     "explained_total_issues",
-                    models.IntegerField(default=0, help_text="The summed number of all vulnerabilities and failures."),
+                    models.IntegerField(
+                        default=0,
+                        help_text="The summed number of all vulnerabilities and failures.",
+                    ),
                 ),
                 (
                     "explained_high",
-                    models.IntegerField(default=0, help_text="The number of high risk vulnerabilities and failures."),
+                    models.IntegerField(
+                        default=0,
+                        help_text="The number of high risk vulnerabilities and failures.",
+                    ),
                 ),
                 (
                     "explained_medium",
-                    models.IntegerField(default=0, help_text="The number of medium risk vulnerabilities and failures."),
+                    models.IntegerField(
+                        default=0,
+                        help_text="The number of medium risk vulnerabilities and failures.",
+                    ),
                 ),
                 (
                     "explained_low",
-                    models.IntegerField(default=0, help_text="The number of low risk vulnerabilities and failures."),
+                    models.IntegerField(
+                        default=0,
+                        help_text="The number of low risk vulnerabilities and failures.",
+                    ),
                 ),
                 (
                     "explained_total_urls",
@@ -343,15 +481,24 @@ class Migration(migrations.Migration):
                 ),
                 (
                     "explained_high_urls",
-                    models.IntegerField(default=0, help_text="Amount of urls with (1 or more) high risk issues."),
+                    models.IntegerField(
+                        default=0,
+                        help_text="Amount of urls with (1 or more) high risk issues.",
+                    ),
                 ),
                 (
                     "explained_medium_urls",
-                    models.IntegerField(default=0, help_text="Amount of urls with (1 or more) medium risk issues."),
+                    models.IntegerField(
+                        default=0,
+                        help_text="Amount of urls with (1 or more) medium risk issues.",
+                    ),
                 ),
                 (
                     "explained_low_urls",
-                    models.IntegerField(default=0, help_text="Amount of urls with (1 or more) low risk issues."),
+                    models.IntegerField(
+                        default=0,
+                        help_text="Amount of urls with (1 or more) low risk issues.",
+                    ),
                 ),
                 (
                     "explained_total_endpoints",
@@ -359,17 +506,24 @@ class Migration(migrations.Migration):
                 ),
                 (
                     "explained_high_endpoints",
-                    models.IntegerField(default=0, help_text="Amount of endpoints with (1 or more) high risk issues."),
+                    models.IntegerField(
+                        default=0,
+                        help_text="Amount of endpoints with (1 or more) high risk issues.",
+                    ),
                 ),
                 (
                     "explained_medium_endpoints",
                     models.IntegerField(
-                        default=0, help_text="Amount of endpoints with (1 or more) medium risk issues."
+                        default=0,
+                        help_text="Amount of endpoints with (1 or more) medium risk issues.",
                     ),
                 ),
                 (
                     "explained_low_endpoints",
-                    models.IntegerField(default=0, help_text="Amount of endpoints with (1 or more) low risk issues."),
+                    models.IntegerField(
+                        default=0,
+                        help_text="Amount of endpoints with (1 or more) low risk issues.",
+                    ),
                 ),
                 (
                     "explained_total_url_issues",
@@ -412,29 +566,40 @@ class Migration(migrations.Migration):
                 ),
                 (
                     "urllist",
-                    models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to="internet_nl_dashboard.urllist"),
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        to="internet_nl_dashboard.urllist",
+                    ),
                 ),
                 (
                     "endpoint_not_applicable",
                     models.IntegerField(
-                        default=0, help_text="Amount of things that are not applicable on this endpoint."
+                        default=0,
+                        help_text="Amount of things that are not applicable on this endpoint.",
                     ),
                 ),
                 (
                     "endpoint_not_testable",
                     models.IntegerField(
-                        default=0, help_text="Amount of things that could not be tested on this endpoint."
+                        default=0,
+                        help_text="Amount of things that could not be tested on this endpoint.",
                     ),
                 ),
                 ("not_applicable", models.IntegerField(default=0)),
                 ("not_testable", models.IntegerField(default=0)),
                 (
                     "url_not_applicable",
-                    models.IntegerField(default=0, help_text="Amount of things that are not applicable on this url."),
+                    models.IntegerField(
+                        default=0,
+                        help_text="Amount of things that are not applicable on this url.",
+                    ),
                 ),
                 (
                     "url_not_testable",
-                    models.IntegerField(default=0, help_text="Amount of things that could not be tested on this url."),
+                    models.IntegerField(
+                        default=0,
+                        help_text="Amount of things that could not be tested on this url.",
+                    ),
                 ),
                 (
                     "average_internet_nl_score",
@@ -445,7 +610,10 @@ class Migration(migrations.Migration):
                 ),
                 (
                     "endpoint_error_in_test",
-                    models.IntegerField(default=0, help_text="Amount of errors in tests performed on this endpoint."),
+                    models.IntegerField(
+                        default=0,
+                        help_text="Amount of errors in tests performed on this endpoint.",
+                    ),
                 ),
                 ("error_in_test", models.IntegerField(default=0)),
                 (
@@ -461,17 +629,39 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name="AccountInternetNLScan",
             fields=[
-                ("id", models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
+                (
+                    "id",
+                    models.AutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
                 (
                     "account",
-                    models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to="internet_nl_dashboard.account"),
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        to="internet_nl_dashboard.account",
+                    ),
                 ),
                 ("scan", models.IntegerField(db_column="scan_id", null=True)),
                 (
                     "urllist",
-                    models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to="internet_nl_dashboard.urllist"),
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        to="internet_nl_dashboard.urllist",
+                    ),
                 ),
-                ("state", models.CharField(blank=True, default="", help_text="The current state", max_length=255)),
+                (
+                    "state",
+                    models.CharField(
+                        blank=True,
+                        default="",
+                        help_text="The current state",
+                        max_length=255,
+                    ),
+                ),
                 ("state_changed_on", models.DateTimeField(blank=True, null=True)),
                 (
                     "report",
@@ -490,7 +680,15 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name="AccountInternetNLScanLog",
             fields=[
-                ("id", models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
+                (
+                    "id",
+                    models.AutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
                 (
                     "state",
                     models.CharField(
@@ -504,7 +702,8 @@ class Migration(migrations.Migration):
                 (
                     "scan",
                     models.ForeignKey(
-                        on_delete=django.db.models.deletion.CASCADE, to="internet_nl_dashboard.accountinternetnlscan"
+                        on_delete=django.db.models.deletion.CASCADE,
+                        to="internet_nl_dashboard.accountinternetnlscan",
                     ),
                 ),
             ],

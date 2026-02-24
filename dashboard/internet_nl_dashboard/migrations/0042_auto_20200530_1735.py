@@ -13,7 +13,10 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name="urllistreport",
             name="endpoint_error_in_test",
-            field=models.IntegerField(default=0, help_text="Amount of errors in tests performed on this endpoint."),
+            field=models.IntegerField(
+                default=0,
+                help_text="Amount of errors in tests performed on this endpoint.",
+            ),
         ),
         migrations.AddField(
             model_name="urllistreport",

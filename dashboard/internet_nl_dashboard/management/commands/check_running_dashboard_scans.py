@@ -12,7 +12,11 @@ class Command(TaskCommand):
 
     def add_arguments(self, parser):
         # https://stackoverflow.com/questions/8259001/python-argparse-command-line-flags-without-arguments
-        parser.add_argument("--reimport", action="store_true", help="Execute the task directly or on remote workers.")
+        parser.add_argument(
+            "--reimport",
+            action="store_true",
+            help="Execute the task directly or on remote workers.",
+        )
 
         return super().add_arguments(parser)
 

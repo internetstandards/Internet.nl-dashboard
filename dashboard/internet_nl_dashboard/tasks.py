@@ -73,7 +73,8 @@ def autoshare_report_to_front_page():
 
     # Do not publish historic reports, things can actually stay offline if there was an error with a report
     UrlListReport.objects.filter(
-        urllist__id__in=ints, at_when__gte=datetime.now(timezone.utc) - timedelta(hours=24)
+        urllist__id__in=ints,
+        at_when__gte=datetime.now(timezone.utc) - timedelta(hours=24),
     ).update(
         is_publicly_shared=True,
         is_shared_on_homepage=True,

@@ -50,7 +50,10 @@ def get_report_differences_compared_to_current_list_operation(request, report_id
     return get_report_differences_compared_to_current_list(get_account(request), report_id)
 
 
-@router.get("/{report_id}/improvements-and-regressions", response={200: ImprovementRegressionSummarySchema})
+@router.get(
+    "/{report_id}/improvements-and-regressions",
+    response={200: ImprovementRegressionSummarySchema},
+)
 def improvement_regressions_compared_to_previous_report_operation(request, report_id: int):
     account = get_account(request)
     report = UrlListReport.objects.all().filter(id=report_id, urllist__account=account).first()
@@ -106,7 +109,8 @@ def get_ad_hoc_tagged_report_operation(request, report_id: int, data: SaveAdHocT
     tags, at_when = parse_ad_hoc_input(data)
 
     return HttpResponse(  # pylint: disable=http-response-with-content-type-json
-        ad_hoc_tagged_report(get_account(request), report_id, tags, at_when), content_type="application/json"
+        ad_hoc_tagged_report(get_account(request), report_id, tags, at_when),
+        content_type="application/json",
     )
 
 

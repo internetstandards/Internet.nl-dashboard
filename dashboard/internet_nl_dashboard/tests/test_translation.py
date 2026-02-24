@@ -64,15 +64,24 @@ def test_convert_vue_i18n_format(db, tmpdir) -> None:
 def test_field_translation():
     # Load dutch translation for a field
     translation_dictionary = get_po_as_dictionary_v2("nl")
-    translated = translate_field("internet_nl_web_https_tls_version", translation_dictionary=translation_dictionary)
+    translated = translate_field(
+        "internet_nl_web_https_tls_version",
+        translation_dictionary=translation_dictionary,
+    )
     assert translated == "TLS-versie"
 
     # Now verify that we can live switch to an english translation
     translation_dictionary = get_po_as_dictionary_v2("en")
-    translated = translate_field("internet_nl_web_https_tls_version", translation_dictionary=translation_dictionary)
+    translated = translate_field(
+        "internet_nl_web_https_tls_version",
+        translation_dictionary=translation_dictionary,
+    )
     assert translated == "TLS version"
 
     # And switch back to dutch again
     translation_dictionary = get_po_as_dictionary_v2("nl")
-    translated = translate_field("internet_nl_web_https_tls_version", translation_dictionary=translation_dictionary)
+    translated = translate_field(
+        "internet_nl_web_https_tls_version",
+        translation_dictionary=translation_dictionary,
+    )
     assert translated == "TLS-versie"

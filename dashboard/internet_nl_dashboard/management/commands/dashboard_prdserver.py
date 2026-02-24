@@ -28,10 +28,17 @@ class Command(RunserverCommand):
 
     def add_arguments(self, parser):
         parser.add_argument(
-            "-m", "--migrate", action="store_true", help="Before starting server run Django migrations."
+            "-m",
+            "--migrate",
+            action="store_true",
+            help="Before starting server run Django migrations.",
         )
         parser.add_argument(
-            "-l", "--loaddata", default=None, type=str, help="Comma separated list of data fixtures to load."
+            "-l",
+            "--loaddata",
+            default=None,
+            type=str,
+            help="Comma separated list of data fixtures to load.",
         )
 
         super().add_arguments(parser)

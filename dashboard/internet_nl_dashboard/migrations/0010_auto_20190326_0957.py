@@ -14,7 +14,10 @@ class Migration(migrations.Migration):
             model_name="account",
             name="internet_nl_api_password",
             field=models.BinaryField(
-                blank=True, help_text="New values will automatically be encrypted.", max_length=255, null=True
+                blank=True,
+                help_text="New values will automatically be encrypted.",
+                max_length=255,
+                null=True,
             ),
         ),
     ]

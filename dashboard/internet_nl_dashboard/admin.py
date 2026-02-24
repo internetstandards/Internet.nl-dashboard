@@ -207,7 +207,11 @@ class UserAdmin(BaseUserAdmin, ImportExportModelAdmin):
 
     list_filter = ["is_active", "is_staff", "is_superuser"][::-1]
 
-    search_fields = ["username", "dashboarduser__account__name", "dashboarduser__account__internet_nl_api_username"]
+    search_fields = [
+        "username",
+        "dashboarduser__account__name",
+        "dashboarduser__account__internet_nl_api_username",
+    ]
 
     @staticmethod
     def in_account(obj):
@@ -250,7 +254,12 @@ admin.site.register([Config], ConfigAdmin)
 class AccountAdmin(ImportExportModelAdmin, admin.ModelAdmin):
     form = CustomAccountModelForm
 
-    list_display = ("name", "internet_nl_api_username", "can_connect_to_internet_nl_api", "no_of_users")
+    list_display = (
+        "name",
+        "internet_nl_api_username",
+        "can_connect_to_internet_nl_api",
+        "no_of_users",
+    )
     search_fields = ("name", "can_connect_to_internet_nl_api")
     # list_filter = [][::-1]
     fields = ("name", "report_settings", "internet_nl_api_username", "new_password")
@@ -349,7 +358,12 @@ class UrlListAdmin(ImportExportModelAdmin, admin.ModelAdmin):
     def no_of_endpoints(obj):
         return (
             Endpoint.objects.all()
-            .filter(url__urls_in_dashboard_list_2=obj, is_dead=False, url__is_dead=False, url__not_resolvable=False)
+            .filter(
+                url__urls_in_dashboard_list_2=obj,
+                is_dead=False,
+                url__is_dead=False,
+                url__not_resolvable=False,
+            )
             .count()
         )
 
@@ -401,7 +415,15 @@ class AccountInternetNLScanInline(nested_admin.NestedTabularInline):  # pylint: 
     can_delete = False
     inlines = [AccountInternetNLScanLogInl]
 
-    readonly_fields = ("account", "urllist", "report", "state", "started_on", "finished_on", "state_changed_on")
+    readonly_fields = (
+        "account",
+        "urllist",
+        "report",
+        "state",
+        "started_on",
+        "finished_on",
+        "state_changed_on",
+    )
 
     def has_add_permission(self, *args, **kwargs):
         return False
@@ -417,7 +439,11 @@ class AccountInternetNLScanAdmin(ImportExportModelAdmin, admin.ModelAdmin):
         qs = qs.select_related("account", "urllist", "scan")
 
         # this column prevents loading of long lists
-        qs = qs.defer("scan__subject_urls", "scan__retrieved_scan_report", "scan__retrieved_scan_report_technical")
+        qs = qs.defer(
+            "scan__subject_urls",
+            "scan__retrieved_scan_report",
+            "scan__retrieved_scan_report_technical",
+        )
 
         return qs
 
@@ -439,7 +465,15 @@ class AccountInternetNLScanAdmin(ImportExportModelAdmin, admin.ModelAdmin):
     list_filter = ["account", "urllist", "state", "started_on", "finished_on"][::-1]
     search_fields = ("urllist__name", "account__name")
 
-    fields = ("state", "state_changed_on", "account", "scan", "urllist", "started_on", "finished_on")
+    fields = (
+        "state",
+        "state_changed_on",
+        "account",
+        "scan",
+        "urllist",
+        "started_on",
+        "finished_on",
+    )
 
     readonly_fields = ("account", "scan", "urllist")
 
@@ -569,10 +603,23 @@ class AccountInternetNLScanLogAdmin(ImportExportModelAdmin, admin.ModelAdmin):
     def get_queryset(self, request):
         qs = super().get_queryset(request)
         return qs.select_related("scan", "scan__urllist", "scan__account").only(
-            "id", "state", "at_when", "scan", "scan__id", "scan__urllist__name", "scan__account__name"
+            "id",
+            "state",
+            "at_when",
+            "scan",
+            "scan__id",
+            "scan__urllist__name",
+            "scan__account__name",
         )
 
-    list_display = ("id", "scan__id", "scan__urllist__name", "scan__account__name", "state", "at_when")
+    list_display = (
+        "id",
+        "scan__id",
+        "scan__urllist__name",
+        "scan__account__name",
+        "state",
+        "at_when",
+    )
     list_filter = ["scan", "state", "at_when", "scan__account__name"][::-1]
     search_fields = ("scan__urllist__name", "scan__account__name")
     fields = list_display
@@ -580,17 +627,39 @@ class AccountInternetNLScanLogAdmin(ImportExportModelAdmin, admin.ModelAdmin):
 
 @admin.register(UploadLog)
 class UploadLogAdmin(ImportExportModelAdmin, admin.ModelAdmin):
-    list_display = ("original_filename", "internal_filename", "status", "message", "user", "upload_date", "filesize")
+    list_display = (
+        "original_filename",
+        "internal_filename",
+        "status",
+        "message",
+        "user",
+        "upload_date",
+        "filesize",
+    )
     search_fields = ("internal_filename", "orginal_filename", "status")
     list_filter = ["message", "upload_date", "user"][::-1]
 
-    fields = ("original_filename", "internal_filename", "status", "message", "user", "upload_date", "filesize")
+    fields = (
+        "original_filename",
+        "internal_filename",
+        "status",
+        "message",
+        "user",
+        "upload_date",
+        "filesize",
+    )
 
 
 @admin.register(models.SubdomainDiscoveryScan)
 class SubdomainDiscoveryScanAdmin(ImportExportModelAdmin, admin.ModelAdmin):
     list_display = ("urllist", "state", "state_changed_on", "state_message")
-    fields = ("urllist", "state", "state_changed_on", "state_message", "domains_discovered")
+    fields = (
+        "urllist",
+        "state",
+        "state_changed_on",
+        "state_message",
+        "domains_discovered",
+    )
     list_filter = ("state", "state_changed_on", "state_message")
 
 
@@ -599,7 +668,10 @@ class UrlListReportAdmin(ImportExportModelAdmin, admin.ModelAdmin):
 
     @staticmethod
     def inspect_list(obj):
-        return format_html('<a href="../../internet_nl_dashboard/urllist/{id}/change">inspect</a>', id=format(obj.id))
+        return format_html(
+            '<a href="../../internet_nl_dashboard/urllist/{id}/change">inspect</a>',
+            id=format(obj.id),
+        )
 
     # do NOT load the calculation field, as that will be slow.
     # https://stackoverflow.com/questions/34774028/how-to-ignore-loading-huge-fields-in-django-admin-list-display

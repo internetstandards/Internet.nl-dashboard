@@ -14,6 +14,9 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name="urllist",
             name="urls",
-            field=models.ManyToManyField(through="internet_nl_dashboard.TaggedUrlInUrllist", to="organizations.Url"),
+            field=models.ManyToManyField(
+                through="internet_nl_dashboard.TaggedUrlInUrllist",
+                to="organizations.Url",
+            ),
         ),
     ]

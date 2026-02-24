@@ -65,7 +65,11 @@ def filter_comparison_report(comparison_report: Dict[str, Any], impact: str = "i
 
     # sort the data on domain and then subdomain. Make sure example.com and example.nl are separate and that
     # the subdomains of example.com are near example.com
-    data = sorted(data, key=lambda k: (k["computed_domain_and_suffix"], k["computed_subdomain"]), reverse=False)
+    data = sorted(
+        data,
+        key=lambda k: (k["computed_domain_and_suffix"], k["computed_subdomain"]),
+        reverse=False,
+    )
 
     return data
 
@@ -92,7 +96,11 @@ def render_comparison_view(data: List[Dict[str, Any]], impact: str = "improvemen
     if not data:
         return ""
 
-    metrics_keys = {"regression": "regressed_metrics", "improvement": "improved_metrics", "neutral": "neutral_metrics"}
+    metrics_keys = {
+        "regression": "regressed_metrics",
+        "improvement": "improved_metrics",
+        "neutral": "neutral_metrics",
+    }
 
     # make sure the translations are correct for the fields:
     translation_dictionary = get_po_as_dictionary_v2(language)

@@ -173,11 +173,18 @@ def suggest_subdomains(domain: str, period: int = 370):
     try:
         response = requests.get(
             config.SUBDOMAIN_SUGGESTION_SERVER_ADDRESS,
-            params={"domain": extract.domain, "suffix": extract.suffix, "period": period},
+            params={
+                "domain": extract.domain,
+                "suffix": extract.suffix,
+                "period": period,
+            },
             timeout=10,
         )
     except Exception:  # pylint: disable=broad-exception-caught
-        log.exception("Failed to retrieve subdomain suggestions from  %s.", config.SUBDOMAIN_SUGGESTION_SERVER_ADDRESS)
+        log.exception(
+            "Failed to retrieve subdomain suggestions from  %s.",
+            config.SUBDOMAIN_SUGGESTION_SERVER_ADDRESS,
+        )
         raise
 
     if response.status_code == 404:
@@ -208,7 +215,10 @@ def suggest_subdomains_for_list(
     if account and urllist_id:
         existing_urls = (
             Url.objects.all()
-            .filter(urls_in_dashboard_list_2__account=account, urls_in_dashboard_list_2__id=urllist_id)
+            .filter(
+                urls_in_dashboard_list_2__account=account,
+                urls_in_dashboard_list_2__id=urllist_id,
+            )
             .values_list("url", flat=True)
         )
         suggestions = sorted(list(set(suggestions) - set(existing_urls)))
@@ -252,7 +262,12 @@ def alter_url_in_urllist(account, urllist_id: int, url_id: int, new_url_string: 
     # what was the old id we're changing?
     old_url = Url.objects.all().filter(pk=url_id).first()
     if not old_url:
-        return AlterUrlResponseSchema(error=True, message="The old url does not exist.", state="error", timestamp=now)
+        return AlterUrlResponseSchema(
+            error=True,
+            message="The old url does not exist.",
+            state="error",
+            timestamp=now,
+        )
 
     if old_url.url == new_url_string:
         # no changes, but return a created item for UI consistency
@@ -282,7 +297,10 @@ def alter_url_in_urllist(account, urllist_id: int, url_id: int, new_url_string: 
     # is the url valid?
     if not Url.is_valid_url(new_url_string):
         return AlterUrlResponseSchema(
-            error=True, message="New url does not have the correct format.", state="error", timestamp=now
+            error=True,
+            message="New url does not have the correct format.",
+            state="error",
+            timestamp=now,
         )
 
     # fetch the url, or create it if it doesn't exist.
@@ -362,7 +380,10 @@ def scan_now(account, urllist_id: int) -> OperationResponseSchema:
     # make sure there are no errors on this list:
     max_urls = config.DASHBOARD_MAXIMUM_DOMAINS_PER_LIST
     if urllist.num_urls > max_urls:
-        return operation_response(error=True, message=f"Cannot scan: Amount of urls exceeds the maximum of {max_urls}.")
+        return operation_response(
+            error=True,
+            message=f"Cannot scan: Amount of urls exceeds the maximum of {max_urls}.",
+        )
 
     if not account.connect_to_internet_nl_api(account.internet_nl_api_username, account.decrypt_password()):
         return operation_response(error=True, message="Credentials for the internet.nl API are not valid.")
@@ -631,7 +652,10 @@ def update_list_settings(
         data["last_scan_id"] = urllist.last_scan[0].scan.id
         data["last_scan_state"] = urllist.last_scan[0].state
         data["last_scan"] = urllist.last_scan[0].started_on.isoformat()
-        data["last_scan_finished"] = urllist.last_scan[0].state in ["finished", "cancelled"]
+        data["last_scan_finished"] = urllist.last_scan[0].state in [
+            "finished",
+            "cancelled",
+        ]
 
     if urllist.last_report:
         data["last_report_id"] = urllist.last_report[0].id
@@ -666,9 +690,10 @@ def validate_list_name(list_name):
 
 # todo: this can be a generic tuple check.
 def validate_list_automated_scan_frequency(automated_scan_frequency):
-    if (automated_scan_frequency, automated_scan_frequency) not in UrlList._meta.get_field(
-        "automated_scan_frequency"
-    ).choices:
+    if (
+        automated_scan_frequency,
+        automated_scan_frequency,
+    ) not in UrlList._meta.get_field("automated_scan_frequency").choices:
         return UrlList._meta.get_field("automated_scan_frequency").default
     return automated_scan_frequency
 
@@ -815,7 +840,10 @@ def get_urllist_content(account: Account, urllist_id: int) -> UrlListContentResp
     # This ordering makes sure all subdomains are near the domains with the right extension.
     urls = (
         Url.objects.all()
-        .filter(urls_in_dashboard_list_2__account=account, urls_in_dashboard_list_2__id=urllist_id)
+        .filter(
+            urls_in_dashboard_list_2__account=account,
+            urls_in_dashboard_list_2__id=urllist_id,
+        )
         .order_by("computed_domain", "computed_suffix", "computed_subdomain")
         .prefetch_related(prefetch, prefetch_tags)
         .all()
@@ -854,7 +882,9 @@ def get_urllist_content(account: Account, urllist_id: int) -> UrlListContentResp
     return UrlListContentResponseSchema(urllist_id=urllist_id, urls=url_items)
 
 
-def retrieve_possible_urls_from_unfiltered_input(unfiltered_input: str) -> Tuple[List[str], int]:
+def retrieve_possible_urls_from_unfiltered_input(
+    unfiltered_input: str,
+) -> Tuple[List[str], int]:
     # we do everything lowercase:
     unfiltered_input = unfiltered_input.lower()
 
@@ -1085,7 +1115,10 @@ def _add_to_urls_to_urllist(  # pylint: disable=too-many-positional-arguments to
                 # simulate the time it takes to add something...
                 sleep.si()
                 | update_spreadsheet_upload_.si(
-                    uploadlog_id, "[3/3] Processing", f'[3/3] Processing completed for list "{current_list.name}".', 100
+                    uploadlog_id,
+                    "[3/3] Processing",
+                    f'[3/3] Processing completed for list "{current_list.name}".',
+                    100,
                 )
             )
         )
@@ -1107,7 +1140,11 @@ def _add_to_urls_to_urllist(  # pylint: disable=too-many-positional-arguments to
 
 
 @app.task(queue="storage", ignore_result=True)
-def add_new_url_to_list_async(url: str, current_list_id: int, urls_with_tags_mapping: Dict[str, Dict[str, set]] = None):
+def add_new_url_to_list_async(
+    url: str,
+    current_list_id: int,
+    urls_with_tags_mapping: Dict[str, Dict[str, set]] = None,
+):
     db_url = Url.add(url)
     urllist = UrlList.objects.all().filter(id=current_list_id).first()
     if not urllist:
@@ -1214,7 +1251,11 @@ def delete_url_from_urllist(account: Account, urllist_id: int, url_id: int) -> b
     # we don't want other users to be able to delete urls of other lists.
     url_is_in_list = (
         Url.objects.all()
-        .filter(urls_in_dashboard_list_2__account=account, urls_in_dashboard_list_2__id=urllist_id, id=url_id)
+        .filter(
+            urls_in_dashboard_list_2__account=account,
+            urls_in_dashboard_list_2__id=urllist_id,
+            id=url_id,
+        )
         .first()
     )
 
@@ -1242,7 +1283,13 @@ def download_as_spreadsheet(account: Account, urllist_id: int, file_type: str = 
     data += [["List(s)", "Domain(s)", "Tags"]]
 
     for url in urls.all():
-        data += [[url.urllist.name, url.url.url, ", ".join(url.tags.values_list("name", flat=True))]]
+        data += [
+            [
+                url.urllist.name,
+                url.url.url,
+                ", ".join(url.tags.values_list("name", flat=True)),
+            ]
+        ]
 
     book = p.get_book(bookdict={"Domains": data})
 

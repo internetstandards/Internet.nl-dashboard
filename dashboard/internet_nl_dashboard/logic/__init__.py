@@ -15,7 +15,10 @@ class OperationResponseSchema(Schema):
 
 
 def operation_response(
-    error: bool = False, success: bool = False, message: str = "", data: Optional[Dict[Any, Any]] = None
+    error: bool = False,
+    success: bool = False,
+    message: str = "",
+    data: Optional[Dict[Any, Any]] = None,
 ) -> OperationResponseSchema:
     return OperationResponseSchema(
         error=error,

@@ -17,7 +17,15 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name="TaggedUrlInUrllist",
             fields=[
-                ("id", models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
+                (
+                    "id",
+                    models.AutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
                 (
                     "tags",
                     taggit.managers.TaggableManager(
@@ -27,10 +35,19 @@ class Migration(migrations.Migration):
                         verbose_name="Tags",
                     ),
                 ),
-                ("url", models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to="organizations.url")),
+                (
+                    "url",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        to="organizations.url",
+                    ),
+                ),
                 (
                     "urllist",
-                    models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to="internet_nl_dashboard.urllist"),
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        to="internet_nl_dashboard.urllist",
+                    ),
                 ),
             ],
             options={

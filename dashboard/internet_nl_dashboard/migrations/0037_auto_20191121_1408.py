@@ -20,13 +20,23 @@ class Migration(migrations.Migration):
             model_name="accountinternetnlscan",
             name="scan",
             field=models.ForeignKey(
-                null=True, on_delete=django.db.models.deletion.CASCADE, to="scanners.InternetNLScan"
+                null=True,
+                on_delete=django.db.models.deletion.CASCADE,
+                to="scanners.InternetNLScan",
             ),
         ),
         migrations.CreateModel(
             name="AccountInternetNLScanLog",
             fields=[
-                ("id", models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
+                (
+                    "id",
+                    models.AutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
                 (
                     "state",
                     models.CharField(
@@ -40,7 +50,8 @@ class Migration(migrations.Migration):
                 (
                     "scan",
                     models.ForeignKey(
-                        on_delete=django.db.models.deletion.CASCADE, to="internet_nl_dashboard.AccountInternetNLScan"
+                        on_delete=django.db.models.deletion.CASCADE,
+                        to="internet_nl_dashboard.AccountInternetNLScan",
                     ),
                 ),
             ],

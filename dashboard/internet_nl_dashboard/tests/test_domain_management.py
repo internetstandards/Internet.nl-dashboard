@@ -33,9 +33,24 @@ from dashboard.internet_nl_dashboard.models import Account, DashboardUser
 
 @responses.activate
 def test_suggest_subdomains(db, caplog):
-    responses.add(responses.GET, "http://localhost:8001/?domain=test&suffix=nl&period=370", json=["test"], status=200)
-    responses.add(responses.GET, "http://localhost:8001/?domain=notexisting&suffix=nl&period=370", json=[], status=404)
-    responses.add(responses.GET, "http://localhost:8001/?domain=broken&suffix=nl&period=370", json=[], status=500)
+    responses.add(
+        responses.GET,
+        "http://localhost:8001/?domain=test&suffix=nl&period=370",
+        json=["test"],
+        status=200,
+    )
+    responses.add(
+        responses.GET,
+        "http://localhost:8001/?domain=notexisting&suffix=nl&period=370",
+        json=[],
+        status=404,
+    )
+    responses.add(
+        responses.GET,
+        "http://localhost:8001/?domain=broken&suffix=nl&period=370",
+        json=[],
+        status=500,
+    )
 
     assert suggest_subdomains("test.nl", 370) == ["test"]
     assert suggest_subdomains("notexisting.nl") == []
@@ -52,9 +67,24 @@ def test_suggest_subdomains(db, caplog):
 @responses.activate
 def test_suggest_subdomains_http(db, client):
     # config.SUBDOMAIN_SUGGESTION_SERVER_ADDRESS, will answer with 'test': test.nl and test.test.nl are valid...
-    responses.add(responses.GET, "http://localhost:8001/?domain=test&suffix=nl&period=370", json=["test"], status=200)
-    responses.add(responses.GET, "http://localhost:8001/?domain=notexisting&suffix=nl&period=370", json=[], status=404)
-    responses.add(responses.GET, "http://localhost:8001/?domain=broken&suffix=nl&period=370", json=[], status=500)
+    responses.add(
+        responses.GET,
+        "http://localhost:8001/?domain=test&suffix=nl&period=370",
+        json=["test"],
+        status=200,
+    )
+    responses.add(
+        responses.GET,
+        "http://localhost:8001/?domain=notexisting&suffix=nl&period=370",
+        json=[],
+        status=404,
+    )
+    responses.add(
+        responses.GET,
+        "http://localhost:8001/?domain=broken&suffix=nl&period=370",
+        json=[],
+        status=500,
+    )
 
     assert (
         client.get("/api/v1/urllists/1/url-suggestions", {"domain": "test.nl"}).status_code == 401
@@ -336,14 +366,22 @@ def test_urllists(db, redis_server) -> None:
     added = save_urllist_content_by_name(
         account,
         "test list 1",
-        {"test.nl": {"tags": []}, "internet.nl": {"tags": []}, "internetcleanup.foundation": {"tags": []}},
+        {
+            "test.nl": {"tags": []},
+            "internet.nl": {"tags": []},
+            "internetcleanup.foundation": {"tags": []},
+        },
     )
     assert added["added_to_list"] == 3 and added["already_in_list"] == 0 and len(added["incorrect_urls"]) == 0
 
     already = save_urllist_content_by_name(
         account,
         "test list 1",
-        {"test.nl": {"tags": []}, "internet.nl": {"tags": []}, "internetcleanup.foundation": {"tags": []}},
+        {
+            "test.nl": {"tags": []},
+            "internet.nl": {"tags": []},
+            "internetcleanup.foundation": {"tags": []},
+        },
     )
     assert already["added_to_list"] == 0 and already["already_in_list"] == 3 and len(already["incorrect_urls"]) == 0
 
@@ -354,7 +392,13 @@ def test_urllists(db, redis_server) -> None:
     # Impossible to filter out garbage domains, as the tld and domain is checked along the way... and some parts
     # of the domain like 'info' might be seen as a domain while it isn't
     already = save_urllist_content_by_name(
-        account, "test list 1", {"test.nonse^": {"tags": []}, "NONSENSE": {"tags": []}, "127.0.0.1": {"tags": []}}
+        account,
+        "test list 1",
+        {
+            "test.nonse^": {"tags": []},
+            "NONSENSE": {"tags": []},
+            "127.0.0.1": {"tags": []},
+        },
     )
     assert already["added_to_list"] == 0 and already["already_in_list"] == 0 and len(already["incorrect_urls"]) == 0
 
@@ -437,10 +481,18 @@ def test_delete_url_from_urllist(db, redis_server):
     l1 = get_or_create_list_by_name(a1, "l1")
     l2 = get_or_create_list_by_name(a2, "l2")
     save_urllist_content_by_name(
-        a1, "l1", {"test.nl": {"tags": []}, "internet.nl": {"tags": []}, "internetcleanup.foundation": {"tags": []}}
+        a1,
+        "l1",
+        {
+            "test.nl": {"tags": []},
+            "internet.nl": {"tags": []},
+            "internetcleanup.foundation": {"tags": []},
+        },
     )
     save_urllist_content_by_name(
-        a2, "l2", {"nu.nl": {"tags": []}, "nos.nl": {"tags": []}, "tweakers.net": {"tags": []}}
+        a2,
+        "l2",
+        {"nu.nl": {"tags": []}, "nos.nl": {"tags": []}, "tweakers.net": {"tags": []}},
     )
 
     assert l1 != l2

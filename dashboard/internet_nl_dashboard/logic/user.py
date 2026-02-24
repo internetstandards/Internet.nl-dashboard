@@ -114,7 +114,10 @@ def save_user_settings(dashboarduser_id, data: SaveUserSettingsInputSchema | dic
         try:
             email_field.clean(data["mail_preferred_mail_address"])
         except ValidationError:
-            return operation_response(error=True, message="save_user_settings_error_form_incorrect_mail_address")
+            return operation_response(
+                error=True,
+                message="save_user_settings_error_form_incorrect_mail_address",
+            )
 
     user.first_name = data["first_name"]
     user.last_name = data["last_name"]

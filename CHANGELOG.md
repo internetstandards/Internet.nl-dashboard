@@ -4,6 +4,15 @@ All notable changes to this project will be documented in this file. For changes
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## V5.2.0 - ?? 2026
+
+### Added
+- OIDC authentication options, see settings.py for configuration options.
+
+### Changed
+- Allauth headless now handles authentication. Use migrate_totp_to_allauth to migrate totp devices to allauth. Documentation is at /_allauth/openapi.html
+
+
 ## V5.1.0 - 18 november 2025
 Intermediate and bugfix release to add CAA support. Due to a complex dependency upgrade, a few manual steps need to be 
 performed when installing this update. Please read the *TWO* upgrade instruction links below. Note that you need to update
@@ -11,7 +20,7 @@ the report format; otherwise your machine will go out of memory(!). This release
 
 ### Added
 - Support for new CAA check #564
-- All frontend calls are now documented in /data/docs, do not yet use this API until after the refactor to the Dutch governmental API standard https://gitdocumentatie.logius.nl/publicatie/api/adr/2.0.2/. #616
+- All frontend calls are now documented in /api/v1/docs, do not yet use this API until after the refactor to the Dutch governmental API standard https://gitdocumentatie.logius.nl/publicatie/api/adr/2.0.2/. #616
 - Preliminary support for OIDC authentication #578
 
 ### Changed

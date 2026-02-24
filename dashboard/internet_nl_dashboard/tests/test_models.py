@@ -11,11 +11,26 @@ def test_determine_next_scan_moment():
 
     preference = "every half year"
     tests = [
-        {"input": "2012-01-01", "outcome": datetime(year=2012, month=7, day=1, tzinfo=timezone.utc)},
-        {"input": "2012-06-30", "outcome": datetime(year=2012, month=7, day=1, tzinfo=timezone.utc)},
-        {"input": "2012-07-01", "outcome": datetime(year=2013, month=1, day=1, tzinfo=timezone.utc)},
-        {"input": "2012-12-31", "outcome": datetime(year=2013, month=1, day=1, tzinfo=timezone.utc)},
-        {"input": "2012-03-04", "outcome": datetime(year=2012, month=7, day=1, tzinfo=timezone.utc)},
+        {
+            "input": "2012-01-01",
+            "outcome": datetime(year=2012, month=7, day=1, tzinfo=timezone.utc),
+        },
+        {
+            "input": "2012-06-30",
+            "outcome": datetime(year=2012, month=7, day=1, tzinfo=timezone.utc),
+        },
+        {
+            "input": "2012-07-01",
+            "outcome": datetime(year=2013, month=1, day=1, tzinfo=timezone.utc),
+        },
+        {
+            "input": "2012-12-31",
+            "outcome": datetime(year=2013, month=1, day=1, tzinfo=timezone.utc),
+        },
+        {
+            "input": "2012-03-04",
+            "outcome": datetime(year=2012, month=7, day=1, tzinfo=timezone.utc),
+        },
     ]
 
     for test in tests:
@@ -24,11 +39,26 @@ def test_determine_next_scan_moment():
 
     preference = "at the start of every quarter"
     tests = [
-        {"input": "2012-01-14", "outcome": datetime(year=2012, month=4, day=1, tzinfo=timezone.utc)},
-        {"input": "2012-04-16", "outcome": datetime(year=2012, month=7, day=1, tzinfo=timezone.utc)},
-        {"input": "2012-06-14", "outcome": datetime(year=2012, month=7, day=1, tzinfo=timezone.utc)},
-        {"input": "2012-07-14", "outcome": datetime(year=2012, month=10, day=1, tzinfo=timezone.utc)},
-        {"input": "2012-12-31", "outcome": datetime(year=2013, month=1, day=1, tzinfo=timezone.utc)},
+        {
+            "input": "2012-01-14",
+            "outcome": datetime(year=2012, month=4, day=1, tzinfo=timezone.utc),
+        },
+        {
+            "input": "2012-04-16",
+            "outcome": datetime(year=2012, month=7, day=1, tzinfo=timezone.utc),
+        },
+        {
+            "input": "2012-06-14",
+            "outcome": datetime(year=2012, month=7, day=1, tzinfo=timezone.utc),
+        },
+        {
+            "input": "2012-07-14",
+            "outcome": datetime(year=2012, month=10, day=1, tzinfo=timezone.utc),
+        },
+        {
+            "input": "2012-12-31",
+            "outcome": datetime(year=2013, month=1, day=1, tzinfo=timezone.utc),
+        },
     ]
 
     for test in tests:
@@ -37,11 +67,26 @@ def test_determine_next_scan_moment():
 
     preference = "every 1st day of the month"
     tests = [
-        {"input": "2012-01-01", "outcome": datetime(year=2012, month=2, day=1, tzinfo=timezone.utc)},
-        {"input": "2012-01-31", "outcome": datetime(year=2012, month=2, day=1, tzinfo=timezone.utc)},
-        {"input": "2012-02-01", "outcome": datetime(year=2012, month=3, day=1, tzinfo=timezone.utc)},
-        {"input": "2012-12-31", "outcome": datetime(year=2013, month=1, day=1, tzinfo=timezone.utc)},
-        {"input": "2012-06-16", "outcome": datetime(year=2012, month=7, day=1, tzinfo=timezone.utc)},
+        {
+            "input": "2012-01-01",
+            "outcome": datetime(year=2012, month=2, day=1, tzinfo=timezone.utc),
+        },
+        {
+            "input": "2012-01-31",
+            "outcome": datetime(year=2012, month=2, day=1, tzinfo=timezone.utc),
+        },
+        {
+            "input": "2012-02-01",
+            "outcome": datetime(year=2012, month=3, day=1, tzinfo=timezone.utc),
+        },
+        {
+            "input": "2012-12-31",
+            "outcome": datetime(year=2013, month=1, day=1, tzinfo=timezone.utc),
+        },
+        {
+            "input": "2012-06-16",
+            "outcome": datetime(year=2012, month=7, day=1, tzinfo=timezone.utc),
+        },
     ]
 
     for test in tests:
@@ -50,13 +95,34 @@ def test_determine_next_scan_moment():
 
     preference = "twice per month"
     tests = [
-        {"input": "2012-01-01", "outcome": datetime(year=2012, month=1, day=15, tzinfo=timezone.utc)},
-        {"input": "2012-01-31", "outcome": datetime(year=2012, month=2, day=1, tzinfo=timezone.utc)},
-        {"input": "2012-02-01", "outcome": datetime(year=2012, month=2, day=15, tzinfo=timezone.utc)},
-        {"input": "2012-12-04", "outcome": datetime(year=2012, month=12, day=15, tzinfo=timezone.utc)},
-        {"input": "2012-12-31", "outcome": datetime(year=2013, month=1, day=1, tzinfo=timezone.utc)},
-        {"input": "2012-06-14", "outcome": datetime(year=2012, month=6, day=15, tzinfo=timezone.utc)},
-        {"input": "2012-06-15", "outcome": datetime(year=2012, month=7, day=1, tzinfo=timezone.utc)},
+        {
+            "input": "2012-01-01",
+            "outcome": datetime(year=2012, month=1, day=15, tzinfo=timezone.utc),
+        },
+        {
+            "input": "2012-01-31",
+            "outcome": datetime(year=2012, month=2, day=1, tzinfo=timezone.utc),
+        },
+        {
+            "input": "2012-02-01",
+            "outcome": datetime(year=2012, month=2, day=15, tzinfo=timezone.utc),
+        },
+        {
+            "input": "2012-12-04",
+            "outcome": datetime(year=2012, month=12, day=15, tzinfo=timezone.utc),
+        },
+        {
+            "input": "2012-12-31",
+            "outcome": datetime(year=2013, month=1, day=1, tzinfo=timezone.utc),
+        },
+        {
+            "input": "2012-06-14",
+            "outcome": datetime(year=2012, month=6, day=15, tzinfo=timezone.utc),
+        },
+        {
+            "input": "2012-06-15",
+            "outcome": datetime(year=2012, month=7, day=1, tzinfo=timezone.utc),
+        },
     ]
 
     for test in tests:

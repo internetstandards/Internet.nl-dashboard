@@ -22,7 +22,10 @@ class Migration(migrations.Migration):
             model_name="urllistreport",
             name="public_report_code",
             field=models.CharField(
-                blank=True, default="", help_text="a unique code that used to identify this report", max_length=64
+                blank=True,
+                default="",
+                help_text="a unique code that used to identify this report",
+                max_length=64,
             ),
         ),
         migrations.AddField(

@@ -11,9 +11,10 @@ from sentry_sdk.integrations.django import DjangoIntegration
 from sentry_sdk.integrations.redis import RedisIntegration
 
 from . import __version__
-from .settings_constance import CONSTANCE_CONFIG_FIELDSETS  # noqa  # pylint: disable=unused-import
-from .settings_constance import CONSTANCE_ADDITIONAL_FIELDS, CONSTANCE_BACKEND, CONSTANCE_CONFIG
-from .settings_jet import JET_SIDE_MENU_COMPACT, JET_SIDE_MENU_ITEMS  # noqa  # pylint: disable=unused-import
+from .settings_constance import CONSTANCE_ADDITIONAL_FIELDS  # noqa  # pylint: disable=unused-import
+from .settings_constance import CONSTANCE_BACKEND, CONSTANCE_CONFIG, CONSTANCE_CONFIG_FIELDSETS
+from .settings_jet import JET_SIDE_MENU_COMPACT  # noqa  # pylint: disable=unused-import
+from .settings_jet import JET_SIDE_MENU_ITEMS  # noqa  # pylint: disable=unused-import
 from .settings_util import get_field_encryption_key_from_file_or_env, get_secret_key_from_file_or_env
 
 load_dotenv()
@@ -117,14 +118,14 @@ INSTALLED_APPS = [
     "allauth",
     "allauth.account",
     "allauth.headless",
-    "allauth.usersessions",
+    # Usersessions stores ip-adresses and thus does not comply with our policy of anonimized usage
+    # "allauth.usersessions",
     "allauth.mfa",
     "allauth.mfa.webauthn",
     "allauth.socialaccount",
-    "allauth.socialaccount.providers.openid_connect",
-    "allauth.socialaccount.providers.openid",
-    "allauth.socialaccount.providers.saml",
-
+    # Enable this setting to add the openid connect login.
+    # Set the settings in SOCIALACCOUNT_PROVIDERS to use the right callbacks.
+    # "allauth.socialaccount.providers.openid_connect",
     # wsm:
     # "storages",
     "websecmap.dramatiq.CustomDjangoDramatiqConfig.CustomDjangoDramatiqConfig",
@@ -379,7 +380,8 @@ DRAMATIQ_RESULT_BACKEND = {
             "url": os.environ.get(
                 "RESULT_BACKEND",
                 os.environ.get(
-                    "DRAMATIQ_RESULT_BACKEND", os.environ.get("DRAMATIQ_BROKER_URL", "redis://localhost:6379/1")
+                    "DRAMATIQ_RESULT_BACKEND",
+                    os.environ.get("DRAMATIQ_BROKER_URL", "redis://localhost:6379/1"),
                 ),
             ),
         }
@@ -509,7 +511,8 @@ OPEN_API_TITLE = os.environ.get("OPEN_API_TITLE", "Internet.nl Dashboard API")
 OPEN_API_CONTACT_ORGANIZATION = os.environ.get("OPEN_API_CONTACT_ORGANIZATION", "Internet.nl API Support")
 OPEN_API_CONTACT_EMAIL = os.environ.get("OPEN_API_CONTACT_EMAIL", "vraag@internet.nl")
 OPEN_API_CONTACT_URL = os.environ.get(
-    "OPEN_API_CONTACT_URL", "https://github.com/internetstandards/Internet.nl-dashboard/"
+    "OPEN_API_CONTACT_URL",
+    "https://github.com/internetstandards/Internet.nl-dashboard/",
 )
 
 
@@ -592,7 +595,10 @@ STORAGES = {
     "screenshots": {
         "BACKEND": "django.core.files.storage.FileSystemStorage",
     },
-    "paper_trail": {"BACKEND": "django.core.files.storage.FileSystemStorage", "OPTIONS": {"base_url": MEDIA_URL}},
+    "paper_trail": {
+        "BACKEND": "django.core.files.storage.FileSystemStorage",
+        "OPTIONS": {"base_url": MEDIA_URL},
+    },
 }
 
 # required from django 4.0
@@ -614,39 +620,6 @@ FULL_REPORT_STORAGE_DIR = f"{REPORT_STORAGE_DIR}original/UrlListReport/"
 if not os.path.isdir(FULL_REPORT_STORAGE_DIR):
     os.makedirs(FULL_REPORT_STORAGE_DIR, exist_ok=True)
 
-AUTHENTICATION_BACKENDS = [
-    # Needed to login by username in Django admin, regardless of `allauth`
-    "django.contrib.auth.backends.ModelBackend",
-    # `allauth` specific authentication methods, such as login by email
-    "allauth.account.auth_backends.AuthenticationBackend",
-]
-
-
-# This is required to disable regular signups. The adapter will prevent the signup form to show.
-# instead it will show "Sign Up Closed" with a sorry message.
-ACCOUNT_ADAPTER = "dashboard.allauth.oidcadapter.AccountAdapter"
-
-# https://docs.allauth.org/en/latest/socialaccount/provider_configuration.html
-SOCIALACCOUNT_ADAPTER = "dashboard.allauth.oidcadapter.OIDCGroupRestrictionAdapter"
-SOCIALACCOUNT_PROVIDERS = {
-    "openid_connect": {
-        "APPS": [
-            {
-                "provider_id": os.environ.get("OIDC_PROVIDER_ID", "my-oidc"),
-                "name": os.environ.get("OIDC_PROVIDER_NAME", "OIDC"),
-                "client_id": os.environ.get("OIDC_CLIENT_ID", ""),
-                "secret": os.environ.get("OIDC_CLIENT_SECRET", ""),
-                "settings": {
-                    "server_url": os.environ.get("OIDC_SERVER_URL", ""),
-                },
-            },
-        ]
-    },
-    "github": {
-        "VERIFIED_EMAIL": True
-    },
-}
-
 
 # WSM settings
 NETWORK_SUPPORTS_IPV4 = os.environ.get("NETWORK_SUPPORTS_IPV4", True)
@@ -657,10 +630,19 @@ NETWORK_SUPPORTS_IPV6 = os.environ.get("NETWORK_SUPPORTS_IPV6", False)
 os.environ["DJANGO_RUNSERVER_HIDE_WARNING"] = "true"
 
 # make sure these imports don't get removed by linting tools
-__all__ = ["CONSTANCE_CONFIG", "CONSTANCE_BACKEND", "CONSTANCE_ADDITIONAL_FIELDS", "CONSTANCE_CONFIG_FIELDSETS"]
+__all__ = [
+    "CONSTANCE_CONFIG",
+    "CONSTANCE_BACKEND",
+    "CONSTANCE_ADDITIONAL_FIELDS",
+    "CONSTANCE_CONFIG_FIELDSETS",
+]
 
 #######
 # BEGIN allauth
+
+# Make integrations simple, in the same style of dashboard
+HEADLESS_SERVE_SPECIFICATION = True
+HEADLESS_SPECIFICATION_TEMPLATE_NAME = "headless/spec/swagger_cdn.html"
 
 ACCOUNT_SIGNUP_ALLOWED = False
 
@@ -704,5 +686,43 @@ HEADLESS_FRONTEND_URLS = {
 
 HEADLESS_ONLY = True
 
+AUTHENTICATION_BACKENDS = [
+    # Needed to login by username in Django admin, regardless of `allauth`
+    "django.contrib.auth.backends.ModelBackend",
+    # `allauth` specific authentication methods, such as login by email
+    "allauth.account.auth_backends.AuthenticationBackend",
+]
+
+
+# This is required to disable regular signups. The adapter will prevent the signup form to show.
+# instead it will show "Sign Up Closed" with a sorry message.
+ACCOUNT_ADAPTER = "dashboard.allauth.oidcadapter.AccountAdapter"
+
+# Setup these variables to use openid connect and enable the social app in the APPS section.
+# MissingSchema at /_allauth/browser/v1/auth/provider/redirect
+# Invalid URL '/.well-known/openid-configuration': No scheme supplied.
+# Perhaps you meant https:///.well-known/openid-configuration?
+# https://docs.allauth.org/en/latest/socialaccount/provider_configuration.html
+# Account registration is enabled by default for openid connect.
+SOCIALACCOUNT_ADAPTER = "dashboard.allauth.oidcadapter.OIDCGroupRestrictionAdapter"
+SOCIALACCOUNT_PROVIDERS = {
+    "openid_connect": {
+        "APPS": [
+            {
+                "provider_id": os.environ.get("OIDC_PROVIDER_ID", "my-oidc"),
+                "name": os.environ.get("OIDC_PROVIDER_NAME", "OIDC"),
+                "client_id": os.environ.get("OIDC_CLIENT_ID", ""),
+                "secret": os.environ.get("OIDC_CLIENT_SECRET", ""),
+                "settings": {
+                    "server_url": os.environ.get("OIDC_SERVER_URL", ""),
+                },
+            },
+        ]
+    },
+}
+
+# Comma-separated list of OIDC groups that are allowed to login/signup.
+# Example: OIDC_ALLOWED_GROUPS=/mygroup,/mygroup/subgroup
+OIDC_ALLOWED_GROUPS = [group.strip() for group in os.environ.get("OIDC_ALLOWED_GROUPS", "").split(",")]
 # END allauth
 #######

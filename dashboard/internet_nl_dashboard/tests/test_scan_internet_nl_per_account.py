@@ -21,7 +21,11 @@ log = logging.getLogger(__package__)
 def test_monitor_timeout(db):
     a = Account.objects.create()
 
-    recoverable_states = ["discovering endpoints", "retrieving scannable urls", "registering scan at internet.nl"]
+    recoverable_states = [
+        "discovering endpoints",
+        "retrieving scannable urls",
+        "registering scan at internet.nl",
+    ]
     for rec_state in recoverable_states:
         scan = AccountInternetNLScan.objects.create(
             account=a,
@@ -60,7 +64,10 @@ def test_creating_report(db, redis_server, default_policy, default_scan_metadata
     #  as they are not seen as relevant for the moment the report is made.
     for domain in ["vitesse.nl", "dierenscheboys.nl", "fcwaalwijk.nl"]:
         mydomain, c = Url.objects.all().get_or_create(
-            url=domain, is_dead=False, not_resolvable=False, created_on=datetime(2010, 1, 1, tzinfo=timezone.utc)
+            url=domain,
+            is_dead=False,
+            not_resolvable=False,
+            created_on=datetime(2010, 1, 1, tzinfo=timezone.utc),
         )
         myendpoint, c = Endpoint.objects.all().get_or_create(
             url=mydomain,
@@ -121,8 +128,14 @@ def test_creating_report(db, redis_server, default_policy, default_scan_metadata
                     "web_ipv6_ns_address": {"status": "passed", "verdict": "good"},
                     "web_ipv6_ns_reach": {"status": "passed", "verdict": "good"},
                     "web_ipv6_ws_address": {"status": "failed", "verdict": "bad"},
-                    "web_ipv6_ws_reach": {"status": "not_tested", "verdict": "not-tested"},
-                    "web_ipv6_ws_similar": {"status": "not_tested", "verdict": "not-tested"},
+                    "web_ipv6_ws_reach": {
+                        "status": "not_tested",
+                        "verdict": "not-tested",
+                    },
+                    "web_ipv6_ws_similar": {
+                        "status": "not_tested",
+                        "verdict": "not-tested",
+                    },
                     "web_dnssec_exist": {"status": "passed", "verdict": "good"},
                     "web_dnssec_valid": {"status": "passed", "verdict": "good"},
                     "web_https_http_available": {"status": "passed", "verdict": "good"},
@@ -131,37 +144,101 @@ def test_creating_report(db, redis_server, default_policy, default_scan_metadata
                     "web_https_http_compress": {"status": "passed", "verdict": "good"},
                     "web_https_tls_keyexchange": {"status": "failed", "verdict": "bad"},
                     "web_https_tls_ciphers": {"status": "passed", "verdict": "good"},
-                    "web_https_tls_cipherorder": {"status": "warning", "verdict": "warning"},
-                    "web_https_tls_version": {"status": "warning", "verdict": "phase-out"},
+                    "web_https_tls_cipherorder": {
+                        "status": "warning",
+                        "verdict": "warning",
+                    },
+                    "web_https_tls_version": {
+                        "status": "warning",
+                        "verdict": "phase-out",
+                    },
                     "web_https_tls_compress": {"status": "passed", "verdict": "good"},
                     "web_https_tls_secreneg": {"status": "passed", "verdict": "good"},
-                    "web_https_tls_clientreneg": {"status": "passed", "verdict": "good"},
+                    "web_https_tls_clientreneg": {
+                        "status": "passed",
+                        "verdict": "good",
+                    },
                     "web_https_cert_chain": {"status": "passed", "verdict": "good"},
                     "web_https_cert_pubkey": {"status": "passed", "verdict": "good"},
                     "web_https_cert_sig": {"status": "passed", "verdict": "good"},
                     "web_https_cert_domain": {"status": "passed", "verdict": "good"},
                     "web_https_dane_exist": {"status": "info", "verdict": "bad"},
-                    "web_https_dane_valid": {"status": "not_tested", "verdict": "not-tested"},
+                    "web_https_dane_valid": {
+                        "status": "not_tested",
+                        "verdict": "not-tested",
+                    },
                     "web_https_tls_0rtt": {"status": "passed", "verdict": "na"},
                     "web_https_tls_ocsp": {"status": "info", "verdict": "ok"},
-                    "web_https_tls_keyexchangehash": {"status": "passed", "verdict": "good"},
-                    "web_appsecpriv_x_frame_options": {"status": "warning", "verdict": "bad"},
-                    "web_appsecpriv_referrer_policy": {"status": "warning", "verdict": "bad"},
+                    "web_https_tls_keyexchangehash": {
+                        "status": "passed",
+                        "verdict": "good",
+                    },
+                    "web_appsecpriv_x_frame_options": {
+                        "status": "warning",
+                        "verdict": "bad",
+                    },
+                    "web_appsecpriv_referrer_policy": {
+                        "status": "warning",
+                        "verdict": "bad",
+                    },
                     "web_appsecpriv_csp": {"status": "info", "verdict": "bad"},
-                    "web_appsecpriv_x_content_type_options": {"status": "warning", "verdict": "bad"},
+                    "web_appsecpriv_x_content_type_options": {
+                        "status": "warning",
+                        "verdict": "bad",
+                    },
                 },
                 "custom": {"tls_1_3_support": "no"},
                 "calculated_results": {
-                    "web_legacy_dnssec": {"status": "passed", "verdict": "passed", "technical_details": []},
-                    "web_legacy_tls_available": {"status": "passed", "verdict": "passed", "technical_details": []},
-                    "web_legacy_tls_ncsc_web": {"status": "failed", "verdict": "failed", "technical_details": []},
-                    "web_legacy_https_enforced": {"status": "passed", "verdict": "passed", "technical_details": []},
-                    "web_legacy_hsts": {"status": "failed", "verdict": "failed", "technical_details": []},
-                    "web_legacy_ipv6_nameserver": {"status": "passed", "verdict": "passed", "technical_details": []},
-                    "web_legacy_ipv6_webserver": {"status": "failed", "verdict": "failed", "technical_details": []},
-                    "web_legacy_dane": {"status": "info", "verdict": "info", "technical_details": []},
-                    "web_legacy_tls_1_3": {"status": "failed", "verdict": "failed", "technical_details": []},
-                    "web_legacy_category_ipv6": {"status": "failed", "verdict": "failed", "technical_details": []},
+                    "web_legacy_dnssec": {
+                        "status": "passed",
+                        "verdict": "passed",
+                        "technical_details": [],
+                    },
+                    "web_legacy_tls_available": {
+                        "status": "passed",
+                        "verdict": "passed",
+                        "technical_details": [],
+                    },
+                    "web_legacy_tls_ncsc_web": {
+                        "status": "failed",
+                        "verdict": "failed",
+                        "technical_details": [],
+                    },
+                    "web_legacy_https_enforced": {
+                        "status": "passed",
+                        "verdict": "passed",
+                        "technical_details": [],
+                    },
+                    "web_legacy_hsts": {
+                        "status": "failed",
+                        "verdict": "failed",
+                        "technical_details": [],
+                    },
+                    "web_legacy_ipv6_nameserver": {
+                        "status": "passed",
+                        "verdict": "passed",
+                        "technical_details": [],
+                    },
+                    "web_legacy_ipv6_webserver": {
+                        "status": "failed",
+                        "verdict": "failed",
+                        "technical_details": [],
+                    },
+                    "web_legacy_dane": {
+                        "status": "info",
+                        "verdict": "info",
+                        "technical_details": [],
+                    },
+                    "web_legacy_tls_1_3": {
+                        "status": "failed",
+                        "verdict": "failed",
+                        "technical_details": [],
+                    },
+                    "web_legacy_category_ipv6": {
+                        "status": "failed",
+                        "verdict": "failed",
+                        "technical_details": [],
+                    },
                 },
             },
         },

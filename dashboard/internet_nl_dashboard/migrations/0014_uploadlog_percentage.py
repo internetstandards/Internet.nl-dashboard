@@ -13,7 +13,10 @@ class Migration(migrations.Migration):
             model_name="uploadlog",
             name="percentage",
             field=models.PositiveIntegerField(
-                blank=True, default=0, help_text="The percentage of domains added in the upload.", null=True
+                blank=True,
+                default=0,
+                help_text="The percentage of domains added in the upload.",
+                null=True,
             ),
         ),
     ]

@@ -20,7 +20,10 @@ def suggest_subdomains(domain: str, period: int = 370):
     )
 
     if response.status_code != 200:
-        log.error("Failed to retrieve subdomain suggestions from  %s.", config.SUBDOMAIN_SUGGESTION_SERVER_ADDRESS)
+        log.error(
+            "Failed to retrieve subdomain suggestions from  %s.",
+            config.SUBDOMAIN_SUGGESTION_SERVER_ADDRESS,
+        )
         return []
 
     return response.json()
