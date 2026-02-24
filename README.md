@@ -367,8 +367,10 @@ OIDC_CLIENT_SECRET=<client_secret>
 OIDC_SERVER_URL=<oidc_server_url>
 OIDC_PROVIDER_ID=my-oidc
 OIDC_PROVIDER_NAME=OIDC
-OIDC_ALLOWED_GROUPS=/mygroup,/mygroup/subgroup
 ```
+
+The OIDC identity token must include the `shac_home_organisation` claim. The
+dashboard uses this value as the account name, creating the account if needed.
 
 #### build "frontend"
 

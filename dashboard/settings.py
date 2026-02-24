@@ -721,8 +721,5 @@ SOCIALACCOUNT_PROVIDERS = {
     },
 }
 
-# Comma-separated list of OIDC groups that are allowed to login/signup.
-# Example: OIDC_ALLOWED_GROUPS=/mygroup,/mygroup/subgroup
-OIDC_ALLOWED_GROUPS = [group.strip() for group in os.environ.get("OIDC_ALLOWED_GROUPS", "").split(",")]
 # END allauth
 #######
