@@ -10,7 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - OIDC authentication options, see settings.py for configuration options.
 
 ### Changed
-- Allauth headless now handles authentication. Use migrate_totp_to_allauth to migrate totp devices to allauth. Documentation is at /_allauth/openapi.html
+- Allauth headless now handles authentication. Use migrate_totp_to_allauth to migrate totp devices to allauth. Documentation is at /_allauth/openapi.html - Setup the site config in django to use the right name for e-mails.
 
 
 ## V5.1.0 - 18 november 2025
