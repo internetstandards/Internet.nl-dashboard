@@ -97,7 +97,7 @@ cachetools==6.2.2
     # via
     #   -c requirements.txt
     #   websecmap
-celery[gevent,msgpack, redis, zstd]==5.5.3
+celery[gevent,msgpack,redis,zstd]==5.5.3
     # via
     #   -c requirements.txt
     #   celery-statsd
@@ -730,6 +730,7 @@ pytokens==0.3.0
     # via black
 pyyaml==6.0.3
     # via
+    #   -c requirements.txt
     #   bandit
     #   moto
     #   responses

@@ -130,7 +130,7 @@ django-activity-stream==2.0.0
     # via -r requirements.in
 django-advanced-filters==2.0.0
     # via websecmap
-django-allauth[headless,mfa,saml,socialaccount,steam]==65.13.0
+django-allauth[headless,headless-spec,mfa,saml,socialaccount,steam]==65.13.0
     # via -r requirements.in
 django-celery-beat==2.8.1
     # via websecmap
@@ -399,6 +399,8 @@ python-resize-image==1.1.20
 python3-openid==3.2.0
     # via django-allauth
 python3-saml==1.16.0
+    # via django-allauth
+pyyaml==6.0.3
     # via django-allauth
 qh3==1.5.6
     # via urllib3-future
