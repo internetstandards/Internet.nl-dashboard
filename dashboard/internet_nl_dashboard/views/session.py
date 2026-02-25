@@ -100,7 +100,12 @@ def session_status_(request):
             "account_name": "",
         }
 
-    account, _ = Account.objects.get_or_create(name="users")
+    # This is for users that are able to log in but are not associated with an account. To prevent
+    # application crashes and unexpected behavior, the user is assigned to a fallback account.
+    # This fallback account is not able to perform scans. The existence of the fallback account in production
+    # means there was a problem when creating or setting up a user. For example, the createsuperuser
+    # command was issued, but the new user was not assigned an account yet.
+    account, _ = Account.objects.get_or_create(name="Fallback account for incomplete new users")
     # got a unique constraint when creating a user in another account. A user may be in one account only.
     dashboarduser, _ = DashboardUser.objects.get_or_create(user=request.user, defaults={"account": account})
 
