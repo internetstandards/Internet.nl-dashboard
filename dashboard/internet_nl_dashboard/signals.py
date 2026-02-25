@@ -1,18 +1,17 @@
 # SPDX-License-Identifier: Apache-2.0
-from actstream import action
-from django.contrib.auth.signals import user_logged_in, user_logged_out
+from django.contrib.auth import get_user_model
+from django.db.models.signals import post_save
 from django.dispatch import receiver
 
-
-@receiver(user_logged_in)
-def stream_login(**kwargs):
-    # sender = user
-    action.send(kwargs["user"], verb="logged in", public=False)
+from dashboard.internet_nl_dashboard.allauth_email import ensure_user_email_address_verified
 
 
-@receiver(user_logged_out)
-def stream_logout(**kwargs):
-    # sender = user
-    # logging out via json requests went wrong somehow.
-    if kwargs.get("user", None):
-        action.send(kwargs["user"], verb="logged out", public=False)
+@receiver(post_save, sender=get_user_model())
+def ensure_allauth_email_verified(sender, instance, **kwargs):
+    """
+    Keep allauth EmailAddress in sync for users created/updated in Django admin.
+
+    This deployment treats user emails as pre-verified; therefore each save
+    ensures `EmailAddress(user, user.email)` exists and is marked verified.
+    """
+    ensure_user_email_address_verified(instance, commit=True)

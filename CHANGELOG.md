@@ -8,10 +8,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 - OIDC authentication options, see settings.py for configuration options.
+- Verify allauth e-mails by default on user creation as mail addresses are pre-verified before they enter the system. 
 
 ### Changed
-- Allauth headless now handles authentication. Use migrate_totp_to_allauth to migrate totp devices to allauth. Documentation is at /_allauth/openapi.html - Setup the site config in django to use the right name for e-mails.
+- Allauth headless now handles authentication. Documentation is at /_allauth/openapi.html - Setup the site config in django to use the right name for e-mails.
 
+### Migrations
+- Migrate existing totp devices to allauth with: `dashboard migrate_totp_to_allauth` 
+- Set existing e-mail addresses as verified with: `dashboard verify_allauth_emails`
 
 ## V5.1.0 - 18 november 2025
 Intermediate and bugfix release to add CAA support. Due to a complex dependency upgrade, a few manual steps need to be 
