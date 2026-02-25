@@ -1,4 +1,5 @@
 # SPDX-License-Identifier: Apache-2.0
+from collections import defaultdict
 from datetime import datetime, timezone
 from typing import Any
 
@@ -81,19 +82,42 @@ def get_scan_monitor_data(account: Account) -> list[ScanMonitorItemSchema]:
         )
     )
 
-    response = []
-    # don't show duplicate scans from running
-    handled_scans = []
+    scans_for_response: list[AccountInternetNLScan] = []
+    handled_scan_ids: set[int] = set()
+
+    # Keep existing ordering: latest finished/history first, then currently running not in latest list.
     for scan in latest_30_scans:
-        handled_scans.append(scan.id)
-        response.append(prepare_scan_data_for_display(scan))
+        handled_scan_ids.add(scan.id)
+        scans_for_response.append(scan)
+    for scan in unfinished_scans:
+        if scan.id not in handled_scan_ids:
+            scans_for_response.append(scan)
 
-    # add all scans that have not finished
-    response.extend(prepare_scan_data_for_display(scan) for scan in unfinished_scans if scan.id not in handled_scans)
-    return response
+    logs_by_scan_id = _load_scan_logs_by_scan_id([scan.id for scan in scans_for_response])
+    return [prepare_scan_data_for_display(scan, logs_by_scan_id.get(scan.id, [])) for scan in scans_for_response]
 
 
-def prepare_scan_data_for_display(scan: Any) -> ScanMonitorItemSchema:
+def _load_scan_logs_by_scan_id(scan_ids: list[int]) -> dict[int, list[ScanLogEntrySchema]]:
+    if not scan_ids:
+        return {}
+
+    logs_qs = (
+        AccountInternetNLScanLog.objects.all()
+        .filter(scan_id__in=scan_ids)
+        .only("scan_id", "at_when", "state")
+        .order_by("scan_id", "-at_when")
+    )
+    logs_by_scan_id: dict[int, list[ScanLogEntrySchema]] = defaultdict(list)
+    for log in logs_qs:
+        logs_by_scan_id[log.scan_id].append(ScanLogEntrySchema(at_when=log.at_when, state=log.state))
+
+    return dict(logs_by_scan_id)
+
+
+def prepare_scan_data_for_display(
+    scan: Any,
+    log_messages: list[ScanLogEntrySchema] | None = None,
+) -> ScanMonitorItemSchema:
     last_report_id = None
     if scan.state == "finished" and scan.report is not None:
         last_report_id = scan.report.id
@@ -108,8 +132,8 @@ def prepare_scan_data_for_display(scan: Any) -> ScanMonitorItemSchema:
         runtime = moment - scan.started_on
         runtime_seconds = int(runtime.total_seconds() * 1000)
 
-    logs_qs = AccountInternetNLScanLog.objects.all().filter(scan=scan).only("at_when", "state").order_by("-at_when")
-    log_messages = [ScanLogEntrySchema(at_when=log.at_when, state=log.state) for log in logs_qs]
+    if log_messages is None:
+        log_messages = []
 
     # Start with defaults and then enrich if related objects are present
     item = ScanMonitorItemSchema(
