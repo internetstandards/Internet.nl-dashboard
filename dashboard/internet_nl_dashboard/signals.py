@@ -7,7 +7,7 @@ from dashboard.internet_nl_dashboard.allauth_email import ensure_user_email_addr
 
 
 @receiver(post_save, sender=get_user_model())
-def ensure_allauth_email_verified(sender, instance, **kwargs):
+def ensure_allauth_email_verified(sender, instance, **kwargs):  # noqa (adopt standard django signal names)
     """
     Keep allauth EmailAddress in sync for users created/updated in Django admin.
 

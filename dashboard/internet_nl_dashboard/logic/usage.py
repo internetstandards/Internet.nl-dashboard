@@ -179,7 +179,7 @@ def user_logged_in_past_n_days(days=30):
 
 
 def abstract_per_year(query, datetime_field):
-    query_hash = sha1(str(query.query).encode("utf-8")).hexdigest()
+    query_hash = sha1(str(query.query).encode("utf-8")).hexdigest()  # nosec (hashing, not security)
     cache_key = (
         f"usage:{USAGE_CACHE_VERSION}:per_year:{query.model._meta.label_lower}:{datetime_field}:{DASHBOARD_EPOCH.year}"
         f":{query_hash}"
@@ -208,7 +208,7 @@ def abstract_per_year(query, datetime_field):
 
 
 def abstract_per_month(query, datetime_field):
-    query_hash = sha1(str(query.query).encode("utf-8")).hexdigest()
+    query_hash = sha1(str(query.query).encode("utf-8")).hexdigest()  # nosec (hashing, not security)
     cache_key = (
         f"usage:{USAGE_CACHE_VERSION}:per_month:{query.model._meta.label_lower}:{datetime_field}:{DASHBOARD_EPOCH.year}"
         f":{query_hash}"
