@@ -12,7 +12,7 @@ import requests
 from actstream import action
 from celery import group
 from constance import config
-from django.db.models import Count, Prefetch
+from django.db.models import Count, OuterRef, Prefetch, Subquery
 from django.http import JsonResponse
 from ninja import Schema
 from websecmap import tldextract
@@ -727,21 +727,31 @@ def get_urllists_from_account(account: Account) -> UrlListsResponseSchema:
     included. Note that this does not return the entire set of urls, given that URLS may be in the thousands.
     A few times a thousand urls will load slowly, which is detrimental to the user experience.
 
-    Usually last_scan and last_report could be fetched with a prefetch, but slicing on prefetching is not possible,
-    so the entire set of scans and reports is selected which is much slower than having a nested query per result.
-
-    Prefetching could be limited with filters, but there is no filter that really limits the results down to a
-    few results. For example: only prefetch the reports from the last year etc will result in a no data at one point.
+    Latest scan/report fields are added with subqueries so we can avoid per-list lookups.
 
     :param account:
     :return:
     """
+
+    latest_scan = AccountInternetNLScan.objects.filter(
+        urllist=OuterRef("pk"),
+        urllist__is_deleted=False,
+    ).order_by("-id")
+
+    latest_report = UrlListReport.objects.filter(urllist=OuterRef("pk")).order_by("-id")
 
     # Could that num_urls slows things down. Given that num_urls is overwritten when loading list data...
     urllists = (
         UrlList.objects.all()
         .filter(account=account, is_deleted=False)
         .annotate(num_urls=Count("urls"))
+        .annotate(
+            last_scan_id=Subquery(latest_scan.values("scan_id")[:1]),
+            last_scan_state=Subquery(latest_scan.values("state")[:1]),
+            last_scan_started_on=Subquery(latest_scan.values("started_on")[:1]),
+            last_report_id=Subquery(latest_report.values("id")[:1]),
+            last_report_date=Subquery(latest_report.values("at_when")[:1]),
+        )
         .order_by("name")
         .only(
             "id",
@@ -761,6 +771,12 @@ def get_urllists_from_account(account: Account) -> UrlListsResponseSchema:
 
     # Not needed to check the contest of the list. If it's empty, then there is just an empty list returned.
     for urllist in urllists:
+        if not urllist.enable_scans:
+            scan_now_available = False
+        elif not urllist.last_scan_state:
+            scan_now_available = True
+        else:
+            scan_now_available = urllist.last_scan_state in ["finished", "cancelled"]
 
         data = {
             "id": urllist.id,
@@ -769,7 +785,7 @@ def get_urllists_from_account(account: Account) -> UrlListsResponseSchema:
             "scan_type": urllist.scan_type,
             "automated_scan_frequency": urllist.automated_scan_frequency,
             "scheduled_next_scan": urllist.scheduled_next_scan,
-            "scan_now_available": urllist.is_scan_now_available(),
+            "scan_now_available": scan_now_available,
             "enable_report_sharing_page": urllist.enable_report_sharing_page,
             "automatically_share_new_reports": urllist.automatically_share_new_reports,
             "default_public_share_code_for_new_reports": urllist.default_public_share_code_for_new_reports,
@@ -788,25 +804,15 @@ def get_urllists_from_account(account: Account) -> UrlListsResponseSchema:
         if urllist.num_urls > max_domains:
             data["list_warnings"].append("WARNING_DOMAINS_IN_LIST_EXCEED_MAXIMUM_ALLOWED")
 
-        last_scan = (
-            AccountInternetNLScan.objects.all()
-            .filter(urllist=urllist)
-            .select_related("scan")
-            .only("scan__id", "state", "started_on")
-            .last()
-        )
-        if last_scan and last_scan.scan and last_scan.started_on:
-            data["last_scan_id"] = last_scan.scan.id
-            data["last_scan_state"] = last_scan.state
-            data["last_scan"] = last_scan.started_on.isoformat()
-            data["last_scan_finished"] = last_scan.state in ["finished", "cancelled"]
+        if urllist.last_scan_started_on:
+            data["last_scan_id"] = urllist.last_scan_id
+            data["last_scan_state"] = urllist.last_scan_state
+            data["last_scan"] = urllist.last_scan_started_on.isoformat()
+            data["last_scan_finished"] = urllist.last_scan_state in ["finished", "cancelled"]
 
-        # Selecting the whole object is extremely slow as the reports are very large, therefore we use .only to limit
-        # the number of fields returned. Then the prefetch is pretty fast again.
-        last_report = UrlListReport.objects.all().filter(urllist=urllist).only("id", "at_when").last()
-        if last_report:
-            data["last_report_id"] = last_report.id
-            data["last_report_date"] = last_report.at_when.isoformat()
+        if urllist.last_report_id:
+            data["last_report_id"] = urllist.last_report_id
+            data["last_report_date"] = urllist.last_report_date.isoformat()
 
         url_lists.append(data)
 
