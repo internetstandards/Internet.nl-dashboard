@@ -96,7 +96,10 @@ def delete_list_operation(request, urllist_id: int):
     return delete_list(get_account(request), urllist_id)
 
 
-@router.put("/{urllist_id}", response={201: CreateListResponseSchema, 200: OperationResponseSchema})
+@router.put(
+    "/{urllist_id}",
+    response={201: CreateListResponseSchema, 200: OperationResponseSchema},
+)
 def update_list_settings_operation(request, urllist_id: int, data: UpdateListSettingsInputSchema):
     # enforce path id to avoid body tampering
     data.id = urllist_id
@@ -185,9 +188,15 @@ def remove_tag_operation(request, urllist_id: int, url_id: int, tag: str):
 def delete_url_from_urllist_operation(request, urllist_id: int, url_id: int):
     account = get_account(request)
     item_deleted = delete_url_from_urllist(account, urllist_id, url_id)
-    return operation_response(success=bool(item_deleted), message="url_deleted" if item_deleted else "url_not_deleted")
+    return operation_response(
+        success=bool(item_deleted),
+        message="url_deleted" if item_deleted else "url_not_deleted",
+    )
 
 
-@router.get("/{urllist_ids_csv}/timeline-graph/{report_type}", response={200: list[UrlListTimelineSeriesSchema]})
+@router.get(
+    "/{urllist_ids_csv}/timeline-graph/{report_type}",
+    response={200: list[UrlListTimelineSeriesSchema]},
+)
 def get_urllist_timeline_graph_operation(request, urllist_ids_csv: str, report_type: str):
     return get_urllist_timeline_graph(get_account(request), urllist_ids_csv, report_type)

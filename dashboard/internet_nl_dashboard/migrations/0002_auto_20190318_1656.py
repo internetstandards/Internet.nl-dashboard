@@ -15,7 +15,15 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name="UrlList",
             fields=[
-                ("id", models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
+                (
+                    "id",
+                    models.AutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
                 (
                     "name",
                     models.CharField(
@@ -31,7 +39,10 @@ class Migration(migrations.Migration):
             model_name="account",
             name="internet_nl_api_password",
             field=models.CharField(
-                blank=True, help_text="New values will automatically be encrypted.", max_length=255, null=True
+                blank=True,
+                help_text="New values will automatically be encrypted.",
+                max_length=255,
+                null=True,
             ),
         ),
         migrations.AddField(
@@ -46,6 +57,10 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name="urllist",
             name="urls",
-            field=models.ManyToManyField(blank=True, related_name="urls_in_dashboard_list", to="organizations.Url"),
+            field=models.ManyToManyField(
+                blank=True,
+                related_name="urls_in_dashboard_list",
+                to="organizations.Url",
+            ),
         ),
     ]

@@ -293,7 +293,10 @@ def log_spreadsheet_upload(user: DashboardUser, file: str, status: str = "", mes
 # Depending on the speed this needs to become a task, as the wait will be too long.
 # transaction atomic cannot happen on very large lists it seems...
 def save_data(
-    account: Account, data: Dict[str, Dict[str, Dict[str, set]]], uploadlog_id: int = None, pending_message: str = None
+    account: Account,
+    data: Dict[str, Dict[str, Dict[str, set]]],
+    uploadlog_id: int = None,
+    pending_message: str = None,
 ):
     return {
         urllist: save_urllist_content_by_name(account, urllist, data[urllist], uploadlog_id, pending_message)
@@ -302,7 +305,13 @@ def save_data(
 
 
 def upload_error(message, user, file) -> Dict[str, Any]:
-    response: Dict[str, Any] = {"error": True, "success": False, "message": message, "details": {}, "status": "error"}
+    response: Dict[str, Any] = {
+        "error": True,
+        "success": False,
+        "message": message,
+        "details": {},
+        "status": "error",
+    }
     log_spreadsheet_upload(user=user, file=file, status=response["status"], message=response["message"])
     return response
 
@@ -328,7 +337,9 @@ def inspect_upload_file(user: DashboardUser, file: str) -> Optional[Dict[str, An
 
     if not is_valid_mimetype(file):
         return upload_error(
-            "The content of the file could not be established. It might not be a spreadsheet file.", user, file
+            "The content of the file could not be established. It might not be a spreadsheet file.",
+            user,
+            file,
         )
 
     return None
@@ -420,7 +431,12 @@ def import_step_2(user: int, file: str, uploadlog_id: int):
     update_spreadsheet_upload(uploadlog_id, status="[2/3] Processing", message=step_2_message)
 
     # File system full, database full.
-    details = save_data(user.account, domain_lists, uploadlog_id=uploadlog_id, pending_message=step_2_message)
+    details = save_data(
+        user.account,
+        domain_lists,
+        uploadlog_id=uploadlog_id,
+        pending_message=step_2_message,
+    )
 
     # Make the details a little bit easier for humans to understand:
     # It's normal that this message is sent earlier than the processing of each domain.
@@ -459,9 +475,20 @@ def upload_domain_spreadsheet_to_list(account: Account, user: DashboardUser, url
 
     urllist = UrlList.objects.all().filter(id=urllist_id, account=account).first()
     if not urllist:
-        return {"error": True, "success": False, "message": "list_does_not_exist", "details": "", "status": "error"}
+        return {
+            "error": True,
+            "success": False,
+            "message": "list_does_not_exist",
+            "details": "",
+            "status": "error",
+        }
 
-    log_spreadsheet_upload(user=user, file=file, status="pending", message="Uploading and processing spreadsheet...")
+    log_spreadsheet_upload(
+        user=user,
+        file=file,
+        status="pending",
+        message="Uploading and processing spreadsheet...",
+    )
 
     # todo: put this in a separate task, to make sure the upload is fast enough and give this feedback to the user.
     # the spreadsheet content is leading, this means that anything in the current list, including tags, will
@@ -477,7 +504,12 @@ def upload_domain_spreadsheet_to_list(account: Account, user: DashboardUser, url
         result = save_urllist_content_by_id(account, urllist.id, domain_data)
         # too many domains
         if "error" in result:
-            log_spreadsheet_upload(user=user, file=file, status="success", message="Too many domains in list.")
+            log_spreadsheet_upload(
+                user=user,
+                file=file,
+                status="success",
+                message="Too many domains in list.",
+            )
             return result
 
     details_str = f"{urllist.name}: new: {result['added_to_list']}, existing: {result['already_in_list']}; "
@@ -486,4 +518,10 @@ def upload_domain_spreadsheet_to_list(account: Account, user: DashboardUser, url
         f"Added {len(domain_lists)} lists and {number_of_urls} urls. Details: {details_str}"
     )
     log_spreadsheet_upload(user=user, file=file, status="success", message=message)
-    return {"error": False, "success": True, "message": message, "details": details_str, "status": "success"}
+    return {
+        "error": False,
+        "success": True,
+        "message": message,
+        "details": details_str,
+        "status": "success",
+    }

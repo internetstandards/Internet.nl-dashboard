@@ -119,7 +119,10 @@ def get_tags_from_urllist_urls(account: Account, urllist_id: int) -> Dict[str, L
     # This ordering makes sure all subdomains are near the domains with the right extension.
     urls = (
         Url.objects.all()
-        .filter(urls_in_dashboard_list_2__account=account, urls_in_dashboard_list_2__id=urllist_id)
+        .filter(
+            urls_in_dashboard_list_2__account=account,
+            urls_in_dashboard_list_2__id=urllist_id,
+        )
         .prefetch_related(prefetch_tags)
         .all()
     )
@@ -169,7 +172,10 @@ def create_spreadsheet(account: Account, report_id: int):
     data += [subcategory_headers(protocol)]
     data += [headers(protocol)]
     data += urllistreport_to_spreadsheet_data(
-        category_name=report.urllist.name, urls=urls, protocol=protocol, tags=url_tag_mapping
+        category_name=report.urllist.name,
+        urls=urls,
+        protocol=protocol,
+        tags=url_tag_mapping,
     )
 
     filename = (
@@ -341,7 +347,8 @@ def upgrade_excel_spreadsheet(spreadsheet_data):
         # There is no true/false, but we can color based on value.
         for grade, pattern in conditional_rules.items():
             worksheet.conditional_formatting.add(
-                f"F13:CD{lines}", CellIsRule(operator="=", formula=[f'"{grade}"'], stopIfTrue=True, fill=pattern)
+                f"F13:CD{lines}",
+                CellIsRule(operator="=", formula=[f'"{grade}"'], stopIfTrue=True, fill=pattern),
             )
 
         workbook.save(tmp.name)
@@ -404,7 +411,10 @@ def subcategory_headers(protocol: str = "dns_soa"):
 
     # translate them:
     return [
-        translate_field(FIELD_TO_CATEGORY_MAP.get(header, ""), translation_dictionary=po_file_as_dictionary)
+        translate_field(
+            FIELD_TO_CATEGORY_MAP.get(header, ""),
+            translation_dictionary=po_file_as_dictionary,
+        )
         for header in sheet_headers
     ]
 
@@ -447,7 +457,10 @@ def formula_row(function: str, protocol: str = "dns_soa"):
 
 
 def urllistreport_to_spreadsheet_data(
-    category_name: str, urls: List[Any], protocol: str = "dns_soa", tags: Dict[str, List[str]] = None
+    category_name: str,
+    urls: List[Any],
+    protocol: str = "dns_soa",
+    tags: Dict[str, List[str]] = None,
 ):
     data = []
     for url in urls:
@@ -462,12 +475,28 @@ def urllistreport_to_spreadsheet_data(
                     continue
                 keyed_ratings = endpoint["ratings"]
                 data.append(
-                    [category_name, url["url"], extract.subdomain, extract.domain, extract.suffix, url_tags, "TRUE"]
+                    [
+                        category_name,
+                        url["url"],
+                        extract.subdomain,
+                        extract.domain,
+                        extract.suffix,
+                        url_tags,
+                        "TRUE",
+                    ]
                     + keyed_values_as_boolean(keyed_ratings, protocol)
                 )
         else:
             data.append(
-                [category_name, url["url"], extract.subdomain, extract.domain, extract.suffix, url_tags, "TRUE"]
+                [
+                    category_name,
+                    url["url"],
+                    extract.subdomain,
+                    extract.domain,
+                    extract.suffix,
+                    url_tags,
+                    "TRUE",
+                ]
             )
 
             for endpoint in url["endpoints"]:

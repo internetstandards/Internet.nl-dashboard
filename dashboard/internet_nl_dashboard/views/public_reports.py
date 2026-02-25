@@ -41,7 +41,11 @@ def get_public_reports_operation(request):
 
 @router.get(
     "/{report_code}",
-    response={200: list[ReportSchema], 201: SharedReportAuthRequiredSchema, 404: OperationResponseSchema},
+    response={
+        200: list[ReportSchema],
+        201: SharedReportAuthRequiredSchema,
+        404: OperationResponseSchema,
+    },
 )
 def get_shared_report_api(request, report_code: str) -> HttpResponse:
     # no code :)
@@ -86,7 +90,10 @@ def get_publicly_shared_lists_per_account_operation(request, account_id: int):
     return get_publicly_shared_lists_per_account(account_id)
 
 
-@router.get("/accounts/{account_id}/urllists/{urllist_id}", response={200: list[PubliclySharedListResponseSchema]})
+@router.get(
+    "/accounts/{account_id}/urllists/{urllist_id}",
+    response={200: list[PubliclySharedListResponseSchema]},
+)
 def get_publicly_shared_lists_per_account_and_list_id_operation(request, account_id: int, urllist_id: int):
     return get_publicly_shared_lists_per_account_and_list_id(account_id, urllist_id)
 
@@ -96,6 +103,9 @@ def get_latest_report_id_from_list_operation(request, urllist_id: int):
     return get_latest_report_id_from_list_and_type(urllist_id, "")
 
 
-@router.get("/urllists/{urllist_id}/latest/{report_type}", response={200: LatestReportCodeSchema})
+@router.get(
+    "/urllists/{urllist_id}/latest/{report_type}",
+    response={200: LatestReportCodeSchema},
+)
 def get_latest_report_id_from_list_and_type_operation(request, urllist_id: int, report_type: str):
     return get_latest_report_id_from_list_and_type(urllist_id, report_type)

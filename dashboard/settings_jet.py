@@ -22,12 +22,30 @@ JET_SIDE_MENU_ITEMS = [
         ],
     },
     {
+        "label": _("🔐 Allauth"),
+        "items": [
+            # allauth.account
+            {"name": "account.emailaddress", "label": "Email Addresses (allauth.account)"},
+            # allauth.socialaccount
+            {"name": "socialaccount.socialaccount", "label": "Social Accounts"},
+            {"name": "socialaccount.socialapp", "label": "Social Apps (OIDC clients)"},
+            {"name": "socialaccount.socialtoken", "label": "Social Tokens"},
+            # allauth.mfa
+            {"name": "mfa.authenticator", "label": "MFA Authenticators"},
+            # Legacy django-otp model, useful while migrating to allauth MFA.
+            {"name": "otp_totp.totpdevice", "label": "Legacy OTP TOTP Devices (2nd factor auth)"},
+        ],
+    },
+    {
         "label": _("🔬 Scan"),
         "items": [
             {"name": "scanners.internetnlscaninspection", "label": "Scan Inspections"},
             {"name": "internet_nl_dashboard.accountinternetnlscan"},
             {"name": "internet_nl_dashboard.accountinternetnlscanlog"},
-            {"name": "internet_nl_dashboard.subdomaindiscoveryscan", "label": "Subdomain Discovery"},
+            {
+                "name": "internet_nl_dashboard.subdomaindiscoveryscan",
+                "label": "Subdomain Discovery",
+            },
         ],
     },
     {
@@ -65,6 +83,7 @@ JET_SIDE_MENU_ITEMS = [
         "label": _("✨ Activity"),
         "items": [
             {"name": "actstream.action"},
+            {"name": "actstream.actioninspection", "label": "Actions (Advanced Filters)"},
         ],
     },
 ]

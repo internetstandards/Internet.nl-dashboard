@@ -55,7 +55,10 @@ def convert_internet_nl_content_to_vue():
 
         # support a per-language kind of file, in case we're going to do dynamic loading of languages.
         json_content = convert_json_format(load_as_po_file(raw_content))
-        store_vue_i18n_file(f"internet_nl.{locale}.json", json.dumps(json_content, indent=2, ensure_ascii=False))
+        store_vue_i18n_file(
+            f"internet_nl.{locale}.json",
+            json.dumps(json_content, indent=2, ensure_ascii=False),
+        )
 
 
 @lru_cache(maxsize=None)
@@ -410,5 +413,8 @@ def translate_field(field_label, translation_dictionary: Dict[str, str]):
     except KeyError:
         # This can happen when something is already translated and the translations overwrite the original values.
         # When the re-translation is applied, the fields have been replaced by the translations and thus cannot be found
-        log.debug("Could not find a translation for %s, returning the label as is.", field_label)
+        log.debug(
+            "Could not find a translation for %s, returning the label as is.",
+            field_label,
+        )
         return field_label

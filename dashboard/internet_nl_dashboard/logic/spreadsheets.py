@@ -29,7 +29,10 @@ def start_spreadsheet_upload(user: DashboardUser, file: UploadedFile) -> Operati
         return operation_response(error=True, message="upload_save_failed")
 
     upload_data: dict[str, Any] = log_spreadsheet_upload(
-        user=user, file=saved_file, status="[1/3] Initializing", message="[1/3] Initializing upload..."
+        user=user,
+        file=saved_file,
+        status="[1/3] Initializing",
+        message="[1/3] Initializing upload...",
     )
     uploadlog_id = upload_data.get("id")
 

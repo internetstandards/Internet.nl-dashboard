@@ -108,7 +108,9 @@ def get_publicly_shared_lists_per_account(
             reports=[
                 PubliclySharedReportSchema(
                     id=report.id,
-                    at_when=report.at_when.isoformat() if hasattr(report.at_when, "isoformat") else str(report.at_when),
+                    at_when=(
+                        report.at_when.isoformat() if hasattr(report.at_when, "isoformat") else str(report.at_when)
+                    ),
                     report_type=report.report_type,
                     has_public_share_code=bool(report.public_share_code),
                     average_internet_nl_score=report.average_internet_nl_score,

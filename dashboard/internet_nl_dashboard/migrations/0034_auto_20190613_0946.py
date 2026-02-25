@@ -13,6 +13,10 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name="account",
             name="internet_nl_api_password",
-            field=models.TextField(blank=True, help_text="New values will automatically be encrypted.", null=True),
+            field=models.TextField(
+                blank=True,
+                help_text="New values will automatically be encrypted.",
+                null=True,
+            ),
         ),
     ]

@@ -79,8 +79,14 @@ def test_compare_report_in_detail_equal_reports(current_path):
                 "computed_subdomain": "acc.dashboard",
                 "computed_suffix": "nl",
                 "test_results_from_internet_nl_available": True,
-                "new": {"report": "https://batch.internet.nl/site/acc.dashboard.internet.nl/200719/", "score": 79},
-                "old": {"report": "https://batch.internet.nl/site/acc.dashboard.internet.nl/200719/", "score": 79},
+                "new": {
+                    "report": "https://batch.internet.nl/site/acc.dashboard.internet.nl/200719/",
+                    "score": 79,
+                },
+                "old": {
+                    "report": "https://batch.internet.nl/site/acc.dashboard.internet.nl/200719/",
+                    "score": 79,
+                },
                 "url": "acc.dashboard.internet.nl",
             },
             # this is an entirely empty report, thus there will be no data here...
@@ -152,8 +158,14 @@ def test_compare_report_in_detail_equal_reports(current_path):
                 "computed_subdomain": "www",
                 "computed_suffix": "nl",
                 "test_results_from_internet_nl_available": True,
-                "new": {"report": "https://batch.internet.nl/site/www.internet.nl/200737/", "score": 100},
-                "old": {"report": "https://batch.internet.nl/site/www.internet.nl/200737/", "score": 100},
+                "new": {
+                    "report": "https://batch.internet.nl/site/www.internet.nl/200737/",
+                    "score": 100,
+                },
+                "old": {
+                    "report": "https://batch.internet.nl/site/www.internet.nl/200737/",
+                    "score": 100,
+                },
                 "url": "www.internet.nl",
             },
         },
@@ -294,8 +306,14 @@ def test_compare_report_detail_differences():
                 "computed_subdomain": "www",
                 "computed_suffix": "nl",
                 "test_results_from_internet_nl_available": True,
-                "new": {"report": "https://batch.internet.nl/site/www.internet.nl/1/", "score": 11.11},
-                "old": {"report": "https://batch.internet.nl/site/www.internet.nl/2/", "score": 22.22},
+                "new": {
+                    "report": "https://batch.internet.nl/site/www.internet.nl/1/",
+                    "score": 11.11,
+                },
+                "old": {
+                    "report": "https://batch.internet.nl/site/www.internet.nl/2/",
+                    "score": 22.22,
+                },
                 "url": "www.internet.nl",
             },
             # The extra domain is not in the negative report, it will thus not have 'old' data.
@@ -306,14 +324,20 @@ def test_compare_report_detail_differences():
                     "regression": 0,
                     "improved_metrics": [],
                     "regressed_metrics": [],
-                    "neutral_metrics": ["internet_nl_web_https_tls_version", "internet_nl_web_https_tls_cipherorder"],
+                    "neutral_metrics": [
+                        "internet_nl_web_https_tls_version",
+                        "internet_nl_web_https_tls_cipherorder",
+                    ],
                 },
                 "computed_domain": "internet",
                 "computed_domain_and_suffix": "internet.nl",
                 "computed_subdomain": "extradomain",
                 "computed_suffix": "nl",
                 "test_results_from_internet_nl_available": True,
-                "new": {"report": "https://batch.internet.nl/site/www.internet.nl/1/", "score": 11.11},
+                "new": {
+                    "report": "https://batch.internet.nl/site/www.internet.nl/1/",
+                    "score": 11.11,
+                },
                 "old": {
                     "report": "",
                     "score": 0,
@@ -359,8 +383,14 @@ def test_compare_report_detail_differences():
                 "computed_subdomain": "www",
                 "computed_suffix": "nl",
                 "test_results_from_internet_nl_available": True,
-                "new": {"report": "https://batch.internet.nl/site/www.internet.nl/2/", "score": 22.22},
-                "old": {"report": "https://batch.internet.nl/site/www.internet.nl/1/", "score": 11.11},
+                "new": {
+                    "report": "https://batch.internet.nl/site/www.internet.nl/2/",
+                    "score": 22.22,
+                },
+                "old": {
+                    "report": "https://batch.internet.nl/site/www.internet.nl/1/",
+                    "score": 11.11,
+                },
                 "url": "www.internet.nl",
             },
         },
@@ -498,8 +528,14 @@ def test_render_comparison_view(db):
                 "computed_subdomain": "www",
                 "computed_suffix": "nl",
                 "test_results_from_internet_nl_available": True,
-                "new": {"report": "https://batch.internet.nl/site/www.internet.nl/2/", "score": 22.22},
-                "old": {"report": "https://batch.internet.nl/site/www.internet.nl/1/", "score": 11.11},
+                "new": {
+                    "report": "https://batch.internet.nl/site/www.internet.nl/2/",
+                    "score": 22.22,
+                },
+                "old": {
+                    "report": "https://batch.internet.nl/site/www.internet.nl/1/",
+                    "score": 11.11,
+                },
                 "url": "www.internet.nl",
             },
         },
@@ -554,17 +590,27 @@ def test_render_comparison_view(db):
 def test_determine_changes(current_path):
     set_1 = {
         # The only metric that is included
-        "internet_nl_web_https_http_hsts": {"test_result": "failed", "simple_progression": 100},
+        "internet_nl_web_https_http_hsts": {
+            "test_result": "failed",
+            "simple_progression": 100,
+        },
         # Categories are ignored
         "internet_nl_web_ipv6": {"test_result": "failed", "simple_progression": 100},
         # legacy fields are ignored
-        "internet_nl_web_legacy_category_ipv6": {"test_result": "failed", "simple_progression": 100},
+        "internet_nl_web_legacy_category_ipv6": {
+            "test_result": "failed",
+            "simple_progression": 100,
+        },
         # score fields are ignored:
         "internet_nl_score": {
             "test_result": 100,
         },
         # deleted field, will also be ignored:
-        "internet_nl_web_appsecpriv_x_xss_protection": {"ok": 1, "scan": 51, "simple_progression": 0},
+        "internet_nl_web_appsecpriv_x_xss_protection": {
+            "ok": 1,
+            "scan": 51,
+            "simple_progression": 0,
+        },
     }
 
     assert determine_changes_in_ratings(set_1, set_1) == {
@@ -578,8 +624,18 @@ def test_determine_changes(current_path):
 
     # Test improvement
     assert determine_changes_in_ratings(
-        {"internet_nl_web_https_http_hsts": {"test_result": "passed", "simple_progression": 400}},
-        {"internet_nl_web_https_http_hsts": {"test_result": "failed", "simple_progression": 100}},
+        {
+            "internet_nl_web_https_http_hsts": {
+                "test_result": "passed",
+                "simple_progression": 400,
+            }
+        },
+        {
+            "internet_nl_web_https_http_hsts": {
+                "test_result": "failed",
+                "simple_progression": 100,
+            }
+        },
     ) == {
         "improvement": 1,
         "neutral": 0,
@@ -591,8 +647,18 @@ def test_determine_changes(current_path):
 
     # test regression
     assert determine_changes_in_ratings(
-        {"internet_nl_web_https_http_hsts": {"test_result": "failed", "simple_progression": 100}},
-        {"internet_nl_web_https_http_hsts": {"test_result": "passed", "simple_progression": 400}},
+        {
+            "internet_nl_web_https_http_hsts": {
+                "test_result": "failed",
+                "simple_progression": 100,
+            }
+        },
+        {
+            "internet_nl_web_https_http_hsts": {
+                "test_result": "passed",
+                "simple_progression": 400,
+            }
+        },
     ) == {
         "improvement": 0,
         "neutral": 0,
@@ -604,7 +670,12 @@ def test_determine_changes(current_path):
 
     # test missing key will result in neutral result
     assert determine_changes_in_ratings(
-        {"internet_nl_web_https_http_hsts": {"test_result": "failed", "simple_progression": 100}},
+        {
+            "internet_nl_web_https_http_hsts": {
+                "test_result": "failed",
+                "simple_progression": 100,
+            }
+        },
         {
             "this_is_a_non_matching_result_and_will_return_into_no_comparison_thus_neutral": {
                 "test_result": "passed",
@@ -622,7 +693,13 @@ def test_determine_changes(current_path):
 
     # and test missing key with an entirely empty old report
     assert determine_changes_in_ratings(
-        {"internet_nl_web_https_http_hsts": {"test_result": "failed", "simple_progression": 100}}, {}
+        {
+            "internet_nl_web_https_http_hsts": {
+                "test_result": "failed",
+                "simple_progression": 100,
+            }
+        },
+        {},
     ) == {
         "improvement": 0,
         "neutral": 1,

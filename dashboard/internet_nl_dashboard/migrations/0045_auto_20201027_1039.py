@@ -6,7 +6,10 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ("internet_nl_dashboard", "0044_dashboarduser_mail_after_mail_unsubscribe_code"),
+        (
+            "internet_nl_dashboard",
+            "0044_dashboarduser_mail_after_mail_unsubscribe_code",
+        ),
     ]
 
     operations = [

@@ -14,13 +14,17 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name="accountinternetnlscan",
             name="urllist",
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to="internet_nl_dashboard.UrlList"),
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.CASCADE,
+                to="internet_nl_dashboard.UrlList",
+            ),
         ),
         migrations.AlterField(
             model_name="urllist",
             name="name",
             field=models.CharField(
-                help_text="Name of the UrlList, for example name of the organization in it.", max_length=120
+                help_text="Name of the UrlList, for example name of the organization in it.",
+                max_length=120,
             ),
         ),
     ]

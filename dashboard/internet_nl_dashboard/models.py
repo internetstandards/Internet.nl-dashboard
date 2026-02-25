@@ -40,7 +40,10 @@ class Account(models.Model):
     # bytes are stored as a string, while ugly, it might just function better and more consistent.
     # https://code.djangoproject.com/ticket/27813
     internet_nl_api_password = models.TextField(
-        blank=True, null=True, help_text="New values will automatically be encrypted.", editable=True
+        blank=True,
+        null=True,
+        help_text="New values will automatically be encrypted.",
+        editable=True,
     )
 
     can_connect_to_internet_nl_api = models.BooleanField(default=False)
@@ -147,10 +150,15 @@ class UrlList(models.Model):
     """
 
     name = models.CharField(
-        max_length=120, help_text="Name of the UrlList, for example name of the organization in it."
+        max_length=120,
+        help_text="Name of the UrlList, for example name of the organization in it.",
     )
 
-    account = models.ForeignKey(Account, on_delete=models.CASCADE, help_text="Who owns and manages this urllist.")
+    account = models.ForeignKey(
+        Account,
+        on_delete=models.CASCADE,
+        help_text="Who owns and manages this urllist.",
+    )
 
     urls = models.ManyToManyField(through="TaggedUrlInUrllist", to=Url, related_name="urls_in_dashboard_list_2")
 
@@ -301,7 +309,9 @@ class SubdomainDiscoveryScan(models.Model):
 
     urllist = models.ForeignKey(UrlList, on_delete=models.CASCADE)
     state = models.CharField(
-        max_length=20, default="requested", help_text="Name of the UrlList, for example name of the organization in it."
+        max_length=20,
+        default="requested",
+        help_text="Name of the UrlList, for example name of the organization in it.",
     )
     state_changed_on = models.DateTimeField(blank=True, null=True)
     state_message = models.CharField(max_length=200, blank=True)
@@ -405,11 +415,18 @@ class UploadLog(models.Model):
     )
 
     user = models.ForeignKey(
-        DashboardUser, on_delete=models.CASCADE, help_text="What user performed this upload.", blank=True, null=True
+        DashboardUser,
+        on_delete=models.CASCADE,
+        help_text="What user performed this upload.",
+        blank=True,
+        null=True,
     )
 
     percentage = models.PositiveIntegerField(
-        default=0, blank=True, null=True, help_text="The percentage of domains added in the upload."
+        default=0,
+        blank=True,
+        null=True,
+        help_text="The percentage of domains added in the upload.",
     )
 
 
@@ -496,7 +513,11 @@ class UrlListReport(SeriesOfUrlsReportMixin):  # pylint: disable=too-many-ancest
         try:
             return (
                 UrlListReport.objects.all()
-                .filter(urllist=self.urllist, report_type=self.report_type, at_when__lt=self.at_when)
+                .filter(
+                    urllist=self.urllist,
+                    report_type=self.report_type,
+                    at_when__lt=self.at_when,
+                )
                 .exclude(id=self.id)
                 .defer("calculation")
                 .latest()
@@ -561,7 +582,10 @@ class AccountInternetNLScanLog(models.Model):
     )
 
     state = models.CharField(
-        max_length=255, blank=True, default="", help_text="The state that was registered at a certain moment in time."
+        max_length=255,
+        blank=True,
+        default="",
+        help_text="The state that was registered at a certain moment in time.",
     )
 
     at_when = models.DateTimeField(blank=True, null=True)

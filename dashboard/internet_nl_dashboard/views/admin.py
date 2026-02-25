@@ -1,11 +1,19 @@
 # SPDX-License-Identifier: Apache-2.0
 from django.contrib.auth.models import User
 from django.http import HttpResponse, JsonResponse
-from ninja import Router, Schema
+from ninja import Query, Router, Schema
 from ninja.security import django_auth_superuser
 
 from dashboard.internet_nl_dashboard.logic import OperationResponseSchema, operation_response
-from dashboard.internet_nl_dashboard.logic.usage import UsageMetricsSchema, usage_metrics
+from dashboard.internet_nl_dashboard.logic.usage import (
+    ActionStatisticsSchema,
+    UsageMetricsSchema,
+    UserStatisticsInputSchema,
+    UserStatisticsSchema,
+    usage_action_metrics,
+    usage_metrics,
+    user_statistics,
+)
 from dashboard.internet_nl_dashboard.models import Account, AccountInternetNLScan, DashboardUser, UrlList
 from dashboard.internet_nl_dashboard.views import get_account
 
@@ -63,7 +71,9 @@ def set_account(request, account_id: int) -> HttpResponse:
 
     return JsonResponse(
         operation_response(
-            success=True, message="switched_account", data={"account_name": dashboard_user.account.name}
+            success=True,
+            message="switched_account",
+            data={"account_name": dashboard_user.account.name},
         ).dict()
     )
 
@@ -82,7 +92,8 @@ def check_api_credentials(request, data: CredentialCheckSchema) -> HttpResponse:
     return JsonResponse(
         {
             "can_connect_to_internet_nl_api": Account.connect_to_internet_nl_api(
-                data.new_account_internet_nl_api_username, data.new_account_internet_nl_api_password
+                data.new_account_internet_nl_api_username,
+                data.new_account_internet_nl_api_password,
             ),
         }
     )
@@ -114,29 +125,43 @@ def save_instant_account_and_user(request, data: InstantAccountAndUserCreationSc
     """
 
     if not data.new_username:
-        return JsonResponse(operation_response(error=True, message="error_no_username_supplied").dict(), status=400)
+        return JsonResponse(
+            operation_response(error=True, message="error_no_username_supplied").dict(),
+            status=400,
+        )
 
     if User.objects.all().filter(username=data.new_username).exists():
-        return JsonResponse(operation_response(error=True, message="error_username_already_exists").dict(), status=409)
+        return JsonResponse(
+            operation_response(error=True, message="error_username_already_exists").dict(),
+            status=409,
+        )
 
     if Account.objects.all().filter(name=data.new_username).exists():
         return JsonResponse(
-            operation_response(error=True, message="error_account_name_already_exists").dict(), status=409
+            operation_response(error=True, message="error_account_name_already_exists").dict(),
+            status=409,
         )
 
     # Extremely arbitrary password requirements. Just to make sure a password has been filled in.
     if len(data.new_password) < 12:
-        return JsonResponse(operation_response(error=True, message="error_password_too_short").dict(), status=400)
+        return JsonResponse(
+            operation_response(error=True, message="error_password_too_short").dict(),
+            status=400,
+        )
 
     if data.use_existing_account_id:
         account = Account.objects.filter(id=data.use_existing_account_id).first()
         if not account:
-            return JsonResponse(operation_response(error=True, message="error_account_not_found").dict(), status=404)
+            return JsonResponse(
+                operation_response(error=True, message="error_account_not_found").dict(),
+                status=404,
+            )
     else:
 
         if not data.new_account_name:
             return JsonResponse(
-                operation_response(error=True, message="error_no_account_name_supplied").dict(), status=400
+                operation_response(error=True, message="error_no_account_name_supplied").dict(),
+                status=400,
             )
 
         account = Account(
@@ -145,7 +170,8 @@ def save_instant_account_and_user(request, data: InstantAccountAndUserCreationSc
                 "internet_nl_api_username": data.new_account_internet_nl_api_username,
                 "internet_nl_api_password": Account.encrypt_password(data.new_account_internet_nl_api_password),
                 "can_connect_to_internet_nl_api": Account.connect_to_internet_nl_api(
-                    data.new_account_internet_nl_api_username, data.new_account_internet_nl_api_password
+                    data.new_account_internet_nl_api_username,
+                    data.new_account_internet_nl_api_password,
                 ),
             }
         )
@@ -173,3 +199,17 @@ def save_instant_account_and_user(request, data: InstantAccountAndUserCreationSc
 @router.get("/usage-statistics", response={200: UsageMetricsSchema})
 def usage_api(request) -> UsageMetricsSchema:
     return usage_metrics()
+
+
+@router.get("/action-statistics", response={200: ActionStatisticsSchema})
+def usage_action_api(request) -> ActionStatisticsSchema:
+    return usage_action_metrics()
+
+
+@router.get("/user-statistics", response={200: UserStatisticsSchema})
+def usage_user_api(request, data: Query[UserStatisticsInputSchema]) -> UserStatisticsSchema:
+    return user_statistics(
+        start_date=data.start_date,
+        end_date=data.end_date,
+        max_records=data.max_records,
+    )

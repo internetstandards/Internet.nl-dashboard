@@ -4,12 +4,15 @@ import re
 from datetime import datetime, timedelta, timezone
 
 import nested_admin
+from actstream.models import Action as ActstreamAction
 from celery import group
 from constance.admin import Config, ConstanceAdmin, ConstanceForm
 from django.contrib import admin
+from django.contrib.admin import SimpleListFilter
 from django.contrib.auth.admin import GroupAdmin as BaseGroupAdmin
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 from django.contrib.auth.models import Group, User
+from django.contrib.contenttypes.models import ContentType
 from django.contrib.humanize.templatetags.humanize import naturaltime
 from django.core.paginator import Paginator
 from django.utils.html import format_html
@@ -44,6 +47,7 @@ from dashboard.internet_nl_dashboard.scanners.scan_internet_nl_per_account impor
 )
 
 log = logging.getLogger(__package__)
+MAX_ACTIVITY_FILTER_OPTIONS = 400
 
 
 class TooManyRecordsPaginator(Paginator):
@@ -207,7 +211,11 @@ class UserAdmin(BaseUserAdmin, ImportExportModelAdmin):
 
     list_filter = ["is_active", "is_staff", "is_superuser"][::-1]
 
-    search_fields = ["username", "dashboarduser__account__name", "dashboarduser__account__internet_nl_api_username"]
+    search_fields = [
+        "username",
+        "dashboarduser__account__name",
+        "dashboarduser__account__internet_nl_api_username",
+    ]
 
     @staticmethod
     def in_account(obj):
@@ -230,6 +238,83 @@ admin.site.unregister(Group)
 admin.site.register(Group, GroupAdmin)
 
 
+def _generic_action_relation_lookups(queryset, relation_name: str):
+    content_type_field = f"{relation_name}_content_type_id"
+    object_id_field = f"{relation_name}_object_id"
+
+    pairs = list(
+        queryset.exclude(**{content_type_field: None})
+        .exclude(**{object_id_field: None})
+        .values_list(content_type_field, object_id_field)
+        .distinct()
+        .order_by(content_type_field, object_id_field)[:MAX_ACTIVITY_FILTER_OPTIONS]
+    )
+    content_types = ContentType.objects.in_bulk({content_type_id for content_type_id, _ in pairs})
+
+    lookups = []
+    for content_type_id, object_id in pairs:
+        content_type = content_types.get(content_type_id)
+        if not content_type:
+            continue
+
+        label = f"{content_type.app_label}.{content_type.model}:{object_id}"
+        model_class = content_type.model_class()
+        if model_class:
+            try:
+                obj = model_class._default_manager.filter(pk=object_id).first()
+                if obj is not None:
+                    label = f"{content_type.app_label}.{content_type.model}: {obj}"
+            except BaseException:  # pylint: disable=broad-except
+                pass
+
+        lookups.append((f"{content_type_id}:{object_id}", label))
+
+    return lookups
+
+
+class ActorListFilter(SimpleListFilter):
+    title = "actor"
+    parameter_name = "actor"
+
+    def lookups(self, request, model_admin):
+        return _generic_action_relation_lookups(model_admin.get_queryset(request), "actor")
+
+    def queryset(self, request, queryset):
+        if not self.value():
+            return queryset
+
+        if ":" not in self.value():
+            return queryset
+        content_type_id, object_id = self.value().split(":", 1)
+        return queryset.filter(actor_content_type_id=content_type_id, actor_object_id=object_id)
+
+
+class TargetListFilter(SimpleListFilter):
+    title = "target"
+    parameter_name = "target"
+
+    def lookups(self, request, model_admin):
+        return _generic_action_relation_lookups(model_admin.get_queryset(request), "target")
+
+    def queryset(self, request, queryset):
+        if not self.value():
+            return queryset
+
+        if ":" not in self.value():
+            return queryset
+        content_type_id, object_id = self.value().split(":", 1)
+        return queryset.filter(target_content_type_id=content_type_id, target_object_id=object_id)
+
+
+class ActionInspectionAdmin(admin.ModelAdmin):
+    date_hierarchy = "timestamp"
+    list_display = ("__str__", "actor", "verb", "target", "public")
+    list_editable = ("verb",)
+    list_filter = (ActorListFilter, "verb", TargetListFilter, "public", "timestamp")
+    raw_id_fields = ("actor_content_type", "target_content_type", "action_object_content_type")
+    search_fields = ("verb", "description", "actor_object_id", "target_object_id", "action_object_object_id")
+
+
 # Overwrite the ugly Constance forms with something nicer
 class CustomConfigForm(ConstanceForm):
     def __init__(self, *args, **kwargs):
@@ -250,7 +335,12 @@ admin.site.register([Config], ConfigAdmin)
 class AccountAdmin(ImportExportModelAdmin, admin.ModelAdmin):
     form = CustomAccountModelForm
 
-    list_display = ("name", "internet_nl_api_username", "can_connect_to_internet_nl_api", "no_of_users")
+    list_display = (
+        "name",
+        "internet_nl_api_username",
+        "can_connect_to_internet_nl_api",
+        "no_of_users",
+    )
     search_fields = ("name", "can_connect_to_internet_nl_api")
     # list_filter = [][::-1]
     fields = ("name", "report_settings", "internet_nl_api_username", "new_password")
@@ -349,7 +439,12 @@ class UrlListAdmin(ImportExportModelAdmin, admin.ModelAdmin):
     def no_of_endpoints(obj):
         return (
             Endpoint.objects.all()
-            .filter(url__urls_in_dashboard_list_2=obj, is_dead=False, url__is_dead=False, url__not_resolvable=False)
+            .filter(
+                url__urls_in_dashboard_list_2=obj,
+                is_dead=False,
+                url__is_dead=False,
+                url__not_resolvable=False,
+            )
             .count()
         )
 
@@ -401,7 +496,15 @@ class AccountInternetNLScanInline(nested_admin.NestedTabularInline):  # pylint: 
     can_delete = False
     inlines = [AccountInternetNLScanLogInl]
 
-    readonly_fields = ("account", "urllist", "report", "state", "started_on", "finished_on", "state_changed_on")
+    readonly_fields = (
+        "account",
+        "urllist",
+        "report",
+        "state",
+        "started_on",
+        "finished_on",
+        "state_changed_on",
+    )
 
     def has_add_permission(self, *args, **kwargs):
         return False
@@ -417,7 +520,11 @@ class AccountInternetNLScanAdmin(ImportExportModelAdmin, admin.ModelAdmin):
         qs = qs.select_related("account", "urllist", "scan")
 
         # this column prevents loading of long lists
-        qs = qs.defer("scan__subject_urls", "scan__retrieved_scan_report", "scan__retrieved_scan_report_technical")
+        qs = qs.defer(
+            "scan__subject_urls",
+            "scan__retrieved_scan_report",
+            "scan__retrieved_scan_report_technical",
+        )
 
         return qs
 
@@ -439,7 +546,15 @@ class AccountInternetNLScanAdmin(ImportExportModelAdmin, admin.ModelAdmin):
     list_filter = ["account", "urllist", "state", "started_on", "finished_on"][::-1]
     search_fields = ("urllist__name", "account__name")
 
-    fields = ("state", "state_changed_on", "account", "scan", "urllist", "started_on", "finished_on")
+    fields = (
+        "state",
+        "state_changed_on",
+        "account",
+        "scan",
+        "urllist",
+        "started_on",
+        "finished_on",
+    )
 
     readonly_fields = ("account", "scan", "urllist")
 
@@ -559,6 +674,7 @@ def create_modeladmin(modeladmin, model, name=None):
 
 
 create_modeladmin(InternetNLV2ScanAdminNew, name="internetNlScanInspection", model=InternetNLV2Scan)
+create_modeladmin(ActionInspectionAdmin, name="actionInspection", model=ActstreamAction)
 
 
 @admin.register(AccountInternetNLScanLog)
@@ -569,10 +685,23 @@ class AccountInternetNLScanLogAdmin(ImportExportModelAdmin, admin.ModelAdmin):
     def get_queryset(self, request):
         qs = super().get_queryset(request)
         return qs.select_related("scan", "scan__urllist", "scan__account").only(
-            "id", "state", "at_when", "scan", "scan__id", "scan__urllist__name", "scan__account__name"
+            "id",
+            "state",
+            "at_when",
+            "scan",
+            "scan__id",
+            "scan__urllist__name",
+            "scan__account__name",
         )
 
-    list_display = ("id", "scan__id", "scan__urllist__name", "scan__account__name", "state", "at_when")
+    list_display = (
+        "id",
+        "scan__id",
+        "scan__urllist__name",
+        "scan__account__name",
+        "state",
+        "at_when",
+    )
     list_filter = ["scan", "state", "at_when", "scan__account__name"][::-1]
     search_fields = ("scan__urllist__name", "scan__account__name")
     fields = list_display
@@ -580,17 +709,39 @@ class AccountInternetNLScanLogAdmin(ImportExportModelAdmin, admin.ModelAdmin):
 
 @admin.register(UploadLog)
 class UploadLogAdmin(ImportExportModelAdmin, admin.ModelAdmin):
-    list_display = ("original_filename", "internal_filename", "status", "message", "user", "upload_date", "filesize")
+    list_display = (
+        "original_filename",
+        "internal_filename",
+        "status",
+        "message",
+        "user",
+        "upload_date",
+        "filesize",
+    )
     search_fields = ("internal_filename", "orginal_filename", "status")
     list_filter = ["message", "upload_date", "user"][::-1]
 
-    fields = ("original_filename", "internal_filename", "status", "message", "user", "upload_date", "filesize")
+    fields = (
+        "original_filename",
+        "internal_filename",
+        "status",
+        "message",
+        "user",
+        "upload_date",
+        "filesize",
+    )
 
 
 @admin.register(models.SubdomainDiscoveryScan)
 class SubdomainDiscoveryScanAdmin(ImportExportModelAdmin, admin.ModelAdmin):
     list_display = ("urllist", "state", "state_changed_on", "state_message")
-    fields = ("urllist", "state", "state_changed_on", "state_message", "domains_discovered")
+    fields = (
+        "urllist",
+        "state",
+        "state_changed_on",
+        "state_message",
+        "domains_discovered",
+    )
     list_filter = ("state", "state_changed_on", "state_message")
 
 
@@ -599,7 +750,10 @@ class UrlListReportAdmin(ImportExportModelAdmin, admin.ModelAdmin):
 
     @staticmethod
     def inspect_list(obj):
-        return format_html('<a href="../../internet_nl_dashboard/urllist/{id}/change">inspect</a>', id=format(obj.id))
+        return format_html(
+            '<a href="../../internet_nl_dashboard/urllist/{id}/change">inspect</a>',
+            id=format(obj.id),
+        )
 
     # do NOT load the calculation field, as that will be slow.
     # https://stackoverflow.com/questions/34774028/how-to-ignore-loading-huge-fields-in-django-admin-list-display

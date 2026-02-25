@@ -41,7 +41,10 @@ def tags_in_urllist(account: Account, urllist_id: int) -> List[str]:
     return list(
         sorted(
             Tag.objects.all()
-            .filter(taggedurlinurllist__urllist=urllist_id, taggedurlinurllist__urllist__account=account)
+            .filter(
+                taggedurlinurllist__urllist=urllist_id,
+                taggedurlinurllist__urllist__account=account,
+            )
             .values_list("name", flat=True)
             .distinct()
         )

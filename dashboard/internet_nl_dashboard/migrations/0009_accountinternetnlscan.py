@@ -15,12 +15,29 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name="AccountInternetNLScan",
             fields=[
-                ("id", models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
+                (
+                    "id",
+                    models.AutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
                 (
                     "account",
-                    models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to="internet_nl_dashboard.Account"),
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        to="internet_nl_dashboard.Account",
+                    ),
                 ),
-                ("scan", models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to="scanners.InternetNLScan")),
+                (
+                    "scan",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        to="scanners.InternetNLScan",
+                    ),
+                ),
             ],
         ),
     ]

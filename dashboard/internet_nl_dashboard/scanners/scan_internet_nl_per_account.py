@@ -108,7 +108,9 @@ def create_scan(internal_scan_type: str, urllist: UrlList, manual_or_scheduled: 
     new_scan.type = internal_scan_type
     new_scan.save()
     internet_nl_websecmap.update_state(
-        new_scan.id, "requested and empty", "requested a scan to be performed on internet.nl api"
+        new_scan.id,
+        "requested and empty",
+        "requested a scan to be performed on internet.nl api",
     )
 
     # We need to store the scan type in the InternetNLV2Scan at creation, because the type in the list might change:
@@ -124,7 +126,12 @@ def create_scan(internal_scan_type: str, urllist: UrlList, manual_or_scheduled: 
     update_state("requested", accountinternetnlscan.id)
 
     # Sprinkling an activity stream action.
-    action.send(urllist.account, verb=f"started {manual_or_scheduled} scan", target=accountinternetnlscan, public=False)
+    action.send(
+        urllist.account,
+        verb=f"started {manual_or_scheduled} scan",
+        target=accountinternetnlscan,
+        public=False,
+    )
 
     return accountinternetnlscan.id
 
@@ -326,7 +333,13 @@ def discovering_endpoints(scan_id: int):
         return group([])
 
     return dns_endpoints.compose_discover_task(
-        **{"urls_filter": {"urls_in_dashboard_list_2__id": scan.urllist.id, "is_dead": False, "not_resolvable": False}}
+        **{
+            "urls_filter": {
+                "urls_in_dashboard_list_2__id": scan.urllist.id,
+                "is_dead": False,
+                "not_resolvable": False,
+            }
+        }
     ) | update_state.si("discovered endpoints", scan.id)
 
 
@@ -340,7 +353,11 @@ def retrieving_scannable_urls(scan_id: int):
     update_state("retrieving scannable urls", scan.id)
 
     # mail was added here, due to a problem while registering scans. We always want dns_soa endpoints.
-    relevant_scan_types = {"web": "dns_a_aaaa", "mail_dashboard": "dns_soa", "mail": "dns_soa"}
+    relevant_scan_types = {
+        "web": "dns_a_aaaa",
+        "mail_dashboard": "dns_soa",
+        "mail": "dns_soa",
+    }
 
     return (
         get_relevant_urls.si(scan.urllist.id, relevant_scan_types[scan.scan.type])
@@ -359,7 +376,11 @@ def registering_scan_at_internet_nl(scan_id: int):
 
     # mail = websecmap, mail_dashboard = internet.nl dashboard, web is the same on both. Mail here is a fallback
     # because the dashboard only understands dns_soa endpoints.
-    relevant_endpoint_types = {"web": "dns_a_aaaa", "mail_dashboard": "dns_soa", "mail": "dns_soa"}
+    relevant_endpoint_types = {
+        "web": "dns_a_aaaa",
+        "mail_dashboard": "dns_soa",
+        "mail": "dns_soa",
+    }
 
     # auto saved.
     scan.scan.subject_urls.set(get_relevant_urls(scan.urllist.id, relevant_endpoint_types[scan.scan.type]))
@@ -663,7 +684,11 @@ def upgrade_report_with_statistics(urllistreport_id: int) -> int:
 
     log.debug("Creating statistics over urllistreport %s.", urllistreport)
     calculation = retrieve_report(urllistreport_id, "UrlListReport")
-    store_report(urllistreport_id, "UrlListReport", optimize_calculation_and_add_statistics(calculation))
+    store_report(
+        urllistreport_id,
+        "UrlListReport",
+        optimize_calculation_and_add_statistics(calculation),
+    )
 
     return int(urllistreport.pk)
 
@@ -832,7 +857,10 @@ def get_relevant_urls(urllist_id: int, protocol: str) -> List[int]:
     urls = (
         Url.objects.all()
         .filter(
-            urls_in_dashboard_list_2=urllist, is_dead=False, not_resolvable=False, endpoint__protocol__in=[protocol]
+            urls_in_dashboard_list_2=urllist,
+            is_dead=False,
+            not_resolvable=False,
+            endpoint__protocol__in=[protocol],
         )
         .values_list("id", flat=True)
     )

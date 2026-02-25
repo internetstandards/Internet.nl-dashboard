@@ -92,7 +92,10 @@ def send_scan_finished_mails(scan: AccountInternetNLScan) -> int:
     :return:
     """
     if not scan.report:
-        log.error("Tried to send a finished mail for a report that was not finished. Scan: %s", scan)
+        log.error(
+            "Tried to send a finished mail for a report that was not finished. Scan: %s",
+            scan,
+        )
         return 0
 
     users = get_users_to_send_mail_to(scan)
@@ -105,7 +108,10 @@ def send_scan_finished_mails(scan: AccountInternetNLScan) -> int:
 
         # set unsubscribe code if it's not set yet. This allows the user to instantly unsubscribe from this feed.
         if user.dashboarduser.mail_after_mail_unsubscribe_code == "":
-            log.debug("For some reason user %s has no unsubscribe code, generating one now", user.id)
+            log.debug(
+                "For some reason user %s has no unsubscribe code, generating one now",
+                user.id,
+            )
             user.dashboarduser.mail_after_mail_unsubscribe_code = generate_unsubscribe_code()
             user.dashboarduser.save()
 
@@ -261,10 +267,14 @@ def convert_to_email_safe_values(values: dict, mail_language: str = "en") -> dic
         "comparison_report_contains_regression": str(values["comparison_report_contains_regression"]),
         "days_between_current_and_previous_report": values["days_between_current_and_previous_report"],
         "comparison_table_improvement": render_comparison_view(
-            values["comparison_table_improvement"], impact="improvement", language=mail_language
+            values["comparison_table_improvement"],
+            impact="improvement",
+            language=mail_language,
         ),
         "comparison_table_regression": render_comparison_view(
-            values["comparison_table_regression"], impact="regression", language=mail_language
+            values["comparison_table_regression"],
+            impact="regression",
+            language=mail_language,
         ),
         "domains_exclusive_in_current_report": ",".join(values["domains_exclusive_in_current_report"]),
         "domains_exclusive_in_other_report": ",".join(values["domains_exclusive_in_other_report"]),
@@ -284,7 +294,8 @@ def unsubscribe(feed: str = "scan_finished", unsubscribe_code: str = ""):
 
     if feed == "scan_finished":
         users = DashboardUser.objects.all().filter(
-            mail_after_mail_unsubscribe_code=unsubscribe_code, mail_send_mail_after_scan_finished=True
+            mail_after_mail_unsubscribe_code=unsubscribe_code,
+            mail_send_mail_after_scan_finished=True,
         )
         for user in users:
             user.mail_send_mail_after_scan_finished = False

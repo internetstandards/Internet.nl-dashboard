@@ -11,9 +11,10 @@ from sentry_sdk.integrations.django import DjangoIntegration
 from sentry_sdk.integrations.redis import RedisIntegration
 
 from . import __version__
-from .settings_constance import CONSTANCE_CONFIG_FIELDSETS  # noqa  # pylint: disable=unused-import
-from .settings_constance import CONSTANCE_ADDITIONAL_FIELDS, CONSTANCE_BACKEND, CONSTANCE_CONFIG
-from .settings_jet import JET_SIDE_MENU_COMPACT, JET_SIDE_MENU_ITEMS  # noqa  # pylint: disable=unused-import
+from .settings_constance import CONSTANCE_ADDITIONAL_FIELDS  # noqa  # pylint: disable=unused-import
+from .settings_constance import CONSTANCE_BACKEND, CONSTANCE_CONFIG, CONSTANCE_CONFIG_FIELDSETS
+from .settings_jet import JET_SIDE_MENU_COMPACT  # noqa  # pylint: disable=unused-import
+from .settings_jet import JET_SIDE_MENU_ITEMS  # noqa  # pylint: disable=unused-import
 from .settings_util import get_field_encryption_key_from_file_or_env, get_secret_key_from_file_or_env
 
 load_dotenv()
@@ -116,9 +117,15 @@ INSTALLED_APPS = [
     # allauth
     "allauth",
     "allauth.account",
+    "allauth.headless",
+    # Usersessions stores ip-adresses and thus does not comply with our policy of anonimized usage
+    # "allauth.usersessions",
+    "allauth.mfa",
+    "allauth.mfa.webauthn",
     "allauth.socialaccount",
-    "allauth.socialaccount.providers.openid_connect",
-    "allauth.usersessions",
+    # Enable this setting to add the openid connect login.
+    # Set the settings in SOCIALACCOUNT_PROVIDERS to use the right callbacks.
+    # "allauth.socialaccount.providers.openid_connect",
     # wsm:
     # "storages",
     "websecmap.dramatiq.CustomDjangoDramatiqConfig.CustomDjangoDramatiqConfig",
@@ -373,7 +380,8 @@ DRAMATIQ_RESULT_BACKEND = {
             "url": os.environ.get(
                 "RESULT_BACKEND",
                 os.environ.get(
-                    "DRAMATIQ_RESULT_BACKEND", os.environ.get("DRAMATIQ_BROKER_URL", "redis://localhost:6379/1")
+                    "DRAMATIQ_RESULT_BACKEND",
+                    os.environ.get("DRAMATIQ_BROKER_URL", "redis://localhost:6379/1"),
                 ),
             ),
         }
@@ -503,7 +511,8 @@ OPEN_API_TITLE = os.environ.get("OPEN_API_TITLE", "Internet.nl Dashboard API")
 OPEN_API_CONTACT_ORGANIZATION = os.environ.get("OPEN_API_CONTACT_ORGANIZATION", "Internet.nl API Support")
 OPEN_API_CONTACT_EMAIL = os.environ.get("OPEN_API_CONTACT_EMAIL", "vraag@internet.nl")
 OPEN_API_CONTACT_URL = os.environ.get(
-    "OPEN_API_CONTACT_URL", "https://github.com/internetstandards/Internet.nl-dashboard/"
+    "OPEN_API_CONTACT_URL",
+    "https://github.com/internetstandards/Internet.nl-dashboard/",
 )
 
 
@@ -532,6 +541,9 @@ EMAIL_BACKEND = "django_mail_admin.backends.CustomEmailBackend"
 if DEBUG:
     # 25 megs for importing reports from live situations
     DATA_UPLOAD_MAX_MEMORY_SIZE = 26214400
+
+    # when developing, show the sent emails in the console:
+    EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
 
 """
 Django Jet 3:
@@ -583,7 +595,10 @@ STORAGES = {
     "screenshots": {
         "BACKEND": "django.core.files.storage.FileSystemStorage",
     },
-    "paper_trail": {"BACKEND": "django.core.files.storage.FileSystemStorage", "OPTIONS": {"base_url": MEDIA_URL}},
+    "paper_trail": {
+        "BACKEND": "django.core.files.storage.FileSystemStorage",
+        "OPTIONS": {"base_url": MEDIA_URL},
+    },
 }
 
 # required from django 4.0
@@ -605,6 +620,72 @@ FULL_REPORT_STORAGE_DIR = f"{REPORT_STORAGE_DIR}original/UrlListReport/"
 if not os.path.isdir(FULL_REPORT_STORAGE_DIR):
     os.makedirs(FULL_REPORT_STORAGE_DIR, exist_ok=True)
 
+
+# WSM settings
+NETWORK_SUPPORTS_IPV4 = os.environ.get("NETWORK_SUPPORTS_IPV4", True)
+NETWORK_SUPPORTS_IPV6 = os.environ.get("NETWORK_SUPPORTS_IPV6", False)
+
+# Since Django 5.2, it's a good warning for beginning developers, it's noise if you're around for a while
+# https://adamj.eu/tech/2025/06/27/django-hide-development-server-warning/
+os.environ["DJANGO_RUNSERVER_HIDE_WARNING"] = "true"
+
+# make sure these imports don't get removed by linting tools
+__all__ = [
+    "CONSTANCE_CONFIG",
+    "CONSTANCE_BACKEND",
+    "CONSTANCE_ADDITIONAL_FIELDS",
+    "CONSTANCE_CONFIG_FIELDSETS",
+]
+
+#######
+# BEGIN allauth
+
+# Make integrations simple, in the same style of dashboard
+HEADLESS_SERVE_SPECIFICATION = True
+HEADLESS_SPECIFICATION_TEMPLATE_NAME = "headless/spec/swagger_cdn.html"
+
+ACCOUNT_SIGNUP_ALLOWED = False
+
+# Registration happens via a dedicated registration form and process. It is not supported
+# in the frontend yet.
+ACCOUNT_ALLOW_REGISTRATION = False
+
+# users have to verify their mail, even though they received a mail on it.
+# This might have to be disabled to make more sense and a more streamlined onboarding.
+ACCOUNT_EMAIL_VERIFICATION = "mandatory"
+
+# Mail address can only be used once. Can this be guessed in the auth attempt?
+ACCOUNT_UNIQUE_EMAIL = True
+
+MFA_SUPPORTED_TYPES = [
+    "webauthn",
+    "totp",
+    "recovery_codes",
+]
+
+ACCOUNT_SIGNUP_FIELDS = ["email*", "username*", "password1*", "password2*"]
+
+MFA_PASSKEY_LOGIN_ENABLED = True
+MFA_PASSKEY_SIGNUP_ENABLED = True
+
+ACCOUNT_LOGIN_METHODS = {
+    "username",
+}
+ACCOUNT_EMAIL_VERIFICATION_BY_CODE_ENABLED = True
+
+# all defaults, but these keys need to be present. Not including the hostname should work.
+HEADLESS_FRONTEND_URLS = {
+    "account_confirm_email": "/account/verify-email/{key}",
+    "account_reset_password": "/account/password/reset",
+    "account_reset_password_from_key": "/account/password/reset/key/{key}",
+    "account_signup": "/account/signup",
+    # Fallback in case the state containing the `next` URL is lost and the handshake
+    # with the third-party provider fails.
+    "socialaccount_login_error": "/account/provider/callback",
+}
+
+HEADLESS_ONLY = True
+
 AUTHENTICATION_BACKENDS = [
     # Needed to login by username in Django admin, regardless of `allauth`
     "django.contrib.auth.backends.ModelBackend",
@@ -612,20 +693,17 @@ AUTHENTICATION_BACKENDS = [
     "allauth.account.auth_backends.AuthenticationBackend",
 ]
 
-# https://docs.allauth.org/en/latest/installation/quickstart.html
-# SOCIALACCOUNT_PROVIDERS = {
-#     'google': {
-#         # For each OAuth based provider, either add a ``SocialApp``
-#         # (``socialaccount`` app) containing the required client
-#         # credentials, or list them here:
-#         'APP': {
-#             'client_id': '123',
-#             'secret': '456',
-#             'key': ''
-#         }
-#     }
-# }
 
+# This is required to disable regular signups. The adapter will prevent the signup form to show.
+# instead it will show "Sign Up Closed" with a sorry message.
+ACCOUNT_ADAPTER = "dashboard.allauth.oidcadapter.AccountAdapter"
+
+# Setup these variables to use openid connect and enable the social app in the APPS section.
+# MissingSchema at /api/v1/allauth/browser/v1/auth/provider/redirect
+# Invalid URL '/.well-known/openid-configuration': No scheme supplied.
+# Perhaps you meant https:///.well-known/openid-configuration?
+# https://docs.allauth.org/en/latest/socialaccount/provider_configuration.html
+# Account registration is enabled by default for openid connect.
 SOCIALACCOUNT_ADAPTER = "dashboard.allauth.oidcadapter.OIDCGroupRestrictionAdapter"
 SOCIALACCOUNT_PROVIDERS = {
     "openid_connect": {
@@ -640,16 +718,8 @@ SOCIALACCOUNT_PROVIDERS = {
                 },
             },
         ]
-    }
+    },
 }
 
-# WSM settings
-NETWORK_SUPPORTS_IPV4 = os.environ.get("NETWORK_SUPPORTS_IPV4", True)
-NETWORK_SUPPORTS_IPV6 = os.environ.get("NETWORK_SUPPORTS_IPV6", False)
-
-# Since Django 5.2, it's a good warning for beginning developers, it's noise if you're around for a while
-# https://adamj.eu/tech/2025/06/27/django-hide-development-server-warning/
-os.environ["DJANGO_RUNSERVER_HIDE_WARNING"] = "true"
-
-# make sure these imports don't get removed by linting tools
-__all__ = ["CONSTANCE_CONFIG", "CONSTANCE_BACKEND", "CONSTANCE_ADDITIONAL_FIELDS", "CONSTANCE_CONFIG_FIELDSETS"]
+# END allauth
+#######

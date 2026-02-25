@@ -215,7 +215,9 @@ class UrlListTimelineSeriesSchema(Schema):
 log = logging.getLogger(__name__)
 
 
-def parse_ad_hoc_input(data: SaveAdHocTaggedReportInputSchema) -> tuple[list[str], Optional[datetime]]:
+def parse_ad_hoc_input(
+    data: SaveAdHocTaggedReportInputSchema,
+) -> tuple[list[str], Optional[datetime]]:
     tags = data.tags or []
     try:
         at_when: Optional[datetime] = (
@@ -741,7 +743,9 @@ def remove_comply_or_explain(calculation: Dict[str, Any]):
     return calculation
 
 
-def clean_up_not_required_data_to_speed_up_report_on_client(calculation: Dict[str, Any]):
+def clean_up_not_required_data_to_speed_up_report_on_client(
+    calculation: Dict[str, Any],
+):
     """
     Loading in JSON objects in the client takes (a lot of) time. The larger the object, the more time.
     Especially with 500+ urls, shaving off data increases parse speed with over 50%. So this is a must
@@ -853,7 +857,10 @@ def split_score_and_url(calculation: Dict[str, Any]):
             since = ""
             last_scan = ""
             for scan_type, rating in endpoint["ratings"].items():
-                if scan_type in ["internet_nl_web_overall_score", "internet_nl_mail_dashboard_overall_score"]:
+                if scan_type in [
+                    "internet_nl_web_overall_score",
+                    "internet_nl_mail_dashboard_overall_score",
+                ]:
                     # explanation	"78 https://batch.interne…zuiderzeeland.nl/886818/"
                     explanation = rating["explanation"].split(" ")  # type: ignore
                     if explanation[0] == "error":
@@ -932,7 +939,13 @@ def add_statistics_over_ratings(calculation: Dict[str, Any]):
 
                 # things that are not_testable or not_applicable do not have impact on thigns being OK
                 # see: https://github.com/internetstandards/Internet.nl-dashboard/issues/68
-                if not any([rating["not_testable"], rating["not_applicable"], rating["error_in_test"]]):
+                if not any(
+                    [
+                        rating["not_testable"],
+                        rating["not_applicable"],
+                        rating["error_in_test"],
+                    ]
+                ):
                     calculation["statistics_per_issue_type"][issue]["ok"] += rating["ok"]
                     # these can be summed because only one of high, med, low is 1
                     calculation["statistics_per_issue_type"][issue]["not_ok"] += (
@@ -1020,7 +1033,11 @@ def update_share_code(account, report_id, share_code):
     report.public_share_code = share_code
     report.save()
 
-    return operation_response(success=True, message="response_updated_share_code", data=report_sharing_data(report))
+    return operation_response(
+        success=True,
+        message="response_updated_share_code",
+        data=report_sharing_data(report),
+    )
 
 
 def update_report_code(account, report_id):
@@ -1032,14 +1049,21 @@ def update_report_code(account, report_id):
     report.public_report_code = str(uuid4())
     report.save()
 
-    return operation_response(success=True, message="response_updated_report_code", data=report_sharing_data(report))
+    return operation_response(
+        success=True,
+        message="response_updated_report_code",
+        data=report_sharing_data(report),
+    )
 
 
 def get_report_for_sharing(account: Account, report_id: int, is_publicly_shared: bool) -> Any:
     return (
         UrlListReport.objects.all()
         .filter(
-            urllist__account=account, urllist__is_deleted=False, id=report_id, is_publicly_shared=is_publicly_shared
+            urllist__account=account,
+            urllist__is_deleted=False,
+            id=report_id,
+            is_publicly_shared=is_publicly_shared,
         )
         .defer("calculation")
         .first()

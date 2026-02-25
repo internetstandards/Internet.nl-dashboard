@@ -164,15 +164,31 @@ CONSTANCE_CONFIG = {
         str,
     ),
     # timeouts
-    "SCAN_TIMEOUT_MINUTES_DISCOVERING_ENDPOINTS": (10000, "timeout for phase DISCOVERING_ENDPOINTS", int),
-    "SCAN_TIMEOUT_MINUTES_RETRIEVING_SCANABLE_URLS": (1440, "timeout for phase RETRIEVING_SCANABLE_URLS", int),
+    "SCAN_TIMEOUT_MINUTES_DISCOVERING_ENDPOINTS": (
+        10000,
+        "timeout for phase DISCOVERING_ENDPOINTS",
+        int,
+    ),
+    "SCAN_TIMEOUT_MINUTES_RETRIEVING_SCANABLE_URLS": (
+        1440,
+        "timeout for phase RETRIEVING_SCANABLE_URLS",
+        int,
+    ),
     "SCAN_TIMEOUT_MINUTES_REGISTERING_SCAN_AT_INTERNET_NL": (
         1440,
         "timeout for phase REGISTERING_SCAN_AT_INTERNET_NL",
         int,
     ),
-    "SCAN_TIMEOUT_MINUTES_IMPORTING_SCAN_RESULTS": (10000, "timeout for phase IMPORTING_SCAN_RESULTS", int),
-    "SCAN_TIMEOUT_MINUTES_CREATING_REPORT": (10000, "timeout for phase CREATING_REPORT", int),
+    "SCAN_TIMEOUT_MINUTES_IMPORTING_SCAN_RESULTS": (
+        10000,
+        "timeout for phase IMPORTING_SCAN_RESULTS",
+        int,
+    ),
+    "SCAN_TIMEOUT_MINUTES_CREATING_REPORT": (
+        10000,
+        "timeout for phase CREATING_REPORT",
+        int,
+    ),
     "SCAN_TIMEOUT_MINUTES_SENDING_MAIL": (1440, "timeout for phase SENDING_MAIL", int),
     "SCAN_TIMEOUT_MINUTES_SERVER_ERROR": (1440, "timeout for phase SERVER_ERROR", int),
     # other stuff
@@ -312,7 +328,14 @@ CONSTANCE_CONFIG_FIELDSETS = OrderedDict(
                 "EMAIL_DASHBOARD_ADDRESS",
             ),
         ),
-        ("Security.txt", ("SECURITY_TXT_IS_REDIRECTED", "SECURITY_TXT_REDIRECT_URL", "SECURITY_TXT_CONTENT")),
+        (
+            "Security.txt",
+            (
+                "SECURITY_TXT_IS_REDIRECTED",
+                "SECURITY_TXT_REDIRECT_URL",
+                "SECURITY_TXT_CONTENT",
+            ),
+        ),
         (
             "Subdomain suggestions",
             (

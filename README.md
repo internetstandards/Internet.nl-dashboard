@@ -369,6 +369,9 @@ OIDC_PROVIDER_ID=my-oidc
 OIDC_PROVIDER_NAME=OIDC
 ```
 
+The OIDC identity token must include the `shac_home_organisation` claim. The
+dashboard uses this value as the account name, creating the account if needed.
+
 #### build "frontend"
 
 The frontend is a react application that nmust be build separately, here is how you can do that:

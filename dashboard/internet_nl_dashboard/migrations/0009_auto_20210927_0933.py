@@ -14,7 +14,9 @@ class Migration(migrations.Migration):
             model_name="urllist",
             name="scan_type",
             field=models.CharField(
-                choices=[("web", "web"), ("mail", "mail"), ("all", "all")], default="web", max_length=4
+                choices=[("web", "web"), ("mail", "mail"), ("all", "all")],
+                default="web",
+                max_length=4,
             ),
         ),
     ]

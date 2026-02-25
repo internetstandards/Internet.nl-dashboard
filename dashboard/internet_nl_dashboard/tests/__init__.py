@@ -19,7 +19,12 @@ def make_url_with_endpoint_and_scan():
     url, _ = Url.objects.all().get_or_create(url="test.nl", created_on=day_0, not_resolvable=False)
 
     endpoint, _ = Endpoint.objects.all().get_or_create(
-        url=url, protocol="https", port="443", ip_version=4, discovered_on=day_1, is_dead=False
+        url=url,
+        protocol="https",
+        port="443",
+        ip_version=4,
+        discovered_on=day_1,
+        is_dead=False,
     )
 
     scan, _ = EndpointGenericScan.objects.all().get_or_create(

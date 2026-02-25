@@ -10,6 +10,8 @@ class DashboardConfig(AppConfig):
         # Loading actstream is not possible yet, as the apps aren't loaded. Django will crash.
         from actstream import registry  # pylint: disable=import-outside-toplevel
 
+        import dashboard.internet_nl_dashboard.signals  # noqa: F401  # pylint: disable=unused-import,import-outside-toplevel
+
         registry.register(self.get_model("UrlList"))
         registry.register(self.get_model("AccountInternetNLScan"))
         registry.register(self.get_model("UrlListReport"))
