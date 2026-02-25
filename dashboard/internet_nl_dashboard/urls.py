@@ -55,6 +55,7 @@ class ORJSONRenderer(BaseRenderer):
         return orjson.dumps(data)
 
 
+# /api/v1/allauth/openapi.html
 api = NinjaAPI(
     title=django_settings.OPEN_API_TITLE,
     openapi_extra={
@@ -68,6 +69,9 @@ api = NinjaAPI(
     },
     version=django_settings.OPEN_API_VERSION,
     renderer=ORJSONRenderer(),
+    description="## Introduction\n\nThis is the dashboard API specification.\n\n "
+    "## Authentication\n\nFor authentication you can login via "
+    "allauth. The allauth swagger file can be found here: `/api/v1/allauth/openapi.html` .",
 )
 
 # Inject API-Version header into the generated OpenAPI schema for all responses.

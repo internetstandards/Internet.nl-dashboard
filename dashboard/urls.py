@@ -49,6 +49,7 @@ def not_supported(**args):
 
 
 frontend_urls = [
+    path("api/v1/allauth/", include("allauth.headless.urls")),
     path("", include("dashboard.internet_nl_dashboard.urls")),
     # Enabling the default auth logins can bypass the two factor authentication. Don't enable it.
     # path('', include('django.contrib.auth.urls')),
@@ -63,7 +64,6 @@ frontend_urls = [
         ),
         name="account_change_password",
     ),
-    path("_allauth/", include("allauth.headless.urls")),
     # Required for social provider callback URLs (e.g. `openid_connect_callback`)
     # that are still resolved server-side during headless redirect flows.
     # In `HEADLESS_ONLY=True`, this does not expose headed account pages.

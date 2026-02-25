@@ -699,7 +699,7 @@ AUTHENTICATION_BACKENDS = [
 ACCOUNT_ADAPTER = "dashboard.allauth.oidcadapter.AccountAdapter"
 
 # Setup these variables to use openid connect and enable the social app in the APPS section.
-# MissingSchema at /_allauth/browser/v1/auth/provider/redirect
+# MissingSchema at /api/v1/allauth/browser/v1/auth/provider/redirect
 # Invalid URL '/.well-known/openid-configuration': No scheme supplied.
 # Perhaps you meant https:///.well-known/openid-configuration?
 # https://docs.allauth.org/en/latest/socialaccount/provider_configuration.html
