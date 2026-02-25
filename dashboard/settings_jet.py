@@ -83,6 +83,7 @@ JET_SIDE_MENU_ITEMS = [
         "label": _("✨ Activity"),
         "items": [
             {"name": "actstream.action"},
+            {"name": "actstream.actioninspection", "label": "Actions (Advanced Filters)"},
         ],
     },
 ]

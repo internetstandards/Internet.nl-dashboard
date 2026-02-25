@@ -1,11 +1,19 @@
 # SPDX-License-Identifier: Apache-2.0
 from django.contrib.auth.models import User
 from django.http import HttpResponse, JsonResponse
-from ninja import Router, Schema
+from ninja import Query, Router, Schema
 from ninja.security import django_auth_superuser
 
 from dashboard.internet_nl_dashboard.logic import OperationResponseSchema, operation_response
-from dashboard.internet_nl_dashboard.logic.usage import UsageMetricsSchema, usage_metrics
+from dashboard.internet_nl_dashboard.logic.usage import (
+    ActionStatisticsSchema,
+    UsageMetricsSchema,
+    UserStatisticsInputSchema,
+    UserStatisticsSchema,
+    usage_action_metrics,
+    usage_metrics,
+    user_statistics,
+)
 from dashboard.internet_nl_dashboard.models import Account, AccountInternetNLScan, DashboardUser, UrlList
 from dashboard.internet_nl_dashboard.views import get_account
 
@@ -191,3 +199,17 @@ def save_instant_account_and_user(request, data: InstantAccountAndUserCreationSc
 @router.get("/usage-statistics", response={200: UsageMetricsSchema})
 def usage_api(request) -> UsageMetricsSchema:
     return usage_metrics()
+
+
+@router.get("/action-statistics", response={200: ActionStatisticsSchema})
+def usage_action_api(request) -> ActionStatisticsSchema:
+    return usage_action_metrics()
+
+
+@router.get("/user-statistics", response={200: UserStatisticsSchema})
+def usage_user_api(request, data: Query[UserStatisticsInputSchema]) -> UserStatisticsSchema:
+    return user_statistics(
+        start_date=data.start_date,
+        end_date=data.end_date,
+        max_records=data.max_records,
+    )
