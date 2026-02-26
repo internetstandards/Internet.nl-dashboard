@@ -56,6 +56,15 @@ def allauth_openapi_swagger_bundle(request):
     return response
 
 
+def allauth_openapi_swagger_init(request):
+    asset_path = ALLAUTH_OPENAPI_DIR / "swagger-ui-init.js"
+    if not asset_path.is_file():
+        raise Http404
+    response = FileResponse(asset_path.open("rb"), content_type="application/javascript; charset=utf-8")
+    response["Cache-Control"] = "public, max-age=86400"
+    return response
+
+
 class SpreadsheetFileTypeConverter:
     # Supports {"key": "value", "key2": "value2"} syntax.
     regex = "(xlsx|ods|csv)"
@@ -163,6 +172,11 @@ urlpatterns = [
         "api/v1/allauth/openapi-assets/swagger-ui-bundle.js",
         allauth_openapi_swagger_bundle,
         name="allauth_openapi_swagger_bundle",
+    ),
+    path(
+        "api/v1/allauth/openapi-assets/swagger-ui-init.js",
+        allauth_openapi_swagger_init,
+        name="allauth_openapi_swagger_init",
     ),
     path("api/v1/", api.urls),
     # dedicated upload-success that is used to handle uploads, this is not really integrated in the API.

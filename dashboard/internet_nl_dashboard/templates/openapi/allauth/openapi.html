@@ -6,23 +6,9 @@
               href="{% url 'allauth_openapi_swagger_css' %}">
         <title>allauth.headless OpenAPI Specification | django-allauth</title>
     </head>
-    <body>
+    <body data-csrf-token="{{ csrf_token }}" data-api-csrf="true" data-openapi-url="{% url 'headless:openapi_json' %}">
         <div id="swagger-ui"></div>
         <script src="{% url 'allauth_openapi_swagger_bundle' %}"></script>
-        <script>
-        const config = {
-            url: "{% url 'headless:openapi_json' %}",
-            dom_id: "#swagger-ui",
-            presets: [
-                SwaggerUIBundle.presets.apis,
-                SwaggerUIBundle.SwaggerUIStandalonePreset
-            ],
-            requestInterceptor: (req) => {
-                req.headers["X-CSRFToken"] = "{{ csrf_token }}";
-                return req;
-            },
-        };
-        SwaggerUIBundle(config);
-        </script>
+        <script src="{% url 'allauth_openapi_swagger_init' %}"></script>
     </body>
 </html>

@@ -18,3 +18,5 @@ The frontend is maintained as a separate repository: `Internet.nl-dashboard-fron
 Mail is sent via django-mail-admin. Subdomains are being harvested via another project called ctlssa.
 
 Development is done with sqlite, production runs on postgres.
+
+Caddy is not used for deployment, the app runs in a wsgi environment.
