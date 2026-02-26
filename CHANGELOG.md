@@ -16,6 +16,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Bugfixes
 - OpenAPI specifications do not require external dependencies (#637)
+- Use consistent naming in urllist name (#621)
 
 ### Upgrading
 - After installation migrate existing totp devices to allauth with: `dashboard migrate_totp_to_allauth` 
