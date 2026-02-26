@@ -14,10 +14,13 @@ Including another URLconf
     1. Import the include() function: from django.urls import include, path
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
+from pathlib import Path
+
 from allauth.account import views as allauth_views
+from django.conf import settings
 from django.contrib import admin
 from django.contrib.auth.decorators import login_required
-from django.http import HttpResponse
+from django.http import FileResponse, Http404, HttpResponse
 from django.urls import include, path, re_path
 from two_factor.urls import urlpatterns as tf_urls
 
@@ -48,7 +51,29 @@ def not_supported(**args):
     return HttpResponse("Feature not supported.")
 
 
+ALLAUTH_OPENAPI_ASSETS = {
+    "swagger-ui.css": "text/css; charset=utf-8",
+    "swagger-ui-bundle.js": "application/javascript; charset=utf-8",
+}
+
+
+def allauth_openapi_asset(request, asset):
+    if asset not in ALLAUTH_OPENAPI_ASSETS:
+        raise Http404
+    asset_path = Path(settings.BASE_DIR) / "internet_nl_dashboard" / "templates" / "openapi" / "allauth" / asset
+    if not asset_path.is_file():
+        raise Http404
+    response = FileResponse(asset_path.open("rb"), content_type=ALLAUTH_OPENAPI_ASSETS[asset])
+    response["Cache-Control"] = "public, max-age=86400"
+    return response
+
+
 frontend_urls = [
+    path(
+        "api/v1/allauth/openapi-assets/<str:asset>",
+        allauth_openapi_asset,
+        name="allauth_openapi_asset",
+    ),
     path("api/v1/allauth/", include("allauth.headless.urls")),
     path("", include("dashboard.internet_nl_dashboard.urls")),
     # Enabling the default auth logins can bypass the two factor authentication. Don't enable it.
