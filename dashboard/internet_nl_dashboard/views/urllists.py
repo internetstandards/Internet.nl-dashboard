@@ -47,6 +47,7 @@ from dashboard.internet_nl_dashboard.logic.spreadsheets import (
     upload_history_for_account,
 )
 from dashboard.internet_nl_dashboard.logic.tags import add_tag, remove_tag, tags_in_urllist
+from dashboard.internet_nl_dashboard.models import TAG_MAX_LENGTH
 from dashboard.internet_nl_dashboard.scanners.subdomains import request_scan, scan_status
 from dashboard.internet_nl_dashboard.views import get_account, get_dashboarduser
 
@@ -54,7 +55,7 @@ log = logging.getLogger(__package__)
 
 
 class TagInputSchema(Schema):
-    tag: Annotated[str, StringConstraints(max_length=40)]
+    tag: Annotated[str, StringConstraints(max_length=TAG_MAX_LENGTH)]
 
 
 class UpdateUrlInputSchema(Schema):

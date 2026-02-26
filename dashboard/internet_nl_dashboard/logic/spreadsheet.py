@@ -42,6 +42,7 @@ from dashboard.internet_nl_dashboard.logic.domains import (
     save_urllist_content_by_id,
     save_urllist_content_by_name,
 )
+from dashboard.internet_nl_dashboard.logic.tags import parse_tags_from_csv_data
 from dashboard.internet_nl_dashboard.models import Account, DashboardUser, UploadLog, UrlList
 
 log = logging.getLogger(__package__)
@@ -178,7 +179,7 @@ def get_data(file: str) -> Dict[str, Dict[str, Dict[str, list]]]:
         found_tags = []
         # if there is no tag column:
         if len(row) > 2:
-            found_tags = str(row[2]).lower().strip().split(",")
+            found_tags = parse_tags_from_csv_data(row[2])
 
         for found_category in found_categories:
             found_category = found_category.strip()

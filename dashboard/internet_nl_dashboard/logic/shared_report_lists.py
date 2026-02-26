@@ -24,7 +24,7 @@ class PubliclySharedReportSchema(Schema):
     public_report_code: str
     total_urls: int
     # Keep compatibility with existing frontend key
-    urllist__name: str
+    urllist_name: str
 
 
 class PubliclySharedListResponseSchema(Schema):
@@ -116,7 +116,7 @@ def get_publicly_shared_lists_per_account(
                     average_internet_nl_score=report.average_internet_nl_score,
                     public_report_code=report.public_report_code,
                     total_urls=report.total_urls,
-                    urllist__name=my_list.name,
+                    urllist_name=my_list.name,
                 )
                 for report in my_list.reports
             ],

@@ -114,6 +114,8 @@ INSTALLED_APPS = [
     "actstream",
     # Sending templated and translatable emails
     "django_mail_admin",
+    # Django Ninja: enables local docs templates/static assets (no CDN fallback)
+    "ninja",
     # allauth
     "allauth",
     "allauth.account",
@@ -642,7 +644,7 @@ __all__ = [
 
 # Make integrations simple, in the same style of dashboard
 HEADLESS_SERVE_SPECIFICATION = True
-HEADLESS_SPECIFICATION_TEMPLATE_NAME = "headless/spec/swagger_cdn.html"
+HEADLESS_SPECIFICATION_TEMPLATE_NAME = "openapi/allauth/openapi.html"
 
 ACCOUNT_SIGNUP_ALLOWED = False
 

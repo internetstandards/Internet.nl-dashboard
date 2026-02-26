@@ -7,11 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## V5.2.0 - ?? 2026
 
 ### Added
-- OIDC authentication options, see settings.py for configuration options.
+- OIDC authentication options, see settings.py for configuration options. (#578)
 - Verify allauth e-mails by default on user creation as mail addresses are pre-verified before they enter the system. 
 
 ### Changed
 - Allauth headless now handles authentication. Documentation is at /api/v1/allauth/openapi.html - Setup the site config in django to use the right name for e-mails.
+- Length of tags on domains is now increased and consistent to 160 characters (#640)
+
+### Bugfixes
+- OpenAPI specifications do not require external dependencies (#637)
+- Use consistent naming in urllist name (#621)
 
 ### Upgrading
 - After installation migrate existing totp devices to allauth with: `dashboard migrate_totp_to_allauth` 

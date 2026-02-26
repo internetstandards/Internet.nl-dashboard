@@ -19,6 +19,9 @@ from websecmap.scanners_internet_nl_web.models import InternetNLV2Scan
 
 log = logging.getLogger(__package__)
 
+# tags with a length over 120 are normal when working with large organizations.
+TAG_MAX_LENGTH = 160
+
 
 class Account(models.Model):
     """

@@ -46,7 +46,7 @@ def test_get_publicly_shared_lists_per_account(db):
                         "average_internet_nl_score": 0.0,
                         "public_report_code": "",
                         "total_urls": 0,
-                        "urllist__name": urllist.name,
+                        "urllist_name": urllist.name,
                     }
                 ],
             }
