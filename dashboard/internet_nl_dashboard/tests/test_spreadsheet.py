@@ -49,7 +49,7 @@ def test_spreadsheet(db, redis_server) -> None:
         # testsite contains these three
         assert data["testsites"] == {
             "aaenmaas.nl": {"tags": ["test"]},
-            "hdsr.nl": {"tags": ["test", " waterschap", " extra"]},
+            "hdsr.nl": {"tags": ["extra", "test", "waterschap"]},
             "zuiderzeeland.nl": {"tags": ["extra"]},
         }
 

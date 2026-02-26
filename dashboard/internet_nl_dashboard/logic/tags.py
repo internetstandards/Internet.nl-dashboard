@@ -2,7 +2,26 @@ from typing import List
 
 from taggit.models import Tag
 
-from dashboard.internet_nl_dashboard.models import Account, TaggedUrlInUrllist
+from dashboard.internet_nl_dashboard.models import TAG_MAX_LENGTH, Account, TaggedUrlInUrllist
+
+
+def parse_tags_from_csv_data(csv_data: str) -> List[str]:
+    try:
+        # When floats or other data types are present in spreadsheet uploads / user input.
+        return normalize_tags(csv_data.split(","))
+    except AttributeError:
+        return []
+
+
+def normalize_tags(tags: list[str]) -> list[str]:
+    # This is not a oneliner as there might be more cleaning steps in the future.
+    # tags returned are unique, lowercase, stripped and non-empty
+    cleaned_tags = []
+    cleaned_tags.extend(normalize_tag(tag) for tag in tags)
+    cleaned_tags = list(sorted(set(cleaned_tags)))
+    if "" in cleaned_tags:
+        cleaned_tags.remove("")
+    return cleaned_tags
 
 
 def normalize_tag(tag: str):
@@ -10,9 +29,8 @@ def normalize_tag(tag: str):
     if not tag:
         return ""
 
-    tag = tag.lower()
-    tag = tag[0:40]
-    return tag
+    tag = tag.lower().strip()
+    return tag[:TAG_MAX_LENGTH]
 
 
 def add_tag(account: Account, url_ids: List[int], urllist_id: int, tag: str) -> None:
