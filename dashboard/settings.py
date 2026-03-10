@@ -729,5 +729,12 @@ SOCIALACCOUNT_PROVIDERS = {
     },
 }
 
+# We want to prevent showing what mail addresses are in the system at password resets
+ACCOUNT_PREVENT_ENUMERATION = True
+
+# But we do not want anyone with an e-mail address getting an unsolicited e-mail from our system, where even
+# wrong addresses results in: smtplib.SMTPRecipientsRefused: {'asdasda@adasdadas.com': (550, b'Unrouteable address')}
+ACCOUNT_EMAIL_UNKNOWN_ACCOUNTS = False
+
 # END allauth
 #######
