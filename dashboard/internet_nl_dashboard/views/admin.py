@@ -1,8 +1,13 @@
 # SPDX-License-Identifier: Apache-2.0
+from typing import Annotated
+
 from django.contrib.auth.models import User
+from django.core.exceptions import ValidationError
+from django.core.validators import validate_email
 from django.http import HttpResponse, JsonResponse
 from ninja import Query, Router, Schema
 from ninja.security import django_auth_superuser
+from pydantic import StringConstraints
 
 from dashboard.internet_nl_dashboard.logic import OperationResponseSchema, operation_response
 from dashboard.internet_nl_dashboard.logic.usage import (
@@ -101,6 +106,7 @@ def check_api_credentials(request, data: CredentialCheckSchema) -> HttpResponse:
 
 class InstantAccountAndUserCreationSchema(Schema):
     new_username: str = ""
+    new_email_address: Annotated[str, StringConstraints(min_length=1, max_length=254)]
     new_password: str = ""
     use_existing_account_id: int | None = None
     new_account_name: str = ""
@@ -134,6 +140,14 @@ def save_instant_account_and_user(request, data: InstantAccountAndUserCreationSc
         return JsonResponse(
             operation_response(error=True, message="error_username_already_exists").dict(),
             status=409,
+        )
+
+    try:
+        validate_email(data.new_email_address)
+    except ValidationError:
+        return JsonResponse(
+            operation_response(error=True, message="error_invalid_email_address").dict(),
+            status=400,
         )
 
     if Account.objects.all().filter(name=data.new_username).exists():
@@ -178,7 +192,7 @@ def save_instant_account_and_user(request, data: InstantAccountAndUserCreationSc
         account.save()
 
     # all seems fine, let's add the user
-    user = User(**{"username": data.new_username})
+    user = User(**{"username": data.new_username, "email": data.new_email_address})
     user.set_password(data.new_password)
     user.is_active = True
     user.save()

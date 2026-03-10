@@ -1,9 +1,17 @@
 # SPDX-License-Identifier: Apache-2.0
-from django.http import HttpResponse
-from ninja import Router
-from ninja.security import django_auth
+from collections import defaultdict
+from datetime import datetime
+from typing import Annotated, Any, Literal
 
-from dashboard.internet_nl_dashboard.logic import OperationResponseSchema
+from django.http import HttpResponse
+from ninja import Field, Router, Schema
+from ninja.security import django_auth
+from pydantic import StringConstraints
+from websecmap.reporting.severity import get_severity
+from websecmap.scanners.impact import get_impact
+from websecmap.scanners.models import EndpointGenericScan
+
+from dashboard.internet_nl_dashboard.logic import OperationResponseSchema, operation_response
 from dashboard.internet_nl_dashboard.logic.mail import ImprovementRegressionSummarySchema, values_from_previous_report
 from dashboard.internet_nl_dashboard.logic.report import (
     RecentReportItemSchema,
@@ -27,6 +35,46 @@ from dashboard.internet_nl_dashboard.models import UrlListReport
 from dashboard.internet_nl_dashboard.views import create_spreadsheet_download, get_account
 
 router = Router(tags=["Reports"], auth=django_auth)
+
+
+class LiveLatestMetricsInputSchema(Schema):
+    urls: list[Annotated[str, StringConstraints(max_length=255)]] = Field(default=["internet.nl"])
+    metrics: list[Annotated[str, StringConstraints(max_length=60)]] = Field(
+        default=["internet_nl_mail_overall_score", "internet_nl_web_overall_score"]
+    )
+
+    model_config = {
+        "json_schema_extra": {
+            "example": {
+                "urls": ["internet.nl"],
+                "metrics": ["internet_nl_mail_overall_score", "internet_nl_web_overall_score"],
+            }
+        }
+    }
+
+
+class LiveLatestMetricSchema(Schema):
+    type: str
+    explanation: str
+    evidence: str
+    meaning: Any | None = None
+    since: datetime
+    last_scan: datetime
+    high: int
+    medium: int
+    low: int
+    ok: int
+    not_testable: int | bool
+    not_applicable: int | bool
+    error_in_test: int | bool
+    translation: str = ""
+    technical_details: str = ""
+    test_result: str = ""
+    is_explained: bool
+    scan: int
+    scan_type: str
+    highlight: dict[str, Any]
+    impact: Literal["high", "medium", "low", "good"]
 
 
 @router.get("", response={200: list[RecentReportItemSchema]})
@@ -118,6 +166,45 @@ def get_ad_hoc_tagged_report_operation(request, report_id: int, data: SaveAdHocT
 def save_ad_hoc_tagged_report_operation(request, report_id: int, data: SaveAdHocTaggedReportInputSchema):
     tags, at_when = parse_ad_hoc_input(data)
     return save_ad_hoc_tagged_report(get_account(request), report_id, tags, at_when)
+
+
+@router.post(
+    "/metrics/now/",
+    response={200: dict[str, dict[str, LiveLatestMetricSchema]], 403: OperationResponseSchema},
+)
+def get_ad_hoc_live_latest_metrics(request, data: LiveLatestMetricsInputSchema):
+    """
+    Return the live status on a series of metrics on a series of urls.
+
+    The impact of this method scales linearly with the number of urls and metrics.
+
+    Requires staff account. Make sure the is_staff flag is set for the user in the admin interface.
+    """
+    if not request.user.is_staff:
+        return 403, operation_response(error=True, message="staff_account_required")
+
+    scans = EndpointGenericScan.objects.filter(
+        endpoint__url__url__in=data.urls,
+        is_the_latest_scan=True,
+        type__in=data.metrics,
+    ).select_related("endpoint__url")
+
+    ad_hoc_live_report = defaultdict(dict)
+
+    for scan in scans:
+        severity = get_severity(scan)
+        severity["impact"] = get_impact(severity)
+
+        # prevent confusion with useless fields
+        del severity["comply_or_explain_explained_by"]
+        del severity["comply_or_explain_explanation"]
+        del severity["comply_or_explain_explanation_valid_until"]
+        del severity["comply_or_explain_valid_at_time_of_report"]
+        del severity["comply_or_explain_explained_on"]
+
+        ad_hoc_live_report[scan.endpoint.url.url][severity["type"]] = severity
+
+    return ad_hoc_live_report
 
 
 # # todo: route seems not to be used anymore.

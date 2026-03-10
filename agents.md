@@ -20,3 +20,7 @@ Mail is sent via django-mail-admin. Subdomains are being harvested via another p
 Development is done with sqlite, production runs on postgres.
 
 Caddy is not used for deployment, the app runs in a wsgi environment.
+
+
+## Testing
+Always place the failure reason after an assertion.

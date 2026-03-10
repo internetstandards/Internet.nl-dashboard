@@ -8,6 +8,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 Added allauth endpoints for authentication using passkeys, oidc, recovery codes and all that. The endpoint is
 /api/v1/allauth/openapi.html.
 
+### Added ###
+- A staff-only call that allows requesting current results for specific metrics on specific urls (reports/metrics/now/)
+
+### Updated ###
+- Fixed allauth CSRF token usage inside the 'try it out' methods
+- Added references to other API's
+
 ## V1.0.0 - 2 december 2025
 Released the first version of the dashboard API. It tries to adhere to the [NLGov REST API standard](https://logius-standaarden.github.io/publicatie/api/adr/2.1.0/).
 

@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - OIDC authentication options, see settings.py for configuration options. (#578)
 - Verify allauth e-mails by default on user creation as mail addresses are pre-verified before they enter the system. 
+- A staff-only call that allows requesting current results for specific metrics on specific urls (reports/metrics/now/)
 
 ### Changed
 - Allauth headless now handles authentication. Documentation is at /api/v1/allauth/openapi.html - Setup the site config in django to use the right name for e-mails.
@@ -17,8 +18,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Bugfixes
 - OpenAPI specifications do not require external dependencies (#637)
 - Use consistent naming in urllist name (#621)
+- Fixed allauth CSRF token usage inside the 'try it out' methods
 
 ### Upgrading
+- Make sure all users have a valid e-mail address, otherwise it is not possible to upgrade (as e-mail verification cannot happen due to no-email)
+- Setup the DEFAULT_FROM_EMAIL environment variable in production to the correct mail sender 
 - After installation migrate existing totp devices to allauth with: `dashboard migrate_totp_to_allauth` 
 - After installation set existing e-mail addresses as verified with: `dashboard verify_allauth_emails`
 
