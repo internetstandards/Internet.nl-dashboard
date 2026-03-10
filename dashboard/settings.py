@@ -642,6 +642,12 @@ __all__ = [
 #######
 # BEGIN allauth
 
+# Be aware of setting the SITE configuration in the django admin for correct e-mail subjects.
+
+# Setup the e-mail sender of this project, otherwise defaults to webmaster@localhost which is a rejected sender.
+DEFAULT_FROM_EMAIL = os.environ.get("DEFAULT_FROM_EMAIL", "vraag@internet.nl")
+SERVER_EMAIL = DEFAULT_FROM_EMAIL
+
 # Make integrations simple, in the same style of dashboard
 HEADLESS_SERVE_SPECIFICATION = True
 HEADLESS_SPECIFICATION_TEMPLATE_NAME = "openapi/allauth/openapi.html"

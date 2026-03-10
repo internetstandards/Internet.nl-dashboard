@@ -22,6 +22,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Upgrading
 - Make sure all users have a valid e-mail address, otherwise it is not possible to upgrade (as e-mail verification cannot happen due to no-email)
+- Setup the DEFAULT_FROM_EMAIL environment variable in production to the correct mail sender 
 - After installation migrate existing totp devices to allauth with: `dashboard migrate_totp_to_allauth` 
 - After installation set existing e-mail addresses as verified with: `dashboard verify_allauth_emails`
 
