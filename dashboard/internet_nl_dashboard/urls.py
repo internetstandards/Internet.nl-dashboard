@@ -1,4 +1,5 @@
 # SPDX-License-Identifier: Apache-2.0
+import json
 from pathlib import Path
 
 import orjson
@@ -8,6 +9,7 @@ from django.http import FileResponse, Http404
 from django.shortcuts import redirect
 from django.urls import path, register_converter
 from ninja import NinjaAPI
+from ninja.openapi.docs import Swagger, render_template
 from ninja.renderers import BaseRenderer
 from websecmap.map.views import security_txt
 
@@ -87,6 +89,27 @@ class ORJSONRenderer(BaseRenderer):
         return orjson.dumps(data)
 
 
+class CSRFAwareSwagger(Swagger):
+    """
+    Force CSRF support in the docs UI.
+
+    The API applies `django_auth` on routers instead of on the top-level `NinjaAPI`.
+    Django Ninja only auto-enables the CSRF request interceptor when `api.auth`
+    is configured globally, so without this override Swagger "Try it out" requests
+    omit `X-CSRFToken` and fail for authenticated mutating endpoints.
+    """
+
+    # following standard signature
+    def render_page(self, request, api, **kwargs):  # pylint: disable=redefined-outer-name
+        self.settings["url"] = self.get_openapi_url(api, kwargs)
+        context = {
+            "swagger_settings": json.dumps(self.settings, indent=1),
+            "api": api,
+            "add_csrf": True,
+        }
+        return render_template(request, self.template, self.template_cdn, context)
+
+
 # /api/v1/allauth/openapi.html
 api = NinjaAPI(
     title=django_settings.OPEN_API_TITLE,
@@ -101,9 +124,16 @@ api = NinjaAPI(
     },
     version=django_settings.OPEN_API_VERSION,
     renderer=ORJSONRenderer(),
+    docs=CSRFAwareSwagger(),
     description="## Introduction\n\nThis is the dashboard API specification.\n\n "
     "## Authentication\n\nFor authentication you can login via "
-    "allauth. The allauth swagger file can be found here: `/api/v1/allauth/openapi.html` .",
+    "allauth. The allauth swagger file can be found here: `/api/v1/allauth/openapi.html` .\n\n"
+    "The internet.nl API, which is used inside the dashboard, can be found here: "
+    "`https://batch.internet.nl/api/batch/openapi.yaml` and can be live-rendered via the following:"
+    "url `https://redocly.github.io/redoc/?url=https://batch.internet.nl/api/batch/openapi.yaml`.\n\n"
+    "## Using Swagger\n\nAuthenticated `POST`, `PUT`, `PATCH` and `DELETE` calls in `/api/v1/docs` use the current "
+    "browser session and CSRF token. First log in in the same browser via `/api/v1/allauth/openapi.html` or "
+    "`/accounts/login/`, then return to `/api/v1/docs` and use `Try it out`.",
 )
 
 # Inject API-Version header into the generated OpenAPI schema for all responses.
