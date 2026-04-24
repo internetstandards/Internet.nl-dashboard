@@ -207,3 +207,5 @@ def test_api_swagger_docs_include_csrf_support(db, client):
     assert response.status_code == 200, "Swagger docs page should load."
     assert b'data-api-csrf="true"' in response.content, "Swagger docs should advertise CSRF support."
     assert b'data-csrf-token="' in response.content, "Swagger docs should embed a CSRF token for Try it out requests."
+    assert b"cdn.jsdelivr.net" not in response.content, "Swagger docs should not reference CDN assets."
+    assert b"unpkg.com" not in response.content, "Swagger docs should not reference external asset hosts."
