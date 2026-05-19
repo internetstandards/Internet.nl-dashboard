@@ -953,7 +953,7 @@ def retrieve_possible_urls_from_unfiltered_input(
     return sorted(has_tld), duplicates_removed
 
 
-def add_domains_from_raw_user_data(account: Account, urllist_id: int, urls: list[str]) -> OperationResponseSchema:
+def add_domains_from_raw_user_data(account: Account, urllist_id: int, raw_urls: str) -> OperationResponseSchema:
     """
     This is the 'id' version of save_urllist. It is a bit stricter as in that it requires the list to exist.
 
@@ -963,11 +963,9 @@ def add_domains_from_raw_user_data(account: Account, urllist_id: int, urls: list
     Used in the web / ajax frontend and uses operation responses.
     """
 
-    unfiltered_urls: str = " ".join(urls or [])
-
     # these are random unfiltered strings and the method expects keys...
     # in this case we'll run an extra retrieve_possible_urls_from_unfiltered_input so there is already some filtering.
-    urls, _ = retrieve_possible_urls_from_unfiltered_input(unfiltered_urls)
+    urls, _ = retrieve_possible_urls_from_unfiltered_input(raw_urls or "")
 
     # does this remove tags of existing urls?
     result = save_urllist_content_by_id(account, urllist_id, {url: {"tags": []} for url in urls})

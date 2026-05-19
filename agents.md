@@ -1,7 +1,3 @@
-## Cautions
-Do not use "constr" from pydantic, as that is deprecated and will be removed.  Use from pydantic import StringConstraints.
-
-
 ## Overview
 This is a python django application. It exposes a Django Ninja APIs for manipulating data under `/api/v1/`. The project
 is dependent on websecmap for storing data, starting scans and building reports.
@@ -24,3 +20,7 @@ Caddy is not used for deployment, the app runs in a wsgi environment.
 
 ## Testing
 Always place the failure reason after an assertion.
+
+
+## Cautions
+Do not use "constr" from pydantic, as that is deprecated and will be removed.  Use from pydantic import StringConstraints.
