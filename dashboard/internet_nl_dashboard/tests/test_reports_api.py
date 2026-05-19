@@ -196,8 +196,7 @@ def test_get_ad_hoc_live_latest_metrics_openapi_example_and_defaults(db, client)
         "internet_nl_web_overall_score",
     ], "OpenAPI should expose the default metric list."
     assert (
-        "First log in in the same browser via `/api/v1/allauth/openapi.html` or `/accounts/login/`"
-        in openapi["info"]["description"]
+        "First log in in the same browser via `/api/v1/allauth/openapi.html`" in openapi["info"]["description"]
     ), "OpenAPI description should explain how Swagger authenticated calls work."
 
 

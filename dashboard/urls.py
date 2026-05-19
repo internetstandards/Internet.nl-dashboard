@@ -14,12 +14,9 @@ Including another URLconf
     1. Import the include() function: from django.urls import include, path
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
-from allauth.account import views as allauth_views
 from django.contrib import admin
-from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse
 from django.urls import include, path, re_path
-from two_factor.urls import urlpatterns as tf_urls
 
 from . import __version__
 
@@ -51,19 +48,6 @@ def not_supported(**args):
 frontend_urls = [
     path("api/v1/allauth/", include("allauth.headless.urls")),
     path("", include("dashboard.internet_nl_dashboard.urls")),
-    # Enabling the default auth logins can bypass the two factor authentication. Don't enable it.
-    # path('', include('django.contrib.auth.urls')),
-    re_path(r"", include(tf_urls)),
-    # https://github.com/pennersr/django-allauth/issues/468
-    path(
-        "accounts/password/change/",
-        login_required(
-            allauth_views.PasswordChangeView.as_view(
-                success_url="/account/authentication/?password_change_success=true"
-            )
-        ),
-        name="account_change_password",
-    ),
     # Required for social provider callback URLs (e.g. `openid_connect_callback`)
     # that are still resolved server-side during headless redirect flows.
     # In `HEADLESS_ONLY=True`, this does not expose headed account pages.

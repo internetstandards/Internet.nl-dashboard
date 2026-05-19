@@ -102,12 +102,9 @@ INSTALLED_APPS = [
     # These apps overwrite whatever is declared above, for example the user information.
     # Yet, it does not overwrite management commands.
     "dashboard.internet_nl_dashboard",
-    # Two factor auth
-    "phonenumber_field",
+    # Legacy OTP models are kept temporarily for migration to allauth MFA.
     "django_otp",
-    "django_otp.plugins.otp_static",
     "django_otp.plugins.otp_totp",
-    "two_factor",
     # Django activity stream
     # https://django-activity-stream.readthedocs.io/en/latest/installation.html
     "django.contrib.sites",
@@ -146,8 +143,6 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
-    # Two factor Auth
-    "django_otp.middleware.OTPMiddleware",
     # https://docs.djangoproject.com/en/4.2/ref/middleware/#django.middleware.gzip.GZipMiddleware
     # This middleware should be placed before any other middleware that need to read or write the response body so
     # that compression happens afterward.
@@ -272,14 +267,10 @@ else:
 MEDIA_ROOT = Path(os.environ.get("MEDIA_ROOT", Path(__file__).parent / "uploads"))
 UPLOAD_ROOT: str = os.environ.get("MEDIA_ROOT", f"{os.path.abspath(os.path.dirname(__file__))}/uploads/")
 
-# Two factor auth
-LOGIN_URL = "two_factor:login"
+# Authentication
+LOGIN_URL = "/api/v1/allauth/openapi.html"
 LOGIN_REDIRECT_URL = "/"
 LOGOUT_REDIRECT_URL = LOGIN_URL
-TWO_FACTOR_QR_FACTORY = "qrcode.image.pil.PilImage"
-# 6 supports google authenticator
-TWO_FACTOR_TOTP_DIGITS = 6
-TWO_FACTOR_PATCH_ADMIN = True
 
 # something from websecmap
 TOOLS = {"organizations": {"import_data_dir": ""}}

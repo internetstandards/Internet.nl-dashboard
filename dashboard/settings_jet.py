@@ -10,7 +10,6 @@ JET_SIDE_MENU_ITEMS = [
             {"name": "django_celery_beat.periodictask", "label": "⏰ Periodic Tasks"},
             {"name": "auth.user", "label": "👤 Users"},
             {"name": "internet_nl_dashboard.account", "label": "🏢 Accounts"},
-            {"name": "otp_totp.totpdevice", "label": "📱 TOTP Devices"},
         ],
     },
     {
@@ -32,8 +31,6 @@ JET_SIDE_MENU_ITEMS = [
             {"name": "socialaccount.socialtoken", "label": "Social Tokens"},
             # allauth.mfa
             {"name": "mfa.authenticator", "label": "MFA Authenticators"},
-            # Legacy django-otp model, useful while migrating to allauth MFA.
-            {"name": "otp_totp.totpdevice", "label": "Legacy OTP TOTP Devices (2nd factor auth)"},
         ],
     },
     {

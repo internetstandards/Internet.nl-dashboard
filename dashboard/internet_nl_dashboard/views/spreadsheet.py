@@ -2,16 +2,15 @@
 import logging
 
 from constance import config
+from django.conf import settings
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse
 from django.shortcuts import render
 
-from dashboard.internet_nl_dashboard.views import LOGIN_URL
-
 log = logging.getLogger(__package__)
 
 
-@login_required(login_url=LOGIN_URL)
+@login_required(login_url=settings.LOGIN_URL)
 def upload(request) -> HttpResponse:
     """This classic page is needed for old school upload scenarios. Those seemed to be required by some browsers."""
     response: HttpResponse = render(

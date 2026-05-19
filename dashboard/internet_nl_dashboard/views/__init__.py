@@ -4,26 +4,18 @@ from typing import Any
 
 import django_excel as excel
 import orjson
-from django.contrib.auth import logout
 from django.http import HttpResponse, JsonResponse
-from django.shortcuts import redirect
 from django.utils.text import slugify
 
 from dashboard.internet_nl_dashboard.models import Account, DashboardUser
 
 log = logging.getLogger(__package__)
-LOGIN_URL = "/account/login/"
 
 """
 Todo: csrf via API calls...
     https://docs.djangoproject.com/en/dev/ref/csrf/#csrf-ajax
     Is handled and validated via middleware, so we don't need to concern ourselves with it here.
 """
-
-
-def logout_view(request) -> HttpResponse:
-    logout(request)
-    return redirect("/")
 
 
 def get_account(request) -> Account:

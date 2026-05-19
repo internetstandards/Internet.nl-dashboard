@@ -542,8 +542,6 @@ pexpect==4.9.0
     # via
     #   -c requirements.txt
     #   ipython
-phonenumberslite==9.0.18
-    # via -r requirements-dev.in
 pillow==12.0.0
     # via
     #   -c requirements.txt
