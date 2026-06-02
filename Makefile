@@ -6,6 +6,7 @@ docker_image_name = internetstandards/dashboard
 
 # configure virtualenv to be created in OS specific cache directory
 VIRTUAL_ENV = .venv
+python_version = 3.13
 
 # variables for environment
 bin = ${VIRTUAL_ENV}/bin
@@ -13,14 +14,15 @@ env = PATH=${bin}:$$PATH DYLD_LIBRARY_PATH=${DYLD_LIBRARY_PATH}
 
 # shortcuts for common used binaries
 uv = VIRTUAL_ENV=${VIRTUAL_ENV} uv # provided by flake.nix
-python = ${bin}/python3.10
-python3 = ${bin}/python3.10
+python = ${bin}/python3.13
+python3 = ${bin}/python3.13
 pip = ${bin}/pip
 pip-compile = ${bin}/pip-compile
 pip-sync = ${bin}/pip-sync
 
 # application binary
 app = ${bin}/${app_name}
+runserver_args ?=
 
 $(shell test -z "$$PS1" || echo -e \nRun `make help` for available commands or use tab-completion.\n)
 
@@ -61,13 +63,16 @@ ${VIRTUAL_ENV}/.requirements.installed: requirements.txt requirements-dev.txt | 
 requirements: requirements.txt requirements-dev.txt
 # perform 'pip freeze' on first class requirements in .in files.
 requirements.txt: requirements.in | ${uv}
-	${uv} pip compile ${pip_compile_args} --custom-compile-command="make requirements" --no-strip-extras --output-file $@ $<
+	${uv} pip compile ${pip_compile_args} --python-version ${python_version} --custom-compile-command="make requirements" --no-strip-extras --output-file $@ $<
 	# fix bug where uv pip compile writes celery[gevent, redis]==5.5.3 instead of celery[gevent,redis]==5.5.3 (without space)
-	sed -Ei 's/, /,/' $@
+	sed -Ei 's/, /,/g' $@
+	# fix bug where uv pip compile writes VCS dependencies as unsupported direct archive URLs.
+	sed -Ei 's|wikidata @ https://gitlab.com/internet-cleanup-foundation/python-wikidata.git@|wikidata @ git+https://gitlab.com/internet-cleanup-foundation/python-wikidata.git@|' $@
 
 requirements-dev.txt: requirements-dev.in requirements.in | ${uv}
-	${uv} pip compile ${pip_compile_args} --custom-compile-command="make requirements" --no-strip-extras --output-file $@ $<
-	sed -Ei 's/, /,/' $@
+	${uv} pip compile ${pip_compile_args} --python-version ${python_version} --custom-compile-command="make requirements" --no-strip-extras --output-file $@ $<
+	sed -Ei 's/, /,/g' $@
+	sed -Ei 's|wikidata @ https://gitlab.com/internet-cleanup-foundation/python-wikidata.git@|wikidata @ git+https://gitlab.com/internet-cleanup-foundation/python-wikidata.git@|' $@
 
 pip-sync: | ${python}
 	# synchronizes the .venv with the state of requirements.txt
@@ -162,7 +167,7 @@ run: ${app}  ## run complete application stack (frontend, worker, broker)
 	DEBUG=1 NETWORK_SUPPORTS_IPV6=1 ${env} ${app} devserver
 
 run-frontend: ${app}  ## only run frontend component
-	DEBUG=1 NETWORK_SUPPORTS_IPV6=1 ${env} ${app} runserver
+	DEBUG=1 NETWORK_SUPPORTS_IPV6=1 ${env} ${app} runserver ${runserver_args}
 
 run-gui-development build-gui-staging build-gui-production:
 	build-gui-production; $(MAKE) $@
@@ -238,7 +243,7 @@ autoreload_browser ?=
 
 ${python} ${VIRTUAL_ENV}:
 	# create virtualenv, Python version is determined by pyproject.toml requires-python
-	${uv} venv --python 3.10 ${VIRTUAL_ENV}
+	${uv} venv --clear --python ${python_version} ${VIRTUAL_ENV}
 
 ${uv}:
 

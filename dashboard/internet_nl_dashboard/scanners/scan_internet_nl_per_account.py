@@ -332,15 +332,15 @@ def discovering_endpoints(scan_id: int):
         log.warning("Trying to discovering_endpoints with unknown scan: %s.", scan_id)
         return group([])
 
-    return dns_endpoints.compose_discover_task(
-        **{
-            "urls_filter": {
-                "urls_in_dashboard_list_2__id": scan.urllist.id,
-                "is_dead": False,
-                "not_resolvable": False,
-            }
-        }
-    ) | update_state.si("discovered endpoints", scan.id)
+    urls = Url.objects.filter(
+        urls_in_dashboard_list_2__id=scan.urllist.id,
+        is_dead=False,
+        not_resolvable=False,
+    )
+    for task in dns_endpoints.compose_manual_discover_task(urls):
+        task.run()
+
+    return update_state.si("discovered endpoints", scan.id)
 
 
 def retrieving_scannable_urls(scan_id: int):

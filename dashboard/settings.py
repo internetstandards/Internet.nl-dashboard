@@ -16,6 +16,7 @@ from .settings_constance import CONSTANCE_BACKEND, CONSTANCE_CONFIG, CONSTANCE_C
 from .settings_jet import JET_SIDE_MENU_COMPACT  # noqa  # pylint: disable=unused-import
 from .settings_jet import JET_SIDE_MENU_ITEMS  # noqa  # pylint: disable=unused-import
 from .settings_util import get_field_encryption_key_from_file_or_env, get_secret_key_from_file_or_env
+from os import getenv
 
 load_dotenv()
 
@@ -352,9 +353,12 @@ DRAMATIQ_BROKER = {
         "dramatiq.middleware.Retries",
         # enable age limits
         "dramatiq.middleware.AgeLimit",
-        # "dramatiq.middleware.TimeLimit",
+        "django_dramatiq.middleware.DbConnectionsMiddleware",
+        "dramatiq.middleware.ShutdownNotifications",
+        "dramatiq.middleware.TimeLimit",
         "dramatiq.middleware.Callbacks",
         "dramatiq.middleware.GroupCallbacks",
+        "dramatiq.middleware.asyncio.AsyncIO",
         # additional logging for workers
         "websecmap.dramatiq.middleware.Logging",
         "websecmap.dramatiq.middleware.StoreFailures",
@@ -729,3 +733,8 @@ ACCOUNT_EMAIL_UNKNOWN_ACCOUNTS = False
 
 # END allauth
 #######
+
+NAMESERVERS_ENVIRONMENT_VARIABLE = "WSM_NAMESERVERS"
+NAMESERVERS = [
+    nameserver.strip() for nameserver in getenv(NAMESERVERS_ENVIRONMENT_VARIABLE, "").split(",") if nameserver.strip()
+]

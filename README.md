@@ -351,7 +351,7 @@ in
 `/site-packages/pkg_resources/_vendor/packaging/requirements.py`
 Probably line 36...
 
-`/Users/stitch/Library/Caches/virtualenvs/internet.nl-dashboard/lib/python3.10/site-packages/pkg_resources/_vendor/packaging/`
+`/Users/stitch/Library/Caches/virtualenvs/internet.nl-dashboard/lib/python3.13/site-packages/pkg_resources/_vendor/packaging/`
 
 ### Localhost development with OIDC
 

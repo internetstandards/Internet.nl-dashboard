@@ -12,7 +12,7 @@
         devShells.default = pkgs.mkShell {
           packages = with pkgs; [
               # development requirements
-              python310
+              python313
               git
               gnumake
               bash

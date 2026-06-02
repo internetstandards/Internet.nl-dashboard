@@ -1,13 +1,13 @@
 from dns.resolver import Resolver
 from websecmap.app.constance import constance_cached_value
+from django.conf import settings
 
 
 def check_dns_resolvers():
     # this checks the configured dns resolver and alerts if something does not resolve.
     # This is made for debugging purposes only.
 
-    nameservers = constance_cached_value("SCANNER_NAMESERVERS")
-    for server in nameservers:
+    for server in settings.NAMESERVERS:
         check_dns_resolver(server)
 
 
