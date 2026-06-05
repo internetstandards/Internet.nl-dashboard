@@ -4,6 +4,7 @@ These testcases help to validate the working of the listmanagement API.
 
 Run these tests with tox -e test -- -k test_clean_urls
 """
+
 from dashboard.internet_nl_dashboard.logic.domains import clean_urls
 
 

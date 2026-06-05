@@ -1,6 +1,6 @@
+from django.conf import settings
 from dns.resolver import Resolver
 from websecmap.app.constance import constance_cached_value
-from django.conf import settings
 
 
 def check_dns_resolvers():

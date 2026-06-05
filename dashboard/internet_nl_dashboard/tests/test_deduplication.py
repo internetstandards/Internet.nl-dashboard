@@ -4,6 +4,7 @@ These testcases make sure we can create scans.
 
 Run these tests with make testcase case=test_deduplication
 """
+
 import logging
 from datetime import datetime, timezone
 

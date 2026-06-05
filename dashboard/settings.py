@@ -1,6 +1,7 @@
 # SPDX-License-Identifier: Apache-2.0
 import os
 from datetime import timedelta
+from os import getenv
 from pathlib import Path
 
 import sentry_sdk
@@ -16,7 +17,6 @@ from .settings_constance import CONSTANCE_BACKEND, CONSTANCE_CONFIG, CONSTANCE_C
 from .settings_jet import JET_SIDE_MENU_COMPACT  # noqa  # pylint: disable=unused-import
 from .settings_jet import JET_SIDE_MENU_ITEMS  # noqa  # pylint: disable=unused-import
 from .settings_util import get_field_encryption_key_from_file_or_env, get_secret_key_from_file_or_env
-from os import getenv
 
 load_dotenv()
 
