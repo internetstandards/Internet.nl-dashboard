@@ -524,9 +524,9 @@ wassima==2.1.0
     # via niquests
 wcwidth==0.7.0
     # via prompt-toolkit
-websecmap @ git+https://gitlab.com/internet-cleanup-foundation/web-security-map@deb2f437b0e6dfc162a6d2e303451a1d8617c9c1
+websecmap @ git+https://gitlab.com/internet-cleanup-foundation/web-security-map@76c3d781d2bcdcd58d2fdb554c5e773742715537
     # via -r requirements.in
-wikidata @ git+https://gitlab.com/internet-cleanup-foundation/python-wikidata.git@10e917f391d6670d0fcda73e819626dbaed02004#tag=0.9.0-1
+wikidata @ git+https://gitlab.com/internet-cleanup-foundation/python-wikidata.git@10e917f391d6670d0fcda73e819626dbaed02004
     # via websecmap
 xlrd==2.0.2
     # via pyexcel-xls

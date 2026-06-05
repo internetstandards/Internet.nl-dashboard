@@ -2,6 +2,7 @@
 # the tutorial must work.
 import logging
 
+from django.apps import apps
 from django.core.management import call_command
 
 log = logging.getLogger(__name__)
@@ -20,6 +21,6 @@ def test_loading_fixtures(db, django_db_reset_sequences):
     call_command("loaddata", "dashboard_production_default_account")
     call_command("loaddata", "dashboard_production_example_email_templates")
     call_command("loaddata", "dashboard_production_periodic_tasks")
-    call_command("loaddata", "dashboard_production_default_scanner_configuration")
-    call_command("loaddata", "dashboard_production_default_scan_policy")
+    apps.get_app_config("scanners_internet_nl_web").startup()
+    apps.get_app_config("scanners_internet_nl_mail").startup()
     log.debug("Done Loading fixtures")

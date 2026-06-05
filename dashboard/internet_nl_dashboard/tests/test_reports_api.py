@@ -58,6 +58,7 @@ def create_endpoint_scan(
         explanation=explanation,
         evidence="https://batch.internet.nl/site/example/123/",
         rating_determined_on=rating_determined_on,
+        last_scan_moment=rating_determined_on,
         is_the_latest_scan=is_the_latest_scan,
         comply_or_explain_is_explained=False,
     )

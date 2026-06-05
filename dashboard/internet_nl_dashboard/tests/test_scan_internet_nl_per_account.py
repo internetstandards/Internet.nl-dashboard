@@ -36,11 +36,13 @@ def test_monitor_timeout(db):
         )
         monitor_timeout(scan.id)
         updated_scan = AccountInternetNLScan.objects.get(id=scan.id)
-        assert updated_scan.state_changed_on != datetime(1996, 1, 1, tzinfo=timezone.utc)
-        assert updated_scan.state_changed_on.year == datetime.now().year
+        assert updated_scan.state_changed_on != datetime(
+            1996, 1, 1, tzinfo=timezone.utc
+        ), "expected monitor_timeout to update stale scan state_changed_on"
+        assert updated_scan.state_changed_on.year == datetime.now().year, "expected stale scan to be retried this year"
 
 
-def test_creating_report(db, redis_server, default_policy, default_scan_metadata):
+def test_creating_report(db, redis_server, default_scan_metadata):
     """
     We're entering the reporting phase, all data has been downloaded in the accountinternetnl scan, and
     a report will be generated. This includes statistics and such.
@@ -100,6 +102,7 @@ def test_creating_report(db, redis_server, default_policy, default_scan_metadata
         evidence="",
         endpoint=vitesse_endpoint,
         rating_determined_on=datetime(2010, 1, 1, tzinfo=timezone.utc),
+        last_scan_moment=datetime(2010, 1, 1, tzinfo=timezone.utc),
     )
     EndpointGenericScan.objects.all().get_or_create(
         type="web_https_tls_version",
@@ -107,6 +110,7 @@ def test_creating_report(db, redis_server, default_policy, default_scan_metadata
         evidence="",
         endpoint=vitesse_endpoint,
         rating_determined_on=datetime(2010, 1, 1, tzinfo=timezone.utc),
+        last_scan_moment=datetime(2010, 1, 1, tzinfo=timezone.utc),
     )
 
     # here, vitesse.nl has an error from the API. This occurs when a crash happens in the api scanner, which is
@@ -262,22 +266,23 @@ def test_creating_report(db, redis_server, default_policy, default_scan_metadata
     first_urlreport = UrlReport.objects.all().filter(url__url="dierenscheboys.nl").first()
     # this fluctuates if settings such as forum_standardisation metrics are enabled/disabled.
     # since the default changed on 20240618 this amount is lowered from 12 to 6.
-    assert first_urlreport.high == 12
-    assert first_urlreport.medium == 6
-    assert first_urlreport.low == 3
-    assert first_urlreport.ok == 22  # 18
-    assert UrlReport.objects.all().filter(url__url="vitesse.nl").count() == 2
+    assert first_urlreport, "expected a URL report for dierenscheboys.nl"
+    assert first_urlreport.high == 6, "expected the current default Internet.nl report policy to produce 6 highs"
+    assert first_urlreport.medium == 6, "expected the current default Internet.nl report policy to produce 6 mediums"
+    assert first_urlreport.low == 3, "expected the current default Internet.nl report policy to produce 3 lows"
+    assert first_urlreport.ok == 18, "expected the current default Internet.nl report policy to produce 18 oks"
+    assert UrlReport.objects.all().filter(url__url="vitesse.nl").count() == 2, "expected old and new vitesse.nl reports"
     # To see what the calculation is exactly: assert first_urlreport.calculation == {}
 
     # vitesse was added, has a very old one and a new report with the error update.
     # dierenscheboys also has a report
-    assert UrlListReport.objects.all().count() == 1
+    assert UrlListReport.objects.all().count() == 1, "expected one URL list report"
 
     first_urllistreport = UrlListReport.objects.all().filter().first()
     # association was made during creating_report
-    assert first_urllistreport.urllist == urllist
-    assert first_urllistreport.high == 12  # 6
-    assert first_urllistreport.average_internet_nl_score == 76
+    assert first_urllistreport.urllist == urllist, "expected URL list report to be linked to the scanned URL list"
+    assert first_urllistreport.high == 6, "expected URL list report to use current default high count"
+    assert first_urllistreport.average_internet_nl_score == 76, "expected average score from dierenscheboys.nl"
     # stats per issue types have been added
 
     # todo: opportunity to verify if the report output is correct.

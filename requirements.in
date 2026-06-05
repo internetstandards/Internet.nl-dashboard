@@ -9,7 +9,7 @@
 # - no version pinning, unless it is required and explained
 
 # to update websecmap, update the SHA hash and run: make update_requirement_websecmap
-websecmap @ git+https://gitlab.com/internet-cleanup-foundation/web-security-map@deb2f437b0e6dfc162a6d2e303451a1d8617c9c1
+websecmap @ git+https://gitlab.com/internet-cleanup-foundation/web-security-map@76c3d781d2bcdcd58d2fdb554c5e773742715537
 
 django-otp
 django-picklefield

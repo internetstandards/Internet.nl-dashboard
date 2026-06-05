@@ -21,7 +21,6 @@ from websecmap.organizations.models import Url
 from websecmap.scanners.models import Endpoint
 from websecmap.scanners_internet_nl_dns_endpoints.tasks import (
     compose_manual_discover_task,
-    get_nameservers,
     has_a_or_aaaa,
     has_soa,
 )
@@ -230,11 +229,15 @@ def suggest_subdomains_for_list(
 
     # perform some AAAA/MX record lookups, so a user can select some things.
     domains_with_dns_status: list[dict[str, Any]] = []
-    nameservers = get_nameservers()
     if len(suggestions) < 30:
         for d in suggestions:
-            has_website = has_a_or_aaaa(d, nameservers)
-            has_email = has_soa(d, nameservers)
+            try:
+                has_website = has_a_or_aaaa(d)
+                has_email = has_soa(d)
+            except Exception:
+                log.debug("Could not determine DNS status for suggested domain %s.", d, exc_info=True)
+                has_website = False
+                has_email = False
             domains_with_dns_status.append(
                 {
                     "domain": d,

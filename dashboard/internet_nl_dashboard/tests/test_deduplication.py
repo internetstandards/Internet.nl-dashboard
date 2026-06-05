@@ -92,43 +92,50 @@ def test_per_acount_scanner(db) -> None:
     assert Endpoint.objects.all().count() == 6
 
     # and duplicate scan results
+    scan_moment = datetime.now(timezone.utc)
     egs1, _ = EndpointGenericScan.objects.get_or_create(
         endpoint=ep1,
         type="testscan 1",
         rating="1",
-        rating_determined_on=datetime.now(timezone.utc),
+        rating_determined_on=scan_moment,
+        last_scan_moment=scan_moment,
     )
     egs2, _ = EndpointGenericScan.objects.get_or_create(
         endpoint=ep1,
         type="testscan 2",
         rating="2",
-        rating_determined_on=datetime.now(timezone.utc),
+        rating_determined_on=scan_moment,
+        last_scan_moment=scan_moment,
     )
     egs3, _ = EndpointGenericScan.objects.get_or_create(
         endpoint=ep1,
         type="testscan 3",
         rating="3",
-        rating_determined_on=datetime.now(timezone.utc),
+        rating_determined_on=scan_moment,
+        last_scan_moment=scan_moment,
     )
 
     egs4, _ = EndpointGenericScan.objects.get_or_create(
         endpoint=ep2,
         type="testscan 4",
         rating="4",
-        rating_determined_on=datetime.now(timezone.utc),
+        rating_determined_on=scan_moment,
+        last_scan_moment=scan_moment,
     )
     egs5, _ = EndpointGenericScan.objects.get_or_create(
         endpoint=ep2,
         type="testscan 5",
         rating="5",
-        rating_determined_on=datetime.now(timezone.utc),
+        rating_determined_on=scan_moment,
+        last_scan_moment=scan_moment,
     )
 
     egs6, _ = EndpointGenericScan.objects.get_or_create(
         endpoint=ep3,
         type="testscan 6",
         rating="6",
-        rating_determined_on=datetime.now(timezone.utc),
+        rating_determined_on=scan_moment,
+        last_scan_moment=scan_moment,
     )
 
     # some with the same data:
@@ -136,26 +143,30 @@ def test_per_acount_scanner(db) -> None:
         endpoint=ep4,
         type="testscan 1",
         rating="1",
-        rating_determined_on=datetime.now(timezone.utc),
+        rating_determined_on=scan_moment,
+        last_scan_moment=scan_moment,
     )
     egs8, _ = EndpointGenericScan.objects.get_or_create(
         endpoint=ep4,
         type="testscan 2",
         rating="2",
-        rating_determined_on=datetime.now(timezone.utc),
+        rating_determined_on=scan_moment,
+        last_scan_moment=scan_moment,
     )
     egs9, _ = EndpointGenericScan.objects.get_or_create(
         endpoint=ep4,
         type="testscan 3",
         rating="3",
-        rating_determined_on=datetime.now(timezone.utc),
+        rating_determined_on=scan_moment,
+        last_scan_moment=scan_moment,
     )
 
     egs10, _ = EndpointGenericScan.objects.get_or_create(
         endpoint=ep6,
         type="unaffected",
         rating="3",
-        rating_determined_on=datetime.now(timezone.utc),
+        rating_determined_on=scan_moment,
+        last_scan_moment=scan_moment,
     )
 
     assert EndpointGenericScan.objects.all().count() == 10
