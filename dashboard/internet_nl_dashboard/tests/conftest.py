@@ -18,6 +18,7 @@ def default_scan_metadata(db):
     CACHE.pop("backend_scanmetadata", None)
     return scanners
 
+
 @pytest.fixture
 def redis_server():
     r = redis.Redis()
