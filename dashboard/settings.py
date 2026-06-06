@@ -734,7 +734,15 @@ ACCOUNT_EMAIL_UNKNOWN_ACCOUNTS = False
 # END allauth
 #######
 
+
+# in 2026 nameservers moved to unbound and come with a separate config
 NAMESERVERS_ENVIRONMENT_VARIABLE = "WSM_NAMESERVERS"
 NAMESERVERS = [
     nameserver.strip() for nameserver in getenv(NAMESERVERS_ENVIRONMENT_VARIABLE, "").split(",") if nameserver.strip()
 ]
+
+# in 2026 there are some magic constants that are used in websecmap, but not used by the dashboard. These can just
+# sit empty.
+WSM_INTERNET_NL_API_URL = getenv("WSM_INTERNET_NL_API_URL", "")
+WSM_INTERNET_NL_API_USERNAME = getenv("WSM_INTERNET_NL_API_USERNAME", "")
+WSM_INTERNET_NL_API_PASSWORD = getenv("WSM_INTERNET_NL_API_PASSWORD", "")
