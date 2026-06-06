@@ -52,7 +52,8 @@ CONSTANCE_CONFIG = {
     # This is a setting duplicated from Web Security Map, todo: deduplicate this setting
     "INTERNET_NL_API_URL": (
         "http://localhost:8080/api/batch/v2",
-        'The internet address for the Internet.nl API installation. This is commonly called a "batch server".',
+        'The internet address for the Internet.nl API installation. This is commonly called a "batch server". '
+        "DEPRECATED set WSM_INTERNET_NL_API_URL in settings.py for the actual scanning part.",
         str,
     ),
     "INTERNET_NL_SCAN_TRACKING_NAME": (

@@ -652,13 +652,13 @@ class InternetNLV2ScanAdminNew(
 
     @staticmethod
     def get_dashboard_scan_queryset(queryset):
-        return (
-            AccountInternetNLScan.objects.filter(scan_id__in=queryset.values_list("pk", flat=True))
-            .select_related("account", "scan", "urllist")
+        return AccountInternetNLScan.objects.filter(scan_id__in=queryset.values_list("pk", flat=True)).select_related(
+            "account", "scan", "urllist"
         )
 
+    @staticmethod
     @admin.display(description="Online")
-    def online(self, obj):
+    def online(obj):
         if not obj.scan_id:
             return None
 

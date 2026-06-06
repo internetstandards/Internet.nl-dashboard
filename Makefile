@@ -181,8 +181,14 @@ app: ${app}  ## perform arbitrary app commands
 	# make app cmd="migrate"
 	DEBUG=1 NETWORK_SUPPORTS_IPV6=1 ${env} ${app} ${cmd}
 
-run-worker: ${app}  ## only run worker component
-	DEBUG=1 NETWORK_SUPPORTS_IPV6=1 ${env} ${app} celery worker -ldebug -Q storage,celery,reporting,ipv4,ipv6,4and6,internet,isolated,database,kickoff,default,database_deprecate,internetnl
+run-worker: ${app}  ## run worker components
+	${MAKE} -j2 run-worker-main run-worker-internetnl
+
+run-worker-main: ${app}  ## run main worker component
+	DEBUG=1 NETWORK_SUPPORTS_IPV6=1 ${env} ${app} celery worker -ldebug -Q storage,celery,reporting,ipv4,ipv6,4and6,internet,isolated,database,kickoff,default,database_deprecate
+
+run-worker-internetnl: ${app}  ## run Internet.nl API worker without prefork, avoids macOS niquests/wassima crashes
+	DEBUG=1 NETWORK_SUPPORTS_IPV6=1 ${env} ${app} celery worker -ldebug -Q internetnl --pool=threads -c 4
 
 run-broker:  ## only run broker
 	docker run --rm --name=redis -p 6379:6379 redis

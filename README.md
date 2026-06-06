@@ -395,3 +395,89 @@ docker compose -f docker-compose-devel.yml build
 ```
 docker compose -f docker-compose-devel.yml up -d
 ```
+
+# wassima / niquests exception issues (during development)
+On june 6 2026:
+Make run-worker starts two workers now. There has been a hard crash on MacOS that could not be circumvented otherwise.
+
+The issue arises with calling something with the latest niquests. In the current configuration:
+  requirements.txt: niquests==3.19.0
+  installed:        niquests 3.19.0
+  urllib3-future:   2.21.902
+  wassima:          2.1.0
+  qh3:              1.9.1
+  jh2:              5.0.13
+
+Codex wrote the following:
+
+```txt
+It reproduced with niquests 3.19.0, and the stack points at wassima.generate_ca_bundle() inside niquests.adapters.cert_verify() after Celery prefork.
+Your reproduced crash is macOS-specific: wassima/_os/_macos.py reading certificates through macOS trust/keychain APIs after Celery fork.
+
+The prefork test reproduced the crash with a read-only status call, so it is not specific to registration or the payload. The faulthandler stack points at:
+
+  wassima/_os/_macos.py root_der_certificates
+  wassima.generate_ca_bundle()
+  niquests.adapters.cert_verify()
+  niquests.get()
+  websecmap.scanners_internet_nl_web.api.status()
+
+  So this does not look like wrong app logic. The wheel metadata also does not show an obvious wrong-architecture wheel: qh3/jh2 are macOS universal/arm64-compatible, and wassima is pure
+  Python. The failure is very likely macOS + Celery prefork + niquests/wassima certificate handling.
+
+  Practical conclusion: keep internetnl off prefork workers. Longer-term, I’d replace niquests with plain requests for these Internet.nl batch API calls in websecmap, since the code only
+  needs simple JSON HTTP Basic Auth calls.
+```
+
+
+```json
+[2026-06-06 14:49:47,355: ERROR/MainProcess] Process 'ForkPoolWorker-8' pid:4809 exited with 'signal 11 (SIGSEGV)'
+[2026-06-06 14:49:47,365: ERROR/MainProcess] Process 'ForkPoolWorker-2' pid:4803 exited with 'signal 11 (SIGSEGV)'
+[2026-06-06 14:49:47,377: ERROR/MainProcess] Process 'ForkPoolWorker-1' pid:4802 exited with 'signal 11 (SIGSEGV)'
+[2026-06-06 14:49:47,400: ERROR/MainProcess] Task handler raised error: WorkerLostError('Worker exited prematurely: signal 11 (SIGSEGV) Job: 10.')
+Traceback (most recent call last):
+  File "/Users/stitch/Documents/_webdevelopment/internetnl/test2/Internet.nl-dashboard/.venv/lib/python3.13/site-packages/billiard/pool.py", line 1265, in mark_as_worker_lost
+    raise WorkerLostError(
+    ...<2 lines>...
+    )
+billiard.einfo.ExceptionWithTraceback:
+"""
+Traceback (most recent call last):
+  File "/Users/stitch/Documents/_webdevelopment/internetnl/test2/Internet.nl-dashboard/.venv/lib/python3.13/site-packages/billiard/pool.py", line 1265, in mark_as_worker_lost
+    raise WorkerLostError(
+    ...<2 lines>...
+    )
+billiard.exceptions.WorkerLostError: Worker exited prematurely: signal 11 (SIGSEGV) Job: 10.
+"""
+[2026-06-06 14:49:47,406: ERROR/MainProcess] Task handler raised error: WorkerLostError('Worker exited prematurely: signal 11 (SIGSEGV) Job: 11.')
+Traceback (most recent call last):
+  File "/Users/stitch/Documents/_webdevelopment/internetnl/test2/Internet.nl-dashboard/.venv/lib/python3.13/site-packages/billiard/pool.py", line 1265, in mark_as_worker_lost
+    raise WorkerLostError(
+    ...<2 lines>...
+    )
+billiard.einfo.ExceptionWithTraceback:
+"""
+Traceback (most recent call last):
+  File "/Users/stitch/Documents/_webdevelopment/internetnl/test2/Internet.nl-dashboard/.venv/lib/python3.13/site-packages/billiard/pool.py", line 1265, in mark_as_worker_lost
+    raise WorkerLostError(
+    ...<2 lines>...
+    )
+billiard.exceptions.WorkerLostError: Worker exited prematurely: signal 11 (SIGSEGV) Job: 11.
+"""
+[2026-06-06 14:49:47,413: ERROR/MainProcess] Task handler raised error: WorkerLostError('Worker exited prematurely: signal 11 (SIGSEGV) Job: 13.')
+Traceback (most recent call last):
+  File "/Users/stitch/Documents/_webdevelopment/internetnl/test2/Internet.nl-dashboard/.venv/lib/python3.13/site-packages/billiard/pool.py", line 1265, in mark_as_worker_lost
+    raise WorkerLostError(
+    ...<2 lines>...
+    )
+billiard.einfo.ExceptionWithTraceback:
+"""
+Traceback (most recent call last):
+  File "/Users/stitch/Documents/_webdevelopment/internetnl/test2/Internet.nl-dashboard/.venv/lib/python3.13/site-packages/billiard/pool.py", line 1265, in mark_as_worker_lost
+    raise WorkerLostError(
+    ...<2 lines>...
+    )
+billiard.exceptions.WorkerLostError: Worker exited prematurely: signal 11 (SIGSEGV) Job: 13.
+"""
+
+```
