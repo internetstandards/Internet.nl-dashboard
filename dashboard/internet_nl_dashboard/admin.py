@@ -681,6 +681,18 @@ create_modeladmin(ActionInspectionAdmin, name="actionInspection", model=Actstrea
 class AccountInternetNLScanLogAdmin(ImportExportModelAdmin, admin.ModelAdmin):
     paginator = TooManyRecordsPaginator
 
+    @admin.display(ordering="scan__id", description="Scan id")
+    def scan_pk(self, obj):
+        return obj.scan_id
+
+    @admin.display(ordering="scan__urllist__name", description="URL list")
+    def scan_urllist_name(self, obj):
+        return obj.scan.urllist.name if obj.scan_id else None
+
+    @admin.display(ordering="scan__account__name", description="Account")
+    def scan_account_name(self, obj):
+        return obj.scan.account.name if obj.scan_id else None
+
     # prevent fetching report files: See sentry issue 7037647108
     def get_queryset(self, request):
         qs = super().get_queryset(request)
@@ -696,15 +708,24 @@ class AccountInternetNLScanLogAdmin(ImportExportModelAdmin, admin.ModelAdmin):
 
     list_display = (
         "id",
-        "scan__id",
-        "scan__urllist__name",
-        "scan__account__name",
+        "scan_pk",
+        "scan_urllist_name",
+        "scan_account_name",
         "state",
         "at_when",
     )
     list_filter = ["scan", "state", "at_when", "scan__account__name"][::-1]
     search_fields = ("scan__urllist__name", "scan__account__name")
-    fields = list_display
+    readonly_fields = ("id", "scan_pk", "scan_urllist_name", "scan_account_name")
+    fields = (
+        "id",
+        "scan",
+        "scan_pk",
+        "scan_urllist_name",
+        "scan_account_name",
+        "state",
+        "at_when",
+    )
 
 
 @admin.register(UploadLog)

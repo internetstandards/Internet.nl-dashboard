@@ -36,7 +36,7 @@ JET_SIDE_MENU_ITEMS = [
     {
         "label": _("🔬 Scan"),
         "items": [
-            {"name": "scanners.internetnlscaninspection", "label": "Scan Inspections"},
+            {"name": "scanners_internet_nl_web.internetnlscaninspection", "label": "Scan Inspections"},
             {"name": "internet_nl_dashboard.accountinternetnlscan"},
             {"name": "internet_nl_dashboard.accountinternetnlscanlog"},
             {
