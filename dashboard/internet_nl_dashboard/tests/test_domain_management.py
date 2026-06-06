@@ -4,6 +4,7 @@ These testcases help to validate the working of the listmanagement API.
 
 Run these tests with tox -e test -- -k test_urllist_management
 """
+
 import timeit
 
 import pytest
@@ -129,7 +130,7 @@ def test_add_domains_from_raw_user_data(db, current_path, redis_server):
     list_1 = get_or_create_list_by_name(account, "test list 1")
 
     # you can't go past the DASHBOARD_MAXIMUM_DOMAINS_PER_LIST
-    response = add_domains_from_raw_user_data(account, list_1.id, domains[:6000]).dict()
+    response = add_domains_from_raw_user_data(account, list_1.id, "\n".join(domains[:6000])).dict()
 
     assert response["error"] is True
     assert response["message"] == "too_many_domains"
@@ -138,7 +139,7 @@ def test_add_domains_from_raw_user_data(db, current_path, redis_server):
     new_url = Url.objects.all().create(url="nu.nl")
     list_1.urls.add(new_url)
 
-    response = add_domains_from_raw_user_data(account, list_1.id, domains[:100]).dict()
+    response = add_domains_from_raw_user_data(account, list_1.id, "\n".join(domains[:100])).dict()
 
     assert response["success"] is True
     assert response["data"] == {

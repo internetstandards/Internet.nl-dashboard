@@ -58,6 +58,7 @@ def create_endpoint_scan(
         explanation=explanation,
         evidence="https://batch.internet.nl/site/example/123/",
         rating_determined_on=rating_determined_on,
+        last_scan_moment=rating_determined_on,
         is_the_latest_scan=is_the_latest_scan,
         comply_or_explain_is_explained=False,
     )
@@ -196,8 +197,7 @@ def test_get_ad_hoc_live_latest_metrics_openapi_example_and_defaults(db, client)
         "internet_nl_web_overall_score",
     ], "OpenAPI should expose the default metric list."
     assert (
-        "First log in in the same browser via `/api/v1/allauth/openapi.html` or `/accounts/login/`"
-        in openapi["info"]["description"]
+        "First log in in the same browser via `/api/v1/allauth/openapi.html`" in openapi["info"]["description"]
     ), "OpenAPI description should explain how Swagger authenticated calls work."
 
 

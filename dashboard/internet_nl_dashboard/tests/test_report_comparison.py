@@ -2,6 +2,7 @@
 """
 Compares reports, in a generic way.
 """
+
 from copy import deepcopy
 
 from dashboard.internet_nl_dashboard.logic.mail_admin_templates import store_template

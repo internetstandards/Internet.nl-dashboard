@@ -9,6 +9,7 @@ coverage
 pytest
 pytest-cov
 pytest-django
+pytest-httpserver
 # counterpart of requests for mock responses
 pytest-responses
 # output logging when test fails
@@ -18,7 +19,7 @@ django-extensions
 django-debug-toolbar
 django-debug-toolbar-request-history
 pytest-mock
-websecmap @ git+https://gitlab.com/internet-cleanup-foundation/web-security-map@3aa1c95b241c80a0c513c1db04909f8e824e0385
+websecmap @ git+https://gitlab.com/internet-cleanup-foundation/web-security-map@76c3d781d2bcdcd58d2fdb554c5e773742715537
 # use the version with relaxed attr requirements
 pytest-docker @ git+https://github.com/avast/pytest-docker@519b155009b6f3570c01f1f56e7c4e6ce3c5c760
 
@@ -34,9 +35,6 @@ freezegun
 colorama
 
 django-cprofile-middleware
-
-# django phonenumber field (via otp) needs this, and cannot get it themselves:
-phonenumberslite>=7.0.2
 
 rst2pdf
 

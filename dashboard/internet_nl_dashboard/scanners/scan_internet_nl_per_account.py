@@ -332,15 +332,15 @@ def discovering_endpoints(scan_id: int):
         log.warning("Trying to discovering_endpoints with unknown scan: %s.", scan_id)
         return group([])
 
-    return dns_endpoints.compose_discover_task(
-        **{
-            "urls_filter": {
-                "urls_in_dashboard_list_2__id": scan.urllist.id,
-                "is_dead": False,
-                "not_resolvable": False,
-            }
-        }
-    ) | update_state.si("discovered endpoints", scan.id)
+    urls = Url.objects.filter(
+        urls_in_dashboard_list_2__id=scan.urllist.id,
+        is_dead=False,
+        not_resolvable=False,
+    )
+    for task in dns_endpoints.compose_manual_discover_task(urls):
+        task.run()
+
+    return update_state.si("discovered endpoints", scan.id)
 
 
 def retrieving_scannable_urls(scan_id: int):
@@ -460,6 +460,10 @@ def processing_scan_results(scan_id: int):
 def copy_state_from_websecmap_scan(scan_id: int):
     scan = AccountInternetNLScan.objects.all().filter(id=scan_id).first()
     if not scan or not scan.scan:
+        return
+
+    # prevent delayed copy tasks on the queue from resetting the new_state to "imported scan results"
+    if scan.state in ["finished", "cancelled"] or scan.state.startswith("error"):
         return
 
     up_to_date_scan_information = InternetNLV2Scan.objects.all().get(id=scan.scan.pk)
@@ -819,21 +823,22 @@ def update_state(state: str, scan_id: int) -> None:
     if not scan:
         return
 
-    # if the state is still the same, just update the last_check, don't append the log.
-    # Don't get it from the scan object, that info might be obsolete.
-    last_state_for_scan = (
-        AccountInternetNLScanLog.objects.all().filter(scan=scan).order_by("-at_when").only("state").first()
-    )
+    # Prevent stale queued tasks from moving terminal scans back into an active state.
+    # Same-state updates are still allowed to fall through to the duplicate-state check below.
+    if (scan.state in ["finished", "cancelled"] or scan.state.startswith("error")) and state != scan.state:
+        return
 
-    if last_state_for_scan:
+    if last_state_for_scan := (
+        AccountInternetNLScanLog.objects.all().filter(scan=scan).order_by("-at_when").only("state").first()
+    ):
         # see: test_update_state
         if last_state_for_scan.state == state == scan.state:
             return
 
-    # do not update a cancelled scan (#159), even if a certain task has finished after a cancel was issued (letting the
-    # task overwriting the cancelled state, continuing the scan)
-    if last_state_for_scan == "cancelled":
-        return
+        # do not update a cancelled scan (#159), even if a certain task has finished after a cancel was issued
+        # (letting the task overwriting the cancelled state, continuing the scan)
+        if last_state_for_scan.state == "cancelled":
+            return
 
     # First state, or a new state.
     scan.state = state

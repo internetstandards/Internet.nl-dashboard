@@ -18,7 +18,6 @@ import dashboard.internet_nl_dashboard.signals  # noqa  # pylint: disable=unused
 from dashboard.internet_nl_dashboard.views import (
     admin,
     app,
-    logout_view,
     mail,
     public_reports,
     reports,
@@ -132,8 +131,8 @@ api = NinjaAPI(
     "`https://batch.internet.nl/api/batch/openapi.yaml` and can be live-rendered via the following:"
     "url `https://redocly.github.io/redoc/?url=https://batch.internet.nl/api/batch/openapi.yaml`.\n\n"
     "## Using Swagger\n\nAuthenticated `POST`, `PUT`, `PATCH` and `DELETE` calls in `/api/v1/docs` use the current "
-    "browser session and CSRF token. First log in in the same browser via `/api/v1/allauth/openapi.html` or "
-    "`/accounts/login/`, then return to `/api/v1/docs` and use `Try it out`.",
+    "browser session and CSRF token. First log in in the same browser via `/api/v1/allauth/openapi.html`, "
+    "then return to `/api/v1/docs` and use `Try it out`.",
 )
 
 # Inject API-Version header into the generated OpenAPI schema for all responses.
@@ -192,7 +191,6 @@ register_converter(SpreadsheetFileTypeConverter, "spreadsheet_filetype")
 
 urlpatterns = [
     path("", lambda request: redirect(config.DASHBOARD_FRONTEND_URL)),
-    path("logout/", logout_view),
     path(
         "api/v1/allauth/openapi-assets/swagger-ui.css",
         allauth_openapi_swagger_css,

@@ -52,7 +52,8 @@ CONSTANCE_CONFIG = {
     # This is a setting duplicated from Web Security Map, todo: deduplicate this setting
     "INTERNET_NL_API_URL": (
         "http://localhost:8080/api/batch/v2",
-        'The internet address for the Internet.nl API installation. This is commonly called a "batch server".',
+        'The internet address for the Internet.nl API installation. This is commonly called a "batch server". '
+        "DEPRECATED set WSM_INTERNET_NL_API_URL in settings.py for the actual scanning part.",
         str,
     ),
     "INTERNET_NL_SCAN_TRACKING_NAME": (
@@ -61,27 +62,6 @@ CONSTANCE_CONFIG = {
         "is sending API requests. A good setting contains something unique about this installation, such as an "
         "organization name. The maximum length is 40 characters.",
         str,
-    ),
-    # This is a setting duplicated from Web Security Map, todo: deduplicate this setting
-    "SCANNER_NAMESERVERS": (
-        [
-            "193.17.47.1",
-            "185.43.135.1",
-            "193.110.81.0",
-            "185.253.5.0",
-            "9.9.9.9",
-            "149.112.112.112",
-            "2001:148f:ffff::1",
-            "2001:148f:fffe::1",
-            "2a0f:fc80::",
-            "2a0f:fc81::",
-            "2620:fe::fe",
-            "2620:fe::9",
-        ],
-        "Nameservers used during scans (dns endpoints and subdomains). This string is loaded as JSON, but not validated"
-        " due to limitations of this settings library. Be careful when editing(!). "
-        "This information is cached and loaded only once every 10 minutes.",
-        "json",
     ),
     "CREDENTIAL_CHECK_URL": (
         "http://localhost:8080/api/",
@@ -315,7 +295,6 @@ CONSTANCE_CONFIG_FIELDSETS = OrderedDict(
                 "SCAN_AT_ALL",
                 "INTERNET_NL_API_URL",
                 "INTERNET_NL_SCAN_TRACKING_NAME",
-                "SCANNER_NAMESERVERS",
                 "CREDENTIAL_CHECK_URL",
             ),
         ),

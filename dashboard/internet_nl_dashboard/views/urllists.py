@@ -63,7 +63,7 @@ class UpdateUrlInputSchema(Schema):
 
 
 class AddUrlsInputSchema(Schema):
-    urls: list[Annotated[str, StringConstraints(max_length=255)]]
+    raw_urls: Annotated[str, StringConstraints(max_length=10_000)]
 
 
 # django_auth replaces @login_required on every call
@@ -155,7 +155,7 @@ def get_urllist_content_operation(request, urllist_id: int):
 
 @router.post("/{urllist_id}/urls", response={201: OperationResponseSchema})
 def add_urls_to_urllist_operation(request, urllist_id: int, data: AddUrlsInputSchema):
-    return add_domains_from_raw_user_data(get_account(request), urllist_id, data.urls)
+    return add_domains_from_raw_user_data(get_account(request), urllist_id, data.raw_urls)
 
 
 @router.put("/{urllist_id}/urls/{url_id}", response={200: AlterUrlResponseSchema})

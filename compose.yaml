@@ -37,7 +37,7 @@ services:
   worker: &worker
     image: ${DOCKER_IMAGE_DASHBOARD:-${DOCKER_REGISTRY:-internetstandards}/dashboard:${RELEASE:-latest}}
     build: .
-    command: celery_dashboard worker --queues storage,celery,isolated,kickoff,kickoff1,kickoff2,kickoff3,kickoff4,database_deprecate,database_deprecate3,database,database3
+    command: celery_dashboard worker --queues storage,celery,isolated,kickoff,kickoff1,kickoff2,kickoff3,kickoff4,database_deprecate,database_deprecate3,database,database3,internetnl
     environment: &worker-environment
       SECRET_KEY_FILE: /etc/django_keys/secret_key
       FIELD_ENCRYPTION_KEY_FILE: /etc/django_keys/field_encryption_key

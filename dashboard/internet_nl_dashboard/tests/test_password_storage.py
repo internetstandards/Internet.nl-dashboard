@@ -4,6 +4,7 @@ Checks that the password in the Account can be stored and retrieved, and results
 
 Run these tests with tox -e test -- -k test_password_storage
 """
+
 import pytest
 
 from dashboard.internet_nl_dashboard.models import Account

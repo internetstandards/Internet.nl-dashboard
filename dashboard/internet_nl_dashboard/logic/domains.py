@@ -19,12 +19,7 @@ from websecmap import tldextract
 from websecmap.app.constance import constance_cached_value
 from websecmap.organizations.models import Url
 from websecmap.scanners.models import Endpoint
-from websecmap.scanners_internet_nl_dns_endpoints.tasks import (
-    compose_discover_task,
-    get_nameservers,
-    has_a_or_aaaa,
-    has_soa,
-)
+from websecmap.scanners_internet_nl_dns_endpoints.tasks import compose_manual_discover_task, has_a_or_aaaa, has_soa
 
 from dashboard.celery import app
 from dashboard.internet_nl_dashboard.logic import OperationResponseSchema, operation_response
@@ -230,11 +225,15 @@ def suggest_subdomains_for_list(
 
     # perform some AAAA/MX record lookups, so a user can select some things.
     domains_with_dns_status: list[dict[str, Any]] = []
-    nameservers = get_nameservers()
     if len(suggestions) < 30:
         for d in suggestions:
-            has_website = has_a_or_aaaa(d, nameservers)
-            has_email = has_soa(d, nameservers)
+            try:
+                has_website = has_a_or_aaaa(d)
+                has_email = has_soa(d)
+            except Exception:
+                log.debug("Could not determine DNS status for suggested domain %s.", d, exc_info=True)
+                has_website = False
+                has_email = False
             domains_with_dns_status.append(
                 {
                     "domain": d,
@@ -953,7 +952,7 @@ def retrieve_possible_urls_from_unfiltered_input(
     return sorted(has_tld), duplicates_removed
 
 
-def add_domains_from_raw_user_data(account: Account, urllist_id: int, urls: list[str]) -> OperationResponseSchema:
+def add_domains_from_raw_user_data(account: Account, urllist_id: int, raw_urls: str) -> OperationResponseSchema:
     """
     This is the 'id' version of save_urllist. It is a bit stricter as in that it requires the list to exist.
 
@@ -963,11 +962,9 @@ def add_domains_from_raw_user_data(account: Account, urllist_id: int, urls: list
     Used in the web / ajax frontend and uses operation responses.
     """
 
-    unfiltered_urls: str = " ".join(urls or [])
-
     # these are random unfiltered strings and the method expects keys...
     # in this case we'll run an extra retrieve_possible_urls_from_unfiltered_input so there is already some filtering.
-    urls, _ = retrieve_possible_urls_from_unfiltered_input(unfiltered_urls)
+    urls, _ = retrieve_possible_urls_from_unfiltered_input(raw_urls or "")
 
     # does this remove tags of existing urls?
     result = save_urllist_content_by_id(account, urllist_id, {url: {"tags": []} for url in urls})
@@ -1167,7 +1164,8 @@ def add_new_url_to_list_async(
 @app.task(queue="storage", ignore_result=True)
 def discover_endpoints(url_id):
     # always try to find a few dns endpoints...
-    compose_discover_task(urls_filter={"pk": url_id}).apply_async()
+    for task in compose_manual_discover_task(Url.objects.filter(pk=url_id)):
+        task.run()
 
 
 def add_tags_to_urls_in_urllist(existing_url: Url, current_list: UrlList, tags: List[str]) -> None:
@@ -1200,7 +1198,8 @@ def _add_to_urls_to_urllist_nicer(account: Account, current_list: UrlList, urls:
             new_url = Url.add(url)
 
             # always try to find a few dns endpoints...
-            compose_discover_task(urls_filter={"pk": new_url.id}).apply_async()
+            for task in compose_manual_discover_task(Url.objects.filter(pk=new_url.id)):
+                task.run()
 
             current_list.urls.add(new_url)
             counters["added_to_list"].append(url)

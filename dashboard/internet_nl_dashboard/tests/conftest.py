@@ -3,12 +3,20 @@ from pathlib import Path
 
 import pytest
 import redis
-from websecmap.conftest import default_policy, default_scan_metadata  # noqa
+from django.apps import apps
+from websecmap.reporting.time_cache import CACHE
+from websecmap.scanners_common.tests import enable_scanners
 
-__all__ = [
-    default_scan_metadata,
-    default_policy,
-]  # prevent code cleaners to automatically remove unused import.
+
+@pytest.fixture
+def default_scan_metadata(db):
+    apps.get_app_config("scanners_internet_nl_web").startup()
+    apps.get_app_config("scanners_internet_nl_mail").startup()
+    scanners = enable_scanners(["internet_nl_web", "internet_nl_mail"])
+    for scanner in scanners.values():
+        scanner.creates_scan_types.update(include_in_report=True, show_in_frontend=True)
+    CACHE.pop("backend_scanmetadata", None)
+    return scanners
 
 
 @pytest.fixture

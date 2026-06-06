@@ -22,6 +22,7 @@ Details obv action metingen gestart eind januari 2020 (er mist bijna een maand d
 
 
 """
+
 from datetime import date, datetime, timedelta, timezone
 from hashlib import sha1
 from typing import Any, Dict

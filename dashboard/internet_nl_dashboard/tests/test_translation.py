@@ -2,6 +2,7 @@
 """
 Run these tests with tox -e test -- -k test_translation
 """
+
 from pathlib import Path
 from unittest import mock
 

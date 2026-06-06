@@ -1,15 +1,12 @@
 # SPDX-License-Identifier: Apache-2.0
 import logging
-from time import sleep
 
-from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth import logout
 from django.http import JsonResponse
-from django_otp.plugins.otp_totp.models import TOTPDevice
 from ninja import Router, Schema
 
 from dashboard.internet_nl_dashboard.logic import OperationResponseSchema, operation_response
 from dashboard.internet_nl_dashboard.models import Account, DashboardUser
-from dashboard.internet_nl_dashboard.views import get_json_body
 
 """
 Uses django sessions to keep users logged in, so no trickery with JWT is needed.
@@ -18,59 +15,6 @@ The login stuff will be as strong as django's stuff, which is acceptable.
 """
 
 log = logging.getLogger(__package__)
-
-
-def session_login_(request):
-    """
-    Note that login is not possible, as the session cookie must be set correctly. The CSRF is tied to the session
-    cookie, so you cannot retrieve that in a different fashion. There are frameworks that allow you to login
-    such as djoser, but they DO NOT do second factor authentication and there is nothing equivalent to
-    django_second_factor_auth. So all logins and session management must be done, until we drop second factor auth
-    or when there is a json api available for the latter.
-
-    :param request:
-    :return:
-    """
-
-    # logging in via javascript is not possible, because the CSRF is tied to the session cookie.
-    # The session cookie cannot be requested by javascript, and we're not going to use JWT because
-    # the second factor part is also django only, and not implemented as REST methods.
-    # So there is currently no way to move to rest based auth _including_ second factor authentication.
-    # of course except OAUTH, but there is no knowledge for that yet.
-
-    # taken from: https://stackoverflow.com/questions/11891322/setting-up-a-user-login-in-python-django-using-json-and-
-    if request.method != "POST":
-        sleep(2)
-        return operation_response(error=True, message="post_only")
-
-    # get the json data:
-    parameters = get_json_body(request)
-
-    username = parameters.get("username", "").strip()
-    password = parameters.get("password", "").strip()
-
-    if not username or not password:
-        sleep(2)
-        return operation_response(error=True, message="no_credentials_supplied")
-
-    user = authenticate(username=username, password=password)
-
-    if user is None:
-        sleep(2)
-        return operation_response(error=True, message="invalid_credentials")
-
-    if not user.is_active:
-        sleep(2)
-        return operation_response(error=True, message="user_not_active")
-
-    # todo: implement generate_challenge and verify_token, so we can do login from new site.
-    devices = TOTPDevice.objects.all().filter(user=user, confirmed=True)
-    if devices:
-        sleep(2)
-        return operation_response(error=True, message="second_factor_login_required")
-
-    login(request, user)
-    return operation_response(success=True, message="logged_in")
 
 
 def session_logout_(request):
@@ -96,7 +40,6 @@ def session_status_(request):
         return {
             "is_authenticated": False,
             "is_superuser": False,
-            "second_factor_enabled": False,
             "account_name": "",
         }
 
@@ -131,19 +74,13 @@ def session_logout(request):
     return JsonResponse(resp.dict() if hasattr(resp, "dict") else resp)
 
 
-def session_login(request):
-    resp = session_login_(request)
-    return JsonResponse(resp.dict() if hasattr(resp, "dict") else resp)
-
-
-# Ninja router for session management (excluding login)
+# Ninja router for session management. Login is handled by django-allauth.
 router = Router(tags=["Session Management"])
 
 
 class SessionStatusSchema(Schema):
     is_authenticated: bool
     is_superuser: bool
-    second_factor_enabled: bool | None = False
     account_name: str
     account_id: int | None = None
 
@@ -155,9 +92,6 @@ def session_status_api(request) -> SessionStatusSchema:
     return SessionStatusSchema(
         is_authenticated=bool(data.get("is_authenticated", False)),
         is_superuser=bool(data.get("is_superuser", False)),
-        second_factor_enabled=(
-            bool(data.get("second_factor_enabled", False)) if "second_factor_enabled" in data else False
-        ),
         account_name=str(data.get("account_name", "")),
         account_id=data.get("account_id"),
     )

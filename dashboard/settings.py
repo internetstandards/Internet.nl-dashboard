@@ -1,6 +1,7 @@
 # SPDX-License-Identifier: Apache-2.0
 import os
 from datetime import timedelta
+from os import getenv
 from pathlib import Path
 
 import sentry_sdk
@@ -102,12 +103,9 @@ INSTALLED_APPS = [
     # These apps overwrite whatever is declared above, for example the user information.
     # Yet, it does not overwrite management commands.
     "dashboard.internet_nl_dashboard",
-    # Two factor auth
-    "phonenumber_field",
+    # Legacy OTP models are kept temporarily for migration to allauth MFA.
     "django_otp",
-    "django_otp.plugins.otp_static",
     "django_otp.plugins.otp_totp",
-    "two_factor",
     # Django activity stream
     # https://django-activity-stream.readthedocs.io/en/latest/installation.html
     "django.contrib.sites",
@@ -146,8 +144,6 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
-    # Two factor Auth
-    "django_otp.middleware.OTPMiddleware",
     # https://docs.djangoproject.com/en/4.2/ref/middleware/#django.middleware.gzip.GZipMiddleware
     # This middleware should be placed before any other middleware that need to read or write the response body so
     # that compression happens afterward.
@@ -272,14 +268,10 @@ else:
 MEDIA_ROOT = Path(os.environ.get("MEDIA_ROOT", Path(__file__).parent / "uploads"))
 UPLOAD_ROOT: str = os.environ.get("MEDIA_ROOT", f"{os.path.abspath(os.path.dirname(__file__))}/uploads/")
 
-# Two factor auth
-LOGIN_URL = "two_factor:login"
+# Authentication
+LOGIN_URL = "/api/v1/allauth/openapi.html"
 LOGIN_REDIRECT_URL = "/"
 LOGOUT_REDIRECT_URL = LOGIN_URL
-TWO_FACTOR_QR_FACTORY = "qrcode.image.pil.PilImage"
-# 6 supports google authenticator
-TWO_FACTOR_TOTP_DIGITS = 6
-TWO_FACTOR_PATCH_ADMIN = True
 
 # something from websecmap
 TOOLS = {"organizations": {"import_data_dir": ""}}
@@ -361,9 +353,12 @@ DRAMATIQ_BROKER = {
         "dramatiq.middleware.Retries",
         # enable age limits
         "dramatiq.middleware.AgeLimit",
-        # "dramatiq.middleware.TimeLimit",
+        "django_dramatiq.middleware.DbConnectionsMiddleware",
+        "dramatiq.middleware.ShutdownNotifications",
+        "dramatiq.middleware.TimeLimit",
         "dramatiq.middleware.Callbacks",
         "dramatiq.middleware.GroupCallbacks",
+        "dramatiq.middleware.asyncio.AsyncIO",
         # additional logging for workers
         "websecmap.dramatiq.middleware.Logging",
         "websecmap.dramatiq.middleware.StoreFailures",
@@ -684,8 +679,8 @@ ACCOUNT_EMAIL_VERIFICATION_BY_CODE_ENABLED = True
 # all defaults, but these keys need to be present. Not including the hostname should work.
 HEADLESS_FRONTEND_URLS = {
     "account_confirm_email": "/account/verify-email/{key}",
-    "account_reset_password": "/account/password/reset",
-    "account_reset_password_from_key": "/account/password/reset/key/{key}",
+    "account_reset_password": "/account/password/reset",  # nosec
+    "account_reset_password_from_key": "/account/password/reset/key/{key}",  # nosec
     "account_signup": "/account/signup",
     # Fallback in case the state containing the `next` URL is lost and the handshake
     # with the third-party provider fails.
@@ -738,3 +733,16 @@ ACCOUNT_EMAIL_UNKNOWN_ACCOUNTS = False
 
 # END allauth
 #######
+
+
+# in 2026 nameservers moved to unbound and come with a separate config
+NAMESERVERS_ENVIRONMENT_VARIABLE = "WSM_NAMESERVERS"
+NAMESERVERS = [
+    nameserver.strip() for nameserver in getenv(NAMESERVERS_ENVIRONMENT_VARIABLE, "").split(",") if nameserver.strip()
+]
+
+# in 2026 there are some magic constants that are used in websecmap, but not used by the dashboard. These can just
+# sit empty. - This needs to be set
+WSM_INTERNET_NL_API_URL = getenv("WSM_INTERNET_NL_API_URL", "https://dev1.batch.internet.nl/api/batch/v2")
+WSM_INTERNET_NL_API_USERNAME = getenv("WSM_INTERNET_NL_API_USERNAME", "dummy")
+WSM_INTERNET_NL_API_PASSWORD = getenv("WSM_INTERNET_NL_API_PASSWORD", "dummy")

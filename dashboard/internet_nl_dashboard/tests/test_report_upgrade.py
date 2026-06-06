@@ -4,6 +4,7 @@ Validate that a report is correctly upgraded
 
 Run these tests with make testcase case=test_reoprt_upgrade
 """
+
 from datetime import datetime, timezone
 
 from websecmap.organizations.models import Url
