@@ -2,7 +2,6 @@
 import logging
 import re
 from datetime import datetime, timedelta, timezone
-from urllib.parse import quote, urlsplit, urlunsplit
 
 import nested_admin
 from actstream.models import Action as ActstreamAction
@@ -661,36 +660,7 @@ class InternetNLV2ScanAdminNew(
     def online(obj):
         if not obj.scan_id:
             return None
-
-        api_url = str(config.INTERNET_NL_API_URL).rstrip("/")
-        parsed_url = urlsplit(api_url)
-        netloc = parsed_url.netloc.rsplit("@", 1)[-1]
-
-        account_scan = (
-            AccountInternetNLScan.objects.all()
-            .filter(scan=obj)
-            .select_related("account")
-            .only("account__internet_nl_api_username", "account__internet_nl_api_password")
-            .first()
-        )
-        if account_scan and account_scan.account.internet_nl_api_username:
-            username = quote(account_scan.account.internet_nl_api_username, safe="")
-            try:
-                password = quote(account_scan.account.decrypt_password(), safe="")
-            except ValueError:
-                password = ""
-            credentials = f"{username}:{password}@" if password else f"{username}@"
-            netloc = f"{credentials}{netloc}"
-
-        url = urlunsplit(
-            (
-                parsed_url.scheme,
-                netloc,
-                f"{parsed_url.path.rstrip('/')}/requests/{obj.scan_id}",
-                "",
-                "",
-            )
-        )
+        url = f"{str(config.INTERNET_NL_API_URL).rstrip("/")}/requests/{obj.scan_id}"
         return format_html('<a href="{}" target="_blank" rel="noopener noreferrer">online</a>', url)
 
     def account_scan(self, obj):

@@ -1,9 +1,7 @@
 # SPDX-License-Identifier: Apache-2.0
 from django.apps import apps
 from django.core.management.base import BaseCommand, CommandError
-
 from websecmap.reporting.time_cache import CACHE
-
 
 DEFAULT_APP_LABELS = ["scanners_internet_nl_web", "scanners_internet_nl_mail"]
 
@@ -16,10 +14,7 @@ class Command(BaseCommand):
             "app_labels",
             nargs="*",
             default=DEFAULT_APP_LABELS,
-            help=(
-                "Django app labels to initialize. Defaults to: "
-                f"{', '.join(DEFAULT_APP_LABELS)}."
-            ),
+            help=("Django app labels to initialize. Defaults to: " f"{', '.join(DEFAULT_APP_LABELS)}."),
         )
 
     def handle(self, *args, **options):
