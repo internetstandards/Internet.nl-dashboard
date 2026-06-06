@@ -386,7 +386,7 @@ DRAMATIQ_RESULT_BACKEND = {
                 "RESULT_BACKEND",
                 os.environ.get(
                     "DRAMATIQ_RESULT_BACKEND",
-                    os.environ.get("DRAMATIQ_BROKER_URL", "redis://localhost:6379/1"),
+                    os.environ.get("DRAMATIQ_BROKER_URL_RESULT_BACKEND", "redis://localhost:6379/1"),
                 ),
             ),
         }
@@ -396,7 +396,9 @@ DRAMATIQ_RESULT_BACKEND = {
 }
 DRAMATIQ_RATE_LIMITER_BACKEND = {
     "BACKEND": ("dramatiq.rate_limits.backends.RedisBackend"),
-    "BACKEND_OPTIONS": ({"url": os.environ.get("DRAMATIQ_BROKER_URL", "redis://localhost:6379/2")}),
+    "BACKEND_OPTIONS": (
+        {"url": os.environ.get("DRAMATIQ_BROKER_URL_RATE_LIMITER_BACKEND", "redis://localhost:6379/2")}
+    ),
 }
 
 DRAMATIQ_AUTODISCOVER_MODULES = ["tasks"]
