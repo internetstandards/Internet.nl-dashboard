@@ -67,11 +67,15 @@ requirements.txt: requirements.in | ${uv}
 	# fix bug where uv pip compile writes celery[gevent, redis]==5.5.3 instead of celery[gevent,redis]==5.5.3 (without space)
 	sed -Ei 's/, /,/g' $@
 	# fix bug where uv pip compile writes VCS dependencies as unsupported direct archive URLs.
+	# keep wikidata aligned with websecmap; pip treats tag and resolved commit refs as conflicting.
+	sed -Ei 's|python-wikidata\.git@[a-f0-9]{40}|python-wikidata.git@0.9.0-1|' $@
 	sed -Ei 's|wikidata @ https://gitlab.com/internet-cleanup-foundation/python-wikidata.git@|wikidata @ git+https://gitlab.com/internet-cleanup-foundation/python-wikidata.git@|' $@
 
 requirements-dev.txt: requirements-dev.in requirements.in | ${uv}
 	${uv} pip compile ${pip_compile_args} --python-version ${python_version} --custom-compile-command="make requirements" --no-strip-extras --output-file $@ $<
 	sed -Ei 's/, /,/g' $@
+	# keep wikidata aligned with websecmap; pip treats tag and resolved commit refs as conflicting.
+	sed -Ei 's|python-wikidata\.git@[a-f0-9]{40}|python-wikidata.git@0.9.0-1|' $@
 	sed -Ei 's|wikidata @ https://gitlab.com/internet-cleanup-foundation/python-wikidata.git@|wikidata @ git+https://gitlab.com/internet-cleanup-foundation/python-wikidata.git@|' $@
 
 pip-sync: | ${python}

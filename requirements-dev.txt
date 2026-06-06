@@ -1064,7 +1064,7 @@ werkzeug==3.1.8
     # via
     #   moto
     #   pytest-httpserver
-wikidata @ git+https://gitlab.com/internet-cleanup-foundation/python-wikidata.git@10e917f391d6670d0fcda73e819626dbaed02004
+wikidata @ git+https://gitlab.com/internet-cleanup-foundation/python-wikidata.git@0.9.0-1
     # via
     #   -c requirements.txt
     #   websecmap
