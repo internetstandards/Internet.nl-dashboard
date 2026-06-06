@@ -4,6 +4,7 @@ from datetime import timedelta
 from os import getenv
 from pathlib import Path
 
+import django_stubs_ext
 import sentry_sdk
 from corsheaders.defaults import default_headers
 from dotenv import load_dotenv
@@ -17,6 +18,9 @@ from .settings_constance import CONSTANCE_BACKEND, CONSTANCE_CONFIG, CONSTANCE_C
 from .settings_jet import JET_SIDE_MENU_COMPACT  # noqa  # pylint: disable=unused-import
 from .settings_jet import JET_SIDE_MENU_ITEMS  # noqa  # pylint: disable=unused-import
 from .settings_util import get_field_encryption_key_from_file_or_env, get_secret_key_from_file_or_env
+
+# Enable runtime subscripting for typed Django classes used by websecmap admin modules.
+django_stubs_ext.monkeypatch()
 
 load_dotenv()
 
@@ -93,6 +97,7 @@ INSTALLED_APPS = [
     "websecmap.scanners",  # Endpoint, EndpointGenericScan, UrlGenericScan
     "websecmap.reporting",  # Various reporting functions (might be not needed)
     "websecmap.map",  # because some scanners are intertwined with map configurations. That needs to go.
+    "websecmap.change_requests",  # does have some references to it, cannot migrate in acceptance environment otherwise
     # this wants to exist when changing periodic tasks.
     "websecmap.scanners_screenshot",
     "websecmap.scanners_internet_nl_dns_endpoints",
