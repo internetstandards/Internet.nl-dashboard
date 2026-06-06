@@ -742,7 +742,7 @@ NAMESERVERS = [
 ]
 
 # in 2026 there are some magic constants that are used in websecmap, but not used by the dashboard. These can just
-# sit empty.
-WSM_INTERNET_NL_API_URL = getenv("WSM_INTERNET_NL_API_URL", "")
+# sit empty. - This needs to be set
+WSM_INTERNET_NL_API_URL = getenv("WSM_INTERNET_NL_API_URL", "https://dev1.batch.internet.nl/api/batch/v2")
 WSM_INTERNET_NL_API_USERNAME = getenv("WSM_INTERNET_NL_API_USERNAME", "dummy")
 WSM_INTERNET_NL_API_PASSWORD = getenv("WSM_INTERNET_NL_API_PASSWORD", "dummy")

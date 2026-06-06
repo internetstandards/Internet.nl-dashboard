@@ -2,12 +2,14 @@
 import logging
 import re
 from datetime import datetime, timedelta, timezone
+from urllib.parse import quote, urlsplit, urlunsplit
 
 import nested_admin
 from actstream.models import Action as ActstreamAction
 from celery import group
+from constance import config
 from constance.admin import Config, ConstanceAdmin, ConstanceForm
-from django.contrib import admin
+from django.contrib import admin, messages
 from django.contrib.admin import SimpleListFilter
 from django.contrib.auth.admin import GroupAdmin as BaseGroupAdmin
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
@@ -510,8 +512,59 @@ class AccountInternetNLScanInline(nested_admin.NestedTabularInline):  # pylint: 
         return False
 
 
+class DashboardScanActionsMixin:
+    actions = [
+        "attempt_rollback",
+        "progress_scan",
+        "send_finish_mail",
+        "create_extra_report",
+    ]
+
+    @staticmethod
+    def get_dashboard_scan_queryset(queryset):
+        return queryset
+
+    @admin.action(description="Attempt rollback (async)")
+    def attempt_rollback(self, request, queryset):
+        queued = 0
+        for scan in self.get_dashboard_scan_queryset(queryset):
+            recover_and_retry.apply_async([scan.id])
+            queued += 1
+        self.message_user(request, f"Rolling back {queued} dashboard scan(s) asynchronously.")
+
+    @admin.action(description="Progress scan (async)")
+    def progress_scan(self, request, queryset):
+        queued = 0
+        for scan in self.get_dashboard_scan_queryset(queryset):
+            tasks = progress_running_scan(scan.id)
+            tasks.apply_async()
+            queued += 1
+        self.message_user(request, f"Attempting to progress {queued} dashboard scan(s) asynchronously.")
+
+    @admin.action(description="Queue finished mail (finished only)")
+    def send_finish_mail(self, request, queryset):
+        sent = 0
+        skipped = 0
+        for scan in self.get_dashboard_scan_queryset(queryset):
+            if scan.finished:
+                send_scan_finished_mails(scan.id)
+                sent += 1
+            else:
+                skipped += 1
+        self.message_user(request, f"Queued {sent} finished mail task(s); skipped {skipped} unfinished scan(s).")
+
+    @admin.action(description="Create additional report (async) (finished only)")
+    def create_extra_report(self, request, queryset):
+        tasks = [creating_report(scan.id) for scan in self.get_dashboard_scan_queryset(queryset)]
+        if not tasks:
+            self.message_user(request, "No related dashboard scans found.", level=messages.WARNING)
+            return
+        group(tasks).apply_async()
+        self.message_user(request, f"Creating additional reports for {len(tasks)} dashboard scan(s) asynchronously.")
+
+
 @admin.register(AccountInternetNLScan)
-class AccountInternetNLScanAdmin(ImportExportModelAdmin, admin.ModelAdmin):
+class AccountInternetNLScanAdmin(DashboardScanActionsMixin, ImportExportModelAdmin, admin.ModelAdmin):
 
     def get_queryset(self, request):
         qs = super().get_queryset(request)
@@ -570,54 +623,11 @@ class AccountInternetNLScanAdmin(ImportExportModelAdmin, admin.ModelAdmin):
     def internetnl_scan_type(obj):
         return obj.scan.type
 
-    actions = []
 
-    def attempt_rollback(self, request, queryset):
-        for scan in queryset:
-            recover_and_retry.apply_async([scan.id])
-        self.message_user(request, "Rolling back asynchronously. May take a while.")
-
-    attempt_rollback.short_description = "Attempt rollback (async)"  # type: ignore
-    actions.append("attempt_rollback")
-
-    def progress_scan(self, request, queryset):
-        log.debug("Attempting to progress scan.")
-        for scan in queryset:
-            log.debug("Progressing scan %s.", scan)
-            tasks = progress_running_scan(scan.id)
-            log.debug("Created task %s.", tasks)
-            tasks.apply_async()
-        self.message_user(request, "Attempting to progress scans (async).")
-
-    progress_scan.short_description = "Progress scan (async)"  # type: ignore
-    actions.append("progress_scan")
-
-    def send_finish_mail(self, request, queryset):
-        sent = 0
-        for scan in queryset:
-            if scan.finished:
-                sent += 1
-                send_scan_finished_mails(scan.id)
-        self.message_user(request, "A total of %s mails have been sent.", sent)
-
-    send_finish_mail.short_description = "Queue finished mail (finished only)"  # type: ignore
-    actions.append("send_finish_mail")
-
-    # This is used to create ad-hoc reports for testing the send_finish_mail function.
-    def create_extra_report(self, request, queryset):
-        tasks = []
-        for scan in queryset:
-            tasks.append(creating_report(scan.id))
-        group(tasks).apply_async()
-        self.message_user(request, "Creating additional reports (async).")
-
-    create_extra_report.short_description = "Create additional report (async) (finished only)"  # type: ignore
-    actions.append("create_extra_report")
-
-
-class InternetNLV2ScanAdminNew(InternetNLV2ScanAdmin, nested_admin.NestedModelAdmin):  # pylint: disable=no-member
+class InternetNLV2ScanAdminNew(
+    DashboardScanActionsMixin, InternetNLV2ScanAdmin, nested_admin.NestedModelAdmin
+):  # pylint: disable=no-member
     # add some inlines to make debugging easier.
-
     def get_queryset(self, request):
         qs = super().get_queryset(request)
 
@@ -639,6 +649,49 @@ class InternetNLV2ScanAdminNew(InternetNLV2ScanAdmin, nested_admin.NestedModelAd
     )
 
     list_filter = InternetNLV2ScanAdmin.list_filter + ()
+
+    @staticmethod
+    def get_dashboard_scan_queryset(queryset):
+        return (
+            AccountInternetNLScan.objects.filter(scan_id__in=queryset.values_list("pk", flat=True))
+            .select_related("account", "scan", "urllist")
+        )
+
+    @admin.display(description="Online")
+    def online(self, obj):
+        if not obj.scan_id:
+            return None
+
+        api_url = str(config.INTERNET_NL_API_URL).rstrip("/")
+        parsed_url = urlsplit(api_url)
+        netloc = parsed_url.netloc.rsplit("@", 1)[-1]
+
+        account_scan = (
+            AccountInternetNLScan.objects.all()
+            .filter(scan=obj)
+            .select_related("account")
+            .only("account__internet_nl_api_username", "account__internet_nl_api_password")
+            .first()
+        )
+        if account_scan and account_scan.account.internet_nl_api_username:
+            username = quote(account_scan.account.internet_nl_api_username, safe="")
+            try:
+                password = quote(account_scan.account.decrypt_password(), safe="")
+            except ValueError:
+                password = ""
+            credentials = f"{username}:{password}@" if password else f"{username}@"
+            netloc = f"{credentials}{netloc}"
+
+        url = urlunsplit(
+            (
+                parsed_url.scheme,
+                netloc,
+                f"{parsed_url.path.rstrip('/')}/requests/{obj.scan_id}",
+                "",
+                "",
+            )
+        )
+        return format_html('<a href="{}" target="_blank" rel="noopener noreferrer">online</a>', url)
 
     def account_scan(self, obj):
         account = (
