@@ -103,6 +103,9 @@ INSTALLED_APPS = [
     "websecmap.scanners_internet_nl_dns_endpoints",
     "websecmap.scanners_internet_nl_web",
     "websecmap.scanners_internet_nl_mail",
+    "websecmap.rescan",
+    "websecmap.fullscan",
+    "websecmap.housekeeping",
     # "websecmap.game",
     # Custom Apps
     # These apps overwrite whatever is declared above, for example the user information.
