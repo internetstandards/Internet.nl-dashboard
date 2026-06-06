@@ -80,6 +80,8 @@ WEB_TLS_TLS_FIELDS = [
     "internet_nl_web_https_tls_0rtt",
     # api 2.0 tls 1.3 fields, may 2020
     "internet_nl_web_https_tls_ocsp",
+    # june 2026
+    "internet_nl_web_https_tls_extendedmastersecret",
 ]
 
 WEB_TLS_CERTIFICATE_FIELDS = [
@@ -189,6 +191,8 @@ MAIL_TLS_TLS_FIELDS = [
     "internet_nl_mail_starttls_tls_clientreneg",
     # api 2.0 tls 1.3 fields, may 2020
     "internet_nl_mail_starttls_tls_0rtt",
+    # 6 june 2026
+    "internet_nl_mail_starttls_tls_extendedmastersecret",
 ]
 
 MAIL_TLS_CERTIFICATE_FIELDS = [
@@ -288,6 +292,7 @@ FIELD_TO_CATEGORY_MAP = {
     "internet_nl_web_https_tls_clientreneg": "category_web_tls_tls",
     "internet_nl_web_https_tls_0rtt": "category_web_tls_tls",
     "internet_nl_web_https_tls_ocsp": "category_web_tls_tls",
+    "internet_nl_web_https_tls_extendedmastersecret": "category_web_tls_tls",
     "internet_nl_web_https_cert_chain": "category_web_tls_certificate",
     "internet_nl_web_https_cert_pubkey": "category_web_tls_certificate",
     "internet_nl_web_https_cert_sig": "category_web_tls_certificate",
@@ -327,6 +332,7 @@ FIELD_TO_CATEGORY_MAP = {
     "internet_nl_mail_starttls_tls_secreneg": "category_mail_starttls_tls",
     "internet_nl_mail_starttls_tls_clientreneg": "category_mail_starttls_tls",
     "internet_nl_mail_starttls_tls_0rtt": "category_mail_starttls_tls",
+    "internet_nl_mail_starttls_tls_extendedmastersecret": "category_mail_starttls_tls",
     "internet_nl_mail_starttls_cert_chain": "category_mail_starttls_certificate",
     "internet_nl_mail_starttls_cert_pubkey": "category_mail_starttls_certificate",
     "internet_nl_mail_starttls_cert_sig": "category_mail_starttls_certificate",
