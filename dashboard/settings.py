@@ -679,8 +679,8 @@ ACCOUNT_EMAIL_VERIFICATION_BY_CODE_ENABLED = True
 # all defaults, but these keys need to be present. Not including the hostname should work.
 HEADLESS_FRONTEND_URLS = {
     "account_confirm_email": "/account/verify-email/{key}",
-    "account_reset_password": "/account/password/reset",
-    "account_reset_password_from_key": "/account/password/reset/key/{key}",
+    "account_reset_password": "/account/password/reset",  # nosec
+    "account_reset_password_from_key": "/account/password/reset/key/{key}",  # nosec
     "account_signup": "/account/signup",
     # Fallback in case the state containing the `next` URL is lost and the handshake
     # with the third-party provider fails.
