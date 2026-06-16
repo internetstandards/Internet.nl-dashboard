@@ -15,6 +15,7 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 
+from allauth.account.decorators import secure_admin_login
 from django.contrib import admin
 from django.http import HttpResponse
 from django.urls import include, path, re_path
@@ -24,6 +25,8 @@ from . import __version__
 admin.site.site_header = f"Dashboard Admin {__version__}"
 # Don't show version in title, as that might be shared without auth
 admin.site.site_title = "Dashboard Admin"
+# Redirects /admin/ via /admin/login/ to the allauth API login endpoint when unauthenticated.
+admin.site.login = secure_admin_login(admin.site.login)
 
 
 def trigger_error(request):
