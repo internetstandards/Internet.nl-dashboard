@@ -58,7 +58,7 @@ services:
   dramatiq:
     image: ${DOCKER_IMAGE_DASHBOARD:-${DOCKER_REGISTRY:-internetstandards}/dashboard:${RELEASE:-latest}}
     build: .
-    command: dashboard rundramatiq --queues dns,storage
+    command: rundramatiq --queues dns storage
     environment:
       DJANGO_DATABASE: production
       DB_ENGINE: postgresql_psycopg2
@@ -66,6 +66,7 @@ services:
       DRAMATIQ_BROKER_URL: redis://broker:6379/0
       DRAMATIQ_BROKER_URL_RESULT_BACKEND: redis://broker:6379/1
       DRAMATIQ_BROKER_URL_RATE_LIMITER_BACKEND: redis://broker:6379/2
+      SENTRY_DSN:
     networks:
       dashboard:
 
