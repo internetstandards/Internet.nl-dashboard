@@ -645,7 +645,7 @@ __all__ = [
 ]
 
 #######
-# BEGIN allauth
+# BEGIN allauthDEFAULT_FROM_EMAIL
 
 # Be aware of setting the SITE configuration in the django admin for correct e-mail subjects.
 
