@@ -55,6 +55,20 @@ services:
       - django-keys:/etc/django_keys/
       - dashboard-frontend-uploads:/source/dashboard/uploads
 
+  dramatiq:
+    image: ${DOCKER_IMAGE_DASHBOARD:-${DOCKER_REGISTRY:-internetstandards}/dashboard:${RELEASE:-latest}}
+    build: .
+    command: dashboard rundramatiq --queues dns,storage
+    environment:
+      DJANGO_DATABASE: production
+      DB_ENGINE: postgresql_psycopg2
+      DB_HOST: database
+      DRAMATIQ_BROKER_URL: redis://broker:6379/0
+      DRAMATIQ_BROKER_URL_RESULT_BACKEND: redis://broker:6379/1
+      DRAMATIQ_BROKER_URL_RATE_LIMITER_BACKEND: redis://broker:6379/2
+    networks:
+      dashboard:
+
   worker-reporting:
     <<: *worker
     command: celery_dashboard worker --queues reporting
@@ -110,7 +124,7 @@ configs:
   caddyfile:
     content: |
       :8000 {
-        @paths path /account/* /admin/* /data/* /api/v1/* /api/v2/* /jet/* /logout/* /mail/* /session/* /static/* /upload/* /security.txt /.well-known/security.txt
+        @paths path /accounts/* /admin/* /data/* /api/v1/* /api/v2/* /jet/* /logout/* /mail/* /session/* /static/* /upload/* /security.txt /.well-known/security.txt
         reverse_proxy @paths backend:8000
         reverse_proxy /* frontend:80
       }

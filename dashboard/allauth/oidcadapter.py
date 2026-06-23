@@ -36,7 +36,14 @@ class OIDCGroupRestrictionAdapter(DefaultSocialAccountAdapter):
     def _get_home_organisation_name(sociallogin) -> str:
         account = getattr(sociallogin, "account", None)
         extra_data = getattr(account, "extra_data", {}) or {}
-        organisation = extra_data.get("shac_home_organisation", "")
+        if not isinstance(extra_data, dict):
+            return ""
+
+        userinfo = extra_data.get("userinfo", {})
+        if not isinstance(userinfo, dict):
+            return ""
+
+        organisation = userinfo.get("schacHomeOrganization", "")
         if not isinstance(organisation, str):
             return ""
         return organisation.strip()
@@ -44,10 +51,25 @@ class OIDCGroupRestrictionAdapter(DefaultSocialAccountAdapter):
     def _require_home_organisation_name(self, sociallogin) -> str:
         organisation = self._get_home_organisation_name(sociallogin)
         if not organisation:
+            claim_keys = self._get_oidc_claim_keys(sociallogin)
+            log.warning("OIDC home organisation claim missing. Available claim keys: %s", claim_keys)
             raise PermissionDenied(
-                "OIDC claim 'shac_home_organisation' is required to determine the dashboard account."
+                "OIDC home organisation claim is required to determine the dashboard account."
             )
         return organisation
+
+    @staticmethod
+    def _get_oidc_claim_keys(sociallogin) -> dict[str, list[str]]:
+        account = getattr(sociallogin, "account", None)
+        extra_data = getattr(account, "extra_data", {}) or {}
+        if not isinstance(extra_data, dict):
+            return {}
+
+        claim_keys = {"extra_data": sorted(extra_data.keys())}
+        userinfo = extra_data.get("userinfo")
+        if isinstance(userinfo, dict):
+            claim_keys["userinfo"] = sorted(userinfo.keys())
+        return claim_keys
 
     @staticmethod
     def _get_or_create_account_by_name(account_name: str) -> Account:
@@ -68,8 +90,8 @@ class OIDCGroupRestrictionAdapter(DefaultSocialAccountAdapter):
 
     def _sync_dashboard_account_from_oidc_claim(self, sociallogin, user=None, account_name=None) -> None:
         """
-        Map an OIDC-authenticated user to a dashboard `Account` using:
-        `sociallogin.account.extra_data['shac_home_organisation']`.
+        Map an OIDC-authenticated user to a dashboard `Account` using the
+        configured OIDC home organisation claim.
 
         Behavior:
         - If the claim points to an existing account name, use that account.
@@ -128,7 +150,7 @@ class OIDCGroupRestrictionAdapter(DefaultSocialAccountAdapter):
 
     def pre_social_login(self, request, sociallogin):
         """
-        Allow only OpenID Connect logins that include `shac_home_organisation`.
+        Allow only OpenID Connect logins that include a home organisation claim.
 
         The claim is required because it determines which dashboard account the
         user belongs to.
@@ -147,7 +169,7 @@ class OIDCGroupRestrictionAdapter(DefaultSocialAccountAdapter):
     def save_user(self, request, sociallogin, form=None):
         """
         Persist social user and then map the user to the dashboard account
-        indicated by OIDC claim `shac_home_organisation`.
+        indicated by the OIDC home organisation claim.
         """
         account_name = self._require_home_organisation_name(sociallogin)
         user = super().save_user(request, sociallogin, form=form)
