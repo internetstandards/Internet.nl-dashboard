@@ -11,7 +11,7 @@ from dashboard.internet_nl_dashboard.models import Account, DashboardUser
 
 
 def _build_sociallogin(user, home_organisation, provider_id="openid_connect"):
-    extra_data = {"userinfo": {"schacHomeOrganization": home_organisation}}
+    extra_data = {"userinfo": {"schac_home_organization": home_organisation}}
     return SimpleNamespace(
         provider=SimpleNamespace(id=provider_id),
         account=SimpleNamespace(extra_data=extra_data),
