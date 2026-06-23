@@ -43,7 +43,7 @@ class OIDCGroupRestrictionAdapter(DefaultSocialAccountAdapter):
         if not isinstance(userinfo, dict):
             return ""
 
-        organisation = userinfo.get("schacHomeOrganization", "")
+        organisation = userinfo.get("schac_home_organization", "")
         if not isinstance(organisation, str):
             return ""
         return organisation.strip()
@@ -53,9 +53,7 @@ class OIDCGroupRestrictionAdapter(DefaultSocialAccountAdapter):
         if not organisation:
             claim_keys = self._get_oidc_claim_keys(sociallogin)
             log.warning("OIDC home organisation claim missing. Available claim keys: %s", claim_keys)
-            raise PermissionDenied(
-                "OIDC home organisation claim is required to determine the dashboard account."
-            )
+            raise PermissionDenied("OIDC home organisation claim is required to determine the dashboard account.")
         return organisation
 
     @staticmethod
