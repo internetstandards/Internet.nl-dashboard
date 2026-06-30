@@ -1,6 +1,7 @@
 import logging
 
 from allauth.account.adapter import DefaultAccountAdapter
+from allauth.account.utils import user_username
 from allauth.socialaccount.adapter import DefaultSocialAccountAdapter
 from django.core.exceptions import PermissionDenied
 
@@ -145,6 +146,18 @@ class OIDCGroupRestrictionAdapter(DefaultSocialAccountAdapter):
         if is_oidc_signup:
             log.info("Allowing signup because provider is OpenID Connect.")
         return is_oidc_signup
+
+    def populate_user(self, request, sociallogin, data):
+        """
+        Populate OIDC users using the home organisation claim as fallback username.
+
+        SURFconext does not provide `preferred_username`, so allauth otherwise
+        falls back to generated usernames such as `user`, `user2`, etc.
+        """
+        user = super().populate_user(request, sociallogin, data)
+        if self._is_oidc_sociallogin(sociallogin) and not user_username(user):
+            user_username(user, self._require_home_organisation_name(sociallogin))
+        return user
 
     def pre_social_login(self, request, sociallogin):
         """
