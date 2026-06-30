@@ -46,6 +46,9 @@ services:
       DB_HOST: database
       WORKER_ROLE: default_ipv4
       BROKER: redis://broker:6379/0
+      DRAMATIQ_BROKER_URL: redis://broker:6379/0
+      DRAMATIQ_BROKER_URL_RESULT_BACKEND: redis://broker:6379/1
+      DRAMATIQ_BROKER_URL_RATE_LIMITER_BACKEND: redis://broker:6379/2
       SENTRY_DSN:
     networks:
       dashboard:
