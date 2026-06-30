@@ -220,11 +220,21 @@ image:  ## Create Docker images
 	docker build -t ${docker_image_name} ${build_args} .
 
 docs: ## Generate documentation in various formats
-	# Remove existing documentation folder
-	-rm -rf docs/render/*
-	${python} -m sphinx -b html docs/input docs/render/html
-	${python} -m sphinx -b markdown docs/input docs/render/markdown
-	${python} -m sphinx -b pdf docs/input docs/render/pdf
+	# Build from a temporary source tree so repo-root image paths also work in Sphinx.
+	@set -e; \
+	docs_src=$$(mktemp -d); \
+	trap 'rm -rf "$$docs_src"' EXIT; \
+	cp -R docs/input/. "$$docs_src"; \
+	mkdir -p "$$docs_src/docs/input"; \
+	ln -s ../../installation "$$docs_src/docs/input/installation"; \
+	rm -rf docs/render/html docs/render/markdown docs/render/pdf; \
+	${python} -m sphinx -b html -d "$$docs_src/.doctrees/html" "$$docs_src" docs/render/html; \
+	${python} -m sphinx -b markdown -d "$$docs_src/.doctrees/markdown" "$$docs_src" docs/render/markdown; \
+	cp -R docs/input/installation docs/render/markdown/installation; \
+	cp -R docs/input/user-management docs/render/markdown/user-management; \
+	${python} -m sphinx -M latexpdf "$$docs_src" "$$docs_src/.latexpdf" -d "$$docs_src/.doctrees/latexpdf"; \
+	mkdir -p docs/render/pdf; \
+	cp "$$docs_src/.latexpdf/latex/dashboard.pdf" docs/render/pdf/dashboard.pdf
 
 ## Housekeeping
 clean:  ## cleanup build artifacts, caches, databases, etc.

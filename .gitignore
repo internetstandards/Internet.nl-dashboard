@@ -47,5 +47,6 @@ _db.sqlite3_
 
 # is generated during build, don't include in git
 websecmap/__version__.py
+docs/render/**/.doctrees/
 .env
 .venv
