@@ -746,6 +746,17 @@ ACCOUNT_PREVENT_ENUMERATION = True
 # wrong addresses results in: smtplib.SMTPRecipientsRefused: {'asdasda@adasdadas.com': (550, b'Unrouteable address')}
 ACCOUNT_EMAIL_UNKNOWN_ACCOUNTS = False
 
+# Tighter rate limiting, this is cache-based and will be reset when the app / container / server resets.
+#   10/m/ip = max 10 attempts per minute per IP address
+#   5/5m/key = max 5 attempts per 5 minutes per key
+#   20/d/key = max 20 attempts per day per key
+# In the case there is an attacker, they can at most block the user trying to log in. This will trigger the
+# password reset procedure. In that case the current day the new password cannot be used, but the next day it's fine.
+# https://docs.allauth.org/en/latest/account/rate_limits.html
+ACCOUNT_RATE_LIMITS = {
+    "login_failed": "10/m/ip,5/5m/key,20/d/key",
+}
+
 # END allauth
 #######
 
