@@ -25,6 +25,34 @@ django_stubs_ext.monkeypatch()
 load_dotenv()
 
 
+def env_bool(name: str, default: bool = False) -> bool:
+    value = os.environ.get(name)
+    if value is None or value.strip() == "":
+        return default
+
+    normalized = value.strip().lower()
+    if normalized in {"1", "true", "yes", "on"}:
+        return True
+    if normalized in {"0", "false", "no", "off"}:
+        return False
+
+    raise ValueError(f"{name} must be one of: 1, true, yes, on, 0, false, no, off")
+
+
+def env_csv(name: str, default: list[str]) -> list[str]:
+    value = os.environ.get(name)
+    if value is None or value.strip() == "":
+        return list(default)
+    return [item.strip() for item in value.split(",") if item.strip()]
+
+
+def env_int(name: str, default: int) -> int:
+    value = os.environ.get(name)
+    if value is None or value.strip() == "":
+        return default
+    return int(value)
+
+
 # import all of this and don't auto-lint it away because there are no references here.
 # most code refers to these settings.
 
@@ -54,14 +82,15 @@ SETTINGS_PATH = os.path.normpath(os.path.dirname(__file__))
 SECRET_KEY = get_secret_key_from_file_or_env()
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = os.environ.get("DEBUG", False)
+DEBUG = env_bool("DEBUG", False)
 if DEBUG:
     print("Django debugging is enabled.")
 
-ALLOWED_HOSTS = os.environ.get("ALLOWED_HOSTS", "localhost,127.0.0.1,::1").split(",")
+ALLOWED_HOSTS = env_csv("ALLOWED_HOSTS", ["localhost", "127.0.0.1", "::1"])
 
 
-AUTORELOAD_BROWSER = bool(os.environ.get("AUTORELOAD_BROWSER", DEBUG))
+AUTORELOAD_BROWSER = env_bool("AUTORELOAD_BROWSER", DEBUG)
+OIDC_ENABLED = env_bool("OIDC_ENABLED", bool(os.environ.get("OIDC_SERVER_URL", "").strip()))
 
 # Application definition
 
@@ -131,13 +160,14 @@ INSTALLED_APPS = [
     "allauth.mfa",
     "allauth.mfa.webauthn",
     "allauth.socialaccount",
-    # Enable this setting to add the openid connect login.
-    # Set the settings in SOCIALACCOUNT_PROVIDERS to use the right callbacks.
-    # "allauth.socialaccount.providers.openid_connect",
+    # OIDC provider support is appended below when OIDC_ENABLED or OIDC_SERVER_URL is set.
     # wsm:
     # "storages",
     "websecmap.dramatiq.CustomDjangoDramatiqConfig.CustomDjangoDramatiqConfig",
 ]
+
+if OIDC_ENABLED:
+    INSTALLED_APPS.append("allauth.socialaccount.providers.openid_connect")
 
 # django activity stream wants a site-id:
 SITE_ID = 1
@@ -629,8 +659,8 @@ if not os.path.isdir(FULL_REPORT_STORAGE_DIR):
 
 
 # WSM settings
-NETWORK_SUPPORTS_IPV4 = os.environ.get("NETWORK_SUPPORTS_IPV4", True)
-NETWORK_SUPPORTS_IPV6 = os.environ.get("NETWORK_SUPPORTS_IPV6", False)
+NETWORK_SUPPORTS_IPV4 = env_bool("NETWORK_SUPPORTS_IPV4", True)
+NETWORK_SUPPORTS_IPV6 = env_bool("NETWORK_SUPPORTS_IPV6", False)
 
 # Since Django 5.2, it's a good warning for beginning developers, it's noise if you're around for a while
 # https://adamj.eu/tech/2025/06/27/django-hide-development-server-warning/
@@ -665,31 +695,25 @@ ACCOUNT_ALLOW_REGISTRATION = False
 
 # users have to verify their mail, even though they received a mail on it.
 # This might have to be disabled to make more sense and a more streamlined onboarding.
-ACCOUNT_EMAIL_VERIFICATION = "mandatory"
+ACCOUNT_EMAIL_VERIFICATION = os.environ.get("ACCOUNT_EMAIL_VERIFICATION", "mandatory")
 
 # Mail address can only be used once. Can this be guessed in the auth attempt?
 ACCOUNT_UNIQUE_EMAIL = True
 
-MFA_SUPPORTED_TYPES = [
-    "webauthn",
-    "totp",
-    "recovery_codes",
-]
+MFA_SUPPORTED_TYPES = env_csv("MFA_SUPPORTED_TYPES", ["webauthn", "totp", "recovery_codes"])
 
-ACCOUNT_SIGNUP_FIELDS = ["email*", "username*", "password1*", "password2*"]
+ACCOUNT_SIGNUP_FIELDS = env_csv("ACCOUNT_SIGNUP_FIELDS", ["email*", "username*", "password1*", "password2*"])
 
-MFA_PASSKEY_LOGIN_ENABLED = True
-MFA_PASSKEY_SIGNUP_ENABLED = True
+MFA_PASSKEY_LOGIN_ENABLED = env_bool("MFA_PASSKEY_LOGIN_ENABLED", True)
+MFA_PASSKEY_SIGNUP_ENABLED = env_bool("MFA_PASSKEY_SIGNUP_ENABLED", True)
 
 # Allow a tolerance of 1 window (defaults to 30 seconds) of receiving the code too late.
 # This allows users to send in their code just before it expires and it will still be accepted even though
 # server or network delays may put it outside the normal window.
-MFA_TOTP_TOLERANCE = 1
+MFA_TOTP_TOLERANCE = env_int("MFA_TOTP_TOLERANCE", 1)
 
-ACCOUNT_LOGIN_METHODS = {
-    "username",
-}
-ACCOUNT_EMAIL_VERIFICATION_BY_CODE_ENABLED = True
+ACCOUNT_LOGIN_METHODS = set(env_csv("ACCOUNT_LOGIN_METHODS", ["username"]))
+ACCOUNT_EMAIL_VERIFICATION_BY_CODE_ENABLED = env_bool("ACCOUNT_EMAIL_VERIFICATION_BY_CODE_ENABLED", True)
 
 # all defaults, but these keys need to be present. Not including the hostname should work.
 HEADLESS_FRONTEND_URLS = {

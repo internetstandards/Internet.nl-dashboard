@@ -16,6 +16,24 @@ services:
       BROKER: redis://broker:6379/0
       SENTRY_DSN:
       DASHBOARD_FRONTEND_URL:
+      WSM_NAMESERVERS: 9.9.9.9
+      OIDC_ENABLED: "false"
+      OIDC_CLIENT_ID: ""
+      OIDC_CLIENT_SECRET: ""
+      OIDC_SERVER_URL: ""
+      OIDC_PROVIDER_ID: "my-oidc"
+      OIDC_PROVIDER_NAME: "OIDC"
+      ACCOUNT_SIGNUP_FIELDS: "email*,username*,password1*,password2*"
+      ACCOUNT_EMAIL_VERIFICATION: "mandatory"
+      ACCOUNT_EMAIL_VERIFICATION_BY_CODE_ENABLED: "true"
+      MFA_SUPPORTED_TYPES: "webauthn,totp,recovery_codes"
+      MFA_PASSKEY_SIGNUP_ENABLED: "true"
+      MFA_PASSKEY_LOGIN_ENABLED: "true"
+      MFA_TOTP_TOLERANCE: "1"
+      CSRF_TRUSTED_ORIGINS_DEFAULT_DOMAIN: http://localhost:8000
+      CSRF_TRUSTED_ORIGINS_WILDCARD_DOMAIN: http://localhost:8000
+      CORS_ALLOWED_ACCEPT_DOMAIN: http://localhost:8000
+      CORS_ALLOWED_DOMAIN: http://localhost:8000
     networks:
       dashboard:
     volumes:
@@ -50,6 +68,8 @@ services:
       DRAMATIQ_BROKER_URL_RESULT_BACKEND: redis://broker:6379/1
       DRAMATIQ_BROKER_URL_RATE_LIMITER_BACKEND: redis://broker:6379/2
       SENTRY_DSN:
+      WSM_NAMESERVERS: 9.9.9.9
+      DEFAULT_FROM_EMAIL: info@example.nl
     networks:
       dashboard:
     healthcheck:
@@ -69,6 +89,7 @@ services:
       DRAMATIQ_BROKER_URL: redis://broker:6379/0
       DRAMATIQ_BROKER_URL_RESULT_BACKEND: redis://broker:6379/1
       DRAMATIQ_BROKER_URL_RATE_LIMITER_BACKEND: redis://broker:6379/2
+      WSM_NAMESERVERS: 9.9.9.9
       SENTRY_DSN:
     networks:
       dashboard:

@@ -68,6 +68,9 @@ In the command shell, perform the following commands.
     cd Internet.nl-dashboard
     docker compose up --build
 
+    # To retry / stop:
+    docker compose down
+
 After a short while your dashboard instance will be ready at http://localhost:8000
 
 Note that on local environments the web application will not work well with the Apple Safari browser due to
@@ -77,8 +80,27 @@ For production environments we recommend running a reverse proxy to this port. E
 
 Configuring settings.py though environment
 -------------------------------------------
+Using the environment you can setup the application. A part of this is already pre-configured inside compose.yaml, which
+is setup for local development. The dashboard support pretty complex setups, including OIDC authentication, but this
+will require configuration work.
+
+
+
+You probably want to run the dashboard on your own domain. To allow this domain to be used in the front-end,
+you need to set the following (environment) variables with the host you need:
+
+For example:
+
+CSRF_TRUSTED_ORIGINS_DEFAULT_DOMAIN: https://example.com
+CSRF_TRUSTED_ORIGINS_WILDCARD_DOMAIN: `https://*.example.com`
+CORS_ALLOWED_DOMAIN: https://example.com
+
+You can set these in the docker compose file in main/compose.yaml. Do so in the path: /services/backend/environment.
+
+
 You can duplicate the .env.sample to .env and setup the variables inside that file. The .env file needs to be
 located next to settings.py of the internet.nl dashboard. Configure the values to the setup you're using.
+
 
 
 Load up default application configuration
@@ -257,20 +279,6 @@ After a scan has finished a report will be ready.
 .. image:: docs/input/installation/scan_scan_monitor.png
 
 
-Using a custom domain
-======================
-You probably want to run the dashboard on your own domain. To allow this domain to be used in the front-end,
-you need to set the following (environment) variables with the host you need:
-
-For example:
-
-CSRF_TRUSTED_ORIGINS_DEFAULT_DOMAIN: https://example.com
-CSRF_TRUSTED_ORIGINS_WILDCARD_DOMAIN: `https://*.example.com`
-CORS_ALLOWED_DOMAIN: https://example.com
-
-You can set these in the docker compose file in main/compose.yaml. Do so in the path: /services/backend/environment.
-
-
 Advanced configuration
 ======================
 
@@ -309,6 +317,35 @@ https://github.com/internetstandards/Internet.nl-ct-log-subdomain-suggestions-ap
 
 In the internet.nl dashboard settings, point the SUBDOMAIN_SUGGESTION_SERVER_ADDRESS setting to the CTLSSA instance.
 
+
+Configuring for OIDC
+---------------------
+
+Configure OIDC by setting the following environment variables directly in ``compose.yaml`` on the backend. Workers don't
+do anything with OIDC. The shipped compose.yaml contains a standard setup without OIDC.
+
+Configure the following to support OIDC:
+
+.. code-block:: yaml
+   # OIDC
+   OIDC_ENABLED: "true"
+   OIDC_CLIENT_ID: "dashboard"
+   OIDC_CLIENT_SECRET: "<client_secret>"
+   OIDC_SERVER_URL: "<oidc_server_url>"
+   OIDC_PROVIDER_ID: "my-oidc"
+   OIDC_PROVIDER_NAME: "OIDC"
+
+   # Password authentication is not possible anymore.
+   ACCOUNT_SIGNUP_FIELDS: "username"
+   ACCOUNT_EMAIL_VERIFICATION: "none"
+   ACCOUNT_EMAIL_VERIFICATION_BY_CODE_ENABLED: "false"
+
+   # In that case you might not want to support any webauthn for existing users.
+   MFA_SUPPORTED_TYPES: "totp,recovery_codes"
+   MFA_PASSKEY_SIGNUP_ENABLED: "false"
+   MFA_PASSKEY_LOGIN_ENABLED: "false"
+
+``ACCOUNT_SIGNUP_FIELDS`` and ``MFA_SUPPORTED_TYPES`` are comma-separated values.
 
 
 .. rst-class:: page-break
