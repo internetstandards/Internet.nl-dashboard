@@ -681,6 +681,11 @@ ACCOUNT_SIGNUP_FIELDS = ["email*", "username*", "password1*", "password2*"]
 MFA_PASSKEY_LOGIN_ENABLED = True
 MFA_PASSKEY_SIGNUP_ENABLED = True
 
+# Allow a tolerance of 1 window (defaults to 30 seconds) of receiving the code too late.
+# This allows users to send in their code just before it expires and it will still be accepted even though
+# server or network delays may put it outside the normal window.
+MFA_TOTP_TOLERANCE = 1
+
 ACCOUNT_LOGIN_METHODS = {
     "username",
 }
