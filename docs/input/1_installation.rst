@@ -76,13 +76,13 @@ CSRF security policies that come out of the box. Please use another browser for 
 For production environments we recommend running a reverse proxy to this port. Examples include nginx or apache.
 
 Configuring settings.py though environment
------------------------------
+-------------------------------------------
 You can duplicate the .env.sample to .env and setup the variables inside that file. The .env file needs to be
 located next to settings.py of the internet.nl dashboard. Configure the values to the setup you're using.
 
 
 Load up default application configuration
------------------------------
+------------------------------------------
 
 This step will be automated before 5.0 is released. For now, run these commands to make sure default configuration is
 loaded. For this you need to know the name of the 'backend' docker container.
@@ -291,7 +291,7 @@ here: http://localhost/admin/django_mail_admin/outbox/
 
 The e-mails that are being sent are stored as templates in the "📨 E-Mail Templates" section. The default language for
 templates is English and several templates are pre-installed to be customized. For more information about these templates
-check the :ref:`email templates` chapter.
+check the :doc:`3_email_templates` chapter.
 
 
 
