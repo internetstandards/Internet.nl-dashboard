@@ -9,13 +9,96 @@ from websecmap.scanners.models import Endpoint, EndpointGenericScan
 from websecmap.scanners_internet_nl_web.models import InternetNLV2Scan
 
 from dashboard.internet_nl_dashboard.models import Account, AccountInternetNLScan, UrlList, UrlListReport
+from dashboard.internet_nl_dashboard.scanners import scan_internet_nl_per_account
 from dashboard.internet_nl_dashboard.scanners.scan_internet_nl_per_account import (
     creating_report,
+    discovering_endpoints,
+    endpoint_discovery_completed,
     monitor_timeout,
     processing_scan_results,
+    queue_endpoint_discovery,
 )
 
 log = logging.getLogger(__package__)
+
+
+class FakeDramatiqGroup:
+    instances = []
+
+    def __init__(self, tasks):
+        self.tasks = list(tasks)
+        self.completion_callbacks = []
+        self.ran = False
+        self.__class__.instances.append(self)
+
+    def add_completion_callback(self, message):
+        self.completion_callbacks.append(message)
+
+    def run(self):
+        self.ran = True
+
+
+def test_discovering_endpoints_waits_for_dramatiq_completion(db, monkeypatch):
+    account = Account.objects.create()
+    urllist = UrlList.objects.create(account=account)
+    url = Url.objects.create(url="internet.nl", is_dead=False, not_resolvable=False)
+    urllist.urls.add(url)
+    scan = AccountInternetNLScan.objects.create(
+        account=account,
+        scan=InternetNLV2Scan.objects.create(),
+        urllist=urllist,
+        state="requested",
+    )
+
+    FakeDramatiqGroup.instances = []
+    monkeypatch.setattr(scan_internet_nl_per_account, "dramatiq_group", FakeDramatiqGroup)
+    monkeypatch.setattr(
+        scan_internet_nl_per_account.dns_endpoints,
+        "compose_manual_discover_task",
+        lambda urls: ["dns-task"],
+    )
+
+    discovery_task = discovering_endpoints(scan.id)
+    scan.refresh_from_db()
+    expected_state_changed_on = scan.state_changed_on.isoformat()
+
+    assert scan.state == "discovering endpoints", "expected endpoint discovery to move to the active state first"
+    assert (
+        discovery_task.task == queue_endpoint_discovery.name
+    ), "expected endpoint discovery to return the Celery queueing task"
+
+    discovery_task.apply()
+    scan.refresh_from_db()
+
+    assert scan.state == "discovering endpoints", "expected scan state to wait for Dramatiq completion"
+    assert len(FakeDramatiqGroup.instances) == 1, "expected one Dramatiq group to be queued"
+    assert FakeDramatiqGroup.instances[0].tasks == ["dns-task"], "expected the DNS task to be queued in Dramatiq"
+    assert FakeDramatiqGroup.instances[0].ran, "expected the Dramatiq group to be started"
+    assert (
+        FakeDramatiqGroup.instances[0].completion_callbacks[0].actor_name == "dashboard.endpoint_discovery_completed"
+    ), "expected endpoint discovery to register the dashboard state completion callback"
+
+    endpoint_discovery_completed(scan.id, expected_state_changed_on)
+    scan.refresh_from_db()
+
+    assert scan.state == "discovered endpoints", "expected Dramatiq completion to advance the dashboard scan state"
+
+
+def test_endpoint_discovery_completion_ignores_stale_callbacks(db):
+    account = Account.objects.create()
+    urllist = UrlList.objects.create(account=account)
+    scan = AccountInternetNLScan.objects.create(
+        account=account,
+        scan=InternetNLV2Scan.objects.create(),
+        urllist=urllist,
+        state="discovering endpoints",
+        state_changed_on=datetime(2026, 1, 1, tzinfo=timezone.utc),
+    )
+
+    endpoint_discovery_completed(scan.id, datetime(2025, 1, 1, tzinfo=timezone.utc).isoformat())
+    scan.refresh_from_db()
+
+    assert scan.state == "discovering endpoints", "expected stale endpoint discovery callbacks to be ignored"
 
 
 def test_monitor_timeout(db):

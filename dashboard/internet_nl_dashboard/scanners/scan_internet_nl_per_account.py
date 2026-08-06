@@ -5,11 +5,13 @@ from copy import copy
 from datetime import datetime, timedelta, timezone
 from typing import Dict, List, Union
 
+import dramatiq
 from actstream import action
 from celery import Task, chain, group
 from constance import config
 from django.db import transaction
 from django.db.models import Q
+from dramatiq import group as dramatiq_group
 from websecmap.app.constance import constance_cached_value
 from websecmap.organizations.models import Url
 from websecmap.reporting.diskreport import retrieve_report, store_report
@@ -322,6 +324,13 @@ def handle_unknown_state(scan_id):
     return group([])
 
 
+def _state_changed_on_key(scan: AccountInternetNLScan) -> str:
+    if not scan.state_changed_on:
+        return ""
+
+    return scan.state_changed_on.isoformat()
+
+
 def discovering_endpoints(scan_id: int):
     # Always immediately update the current state, so the amount of double calls is minimal:
     #  "discovered endpoints" to "discovering endpoints" and cause an infinte loop.
@@ -332,15 +341,48 @@ def discovering_endpoints(scan_id: int):
         log.warning("Trying to discovering_endpoints with unknown scan: %s.", scan_id)
         return group([])
 
+    return queue_endpoint_discovery.si(scan.id, _state_changed_on_key(scan))
+
+
+@app.task(queue="storage", ignore_result=True)
+def queue_endpoint_discovery(scan_id: int, expected_state_changed_on: str) -> None:
+    scan = AccountInternetNLScan.objects.all().filter(id=scan_id).first()
+    if not scan:
+        log.warning("Trying to queue_endpoint_discovery with unknown scan: %s.", scan_id)
+        return
+
+    if scan.state != "discovering endpoints" or _state_changed_on_key(scan) != expected_state_changed_on:
+        log.debug("Skipping stale endpoint discovery queueing for dashboard scan %s.", scan_id)
+        return
+
     urls = Url.objects.filter(
         urls_in_dashboard_list_2__id=scan.urllist.id,
         is_dead=False,
         not_resolvable=False,
     )
-    for task in dns_endpoints.compose_manual_discover_task(urls):
-        task.run()
 
-    return update_state.si("discovered endpoints", scan.id)
+    tasks = list(dns_endpoints.compose_manual_discover_task(urls))
+    if not tasks:
+        endpoint_discovery_completed(scan.id, expected_state_changed_on)
+        return
+
+    discovery_tasks = dramatiq_group(tasks)
+    discovery_tasks.add_completion_callback(endpoint_discovery_completed.message(scan.id, expected_state_changed_on))
+    discovery_tasks.run()
+
+
+@dramatiq.actor(actor_name="dashboard.endpoint_discovery_completed", queue_name="storage")
+def endpoint_discovery_completed(scan_id: int, expected_state_changed_on: str) -> None:
+    scan = AccountInternetNLScan.objects.all().filter(id=scan_id).only("id", "state", "state_changed_on").first()
+    if not scan:
+        log.warning("Trying to finish endpoint discovery with unknown scan: %s.", scan_id)
+        return
+
+    if scan.state != "discovering endpoints" or _state_changed_on_key(scan) != expected_state_changed_on:
+        log.debug("Skipping stale endpoint discovery completion for dashboard scan %s.", scan_id)
+        return
+
+    update_state("discovered endpoints", scan.id)
 
 
 def retrieving_scannable_urls(scan_id: int):

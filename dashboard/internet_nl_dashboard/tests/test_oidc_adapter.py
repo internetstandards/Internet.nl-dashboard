@@ -66,6 +66,37 @@ def test_pre_social_login_denies_non_oidc_provider(db):
         adapter.pre_social_login(None, sociallogin)
 
 
+def test_populate_user_sets_oidc_username_to_home_organisation(db, monkeypatch):
+    new_user = get_user_model()()
+    sociallogin = _build_sociallogin(user=new_user, home_organisation="team-b.example")
+    adapter = OIDCGroupRestrictionAdapter()
+
+    def fake_super_populate_user(self, request, sociallogin, data):
+        return sociallogin.user
+
+    monkeypatch.setattr(DefaultSocialAccountAdapter, "populate_user", fake_super_populate_user)
+
+    user = adapter.populate_user(None, sociallogin, {})
+
+    assert user.username == "team-b.example", "OIDC username should be populated from schac_home_organization."
+
+
+def test_populate_user_keeps_oidc_preferred_username_when_available(db, monkeypatch):
+    new_user = get_user_model()()
+    sociallogin = _build_sociallogin(user=new_user, home_organisation="team-c.example")
+    adapter = OIDCGroupRestrictionAdapter()
+
+    def fake_super_populate_user(self, request, sociallogin, data):
+        sociallogin.user.username = "preferred-user"
+        return sociallogin.user
+
+    monkeypatch.setattr(DefaultSocialAccountAdapter, "populate_user", fake_super_populate_user)
+
+    user = adapter.populate_user(None, sociallogin, {})
+
+    assert user.username == "preferred-user", "OIDC preferred_username should not be overwritten."
+
+
 def test_save_user_assigns_new_user_to_home_organisation(db, monkeypatch):
     new_user = get_user_model()(username="oidc-new-user")
     sociallogin = _build_sociallogin(user=new_user, home_organisation="Team B")

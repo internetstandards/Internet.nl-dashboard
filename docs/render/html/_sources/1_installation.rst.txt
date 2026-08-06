@@ -5,9 +5,10 @@ Installation guide
    :start: 1
 
 
-This is a draft installation guide that will be ready in version 5.0 of the internet.nl dashboard.
+This is the installation guide for version 5.2 of the internet.nl dashboard. This installation guide assumes you're
+somewhat familiar with the command line.
 
-The ticket for this issue: https://github.com/internetstandards/Internet.nl-dashboard/issues/495
+History and context for this manual: https://github.com/internetstandards/Internet.nl-dashboard/issues/495
 
 Overview
 =====================
@@ -74,9 +75,14 @@ CSRF security policies that come out of the box. Please use another browser for 
 
 For production environments we recommend running a reverse proxy to this port. Examples include nginx or apache.
 
+Configuring settings.py though environment
+-------------------------------------------
+You can duplicate the .env.sample to .env and setup the variables inside that file. The .env file needs to be
+located next to settings.py of the internet.nl dashboard. Configure the values to the setup you're using.
 
-Load up default configuration
------------------------------
+
+Load up default application configuration
+------------------------------------------
 
 This step will be automated before 5.0 is released. For now, run these commands to make sure default configuration is
 loaded. For this you need to know the name of the 'backend' docker container.
@@ -91,8 +97,7 @@ Load up the config:
     docker exec -ti internetnl-dashboard-backend-1 dashboard loaddata dashboard_production_default_account
     docker exec -ti internetnl-dashboard-backend-1 dashboard loaddata dashboard_production_example_email_templates
     docker exec -ti internetnl-dashboard-backend-1 dashboard loaddata dashboard_production_periodic_tasks
-    docker exec -ti internetnl-dashboard-backend-1 dashboard loaddata dashboard_production_default_scanner_configuration
-    docker exec -ti internetnl-dashboard-backend-1 dashboard loaddata dashboard_production_default_scan_policy
+    docker exec -ti internetnl-dashboard-backend-1 dashboard initialize_internetnl_scanners
 
 
 If you also want an example lists to get started, run the following command.
@@ -115,9 +120,9 @@ Then connect the superuser to a dashboard account. Superusers can join any accou
 
 Logging in
 ----------
-Now you can login at http://localhost:8000/admin/, or the same path under your server url.
+Now you can login at http://localhost/admin/, or the same path under your server url.
 
-The account of this user connects to the default internet.nl development scanning instance on http://localhost:8080 with
+The account of this user connects to the default internet.nl development scanning instance on http://localhost with
 default credentials internetnl / internetnl. You will have to change the *account* credentials to the internet.nl API.
 These are *not* the user credentials for the dashboard.
 
@@ -145,11 +150,11 @@ Setting up scanning
 1. Visit the admin webpage on ``/admin/`` and log in. You might be redirected to the end-user website after logging in,
 so go to ``/admin/`` again.
 
-.. image:: installation/admin_login_window.png
+.. image:: docs/input/installation/admin_login_window.png
 
 After a successful login you will see something that looks like this:
 
-.. image:: installation/admin_panel.png
+.. image:: docs/input/installation/admin_panel.png
 
 2. Go to "🎛️ Dashboard Configuration" in the left menu
 
@@ -161,7 +166,7 @@ After a successful login you will see something that looks like this:
   4. INTERNET_NL_SCAN_TRACKING_NAME
   5. Click the save button
 
-.. image:: installation/config_example_general_settings.png
+.. image:: docs/input/installation/config_example_general_settings.png
 
 These settings can also be set using the command line, this saves some time clicking through the admin interface.
 
@@ -172,27 +177,26 @@ Use the following commands, of course with your own personal settings::
     docker exec -ti internetnl-dashboard-backend-1 dashboard constance set CREDENTIAL_CHECK_URL http://127.0.0.1:9000/api/
     docker exec -ti internetnl-dashboard-backend-1 dashboard constance set INTERNET_NL_SCAN_TRACKING_NAME "My Dashboard Instance"
 
-
 Examples of these settings for internet.nl servers are:
 
     - DASHBOARD_FRONTEND_URL https://dashboard.internet.nl
     - INTERNET_NL_API_URL https://batch.internet.nl/api/batch/v2
     - CREDENTIAL_CHECK_URL https://batch.internet.nl/api/batch/v2/requests
-    - INTERNET_NL_SCAN_TRACKING_NAME "My Internet.nl Dashboard"
+    - INTERNET_NL_SCAN_TRACKING_NAME "<organization name> Dashboard"
     - EMAIL_DASHBOARD_ADDRESS https://dashboard.internet.nl
 
 
 4. Setup the API credentials for the account.
 
   1. Go to the account management page
-  2. http://127.0.0.1:8000/admin/internet_nl_dashboard/account/
+  2. http://127.0.0.1/admin/internet_nl_dashboard/account/
   3. Click on the admin user
   4. Setup the "internet nl api username" and "new password" field and click save
   5. To test if the account was setup properly, use the 'Check API credentials'
   6. If the credentials are correctly configured the check will return a checkmark symbol, otherwise a cross symbol will be visible on the row of this account.
 
-.. image:: installation/config_setup_api_credentials.png
-.. image:: installation/config_credential_check.png
+.. image:: docs/input/installation/config_setup_api_credentials.png
+.. image:: docs/input/installation/config_credential_check.png
 
 Note that the password in step 4.3 is being saved inside the database as an encrypted value. The key to that encryption
 was auto-generated using this setup. This key is stored inside a file, if you change it the currently stored passwords
@@ -214,8 +218,8 @@ Performing your first scan
 
 1. Visit the dashboard frontend and log in.
 
-.. image:: installation/scan_login_link.png
-.. image:: installation/admin_login_window.png
+.. image:: docs/input/installation/scan_login_link.png
+.. image:: docs/input/installation/admin_login_window.png
 
 2. Go to 'domains'
 3. Create a new scan:
@@ -225,9 +229,9 @@ Performing your first scan
   3. Set the list to scan both web and mail
   4. Save the list
 
-.. image:: installation/scan_create_new_list.png
+.. image:: docs/input/installation/scan_create_new_list.png
 
-.. image:: installation/scan_newly_created_list.png
+.. image:: docs/input/installation/scan_newly_created_list.png
 
 4. Add domains to the list
 
@@ -236,21 +240,21 @@ Performing your first scan
   3. Click 'add the above domains to the list'
   4. After adding successfully, click 'close'
 
-.. image:: installation/scan_adding_domains.png
+.. image:: docs/input/installation/scan_adding_domains.png
 
-.. image:: installation/scan_adding_success.png
+.. image:: docs/input/installation/scan_adding_success.png
 
-.. image:: installation/scan_list_with_domains.png
+.. image:: docs/input/installation/scan_list_with_domains.png
 
 5. start a scan by clicking 'scan now' and confirming the scan
 
-.. image:: installation/scan_scan_now.png
+.. image:: docs/input/installation/scan_scan_now.png
 
 6. On the `scan monitor` page the list of currently running scans can be seen.
 
 After a scan has finished a report will be ready.
 
-.. image:: installation/scan_scan_monitor.png
+.. image:: docs/input/installation/scan_scan_monitor.png
 
 
 Using a custom domain
@@ -261,7 +265,7 @@ you need to set the following (environment) variables with the host you need:
 For example:
 
 CSRF_TRUSTED_ORIGINS_DEFAULT_DOMAIN: https://example.com
-CSRF_TRUSTED_ORIGINS_WILDCARD_DOMAIN: https://*.example.com
+CSRF_TRUSTED_ORIGINS_WILDCARD_DOMAIN: `https://*.example.com`
 CORS_ALLOWED_DOMAIN: https://example.com
 
 You can set these in the docker compose file in main/compose.yaml. Do so in the path: /services/backend/environment.
@@ -273,21 +277,21 @@ Advanced configuration
 Setting up e-mail notification after scanning
 ---------------------------------------------
 After a scan completes it's possible to receive an e-mail. An SMTP server has to be configured in the admin interface,
-here: http://localhost:8000/admin/django_mail_admin/outbox/
+here: http://localhost/admin/django_mail_admin/outbox/
 
 1. Visit the admin interface on ``/admin/`` and log in.
 
 2. In the sidebar click "📨 Outboxes"
 
 3. Fill in the form with all SMTP details and click save. Only one outbox is needed.
-.. image:: installation/email_add_outbox.png
+.. image:: docs/input/installation/email_add_outbox.png
 
-.. image:: installation/email_configured_outbox.png
+.. image:: docs/input/installation/email_configured_outbox.png
 
 
 The e-mails that are being sent are stored as templates in the "📨 E-Mail Templates" section. The default language for
 templates is English and several templates are pre-installed to be customized. For more information about these templates
-check the :ref:`email templates` chapter.
+check the :doc:`3_email_templates` chapter.
 
 
 
@@ -297,7 +301,7 @@ Setting up subdomain suggestions
 It's possible to use subdomain suggestions when managing lists of urls. The exact instructions for running and installing
 this feature are to be documented.
 
-In the admin interface on http://localhost:8000/admin/constance/config/ you will find the possibility to use subdomain
+In the admin interface on http://localhost/admin/constance/config/ you will find the possibility to use subdomain
 suggestions via a separate installation of the CTLSSA tool.
 
 The CTLSSA tool can be found here and run via docker:

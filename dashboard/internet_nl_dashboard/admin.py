@@ -517,11 +517,21 @@ class DashboardScanActionsMixin:
         "progress_scan",
         "send_finish_mail",
         "create_extra_report",
+        "reset",
     ]
 
     @staticmethod
     def get_dashboard_scan_queryset(queryset):
         return queryset
+
+    @admin.action(description="Reset / Re-Request")
+    def reset(self, request, queryset):
+        queued = 0
+        for scan in self.get_dashboard_scan_queryset(queryset):
+            scan.state = "requested"
+            scan.save()
+            queued += 1
+        self.message_user(request, f"Reset {queued} dashboard scan(s) directly (state may be overwritten via async).")
 
     @admin.action(description="Attempt rollback (async)")
     def attempt_rollback(self, request, queryset):

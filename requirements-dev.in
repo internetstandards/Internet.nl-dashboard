@@ -26,7 +26,7 @@ pytest-docker @ git+https://github.com/avast/pytest-docker@519b155009b6f3570c01f
 # docs / readthedocs.io
 sphinx
 sphinx-autobuild
-recommonmark
+furo
 sphinx-markdown-builder
 
 # tests (of scanners)
@@ -35,8 +35,6 @@ freezegun
 colorama
 
 django-cprofile-middleware
-
-rst2pdf
 
 # QA tooling
 bandit

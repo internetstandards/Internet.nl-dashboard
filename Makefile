@@ -186,13 +186,16 @@ app: ${app}  ## perform arbitrary app commands
 	DEBUG=1 NETWORK_SUPPORTS_IPV6=1 ${env} ${app} ${cmd}
 
 run-worker: ${app}  ## run worker components
-	${MAKE} -j2 run-worker-main run-worker-internetnl
+	${MAKE} -j3 run-worker-dramatiq run-worker-main run-worker-internetnl
 
 run-worker-main: ${app}  ## run main worker component
 	DEBUG=1 NETWORK_SUPPORTS_IPV6=1 ${env} ${app} celery worker -ldebug -Q storage,celery,reporting,ipv4,ipv6,4and6,internet,isolated,database,kickoff,default,database_deprecate
 
 run-worker-internetnl: ${app}  ## run Internet.nl API worker without prefork, avoids macOS niquests/wassima crashes
 	DEBUG=1 NETWORK_SUPPORTS_IPV6=1 ${env} ${app} celery worker -ldebug -Q internetnl --pool=threads -c 4
+
+run-worker-dramatiq: ${app}  ## only run dramatiq worker component
+	DEBUG=1 NETWORK_SUPPORTS_IPV6=1 ${app} rundramatiq --processes 1 --threads 5
 
 run-broker:  ## only run broker
 	docker run --rm --name=redis -p 6379:6379 redis
@@ -220,11 +223,21 @@ image:  ## Create Docker images
 	docker build -t ${docker_image_name} ${build_args} .
 
 docs: ## Generate documentation in various formats
-	# Remove existing documentation folder
-	-rm -rf docs/render/*
-	${python} -m sphinx -b html docs/input docs/render/html
-	${python} -m sphinx -b markdown docs/input docs/render/markdown
-	${python} -m sphinx -b pdf docs/input docs/render/pdf
+	# Build from a temporary source tree so repo-root image paths also work in Sphinx.
+	@set -e; \
+	docs_src=$$(mktemp -d); \
+	trap 'rm -rf "$$docs_src"' EXIT; \
+	cp -R docs/input/. "$$docs_src"; \
+	mkdir -p "$$docs_src/docs/input"; \
+	ln -s ../../installation "$$docs_src/docs/input/installation"; \
+	rm -rf docs/render/html docs/render/markdown docs/render/pdf; \
+	${python} -m sphinx -b html -d "$$docs_src/.doctrees/html" "$$docs_src" docs/render/html; \
+	${python} -m sphinx -b markdown -d "$$docs_src/.doctrees/markdown" "$$docs_src" docs/render/markdown; \
+	cp -R docs/input/installation docs/render/markdown/installation; \
+	cp -R docs/input/user-management docs/render/markdown/user-management; \
+	${python} -m sphinx -M latexpdf "$$docs_src" "$$docs_src/.latexpdf" -d "$$docs_src/.doctrees/latexpdf"; \
+	mkdir -p docs/render/pdf; \
+	cp "$$docs_src/.latexpdf/latex/dashboard.pdf" docs/render/pdf/dashboard.pdf
 
 ## Housekeeping
 clean:  ## cleanup build artifacts, caches, databases, etc.

@@ -1,8 +1,9 @@
 # Installation guide
 
-This is a draft installation guide that will be ready in version 5.0 of the internet.nl dashboard.
+This is the installation guide for version 5.2 of the internet.nl dashboard. This installation guide assumes you’re
+somewhat familiar with the command line.
 
-The ticket for this issue: [https://github.com/internetstandards/Internet.nl-dashboard/issues/495](https://github.com/internetstandards/Internet.nl-dashboard/issues/495)
+History and context for this manual: [https://github.com/internetstandards/Internet.nl-dashboard/issues/495](https://github.com/internetstandards/Internet.nl-dashboard/issues/495)
 
 ## Overview
 
@@ -54,7 +55,12 @@ CSRF security policies that come out of the box. Please use another browser for 
 
 For production environments we recommend running a reverse proxy to this port. Examples include nginx or apache.
 
-### Load up default configuration
+### Configuring settings.py though environment
+
+You can duplicate the .env.sample to .env and setup the variables inside that file. The .env file needs to be
+located next to settings.py of the internet.nl dashboard. Configure the values to the setup you’re using.
+
+### Load up default application configuration
 
 This step will be automated before 5.0 is released. For now, run these commands to make sure default configuration is
 loaded. For this you need to know the name of the ‘backend’ docker container.
@@ -68,8 +74,7 @@ Load up the config:
 docker exec -ti internetnl-dashboard-backend-1 dashboard loaddata dashboard_production_default_account
 docker exec -ti internetnl-dashboard-backend-1 dashboard loaddata dashboard_production_example_email_templates
 docker exec -ti internetnl-dashboard-backend-1 dashboard loaddata dashboard_production_periodic_tasks
-docker exec -ti internetnl-dashboard-backend-1 dashboard loaddata dashboard_production_default_scanner_configuration
-docker exec -ti internetnl-dashboard-backend-1 dashboard loaddata dashboard_production_default_scan_policy
+docker exec -ti internetnl-dashboard-backend-1 dashboard initialize_internetnl_scanners
 ```
 
 If you also want an example lists to get started, run the following command.
@@ -91,9 +96,9 @@ Then connect the superuser to a dashboard account. Superusers can join any accou
 
 ### Logging in
 
-Now you can login at [http://localhost:8000/admin/](http://localhost:8000/admin/), or the same path under your server url.
+Now you can login at [http://localhost/admin/](http://localhost/admin/), or the same path under your server url.
 
-The account of this user connects to the default internet.nl development scanning instance on [http://localhost:8080](http://localhost:8080) with
+The account of this user connects to the default internet.nl development scanning instance on [http://localhost](http://localhost) with
 default credentials internetnl / internetnl. You will have to change the *account* credentials to the internet.nl API.
 These are *not* the user credentials for the dashboard.
 
@@ -143,12 +148,12 @@ Examples of these settings for internet.nl servers are:
 > - DASHBOARD_FRONTEND_URL [https://dashboard.internet.nl](https://dashboard.internet.nl)
 > - INTERNET_NL_API_URL [https://batch.internet.nl/api/batch/v2](https://batch.internet.nl/api/batch/v2)
 > - CREDENTIAL_CHECK_URL [https://batch.internet.nl/api/batch/v2/requests](https://batch.internet.nl/api/batch/v2/requests)
-> - INTERNET_NL_SCAN_TRACKING_NAME “My Internet.nl Dashboard”
+> - INTERNET_NL_SCAN_TRACKING_NAME “<organization name> Dashboard”
 > - EMAIL_DASHBOARD_ADDRESS [https://dashboard.internet.nl](https://dashboard.internet.nl)
 1. Setup the API credentials for the account.
 
 > 1. Go to the account management page
-> 2. [http://127.0.0.1:8000/admin/internet_nl_dashboard/account/](http://127.0.0.1:8000/admin/internet_nl_dashboard/account/)
+> 2. [http://127.0.0.1/admin/internet_nl_dashboard/account/](http://127.0.0.1/admin/internet_nl_dashboard/account/)
 > 3. Click on the admin user
 > 4. Setup the “internet nl api username” and “new password” field and click save
 > 5. To test if the account was setup properly, use the ‘Check API credentials’
@@ -200,13 +205,7 @@ you need to set the following (environment) variables with the host you need:
 For example:
 
 CSRF_TRUSTED_ORIGINS_DEFAULT_DOMAIN: [https://example.com](https://example.com)
-CSRF_TRUSTED_ORIGINS_WILDCARD_DOMAIN: [https://](https://)
-
-```
-*
-```
-
-.example.com
+CSRF_TRUSTED_ORIGINS_WILDCARD_DOMAIN: https://\*.example.com
 CORS_ALLOWED_DOMAIN: [https://example.com](https://example.com)
 
 You can set these in the docker compose file in main/compose.yaml. Do so in the path: /services/backend/environment.
@@ -216,26 +215,26 @@ You can set these in the docker compose file in main/compose.yaml. Do so in the 
 ### Setting up e-mail notification after scanning
 
 After a scan completes it’s possible to receive an e-mail. An SMTP server has to be configured in the admin interface,
-here: [http://localhost:8000/admin/django_mail_admin/outbox/](http://localhost:8000/admin/django_mail_admin/outbox/)
+here: [http://localhost/admin/django_mail_admin/outbox/](http://localhost/admin/django_mail_admin/outbox/)
 
 1. Visit the admin interface on `/admin/` and log in.
 2. In the sidebar click “📨 Outboxes”
 
 3. Fill in the form with all SMTP details and click save. Only one outbox is needed.
-.. image:: installation/email_add_outbox.png
+.. image:: docs/input/installation/email_add_outbox.png
 
 ![image](installation/email_configured_outbox.png)
 
 The e-mails that are being sent are stored as templates in the “📨 E-Mail Templates” section. The default language for
 templates is English and several templates are pre-installed to be customized. For more information about these templates
-check the email templates chapter.
+check the [3   Email Templates](3_email_templates.md) chapter.
 
 ### Setting up subdomain suggestions
 
 It’s possible to use subdomain suggestions when managing lists of urls. The exact instructions for running and installing
 this feature are to be documented.
 
-In the admin interface on [http://localhost:8000/admin/constance/config/](http://localhost:8000/admin/constance/config/) you will find the possibility to use subdomain
+In the admin interface on [http://localhost/admin/constance/config/](http://localhost/admin/constance/config/) you will find the possibility to use subdomain
 suggestions via a separate installation of the CTLSSA tool.
 
 The CTLSSA tool can be found here and run via docker:
