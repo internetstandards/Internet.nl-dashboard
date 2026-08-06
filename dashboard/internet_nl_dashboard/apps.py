@@ -1,5 +1,6 @@
 # SPDX-License-Identifier: Apache-2.0
 from django.apps import AppConfig
+from django.contrib.auth import get_user_model
 
 
 class DashboardConfig(AppConfig):
@@ -11,6 +12,9 @@ class DashboardConfig(AppConfig):
         from actstream import registry  # pylint: disable=import-outside-toplevel
 
         import dashboard.internet_nl_dashboard.signals  # noqa: F401  # pylint: disable=unused-import,import-outside-toplevel
+        from dashboard.internet_nl_dashboard.user_extensions import reset_2fa  # pylint: disable=import-outside-toplevel
+
+        get_user_model().add_to_class("reset_2fa", reset_2fa)
 
         registry.register(self.get_model("UrlList"))
         registry.register(self.get_model("AccountInternetNLScan"))
