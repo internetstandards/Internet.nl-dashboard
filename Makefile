@@ -171,7 +171,7 @@ run: ${app}  ## run complete application stack (frontend, worker, broker)
 	DEBUG=1 NETWORK_SUPPORTS_IPV6=1 ${env} ${app} devserver
 
 run-frontend: ${app}  ## only run frontend component
-	DEBUG=1 NETWORK_SUPPORTS_IPV6=1 ${env} ${app} runserver ${runserver_args}
+	DEBUG=1 NETWORK_SUPPORTS_IPV6=1 ${env} ${app} runserver 0.0.0.0:8000 ${runserver_args}
 
 run-gui-development build-gui-staging build-gui-production:
 	build-gui-production; $(MAKE) $@
