@@ -58,6 +58,10 @@ class TagInputSchema(Schema):
     tag: Annotated[str, StringConstraints(max_length=TAG_MAX_LENGTH)]
 
 
+class AddTagsInputSchema(TagInputSchema):
+    url_ids: list[int]
+
+
 class UpdateUrlInputSchema(Schema):
     new_url_string: Annotated[str, StringConstraints(max_length=255)]
 
@@ -156,6 +160,17 @@ def get_urllist_content_operation(request, urllist_id: int):
 @router.post("/{urllist_id}/urls", response={201: OperationResponseSchema})
 def add_urls_to_urllist_operation(request, urllist_id: int, data: AddUrlsInputSchema):
     return add_domains_from_raw_user_data(get_account(request), urllist_id, data.raw_urls)
+
+
+@router.post("/{urllist_id}/urls/tags", response={201: OperationResponseSchema})
+def add_tags_operation(request, urllist_id: int, data: AddTagsInputSchema):
+    add_tag(
+        account=get_account(request),
+        urllist_id=urllist_id,
+        url_ids=data.url_ids,
+        tag=data.tag,
+    )
+    return operation_response(success=True)
 
 
 @router.put("/{urllist_id}/urls/{url_id}", response={200: AlterUrlResponseSchema})
