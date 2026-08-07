@@ -14,11 +14,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - Allauth headless now handles authentication. Documentation is at /api/v1/allauth/openapi.html - Setup the site config in django to use the right name for e-mails.
 - Length of tags on domains is now increased and consistent to 160 characters (#640)
+- Default TOTP settings allow one window extra, MFA_TOTP_TOLERANCE = 1 (#676)
 
 ### Bugfixes
 - OpenAPI specifications do not require external dependencies (#637)
 - Use consistent naming in urllist name (#621)
 - Fixed allauth CSRF token usage inside the 'try it out' methods
+- Bulk tagging has been fixed (#681)
 
 ### Upgrading
 - Make sure all users have a valid e-mail address, otherwise it is not possible to upgrade (as e-mail verification cannot happen due to no-email)

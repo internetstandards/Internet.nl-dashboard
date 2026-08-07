@@ -86,7 +86,7 @@ DEBUG = env_bool("DEBUG", False)
 if DEBUG:
     print("Django debugging is enabled.")
 
-ALLOWED_HOSTS = env_csv("ALLOWED_HOSTS", ["localhost", "127.0.0.1", "::1"])
+ALLOWED_HOSTS = env_csv("ALLOWED_HOSTS", ["localhost", "127.0.0.1", "::1", "*"])
 
 
 AUTORELOAD_BROWSER = env_bool("AUTORELOAD_BROWSER", DEBUG)
@@ -598,6 +598,7 @@ CORS_ALLOWED_ORIGINS = [
     os.environ.get("CORS_ALLOWED_DOMAIN", "https://dashboard.internet.nl"),
     "http://localhost:5173",
     "http://localhost:5174",
+    "http://192.168.1.207:5173"
 ]
 
 # as soon as this is set, the vue post stuff doesn't work anymore.
@@ -645,6 +646,7 @@ CSRF_TRUSTED_ORIGINS = [
     "http://::1",
     "http://localhost:5173",
     "http://localhost:5174",
+    "http://192.168.1.207:5173",
     os.environ.get("CSRF_TRUSTED_ORIGINS_DEFAULT_DOMAIN", "https://internet.nl"),
     os.environ.get("CSRF_TRUSTED_ORIGINS_WILDCARD_DOMAIN", "https://*.internet.nl"),
 ]
