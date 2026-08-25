@@ -152,8 +152,18 @@ def update_share_code_operation(request, report_id: int, data: ShareCodeSchema):
     return update_share_code(get_account(request), report_id, data.public_share_code)
 
 
-@router.get("/{report_id}/ad-hoc", response={200: list[ReportSchema]})
+@router.get("/{report_id}/ad-hoc", response={200: ReportSchema})
 def get_ad_hoc_tagged_report_operation(request, report_id: int, data: SaveAdHocTaggedReportInputSchema):
+    tags, at_when = parse_ad_hoc_input(data)
+
+    return HttpResponse(  # pylint: disable=http-response-with-content-type-json
+        ad_hoc_tagged_report(get_account(request), report_id, tags, at_when),
+        content_type="application/json",
+    )
+
+
+@router.post("/{report_id}/ad-hoc/preview", response={200: ReportSchema})
+def preview_ad_hoc_tagged_report_operation(request, report_id: int, data: SaveAdHocTaggedReportInputSchema):
     tags, at_when = parse_ad_hoc_input(data)
 
     return HttpResponse(  # pylint: disable=http-response-with-content-type-json
