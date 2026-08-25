@@ -52,10 +52,13 @@ def test_discovering_endpoints_waits_for_dramatiq_completion(db, monkeypatch):
 
     FakeDramatiqGroup.instances = []
     monkeypatch.setattr(scan_internet_nl_per_account, "dramatiq_group", FakeDramatiqGroup)
+    dns_task = scan_internet_nl_per_account.dns_endpoints.has_mx_without_cname.message(
+        url.url
+    ) | scan_internet_nl_per_account.dns_endpoints.connect_result_simple.message("dns_mx_no_cname", url.id, 0, 0)
     monkeypatch.setattr(
         scan_internet_nl_per_account.dns_endpoints,
         "compose_manual_discover_task",
-        lambda urls: ["dns-task"],
+        lambda urls: [dns_task],
     )
 
     discovery_task = discovering_endpoints(scan.id)
@@ -72,7 +75,17 @@ def test_discovering_endpoints_waits_for_dramatiq_completion(db, monkeypatch):
 
     assert scan.state == "discovering endpoints", "expected scan state to wait for Dramatiq completion"
     assert len(FakeDramatiqGroup.instances) == 1, "expected one Dramatiq group to be queued"
-    assert FakeDramatiqGroup.instances[0].tasks == ["dns-task"], "expected the DNS task to be queued in Dramatiq"
+    prepared_task = FakeDramatiqGroup.instances[0].tasks[0]
+    assert len(prepared_task.messages) == 3, "expected the DNS pipeline to include its completion finalizer"
+    assert (
+        prepared_task.messages[-1].actor_name
+        == scan_internet_nl_per_account.endpoint_discovery_pipeline_finished.actor_name
+    ), "expected the endpoint discovery finalizer to terminate the pipeline"
+    assert all(
+        message.options["on_retry_exhausted"]
+        == scan_internet_nl_per_account.endpoint_discovery_task_retries_exhausted.actor_name
+        for message in prepared_task.messages[:-1]
+    ), "expected every fallible pipeline task to recover after retries are exhausted"
     assert FakeDramatiqGroup.instances[0].ran, "expected the Dramatiq group to be started"
     assert (
         FakeDramatiqGroup.instances[0].completion_callbacks[0].actor_name == "dashboard.endpoint_discovery_completed"
@@ -82,6 +95,45 @@ def test_discovering_endpoints_waits_for_dramatiq_completion(db, monkeypatch):
     scan.refresh_from_db()
 
     assert scan.state == "discovered endpoints", "expected Dramatiq completion to advance the dashboard scan state"
+
+
+class FakeDramatiqBroker:
+    def __init__(self):
+        self.enqueued = []
+
+    def enqueue(self, message):
+        self.enqueued.append(message)
+
+
+def test_exhausted_endpoint_tasks_enqueue_the_group_terminal_message(monkeypatch):
+    task = scan_internet_nl_per_account.dns_endpoints.has_mx_without_cname.message(
+        "unreachable.example"
+    ) | scan_internet_nl_per_account.dns_endpoints.connect_result_simple.message("dns_mx_no_cname", 1, 0, 0)
+    prepared_task = scan_internet_nl_per_account._make_endpoint_discovery_task_failure_aware(task)
+    completion_callback = scan_internet_nl_per_account.endpoint_discovery_completed.message(1, "state-key")
+    terminal_message = prepared_task.messages[-1].copy(
+        options={
+            "group_completion_uuid": "group-id",
+            "group_completion_callbacks": [completion_callback.asdict()],
+        }
+    )
+    prepared_task = scan_internet_nl_per_account.dramatiq.pipeline([*prepared_task.messages[:-1], terminal_message])
+    broker = FakeDramatiqBroker()
+    monkeypatch.setattr(scan_internet_nl_per_account.dramatiq, "get_broker", lambda: broker)
+
+    for failed_message in prepared_task.messages[:-1]:
+        scan_internet_nl_per_account.endpoint_discovery_task_retries_exhausted(
+            failed_message.asdict(), {"retries": 3, "max_retries": 3}
+        )
+
+    assert len(broker.enqueued) == 2, "expected every exhausted pipeline stage to enqueue one terminal message"
+    assert all(
+        message.actor_name == scan_internet_nl_per_account.endpoint_discovery_pipeline_finished.actor_name
+        for message in broker.enqueued
+    ), "expected exhausted tasks to skip to the successful endpoint discovery finalizer"
+    assert all(message.options["group_completion_uuid"] == "group-id" for message in broker.enqueued), (
+        "expected recovered finalizers to retain the Dramatiq group barrier metadata"
+    )
 
 
 def test_endpoint_discovery_completion_ignores_stale_callbacks(db):
