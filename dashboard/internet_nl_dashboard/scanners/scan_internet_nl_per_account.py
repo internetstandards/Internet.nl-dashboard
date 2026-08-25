@@ -3,7 +3,7 @@ import json
 import logging
 from copy import copy
 from datetime import datetime, timedelta, timezone
-from typing import Dict, List, Union
+from typing import Any, Dict, List, Union
 
 import dramatiq
 from actstream import action
@@ -344,6 +344,67 @@ def discovering_endpoints(scan_id: int):
     return queue_endpoint_discovery.si(scan.id, _state_changed_on_key(scan))
 
 
+@dramatiq.actor(
+    actor_name="dashboard.endpoint_discovery_pipeline_finished",
+    queue_name="storage",
+    max_retries=3,
+    min_backoff=1_000,
+    max_backoff=10_000,
+)
+def endpoint_discovery_pipeline_finished() -> None:
+    """Provide a successful terminal message for the endpoint discovery group barrier."""
+
+
+def _terminal_endpoint_discovery_message(message_data: dict[str, Any]) -> dramatiq.Message | None:
+    current_message_data = message_data
+    while pipe_target := current_message_data.get("options", {}).get("pipe_target"):
+        current_message_data = pipe_target
+
+    if current_message_data.get("actor_name") != endpoint_discovery_pipeline_finished.actor_name:
+        log.error(
+            "Could not recover failed endpoint discovery pipeline: terminal actor is %s.",
+            current_message_data.get("actor_name"),
+        )
+        return None
+
+    return dramatiq.Message(**current_message_data)
+
+
+@dramatiq.actor(
+    actor_name="dashboard.endpoint_discovery_task_retries_exhausted",
+    queue_name="storage",
+    max_retries=3,
+    min_backoff=1_000,
+    max_backoff=10_000,
+)
+def endpoint_discovery_task_retries_exhausted(message_data: dict[str, Any], retry_data: dict[str, Any]) -> None:
+    """Finish an endpoint discovery pipeline after one of its tasks permanently fails."""
+    log.error(
+        "Endpoint discovery task exhausted retries; completing its pipeline without a result. "
+        "actor=%s args=%s retries=%s max_retries=%s",
+        message_data.get("actor_name"),
+        message_data.get("args"),
+        retry_data.get("retries"),
+        retry_data.get("max_retries"),
+    )
+
+    terminal_message = _terminal_endpoint_discovery_message(message_data)
+    if terminal_message:
+        dramatiq.get_broker().enqueue(terminal_message)
+
+
+def _make_endpoint_discovery_task_failure_aware(task: dramatiq.pipeline) -> dramatiq.pipeline:
+    retry_options = {
+        "on_retry_exhausted": endpoint_discovery_task_retries_exhausted.actor_name,
+        "max_retries": 3,
+        "min_backoff": 1_000,
+        "max_backoff": 10_000,
+    }
+    messages = [message.copy(options=retry_options) for message in task.messages]
+    messages.append(endpoint_discovery_pipeline_finished.message_with_options(pipe_ignore=True))
+    return dramatiq.pipeline(messages)
+
+
 @app.task(queue="storage", ignore_result=True)
 def queue_endpoint_discovery(scan_id: int, expected_state_changed_on: str) -> None:
     scan = AccountInternetNLScan.objects.all().filter(id=scan_id).first()
@@ -361,7 +422,9 @@ def queue_endpoint_discovery(scan_id: int, expected_state_changed_on: str) -> No
         not_resolvable=False,
     )
 
-    tasks = list(dns_endpoints.compose_manual_discover_task(urls))
+    tasks = [
+        _make_endpoint_discovery_task_failure_aware(task) for task in dns_endpoints.compose_manual_discover_task(urls)
+    ]
     if not tasks:
         endpoint_discovery_completed(scan.id, expected_state_changed_on)
         return
