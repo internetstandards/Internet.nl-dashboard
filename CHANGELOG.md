@@ -25,10 +25,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - OpenAPI specifications do not require external dependencies (#637)
 - Use consistent naming in urllist name (#621)
 - Fixed allauth CSRF token usage inside the 'try it out' methods
+- Accounts without an e-mail address can sign in without entering an impossible e-mail verification flow. Passkey login
+  remains available, while passkey signup is disabled because allauth requires a verified e-mail address for that flow.
 - Bulk tagging has been fixed (#681)
 
 ### Upgrading
-- Make sure all users have a valid e-mail address, otherwise it is not possible to upgrade (as e-mail verification cannot happen due to no-email)
+- E-mail addresses are optional. Password reset by e-mail is unavailable to users without one.
 - Setup the DEFAULT_FROM_EMAIL environment variable in production to the correct mail sender 
 - After installation migrate existing totp devices to allauth with: `dashboard migrate_totp_to_allauth` 
 - After installation set existing e-mail addresses as verified with: `dashboard verify_allauth_emails`
