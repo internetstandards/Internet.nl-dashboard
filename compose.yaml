@@ -81,7 +81,7 @@ services:
   dramatiq:
     image: ${DOCKER_IMAGE_DASHBOARD:-${DOCKER_REGISTRY:-internetstandards}/dashboard:${RELEASE:-latest}}
     build: .
-    command: rundramatiq --queues dns storage
+    command: ["rundramatiq", "--queues", "dns", "storage"]
     environment:
       DJANGO_DATABASE: production
       DB_ENGINE: postgresql_psycopg2
