@@ -6,6 +6,24 @@ from django.contrib.auth import get_user_model
 from django.core.management import call_command
 
 
+def test_user_without_email_can_log_in_via_allauth_headless(db, client):
+    password = "correct horse battery staple"
+    get_user_model().objects.create_user(
+        username="no-email-user",
+        email="",
+        password=password,
+    )
+
+    response = client.post(
+        "/api/v1/allauth/browser/v1/auth/login",
+        data={"username": "no-email-user", "password": password},
+        content_type="application/json",
+    )
+
+    assert response.status_code == 200, response.content
+    assert response.json()["meta"]["is_authenticated"] is True, response.content
+
+
 def test_signal_verifies_email_for_new_user(db):
     user = get_user_model().objects.create_user(
         username="signal-new-user",

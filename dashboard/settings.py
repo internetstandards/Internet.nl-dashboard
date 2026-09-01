@@ -695,19 +695,22 @@ ACCOUNT_SIGNUP_ALLOWED = False
 # in the frontend yet.
 ACCOUNT_ALLOW_REGISTRATION = False
 
-# users have to verify their mail, even though they received a mail on it.
-# This might have to be disabled to make more sense and a more streamlined onboarding.
-ACCOUNT_EMAIL_VERIFICATION = os.environ.get("ACCOUNT_EMAIL_VERIFICATION", "mandatory")
+# E-mail is not available for every legacy account, so it cannot be part of the
+# authentication requirement. Users with an e-mail address still get a verified
+# allauth EmailAddress through the user post-save signal.
+ACCOUNT_EMAIL_VERIFICATION = os.environ.get("ACCOUNT_EMAIL_VERIFICATION", "none")
 
 # Mail address can only be used once. Can this be guessed in the auth attempt?
 ACCOUNT_UNIQUE_EMAIL = True
 
 MFA_SUPPORTED_TYPES = env_csv("MFA_SUPPORTED_TYPES", ["webauthn", "totp", "recovery_codes"])
 
-ACCOUNT_SIGNUP_FIELDS = env_csv("ACCOUNT_SIGNUP_FIELDS", ["email*", "username*", "password1*", "password2*"])
+ACCOUNT_SIGNUP_FIELDS = env_csv("ACCOUNT_SIGNUP_FIELDS", ["username*", "password1*", "password2*"])
 
 MFA_PASSKEY_LOGIN_ENABLED = env_bool("MFA_PASSKEY_LOGIN_ENABLED", True)
-MFA_PASSKEY_SIGNUP_ENABLED = env_bool("MFA_PASSKEY_SIGNUP_ENABLED", True)
+# allauth requires mandatory e-mail verification for passkey-based signup.
+# Passwordless login with an existing passkey remains available.
+MFA_PASSKEY_SIGNUP_ENABLED = env_bool("MFA_PASSKEY_SIGNUP_ENABLED", False)
 
 # Allow a tolerance of 1 window (defaults to 30 seconds) of receiving the code too late.
 # This allows users to send in their code just before it expires and it will still be accepted even though
@@ -715,7 +718,7 @@ MFA_PASSKEY_SIGNUP_ENABLED = env_bool("MFA_PASSKEY_SIGNUP_ENABLED", True)
 MFA_TOTP_TOLERANCE = env_int("MFA_TOTP_TOLERANCE", 1)
 
 ACCOUNT_LOGIN_METHODS = set(env_csv("ACCOUNT_LOGIN_METHODS", ["username"]))
-ACCOUNT_EMAIL_VERIFICATION_BY_CODE_ENABLED = env_bool("ACCOUNT_EMAIL_VERIFICATION_BY_CODE_ENABLED", True)
+ACCOUNT_EMAIL_VERIFICATION_BY_CODE_ENABLED = env_bool("ACCOUNT_EMAIL_VERIFICATION_BY_CODE_ENABLED", False)
 
 # all defaults, but these keys need to be present. Not including the hostname should work.
 HEADLESS_FRONTEND_URLS = {
