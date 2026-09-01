@@ -4,17 +4,22 @@ All notable changes to this project will be documented in this file. For changes
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## V5.2.0 - ?? 2026
+## V5.2.0 - 1 september 2026
 
 ### Added
+- Support for the Extended Master Secret tests
 - OIDC authentication options, see settings.py for configuration options. (#578)
 - Verify allauth e-mails by default on user creation as mail addresses are pre-verified before they enter the system. 
 - A staff-only call that allows requesting current results for specific metrics on specific urls (reports/metrics/now/)
+- Extensive usage statistics
+- Password resets are now possible due to the use of allauth
 
 ### Changed
+- Many frontend upgrades make the UI more modern, responsive and advanced
 - Allauth headless now handles authentication. Documentation is at /api/v1/allauth/openapi.html - Setup the site config in django to use the right name for e-mails.
 - Length of tags on domains is now increased and consistent to 160 characters (#640)
 - Default TOTP settings allow one window extra, MFA_TOTP_TOLERANCE = 1 (#676)
+- Speedups for large domain lists retrieval and scan monitoring
 
 ### Bugfixes
 - OpenAPI specifications do not require external dependencies (#637)
@@ -27,6 +32,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Setup the DEFAULT_FROM_EMAIL environment variable in production to the correct mail sender 
 - After installation migrate existing totp devices to allauth with: `dashboard migrate_totp_to_allauth` 
 - After installation set existing e-mail addresses as verified with: `dashboard verify_allauth_emails`
+- Adter installation import the new scanners, policies and so on via `dashboard initialize_internetnl_scanners`
+- Change the periodic task `websecmap.scanners_internetnl_web.steps.check_running_internet_nl_scans` to `websecmap.scanners_internet_nl_web.steps.check_running_internet_nl_scans`
+- Make sure the environment has set the `WSM_INTERNET_NL_API_URL` variable
+- Make sure the environment has set the `WSM_NAMESERVERS` variable
+- More inside ticket https://github.com/internetstandards/Internet.nl-dashboard/issues/642
 
 
 ## V5.1.0 - 18 november 2025
