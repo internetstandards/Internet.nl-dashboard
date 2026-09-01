@@ -27,6 +27,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fixed allauth CSRF token usage inside the 'try it out' methods
 - Accounts without an e-mail address can sign in without entering an impossible e-mail verification flow. Passkey login
   remains available, while passkey signup is disabled because allauth requires a verified e-mail address for that flow.
+- Pass the Dramatiq `dns` and `storage` queues as separate arguments so both queues are consumed
 - Bulk tagging has been fixed (#681)
 
 ### Upgrading
