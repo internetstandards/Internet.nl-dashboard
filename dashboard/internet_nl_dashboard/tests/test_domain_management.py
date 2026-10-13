@@ -14,7 +14,8 @@ from django.contrib.auth.models import User
 from websecmap.organizations.models import Url
 
 from dashboard.internet_nl_dashboard.logic.domains import (
-    ServerError,
+    InvalidSuggestionDomain,
+    SubdomainSuggestionsFailed,
     UrlListContentResponseSchema,
     add_domains_from_raw_user_data,
     clean_urls,
@@ -30,6 +31,7 @@ from dashboard.internet_nl_dashboard.logic.domains import (
     suggest_subdomains,
 )
 from dashboard.internet_nl_dashboard.models import Account, DashboardUser
+from dashboard.internet_nl_dashboard.problems import ApiError, ProblemType
 
 
 @responses.activate
@@ -57,11 +59,11 @@ def test_suggest_subdomains(db, caplog):
     assert suggest_subdomains("notexisting.nl") == []
 
     # incomplete requests:
-    with pytest.raises(ValueError):
-        assert suggest_subdomains("192.168.1.1") == []
-    with pytest.raises(ValueError):
+    with pytest.raises(InvalidSuggestionDomain):
+        suggest_subdomains("192.168.1.1")
+    with pytest.raises(InvalidSuggestionDomain):
         suggest_subdomains("a")
-    with pytest.raises(ServerError):
+    with pytest.raises(SubdomainSuggestionsFailed):
         suggest_subdomains("broken.nl")
 
 
@@ -130,24 +132,25 @@ def test_add_domains_from_raw_user_data(db, current_path, redis_server):
     list_1 = get_or_create_list_by_name(account, "test list 1")
 
     # you can't go past the DASHBOARD_MAXIMUM_DOMAINS_PER_LIST
-    response = add_domains_from_raw_user_data(account, list_1.id, "\n".join(domains[:6000])).dict()
-
-    assert response["error"] is True
-    assert response["message"] == "too_many_domains"
+    with pytest.raises(ApiError) as failure:
+        add_domains_from_raw_user_data(account, list_1.id, "\n".join(domains[:6000]))
+    assert failure.value.status_code == 400, "Exceeding the domain limit should be invalid input."
+    assert (
+        failure.value.problem_type == ProblemType.DOMAIN_LIMIT_EXCEEDED
+    ), "The domain limit should have a stable problem type."
 
     # add an existing url, this should be one query check:
     new_url = Url.objects.all().create(url="nu.nl")
     list_1.urls.add(new_url)
 
-    response = add_domains_from_raw_user_data(account, list_1.id, "\n".join(domains[:100])).dict()
+    response = add_domains_from_raw_user_data(account, list_1.id, "\n".join(domains[:100]))
 
-    assert response["success"] is True
-    assert response["data"] == {
+    assert response == {
         "incorrect_urls": [],
         "added_to_list": 99,
         "already_in_list": 1,
         "duplicates_removed": 0,
-    }
+    }, "Bulk addition should return its counters directly."
 
 
 def test_keys_match():
@@ -424,10 +427,7 @@ def test_urllists(db, redis_server) -> None:
 
     """ Delete the entire list, we'll get nothing back, only an empty response. """
     result = delete_list(account=account, urllist_id=list_1.id)
-    operation_response = result.dict()
-
-    # it deletes two urls and the list itself, makes 3
-    assert operation_response["success"] is True
+    assert result is None, "Deleting a list should complete without response data."
     list_content = get_urllist_content(account=account, urllist_id=list_1.pk)
 
     # deletion is administrative, so the urls are still connected.
@@ -435,9 +435,9 @@ def test_urllists(db, redis_server) -> None:
 
     account2, created = Account.objects.all().get_or_create(name="test 2")
     """ You cannot delete things from another account """
-    result = delete_list(account=account2, urllist_id=list_1.id)
-    operation_response = result.dict()
-    assert operation_response["success"] is False
+    with pytest.raises(ApiError) as failure:
+        delete_list(account=account2, urllist_id=list_1.id)
+    assert failure.value.status_code == 404, "Another account must not be able to delete this list."
 
     """ A new list will not be created if there are no urls for it..."""
     added = save_urllist_content_by_name(account, "should be empty", {})

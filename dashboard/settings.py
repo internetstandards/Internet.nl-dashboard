@@ -173,6 +173,7 @@ if OIDC_ENABLED:
 SITE_ID = 1
 
 MIDDLEWARE = [
+    "dashboard.internet_nl_dashboard.problems.DashboardApiProblemMiddleware",
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.locale.LocaleMiddleware",

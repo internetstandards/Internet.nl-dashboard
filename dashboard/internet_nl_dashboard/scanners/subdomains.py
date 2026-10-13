@@ -8,16 +8,16 @@ from websecmap.scanners_internet_nl_dns_endpoints.tasks import has_a_or_aaaa, ha
 
 from dashboard.celery import app
 from dashboard.internet_nl_dashboard import log
-from dashboard.internet_nl_dashboard.logic import operation_response
 from dashboard.internet_nl_dashboard.logic.domains import _add_to_urls_to_urllist_nicer
 from dashboard.internet_nl_dashboard.models import Account, SubdomainDiscoveryScan, UrlList
+from dashboard.internet_nl_dashboard.problems import ApiError, ProblemType
 
 
 # UI Operation
 def request_scan(account: Account, urllist_id: int):
-    urllist = UrlList.objects.all().filter(account=account, id=urllist_id).first()
+    urllist = UrlList.objects.all().filter(account=account, id=urllist_id, is_deleted=False).first()
     if not urllist:
-        return operation_response(error=True, message="list_does_not_exist")
+        raise ApiError(404, "List does not exist.", ProblemType.LIST_NOT_FOUND)
 
     # Can only start a scan when the previous one finished:
     last_scan = SubdomainDiscoveryScan.objects.all().filter(urllist=urllist_id).last()
@@ -40,17 +40,15 @@ def request_scan(account: Account, urllist_id: int):
 
 
 def scan_status(account: Account, urllist_id: int):
-    urllist = UrlList.objects.all().filter(account=account, id=urllist_id).first()
+    urllist = UrlList.objects.all().filter(account=account, id=urllist_id, is_deleted=False).first()
     if not urllist:
-        return operation_response(error=True, message="list_does_not_exist")
+        raise ApiError(404, "List does not exist.", ProblemType.LIST_NOT_FOUND)
 
     scan = SubdomainDiscoveryScan.objects.all().filter(urllist=urllist).last()
     if not scan:
-        return operation_response(error=True, message="not_scanned_at_all")
+        raise ApiError(404, "No discovery scan exists for this list.", ProblemType.DISCOVERY_NOT_STARTED)
 
     return {
-        "success": True,
-        "error": False,
         "state": scan.state,
         "state_message": scan.state_message,
         "state_changed_on": scan.state_changed_on,

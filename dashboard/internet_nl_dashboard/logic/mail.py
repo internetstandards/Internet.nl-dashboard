@@ -292,6 +292,9 @@ def unsubscribe(feed: str = "scan_finished", unsubscribe_code: str = ""):
     # example: https://dashboard.internet.nl/mail/unsubscribe/scan_finished/{{unsubscribe_code}}/
     time.sleep(1)
 
+    if not unsubscribe_code:
+        return {"unsubscribed": True}
+
     if feed == "scan_finished":
         users = DashboardUser.objects.all().filter(
             mail_after_mail_unsubscribe_code=unsubscribe_code,

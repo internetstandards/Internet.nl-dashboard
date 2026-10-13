@@ -4,29 +4,35 @@ from typing import Any
 
 from celery import group
 from django.core.files.uploadedfile import UploadedFile
+from kombu.exceptions import OperationalError
 
-from dashboard.internet_nl_dashboard.logic import OperationResponseSchema, operation_response
 from dashboard.internet_nl_dashboard.logic.spreadsheet import (
+    SpreadsheetStorageUnavailable,
     UploadHistoryItemSchema,
     get_upload_history,
     import_step_2,
     log_spreadsheet_upload,
     save_file,
+    update_spreadsheet_upload,
 )
 from dashboard.internet_nl_dashboard.models import Account, DashboardUser
+from dashboard.internet_nl_dashboard.problems import DocumentedApiError, ProblemType, raises
 
 log = logging.getLogger(__name__)
 
 
-def start_spreadsheet_upload(user: DashboardUser, file: UploadedFile) -> OperationResponseSchema:
+class SpreadsheetQueueUnavailable(DocumentedApiError):
+    status = 503
+    detail = "The spreadsheet import queue is temporarily unavailable. Please try again later."
+    problem_type = ProblemType.SPREADSHEET_QUEUE_UNAVAILABLE
+
+
+@raises(SpreadsheetStorageUnavailable, SpreadsheetQueueUnavailable)
+def start_spreadsheet_upload(user: DashboardUser, file: UploadedFile) -> dict:
     """
-    Save the uploaded file and enqueue parsing/import. Returns an operation response with the upload log id.
+    Save the uploaded file and enqueue parsing/import. Returns the upload log id.
     """
-    try:
-        saved_file = save_file(file)
-    except Exception as exc:  # pylint: disable=broad-except
-        log.exception("Failed to save uploaded spreadsheet", exc_info=exc)
-        return operation_response(error=True, message="upload_save_failed")
+    saved_file = save_file(file)
 
     upload_data: dict[str, Any] = log_spreadsheet_upload(
         user=user,
@@ -36,13 +42,14 @@ def start_spreadsheet_upload(user: DashboardUser, file: UploadedFile) -> Operati
     )
     uploadlog_id = upload_data.get("id")
 
-    group(import_step_2.si(user.id, saved_file, uploadlog_id)).apply_async()
+    try:
+        group(import_step_2.si(user.id, saved_file, uploadlog_id)).apply_async()
+    except OperationalError as exc:
+        log.exception("The spreadsheet import queue is temporarily unavailable")
+        update_spreadsheet_upload(uploadlog_id, status="error", message=SpreadsheetQueueUnavailable.detail)
+        raise SpreadsheetQueueUnavailable() from exc
 
-    return operation_response(
-        success=True,
-        message="upload_started",
-        data={"uploadlog_id": uploadlog_id},
-    )
+    return {"uploadlog_id": uploadlog_id}
 
 
 def upload_history_for_account(account: Account) -> list[UploadHistoryItemSchema]:

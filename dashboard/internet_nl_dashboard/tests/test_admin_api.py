@@ -32,9 +32,9 @@ def test_save_instant_account_and_user_requires_email_address(db, client):
         content_type="application/json",
     )
 
-    assert response.status_code == 422, "Missing required email should fail schema validation."
+    assert response.status_code == 400, "Missing required email should fail schema validation."
     assert (
-        "new_email_address" in response.json()["detail"][0]["loc"]
+        "new_email_address" in response.json()["errors"][0]["loc"]
     ), "Validation error should reference the email field."
 
 

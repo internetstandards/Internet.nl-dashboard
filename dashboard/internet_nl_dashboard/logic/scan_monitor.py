@@ -7,8 +7,8 @@ from actstream import action
 from constance import config
 from ninja import Schema
 
-from dashboard.internet_nl_dashboard.logic import OperationResponseSchema, operation_response
 from dashboard.internet_nl_dashboard.models import Account, AccountInternetNLScan, AccountInternetNLScanLog
+from dashboard.internet_nl_dashboard.problems import DocumentedApiError, ProblemType, raises
 from dashboard.internet_nl_dashboard.scanners.scan_internet_nl_per_account import update_state
 
 
@@ -169,7 +169,19 @@ def prepare_scan_data_for_display(
     return item
 
 
-def cancel_scan(account: Account, scan_id: int) -> OperationResponseSchema:
+class ScanNotFound(DocumentedApiError):
+    status = 404
+    detail = "No scan with this ID exists in the current account."
+
+
+class ScanAlreadyFinished(DocumentedApiError):
+    status = 409
+    detail = "A finished scan cannot be cancelled."
+    problem_type = ProblemType.SCAN_ALREADY_FINISHED
+
+
+@raises(ScanNotFound, ScanAlreadyFinished)
+def cancel_scan(account: Account, scan_id: int) -> None:
     """
     :param account: Account
     :param scan_id: AccountInternetNLScan ID
@@ -179,13 +191,13 @@ def cancel_scan(account: Account, scan_id: int) -> OperationResponseSchema:
     scan = AccountInternetNLScan.objects.all().filter(account=account, pk=scan_id).first()
 
     if not scan:
-        return operation_response(error=True, message="scan not found")
+        raise ScanNotFound()
 
     if scan.state == "finished":
-        return operation_response(success=True, message="scan already finished")
+        raise ScanAlreadyFinished()
 
     if scan.state == "cancelled":
-        return operation_response(success=True, message="scan already cancelled")
+        return None
 
     scan.finished_on = datetime.now(timezone.utc)
     scan.save()
@@ -194,4 +206,4 @@ def cancel_scan(account: Account, scan_id: int) -> OperationResponseSchema:
     # Sprinkling an activity stream action.
     action.send(account, verb="cancelled scan", target=scan, public=False)
 
-    return operation_response(success=True, message="scan cancelled")
+    return None

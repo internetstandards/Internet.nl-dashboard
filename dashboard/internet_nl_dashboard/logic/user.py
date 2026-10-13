@@ -1,5 +1,6 @@
 # SPDX-License-Identifier: Apache-2.0
 import logging
+from datetime import datetime
 from typing import Optional
 
 from django import forms
@@ -7,8 +8,8 @@ from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
 from ninja import Schema
 
-from dashboard.internet_nl_dashboard.logic import OperationResponseSchema, operation_response
 from dashboard.internet_nl_dashboard.logic.domains import keys_are_present_in_object
+from dashboard.internet_nl_dashboard.problems import ApiError, ProblemType
 from dashboard.settings import LANGUAGES
 
 log = logging.getLogger(__package__)
@@ -17,8 +18,8 @@ log = logging.getLogger(__package__)
 class UserSettingsSchema(Schema):
     first_name: str
     last_name: str
-    date_joined: Optional[str] = None
-    last_login: Optional[str] = None
+    date_joined: Optional[datetime] = None
+    last_login: Optional[datetime] = None
     account_id: int
     account_name: str
     mail_preferred_mail_address: Optional[str] = None
@@ -74,12 +75,12 @@ def get_user_settings(dashboarduser_id) -> UserSettingsSchema:
     return UserSettingsSchema(**data)
 
 
-def save_user_settings(dashboarduser_id, data: SaveUserSettingsInputSchema | dict) -> OperationResponseSchema:
+def save_user_settings(dashboarduser_id, data: SaveUserSettingsInputSchema | dict) -> None:
 
     user = User.objects.all().filter(dashboarduser=dashboarduser_id).first()
 
     if not user:
-        return operation_response(error=True, message="save_user_settings_error_could_not_retrieve_user")
+        raise ApiError(404, "User settings could not be found.", ProblemType.USER_SETTINGS_NOT_FOUND)
 
     """
     The only fields that can be changed by the user are:
@@ -102,11 +103,21 @@ def save_user_settings(dashboarduser_id, data: SaveUserSettingsInputSchema | dic
         "mail_send_mail_after_scan_finished",
     ]
     if not keys_are_present_in_object(expected_keys, data):
-        return operation_response(error=True, message="save_user_settings_error_incomplete_data")
+        raise ApiError(
+            400,
+            "Required settings are missing.",
+            ProblemType.INVALID_INPUT,
+            errors=[{"loc": ["body", key], "msg": "Field required"} for key in expected_keys if key not in data],
+        )
 
     # validate data. Even if it's correct for the model (like any language), that's not what we'd accept.
     if data["mail_preferred_language"] not in [language_code for language_code, name in LANGUAGES]:
-        return operation_response(error=True, message="save_user_settings_error_form_unsupported_language")
+        raise ApiError(
+            400,
+            "The selected language is not supported.",
+            ProblemType.UNSUPPORTED_LANGUAGE,
+            field="mail_preferred_language",
+        )
 
     # email is allowed to be empty:
     if data["mail_preferred_mail_address"]:
@@ -114,9 +125,11 @@ def save_user_settings(dashboarduser_id, data: SaveUserSettingsInputSchema | dic
         try:
             email_field.clean(data["mail_preferred_mail_address"])
         except ValidationError:
-            return operation_response(
-                error=True,
-                message="save_user_settings_error_form_incorrect_mail_address",
+            raise ApiError(
+                400,
+                "The email address is invalid.",
+                ProblemType.INVALID_EMAIL_ADDRESS,
+                field="mail_preferred_mail_address",
             )
 
     user.first_name = data["first_name"]
@@ -128,4 +141,4 @@ def save_user_settings(dashboarduser_id, data: SaveUserSettingsInputSchema | dic
     user.dashboarduser.mail_send_mail_after_scan_finished = data["mail_send_mail_after_scan_finished"]
     user.dashboarduser.save()
 
-    return operation_response(success=True, message="save_user_settings_success")
+    return None

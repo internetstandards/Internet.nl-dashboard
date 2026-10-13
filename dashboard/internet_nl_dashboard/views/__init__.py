@@ -34,10 +34,6 @@ def empty_response() -> JsonResponse:
     return JsonResponse({})
 
 
-def error_response(message: str) -> JsonResponse:
-    return JsonResponse({"status": "error", "message": message})
-
-
 def get_json_body(request):
 
     try:

@@ -2,10 +2,10 @@
 import logging
 
 from django.contrib.auth import logout
-from django.http import JsonResponse
+from django.http import HttpResponse, JsonResponse
 from ninja import Router, Schema
+from ninja.security import django_auth
 
-from dashboard.internet_nl_dashboard.logic import OperationResponseSchema, operation_response
 from dashboard.internet_nl_dashboard.models import Account, DashboardUser
 
 """
@@ -23,10 +23,10 @@ def session_logout_(request):
     # https://docs.djangoproject.com/en/3.1/ref/contrib/auth/
     if not request.user.is_authenticated:
         log.debug("User is not authenticated...")
-        return operation_response(success=True, message="logged_out")
+        return None
 
     logout(request)
-    return operation_response(success=True, message="logged_out")
+    return None
 
 
 def session_status_(request):
@@ -70,8 +70,8 @@ def session_status(request):
 
 
 def session_logout(request):
-    resp = session_logout_(request)
-    return JsonResponse(resp.dict() if hasattr(resp, "dict") else resp)
+    session_logout_(request)
+    return HttpResponse(status=204)
 
 
 # Ninja router for session management. Login is handled by django-allauth.
@@ -97,8 +97,8 @@ def session_status_api(request) -> SessionStatusSchema:
     )
 
 
-@router.get("/logout", response={200: OperationResponseSchema})
-def session_logout_api(request) -> OperationResponseSchema:
+@router.delete("", response={204: None}, auth=django_auth)
+def session_logout_api(request) -> None:
     # Reuse existing logic function
     resp = session_logout_(request)
     return resp

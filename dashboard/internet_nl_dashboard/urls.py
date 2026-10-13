@@ -1,5 +1,6 @@
 # SPDX-License-Identifier: Apache-2.0
 import json
+import logging
 from pathlib import Path
 
 import orjson
@@ -9,12 +10,14 @@ from django.http import FileResponse, Http404
 from django.shortcuts import redirect
 from django.urls import path, register_converter
 from ninja import NinjaAPI
+from ninja.errors import HttpError, ValidationError
 from ninja.openapi.docs import Swagger, render_template
 from ninja.renderers import BaseRenderer
 from websecmap.map.views import security_txt
 
 # We have to import the signals somewhere?!
 import dashboard.internet_nl_dashboard.signals  # noqa  # pylint: disable=unused-import
+from dashboard.internet_nl_dashboard.problems import ProblemSchema, ProblemType, problem_response
 from dashboard.internet_nl_dashboard.views import (
     admin,
     app,
@@ -135,23 +138,90 @@ api = NinjaAPI(
     "then return to `/api/v1/docs` and use `Try it out`.",
 )
 
-# Inject API-Version header into the generated OpenAPI schema for all responses.
-# This workaround is generated code.
+
+@api.exception_handler(HttpError)
+def http_error(request, exc):
+    return problem_response(
+        exc.status_code,
+        str(exc),
+        problem_type=getattr(exc, "problem_type", None),
+        errors=getattr(exc, "errors", None),
+        extensions=getattr(exc, "extensions", None),
+    )
+
+
+@api.exception_handler(Http404)
+def not_found(request, exc):
+    return problem_response(404, "The requested resource does not exist.")
+
+
+@api.exception_handler(ValidationError)
+def invalid_input(request, exc):
+    return problem_response(
+        400, "The request contains invalid input.", problem_type=ProblemType.INVALID_INPUT, errors=exc.errors
+    )
+
+
+@api.exception_handler(Exception)
+def unexpected_error(request, exc):
+    logging.getLogger(__name__).exception("Dashboard API request failed")
+    return problem_response(500, "The request could not be completed.")
+
+
+# Add shared HTTP failures, the Problem Details media type and API-Version headers.
+# Endpoint-specific errors and descriptions are declared on their route decorators.
 _orig_get_openapi_schema = api.get_openapi_schema
 
 
 def _get_openapi_schema_with_version_header(**kwargs):
-    schema = _orig_get_openapi_schema()
+    schema = _orig_get_openapi_schema(**kwargs)
     components = schema.setdefault("components", {})
+    problem_schema = ProblemSchema.model_json_schema(ref_template="#/components/schemas/{model}")
+    components.setdefault("schemas", {}).update(problem_schema.pop("$defs", {}))
+    components["schemas"]["ProblemSchema"] = problem_schema
     headers = components.setdefault("headers", {})
     headers["API-Version"] = {
         "description": f"Semantic version of the {django_settings.OPEN_API_TITLE}",
         "schema": {"type": "string", "example": django_settings.OPEN_API_VERSION},
     }
+    shared_errors = {
+        400: ("InvalidInput", "A path/query parameter or request body is invalid."),
+        401: ("AuthenticationRequired", "Authentication is missing or does not meet this endpoint's requirements."),
+        403: ("CsrfVerificationFailed", "CSRF verification failed for this session-authenticated request."),
+        500: ("InternalServerError", "An unexpected server error prevented completing the request."),
+    }
+    reusable_responses = components.setdefault("responses", {})
+    shared_references = {}
+    for status, (name, description) in shared_errors.items():
+        reusable_responses[name] = {
+            "description": description,
+            "content": {"application/problem+json": {"schema": {"$ref": "#/components/schemas/ProblemSchema"}}},
+            "headers": {"API-Version": {"$ref": "#/components/headers/API-Version"}},
+        }
+        shared_references[status] = {"$ref": f"#/components/responses/{name}"}
     for path_item in schema.get("paths", {}).values():
-        for operation in path_item.values():
+        for method, operation in path_item.items():
+            if not isinstance(operation, dict):
+                continue
             responses = operation.get("responses", {})
-            for response in responses.values():
+            responses.pop(422, None)
+            responses.pop("422", None)
+            if operation.get("parameters") or operation.get("requestBody"):
+                responses.setdefault(400, shared_references[400])
+            if operation.get("security"):
+                responses.setdefault(401, shared_references[401])
+                if method in {"post", "put", "patch", "delete"}:
+                    responses.setdefault(403, shared_references[403])
+            responses.setdefault(500, shared_references[500])
+            for status, response in responses.items():
+                if "$ref" in response:
+                    continue
+                if str(status).isdigit() and int(status) >= 400:
+                    # Retain the route's explanation of when this status occurs.
+                    content = response.get("content", {})
+                    media = content.get("application/problem+json", content.get("application/json", {}))
+                    media.setdefault("schema", {"$ref": "#/components/schemas/ProblemSchema"})
+                    response["content"] = {"application/problem+json": media}
                 response_headers = response.setdefault("headers", {})
                 response_headers["API-Version"] = {"$ref": "#/components/headers/API-Version"}
     return schema

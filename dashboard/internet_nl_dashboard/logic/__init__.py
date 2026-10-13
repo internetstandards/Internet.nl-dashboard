@@ -1,35 +1,4 @@
 # SPDX-License-Identifier: Apache-2.0
-from datetime import datetime, timezone
-from typing import Any, Dict, Optional
-
-from ninja import Schema
-
-
-class OperationResponseSchema(Schema):
-    success: bool = False
-    error: bool = False
-    message: str = ""
-    state: str = ""
-    data: Optional[Dict[Any, Any]] = None
-    timestamp: datetime | None = None
-
-
-def operation_response(
-    error: bool = False,
-    success: bool = False,
-    message: str = "",
-    data: Optional[Dict[Any, Any]] = None,
-) -> OperationResponseSchema:
-    return OperationResponseSchema(
-        error=error,
-        success=success,
-        message=message,
-        state="error" if error else "success",
-        data=data,
-        timestamp=datetime.now(timezone.utc),
-    )
-
-
 # WARNING! ORDERING IS RELEVANT!
 # Ordered sets of fields, that have a correct natural order that is maintained througout the application
 # The ordering is used in the spreadsheet export. The way the fields are ordered is relevant.

@@ -11,7 +11,6 @@ from websecmap.reporting.severity import get_severity
 from websecmap.scanners.impact import get_impact
 from websecmap.scanners.models import EndpointGenericScan
 
-from dashboard.internet_nl_dashboard.logic import OperationResponseSchema, operation_response
 from dashboard.internet_nl_dashboard.logic.mail import ImprovementRegressionSummarySchema, values_from_previous_report
 from dashboard.internet_nl_dashboard.logic.report import (
     RecentReportItemSchema,
@@ -32,6 +31,7 @@ from dashboard.internet_nl_dashboard.logic.report import (
 )
 from dashboard.internet_nl_dashboard.logic.report_to_spreadsheet import create_spreadsheet, upgrade_excel_spreadsheet
 from dashboard.internet_nl_dashboard.models import UrlListReport
+from dashboard.internet_nl_dashboard.problems import ApiError, ProblemSchema, ProblemType, problem_responses
 from dashboard.internet_nl_dashboard.views import create_spreadsheet_download, get_account
 
 router = Router(tags=["Reports"], auth=django_auth)
@@ -82,7 +82,7 @@ def get_recent_reports_operation(request):
     return get_recent_reports(get_account(request))
 
 
-@router.get("/{report_id}", response={200: list[ReportSchema]})
+@router.get("/{report_id}", response={200: ReportSchema}, openapi_extra=problem_responses(get_report))
 def get_report_operation(request, report_id: int) -> HttpResponse:
     # Explicitly NOT use jsonresponse as this loads the json data into an encoder which is extremely slow on large files
     return HttpResponse(  # pylint: disable=http-response-with-content-type-json
@@ -132,37 +132,59 @@ def download_spreadsheet(request, report_id: int, file_type: str) -> HttpRespons
     return create_spreadsheet_download(filename, spreadsheet, file_type)
 
 
-@router.post("/{report_id}/share", response={200: OperationResponseSchema})
+@router.post(
+    "/{report_id}/share",
+    response={200: dict, 404: ProblemSchema},
+    openapi_extra={
+        "responses": {404: {"description": "The report does not exist in the current account or is already shared."}}
+    },
+)
 def share_operation(request, report_id: int, data: ShareCodeSchema):
     return share(get_account(request), report_id, data.public_share_code)
 
 
-@router.put("/{report_id}/share/report-code", response={200: OperationResponseSchema})
+@router.put(
+    "/{report_id}/share/report-code",
+    response={200: dict, 404: ProblemSchema},
+    openapi_extra={
+        "responses": {
+            404: {"description": "The report does not exist in the current account or is not currently shared."}
+        }
+    },
+)
 def update_report_code_operation(request, report_id: int):
     return update_report_code(get_account(request), report_id)
 
 
-@router.delete("/{report_id}/share", response={200: OperationResponseSchema})
+@router.delete(
+    "/{report_id}/share",
+    response={200: dict, 404: ProblemSchema},
+    openapi_extra={
+        "responses": {
+            404: {"description": "The report does not exist in the current account or is not currently shared."}
+        }
+    },
+)
 def unshare_operation(request, report_id: int):
     return unshare(get_account(request), report_id)
 
 
-@router.put("/{report_id}/share/share-code", response={200: OperationResponseSchema})
+@router.put(
+    "/{report_id}/share/share-code",
+    response={200: dict, 404: ProblemSchema},
+    openapi_extra={
+        "responses": {
+            404: {"description": "The report does not exist in the current account or is not currently shared."}
+        }
+    },
+)
 def update_share_code_operation(request, report_id: int, data: ShareCodeSchema):
     return update_share_code(get_account(request), report_id, data.public_share_code)
 
 
-@router.get("/{report_id}/ad-hoc", response={200: ReportSchema})
-def get_ad_hoc_tagged_report_operation(request, report_id: int, data: SaveAdHocTaggedReportInputSchema):
-    tags, at_when = parse_ad_hoc_input(data)
-
-    return HttpResponse(  # pylint: disable=http-response-with-content-type-json
-        ad_hoc_tagged_report(get_account(request), report_id, tags, at_when),
-        content_type="application/json",
-    )
-
-
-@router.post("/{report_id}/ad-hoc/preview", response={200: ReportSchema})
+@router.post(
+    "/{report_id}/ad-hoc/preview", response={200: ReportSchema}, openapi_extra=problem_responses(ad_hoc_tagged_report)
+)
 def preview_ad_hoc_tagged_report_operation(request, report_id: int, data: SaveAdHocTaggedReportInputSchema):
     tags, at_when = parse_ad_hoc_input(data)
 
@@ -172,15 +194,18 @@ def preview_ad_hoc_tagged_report_operation(request, report_id: int, data: SaveAd
     )
 
 
-@router.post("/{report_id}/ad-hoc", response={200: OperationResponseSchema})
+@router.post("/{report_id}/ad-hoc", response={204: None}, openapi_extra=problem_responses(save_ad_hoc_tagged_report))
 def save_ad_hoc_tagged_report_operation(request, report_id: int, data: SaveAdHocTaggedReportInputSchema):
     tags, at_when = parse_ad_hoc_input(data)
     return save_ad_hoc_tagged_report(get_account(request), report_id, tags, at_when)
 
 
 @router.post(
-    "/metrics/now/",
-    response={200: dict[str, dict[str, LiveLatestMetricSchema]], 403: OperationResponseSchema},
+    "/metrics/now",
+    response={200: dict[str, dict[str, LiveLatestMetricSchema]], 403: ProblemSchema},
+    openapi_extra={
+        "responses": {403: {"description": "The current user is not a staff member, or CSRF verification failed."}}
+    },
 )
 def get_ad_hoc_live_latest_metrics(request, data: LiveLatestMetricsInputSchema):
     """
@@ -191,7 +216,7 @@ def get_ad_hoc_live_latest_metrics(request, data: LiveLatestMetricsInputSchema):
     Requires staff account. Make sure the is_staff flag is set for the user in the admin interface.
     """
     if not request.user.is_staff:
-        return 403, operation_response(error=True, message="staff_account_required")
+        raise ApiError(403, "A staff account is required.", ProblemType.STAFF_ACCOUNT_REQUIRED)
 
     scans = EndpointGenericScan.objects.filter(
         endpoint__url__url__in=data.urls,
