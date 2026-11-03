@@ -17,6 +17,12 @@ Development is done with sqlite, production runs on postgres.
 
 Caddy is not used for deployment, the app runs in a wsgi environment.
 
+Issues of the project can be found here, including front end issues: 
+https://github.com/internetstandards/Internet.nl-dashboard/issues
+
+The frontend repo can be found here:
+https://github.com/internetstandards/Internet.nl-dashboard-frontend
+
 
 ## Writing tests
 
