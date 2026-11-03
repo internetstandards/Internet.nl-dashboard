@@ -50,3 +50,7 @@ websecmap/__version__.py
 docs/render/**/.doctrees/
 .env
 .venv
+
+
+# Don't tie stuff together, local logs are enough to figure out most issues
+agents-log/*
