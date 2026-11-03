@@ -575,7 +575,7 @@ class AccountInternetNLScan(models.Model):
         return self.state == "finished"
 
     def __str__(self):
-        return f"Scan {self.scan.id} by {self.account.name} in {self.urllist.name}"
+        return f"Scan {self.scan.id if self.scan else 'pending'} by {self.account.name} in {self.urllist.name}"
 
 
 class AccountInternetNLScanLog(models.Model):

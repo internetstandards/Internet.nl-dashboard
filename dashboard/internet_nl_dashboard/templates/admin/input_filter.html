@@ -1,0 +1,19 @@
+{% load i18n %}
+{% for choice in choices %}
+<div class="changelist-filter-popup">
+  <input class="changelist-filter-popup-toggle" type="text" readonly
+         aria-label="{{ title|capfirst }}" value="{{ title|capfirst }}{% if choice.value %}: {{ choice.value }}{% endif %}">
+  <div class="changelist-filter-popup-content">
+    <form method="get">
+      {% for name, value in choice.other_parameters %}
+        <input type="hidden" name="{{ name }}" value="{{ value }}">
+      {% endfor %}
+      <label for="filter-{{ spec.parameter_name }}">{{ title|capfirst }}</label>
+      <input type="{{ spec.input_type }}" id="filter-{{ spec.parameter_name }}"
+             name="{{ spec.parameter_name }}" value="{{ choice.value }}"{% if spec.input_type == "number" %} min="1" step="1"{% endif %}>
+      <button type="submit">{% translate "Apply" %}</button>
+      <a href="{{ choice.clear_url }}">{% translate "Clear" %}</a>
+    </form>
+  </div>
+</div>
+{% endfor %}
