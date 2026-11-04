@@ -32,7 +32,8 @@ def test_openapi_paths_queries_and_get_methods_follow_the_contract(client):
                         r"[a-z][a-z\d]*([A-Z][a-z\d]*)*", parameter["name"]
                     ), "Query keys must use camelCase."
         assert "requestBody" not in methods.get("get", {}), "GET requests must not depend on a request body."
-    assert "delete" in schema["paths"]["/api/v1/session"], "Session deletion must use DELETE."
+    assert "/api/v1/session" not in schema["paths"], "Allauth owns session management."
+    assert "/api/v1/session/status" not in schema["paths"], "Allauth exposes the dashboard session data."
     assert "post" in schema["paths"]["/api/v1/mail/unsubscriptions"], "Unsubscription must use POST."
     assert "/api/v1/session/logout" not in schema["paths"], "The unsafe GET logout route must be removed."
 
@@ -89,12 +90,11 @@ def test_user_statistics_accepts_camel_case_queries(account_client):
 def test_get_cannot_log_out_and_delete_ends_the_session(account_client):
     client, _, user = account_client
     assert_problem(client.get("/api/v1/session/logout"), 404)
-    assert_problem(client.get("/api/v1/session"), 405)
+    assert_problem(client.get("/api/v1/session"), 404)
     assert client.session.get("_auth_user_id") == str(user.id), "GET requests must preserve the session."
-    response = client.delete("/api/v1/session")
-    assert (
-        response.status_code == 204 and response.content == b""
-    ), "Deleting the current session should return no content."
+    response = client.delete("/api/v1/allauth/browser/v1/auth/session")
+    assert response.status_code == 401, "Allauth reports the resulting unauthenticated session as 401."
+    assert response.json()["meta"]["is_authenticated"] is False, "Logout must return an unauthenticated state."
     assert "_auth_user_id" not in client.session, "A successful DELETE must end the session."
 
 
@@ -102,7 +102,8 @@ def test_session_delete_requires_csrf(account_client):
     _, _, user = account_client
     client = Client(enforce_csrf_checks=True)
     client.force_login(user)
-    assert_problem(client.delete("/api/v1/session"), 403)
+    response = client.delete("/api/v1/allauth/browser/v1/auth/session")
+    assert response.status_code == 403, "Allauth logout must require a valid CSRF token."
     assert client.session.get("_auth_user_id") == str(user.id), "A rejected logout must preserve the session."
 
 

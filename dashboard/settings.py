@@ -689,6 +689,7 @@ SERVER_EMAIL = DEFAULT_FROM_EMAIL
 # Make integrations simple, in the same style of dashboard
 HEADLESS_SERVE_SPECIFICATION = True
 HEADLESS_SPECIFICATION_TEMPLATE_NAME = "openapi/allauth/openapi.html"
+HEADLESS_ADAPTER = "dashboard.allauth.headlessadapter.HeadlessAdapter"
 
 ACCOUNT_SIGNUP_ALLOWED = False
 

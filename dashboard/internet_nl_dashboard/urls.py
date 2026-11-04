@@ -25,7 +25,6 @@ from dashboard.internet_nl_dashboard.views import (
     public_reports,
     reports,
     scans,
-    session,
     settings,
     signup,
     spreadsheet,
@@ -246,7 +245,6 @@ api.add_decorator(version_header, mode="view")
 
 api.add_router("/config", app.router)
 api.add_router("/signup", signup.router)
-api.add_router("/session", session.router)
 api.add_router("/settings", settings.router)
 api.add_router("/urllists", urllists.router)
 api.add_router("/scans", scans.router)
