@@ -8,10 +8,9 @@ import requests
 from django.contrib.auth.models import User
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import Client
-from kombu.exceptions import OperationalError
 from websecmap.organizations.models import Url
 
-from dashboard.internet_nl_dashboard.models import Account, AccountInternetNLScan, DashboardUser, UploadLog, UrlList
+from dashboard.internet_nl_dashboard.models import Account, AccountInternetNLScan, DashboardUser, DomainBatch, UrlList
 from dashboard.internet_nl_dashboard.problems import DocumentedApiError, ProblemType, problem_responses, raises
 
 
@@ -199,23 +198,24 @@ def test_list_failures_and_unchanged_foreign_url_cannot_succeed(signed_in):
         404,
     )
     assert_problem(
-        client.post(f"/api/v1/urllists/{urllist.id}/urls", {"raw_urls": ""}, content_type="application/json"), 404
+        client.post(
+            f"/api/v1/urllists/{urllist.id}/urls", {"raw_urls": "example.com"}, content_type="application/json"
+        ),
+        404,
     )
 
 
-def test_domain_limit_is_a_typed_field_error_through_the_http_api(signed_in):
+def test_domain_addition_is_accepted_for_background_validation(signed_in):
     client, account, _ = signed_in
     urllist = UrlList.objects.create(account=account)
-    with patch("dashboard.internet_nl_dashboard.logic.domains.constance_cached_value", return_value=0):
+    with patch("dashboard.internet_nl_dashboard.logic.domain_batches.process_domain_batch.send") as schedule:
         response = client.post(
             f"/api/v1/urllists/{urllist.id}/urls", {"raw_urls": "example.com"}, content_type="application/json"
         )
-    body = assert_problem(response, 400)
-    assert (
-        body["type"] == ProblemType.DOMAIN_LIMIT_EXCEEDED
-    ), "The real import logic must identify a domain-limit error."
-    assert body["errors"][0]["loc"] == ["body", "raw_urls"], "The field error must identify the submitted domains."
-    assert urllist.urls.count() == 0, "A rejected import must leave the list unchanged."
+    assert response.status_code == 202, "Domain additions must be validated in the background before confirmation."
+    assert response.json()["stage"] == "validation", "The response must identify the current processing stage."
+    schedule.assert_called_once_with(response.json()["id"])
+    assert urllist.urls.count() == 0, "An accepted batch must leave the list unchanged until confirmation."
 
 
 def test_start_scan_accepts_work_and_reports_state_conflicts(signed_in):
@@ -239,46 +239,58 @@ def test_discovery_retains_resource_state(signed_in):
     urllist = UrlList.objects.create(account=account)
     url = f"/api/v1/urllists/{urllist.id}/www-subdomain-discovery"
     body = assert_problem(client.get(url), 404)
-    assert (
-        body["type"] == ProblemType.DISCOVERY_NOT_STARTED
-    ), "An unstarted discovery should identify the initial state."
+    assert body["type"] == ProblemType.DISCOVERY_NOT_STARTED, (
+        "An unstarted discovery should identify the initial state."
+    )
     missing = assert_problem(client.get("/api/v1/urllists/999999/www-subdomain-discovery"), 404)
-    assert (
-        missing["type"] == ProblemType.LIST_NOT_FOUND
-    ), "A missing list must be distinguishable from an unstarted scan."
-    response = client.post(url)
-    assert response.status_code == 202, "Discovery requests should be accepted."
-    assert response.json()["state"] == "requested", "Scan state is useful resource data and must be retained."
+    assert missing["type"] == ProblemType.LIST_NOT_FOUND, (
+        "A missing list must be distinguishable from an unstarted scan."
+    )
+    urllist.urls.add(Url.add("example.com"))
+    with patch("dashboard.internet_nl_dashboard.logic.domain_batches.process_domain_batch.send"):
+        response = client.post(url)
+    assert response.status_code == 202, "Discovery requests should be accepted for batch validation."
+    assert response.json()["stage"] == "validation", "Discovered domains must use the shared batch process."
     assert "success" not in response.json(), "Discovery data should have no operation envelope."
-    response = client.get(url)
-    assert response.status_code == 200 and response.json()["state"] == "requested", "Polling should return scan state."
+    response = client.get(f"/api/v1/urllists/domain-batches/{response.json()['id']}")
+    assert response.status_code == 200 and response.json()["status"] == "queued", (
+        "Polling must return durable batch state."
+    )
 
 
-def test_upload_acceptance_returns_the_upload_identifier(signed_in):
+def test_upload_acceptance_returns_the_batch_identifier(signed_in):
     client, _, _ = signed_in
     upload = SimpleUploadedFile("domains.csv", b"example.com\n")
-    with patch("dashboard.internet_nl_dashboard.logic.spreadsheets.save_file", return_value="domains.csv"), patch(
-        "dashboard.internet_nl_dashboard.logic.spreadsheets.log_spreadsheet_upload", return_value={"id": 42}
-    ), patch("dashboard.internet_nl_dashboard.logic.spreadsheets.group"):
+    with (
+        patch("dashboard.internet_nl_dashboard.logic.domain_batches.save_file", return_value="domains.csv"),
+        patch("dashboard.internet_nl_dashboard.logic.domain_batches.process_domain_batch.send"),
+    ):
         response = client.post("/api/v1/urllists/import-spreadsheets", {"file": upload})
     assert response.status_code == 202, "Queued imports should return Accepted."
-    assert response.json() == {"uploadlog_id": 42}, "The import identifier should be returned without an envelope."
+    assert response.json()["id"] == DomainBatch.objects.get().id, "The response must identify the persisted batch."
+    assert response.json()["stage"] == "validation", "Spreadsheet uploads must start with validation."
 
 
 @pytest.mark.parametrize("path", ["/api/v1/urllists/import-spreadsheets", "/api/v1/urllists/1/spreadsheets"])
 @pytest.mark.parametrize("storage_errno", [errno.ENOSPC, errno.EDQUOT, errno.EBUSY])
 def test_known_spreadsheet_storage_failures_are_service_unavailable(signed_in, path, storage_errno):
-    client, _, _ = signed_in
+    client, account, _ = signed_in
+    urllist = UrlList.objects.create(account=account)
+    if path.endswith("/1/spreadsheets"):
+        path = f"/api/v1/urllists/{urllist.id}/spreadsheets"
     upload = SimpleUploadedFile("domains.csv", b"example.com\n")
-    with patch(
-        "dashboard.internet_nl_dashboard.logic.spreadsheet.FileSystemStorage.save",
-        side_effect=OSError(storage_errno, "private storage path"),
-    ), patch("dashboard.internet_nl_dashboard.logic.spreadsheets.group") as schedule:
+    with (
+        patch(
+            "dashboard.internet_nl_dashboard.logic.spreadsheet.FileSystemStorage.save",
+            side_effect=OSError(storage_errno, "private storage path"),
+        ),
+        patch("dashboard.internet_nl_dashboard.logic.domain_batches.process_domain_batch.send") as schedule,
+    ):
         response = client.post(path, {"file": upload})
     body = assert_problem(response, 503)
-    assert (
-        body["type"] == ProblemType.SPREADSHEET_STORAGE_UNAVAILABLE
-    ), "Known storage outages should have a specific problem type."
+    assert body["type"] == ProblemType.SPREADSHEET_STORAGE_UNAVAILABLE, (
+        "Known storage outages should have a specific problem type."
+    )
     assert "private storage path" not in body["detail"], "Storage internals must not be exposed in the response."
     assert schedule.call_count == 0, "An upload must not be scheduled when its file could not be saved."
 
@@ -300,22 +312,22 @@ def test_spreadsheet_queue_outage_is_service_unavailable_and_marks_upload_failed
     client, _, _ = signed_in
     settings.MEDIA_ROOT = tmp_path
     upload = SimpleUploadedFile("domains.csv", b"example.com\n")
-    with patch("dashboard.internet_nl_dashboard.logic.spreadsheets.group") as schedule:
-        schedule.return_value.apply_async.side_effect = OperationalError("private broker connection")
+    with patch("dashboard.internet_nl_dashboard.logic.domain_batches.process_domain_batch.send") as schedule:
+        schedule.side_effect = RuntimeError("private broker connection")
         response = client.post("/api/v1/urllists/import-spreadsheets", {"file": upload})
     body = assert_problem(response, 503)
-    assert (
-        body["type"] == ProblemType.SPREADSHEET_QUEUE_UNAVAILABLE
-    ), "A broker outage should be reported as temporary unavailability."
+    assert body["type"] == ProblemType.SPREADSHEET_QUEUE_UNAVAILABLE, (
+        "A broker outage should be reported as temporary unavailability."
+    )
     assert "private broker" not in body["detail"], "Broker connection details must remain on the server."
-    log = UploadLog.objects.get()
-    assert log.status == "error", "An unscheduled upload must not remain indefinitely in the initializing state."
+    log = DomainBatch.objects.get()
+    assert log.status == "failed", "An unscheduled upload must not remain indefinitely in the initializing state."
     assert log.message == body["detail"], "Upload history should explain why the import did not start."
 
 
 def test_missing_spreadsheet_is_invalid_input_not_a_service_failure(signed_in):
     client, _, _ = signed_in
-    with patch("dashboard.internet_nl_dashboard.logic.spreadsheets.group") as schedule:
+    with patch("dashboard.internet_nl_dashboard.logic.domain_batches.process_domain_batch.send") as schedule:
         response = client.post("/api/v1/urllists/import-spreadsheets", {})
     assert_problem(response, 400)
     assert schedule.call_count == 0, "Invalid requests must not schedule an import."
@@ -449,34 +461,12 @@ def test_admin_conflicts_share_http_status_but_identify_the_conflicting_field(si
     ], "The frontend should be able to highlight the conflicting field."
 
 
-@pytest.mark.parametrize(
-    "message,status,problem_type,detail",
-    [
-        ("list_does_not_exist", 404, ProblemType.LIST_NOT_FOUND, "List does not exist."),
-        ("add_domains_list_does_not_exist", 404, ProblemType.LIST_NOT_FOUND, "List does not exist."),
-        ("too_many_domains", 400, ProblemType.DOMAIN_LIMIT_EXCEEDED, "Too many domains."),
-        (
-            "The uploaded file contained no data.",
-            400,
-            ProblemType.INVALID_SPREADSHEET,
-            "The uploaded file contained no data.",
-        ),
-        (None, 400, ProblemType.INVALID_SPREADSHEET, "Spreadsheet could not be imported."),
-    ],
-)
-def test_synchronous_spreadsheet_errors_use_problem_details(signed_in, message, status, problem_type, detail):
+def test_spreadsheet_for_missing_list_uses_problem_details(signed_in):
     client, _, _ = signed_in
     upload = SimpleUploadedFile("domains.csv", b"example.com\n")
-    with patch(
-        "dashboard.internet_nl_dashboard.views.urllists.upload_domain_spreadsheet_to_list",
-        return_value={"error": True, "message": message},
-    ):
-        response = client.post("/api/v1/urllists/999999/spreadsheets", {"file": upload})
-    body = assert_problem(response, status)
-    assert body["type"] == problem_type, "Import failures must have stable identifiers independent of their text."
-    assert body["detail"] == detail, "Spreadsheet validation messages belong in the readable detail."
-    if status == 400:
-        assert body["errors"][0]["loc"] == ["body", "file"], "Invalid uploads must identify the file field."
+    response = client.post("/api/v1/urllists/999999/spreadsheets", {"file": upload})
+    body = assert_problem(response, 404)
+    assert body["type"] == ProblemType.LIST_NOT_FOUND, "List ownership must be checked before saving an upload."
 
 
 def resolve_openapi_response(schema, response):
@@ -583,14 +573,14 @@ def test_declared_errors_with_the_same_status_are_all_documented():
         ("/api/v1/urllists/{urllist_id}", "delete", {204, 404}, {404: "current account"}),
         ("/api/v1/urllists/{urllist_id}", "put", {200, 404}, {404: "current account"}),
         ("/api/v1/urllists/{urllist_id}/scans", "post", {202, 400, 404, 409}, {400: "credentials", 409: "conditions"}),
-        ("/api/v1/urllists/{urllist_id}/urls", "post", {201, 400, 404}, {400: "list limit"}),
+        ("/api/v1/urllists/{urllist_id}/urls", "post", {202, 400, 404, 503}, {404: "list", 503: "queue"}),
         ("/api/v1/urllists/{urllist_id}/urls/{url_id}", "put", {200, 400, 404}, {400: "format", 404: "URL"}),
         ("/api/v1/urllists/{urllist_id}/urls/{url_id}", "delete", {204, 404}, {404: "URL"}),
         (
             "/api/v1/urllists/{urllist_id}/spreadsheets",
             "post",
-            {200, 400, 404, 503},
-            {400: "spreadsheet", 503: "storage"},
+            {202, 400, 404, 503},
+            {404: "list", 503: "storage"},
         ),
         ("/api/v1/urllists/import-spreadsheets", "post", {202, 500, 503}, {503: "storage"}),
         (
@@ -624,19 +614,19 @@ def test_declared_errors_with_the_same_status_are_all_documented():
 def test_openapi_explains_expected_domain_failures(client, path, method, statuses, description_fragments):
     schema = client.get("/api/v1/openapi.json").json()
     responses = schema["paths"][path][method]["responses"]
-    assert {str(status) for status in statuses} <= set(
-        responses
-    ), "Expected domain outcomes must be explicit in OpenAPI."
+    assert {str(status) for status in statuses} <= set(responses), (
+        "Expected domain outcomes must be explicit in OpenAPI."
+    )
     for status, fragment in description_fragments.items():
-        assert (
-            fragment in responses[str(status)]["description"]
-        ), "Each domain failure must explain its endpoint-specific cause."
+        assert fragment in responses[str(status)]["description"], (
+            "Each domain failure must explain its endpoint-specific cause."
+        )
     for status, response in responses.items():
         if int(status) >= 400:
             response = resolve_openapi_response(schema, response)
-            assert set(response["content"]) == {
-                "application/problem+json"
-            }, "Every error should advertise its actual media type."
+            assert set(response["content"]) == {"application/problem+json"}, (
+                "Every error should advertise its actual media type."
+            )
 
 
 def test_openapi_reuses_shared_errors_and_retains_domain_overrides(client):

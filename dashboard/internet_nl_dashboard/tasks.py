@@ -1,13 +1,12 @@
 # SPDX-License-Identifier: Apache-2.0
 import logging
 from datetime import datetime, timedelta, timezone
-from modulefinder import Module
-from typing import List
 
 from celery import Task, group
 from constance import config
 
 from dashboard.celery import app
+from dashboard.internet_nl_dashboard.logic.domain_batches import process_domain_batch
 from dashboard.internet_nl_dashboard.models import Account, UrlList, UrlListReport
 from dashboard.internet_nl_dashboard.scanners import scan_internet_nl_per_account, subdomains
 from dashboard.internet_nl_dashboard.scanners.scan_internet_nl_per_account import initialize_scan
@@ -57,8 +56,7 @@ def start_scans_for_lists_who_are_up_for_scanning() -> Task:
 
 
 # explicitly declare the imported modules as this modules 'content', prevents pyflakes issues
-# Todo: List item 0 has incompatible type Module; expected Module
-__all__: List[Module] = [scan_internet_nl_per_account, subdomains]  # type: ignore
+__all__ = ["scan_internet_nl_per_account", "subdomains", "process_domain_batch"]
 
 
 @app.task(queue="storage", ignore_result=True)

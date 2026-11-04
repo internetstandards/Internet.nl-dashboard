@@ -25,7 +25,6 @@ from dashboard.internet_nl_dashboard.logic.domains import (
     UrlListContentResponseSchema,
     UrlListScanStatusResponseSchema,
     UrlListsResponseSchema,
-    add_domains_from_raw_user_data,
     alter_url_in_urllist,
     create_list,
     delete_list,
@@ -39,16 +38,29 @@ from dashboard.internet_nl_dashboard.logic.domains import (
     update_list_settings,
 )
 from dashboard.internet_nl_dashboard.logic.report import UrlListTimelineSeriesSchema, get_urllist_timeline_graph
-from dashboard.internet_nl_dashboard.logic.spreadsheet import save_file, upload_domain_spreadsheet_to_list
+from dashboard.internet_nl_dashboard.logic.domain_batches import (
+    BatchConfirmSchema,
+    BatchInputSchema,
+    BatchItemSchema,
+    BatchSchema,
+    CorrectionsSchema,
+    batch_summary,
+    cancel_batch,
+    confirm_batch,
+    correct_batch,
+    owned_batch,
+    retry_batch,
+    start_batch,
+)
 from dashboard.internet_nl_dashboard.logic.spreadsheets import (
     UploadHistoryItemSchema,
     start_spreadsheet_upload,
     upload_history_for_account,
 )
 from dashboard.internet_nl_dashboard.logic.tags import add_tag, remove_tag, tags_in_urllist
-from dashboard.internet_nl_dashboard.models import TAG_MAX_LENGTH
+from dashboard.internet_nl_dashboard.models import TAG_MAX_LENGTH, DomainBatch, UrlList
 from dashboard.internet_nl_dashboard.problems import ApiError, ProblemSchema, ProblemType, problem_responses
-from dashboard.internet_nl_dashboard.scanners.subdomains import request_scan, scan_status
+from dashboard.internet_nl_dashboard.scanners.subdomains import scan_status
 from dashboard.internet_nl_dashboard.views import get_account, get_dashboarduser
 
 log = logging.getLogger(__package__)
@@ -64,10 +76,6 @@ class AddTagsInputSchema(TagInputSchema):
 
 class UpdateUrlInputSchema(Schema):
     new_url_string: Annotated[str, StringConstraints(max_length=255)]
-
-
-class AddUrlsInputSchema(Schema):
-    raw_urls: Annotated[str, StringConstraints(max_length=10_000)]
 
 
 # django_auth replaces @login_required on every call
@@ -92,12 +100,80 @@ def upload_history(request):
 
 @router.post(
     "/import-spreadsheets",
-    response={202: dict},
+    response={202: BatchSchema},
     openapi_extra=problem_responses(start_spreadsheet_upload),
 )
 def upload_spreadsheet(request, file: UploadedFile = File(...)) -> Status[dict]:
     user = get_dashboarduser(request)
     return Status(202, start_spreadsheet_upload(user, file))
+
+
+@router.get("/domain-batches", response={200: list[BatchSchema]})
+def domain_batches_operation(
+    request,
+    urllist_id: int | None = Query(None, alias="urllistId"),
+    pending_only: bool = Query(False, alias="pendingOnly"),
+):
+    batches = DomainBatch.objects.filter(account=get_account(request)).select_related("account", "urllist")
+    if urllist_id is not None:
+        batches = batches.filter(urllist__id=urllist_id)
+    if pending_only:
+        batches = batches.exclude(status__in=("completed", "cancelled"))
+    return [batch_summary(batch) for batch in batches.order_by("-id")[:30]]
+
+
+@router.get("/domain-batches/{batch_id}", response={200: BatchSchema, 404: ProblemSchema})
+def domain_batch_operation(request, batch_id: int):
+    return batch_summary(owned_batch(get_account(request), batch_id))
+
+
+@router.delete(
+    "/domain-batches/{batch_id}",
+    response={204: None, 404: ProblemSchema, 409: ProblemSchema},
+    openapi_extra={
+        "responses": {
+            404: {"description": "The domain batch does not exist in the current account."},
+            409: {"description": "Completed domain batches cannot be cancelled."},
+        }
+    },
+)
+def domain_batch_cancel_operation(request, batch_id: int):
+    cancel_batch(get_account(request), batch_id)
+    return Status(204, None)
+
+
+@router.get("/domain-batches/{batch_id}/rejections", response={200: list[BatchItemSchema], 404: ProblemSchema})
+def domain_batch_rejections_operation(request, batch_id: int):
+    batch = owned_batch(get_account(request), batch_id)
+    return batch.items.filter(status__in=("invalid", "unresolvable", "limit")).order_by("position")
+
+
+@router.post(
+    "/domain-batches/{batch_id}/confirm",
+    response={202: BatchSchema, 404: ProblemSchema, 409: ProblemSchema},
+    openapi_extra=problem_responses(start_batch, descriptions={404: "The list does not exist in the current account."}),
+)
+def domain_batch_confirm_operation(request, batch_id: int, data: BatchConfirmSchema | None = None):
+    options = data or BatchConfirmSchema()
+    return Status(202, confirm_batch(get_account(request), batch_id, options.overwrite, options.confirmation))
+
+
+@router.post(
+    "/domain-batches/{batch_id}/corrections",
+    response={202: BatchSchema, 404: ProblemSchema, 409: ProblemSchema},
+    openapi_extra=problem_responses(start_batch, descriptions={404: "The list does not exist in the current account."}),
+)
+def domain_batch_correct_operation(request, batch_id: int, data: CorrectionsSchema):
+    return Status(202, correct_batch(get_account(request), batch_id, data.corrections))
+
+
+@router.post(
+    "/domain-batches/{batch_id}/retry",
+    response={202: BatchSchema, 404: ProblemSchema, 409: ProblemSchema},
+    openapi_extra=problem_responses(start_batch, descriptions={404: "The list does not exist in the current account."}),
+)
+def domain_batch_retry_operation(request, batch_id: int):
+    return Status(202, retry_batch(get_account(request), batch_id))
 
 
 @router.delete(
@@ -162,13 +238,20 @@ def suggest_subdomains_operation(request, urllist_id: int, data: Query[Suggested
 
 @router.post(
     "/{urllist_id}/www-subdomain-discovery",
-    response={202: dict, 404: ProblemSchema},
-    openapi_extra={
-        "responses": {404: {"description": "The list does not exist in the current account or has been deleted."}}
-    },
+    response={202: BatchSchema, 404: ProblemSchema},
+    openapi_extra=problem_responses(start_batch, descriptions={404: "The list does not exist in the current account."}),
 )
 def request_subdomain_discovery_scan_api(request, urllist_id: int):
-    return Status(202, request_scan(get_account(request), urllist_id))
+    urllist = UrlList.objects.filter(account=get_account(request), id=urllist_id, is_deleted=False).first()
+    if not urllist:
+        raise ApiError(404, "List does not exist.", ProblemType.LIST_NOT_FOUND)
+    domains = "\n".join(
+        f"www.{domain}"
+        for domain in urllist.urls.filter(computed_subdomain="").values_list("url", flat=True).iterator()
+    )
+    if not domains:
+        raise ApiError(400, "There are no top-level domains to discover in this list.")
+    return Status(202, start_batch(get_dashboarduser(request), urllist_id=urllist_id, raw_urls=domains))
 
 
 @router.get(
@@ -178,7 +261,7 @@ def request_subdomain_discovery_scan_api(request, urllist_id: int):
         "responses": {
             404: {
                 "description": (
-                    "The list does not exist in the current account, has been deleted, or has no " "discovery scan yet."
+                    "The list does not exist in the current account, has been deleted, or has no discovery scan yet."
                 )
             }
         }
@@ -196,27 +279,11 @@ def download_list_operation(request, urllist_id: int, file_type: str):
 
 @router.post(
     "/{urllist_id}/spreadsheets",
-    response={200: dict, 400: ProblemSchema, 404: ProblemSchema},
-    openapi_extra=problem_responses(
-        save_file,
-        descriptions={
-            400: "The uploaded spreadsheet is invalid or its domains exceed the list limit.",
-            404: "The target list does not exist in the current account.",
-        },
-    ),
+    response={202: BatchSchema, 404: ProblemSchema},
+    openapi_extra=problem_responses(start_batch, descriptions={404: "The list does not exist in the current account."}),
 )
-def upload_list_operation(request, urllist_id: int, file: UploadedFile = File(...)) -> dict:
-    result = upload_domain_spreadsheet_to_list(get_account(request), get_dashboarduser(request), urllist_id, file)
-    if result.get("error"):
-        message = result.get("message")
-        if message in {"list_does_not_exist", "add_domains_list_does_not_exist"}:
-            raise ApiError(404, "List does not exist.", ProblemType.LIST_NOT_FOUND)
-        if message == "too_many_domains":
-            raise ApiError(400, "Too many domains.", ProblemType.DOMAIN_LIMIT_EXCEEDED, field="file")
-        raise ApiError(
-            400, message or "Spreadsheet could not be imported.", ProblemType.INVALID_SPREADSHEET, field="file"
-        )
-    return {"details": result.get("details", "")}
+def upload_list_operation(request, urllist_id: int, file: UploadedFile = File(...)):
+    return Status(202, start_batch(get_dashboarduser(request), urllist_id=urllist_id, file=file))
 
 
 @router.get("/{urllist_id}/tags", response={200: list[str]})
@@ -231,16 +298,11 @@ def get_urllist_content_operation(request, urllist_id: int):
 
 @router.post(
     "/{urllist_id}/urls",
-    response={201: dict, 400: ProblemSchema, 404: ProblemSchema},
-    openapi_extra={
-        "responses": {
-            400: {"description": "Invalid request data or adding these domains would exceed the list limit."},
-            404: {"description": "The list does not exist in the current account or has been deleted."},
-        }
-    },
+    response={202: BatchSchema, 404: ProblemSchema},
+    openapi_extra=problem_responses(start_batch, descriptions={404: "The list does not exist in the current account."}),
 )
-def add_urls_to_urllist_operation(request, urllist_id: int, data: AddUrlsInputSchema):
-    return Status(201, add_domains_from_raw_user_data(get_account(request), urllist_id, data.raw_urls))
+def add_urls_to_urllist_operation(request, urllist_id: int, data: BatchInputSchema):
+    return Status(202, start_batch(get_dashboarduser(request), urllist_id=urllist_id, raw_urls=data.raw_urls))
 
 
 @router.post("/{urllist_id}/urls/tags", response={204: None})
@@ -262,7 +324,7 @@ def add_tags_operation(request, urllist_id: int, data: AddTagsInputSchema):
             400: {"description": "Invalid request data or the new URL has an invalid format."},
             404: {
                 "description": (
-                    "The list does not exist in the current account, has been deleted, or does not " "contain the URL."
+                    "The list does not exist in the current account, has been deleted, or does not contain the URL."
                 )
             },
         }

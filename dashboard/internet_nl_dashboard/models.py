@@ -9,6 +9,7 @@ from cryptography.fernet import Fernet
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.db import models
+from django.utils.timezone import now
 from django_countries.fields import CountryField
 from jsonfield import JSONField
 from requests.auth import HTTPBasicAuth
@@ -375,6 +376,44 @@ def determine_next_scan_moment(preference: str) -> datetime:
         return returned.replace(year=now.year + 1) if now.month == 12 else returned.replace(month=now.month + 1)
 
     raise ValueError(f"String {preference} could not be translated to a scan moment.")
+
+
+class DomainBatch(models.Model):
+    """Durable progress for spreadsheet, text and discovered-domain additions."""
+
+    account = models.ForeignKey(Account, on_delete=models.CASCADE)
+    user = models.ForeignKey(DashboardUser, on_delete=models.CASCADE)
+    urllist = models.ForeignKey(UrlList, null=True, blank=True, on_delete=models.SET_NULL)
+    target_list = models.BooleanField(default=False)
+    overwrite = models.BooleanField(default=False)
+    source = models.CharField(max_length=20, default="text")
+    filename = models.CharField(max_length=255, blank=True)
+    file_path = models.TextField(blank=True)
+    raw_text = models.TextField(blank=True)
+    stage = models.CharField(max_length=20, default="validation")
+    status = models.CharField(max_length=20, default="queued", db_index=True)
+    message = models.TextField(blank=True)
+    total = models.PositiveIntegerField(default=0)
+    processed = models.PositiveIntegerField(default=0)
+    worker_token = models.CharField(max_length=36, blank=True)
+    created_on = models.DateTimeField(default=now)
+    updated_on = models.DateTimeField(default=now)
+
+
+class DomainBatchItem(models.Model):
+    batch = models.ForeignKey(DomainBatch, related_name="items", on_delete=models.CASCADE)
+    position = models.PositiveIntegerField()
+    row = models.PositiveIntegerField()
+    list_name = models.TextField()
+    raw_domain = models.TextField()
+    domain = models.CharField(max_length=255, blank=True)
+    tags = models.JSONField(default=list)
+    status = models.CharField(max_length=20, default="pending")
+    reason = models.CharField(max_length=255, blank=True)
+
+    class Meta:
+        constraints = [models.UniqueConstraint(fields=["batch", "position"], name="domain_batch_position")]
+        indexes = [models.Index(fields=["batch", "status", "position"], name="domain_batch_work")]
 
 
 class UploadLog(models.Model):
