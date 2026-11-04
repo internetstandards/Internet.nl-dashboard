@@ -5,12 +5,13 @@ from django.http import HttpResponse
 from django.views.decorators.csrf import csrf_exempt
 from ninja import Router
 
-from dashboard.internet_nl_dashboard.logic import OperationResponseSchema, operation_response
 from dashboard.internet_nl_dashboard.logic.report import (
     PublicReportItemSchema,
     ReportSchema,
-    SharedReportAuthRequiredSchema,
+    SharedReportAccessDenied,
+    SharedReportAccessProblemSchema,
     SharedReportInputSchema,
+    SharedReportNotFound,
     get_public_reports,
     get_shared_report,
 )
@@ -21,6 +22,7 @@ from dashboard.internet_nl_dashboard.logic.shared_report_lists import (
     get_publicly_shared_lists_per_account,
     get_publicly_shared_lists_per_account_and_list_id,
 )
+from dashboard.internet_nl_dashboard.problems import ProblemSchema, problem_responses
 
 log = logging.getLogger(__package__)
 
@@ -42,46 +44,30 @@ def get_public_reports_operation(request):
 @router.get(
     "/{report_code}",
     response={
-        200: list[ReportSchema],
-        201: SharedReportAuthRequiredSchema,
-        404: OperationResponseSchema,
+        200: ReportSchema,
+        SharedReportAccessDenied.status: SharedReportAccessProblemSchema,
+        SharedReportNotFound.status: ProblemSchema,
     },
+    openapi_extra=problem_responses(get_shared_report),
 )
 def get_shared_report_api(request, report_code: str) -> HttpResponse:
-    # no code :)
-    log.debug(report_code)
     payload = get_shared_report(report_code, "")
-    if payload == []:
-        return HttpResponse(
-            operation_response(error=True, message="report_not_found").json(),
-            content_type="application/json",
-            status=404,
-        )
-    if isinstance(payload, str) and '"authentication_required": true' in payload:
-        return HttpResponse(payload, content_type="application/json", status=201)
     return HttpResponse(payload, content_type="application/json")
 
 
 @router.post(
     "/{report_code}",
     response={
-        200: ReportSchema | SharedReportAuthRequiredSchema,
-        201: SharedReportAuthRequiredSchema,
-        404: OperationResponseSchema,
+        200: ReportSchema,
+        SharedReportAccessDenied.status: SharedReportAccessProblemSchema,
+        SharedReportNotFound.status: ProblemSchema,
     },
+    openapi_extra=problem_responses(get_shared_report),
 )
 @csrf_exempt
 def get_shared_report_api_with_code(request, report_code: str, data: SharedReportInputSchema) -> HttpResponse:
     # Explicitly NOT use jsonresponse as this loads the json data into an encoder which is extremely slow on large files
     payload = get_shared_report(report_code, data.share_code)
-    if payload == []:
-        return HttpResponse(
-            operation_response(error=True, message="report_not_found").json(),
-            content_type="application/json",
-            status=404,
-        )
-    if isinstance(payload, str) and '"authentication_required": true' in payload:
-        return HttpResponse(payload, content_type="application/json", status=201)
     return HttpResponse(payload, content_type="application/json")
 
 

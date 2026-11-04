@@ -22,7 +22,6 @@ from websecmap.scanners.models import Endpoint
 from websecmap.scanners_internet_nl_dns_endpoints.tasks import compose_manual_discover_task, has_a_or_aaaa, has_soa
 
 from dashboard.celery import app
-from dashboard.internet_nl_dashboard.logic import OperationResponseSchema, operation_response
 from dashboard.internet_nl_dashboard.models import (
     Account,
     AccountInternetNLScan,
@@ -32,6 +31,7 @@ from dashboard.internet_nl_dashboard.models import (
     UrlListReport,
     determine_next_scan_moment,
 )
+from dashboard.internet_nl_dashboard.problems import ApiError, DocumentedApiError, ProblemType, raises
 from dashboard.internet_nl_dashboard.scanners.scan_internet_nl_per_account import initialize_scan
 from dashboard.internet_nl_dashboard.views import create_spreadsheet_download
 
@@ -49,11 +49,10 @@ class UrlListSummarySchema(Schema):
     default_public_share_code_for_new_reports: str = ""
     last_scan_id: int | None = None
     last_scan_state: str | None = None
-    # Note: get_urllists_from_account returns ISO formatted strings for dates
-    last_scan: str | None = None
+    last_scan: datetime | None = None
     last_scan_finished: bool | None = None
     last_report_id: int | None = None
-    last_report_date: str | None = None
+    last_report_date: datetime | None = None
     list_warnings: list[str] = []
     num_urls: int
 
@@ -107,12 +106,8 @@ class AlterUrlDataSchema(Schema):
     removed: UrlChangeItemSchema | None = None
 
 
-class AlterUrlResponseSchema(OperationResponseSchema):
-    data: AlterUrlDataSchema | None = None
-
-
-class CreateListResponseSchema(OperationResponseSchema):
-    data: UrlListSummarySchema | None = None
+AlterUrlResponseSchema = AlterUrlDataSchema
+CreateListResponseSchema = UrlListSummarySchema
 
 
 class CreateUrlListInputSchema(Schema):
@@ -153,8 +148,28 @@ class UpdateListSettingsInputSchema(Schema):
 log = logging.getLogger(__package__)
 
 
-class ServerError(BaseException):
-    pass
+class InvalidSuggestionDomain(DocumentedApiError):
+    status = 400
+    detail = "A valid domain name is required for subdomain suggestions."
+    problem_type = ProblemType.INVALID_SUGGESTION_DOMAIN
+
+
+class SubdomainSuggestionsUnavailable(DocumentedApiError):
+    status = 503
+    detail = "The subdomain suggestion service is temporarily unavailable."
+    problem_type = ProblemType.SUBDOMAIN_SUGGESTIONS_UNAVAILABLE
+
+
+class SubdomainSuggestionsTimeout(DocumentedApiError):
+    status = 504
+    detail = "The subdomain suggestion service did not respond in time."
+    problem_type = ProblemType.SUBDOMAIN_SUGGESTIONS_TIMEOUT
+
+
+class SubdomainSuggestionsFailed(DocumentedApiError):
+    status = 502
+    detail = "The subdomain suggestion service returned an unusable response."
+    problem_type = ProblemType.SUBDOMAIN_SUGGESTIONS_FAILED
 
 
 def suggest_subdomains(domain: str, period: int = 370):
@@ -162,7 +177,7 @@ def suggest_subdomains(domain: str, period: int = 370):
 
     # ip address or garbage
     if not extract.domain or not extract.suffix:
-        raise ValueError("Invalid input")
+        raise InvalidSuggestionDomain()
 
     # call SUBDOMAIN_SUGGESTION_SERVER_ADDRESS
     try:
@@ -175,15 +190,16 @@ def suggest_subdomains(domain: str, period: int = 370):
             },
             timeout=10,
         )
-    except Exception:  # pylint: disable=broad-exception-caught
-        log.exception(
-            "Failed to retrieve subdomain suggestions from  %s.",
-            config.SUBDOMAIN_SUGGESTION_SERVER_ADDRESS,
-        )
-        raise
+    except requests.Timeout as exc:
+        raise SubdomainSuggestionsTimeout() from exc
+    except requests.ConnectionError as exc:
+        raise SubdomainSuggestionsUnavailable() from exc
 
     if response.status_code == 404:
         return []
+
+    if response.status_code == 503:
+        raise SubdomainSuggestionsUnavailable()
 
     if response.status_code != 200:
         log.error(
@@ -191,11 +207,17 @@ def suggest_subdomains(domain: str, period: int = 370):
             config.SUBDOMAIN_SUGGESTION_SERVER_ADDRESS,
             response.status_code,
         )
-        raise ServerError("Failed to retrieve subdomain suggestions")
+        raise SubdomainSuggestionsFailed()
 
-    return response.json()
+    try:
+        return response.json()
+    except requests.exceptions.JSONDecodeError as exc:
+        raise SubdomainSuggestionsFailed() from exc
 
 
+@raises(
+    InvalidSuggestionDomain, SubdomainSuggestionsUnavailable, SubdomainSuggestionsTimeout, SubdomainSuggestionsFailed
+)
 def suggest_subdomains_for_list(
     account: Account, urllist_id: int, domain: str, period: int = 370
 ) -> list[dict[str, Any]]:
@@ -256,17 +278,13 @@ def suggest_subdomains_for_list(
 
 # todo: write test
 def alter_url_in_urllist(account, urllist_id: int, url_id: int, new_url_string: str) -> AlterUrlResponseSchema:
-    now = datetime.now(timezone.utc)
-
     # what was the old id we're changing?
-    old_url = Url.objects.all().filter(pk=url_id).first()
+    urllist = UrlList.objects.filter(account=account, pk=urllist_id, is_deleted=False).first()
+    if not urllist:
+        raise ApiError(404, "List does not exist.")
+    old_url = urllist.urls.filter(pk=url_id).first()
     if not old_url:
-        return AlterUrlResponseSchema(
-            error=True,
-            message="The old url does not exist.",
-            state="error",
-            timestamp=now,
-        )
+        raise ApiError(404, "The old url does not exist.")
 
     if old_url.url == new_url_string:
         # no changes, but return a created item for UI consistency
@@ -280,27 +298,11 @@ def alter_url_in_urllist(account, urllist_id: int, url_id: int, new_url_string: 
             domain=old_url.computed_domain,
             suffix=old_url.computed_suffix,
         )
-        return AlterUrlResponseSchema(
-            success=True,
-            message="Saved.",
-            state="success",
-            data=AlterUrlDataSchema(created=created_item, removed=None),
-            timestamp=now,
-        )
-
-    # is this really a list?
-    urllist = UrlList.objects.all().filter(account=account, pk=urllist_id).first()
-    if not urllist:
-        return AlterUrlResponseSchema(error=True, message="List does not exist.", state="error", timestamp=now)
+        return AlterUrlDataSchema(created=created_item, removed=None)
 
     # is the url valid?
     if not Url.is_valid_url(new_url_string):
-        return AlterUrlResponseSchema(
-            error=True,
-            message="New url does not have the correct format.",
-            state="error",
-            timestamp=now,
-        )
+        raise ApiError(400, "New url does not have the correct format.")
 
     # fetch the url, or create it if it doesn't exist.
     new_url, created = get_url(new_url_string)
@@ -353,16 +355,10 @@ def alter_url_in_urllist(account, urllist_id: int, url_id: int, new_url_string: 
         suffix=old_fragments.suffix,
     )
 
-    return AlterUrlResponseSchema(
-        success=True,
-        message="Saved.",
-        state="success",
-        data=AlterUrlDataSchema(created=created_item, removed=removed_item),
-        timestamp=now,
-    )
+    return AlterUrlDataSchema(created=created_item, removed=removed_item)
 
 
-def scan_now(account, urllist_id: int) -> OperationResponseSchema:
+def scan_now(account, urllist_id: int) -> None:
     urllist = (
         UrlList.objects.all()
         .filter(account=account, id=urllist_id, is_deleted=False)
@@ -371,21 +367,18 @@ def scan_now(account, urllist_id: int) -> OperationResponseSchema:
     )
 
     if not urllist:
-        return operation_response(error=True, message="List could not be found.")
+        raise ApiError(404, "List could not be found.")
 
     if not urllist.is_scan_now_available():
-        return operation_response(error=True, message="Not all conditions for initiating a scan are met.")
+        raise ApiError(409, "Not all conditions for initiating a scan are met.")
 
     # make sure there are no errors on this list:
     max_urls = config.DASHBOARD_MAXIMUM_DOMAINS_PER_LIST
     if urllist.num_urls > max_urls:
-        return operation_response(
-            error=True,
-            message=f"Cannot scan: Amount of urls exceeds the maximum of {max_urls}.",
-        )
+        raise ApiError(400, f"Cannot scan: Amount of urls exceeds the maximum of {max_urls}.")
 
     if not account.connect_to_internet_nl_api(account.internet_nl_api_username, account.decrypt_password()):
-        return operation_response(error=True, message="Credentials for the internet.nl API are not valid.")
+        raise ApiError(400, "Credentials for the internet.nl API are not valid.")
 
     # Make sure the fernet key is working fine, you are on the correct queue (-Q storage) and that the correct API
     # version is used.
@@ -397,21 +390,21 @@ def scan_now(account, urllist_id: int) -> OperationResponseSchema:
     urllist.last_manual_scan = datetime.now(timezone.utc)
     urllist.save()
 
-    return operation_response(success=True, message="Scan started")
+    return None
 
 
 def scan_urllist_now_ignoring_business_rules(urllist: UrlList):
     my_urllist = UrlList.objects.all().filter(pk=urllist.id).first()
 
     if not my_urllist:
-        return operation_response(error=True, message="List could not be found.")
+        raise ApiError(404, "List could not be found.")
 
     initialize_scan(my_urllist.id)
 
     my_urllist.last_manual_scan = datetime.now(timezone.utc)
     my_urllist.save()
 
-    return operation_response(success=True, message="Scan started")
+    return None
 
 
 def get_url(new_url_string: str):
@@ -467,19 +460,10 @@ def create_list(account: Account, data: CreateUrlListInputSchema) -> CreateListR
     # Sprinkling an activity stream action.
     action.send(account, verb="created list", target=urllist, public=False)
 
-    # todo: abstract state and timestamp, just like in the old operation_response code.
-    #  or... use rest status codes, like 200 and 400.
-    return CreateListResponseSchema(
-        success=True,
-        error=False,
-        message="List created.",
-        state="success",
-        data=list_summary,
-        timestamp=datetime.now(timezone.utc),
-    )
+    return list_summary
 
 
-def delete_list(account: Account, urllist_id: int) -> OperationResponseSchema:
+def delete_list(account: Account, urllist_id: int) -> None:
     """
     The first assumption was that a list is not precious or special, and that it can be quickly re-created with an
     import from excel or a csv paste in the web interface. Yet this assumption is wrong. It's valuable to keep the list
@@ -489,11 +473,10 @@ def delete_list(account: Account, urllist_id: int) -> OperationResponseSchema:
 
     :param account:
     :param urllist_id: Identifier of the list to delete.
-    :return: OperationResponseSchema
     """
     urllist = UrlList.objects.all().filter(account=account, id=urllist_id, is_deleted=False).first()
     if not urllist:
-        return operation_response(error=True, message="List could not be deleted.")
+        raise ApiError(404, "List could not be deleted.")
 
     urllist.is_deleted = True
     urllist.enable_scans = False
@@ -503,7 +486,7 @@ def delete_list(account: Account, urllist_id: int) -> OperationResponseSchema:
     # Sprinkling an activity stream action.
     action.send(account, verb="deleted list", target=urllist, public=False)
 
-    return operation_response(success=True, message="List deleted.")
+    return None
 
 
 def get_scan_status_of_list(account: Account, list_id: int) -> UrlListScanStatusResponseSchema:
@@ -568,9 +551,7 @@ def get_scan_status_of_list(account: Account, list_id: int) -> UrlListScanStatus
 
 
 # @pysnooper.snoop()
-def update_list_settings(
-    account: Account, user_input: UpdateListSettingsInputSchema
-) -> CreateListResponseSchema | OperationResponseSchema:
+def update_list_settings(account: Account, user_input: UpdateListSettingsInputSchema) -> UrlListSummarySchema:
     """
 
     This cannot update the urls, as that would increase complexity too much.
@@ -613,7 +594,7 @@ def update_list_settings(
     )
 
     if not urllist:
-        return operation_response(error=True, message="No list of urls found.")
+        raise ApiError(404, "No list of urls found.")
 
     # Yes, you can try and set any value. Values that are not recognized do not result in errors / error messages,
     # instead they will be overwritten with the default. This means less interaction with users / less annoyance over
@@ -629,8 +610,8 @@ def update_list_settings(
         "scheduled_next_scan": determine_next_scan_moment(frequency),
         "enable_report_sharing_page": bool(user_input_dict.get("enable_report_sharing_page", "")),
         "automatically_share_new_reports": bool(user_input_dict.get("automatically_share_new_reports", "")),
-        "default_public_share_code_for_new_reports": user_input_dict.get(
-            "default_public_share_code_for_new_reports", ""
+        "default_public_share_code_for_new_reports": (
+            user_input_dict.get("default_public_share_code_for_new_reports") or ""
         )[:64],
     }
 
@@ -658,7 +639,7 @@ def update_list_settings(
 
     if urllist.last_report:
         data["last_report_id"] = urllist.last_report[0].id
-        data["last_report_date"] = urllist.last_report[0].at_when
+        data["last_report_date"] = urllist.last_report[0].at_when.isoformat()
 
     data["scan_now_available"] = updated_urllist.is_scan_now_available()
 
@@ -671,7 +652,7 @@ def update_list_settings(
     # Sprinkling an activity stream action.
     action.send(account, verb="updated list", target=updated_urllist, public=False)
 
-    return operation_response(success=True, message="Updated list settings", data=data)
+    return UrlListSummarySchema(**data)
 
 
 def keys_are_present_in_object(expected_keys: List[str], any_object: Dict[str, Any]):
@@ -952,14 +933,14 @@ def retrieve_possible_urls_from_unfiltered_input(
     return sorted(has_tld), duplicates_removed
 
 
-def add_domains_from_raw_user_data(account: Account, urllist_id: int, raw_urls: str) -> OperationResponseSchema:
+def add_domains_from_raw_user_data(account: Account, urllist_id: int, raw_urls: str) -> dict:
     """
     This is the 'id' version of save_urllist. It is a bit stricter as in that it requires the list to exist.
 
     Stores urls in an urllist. If the url doesn't exist yet, it will be added to the database (so the urls
     can be shared with multiple accounts, and only requires one scan).
 
-    Used in the web / ajax frontend and uses operation responses.
+    Used by the frontend to add domains and return import counters.
     """
 
     # these are random unfiltered strings and the method expects keys...
@@ -969,9 +950,11 @@ def add_domains_from_raw_user_data(account: Account, urllist_id: int, raw_urls: 
     # does this remove tags of existing urls?
     result = save_urllist_content_by_id(account, urllist_id, {url: {"tags": []} for url in urls})
     if "error" in result:
-        return OperationResponseSchema(**result)
+        if result["message"] == "add_domains_list_does_not_exist":
+            raise ApiError(404, "List does not exist.", ProblemType.LIST_NOT_FOUND)
+        raise ApiError(400, "Too many domains.", ProblemType.DOMAIN_LIMIT_EXCEEDED, field="raw_urls")
 
-    return operation_response(success=True, message="add_domains_valid_urls_added", data=result)
+    return result
 
 
 def save_urllist_content_by_name(

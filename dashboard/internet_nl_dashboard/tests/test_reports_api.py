@@ -9,6 +9,7 @@ from websecmap.scanners.impact import get_impact
 from websecmap.scanners.models import Endpoint, EndpointGenericScan
 
 from dashboard.internet_nl_dashboard.models import Account, DashboardUser
+from dashboard.internet_nl_dashboard.problems import ProblemType
 
 
 def create_authenticated_client(client, *, is_staff: bool = False):
@@ -83,7 +84,7 @@ def expected_live_metric(scan: EndpointGenericScan) -> dict:
 
 def test_get_ad_hoc_live_latest_metrics_requires_auth(db, client):
     response = client.post(
-        "/api/v1/reports/metrics/now/",
+        "/api/v1/reports/metrics/now",
         data=json.dumps({"urls": ["example.nl"]}),
         content_type="application/json",
     )
@@ -95,16 +96,16 @@ def test_get_ad_hoc_live_latest_metrics_requires_staff_account(db, client):
     client = create_authenticated_client(client, is_staff=False)
 
     response = client.post(
-        "/api/v1/reports/metrics/now/",
+        "/api/v1/reports/metrics/now",
         data=json.dumps({"urls": ["internet.nl"]}),
         content_type="application/json",
     )
 
     assert response.status_code == 403, "Non-staff users should receive a forbidden response."
     assert (
-        response.json()["message"] == "staff_account_required"
+        response.json()["type"] == ProblemType.STAFF_ACCOUNT_REQUIRED
     ), "Forbidden response should explain the staff requirement."
-    assert response.json()["error"] is True, "Forbidden response should be marked as an error."
+    assert response.json()["status"] == 403, "Problem status should match the HTTP response."
 
 
 def test_get_ad_hoc_live_latest_metrics_uses_default_urls_and_metrics(db, client):
@@ -134,7 +135,7 @@ def test_get_ad_hoc_live_latest_metrics_uses_default_urls_and_metrics(db, client
     )
 
     response = client.post(
-        "/api/v1/reports/metrics/now/",
+        "/api/v1/reports/metrics/now",
         data=json.dumps({}),
         content_type="application/json",
     )
@@ -166,7 +167,7 @@ def test_get_ad_hoc_live_latest_metrics_filters_requested_metrics(db, client):
     )
 
     response = client.post(
-        "/api/v1/reports/metrics/now/",
+        "/api/v1/reports/metrics/now",
         data=json.dumps({"urls": ["custom.example.nl"], "metrics": ["web_https_tls_version"]}),
         content_type="application/json",
     )

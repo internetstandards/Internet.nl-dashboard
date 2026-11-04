@@ -18,6 +18,7 @@ DONE: give example files.
 DONE: supply example download files.
 """
 
+import errno
 import logging
 import os
 import re
@@ -44,6 +45,7 @@ from dashboard.internet_nl_dashboard.logic.domains import (
 )
 from dashboard.internet_nl_dashboard.logic.tags import parse_tags_from_csv_data
 from dashboard.internet_nl_dashboard.models import Account, DashboardUser, UploadLog, UrlList
+from dashboard.internet_nl_dashboard.problems import DocumentedApiError, ProblemType, raises
 
 log = logging.getLogger(__package__)
 
@@ -67,6 +69,12 @@ SPREADSHEET_MIME_TYPES: List[str] = [
 ALLOWED_SPREADSHEET_EXTENSIONS: List[str] = ["xlsx", "xls", "ods", "csv"]
 
 
+class SpreadsheetStorageUnavailable(DocumentedApiError):
+    status = 503
+    detail = "Spreadsheet storage is temporarily unavailable. Please try again later."
+    problem_type = ProblemType.SPREADSHEET_STORAGE_UNAVAILABLE
+
+
 def is_file(file: str) -> bool:
     if not os.path.isfile(file):
         log.debug("Not a valid file path.")
@@ -74,11 +82,25 @@ def is_file(file: str) -> bool:
     return True
 
 
+@raises(SpreadsheetStorageUnavailable)
 def save_file(myfile) -> str:
-    # todo: filesystem might be full.
     # https://docs.djangoproject.com/en/2.1/ref/files/storage/
     file_system_storage = FileSystemStorage(location=settings.MEDIA_ROOT)
-    filename = file_system_storage.save(myfile.name, myfile)
+    try:
+        filename = file_system_storage.save(myfile.name, myfile)
+    except OSError as exc:
+        if exc.errno not in {
+            errno.ENOSPC,
+            errno.EDQUOT,
+            errno.EAGAIN,
+            errno.EBUSY,
+            errno.EMFILE,
+            errno.ENFILE,
+            errno.ETIMEDOUT,
+        }:
+            raise
+        log.exception("Spreadsheet storage is temporarily unavailable")
+        raise SpreadsheetStorageUnavailable() from exc
     return f"{settings.MEDIA_ROOT}/{filename}"
 
 
@@ -215,7 +237,7 @@ def get_data(file: str) -> Dict[str, Dict[str, Dict[str, list]]]:
 class UploadHistoryItemSchema(Schema):
     original_filename: str | None
     message: str | None
-    upload_date: str
+    upload_date: datetime
     filesize: int
     percentage: int | None
 

@@ -9,7 +9,6 @@ from ninja import Query, Router, Schema
 from ninja.security import django_auth_superuser
 from pydantic import StringConstraints
 
-from dashboard.internet_nl_dashboard.logic import OperationResponseSchema, operation_response
 from dashboard.internet_nl_dashboard.logic.usage import (
     ActionStatisticsSchema,
     UsageMetricsSchema,
@@ -20,6 +19,7 @@ from dashboard.internet_nl_dashboard.logic.usage import (
     user_statistics,
 )
 from dashboard.internet_nl_dashboard.models import Account, AccountInternetNLScan, DashboardUser, UrlList
+from dashboard.internet_nl_dashboard.problems import ApiError, ProblemSchema, ProblemType
 from dashboard.internet_nl_dashboard.views import get_account
 
 router = Router(tags=["Administration"], auth=django_auth_superuser)
@@ -62,7 +62,11 @@ def get_accounts(request) -> HttpResponse:
     return JsonResponse({"current_account": current_account, "accounts": account_data})
 
 
-@router.post("/accounts/{account_id}/impersonation", response={200: OperationResponseSchema})
+@router.post(
+    "/accounts/{account_id}/impersonation",
+    response={200: dict, 404: ProblemSchema},
+    openapi_extra={"responses": {404: {"description": "The account to switch to does not exist."}}},
+)
 def set_account(request, account_id: int) -> HttpResponse:
 
     dashboard_user = DashboardUser.objects.all().filter(user=request.user).first()
@@ -71,16 +75,13 @@ def set_account(request, account_id: int) -> HttpResponse:
     if not dashboard_user:
         dashboard_user = DashboardUser(**{"account": Account.objects.all().first(), "user": request.user})
 
-    dashboard_user.account = Account.objects.get(id=account_id)
+    account = Account.objects.filter(id=account_id).first()
+    if not account:
+        raise ApiError(404, "Account not found.", ProblemType.ACCOUNT_NOT_FOUND)
+    dashboard_user.account = account
     dashboard_user.save()
 
-    return JsonResponse(
-        operation_response(
-            success=True,
-            message="switched_account",
-            data={"account_name": dashboard_user.account.name},
-        ).dict()
-    )
+    return JsonResponse({"account_name": dashboard_user.account.name})
 
 
 class CredentialCheckSchema(Schema):
@@ -117,11 +118,18 @@ class InstantAccountAndUserCreationSchema(Schema):
 # TODO: split account and user creation into separate resources; keep combined for backward compatibility.
 @router.post(
     "/accounts",
-    response={
-        201: OperationResponseSchema,
-        400: OperationResponseSchema,
-        404: OperationResponseSchema,
-        409: OperationResponseSchema,
+    response={201: dict, 400: ProblemSchema, 404: ProblemSchema, 409: ProblemSchema},
+    openapi_extra={
+        "responses": {
+            400: {
+                "description": (
+                    "Required account/user details are missing, the email address is invalid, or the "
+                    "password is too short."
+                )
+            },
+            404: {"description": "The selected existing account does not exist."},
+            409: {"description": "The username or new account name is already in use."},
+        }
     },
 )
 def save_instant_account_and_user(request, data: InstantAccountAndUserCreationSchema) -> HttpResponse:
@@ -131,51 +139,34 @@ def save_instant_account_and_user(request, data: InstantAccountAndUserCreationSc
     """
 
     if not data.new_username:
-        return JsonResponse(
-            operation_response(error=True, message="error_no_username_supplied").dict(),
-            status=400,
-        )
+        raise ApiError(400, "No username supplied.", ProblemType.USERNAME_REQUIRED, field="new_username")
 
     if User.objects.all().filter(username=data.new_username).exists():
-        return JsonResponse(
-            operation_response(error=True, message="error_username_already_exists").dict(),
-            status=409,
-        )
+        raise ApiError(409, "Username already exists.", ProblemType.USERNAME_ALREADY_EXISTS, field="new_username")
 
     try:
         validate_email(data.new_email_address)
     except ValidationError:
-        return JsonResponse(
-            operation_response(error=True, message="error_invalid_email_address").dict(),
-            status=400,
-        )
+        raise ApiError(400, "Invalid email address.", ProblemType.INVALID_EMAIL_ADDRESS, field="new_email_address")
 
-    if Account.objects.all().filter(name=data.new_username).exists():
-        return JsonResponse(
-            operation_response(error=True, message="error_account_name_already_exists").dict(),
-            status=409,
+    if Account.objects.all().filter(name=data.new_account_name).exists():
+        raise ApiError(
+            409, "Account name already exists.", ProblemType.ACCOUNT_NAME_ALREADY_EXISTS, field="new_account_name"
         )
 
     # Extremely arbitrary password requirements. Just to make sure a password has been filled in.
     if len(data.new_password) < 12:
-        return JsonResponse(
-            operation_response(error=True, message="error_password_too_short").dict(),
-            status=400,
-        )
+        raise ApiError(400, "Password too short.", ProblemType.PASSWORD_TOO_SHORT, field="new_password")
 
     if data.use_existing_account_id:
         account = Account.objects.filter(id=data.use_existing_account_id).first()
         if not account:
-            return JsonResponse(
-                operation_response(error=True, message="error_account_not_found").dict(),
-                status=404,
-            )
+            raise ApiError(404, "Account not found.", ProblemType.ACCOUNT_NOT_FOUND, field="use_existing_account_id")
     else:
 
         if not data.new_account_name:
-            return JsonResponse(
-                operation_response(error=True, message="error_no_account_name_supplied").dict(),
-                status=400,
+            raise ApiError(
+                400, "No account name supplied.", ProblemType.ACCOUNT_NAME_REQUIRED, field="new_account_name"
             )
 
         account = Account(
@@ -200,14 +191,7 @@ def save_instant_account_and_user(request, data: InstantAccountAndUserCreationSc
     dashboarduser = DashboardUser(**{"user": user, "account": account})
     dashboarduser.save()
 
-    return JsonResponse(
-        operation_response(
-            success=True,
-            message=f"User {data.new_username} created and added to account {account.name}.",
-            data={"user_id": user.id, "account_id": account.id},
-        ).dict(),
-        status=201,
-    )
+    return JsonResponse({"user_id": user.id, "account_id": account.id}, status=201)
 
 
 @router.get("/usage-statistics", response={200: UsageMetricsSchema})

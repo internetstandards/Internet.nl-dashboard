@@ -1,7 +1,6 @@
 # SPDX-License-Identifier: Apache-2.0
 from django.contrib.auth.models import User
 
-from dashboard.internet_nl_dashboard.logic import operation_response
 from dashboard.internet_nl_dashboard.logic.user import (
     SaveUserSettingsInputSchema,
     get_user_settings,
@@ -51,13 +50,7 @@ def test_user_editing(db):
         mail_preferred_language="nl",
         mail_send_mail_after_scan_finished=False,
     )
-    response = save_user_settings(1, new_data).dict()
-    del response["timestamp"]
-
-    expected_response = operation_response(success=True, message="save_user_settings_success").dict()
-    del expected_response["timestamp"]
-
-    assert response == expected_response
+    assert save_user_settings(1, new_data) is None, "Saving settings should complete without a response envelope."
 
     user = User.objects.all().first()
     assert user.first_name == "example"

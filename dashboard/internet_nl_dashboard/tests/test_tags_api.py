@@ -24,8 +24,8 @@ def test_add_tag_to_multiple_urls(db, client):
         content_type="application/json",
     )
 
-    assert response.status_code == 201, "Adding a tag to multiple URL IDs should succeed."
-    assert response.json()["success"] is True, "The operation response should report success."
+    assert response.status_code == 204, "Adding a tag to multiple URL IDs should succeed."
+    assert response.content == b"", "Successful tag updates should return no body."
 
     for url in selected_urls:
         tagged_url = TaggedUrlInUrllist.objects.get(urllist=urllist, url=url)
@@ -56,7 +56,7 @@ def test_add_tag_only_changes_urls_in_the_requested_account_list(db, client):
         content_type="application/json",
     )
 
-    assert response.status_code == 201, "Valid bulk-tag requests should succeed even when unrelated IDs are ignored."
+    assert response.status_code == 204, "Valid bulk-tag requests should succeed even when unrelated IDs are ignored."
     requested_tagged_url = TaggedUrlInUrllist.objects.get(urllist=urllist, url=requested_url)
     assert list(requested_tagged_url.tags.names()) == [
         "scoped tag"

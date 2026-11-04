@@ -4,25 +4,26 @@ import json
 import logging
 import re
 from copy import copy
-from datetime import datetime
+from datetime import date, datetime, time, timezone
 from time import sleep
-from typing import Any, Dict, List, Optional, Union
+from typing import Annotated, Any, Dict, List, Optional, Union
 from uuid import uuid4
 
 from actstream import action
 from django.db.models import Model, Prefetch
-from ninja import Schema
+from ninja import Field, Schema
+from pydantic import field_validator
 from websecmap.organizations.models import Url
 from websecmap.reporting.diskreport import location_on_disk, retrieve_report, store_report
 from websecmap.reporting.report import relevant_urls_at_timepoint
 
 from dashboard.celery import app
-from dashboard.internet_nl_dashboard.logic import operation_response
 from dashboard.internet_nl_dashboard.logic.urllist_dashboard_report import (
     create_calculation_on_urls,
     sum_internet_nl_scores_over_rating,
 )
 from dashboard.internet_nl_dashboard.models import Account, UrlList, UrlListReport
+from dashboard.internet_nl_dashboard.problems import ApiError, DocumentedApiError, ProblemSchema, ProblemType, raises
 
 
 class RatingCalculationSchema(Schema):
@@ -146,12 +147,15 @@ class ReportSchema(Schema):
     public_share_code: str
 
 
-class SharedReportAuthRequiredSchema(Schema):
-    authentication_required: bool = True
+class SharedReportMetadataSchema(Schema):
     public_report_code: str
-    id: str
+    id: int
     urllist_name: str
-    at_when: str
+    at_when: datetime
+
+
+class SharedReportAccessProblemSchema(ProblemSchema):
+    report: SharedReportMetadataSchema
 
 
 class SharedReportInputSchema(Schema):
@@ -173,15 +177,14 @@ class RecentReportItemSchema(Schema):
     type: str
     number_of_urls: int
     list_name: str
-    # at_when is emitted as ISO string by get_recent_reports
-    at_when: str
+    at_when: datetime
     urllist_id: int
     urllist_scan_type: str
 
 
 class PublicReportItemSchema(Schema):
     # Public reports displayed on the homepage
-    at_when: str
+    at_when: datetime
     average_internet_nl_score: float
     report_type: str
     urllist_name: str
@@ -195,12 +198,19 @@ class ShareCodeSchema(Schema):
 
 class SaveAdHocTaggedReportInputSchema(Schema):
     tags: List[str] = []
-    custom_date: Optional[str] = None
-    custom_time: Optional[str] = None
+    custom_date: date | None = None
+    custom_time: Annotated[time, Field(json_schema_extra={"format": "time-local"})] | None = None
+
+    @field_validator("custom_time")
+    @classmethod
+    def local_time_only(cls, value):
+        if value is not None and value.tzinfo is not None:
+            raise ValueError("Use a local time without a timezone offset.")
+        return value
 
 
 class UrlListTimelineDataPointSchema(Schema):
-    date: str
+    date: date
     urls: int
     average_internet_nl_score: float
     report: int
@@ -219,15 +229,11 @@ def parse_ad_hoc_input(
     data: SaveAdHocTaggedReportInputSchema,
 ) -> tuple[list[str], Optional[datetime]]:
     tags = data.tags or []
-    try:
-        at_when: Optional[datetime] = (
-            datetime.fromisoformat(f"{data.custom_date} {data.custom_time}")
-            if data.custom_date and data.custom_time
-            else None
-        )
-    except ValueError:
-        at_when = None
-
+    at_when = (
+        datetime.combine(data.custom_date, data.custom_time, tzinfo=timezone.utc)
+        if data.custom_date and data.custom_time
+        else None
+    )
     return tags, at_when
 
 
@@ -258,6 +264,11 @@ def get_recent_reports(account: Account) -> list[RecentReportItemSchema]:
     ]
 
 
+class AdHocReportNotFound(DocumentedApiError):
+    status = 404
+    detail = "No report with this ID is available in the current account."
+
+
 def ad_hoc_report_create(account: Account, report_id: int, tags: List[str], at_when: Optional[datetime]):
     # Get a list of urls based on tags, the simplest way: require all tags to be present.
     # Url Reports don't have to be re-created because you're piggy-backing on a specific, larger, report.
@@ -272,7 +283,7 @@ def ad_hoc_report_create(account: Account, report_id: int, tags: List[str], at_w
         UrlListReport.objects.all().filter(urllist__account=account, urllist__is_deleted=False, id=report_id).first()
     )
     if not report:
-        return {}
+        raise AdHocReportNotFound()
 
     # This is an "AND" construction, each tag should be present:
     urls = Url.objects.all().filter(taggedurlinurllist__urllist=report.urllist)
@@ -300,6 +311,7 @@ def ad_hoc_report_create(account: Account, report_id: int, tags: List[str], at_w
     return report
 
 
+@raises(AdHocReportNotFound)
 def save_ad_hoc_tagged_report(account: Account, report_id: int, tags: List[str], at_when: Optional[datetime]):
     report = ad_hoc_report_create(account, report_id, tags, at_when)
     # A new ID saves as a new record
@@ -310,9 +322,10 @@ def save_ad_hoc_tagged_report(account: Account, report_id: int, tags: List[str],
 
     store_report(report.pk, "UrlListReport", tmp_calculation)
 
-    return operation_response(success=True)
+    return None
 
 
+@raises(AdHocReportNotFound)
 def ad_hoc_tagged_report(account: Account, report_id: int, tags: List[str], at_when: Optional[datetime]):
     report = ad_hoc_report_create(account, report_id, tags, at_when)
 
@@ -419,7 +432,8 @@ def get_urllist_timeline_graph(
     return ordered_lists
 
 
-def get_report(account: Account, report_id: int) -> ReportSchema:
+@raises(AdHocReportNotFound)
+def get_report(account: Account, report_id: int) -> str:
     log.debug("Retrieve report data")
     # it's okay if the list is deleted. Still be able to see reports from the past
     # urllist__is_deleted=False,
@@ -443,7 +457,7 @@ def get_report(account: Account, report_id: int) -> ReportSchema:
     )
 
     if not report:
-        return "{}"
+        raise AdHocReportNotFound()
 
     log_report_access_async.apply_async([report_id, account.id])
     calculation_raw = retrieve_report_raw(report_id, "UrlListReport")
@@ -495,8 +509,43 @@ def get_public_reports() -> list[PublicReportItemSchema]:
     ]
 
 
-def get_shared_report(report_code: str, share_code: str = "") -> ReportSchema | SharedReportAuthRequiredSchema | str:
-    # adding str, because of optimization to not return json, but to return a string
+class SharedReportNotFound(DocumentedApiError):
+    status = 404
+    detail = "No publicly shared report exists for this report code."
+
+
+class SharedReportAccessDenied(DocumentedApiError):
+    status = 403
+    detail = "A valid share code is required to access this report."
+    problem_type = ProblemType.REPORT_ACCESS_DENIED
+    problem_schema = SharedReportAccessProblemSchema
+
+    def __init__(self, report):
+        super().__init__()
+        metadata = SharedReportMetadataSchema(
+            id=report["id"],
+            public_report_code=report["public_report_code"],
+            urllist_name=report["urllist__name"],
+            at_when=report["at_when"],
+        )
+        self.extensions = {"report": metadata.model_dump(mode="json")}
+
+    @classmethod
+    def example(cls):
+        return {
+            **super().example(),
+            "report": SharedReportMetadataSchema(
+                id=42,
+                public_report_code="example-report",
+                urllist_name="Example list",
+                at_when=datetime(2026, 1, 1, tzinfo=timezone.utc),
+            ).model_dump(mode="json"),
+        }
+
+
+@raises(SharedReportNotFound, SharedReportAccessDenied)
+def get_shared_report(report_code: str, share_code: str = "") -> str:
+    # Keep large calculation JSON as text to avoid parsing the report dataset.
     # Check if report_code exists. If so see if a share code is required.
     report = (
         UrlListReport.objects.all()
@@ -527,7 +576,7 @@ def get_shared_report(report_code: str, share_code: str = "") -> ReportSchema | 
         # deter brute forcing
         log.debug("Could not find report with code %s", report_code)
         sleep(3)
-        return []
+        raise SharedReportNotFound()
 
     if report["public_share_code"] == share_code:
         # todo: prevent loads/dumps with report calculation, it is should be sent without any loading to speed up
@@ -535,11 +584,7 @@ def get_shared_report(report_code: str, share_code: str = "") -> ReportSchema | 
         calculation = retrieve_report_raw(report["id"], "UrlListReport")
         return f"{dump_report_to_text_resembling_json(report, calculation)}"
 
-    # todo: should be a normal REST response
-    return (
-        f'{{"authentication_required": true, "public_report_code": "{report_code}", "id": "{report["id"]}", '
-        f'"urllist_name": "{report["urllist__name"]}", "at_when": "{report["at_when"]}"}}'
-    )
+    raise SharedReportAccessDenied(report)
 
 
 def dump_report_to_text_resembling_json(report, calculation):
@@ -552,21 +597,19 @@ def dump_report_to_text_resembling_json(report, calculation):
     :param report:
     :return:
     """
-    return (
-        "{"
-        f'"id": {report["id"]}, '
-        f'"urllist_id": {report["urllist_id"]}, '
-        f'"urllist_name": "{report["urllist__name"]}", '
-        f'"average_internet_nl_score": {report["average_internet_nl_score"]}, '
-        f'"total_urls": {report["total_urls"]}, '
-        f'"is_publicly_shared": {"true" if report["is_publicly_shared"] else "false"}, '
-        f'"at_when": "{report["at_when"]}", '
-        f'"calculation": {calculation}, '
-        f'"report_type": "{report["report_type"]}", '
-        f'"public_report_code": "{report["public_report_code"]}", '
-        f'"public_share_code": "{report["public_share_code"]}" '
-        "}"
-    )
+    metadata = {
+        "id": report["id"],
+        "urllist_id": report["urllist_id"],
+        "urllist_name": report["urllist__name"],
+        "average_internet_nl_score": report["average_internet_nl_score"],
+        "total_urls": report["total_urls"],
+        "is_publicly_shared": report["is_publicly_shared"],
+        "at_when": report["at_when"].isoformat(),
+        "report_type": report["report_type"],
+        "public_report_code": report["public_report_code"],
+        "public_share_code": report["public_share_code"],
+    }
+    return json.dumps(metadata)[:-1] + f', "calculation": {calculation}' + "}"
 
 
 def get_report_directly(report_id):
@@ -999,7 +1042,7 @@ def share(account, report_id, share_code):
     report = get_report_for_sharing(account, report_id, False)
 
     if not report:
-        return operation_response(error=True, message="response_no_report_found")
+        raise ApiError(404, "Report not found in the required sharing state.", ProblemType.REPORT_SHARING_UNAVAILABLE)
 
     report.is_publicly_shared = True
     report.public_share_code = share_code
@@ -1009,51 +1052,43 @@ def share(account, report_id, share_code):
         report.public_report_code = str(uuid4())
     report.save()
 
-    return operation_response(success=True, message="response_shared", data=report_sharing_data(report))
+    return report_sharing_data(report)
 
 
 def unshare(account, report_id):
     report = get_report_for_sharing(account, report_id, True)
 
     if not report:
-        return operation_response(error=True, message="response_no_report_found")
+        raise ApiError(404, "Report not found in the required sharing state.", ProblemType.REPORT_SHARING_UNAVAILABLE)
 
     report.is_publicly_shared = False
     report.save()
 
-    return operation_response(success=True, message="response_unshared", data=report_sharing_data(report))
+    return report_sharing_data(report)
 
 
 def update_share_code(account, report_id, share_code):
     report = get_report_for_sharing(account, report_id, True)
 
     if not report:
-        return operation_response(error=True, message="response_no_report_found")
+        raise ApiError(404, "Report not found in the required sharing state.", ProblemType.REPORT_SHARING_UNAVAILABLE)
 
     report.public_share_code = share_code
     report.save()
 
-    return operation_response(
-        success=True,
-        message="response_updated_share_code",
-        data=report_sharing_data(report),
-    )
+    return report_sharing_data(report)
 
 
 def update_report_code(account, report_id):
     report = get_report_for_sharing(account, report_id, True)
 
     if not report:
-        return operation_response(error=True, message="response_no_report_found")
+        raise ApiError(404, "Report not found in the required sharing state.", ProblemType.REPORT_SHARING_UNAVAILABLE)
 
     report.public_report_code = str(uuid4())
     report.save()
 
-    return operation_response(
-        success=True,
-        message="response_updated_report_code",
-        data=report_sharing_data(report),
-    )
+    return report_sharing_data(report)
 
 
 def get_report_for_sharing(account: Account, report_id: int, is_publicly_shared: bool) -> Any:

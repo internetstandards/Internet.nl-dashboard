@@ -17,17 +17,15 @@ CONSTANCE_CONFIG = {
         str,
     ),
     "DASHBOARD_MAXIMUM_DOMAINS_PER_LIST": (
-        1000,
-        "The maximum amount of domains that can be in a list. There will be no crash when somebody imports more "
-        "via a spreadsheet: domains will be added but the list will refuse to scan and show a warning."
-        "In normal use cases these limits will not be reached as average lists are about 300 domains. Lists "
-        "with 600 domains are unusual. Lists with 10.000+ domains are exceptional.",
+        5000,
+        "The maximum number of domains in a list. Batch additions skip existing domains and add new "
+        "resolvable domains in the supplied order until this limit is reached.",
         int,
     ),
     "DASHBOARD_MAXIMUM_DOMAINS_PER_SPREADSHEET": (
-        1000,
-        "The maximum amount of domains that can be imported via a spreadsheet at one time. "
-        "In normal use cases these limits will not be reached.",
+        100000,
+        "The maximum number of input entries in a domain batch (spreadsheet or text). "
+        "The domain limit per list is checked separately after validation.",
         int,
     ),
     "DASHBOARD_MAXIMUM_LISTS_PER_SPREADSHEET": (

@@ -1,3 +1,4 @@
+from datetime import datetime
 from typing import Dict, List, Optional
 
 from django.db.models import Prefetch
@@ -17,7 +18,7 @@ class SharedListSchema(Schema):
 
 class PubliclySharedReportSchema(Schema):
     id: int
-    at_when: str
+    at_when: datetime
     report_type: str
     has_public_share_code: bool
     average_internet_nl_score: float

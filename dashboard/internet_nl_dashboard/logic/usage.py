@@ -33,7 +33,7 @@ from django.contrib.contenttypes.models import ContentType
 from django.core.cache import cache
 from django.db.models import Count, Min, Q
 from django.db.models.functions import ExtractMonth, ExtractYear
-from ninja import Schema
+from ninja import Field, Schema
 from websecmap.organizations.models import Url
 from websecmap.scanners.models import EndpointGenericScan
 
@@ -84,9 +84,9 @@ class ActionStatisticsSchema(Schema):
 
 
 class UserStatisticsInputSchema(Schema):
-    start_date: date | None = None
-    end_date: date | None = None
-    max_records: int = 10
+    start_date: date | None = Field(default=None, alias="startDate")
+    end_date: date | None = Field(default=None, alias="endDate")
+    max_records: int = Field(default=10, alias="maxRecords", ge=1)
 
 
 class ActorVerbStatisticsSchema(Schema):
@@ -99,8 +99,8 @@ class ActorVerbStatisticsSchema(Schema):
 
 
 class UserStatisticsSchema(Schema):
-    start_date: str
-    end_date: str
+    start_date: date
+    end_date: date
     max_records: int
     actors: list[ActorVerbStatisticsSchema]
 

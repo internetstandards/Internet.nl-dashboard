@@ -10,12 +10,13 @@ from constance import config
 from constance.admin import Config, ConstanceAdmin, ConstanceForm
 from django.contrib import admin, messages
 from django.contrib.admin import SimpleListFilter
+from django.contrib.admin.views.main import ChangeList
 from django.contrib.auth.admin import GroupAdmin as BaseGroupAdmin
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 from django.contrib.auth.models import Group, User
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.humanize.templatetags.humanize import naturaltime
-from django.core.paginator import Paginator
+from django.db.models import Count, Max, Q, Subquery
 from django.utils.html import format_html
 from django.utils.safestring import mark_safe
 from django_celery_beat.admin import PeriodicTaskAdmin, PeriodicTaskForm
@@ -23,8 +24,6 @@ from django_celery_beat.models import CrontabSchedule, PeriodicTask
 from import_export import resources
 from import_export.admin import ImportExportModelAdmin
 from jet.admin import CompactInline
-from websecmap.organizations.models import Url
-from websecmap.scanners.models import Endpoint
 from websecmap.scanners_internet_nl_web.admin import InternetNLV2ScanAdmin
 from websecmap.scanners_internet_nl_web.models import InternetNLV2Scan, InternetNLV2StateLog
 
@@ -51,13 +50,38 @@ log = logging.getLogger(__package__)
 MAX_ACTIVITY_FILTER_OPTIONS = 400
 
 
-class TooManyRecordsPaginator(Paginator):
-    def __init__(self, object_list, per_page, something, darkside):
-        super().__init__(object_list, per_page, something, darkside)
+class InputListFilter(admin.FieldListFilter):
+    """Filter by a related object's ID or text without loading every possible choice."""
 
-    @property
-    def count(self):  # pylint: disable=invalid-overridden-method
-        return 13374223
+    template = "admin/input_filter.html"
+
+    def __init__(self, field, request, params, model, model_admin, field_path):
+        self.input_type = "number" if field.is_relation else "text"
+        lookup = f"{field.target_field.name}__exact" if field.is_relation else "icontains"
+        self.parameter_name = f"{field_path}__{lookup}"
+        super().__init__(field, request, params, model, model_admin, field_path)
+        if field.is_relation:
+            self.title = f"{self.title} ID"
+        if self.parameter_name in self.used_parameters:
+            values = self.used_parameters[self.parameter_name]
+            self.used_parameters[self.parameter_name] = [value for value in values if value.strip()]
+            if not self.used_parameters[self.parameter_name]:
+                del self.used_parameters[self.parameter_name]
+
+    def expected_parameters(self):
+        return [self.parameter_name]
+
+    def choices(self, changelist):
+        yield {
+            "value": self.used_parameters.get(self.parameter_name, [""])[-1],
+            "other_parameters": (
+                (name, value)
+                for name, values in changelist.filter_params.items()
+                if name != self.parameter_name
+                for value in values
+            ),
+            "clear_url": changelist.get_query_string(remove=[self.parameter_name]),
+        }
 
 
 def only_alphanumeric(data: str) -> str:
@@ -336,6 +360,9 @@ admin.site.register([Config], ConfigAdmin)
 class AccountAdmin(ImportExportModelAdmin, admin.ModelAdmin):
     form = CustomAccountModelForm
 
+    def get_queryset(self, request):
+        return super().get_queryset(request).annotate(user_count=Count("dashboarduser"))
+
     list_display = (
         "name",
         "internet_nl_api_username",
@@ -361,7 +388,7 @@ class AccountAdmin(ImportExportModelAdmin, admin.ModelAdmin):
     def no_of_users(obj):
         return mark_safe(
             f"<a href='/admin/auth/user/?q={only_alphanumeric(obj.name)}#/tab/inline_0/'>"  # nosec
-            f"🔎 {DashboardUser.objects.all().filter(account=obj).count()}"
+            f"🔎 {obj.user_count}"
         )
 
     def save_model(self, request, obj, form, change):
@@ -391,11 +418,51 @@ class AccountAdmin(ImportExportModelAdmin, admin.ModelAdmin):
     actions.append("check_api_connectivity")
 
 
+class UrlListChangeList(ChangeList):
+    def get_results(self, request):
+        super().get_results(request)
+        # Batch statistics for the current page, after filtering, counting and pagination.
+        self.result_list = list(self.result_list)
+        if not self.result_list:
+            return
+        visible_ids = tuple(urllist.id for urllist in self.result_list)
+        live_url = Q(url__is_dead=False, url__not_resolvable=False)
+        statistics = {
+            row["urllist"]: row
+            for row in TaggedUrlInUrllist.objects.filter(urllist__in=visible_ids)
+            .order_by()
+            .values("urllist")
+            .annotate(
+                url_count=Count("url", filter=live_url, distinct=True),
+                endpoint_count=Count("url__endpoint", filter=live_url & Q(url__endpoint__is_dead=False), distinct=True),
+            )
+        }
+        latest_scans = (
+            AccountInternetNLScan.objects.filter(urllist__in=visible_ids)
+            .order_by()
+            .values("urllist")
+            .annotate(latest=Max("id"))
+            .values("latest")
+        )
+        states = dict(
+            AccountInternetNLScan.objects.filter(id__in=Subquery(latest_scans)).values_list("urllist", "state")
+        )
+        for urllist in self.result_list:
+            totals = statistics.get(urllist.id, {})
+            urllist.url_count = totals.get("url_count", 0)
+            urllist.endpoint_count = totals.get("endpoint_count", 0)
+            urllist.last_scan_state = None if urllist.is_deleted else states.get(urllist.id)
+
+
 @admin.register(UrlList)
 class UrlListAdmin(ImportExportModelAdmin, admin.ModelAdmin):
+    list_select_related = ("account",)
+
+    def get_changelist(self, request, **kwargs):
+        return UrlListChangeList
 
     list_display = (
-        "pk",
+        "id",
         "name",
         "account",
         "scan_type",
@@ -434,27 +501,23 @@ class UrlListAdmin(ImportExportModelAdmin, admin.ModelAdmin):
 
     @staticmethod
     def no_of_urls(obj):
-        return Url.objects.all().filter(urls_in_dashboard_list_2=obj, is_dead=False, not_resolvable=False).count()
+        return obj.url_count
 
     @staticmethod
     def no_of_endpoints(obj):
-        return (
-            Endpoint.objects.all()
-            .filter(
-                url__urls_in_dashboard_list_2=obj,
-                is_dead=False,
-                url__is_dead=False,
-                url__not_resolvable=False,
-            )
-            .count()
-        )
+        return obj.endpoint_count
+
+    @staticmethod
+    @admin.display(boolean=True)
+    def is_scan_now_available(obj):
+        return obj.enable_scans and (obj.last_scan_state is None or obj.last_scan_state in ("finished", "cancelled"))
 
     actions = []
 
     def scan_urllist_now(self, request, queryset):
         feedback = ""
         for urllist in queryset:
-            feedback += repr(f"List #{urllist.pk}: {scan_urllist_now_ignoring_business_rules(urllist)} ")
+            feedback += repr(f"List #{urllist.id}: {scan_urllist_now_ignoring_business_rules(urllist)} ")
 
         self.message_user(request, feedback)
 
@@ -469,6 +532,7 @@ class TaggedUrlInUrllistAdmin(ImportExportModelAdmin, admin.ModelAdmin):
 
     list_display = ("url", "urllist")
     fields = ("url", "urllist", "tags")
+    raw_id_fields = ("url", "urllist")
 
 
 class InternetNLV2StateLogInline(nested_admin.NestedTabularInline):  # pylint: disable=no-member too-few-public-methods
@@ -579,13 +643,14 @@ class AccountInternetNLScanAdmin(DashboardScanActionsMixin, ImportExportModelAdm
         qs = super().get_queryset(request)
 
         # prefetch account, scan and urllist, as loading this takes ages because of subqueries.
-        qs = qs.select_related("account", "urllist", "scan")
+        qs = qs.select_related("account", "urllist__account", "scan", "report")
 
         # this column prevents loading of long lists
         qs = qs.defer(
             "scan__subject_urls",
             "scan__retrieved_scan_report",
             "scan__retrieved_scan_report_technical",
+            "report__calculation",
         )
 
         return qs
@@ -605,7 +670,7 @@ class AccountInternetNLScanAdmin(DashboardScanActionsMixin, ImportExportModelAdm
         "report",
     )
 
-    list_filter = ["account", "urllist", "state", "started_on", "finished_on"][::-1]
+    list_filter = ["account", ("urllist", InputListFilter), "state", "started_on", "finished_on"][::-1]
     search_fields = ("urllist__name", "account__name")
 
     fields = (
@@ -626,11 +691,11 @@ class AccountInternetNLScanAdmin(DashboardScanActionsMixin, ImportExportModelAdm
 
     @staticmethod
     def internetnl_scan(obj):
-        return obj.scan.id
+        return obj.scan.id if obj.scan else None
 
     @staticmethod
     def internetnl_scan_type(obj):
-        return obj.scan.type
+        return obj.scan.type if obj.scan else None
 
 
 class InternetNLV2ScanAdminNew(
@@ -712,19 +777,20 @@ create_modeladmin(ActionInspectionAdmin, name="actionInspection", model=Actstrea
 
 @admin.register(AccountInternetNLScanLog)
 class AccountInternetNLScanLogAdmin(ImportExportModelAdmin, admin.ModelAdmin):
-    paginator = TooManyRecordsPaginator
+    show_full_result_count = False
+    raw_id_fields = ("scan",)
 
     @admin.display(ordering="scan__id", description="Scan id")
     def scan_pk(self, obj):
-        return obj.scan_id
+        return obj.scan.id
 
     @admin.display(ordering="scan__urllist__name", description="URL list")
     def scan_urllist_name(self, obj):
-        return obj.scan.urllist.name if obj.scan_id else None
+        return obj.scan.urllist.name
 
     @admin.display(ordering="scan__account__name", description="Account")
     def scan_account_name(self, obj):
-        return obj.scan.account.name if obj.scan_id else None
+        return obj.scan.account.name
 
     # prevent fetching report files: See sentry issue 7037647108
     def get_queryset(self, request):
@@ -747,7 +813,7 @@ class AccountInternetNLScanLogAdmin(ImportExportModelAdmin, admin.ModelAdmin):
         "state",
         "at_when",
     )
-    list_filter = ["scan", "state", "at_when", "scan__account__name"][::-1]
+    list_filter = [("scan", InputListFilter), "state", "at_when", "scan__account"][::-1]
     search_fields = ("scan__urllist__name", "scan__account__name")
     readonly_fields = ("id", "scan_pk", "scan_urllist_name", "scan_account_name")
     fields = (
@@ -763,6 +829,8 @@ class AccountInternetNLScanLogAdmin(ImportExportModelAdmin, admin.ModelAdmin):
 
 @admin.register(UploadLog)
 class UploadLogAdmin(ImportExportModelAdmin, admin.ModelAdmin):
+    list_select_related = ("user__account", "user__user")
+    raw_id_fields = ("user",)
     list_display = (
         "original_filename",
         "internal_filename",
@@ -773,7 +841,7 @@ class UploadLogAdmin(ImportExportModelAdmin, admin.ModelAdmin):
         "filesize",
     )
     search_fields = ("internal_filename", "orginal_filename", "status")
-    list_filter = ["message", "upload_date", "user"][::-1]
+    list_filter = [("message", InputListFilter), "upload_date", ("user", InputListFilter)][::-1]
 
     fields = (
         "original_filename",
@@ -788,6 +856,7 @@ class UploadLogAdmin(ImportExportModelAdmin, admin.ModelAdmin):
 
 @admin.register(models.SubdomainDiscoveryScan)
 class SubdomainDiscoveryScanAdmin(ImportExportModelAdmin, admin.ModelAdmin):
+    raw_id_fields = ("urllist",)
     list_display = ("urllist", "state", "state_changed_on", "state_message")
     fields = (
         "urllist",
@@ -796,7 +865,7 @@ class SubdomainDiscoveryScanAdmin(ImportExportModelAdmin, admin.ModelAdmin):
         "state_message",
         "domains_discovered",
     )
-    list_filter = ("state", "state_changed_on", "state_message")
+    list_filter = ("state", "state_changed_on", ("state_message", InputListFilter))
 
 
 @admin.register(models.UrlListReport)
@@ -815,7 +884,7 @@ class UrlListReportAdmin(ImportExportModelAdmin, admin.ModelAdmin):
         qs = super().get_queryset(request)
 
         # tell Django to not retrieve mpoly field from DB
-        qs = qs.defer("calculation")
+        qs = qs.select_related("urllist__account").defer("calculation")
         return qs
 
     list_display = (
@@ -833,7 +902,8 @@ class UrlListReportAdmin(ImportExportModelAdmin, admin.ModelAdmin):
         "inspect_list",
     )
     search_fields = ["at_when"]
-    list_filter = ["urllist", "at_when", "is_publicly_shared"][::-1]
+    list_filter = [("urllist", InputListFilter), "at_when", "is_publicly_shared"][::-1]
+    raw_id_fields = ("urllist",)
     fields = (
         "urllist",
         "report_type",
