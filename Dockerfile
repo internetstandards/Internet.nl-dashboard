@@ -1,5 +1,7 @@
 FROM python:3.13
 
+LABEL org.opencontainers.image.source=https://github.com/internetstandards/Internet.nl-dashboard
+
 ENV PIP_DISABLE_PIP_VERSION_CHECK 1
 
 RUN python3 -m venv /pyenv

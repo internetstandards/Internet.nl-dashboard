@@ -1,6 +1,6 @@
 services:
   backend:
-    image: ${DOCKER_IMAGE_DASHBOARD:-${DOCKER_REGISTRY:-internetstandards}/dashboard:${RELEASE:-latest}}
+    image: ${DOCKER_IMAGE_DASHBOARD:-${DOCKER_REGISTRY:-ghcr.io/internetstandards}/dashboard:${RELEASE:-latest}}
     build: .
     command: dashboard_prdserver --migrate
     # TODO: check if needed: --security-opt seccomp=unconfined
@@ -43,7 +43,7 @@ services:
       interval: 60s
 
   frontend:
-    image: ${DOCKER_IMAGE_DASHBOARD_STATIC:-${DOCKER_REGISTRY:-internetstandards}/dashboard-static:${RELEASE:-latest}}
+    image: ${DOCKER_IMAGE_DASHBOARD_STATIC:-${DOCKER_REGISTRY:-ghcr.io/internetstandards}/dashboard-static:${RELEASE:-latest}}
     build: https://github.com/internetstandards/Internet.nl-dashboard-frontend.git
     networks:
       dashboard:
@@ -53,7 +53,7 @@ services:
       - dashboard-frontend-uploads:/source/dashboard/uploads
 
   worker: &worker
-    image: ${DOCKER_IMAGE_DASHBOARD:-${DOCKER_REGISTRY:-internetstandards}/dashboard:${RELEASE:-latest}}
+    image: ${DOCKER_IMAGE_DASHBOARD:-${DOCKER_REGISTRY:-ghcr.io/internetstandards}/dashboard:${RELEASE:-latest}}
     build: .
     command: celery_dashboard worker --queues storage,celery,isolated,kickoff,kickoff1,kickoff2,kickoff3,kickoff4,database_deprecate,database_deprecate3,database,database3,internetnl
     environment: &worker-environment
@@ -79,7 +79,7 @@ services:
       - dashboard-frontend-uploads:/source/dashboard/uploads
 
   dramatiq:
-    image: ${DOCKER_IMAGE_DASHBOARD:-${DOCKER_REGISTRY:-internetstandards}/dashboard:${RELEASE:-latest}}
+    image: ${DOCKER_IMAGE_DASHBOARD:-${DOCKER_REGISTRY:-ghcr.io/internetstandards}/dashboard:${RELEASE:-latest}}
     build: .
     command:
       - rundramatiq
@@ -114,7 +114,7 @@ services:
 
   scheduler:
     <<: *worker
-    image: ${DOCKER_IMAGE_DASHBOARD:-${DOCKER_REGISTRY:-internetstandards}/dashboard:${RELEASE:-latest}}
+    image: ${DOCKER_IMAGE_DASHBOARD:-${DOCKER_REGISTRY:-ghcr.io/internetstandards}/dashboard:${RELEASE:-latest}}
     build: .
     command: celery_dashboard beat -l info --pidfile=/var/tmp/celerybeat.pid
 
