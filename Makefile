@@ -2,7 +2,7 @@ SHELL=/bin/bash
 
 # settings
 app_name = dashboard
-docker_image_name = internetstandards/dashboard
+docker_image_name = ghcr.io/internetstandards/dashboard
 
 # configure virtualenv to be created in OS specific cache directory
 VIRTUAL_ENV = .venv

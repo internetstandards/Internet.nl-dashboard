@@ -10,6 +10,7 @@ jobs:
   build:
     permissions:
       contents: read
+      packages: write
       pull-requests: write
     environment: Default
     runs-on: ubuntu-latest
@@ -23,13 +24,13 @@ jobs:
         python-version: [ "3.10" ]
         redis-version: [ 6 ]
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v7
       # This helps with adding version information to the build in the admin on production. CI usually works shallow.
       # https://stackoverflow.com/questions/4916492/git-describe-fails-with-fatal-no-names-found-cannot-describe-anything
       # this will fetch the whole repository, which is more expensive.
       - run: git fetch --prune --unshallow --tags
       - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v7
         with:
           python-version: ${{ matrix.python-version }}
       - name: Start Redis
@@ -49,17 +50,15 @@ jobs:
         run: make test
       - name: build image
         run: |
-          make image build_args=--build-arg=VERSION=$(git describe --tags --abbrev=0)-$(git log -1 --pretty=format:%h)
-      - name: Login to Docker Hub
+          make image build_args="--build-arg=VERSION=$(git describe --tags --abbrev=0)-$(git log -1 --pretty=format:%h)"
+      - name: Login to GitHub Container Registry
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-        uses: docker/login-action@v2
+        uses: docker/login-action@v4
         with:
-          username: ${{ secrets.DOCKERHUB_USERNAME }}
-          password: ${{ secrets.DOCKERHUB_TOKEN }}
-      - name: Push image to docker hub
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Push image to GitHub Container Registry
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'
         run: |
           make push_image
-        env:
-          DOCKER_USERNAME: internetstandards
-          secure: U7kSLhWutEWne8w0zMUN3XzWWWHnK0NKuDxrKQBtYpH5VA+ROd0js7y9uFYflqdJO/doiXE4updVM8D1aGrxfJ8Wp2Ywp5vC/6Ua+Wn+pdIi2WNBqOgCeq3+2NUMND7DpChFIA9dBiEOCnnOlRKYaz5bBhOR7trruV2E+QSCG+Scxejg+pToF/cRsQDI9zTktAr9rfWDfOjz0jfxC2NixOP8THFZhDW/vXlRWWGtmwvnawwXMdyhRYnIV/fvb2RnHeVlDXckMm+GTEcRwKZTp1Cy/lCuk8zEzxPkSvrYnAeC8Dto/KPFo9XnRNKNPygf4t7YlJ8eGvw7sp5QKH327D8+1kjspq20Aqq7IoHSHnhmYGrJSsgmoWsod6Be8PaFV/FjjfDbMvcpNspVxSPQu/h0P0POdK3+0HJBQ0j1qaYlOwlKGFyoNEN+hPOg7A/RWeV+P5wn5SxZCepL4T95uS4JIsb7SMmD1GxRTr+6ygRrKOnduBtBXFV48LALxvAwvBTka9muo924HDNsRQiI0r5gizoNPPTw+T8tzynoc7QRalih03UnEVvRxuPPz+kF+GyXQYLjVRIuPlrubnprOuW31VYEgwzAv32Ec3OZoUvx6MQvSvsignklSJgg9pucMu6apQPNkyt8GPRgUKUqQscPY1mSMhblWnaPAu7my9w=
